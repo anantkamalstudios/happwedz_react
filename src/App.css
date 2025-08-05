@@ -158,7 +158,8 @@ body {
 }
 
 
-* Login Form */ .wedding-login-container {
+/* * Login Form */
+*/ .wedding-login-container {
   background: linear-gradient(135deg, #fdf5f8 0%, #f8f4fa 100%);
   font-family: "Poppins", sans-serif;
   position: relative;
