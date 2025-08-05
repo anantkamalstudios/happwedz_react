@@ -1,15 +1,19 @@
-import React from 'react'
-import Herosection from '../Home/Herosection'
-import WeddingCategories from '../home/WeddingCategories'
+import React from "react";
+import Herosection from "../home/Herosection";
+import WeddingCategories from "../home/WeddingCategories";
+import VenueSlider from "../home/VenueSlider";
+import PopularSearches from "../home/PopularSearches";
 
-
-function Home() {
+const Home = () => {
     return (
-        <div>
+        <>
             <Herosection />
             <WeddingCategories />
-        </div>
-    )
-}
 
-export default Home
+            <VenueSlider />
+            <PopularSearches />
+        </>
+    );
+};
+
+export default Home;

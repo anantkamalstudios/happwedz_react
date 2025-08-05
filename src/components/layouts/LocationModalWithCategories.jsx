@@ -60,15 +60,31 @@ const LocationModalWithCategories = () => {
 
   return (
     <>
-      {/* Button to trigger modal */}
-      <Button variant="outline-light" onClick={handleShow}>
-        📍 Select Location
+      <Button
+        variant="outline-light"
+        style={{ fontSize: "12px" }}
+        onClick={handleShow}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="lucide lucide-map-pin-icon lucide-map-pin"
+        >
+          <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>{" "}
+        Select Location
       </Button>
 
-      {/* Modal */}
-      <Modal show={show} onHide={handleClose} size="lg" centered>
+      <Modal show={show} onHide={handleClose} size="xl" centered>
         <Modal.Body>
-          {/* Search Input */}
           <Form.Control
             type="text"
             placeholder="🔍 Search City, State..."
@@ -85,10 +101,13 @@ const LocationModalWithCategories = () => {
               return (
                 <Col key={category} md={4} className="mb-4">
                   <h6 className="text-danger fw-bold">{category}</h6>
-                  <ul className="list-unstyled">
+                  <ul className="list-unstyled text-decoration-none">
                     {filtered.map((city) => (
                       <li key={city}>
-                        <a href="#" className="text-dark d-block py-1">
+                        <a
+                          href="#"
+                          className="text-dark d-block py-1 text-decoration-none"
+                        >
                           {city}
                         </a>
                       </li>
@@ -99,11 +118,6 @@ const LocationModalWithCategories = () => {
             })}
           </Row>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
-        </Modal.Footer>
       </Modal>
     </>
   );
