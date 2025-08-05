@@ -8,22 +8,22 @@ const PopularSearches = () => {
     new Swiper(".popularSearchSwiper", {
       loop: true,
       speed: 8000,
-      spaceBetween: 20,
+      spaceBetween: 30,
       slidesPerView: "auto",
       freeMode: true,
       freeModeMomentum: false,
       breakpoints: {
         0: {
-          slidesPerView: 1.2,
+          slidesPerView: 1.1,
         },
         576: {
-          slidesPerView: 1.8,
+          slidesPerView: 1.5,
         },
         768: {
-          slidesPerView: 2.5,
+          slidesPerView: 2,
         },
         992: {
-          slidesPerView: 3.2,
+          slidesPerView: 3,
         },
       },
     });
@@ -64,16 +64,16 @@ const PopularSearches = () => {
         <div className="swiper-wrapper">
           {popularSearches.map((popularSearch, index) => (
             <div
-              className="swiper-slide swiper-slider-popular-search"
+              className="swiper-slide swiper-slider-popular-search overflow-hidden"
               key={index}
             >
               <div className="card border-0 shadow-sm rounded-4 overflow-hidden">
                 <img
                   src={popularSearch.image}
-                  className="card-img-top rounded-4 popular-search-swiper-img"
+                  className="card-img-top rounded-4 popular-search-swiper-img hover-animate-img"
                   alt={popularSearch.name}
                 />
-                <div className="row">
+                {/* <div className="row">
                   <div className="d-flex">
                     <div className="card-body">
                       <h6 className="card-title fw-bold mb-1">
@@ -101,7 +101,7 @@ const PopularSearches = () => {
                       <span className="small">5.0</span>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           ))}

@@ -87,7 +87,7 @@ const LocationModalWithCategories = () => {
         <Modal.Body>
           <Form.Control
             type="text"
-            placeholder="🔍 Search City, State..."
+            placeholder=" Search City, State..."
             value={searchTerm}
             onChange={handleSearch}
             className="mb-4 p-3"

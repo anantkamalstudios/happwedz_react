@@ -1,34 +1,29 @@
 import React, { useEffect } from "react";
 import Swiper from "swiper/bundle";
 import "swiper/css/bundle";
-import venues from "../../data/venue";
+import realWeddings from "../../data/venue";
 
-const VenueSlider = () => {
+const RealWeddings = () => {
   useEffect(() => {
-    new Swiper(".venueSwiper", {
-      slidesPerView: "auto",
+    new Swiper(".popularSearchSwiper", {
       loop: true,
       speed: 8000,
-      spaceBetween: 20,
+      spaceBetween: 30,
       slidesPerView: "auto",
-      autoplay: {
-        delay: 0,
-        disableOnInteraction: false,
-      },
       freeMode: true,
       freeModeMomentum: false,
       breakpoints: {
         0: {
-          slidesPerView: 1.2,
+          slidesPerView: 1.1,
         },
         576: {
-          slidesPerView: 1.8,
+          slidesPerView: 1.5,
         },
         768: {
-          slidesPerView: 2.5,
+          slidesPerView: 2,
         },
         992: {
-          slidesPerView: 3.2,
+          slidesPerView: 3,
         },
       },
     });
@@ -38,12 +33,12 @@ const VenueSlider = () => {
     <div className="container py-5">
       <div className="d-flex justify-content-around align-items-center">
         <div className="col-md-10">
-          <h3 className="fw-bold mb-4 text-dark">Popular Venue Searches</h3>
+          <h3 className="fw-bold mb-4 text-dark">Real Wedding Photos</h3>
         </div>
         <div className="col-md-2 ">
           <a href="" className="text-decoration-none">
             <h6 className="fw-bold mb-4 text-dark">
-              View All Venue{" "}
+              Show More
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -63,26 +58,27 @@ const VenueSlider = () => {
         </div>
       </div>
 
-      <div className="swiper venueSwiper">
-        <div className="venue-swiper-wrapper swiper-wrapper">
-          {venues.map((venue, index) => (
+      <div className="swiper popularSearchSwiper">
+        <div className="swiper-wrapper">
+          {realWeddings.map((popularSearch, index) => (
             <div
-              className="swiper-slide"
+              className="swiper-slide swiper-slider-popular-search overflow-hidden"
               key={index}
-              style={{ width: "250px" }}
             >
               <div className="card border-0 shadow-sm rounded-4 overflow-hidden">
                 <img
-                  src={venue.image}
-                  className="card-img-top rounded-4 venues-swiper-img"
-                  alt={venue.name}
+                  src={popularSearch.image}
+                  className="card-img-top rounded-4 popular-search-swiper-img hover-animate-img"
+                  alt={popularSearch.name}
                 />
-                <div className="row">
+                {/* <div className="row">
                   <div className="d-flex">
                     <div className="card-body">
-                      <h6 className="card-title fw-bold mb-1">{venue.name}</h6>
+                      <h6 className="card-title fw-bold mb-1">
+                        {popularSearch.name}
+                      </h6>
                       <p className="card-text text-muted small">
-                        {venue.location}
+                        {popularSearch.location}
                       </p>
                     </div>
                     <div className="card-body text-end">
@@ -103,7 +99,7 @@ const VenueSlider = () => {
                       <span className="small">5.0</span>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           ))}
@@ -113,4 +109,4 @@ const VenueSlider = () => {
   );
 };
 
-export default VenueSlider;
+export default RealWeddings;
