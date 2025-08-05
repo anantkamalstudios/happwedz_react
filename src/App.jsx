@@ -1,16 +1,13 @@
-
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Header from "./components/layouts/Header";
 import Footer from "./components/layouts/Footer";
-import 'bootstrap/dist/css/bootstrap.min.css';
 import "./App.css";
 import Home from "./components/pages/Home";
-import CustomerRegister from "./components/auth/CustomerRegister";
 import CustomerLogin from "./components/auth/CustomerLogin";
+import CustomerRegister from "./components/auth/CustomerRegister";
 import VendorLogin from "./components/auth/VendorLogin";
 import VendorRegister from "./components/auth/VendorRegister";
-
 
 function App() {
   return (
@@ -33,4 +30,3 @@ function App() {
 }
 
 export default App;
-

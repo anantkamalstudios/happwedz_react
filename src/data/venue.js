@@ -3,43 +3,43 @@ const venues = [
     name: "Elegant Palace",
     location: "Mumbai, Maharashtra",
     image:
-      "https://images.unsplash.com/photo-1558979158-65a1eaa08691?auto=format&fit=crop&w=800&q=80",
+      "https://image.wedmegood.com/resized/450X/uploads/images/a9be0dac3e0b47c79e41dd7e0a82ec93realwedding/b(6)Large.jpeg?crop=102,322,812,457",
   },
   {
     name: "Royal Garden",
     location: "Delhi, India",
     image:
-      "https://images.unsplash.com/photo-1505935428862-770b6f24f629?auto=format&fit=crop&w=800&q=80",
+      "https://image.wedmegood.com/resized/450X/uploads/images/e2512a8ba02e4a7784428b8d91d3d6ddrealwedding/MAHE0184.jpg?crop=372,436,1620,911",
   },
   {
     name: "The Wedding Lawn",
     location: "Bangalore",
     image:
-      "https://images.unsplash.com/photo-1558979158-65a1eaa08691?auto=format&fit=crop&w=800&q=80",
+      "https://image.wedmegood.com/resized/450X/uploads/images/19ae50c7cbaf4ab994a6dff3c0bc598frealwedding/1.jpg?crop=154,160,1626,914",
   },
   {
     name: "Grand Sapphire",
     location: "Jaipur",
     image:
-      "https://images.unsplash.com/photo-1521540216272-a50305cd4421?auto=format&fit=crop&w=800&q=80",
+      "https://image.wedmegood.com/resized/450X/uploads/images/a9be0dac3e0b47c79e41dd7e0a82ec93realwedding/b(6)Large.jpeg?crop=102,322,812,457",
   },
   {
     name: "Lotus Banquets",
     location: "Chennai",
     image:
-      "https://images.unsplash.com/photo-1558979158-65a1eaa08691?auto=format&fit=crop&w=800&q=80",
+      "https://image.wedmegood.com/resized/450X/uploads/images/e2512a8ba02e4a7784428b8d91d3d6ddrealwedding/MAHE0184.jpg?crop=372,436,1620,911",
   },
   {
     name: "Lotus Banquets",
     location: "Chennai",
     image:
-      "https://images.unsplash.com/photo-1558979158-65a1eaa08691?auto=format&fit=crop&w=800&q=80",
+      "https://image.wedmegood.com/resized/450X/uploads/images/19ae50c7cbaf4ab994a6dff3c0bc598frealwedding/1.jpg?crop=154,160,1626,914",
   },
   {
     name: "Lotus Banquets",
     location: "Chennai",
     image:
-      "https://images.unsplash.com/photo-1558979158-65a1eaa08691?auto=format&fit=crop&w=800&q=80",
+      "https://image.wedmegood.com/resized/450X/uploads/images/a9be0dac3e0b47c79e41dd7e0a82ec93realwedding/b(6)Large.jpeg?crop=102,322,812,457",
   },
 ];
 

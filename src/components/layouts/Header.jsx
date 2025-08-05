@@ -6,22 +6,33 @@ import LocationModalWithCategories from "./LocationModalWithCategories";
 const Header = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-light shadow-sm primary-bg">
-      <div className="container-fluid mx-5">
-        <a className="navbar-brand" href="/">
-          <img src="./images/logo.webp" alt="HappyWedz" height="40" />
-        </a>
+      <div className="container-fluid px-4 py-2">
+        <div className="d-flex d-lg-none justify-content-between align-items-center w-100">
+          <a className="navbar-brand" href="/">
+            <img src="/images/logo.webp" alt="HappyWedz" height="40" />
+          </a>
 
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#mainNav"
-          aria-controls="mainNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
+          <button
+            className="navbar-toggler border-0"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#mainNav"
+            aria-controls="mainNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span className="navbar-toggler-icon custom-toggler-icon"></span>
+          </button>
+        </div>
+
+        <div
+          className="collapse navbar-collapse justify-content-between"
+          id="mainNav"
         >
-          <span className="navbar-toggler-icon"></span>
-        </button>
+          <a className="navbar-brand d-none d-lg-block" href="/">
+            <img src="/images/logo.webp" alt="HappyWedz" height="40" />
+          </a>
+        </div>
 
         <div className="collapse navbar-collapse" id="mainNav">
           <div className="row">
@@ -30,7 +41,10 @@ const Header = () => {
                 <div className="row align-items-center gy-2">
                   {/* Left: Tagline */}
                   <div className="col-12 col-sm-6 col-lg-6 text-center text-sm-start">
-                    <a className="nav-link text-white fw-semibold" href="#">
+                    <a
+                      className="nav-link text-white fw-semibold top-header-heading"
+                      href="#"
+                    >
                       India's Favourite Wedding Planning Platform
                     </a>
                   </div>
@@ -171,15 +185,18 @@ const Header = () => {
                         <a
                           className="nav-link dropdown-toggle text-white"
                           href="#"
+                          data-bs-toggle="dropdown"
                         >
                           Venues
                         </a>
-                        <div className="dropdown-menu mega-dropdown w-100 mt-0 shadow p-4">
+                        <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                           <div className="container">
-                            <div className="row">
-                              {/* Column 1 */}
+                            <div className="row g-4">
+                              {/* Column 1: By Type */}
                               <div className="col-md-8">
-                                <h6 className="fw-bold mb-3">By Type</h6>
+                                <h6 className="fw-semibold text-uppercase mb-3 text-secondary">
+                                  By Type
+                                </h6>
                                 <div className="row">
                                   {[
                                     "Banquet Halls",
@@ -193,24 +210,24 @@ const Header = () => {
                                     "Show More",
                                   ].map((item, i) => (
                                     <div
-                                      className="col-6 col-md-4 mb-2"
+                                      className="col-6 col-sm-4 mb-2"
                                       key={i}
                                     >
                                       <a
                                         href="#"
-                                        className="text-dark text-decoration-none d-flex align-items-center"
+                                        className="dropdown-link d-flex align-items-center"
                                       >
-                                        <i className="bi bi-check-circle me-2"></i>{" "}
-                                        {item}
+                                        <i className="bi bi-check-circle me-2 text-primary"></i>
+                                        <span className="small">{item}</span>
                                       </a>
                                     </div>
                                   ))}
                                 </div>
 
-                                <h6 className="fw-bold mt-4">
-                                  Complete Your Wedding Team
+                                <h6 className="fw-semibold mt-4 text-uppercase text-secondary">
+                                  Popular Locations
                                 </h6>
-                                <div className="d-flex flex-wrap">
+                                <div className="d-flex flex-wrap mt-2">
                                   {[
                                     "Bandra",
                                     "Thane",
@@ -223,7 +240,7 @@ const Header = () => {
                                     <a
                                       key={i}
                                       href="#"
-                                      className="me-3 mt-2 text-decoration-none text-muted small"
+                                      className="badge bg-light text-muted me-2 mb-2 px-3 py-2 small text-decoration-none rounded-pill"
                                     >
                                       {item}
                                     </a>
@@ -231,20 +248,26 @@ const Header = () => {
                                 </div>
                               </div>
 
-                              {/* Column 2 - Right Panel */}
+                              {/* Column 2: Featured box */}
                               <div className="col-md-4 d-none d-md-block">
-                                <div className="bg-white rounded shadow-sm p-3">
-                                  <h6 className="fw-bold">
-                                    Destination weddings
-                                  </h6>
-                                  <p className="mb-0 text-muted small">
-                                    Easily plan your international wedding.
-                                  </p>
+                                <div className="bg-white rounded-4 shadow-sm p-4 h-100 d-flex flex-column justify-content-between">
+                                  <div>
+                                    <h6 className="fw-bold mb-2">
+                                      Destination Weddings
+                                    </h6>
+                                    <p className="text-muted small mb-3">
+                                      Easily plan your international wedding
+                                      with the best venues and planners.
+                                    </p>
+                                  </div>
                                   <img
                                     src="https://cdn-icons-png.flaticon.com/512/3176/3176294.png"
                                     alt="Destination"
-                                    className="img-fluid mt-2"
-                                    style={{ width: "40px" }}
+                                    className="img-fluid"
+                                    style={{
+                                      width: "60px",
+                                      objectFit: "contain",
+                                    }}
                                   />
                                 </div>
                               </div>
@@ -265,15 +288,12 @@ const Header = () => {
                             Vendors
                           </a>
 
-                          <div
-                            className="dropdown-menu mega-dropdown w-100 mt-0 shadow p-4"
-                            aria-labelledby="vendorsDropdown"
-                          >
+                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
-                              <div className="row">
-                                {/* Column 1 */}
+                              <div className="row g-4">
+                                {/* Column 1: By Type */}
                                 <div className="col-md-8">
-                                  <h6 className="fw-bold mb-3">
+                                  <h6 className="fw-semibold text-uppercase mb-3 text-secondary">
                                     Start hiring your vendors
                                   </h6>
                                   <div className="row">
@@ -289,40 +309,37 @@ const Header = () => {
                                       "Wedding Planners",
                                     ].map((item, i) => (
                                       <div
-                                        className="col-6 col-md-4 mb-2"
+                                        className="col-6 col-sm-4 mb-2"
                                         key={i}
                                       >
                                         <a
                                           href="#"
-                                          className="text-dark text-decoration-none d-flex align-items-center"
+                                          className="dropdown-link d-flex align-items-center"
                                         >
-                                          <i className="bi bi-check-circle me-2"></i>{" "}
-                                          {item}
+                                          <i className="bi bi-check-circle me-2 text-primary"></i>
+                                          <span className="small">{item}</span>
                                         </a>
                                       </div>
                                     ))}
                                   </div>
 
-                                  <h6 className="fw-bold mt-4">
-                                    Complete Your Wedding Team
+                                  <h6 className="fw-semibold mt-4 text-uppercase text-secondary">
+                                    Popular Locations
                                   </h6>
-                                  <div className="d-flex flex-wrap">
+                                  <div className="d-flex flex-wrap mt-2">
                                     {[
-                                      "Wedding Choreographers",
-                                      "Photobooth",
-                                      "Wedding DJ",
-                                      "Wedding Cakes",
-                                      "Wedding Decorators",
-                                      "Party Places",
-                                      "Honeymoon",
-                                      "Wedding Entertainment",
-                                      "Tent House",
-                                      "Promotions",
+                                      "Bandra",
+                                      "Thane",
+                                      "Kalyan",
+                                      "Ulhasnagar",
+                                      "Bhiwandi",
+                                      "Panvel",
+                                      "Andheri East",
                                     ].map((item, i) => (
                                       <a
                                         key={i}
                                         href="#"
-                                        className="me-3 mt-2 text-decoration-none text-muted small"
+                                        className="badge bg-light text-muted me-2 mb-2 px-3 py-2 small text-decoration-none rounded-pill"
                                       >
                                         {item}
                                       </a>
@@ -330,20 +347,26 @@ const Header = () => {
                                   </div>
                                 </div>
 
-                                {/* Column 2 - Right Panel */}
+                                {/* Column 2: Featured box */}
                                 <div className="col-md-4 d-none d-md-block">
-                                  <div className="bg-white rounded shadow-sm p-3">
-                                    <h6 className="fw-bold">
-                                      Destination weddings
-                                    </h6>
-                                    <p className="mb-0 text-muted small">
-                                      Easily plan your international wedding.
-                                    </p>
+                                  <div className="bg-white rounded-4 shadow-sm p-4 h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                      <h6 className="fw-bold mb-2">
+                                        Destination Weddings
+                                      </h6>
+                                      <p className="text-muted small mb-3">
+                                        Easily plan your international wedding
+                                        with the best venues and planners.
+                                      </p>
+                                    </div>
                                     <img
                                       src="https://cdn-icons-png.flaticon.com/512/3176/3176294.png"
                                       alt="Destination"
-                                      className="img-fluid mt-2"
-                                      style={{ width: "40px" }}
+                                      className="img-fluid"
+                                      style={{
+                                        width: "60px",
+                                        objectFit: "contain",
+                                      }}
                                     />
                                   </div>
                                 </div>
@@ -353,15 +376,375 @@ const Header = () => {
                         </div>
                       </li>
 
-                      {/* Other Nav Items */}
-                      {[
-                        "Photos",
-                        "Real Weddings",
-                        "E-Invites",
-                        "Two Soul",
-                        "Matrimonial",
-                        "Genie",
-                      ].map((item) => (
+                      {/* photo Dropdown */}
+                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper">
+                          <a
+                            className="nav-link dropdown-toggle text-white"
+                            href="#"
+                            id="photoDropdown"
+                            role="button"
+                          >
+                            Photography
+                          </a>
+
+                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                            <div className="container">
+                              <div className="row g-4">
+                                {[
+                                  {
+                                    title: "Outfit",
+                                    items: [
+                                      "Bridal Lehenga",
+                                      "Wedding Sarees",
+                                      "Engagement",
+                                      "Mehndi",
+                                      "Blouse Designs",
+                                      "More",
+                                    ],
+                                  },
+                                  {
+                                    title: "Jewellery & Accessories",
+                                    items: [
+                                      "Bridal Jewellery",
+                                      "Engagement Rings",
+                                      "Floral Jewellery",
+                                      "More",
+                                    ],
+                                  },
+                                  {
+                                    title: "Mehndi",
+                                    items: [
+                                      "Arabic",
+                                      "Mehndi Designs",
+                                      "Simple",
+                                      "Unique",
+                                      "More",
+                                    ],
+                                  },
+                                  {
+                                    title: "Decor & Ideas",
+                                    items: [
+                                      "Wedding Decor",
+                                      "Bridal Entry",
+                                      "Groom Entry",
+                                      "Wedding Games",
+                                      "More",
+                                    ],
+                                  },
+                                  {
+                                    title: "Wedding Cards & Gifts",
+                                    items: [
+                                      "Designs",
+                                      "Wedding Gifts",
+                                      "Wedding Invitations",
+                                      "More",
+                                    ],
+                                  },
+                                  {
+                                    title: "Wedding Photography",
+                                    items: [
+                                      "Pre Wedding Shoot",
+                                      "Wedding",
+                                      "Photoshoot & Poses",
+                                      "More",
+                                    ],
+                                  },
+                                  {
+                                    title: "Groom Wear",
+                                    items: [
+                                      "Sherwani for Groom",
+                                      "Wedding Suits for Groom",
+                                      "More",
+                                    ],
+                                  },
+                                  {
+                                    title: "Bridal Makeup & Hair",
+                                    items: [
+                                      "Bridal Makeup",
+                                      "Bridal Hairstyles",
+                                      "Engagement",
+                                      "Mehndi",
+                                      "More",
+                                    ],
+                                  },
+                                ].map((section, i) => (
+                                  <div className="col-6 col-md-3" key={i}>
+                                    <h6 className="fw-semibold text-secondary mb-3">
+                                      {section.title}
+                                    </h6>
+                                    <ul className="list-unstyled">
+                                      {section.items.map((item, idx) => (
+                                        <li key={idx}>
+                                          <a
+                                            href="#"
+                                            className="dropdown-link small d-block mb-2"
+                                          >
+                                            <i className="bi bi-chevron-right me-2 text-muted"></i>
+                                            {item}
+                                          </a>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+
+                      {/* Real Weddings Dropdown */}
+                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper">
+                          <a
+                            className="nav-link dropdown-toggle text-white"
+                            href="#"
+                            id="rwDropdown"
+                            role="button"
+                          >
+                            Real Weddings
+                          </a>
+
+                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                            <div className="container">
+                              <div className="row mt-5">
+                                {/* By City */}
+                                <div className="col-6 col-md-3">
+                                  <h6 className="fw-semibold text-secondary mb-3">
+                                    By City
+                                  </h6>
+                                  <ul className="list-unstyled">
+                                    {[
+                                      "Mumbai",
+                                      "Bangalore",
+                                      "Pune",
+                                      "Kolkata",
+                                      "Jaipur",
+                                      "Others",
+                                    ].map((city, i) => (
+                                      <li key={i}>
+                                        <a
+                                          href="#"
+                                          className="dropdown-link small d-block mb-2"
+                                        >
+                                          <i className="bi bi-geo-alt me-2 text-muted"></i>{" "}
+                                          {city}
+                                        </a>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+
+                                {/* By Culture */}
+                                <div className="col-6 col-md-3">
+                                  <h6 className="fw-semibold text-secondary mb-3">
+                                    By Culture
+                                  </h6>
+                                  <ul className="list-unstyled">
+                                    {[
+                                      "Maharashtrian",
+                                      "Punjabi / Sikh",
+                                      "Bengali",
+                                      "Gujarati",
+                                      "Marwari",
+                                      "Telugu",
+                                      "Others",
+                                    ].map((culture, i) => (
+                                      <li key={i}>
+                                        <a
+                                          href="#"
+                                          className="dropdown-link small d-block mb-2"
+                                        >
+                                          <i className="bi bi-flower1 me-2 text-muted"></i>{" "}
+                                          {culture}
+                                        </a>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+
+                                {/* By Theme */}
+                                <div className="col-6 col-md-3">
+                                  <h6 className="fw-semibold text-secondary mb-3">
+                                    By Theme
+                                  </h6>
+                                  <ul className="list-unstyled">
+                                    {[
+                                      "Destination",
+                                      "Grand & Luxurious",
+                                      "Pocket Friendly Stunners",
+                                      "Intimate & Minimalist",
+                                      "Modern & Stylish",
+                                      "International",
+                                      "Others",
+                                    ].map((theme, i) => (
+                                      <li key={i}>
+                                        <a
+                                          href="#"
+                                          className="dropdown-link small d-block mb-2"
+                                        >
+                                          <i className="bi bi-star me-2 text-muted"></i>{" "}
+                                          {theme}
+                                        </a>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+
+                                {/* Latest Real Weddings with Images */}
+                                <div className="col-12 col-md-3">
+                                  <h6 className="fw-semibold text-secondary mb-3">
+                                    Latest Real Weddings
+                                  </h6>
+                                  <div className="d-flex flex-column gap-3">
+                                    {[
+                                      {
+                                        name: "Sanya and Yuvraj",
+                                        image:
+                                          "https://image.wedmegood.com/resized/250X/uploads/images/d1e7005c97ba4762ac1e93bdbeb4e0d3realwedding/IMG_0263.jpeg?crop=229,404,1626,914",
+                                      },
+                                      {
+                                        name: "Sanya and Yuvraj (Udaipur)",
+                                        image:
+                                          "https://image.wedmegood.com/resized/250X/uploads/images/d1e7005c97ba4762ac1e93bdbeb4e0d3realwedding/IMG_0263.jpeg?crop=229,404,1626,914",
+                                      },
+                                    ].map((wedding, i) => (
+                                      <div
+                                        key={i}
+                                        className="d-flex align-items-center"
+                                      >
+                                        <img
+                                          src={wedding.image}
+                                          alt={wedding.name}
+                                          className="me-3 rounded-3"
+                                          style={{
+                                            width: "60px",
+                                            height: "60px",
+                                            objectFit: "cover",
+                                          }}
+                                        />
+                                        <span className="small text-muted">
+                                          {wedding.name}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+
+                      {/* E-invites Dropdown */}
+                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper">
+                          <a
+                            className="nav-link dropdown-toggle text-white"
+                            href="#"
+                            id="photoDropdown"
+                            role="button"
+                          >
+                            E-Invites
+                          </a>
+
+                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                            <div className="container">
+                              <div className="row g-4">
+                                {[
+                                  {
+                                    title: "Wedding Invitation Maker",
+                                    items: [
+                                      "Wedding Card Designs",
+                                      "Invitation Video Templates",
+                                      "Save the Date Templates",
+                                    ],
+                                  },
+                                ].map((section, i) => (
+                                  <div className="col-6 col-md-3" key={i}>
+                                    <h6 className="fw-semibold text-secondary mb-3">
+                                      {section.title}
+                                    </h6>
+                                    <ul className="list-unstyled">
+                                      {section.items.map((item, idx) => (
+                                        <li key={idx}>
+                                          <a
+                                            href="#"
+                                            className="dropdown-link small d-block mb-2"
+                                          >
+                                            <i className="bi bi-chevron-right me-2 text-muted"></i>
+                                            {item}
+                                          </a>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+
+                      {/* photo Dropdown */}
+                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper">
+                          <a
+                            className="nav-link dropdown-toggle text-white"
+                            href="#"
+                            id="photoDropdown"
+                            role="button"
+                          >
+                            Two Soul
+                          </a>
+
+                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                            <div className="container">
+                              <div className="row g-4">
+                                {[
+                                  {
+                                    title: "Bride",
+                                    items: [
+                                      "Mehndi Artists",
+                                      "Bridal Makeup Artists",
+                                      "Makeup Salon",
+                                      "Bridal Jewellery",
+                                      "Bridal Lehenga",
+                                      "Trousseau Packing",
+                                    ],
+                                  },
+                                  {
+                                    title: "Couples",
+                                    items: ["Sherwani", "Promotions", "More"],
+                                  },
+                                ].map((section, i) => (
+                                  <div className="col-6 col-md-3" key={i}>
+                                    <h6 className="fw-semibold text-secondary mb-3">
+                                      {section.title}
+                                    </h6>
+                                    <ul className="list-unstyled">
+                                      {section.items.map((item, idx) => (
+                                        <li key={idx}>
+                                          <a
+                                            href="#"
+                                            className="dropdown-link small d-block mb-2"
+                                          >
+                                            <i className="bi bi-chevron-right me-2 text-muted"></i>
+                                            {item}
+                                          </a>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+
+                      {["Matrimonial", "Genie"].map((item) => (
                         <li className="nav-item" key={item}>
                           <a className="nav-link text-white" href="#">
                             {item}
