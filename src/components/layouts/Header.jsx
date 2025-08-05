@@ -757,7 +757,7 @@ const Header = () => {
                   {/* Right: Login/Signup */}
                   <div className="col-12 col-lg-3 mt-2 d-flex justify-content-center justify-content-lg-end">
                     <div className="d-flex gap-3">
-                      <a href="#" className="text-white text-decoration-none">
+                      <a href="/customer-login" className="text-white text-decoration-none">
                         Login
                       </a>
                       <a href="#" className="text-white text-decoration-none">

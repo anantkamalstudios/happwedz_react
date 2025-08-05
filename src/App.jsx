@@ -14,6 +14,10 @@ function App() {
       <main style={{ minHeight: "70vh" }}>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/customer-register" element={<CustomerRegister />} />
+          <Route path="/customer-login" element={<CustomerLogin />} />
+          <Route path="/vendor-login" element={<VendorLogin />} />
+          <Route path="/vendor-register" element={<VendorRegister />} />
         </Routes>
       </main>
 
