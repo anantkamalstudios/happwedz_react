@@ -131,4 +131,377 @@ body {
   border-radius: 1.5rem;
   overflow: hidden;
   height: auto;
+  position: relative;
+}
+.popular-search-swiper-img:hover {
+  transform: scale(1.5);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.divider {
+  width: 80px;
+  height: 2px;
+  background: linear-gradient(to right, #e9b0ce, #d8a1bd);
+}
+
+.tool-card {
+  transition: all 0.4s ease;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(232, 183, 213, 0.2);
+  transition: transform 0.6s ease;
+  perspective: 1000px;
+}
+
+.tool-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(216, 161, 189, 0.15);
+}
+
+.icon-wrapper {
+  width: 80px;
+  height: 80px;
+  background: #f9eef7;
+  font-size: 2.5rem;
+  color: #d8a1bd;
+  transition: all 0.3s ease;
+}
+
+.icon-wrapper {
+  width: 80px;
+  height: 80px;
+  background-color: #f8f9fa;
+  transition: transform 0.6s ease;
+  perspective: 1000px;
+}
+
+.tool-card:hover .tool-icon-img {
+  transform: rotateY(360deg);
+  transition: transform 0.6s ease;
+}
+
+.tool-icon-img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.6s ease;
+}
+
+.tool-card:hover .icon-wrapper {
+  background: linear-gradient(135deg, #fa4df1 0%, #d8aca1 100%);
+  color: white;
+  transform: scale(1.1);
+}
+
+.decorative-border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(to right, #e9b0ce, #d8a1bd);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tool-card:hover .decorative-border {
+  opacity: 1;
+}
+
+.wedding-link {
+  color: #b57e9f !important;
+  transition: all 0.3s ease;
+}
+
+.wedding-link:hover {
+  color: #8a5a76 !important;
+  letter-spacing: 0.5px;
+}
+
+.top-header-heading {
+  margin-left: 8px;
+}
+
+.mega-dropdown-wrapper .dropdown-menu {
+  top: 100%;
+  left: 0;
+  border-radius: 1rem;
+  background-color: #fff;
+  z-index: 9999;
+}
+
+/* Link styling */
+.dropdown-link {
+  color: #333;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.dropdown-link:hover {
+  color: #e83581;
+}
+
+/* Hover badge */
+.badge:hover {
+  background-color: #e83581;
+  color: #fff;
+}
+
+/* Remove Bootstrap default border */
+.navbar .dropdown-menu {
+  border: none;
+}
+
+/* login  */
+/* * Login Form */
+*/ .wedding-login-container {
+  background: linear-gradient(135deg, #fdf5f8 0%, #f8f4fa 100%);
+  font-family: "Poppins", sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+.col-lg-6.d-none.d-lg-block {
+  background: url("https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1080&q=80")
+    no-repeat center center;
+  background-size: cover;
+  min-height: 700px;
+}
+
+.wedding-image-overlay {
+  background: linear-gradient(
+    45deg,
+    rgb(91 17 60 / 77%) 0%,
+    rgb(189 141 166 / 50%) 100%
+  );
+}
+
+.gold-text {
+  color: #c5a880;
+  font-weight: 500;
+}
+
+.divider {
+  width: 80px;
+  height: 2px;
+  background: linear-gradient(to right, #e9b0ce, #d8a1bd);
+}
+
+.floral-divider {
+  position: relative;
+  height: 40px;
+  width: 200px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40'%3E%3Cpath fill='none' stroke='%23ffffff' stroke-width='2' d='M10,20 Q50,10 90,20 T170,20'/%3E%3Ccircle cx='20' cy='20' r='3' fill='%23ffffff'/%3E%3Ccircle cx='50' cy='10' r='3' fill='%23ffffff'/%3E%3Ccircle cx='80' cy='20' r='3' fill='%23ffffff'/%3E%3Ccircle cx='110' cy='30' r='3' fill='%23ffffff'/%3E%3Ccircle cx='140' cy='20' r='3' fill='%23ffffff'/%3E%3Ccircle cx='170' cy='20' r='3' fill='%23ffffff'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.feature-icon {
+  text-align: center;
+  padding: 15px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  width: 100px;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo .d-inline-flex {
+  background: linear-gradient(135deg, #e9b0ce 0%, #d8a1bd 100%);
+  color: white;
+}
+
+.input-group-text {
+  background-color: #f9eef7;
+  border: none;
+  border-right: 1px solid #e9d4e2;
+  color: #8a5a76;
+}
+
+.form-control {
+  border: 1px solid #e9d4e2;
+  background-color: #fdf9fc;
+  border-radius: 0 8px 8px 0 !important;
+}
+
+.form-control:focus {
+  box-shadow: 0 0 0 0.25rem rgba(216, 161, 189, 0.25);
+  border-color: #d8a1bd;
+}
+
+.login-btn {
+  background: linear-gradient(135deg, #e9b0ce 0%, #d8a1bd 100%);
+  border: none;
+  border-radius: 50px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 20px rgba(216, 161, 189, 0.4);
+}
+
+.divider-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #e9d4e2;
+  z-index: 1;
+}
+
+.divider-text {
+  position: relative;
+  z-index: 2;
+  background: white;
+  color: #8a5a76;
+  font-size: 0.9rem;
+}
+
+.wedding-link {
+  color: #b57e9f !important;
+  transition: all 0.3s ease;
+}
+
+.wedding-link:hover {
+  color: #8a5a76 !important;
+}
+
+.floral-decoration {
+  position: absolute;
+  z-index: 0;
+}
+
+.top-left {
+  top: 0;
+  left: 0;
+  transform: rotate(180deg);
+}
+
+.bottom-right {
+  bottom: 0;
+  right: 0;
+}
+
+.floral-svg {
+  width: 250px;
+  height: 250px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='blob:https://web.whatsapp.com/a7a05615-5375-4735-8954-cdd6b49635fe' viewBox='0 0 200 200'%3E%3Cpath fill='%23e9b0ce' fill-opacity='0.1' d='M44.3,-48.8C55.4,-40.7,61.2,-22.7,61.4,-4.5C61.5,13.7,56,32.1,45.9,41.1C35.8,50.1,21.1,49.7,3.4,53.9C-14.3,58.1,-28.6,67,-39.1,62.3C-49.5,57.5,-56.1,39.2,-61.3,19.8C-66.4,0.4,-70.1,-20.1,-63.8,-36.1C-57.4,-52.1,-41.1,-63.6,-23.8,-69.2C-6.6,-74.8,11.7,-74.6,27.5,-68.1C43.4,-61.7,56.8,-49.1,61.8,-34.3C66.8,-19.4,63.4,-2.4,59.6,12.1C55.8,26.6,51.6,38.8,43.3,47.2C35,55.6,22.6,60.3,8.2,65.6C-6.2,70.9,-20.6,76.9,-31.3,73.1C-42.1,69.3,-49.3,55.7,-55.4,41.6C-61.5,27.4,-66.6,12.7,-67.2,-2.3C-67.8,-17.4,-63.9,-34.8,-55.1,-45.5C-46.2,-56.2,-32.4,-60.1,-17.2,-65.8C-1.9,-71.4,14.7,-78.7,26.5,-75.5C38.3,-72.4,45.3,-58.7,51.5,-44.6C57.7,-30.5,63.1,-15.9,64.1,-0.8C65.1,14.2,61.7,28.9,54.1,39.8C46.5,50.6,34.7,57.6,21.7,63.7C8.7,69.9,-5.5,75.2,-19.1,74.4C-32.7,73.5,-45.7,66.5,-53.3,55.1C-60.9,43.7,-63.1,27.8,-64.9,11.6C-66.6,-4.6,-67.9,-21.1,-62.6,-34.5C-57.4,-47.9,-45.6,-58.1,-32.6,-65.1C-19.7,-72.1,-5.5,-75.9,8.3,-73.9C22.1,-71.8,36.1,-63.9,44.3,-48.8Z' transform='translate(100 100)'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+@media (max-width: 992px) {
+  .floral-decoration {
+    display: none;
+  }
+}
+
+/* wedding categories */
+.category-accordion {
+  background: white;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.header-bar {
+  padding: 14px 18px;
+  position: relative;
+  cursor: pointer;
+  gap: 16px;
+}
+
+.title-block h5 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  display: inline-block;
+}
+
+.subtitle {
+  font-size: 0.85rem;
+  color: #4f5d75;
+  margin-top: 4px;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chevron {
+  transition: transform 0.25s ease;
+  display: inline-flex;
+  margin-left: 4px;
+}
+
+.chevron.open {
+  transform: rotate(180deg);
+}
+
+.circle-img-wrapper {
+  width: 110px;
+  height: 110px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: 50%;
+  margin-left: auto;
+  border: 4px solid white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.circle-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.expandable {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, padding 0.35s ease;
+  padding: 0 18px;
+}
+
+.expandable.show {
+  padding: 16px 18px 18px;
+  max-height: 800px;
+}
+
+.item-link {
+  color: #1f2d3a;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.item-link:hover {
+  color: #e83581;
+  text-decoration: underline;
+}
+
+@media (max-width: 767px) {
+  .circle-img-wrapper {
+    width: 80px;
+    height: 80px;
+    margin-top: 8px;
+  }
+
+  .header-bar {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .title-row {
+    margin-bottom: 4px;
+  }
 }

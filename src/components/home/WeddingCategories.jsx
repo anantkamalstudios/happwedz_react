@@ -1,10 +1,7 @@
-
 import React, { useState } from "react";
 import categories from "../../data/categories";
 const CategoryAccordion = () => {
-
-
-  const [openIndex, setOpenIndex] = useState(0);
+  const [openIndex, setOpenIndex] = useState(-1);
 
   const toggle = (i) => {
     setOpenIndex((prev) => (prev === i ? -1 : i));
@@ -29,8 +26,16 @@ const CategoryAccordion = () => {
                   <div className="title-block">
                     <div className="title-row d-flex align-items-center">
                       <h5 className="mb-0 me-2">{cat.title}</h5>
-                      <div className={`chevron ${isOpen ? "open" : ""}`} aria-hidden="true">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <div
+                        className={`chevron ${isOpen ? "open" : ""}`}
+                        aria-hidden="true"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                        >
                           <path
                             d="M6 9l6 6 6-6"
                             stroke="#1f2d3a"
@@ -43,8 +48,7 @@ const CategoryAccordion = () => {
                     </div>
                     <div className="subtitle">{cat.subtitle}</div>
                   </div>
-                  <div className="circle-img-wrapper"
-                  >
+                  <div className="circle-img-wrapper">
                     <img loading="lazy" src={cat.imageSrc} alt={cat.title} />
                   </div>
                 </div>
@@ -65,11 +69,8 @@ const CategoryAccordion = () => {
           );
         })}
       </div>
-
-
     </div>
   );
 };
 
 export default CategoryAccordion;
-
