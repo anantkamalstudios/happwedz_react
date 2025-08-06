@@ -8,9 +8,9 @@ const Header = () => {
     <nav className="navbar navbar-expand-lg navbar-light shadow-sm primary-bg">
       <div className="container-fluid px-4 py-2">
         <div className="d-flex d-lg-none justify-content-between align-items-center w-100">
-          <a className="navbar-brand" href="/">
+          <Link className="navbar-brand" to="/">
             <img src="/images/logo.webp" alt="HappyWedz" height="40" />
-          </a>
+          </Link>
 
           <button
             className="navbar-toggler border-0"
@@ -182,13 +182,17 @@ const Header = () => {
                   <div className="col-12 col-lg-9">
                     <ul className="navbar-nav d-flex flex-wrap flex-lg-nowrap gap-2 gap-lg-0 mb-3 mb-lg-0">
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                        <a
+                        <Link
+                          to="/venus"
                           className="nav-link dropdown-toggle text-white"
-                          href="#"
-                          data-bs-toggle="dropdown"
+
                         >
                           Venues
-                        </a>
+                        </Link>
+                        {/* <a className="nav-link dropdown-toggle text-white"
+                          href="/venus"
+                        >Venues
+                        </a> */}
                         <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                           <div className="container">
                             <div className="row g-4">

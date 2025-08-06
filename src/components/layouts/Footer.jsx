@@ -78,10 +78,10 @@ const Footer = () => {
                         <div className="d-flex gap-3 align-items-start pt-2">
 
                             <a href="https://facebook.com" aria-label="Facebook" target="_blank" rel="noopener noreferrer" className="social-btn">
-                                <i class="fa-brands fa-facebook-f"></i>
+                                <i className="fa-brands fa-facebook-f"></i>
                             </a>
                             <a href="https://instagram.com" aria-label="Instagram" target="_blank" rel="noopener noreferrer" className="social-btn">
-                                <i class="fa-brands fa-instagram"></i>
+                                <i className="fa-brands fa-instagram"></i>
                             </a>
 
 

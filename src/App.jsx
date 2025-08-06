@@ -8,6 +8,7 @@ import CustomerLogin from "./components/auth/CustomerLogin";
 import CustomerRegister from "./components/auth/CustomerRegister";
 import VendorLogin from "./components/auth/VendorLogin";
 import VendorRegister from "./components/auth/VendorRegister";
+import Venus from "./components/pages/Venus";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <main style={{ minHeight: "70vh" }}>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/venus" element={<Venus />} />
           <Route path="/customer-register" element={<CustomerRegister />} />
           <Route path="/customer-login" element={<CustomerLogin />} />
           <Route path="/vendor-login" element={<VendorLogin />} />

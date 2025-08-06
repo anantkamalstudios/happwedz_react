@@ -170,6 +170,7 @@ const blogsCarousel = () => {
               left: "-40px",
               width: "48px",
               height: "48px",
+              marginLeft: "3rem",
               background: "rgba(255,255,255,0.9)",
               borderRadius: "50%",
               boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
@@ -182,6 +183,7 @@ const blogsCarousel = () => {
               right: "-40px",
               width: "48px",
               height: "48px",
+              marginRight: "3rem",
               background: "rgba(255,255,255,0.9)",
               borderRadius: "50%",
               boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
@@ -189,49 +191,6 @@ const blogsCarousel = () => {
           ></div>
         </Swiper>
       </div>
-
-      <style jsx>{`
-        .wedding-blog-section {
-          position: relative;
-          overflow: hidden;
-        }
-
-        .blog-blogs {
-          transition: all 0.4s ease;
-          transform-origin: center bottom;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-          border: 1px solid rgba(232, 183, 213, 0.2);
-        }
-
-        .blog-blogs:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 15px 35px rgba(216, 161, 189, 0.2);
-        }
-
-        .wedding-link {
-          color: #b57e9f !important;
-          transition: all 0.3s ease;
-          font-weight: 500;
-        }
-
-        .wedding-link:hover {
-          color: #8a5a76 !important;
-          letter-spacing: 0.5px;
-        }
-
-        .swiper-button-prev:after,
-        .swiper-button-next:after {
-          font-size: 20px;
-          font-weight: bold;
-        }
-
-        @media (max-width: 768px) {
-          .swiper-button-prev,
-          .swiper-button-next {
-            display: none;
-          }
-        }
-      `}</style>
     </div>
   );
 };
