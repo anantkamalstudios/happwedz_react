@@ -1,0 +1,128 @@
+export const venuesGrid = [
+  {
+    id: 1,
+    name: "Royal Banquet Hall",
+    location: "Hyderabad, Banjara Hills",
+    rating: 4.8,
+    reviews: 120,
+    capacity: 1000,
+    call: "Responds within 24 hours",
+    price: "1.5 Lakh",
+    image:
+      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+  },
+  {
+    id: 2,
+    name: "Grand Sapphire Palace",
+    location: "Mumbai, Andheri West",
+    rating: 4.6,
+    reviews: 98,
+    capacity: 1000,
+    price: "2 Lakh",
+    image:
+      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+  },
+  {
+    id: 3,
+    name: "The Majestic Ballroom",
+    location: "Delhi, Connaught Place",
+    rating: 4.9,
+    reviews: 150,
+    capacity: 1000,
+    price: "2.5 Lakh",
+    image:
+      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+  },
+  {
+    id: 4,
+    name: "Emerald Garden Venue",
+    location: "Bengaluru, Whitefield",
+    rating: 4.7,
+    reviews: 87,
+    capacity: 1000,
+    call: "Responds within 24 hours",
+    price: "1.8 Lakh",
+    image:
+      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+  },
+  {
+    id: 5,
+    name: "Oceanview Terrace",
+    location: "Goa, Panaji",
+    rating: 4.5,
+    reviews: 76,
+    capacity: 1000,
+    call: "Responds within 24 hours",
+    price: "3 Lakh",
+    image:
+      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+  },
+  {
+    id: 6,
+    name: "Crystal Palace",
+    location: "Jaipur, C-Scheme",
+    rating: 4.4,
+    reviews: 110,
+    capacity: 1000,
+    price: "1.2 Lakh",
+    image:
+      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+  },
+  {
+    id: 7,
+    name: "Sunset Pavilion",
+    location: "Chennai, ECR",
+    rating: 4.3,
+    reviews: 64,
+    capacity: 1000,
+    call: "Responds within 24 hours",
+    price: "1.6 Lakh",
+    image:
+      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+  },
+  {
+    id: 8,
+    name: "The Imperial Courtyard",
+    location: "Kolkata, Salt Lake",
+    rating: 4.6,
+    reviews: 102,
+    capacity: 1000,
+    price: "2.2 Lakh",
+    image:
+      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+  },
+  {
+    id: 9,
+    name: "Lush Green Lawns",
+    location: "Pune, Koregaon Park",
+    rating: 4.2,
+    reviews: 54,
+    capacity: 1000,
+    price: "1 Lakh",
+    image:
+      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+  },
+  {
+    id: 10,
+    name: "Celestial Banquets",
+    location: "Ahmedabad, SG Highway",
+    rating: 4.5,
+    reviews: 89,
+    capacity: 1000,
+    call: "Responds within 24 hours",
+    price: "1.7 Lakh",
+    image:
+      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+  },
+  {
+    id: 11,
+    name: "Lakeview Celebrations",
+    location: "Udaipur, Fateh Sagar",
+    rating: 4.9,
+    reviews: 135,
+    capacity: 1000,
+    price: "3.5 Lakh",
+    image:
+      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+  },
+];
