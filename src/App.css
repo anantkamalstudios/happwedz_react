@@ -547,3 +547,58 @@ body {
     display: none;
   }
 }
+
+.region-img-wrapper {
+  width: 130px;
+  height: 130px;
+  margin: 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.region-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  transition: transform 0.4s ease;
+}
+
+.region-slide-card:hover .region-img-wrapper {
+  transform: rotate(10deg);
+  /* Slight rotation of wrapper */
+}
+
+.region-slide-card:hover .region-img {
+  transform: scale(1.03);
+  /* Slight zoom */
+}
+
+.region-slide-card:hover .region-img-wrapper {
+  transform: rotateY(5deg);
+}
+
+.wedding-header-wrapper {
+  background-image: url('https://cdn1.weddingwire.in/assets/img/listing-city/in-chennai-10011065.webp');
+  /* ✅ Change path if needed */
+  background-position: right center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  border-radius: 0 0 0 200px;
+  position: relative;
+  overflow: hidden;
+}
+
+.content-wrapper {
+  background-color: white;
+  border-top-left-radius: 200px;
+  border-bottom-left-radius: 200px;
+  position: absolute;
+  top: 100px;
+  min-height: 500px;
+}
