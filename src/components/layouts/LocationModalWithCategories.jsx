@@ -106,7 +106,7 @@ const LocationModalWithCategories = () => {
                       <li key={city}>
                         <a
                           href="#"
-                          className="text-dark d-block py-1 text-decoration-none"
+                          className="text-dark d-block py-1 text-decoration-none small"
                         >
                           {city}
                         </a>

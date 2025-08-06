@@ -11,7 +11,6 @@ const blogsCarousel = () => {
     <div
       className="wedding-blog-section py-3 px-3"
       style={{
-        background: "linear-gradient(135deg, #fdf5f8 0%, #f8f4fa 100%)",
         position: "relative",
         overflow: "hidden",
       }}
