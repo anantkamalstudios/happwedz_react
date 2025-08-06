@@ -10,19 +10,19 @@
 // }
 
 // export default Venus;
-import React from 'react'
+import React from "react";
 import VenueSearch from "../../components/layouts/venus/VenuesSearch";
 import VenuesHeroSection from "../../components/layouts/venus/VenuesHeroSection";
 
 function Venus() {
-    return (
-        <>
-            <VenueSearch />
-            <VenuesHeroSection />
-        </>
-    )
+  return (
+    <>
+      <VenueSearch />
+      <VenuesHeroSection loc={"Mumbai"} />
+      <VenuesHeroSection loc={"Nashik"} />
+      <VenuesHeroSection loc={"Pune"} />
+    </>
+  );
 }
 
-export default Venus
-
-
+export default Venus;

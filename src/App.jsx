@@ -9,6 +9,8 @@ import CustomerRegister from "./components/auth/CustomerRegister";
 import VendorLogin from "./components/auth/VendorLogin";
 import VendorRegister from "./components/auth/VendorRegister";
 import Venus from "./components/pages/Venus";
+import SubVenues from "./components/pages/SubVenues";
+import NotFound from "./components/pages/NotFound";
 
 function App() {
   return (
@@ -19,10 +21,12 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/venus" element={<Venus />} />
+          <Route path="/venues/:slug" element={<SubVenues />} />
           <Route path="/customer-register" element={<CustomerRegister />} />
           <Route path="/customer-login" element={<CustomerLogin />} />
           <Route path="/vendor-login" element={<VendorLogin />} />
           <Route path="/vendor-register" element={<VendorRegister />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
 

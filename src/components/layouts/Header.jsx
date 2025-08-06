@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Links } from "react-router-dom";
 import { Modal, Button, Form } from "react-bootstrap";
 import LocationModalWithCategories from "./LocationModalWithCategories";
 
 const Header = () => {
   return (
-    <nav className="navbar navbar-expand-lg navbar-light shadow-sm primary-bg">
-      <div className="container-fluid px-4 py-2">
-        <div className="d-flex d-lg-none justify-content-between align-items-center w-100">
+    <nav className="navbar navbar-expand-lg navbar-light shadow-sm primary-bg p-0">
+      <div className="container-fluid">
+        <div className="d-flex d-lg-none justify-content-between align-items-center w-100 px-3 py-2">
           <Link className="navbar-brand" to="/">
             <img src="/images/logo.webp" alt="HappyWedz" height="40" />
           </Link>
@@ -29,14 +29,14 @@ const Header = () => {
           className="collapse navbar-collapse justify-content-between"
           id="mainNav"
         >
-          <a className="navbar-brand d-none d-lg-block" href="/">
+          {/* <a className="navbar-brand d-none d-lg-block" href="/">
             <img src="/images/logo.webp" alt="HappyWedz" height="40" />
-          </a>
+          </a> */}
         </div>
 
         <div className="collapse navbar-collapse" id="mainNav">
           <div className="row">
-            <div className="col-12 py-2">
+            <div className="col-12 pink-gradient-bg">
               <div className="container">
                 <div className="row align-items-center gy-2">
                   {/* Left: Tagline */}
@@ -170,6 +170,17 @@ const Header = () => {
                         ></line>
                       </svg>
                     </a>
+
+                    <a
+                      href="/customer-login"
+                      className="text-white text-decoration-none"
+                    >
+                      Login
+                    </a>
+                    <a href="#" className="text-white text-decoration-none">
+                      SignUp
+                    </a>
+                    <div className="d-flex gap-3"></div>
                   </div>
                 </div>
               </div>
@@ -178,14 +189,23 @@ const Header = () => {
             {/* Bottom */}
             <div className="col-12 py-2">
               <div className="container">
-                <div className="row align-items-start flex-column flex-lg-row">
-                  <div className="col-12 col-lg-9">
-                    <ul className="navbar-nav d-flex flex-wrap flex-lg-nowrap gap-2 gap-lg-0 mb-3 mb-lg-0">
+                <div className="row justify-content-center">
+                  <div className="col-lg-12 d-flex flex-column flex-lg-row align-items-center justify-content-between">
+                    <div className="mb-3 text-center d-none d-lg-block">
+                      <Link className="navbar-brand-logo" to="/">
+                        <img
+                          src="/images/logo.webp"
+                          alt="HappyWedz"
+                          height="35"
+                          className="mx-auto d-block"
+                        />
+                      </Link>
+                    </div>
+                    <ul className="navbar-nav d-flex flex-wrap justify-content-center gap-3">
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <Link
                           to="/venus"
                           className="nav-link dropdown-toggle text-white"
-
                         >
                           Venues
                         </Link>
@@ -217,13 +237,16 @@ const Header = () => {
                                       className="col-6 col-sm-4 mb-2"
                                       key={i}
                                     >
-                                      <a
-                                        href="#"
+                                      <Link
+                                        to={`/venues/${item
+                                          .toLowerCase()
+                                          .replace(/\s+/g, "-")
+                                          .replace(/[^a-z0-9\-]/g, "")}`}
                                         className="dropdown-link d-flex align-items-center"
                                       >
                                         <i className="bi bi-check-circle me-2 text-primary"></i>
                                         <span className="small">{item}</span>
-                                      </a>
+                                      </Link>
                                     </div>
                                   ))}
                                 </div>
@@ -241,13 +264,15 @@ const Header = () => {
                                     "Panvel",
                                     "Andheri East",
                                   ].map((item, i) => (
-                                    <a
-                                      key={i}
-                                      href="#"
+                                    <Link
+                                      to={`/venues/${item
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "-")
+                                        .replace(/[^a-z0-9\-]/g, "")}`}
                                       className="badge bg-light text-muted me-2 mb-2 px-3 py-2 small text-decoration-none rounded-pill"
                                     >
                                       {item}
-                                    </a>
+                                    </Link>
                                   ))}
                                 </div>
                               </div>
@@ -316,13 +341,15 @@ const Header = () => {
                                         className="col-6 col-sm-4 mb-2"
                                         key={i}
                                       >
-                                        <a
-                                          href="#"
+                                        <Link
+                                          to={`/venues/${item
+                                            .toLowerCase()
+                                            .replace(/\s+/g, "-")
+                                            .replace(/[^a-z0-9\-]/g, "")}`}
                                           className="dropdown-link d-flex align-items-center"
                                         >
-                                          <i className="bi bi-check-circle me-2 text-primary"></i>
                                           <span className="small">{item}</span>
-                                        </a>
+                                        </Link>
                                       </div>
                                     ))}
                                   </div>
@@ -340,13 +367,15 @@ const Header = () => {
                                       "Panvel",
                                       "Andheri East",
                                     ].map((item, i) => (
-                                      <a
-                                        key={i}
-                                        href="#"
-                                        className="badge bg-light text-muted me-2 mb-2 px-3 py-2 small text-decoration-none rounded-pill"
+                                      <Link
+                                        to={`/venues/${item
+                                          .toLowerCase()
+                                          .replace(/\s+/g, "-")
+                                          .replace(/[^a-z0-9\-]/g, "")}`}
+                                        className="dropdown-link d-flex align-items-center"
                                       >
                                         {item}
-                                      </a>
+                                      </Link>
                                     ))}
                                   </div>
                                 </div>
@@ -480,13 +509,16 @@ const Header = () => {
                                     <ul className="list-unstyled">
                                       {section.items.map((item, idx) => (
                                         <li key={idx}>
-                                          <a
-                                            href="#"
+                                          <Link
+                                            to={`/venues/${item
+                                              .toLowerCase()
+                                              .replace(/\s+/g, "-")
+                                              .replace(/[^a-z0-9\-]/g, "")}`}
                                             className="dropdown-link small d-block mb-2"
                                           >
                                             <i className="bi bi-chevron-right me-2 text-muted"></i>
                                             {item}
-                                          </a>
+                                          </Link>
                                         </li>
                                       ))}
                                     </ul>
@@ -528,13 +560,16 @@ const Header = () => {
                                       "Others",
                                     ].map((city, i) => (
                                       <li key={i}>
-                                        <a
-                                          href="#"
+                                        <Link
+                                          to={`/venues/${city
+                                            .toLowerCase()
+                                            .replace(/\s+/g, "-")
+                                            .replace(/[^a-z0-9\-]/g, "")}`}
                                           className="dropdown-link small d-block mb-2"
                                         >
                                           <i className="bi bi-geo-alt me-2 text-muted"></i>{" "}
                                           {city}
-                                        </a>
+                                        </Link>
                                       </li>
                                     ))}
                                   </ul>
@@ -556,13 +591,16 @@ const Header = () => {
                                       "Others",
                                     ].map((culture, i) => (
                                       <li key={i}>
-                                        <a
-                                          href="#"
+                                        <Link
+                                          to={`/venues/${culture
+                                            .toLowerCase()
+                                            .replace(/\s+/g, "-")
+                                            .replace(/[^a-z0-9\-]/g, "")}`}
                                           className="dropdown-link small d-block mb-2"
                                         >
                                           <i className="bi bi-flower1 me-2 text-muted"></i>{" "}
                                           {culture}
-                                        </a>
+                                        </Link>
                                       </li>
                                     ))}
                                   </ul>
@@ -584,13 +622,16 @@ const Header = () => {
                                       "Others",
                                     ].map((theme, i) => (
                                       <li key={i}>
-                                        <a
-                                          href="#"
+                                        <Link
+                                          to={`/venues/${theme
+                                            .toLowerCase()
+                                            .replace(/\s+/g, "-")
+                                            .replace(/[^a-z0-9\-]/g, "")}`}
                                           className="dropdown-link small d-block mb-2"
                                         >
                                           <i className="bi bi-star me-2 text-muted"></i>{" "}
                                           {theme}
-                                        </a>
+                                        </Link>
                                       </li>
                                     ))}
                                   </ul>
@@ -618,19 +659,27 @@ const Header = () => {
                                         key={i}
                                         className="d-flex align-items-center"
                                       >
-                                        <img
-                                          src={wedding.image}
-                                          alt={wedding.name}
-                                          className="me-3 rounded-3"
-                                          style={{
-                                            width: "60px",
-                                            height: "60px",
-                                            objectFit: "cover",
-                                          }}
-                                        />
-                                        <span className="small text-muted">
-                                          {wedding.name}
-                                        </span>
+                                        <Link
+                                          to={`/venues/${wedding.name
+                                            .toLowerCase()
+                                            .replace(/\s+/g, "-")
+                                            .replace(/[^a-z0-9\-]/g, "")}`}
+                                          className="dropdown-link small d-block mb-2"
+                                        >
+                                          <img
+                                            src={wedding.image}
+                                            alt={wedding.name}
+                                            className="me-3 rounded-3"
+                                            style={{
+                                              width: "60px",
+                                              height: "60px",
+                                              objectFit: "cover",
+                                            }}
+                                          />
+                                          <span className="small text-muted">
+                                            {wedding.name}
+                                          </span>
+                                        </Link>
                                       </div>
                                     ))}
                                   </div>
@@ -673,13 +722,16 @@ const Header = () => {
                                     <ul className="list-unstyled">
                                       {section.items.map((item, idx) => (
                                         <li key={idx}>
-                                          <a
-                                            href="#"
+                                          <Link
+                                            to={`/venues/${item
+                                              .toLowerCase()
+                                              .replace(/\s+/g, "-")
+                                              .replace(/[^a-z0-9\-]/g, "")}`}
                                             className="dropdown-link small d-block mb-2"
                                           >
                                             <i className="bi bi-chevron-right me-2 text-muted"></i>
                                             {item}
-                                          </a>
+                                          </Link>
                                         </li>
                                       ))}
                                     </ul>
@@ -730,13 +782,16 @@ const Header = () => {
                                     <ul className="list-unstyled">
                                       {section.items.map((item, idx) => (
                                         <li key={idx}>
-                                          <a
-                                            href="#"
+                                          <Link
+                                            to={`/venues/${item
+                                              .toLowerCase()
+                                              .replace(/\s+/g, "-")
+                                              .replace(/[^a-z0-9\-]/g, "")}`}
                                             className="dropdown-link small d-block mb-2"
                                           >
                                             <i className="bi bi-chevron-right me-2 text-muted"></i>
                                             {item}
-                                          </a>
+                                          </Link>
                                         </li>
                                       ))}
                                     </ul>
@@ -748,26 +803,42 @@ const Header = () => {
                         </div>
                       </li>
 
-                      {["Matrimonial", "Genie"].map((item) => (
+                      {/* Matrimonial Dropdown */}
+                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper">
+                          <Link
+                            className="nav-link text-white"
+                            to={`/venues/matrimonial`}
+                            id="photoDropdown"
+                            role="button"
+                          >
+                            Matrimonial
+                          </Link>
+                        </div>
+                      </li>
+
+                      {/* Genie Dropdown */}
+                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper">
+                          <Link
+                            className="nav-link text-white"
+                            to={`/venues/genie`}
+                            id="photoDropdown"
+                            role="button"
+                          >
+                            Genie
+                          </Link>
+                        </div>
+                      </li>
+
+                      {/* {["Genie"].map((item) => (
                         <li className="nav-item" key={item}>
                           <a className="nav-link text-white" href="#">
                             {item}
                           </a>
                         </li>
-                      ))}
+                      ))} */}
                     </ul>
-                  </div>
-
-                  {/* Right: Login/Signup */}
-                  <div className="col-12 col-lg-3 mt-2 d-flex justify-content-center justify-content-lg-end">
-                    <div className="d-flex gap-3">
-                      <a href="/customer-login" className="text-white text-decoration-none">
-                        Login
-                      </a>
-                      <a href="#" className="text-white text-decoration-none">
-                        Fresh Sign-Up
-                      </a>
-                    </div>
                   </div>
                 </div>
               </div>
