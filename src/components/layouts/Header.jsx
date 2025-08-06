@@ -264,15 +264,17 @@ const Header = () => {
                                     "Panvel",
                                     "Andheri East",
                                   ].map((item, i) => (
-                                    <Link
-                                      to={`/venues/${item
-                                        .toLowerCase()
-                                        .replace(/\s+/g, "-")
-                                        .replace(/[^a-z0-9\-]/g, "")}`}
-                                      className="badge bg-light text-muted me-2 mb-2 px-3 py-2 small text-decoration-none rounded-pill"
-                                    >
-                                      {item}
-                                    </Link>
+                                    <div className="" key={i}>
+                                      <Link
+                                        to={`/venues/${item
+                                          .toLowerCase()
+                                          .replace(/\s+/g, "-")
+                                          .replace(/[^a-z0-9\-]/g, "")}`}
+                                        className="badge bg-light text-muted me-2 mb-2 px-3 py-2 small text-decoration-none rounded-pill"
+                                      >
+                                        {item}
+                                      </Link>
+                                    </div>
                                   ))}
                                 </div>
                               </div>
@@ -367,15 +369,17 @@ const Header = () => {
                                       "Panvel",
                                       "Andheri East",
                                     ].map((item, i) => (
-                                      <Link
-                                        to={`/venues/${item
-                                          .toLowerCase()
-                                          .replace(/\s+/g, "-")
-                                          .replace(/[^a-z0-9\-]/g, "")}`}
-                                        className="dropdown-link d-flex align-items-center"
-                                      >
-                                        {item}
-                                      </Link>
+                                      <div className="" key={i}>
+                                        <Link
+                                          to={`/venues/${item
+                                            .toLowerCase()
+                                            .replace(/\s+/g, "-")
+                                            .replace(/[^a-z0-9\-]/g, "")}`}
+                                          className="dropdown-link d-flex align-items-center"
+                                        >
+                                          {item}
+                                        </Link>
+                                      </div>
                                     ))}
                                   </div>
                                 </div>
