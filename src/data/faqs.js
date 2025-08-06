@@ -1,7 +1,7 @@
 const faqs = [
     {
-        question: "How to find the ideal wedding venue for your wedding functions?",
-        answer: "When you have a clear vision for your wedding theme, finding that perfect wedding venue can be one of the most daunting tasks. Keep in mind that finding the ideal wedding venue is not just about how the property looks. Once you have an idea of your dates, guest list and budget you can begin shortlisting wedding venues. Cross-check the venue pricing to ensure it fits your wedding budget and your guest list size. Next, consider the weather and time of day to help you decide on the type of venue and if you'll be celebrating indoors or outdoors. Finally, shortlist wedding venues that will be able to create the wedding theme you want.",
+        question: "How do I find wedding venues in my budget?",
+        answer: "Use our budget filter to search venues by price range. Most venues list their starting prices, and you can contact them directly for detailed pricing.",
 
     },
     {

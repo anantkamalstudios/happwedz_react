@@ -548,6 +548,7 @@ body {
   }
 }
 
+/* find regions */
 .region-img-wrapper {
   width: 130px;
   height: 130px;
@@ -568,37 +569,59 @@ body {
 
 .region-slide-card:hover .region-img-wrapper {
   transform: rotate(10deg);
-  /* Slight rotation of wrapper */
+
 }
 
 .region-slide-card:hover .region-img {
   transform: scale(1.03);
-  /* Slight zoom */
+
 }
 
 .region-slide-card:hover .region-img-wrapper {
   transform: rotateY(5deg);
 }
 
-.wedding-header-wrapper {
-  background-image: url('https://cdn1.weddingwire.in/assets/img/listing-city/in-chennai-10011065.webp');
-  /* ✅ Change path if needed */
-  background-position: right center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  min-height: 500px;
-  display: flex;
-  align-items: center;
-  border-radius: 0 0 0 200px;
-  position: relative;
+/* faqs/ */
+.faq-section {
+
+  border-radius: 15px;
+
+}
+
+.faqs-content {
+  width: 150%;
+  padding: 20px;
+}
+
+.accordion-item {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.accordion-item.active {
+  border-color: var(--bs-primary);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.accordion-header {
+  padding: 18px 20px;
+  background: white;
+}
+
+.accordion-content {
+  background: white;
+  transition: all 0.3s ease;
   overflow: hidden;
 }
 
-.content-wrapper {
-  background-color: white;
-  border-top-left-radius: 200px;
-  border-bottom-left-radius: 200px;
-  position: absolute;
-  top: 100px;
-  min-height: 500px;
+.faq-icon {
+  font-size: 1.2rem;
+}
+
+.accordion-item:not(.active):hover {
+  background: #f8f9fa;
 }

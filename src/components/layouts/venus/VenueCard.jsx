@@ -1,4 +1,4 @@
-// src/components/VenueCard.js
+
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faMapMarkerAlt, faUser, faRupeeSign } from '@fortawesome/free-solid-svg-icons';
