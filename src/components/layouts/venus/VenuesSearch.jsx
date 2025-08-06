@@ -45,7 +45,7 @@ const VenueSearch = () => {
                     <FaSearch className="me-2" style={{ color: "#6c757d" }} />
                     <Form.Control
                       type="text"
-                      placeholder="Search venues"
+                      placeholder="Venues"
                       style={{
                         border: "none",
                         backgroundColor: "transparent",
