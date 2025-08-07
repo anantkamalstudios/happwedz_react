@@ -18,7 +18,7 @@ import {
 import { BsLightningCharge } from "react-icons/bs";
 import { LuUsers } from "react-icons/lu";
 import { FaIndianRupeeSign } from "react-icons/fa6";
-import Asideview from "./Asideview";
+import DynamicAside from "../aside/DynamicAside";
 // import { subVenuesData } from "../../../data/subVenuesData";
 
 const GridView = ({ subVenuesData, section }) => {
@@ -39,6 +39,7 @@ const GridView = ({ subVenuesData, section }) => {
 
   return (
     <Row>
+      {/* Left Sidebar */}
       <Col xs={12} md={3}>
         <DynamicAside section={section} />
       </Col>

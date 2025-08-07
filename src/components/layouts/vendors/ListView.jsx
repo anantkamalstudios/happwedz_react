@@ -5,9 +5,8 @@ import { BsLightningCharge } from "react-icons/bs";
 import { LuUsers } from "react-icons/lu";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import Asideview from "./Asideview";
-import DynamicAside from "../aside/DynamicAside";
 
-const ListView = ({ subVenuesData, section }) => {
+const ListView = ({ subVendorsData }) => {
   const [favorites, setFavorites] = useState({});
   const [filter, setFilter] = useState("all");
 
@@ -20,40 +19,40 @@ const ListView = ({ subVenuesData, section }) => {
 
   const filteredVenues =
     filter === "all"
-      ? subVenuesData
-      : subVenuesData.filter((venue) => venue.type === filter);
+      ? subVendorsData
+      : subVendorsData.filter((venue) => venue.type === filter);
 
   return (
     <>
       <Row>
         <Col xs={12} md={3} className="mb-4">
-          <DynamicAside section={section} />
+          <Asideview />
         </Col>
-        <Col key={subVenuesData.id} xs={9} className="mb-4">
+        <Col key={subVendorsData.id} xs={9} className="mb-4">
           <Card className="venue-card h-100 rounded-4 p-2 shadow-sm">
-            {filteredVenues.map((subVenuesData) => (
+            {filteredVenues.map((subVendorsData) => (
               <Row>
                 <Col xs={12} md={4} className="position-relative">
                   <div className="position-relative">
                     <Card.Img
-                      src={subVenuesData.image}
-                      alt={subVenuesData.name}
+                      src={subVendorsData.image}
+                      alt={subVendorsData.name}
                       className="img-fluid rounded-3"
                       style={{ height: "220px", objectFit: "cover" }}
                     />
 
                     <button
                       className="btn-glass position-absolute top-0 end-0 m-2 rounded-circle"
-                      onClick={() => toggleFavorite(subVenuesData.id)}
+                      onClick={() => toggleFavorite(subVendorsData.id)}
                     >
-                      {favorites[subVenuesData.id] ? (
+                      {favorites[subVendorsData.id] ? (
                         <FaHeart className="text-danger flip-icon" />
                       ) : (
                         <FaRegHeart className="text-white flip-icon" />
                       )}
                     </button>
                     <div className="price-tag">
-                      <FaIndianRupeeSign /> {subVenuesData.price}
+                      <FaIndianRupeeSign /> {subVendorsData.price}
                     </div>
                   </div>
                 </Col>
@@ -64,10 +63,10 @@ const ListView = ({ subVenuesData, section }) => {
                 >
                   <div>
                     <Card.Title as="h5" className="venue-name mb-1">
-                      {subVenuesData.name}
+                      {subVendorsData.name}
                     </Card.Title>
                     <div className="text-muted small mb-2">
-                      {(subVenuesData.description || "")
+                      {(subVendorsData.description || "")
                         .split(" ")
                         .slice(0, 20)
                         .join(" ")}
@@ -75,31 +74,31 @@ const ListView = ({ subVenuesData, section }) => {
                     </div>
 
                     <div className="text-muted small mb-2">
-                      {subVenuesData.location}
+                      {subVendorsData.location}
                     </div>
 
                     <div className="d-flex justify-content-between align-items-center mb-2 flex-wrap">
                       <div className="d-flex align-items-center flex-wrap">
                         <div className="rating-badge me-3 d-flex align-items-center">
                           <FaStar className="text-warning me-1" />
-                          <span>{subVenuesData.rating}</span>
+                          <span>{subVendorsData.rating}</span>
                           <span className="text-muted ms-1">
-                            ({subVenuesData.reviews})
+                            ({subVendorsData.reviews})
                           </span>
                         </div>
 
                         <div className="capacity-badge d-flex align-items-center">
                           <LuUsers className="text-dark me-1" />
                           <span className="text-muted">
-                            {subVenuesData.capacity}
+                            {subVendorsData.capacity}
                           </span>
                         </div>
                       </div>
 
-                      {subVenuesData.call && (
+                      {subVendorsData.call && (
                         <div className="text-muted small d-flex align-items-center mt-2 mt-md-0">
                           <BsLightningCharge color="orange" className="me-1" />
-                          {subVenuesData.call}
+                          {subVendorsData.call}
                         </div>
                       )}
                     </div>

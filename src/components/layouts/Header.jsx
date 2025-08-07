@@ -4,6 +4,12 @@ import { Modal, Button, Form } from "react-bootstrap";
 import LocationModalWithCategories from "./LocationModalWithCategories";
 
 const Header = () => {
+  const toSlug = (text) =>
+    text
+      ?.toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9\-]/g, "") || "";
+
   return (
     <nav className="navbar navbar-expand-lg navbar-light shadow-sm primary-bg p-0">
       <div className="container-fluid">
@@ -204,15 +210,11 @@ const Header = () => {
                     <ul className="navbar-nav d-flex flex-wrap justify-content-center gap-3">
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <Link
-                          to="/venus"
+                          to="/venues"
                           className="nav-link dropdown-toggle text-white"
                         >
                           Venues
                         </Link>
-                        {/* <a className="nav-link dropdown-toggle text-white"
-                          href="/venus"
-                        >Venues
-                        </a> */}
                         <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                           <div className="container">
                             <div className="row g-4">
@@ -310,19 +312,16 @@ const Header = () => {
                       {/* Vendors Dropdown */}
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
-                          <a
+                          <Link
+                            to="/vendors"
                             className="nav-link dropdown-toggle text-white"
-                            href="#"
-                            id="vendorsDropdown"
-                            role="button"
                           >
                             Vendors
-                          </a>
+                          </Link>
 
                           <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
                               <div className="row g-4">
-                                {/* Column 1: By Type */}
                                 <div className="col-md-8">
                                   <h6 className="fw-semibold text-uppercase mb-3 text-secondary">
                                     Start hiring your vendors
@@ -344,40 +343,11 @@ const Header = () => {
                                         key={i}
                                       >
                                         <Link
-                                          to={`/venues/${item
-                                            .toLowerCase()
-                                            .replace(/\s+/g, "-")
-                                            .replace(/[^a-z0-9\-]/g, "")}`}
+                                          to={`/vendors/${toSlug(item)}`}
+                                          state={{ title: item }}
                                           className="dropdown-link d-flex align-items-center"
                                         >
                                           <span className="small">{item}</span>
-                                        </Link>
-                                      </div>
-                                    ))}
-                                  </div>
-
-                                  <h6 className="fw-semibold mt-4 text-uppercase text-secondary">
-                                    Popular Locations
-                                  </h6>
-                                  <div className="d-flex flex-wrap mt-2">
-                                    {[
-                                      "Bandra",
-                                      "Thane",
-                                      "Kalyan",
-                                      "Ulhasnagar",
-                                      "Bhiwandi",
-                                      "Panvel",
-                                      "Andheri East",
-                                    ].map((item, i) => (
-                                      <div className="" key={i}>
-                                        <Link
-                                          to={`/venues/${item
-                                            .toLowerCase()
-                                            .replace(/\s+/g, "-")
-                                            .replace(/[^a-z0-9\-]/g, "")}`}
-                                          className="dropdown-link d-flex align-items-center"
-                                        >
-                                          {item}
                                         </Link>
                                       </div>
                                     ))}
@@ -416,14 +386,14 @@ const Header = () => {
                       {/* photo Dropdown */}
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
-                          <a
+                          <Link
                             className="nav-link dropdown-toggle text-white"
-                            href="#"
+                            to="/photography"
                             id="photoDropdown"
                             role="button"
                           >
                             Photography
-                          </a>
+                          </Link>
 
                           <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
@@ -514,10 +484,8 @@ const Header = () => {
                                       {section.items.map((item, idx) => (
                                         <li key={idx}>
                                           <Link
-                                            to={`/venues/${item
-                                              .toLowerCase()
-                                              .replace(/\s+/g, "-")
-                                              .replace(/[^a-z0-9\-]/g, "")}`}
+                                            to={`/photography/${toSlug(item)}`}
+                                            state={{ title: item }}
                                             className="dropdown-link small d-block mb-2"
                                           >
                                             <i className="bi bi-chevron-right me-2 text-muted"></i>
@@ -537,14 +505,15 @@ const Header = () => {
                       {/* Real Weddings Dropdown */}
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
-                          <a
+                          <Link
                             className="nav-link dropdown-toggle text-white"
-                            href="#"
+                            to="/real-wedding"
+                            state={{ title: "real-wedding" }}
                             id="rwDropdown"
                             role="button"
                           >
                             Real Weddings
-                          </a>
+                          </Link>
 
                           <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
@@ -565,10 +534,8 @@ const Header = () => {
                                     ].map((city, i) => (
                                       <li key={i}>
                                         <Link
-                                          to={`/venues/${city
-                                            .toLowerCase()
-                                            .replace(/\s+/g, "-")
-                                            .replace(/[^a-z0-9\-]/g, "")}`}
+                                          to={`/real-wedding/${toSlug(city)}`}
+                                          state={{ title: city }}
                                           className="dropdown-link small d-block mb-2"
                                         >
                                           <i className="bi bi-geo-alt me-2 text-muted"></i>{" "}
@@ -596,10 +563,8 @@ const Header = () => {
                                     ].map((culture, i) => (
                                       <li key={i}>
                                         <Link
-                                          to={`/venues/${culture
-                                            .toLowerCase()
-                                            .replace(/\s+/g, "-")
-                                            .replace(/[^a-z0-9\-]/g, "")}`}
+                                          to={`/by-culture/${toSlug(culture)}`}
+                                          state={{ title: culture }}
                                           className="dropdown-link small d-block mb-2"
                                         >
                                           <i className="bi bi-flower1 me-2 text-muted"></i>{" "}
@@ -627,10 +592,8 @@ const Header = () => {
                                     ].map((theme, i) => (
                                       <li key={i}>
                                         <Link
-                                          to={`/venues/${theme
-                                            .toLowerCase()
-                                            .replace(/\s+/g, "-")
-                                            .replace(/[^a-z0-9\-]/g, "")}`}
+                                          to={`/by-theme/${toSlug(theme)}`}
+                                          state={{ title: theme }}
                                           className="dropdown-link small d-block mb-2"
                                         >
                                           <i className="bi bi-star me-2 text-muted"></i>{" "}
@@ -664,10 +627,10 @@ const Header = () => {
                                         className="d-flex align-items-center"
                                       >
                                         <Link
-                                          to={`/venues/${wedding.name
-                                            .toLowerCase()
-                                            .replace(/\s+/g, "-")
-                                            .replace(/[^a-z0-9\-]/g, "")}`}
+                                          to={`/latest-real-weddings/${toSlug(
+                                            wedding.name
+                                          )}`}
+                                          state={{ title: wedding.name }}
                                           className="dropdown-link small d-block mb-2"
                                         >
                                           <img
@@ -697,14 +660,15 @@ const Header = () => {
                       {/* E-invites Dropdown */}
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
-                          <a
+                          <Link
                             className="nav-link dropdown-toggle text-white"
-                            href="#"
+                            to="/e-invites"
+                            state={{ title: "E-Invites" }}
                             id="photoDropdown"
                             role="button"
                           >
                             E-Invites
-                          </a>
+                          </Link>
 
                           <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
@@ -727,10 +691,8 @@ const Header = () => {
                                       {section.items.map((item, idx) => (
                                         <li key={idx}>
                                           <Link
-                                            to={`/venues/${item
-                                              .toLowerCase()
-                                              .replace(/\s+/g, "-")
-                                              .replace(/[^a-z0-9\-]/g, "")}`}
+                                            to={`/e-invite/${toSlug(item)}`}
+                                            state={{ title: item }}
                                             className="dropdown-link small d-block mb-2"
                                           >
                                             <i className="bi bi-chevron-right me-2 text-muted"></i>
@@ -750,14 +712,15 @@ const Header = () => {
                       {/* photo Dropdown */}
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
-                          <a
+                          <Link
                             className="nav-link dropdown-toggle text-white"
-                            href="#"
+                            to="/twosoul"
+                            state={{ title: "TwoSoul" }}
                             id="photoDropdown"
                             role="button"
                           >
                             Two Soul
-                          </a>
+                          </Link>
 
                           <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
@@ -787,10 +750,8 @@ const Header = () => {
                                       {section.items.map((item, idx) => (
                                         <li key={idx}>
                                           <Link
-                                            to={`/venues/${item
-                                              .toLowerCase()
-                                              .replace(/\s+/g, "-")
-                                              .replace(/[^a-z0-9\-]/g, "")}`}
+                                            to={`/two-soul/${toSlug(item)}`}
+                                            state={{ title: item }}
                                             className="dropdown-link small d-block mb-2"
                                           >
                                             <i className="bi bi-chevron-right me-2 text-muted"></i>
@@ -812,7 +773,8 @@ const Header = () => {
                         <div className="dropdown-wrapper">
                           <Link
                             className="nav-link text-white"
-                            to={`/venues/matrimonial`}
+                            to="/matrimonial"
+                            state={{ title: "Matrimonial" }}
                             id="photoDropdown"
                             role="button"
                           >
@@ -826,7 +788,8 @@ const Header = () => {
                         <div className="dropdown-wrapper">
                           <Link
                             className="nav-link text-white"
-                            to={`/venues/genie`}
+                            to="/genie"
+                            state={{ title: "Genie" }}
                             id="photoDropdown"
                             role="button"
                           >

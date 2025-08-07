@@ -4,30 +4,33 @@ import GridView from "../layouts/venus/GridView";
 import ListView from "../layouts/venus/ListView";
 import { subVenuesData } from "../../data/subVenuesData";
 import { Button } from "react-bootstrap";
+import ViewSwitcher from "../layouts/venus/ViewSwitcher";
+import VenuesSearch from "../layouts/venus/VenuesSearch";
+import MapView from "../layouts/venus/MapView";
 
 const SubVenues = () => {
   const { slug } = useParams();
-  const [toggleSwitch, setToggleSwitch] = useState("list");
+  const toTitleCase = (slug) => {
+    return slug
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
+  const [view, setView] = useState("list");
 
   const toggleView = () => {
     setToggleSwitch(toggleSwitch === "grid" ? "list" : "grid");
   };
 
-  return (
-    <div className="container py-4">
-      <div className="d-flex justify-content-end mb-3">
-        <Button variant="outline-primary" onClick={toggleView}>
-          Switch to {toggleSwitch === "grid" ? "List" : "Grid"} View
-        </Button>
-      </div>
+  const title = slug ? toTitleCase(slug) : "Wedding Venues";
 
-      {toggleSwitch === "list" ? (
-        subVenuesData.map((subVenue) => (
-          <ListView subVenuesData={subVenue} key={subVenue.id} />
-        ))
-      ) : (
-        <GridView subVenuesData={subVenuesData} />
-      )}
+  return (
+    <div className="container-fluid">
+      <VenuesSearch title={title} />
+      <ViewSwitcher view={view} setView={setView} />
+      {view === "list" && <ListView subVenuesData={subVenuesData} />}
+      {view === "images" && <GridView subVenuesData={subVenuesData} />}
+      {view === "map" && <MapView subVenuesData={subVenuesData} />}
     </div>
   );
 };

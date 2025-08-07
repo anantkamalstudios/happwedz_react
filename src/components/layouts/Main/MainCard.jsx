@@ -12,7 +12,7 @@ import {
   faRupeeSign,
 } from "@fortawesome/free-solid-svg-icons";
 
-const VenueCard = ({ venue }) => {
+const MainCard = ({ venue }) => {
   return (
     <div className="card h-100 border-0 shadow-sm rounded-4 venue-card">
       <div className="position-relative">
@@ -58,4 +58,4 @@ const VenueCard = ({ venue }) => {
   );
 };
 
-export default VenueCard;
+export default MainCard;

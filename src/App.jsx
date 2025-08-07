@@ -11,6 +11,10 @@ import VendorRegister from "./components/auth/VendorRegister";
 import Venus from "./components/pages/Venus";
 import SubVenues from "./components/pages/SubVenues";
 import NotFound from "./components/pages/NotFound";
+import Vendors from "./components/pages/Vendors";
+import SubVendors from "./components/pages/SubVendors";
+import MainSection from "./components/pages/MainSection";
+import SubSection from "./components/pages/SubSection";
 
 function App() {
   return (
@@ -20,8 +24,13 @@ function App() {
       <main style={{ minHeight: "70vh" }}>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/venus" element={<Venus />} />
+          <Route path="/:section" element={<MainSection />} />
+          <Route path="/:section/:slug" element={<SubSection />} />
+
+          {/* <Route path="/venus" element={<Venus />} />
           <Route path="/venues/:slug" element={<SubVenues />} />
+          <Route path="/vendors" element={<Vendors />} />
+          <Route path="/vendors/:slug" element={<SubVendors />} /> */}
           <Route path="/customer-register" element={<CustomerRegister />} />
           <Route path="/customer-login" element={<CustomerLogin />} />
           <Route path="/vendor-login" element={<VendorLogin />} />

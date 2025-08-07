@@ -3,7 +3,7 @@ import { FaList, FaTh, FaMapMarkerAlt } from "react-icons/fa";
 
 const ViewSwitcher = ({ view, setView }) => {
   return (
-    <div className="col-3 col-lg-3 ms-auto py-4">
+    <div className="col-3 col-lg-3 ms-auto py-4 row justify-content-end d-none d-sm-flex">
       <div className="view-switcher-wrapper">
         <div className="view-switcher">
           <button

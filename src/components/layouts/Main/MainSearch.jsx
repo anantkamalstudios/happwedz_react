@@ -3,7 +3,7 @@ import { Container, Row, Col, Form, Button, InputGroup } from "react-bootstrap";
 import { CiSearch } from "react-icons/ci";
 import { FaMapMarkerAlt, FaSearch } from "react-icons/fa";
 
-const VenueSearch = ({ title }) => {
+const MainSearch = ({ title }) => {
   return (
     <section className="bg-white position-relative overflow-hidden">
       <Row className="position-relative align-items-center">
@@ -105,4 +105,4 @@ const VenueSearch = ({ title }) => {
   );
 };
 
-export default VenueSearch;
+export default MainSearch;

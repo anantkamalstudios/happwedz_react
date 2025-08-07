@@ -19,9 +19,9 @@ import { BsLightningCharge } from "react-icons/bs";
 import { LuUsers } from "react-icons/lu";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import Asideview from "./Asideview";
-// import { subVenuesData } from "../../../data/subVenuesData";
+// import { subVenuesData } from "../../../data/subVendorsData";
 
-const GridView = ({ subVenuesData, section }) => {
+const GridView = ({ subVendorsData }) => {
   const [favorites, setFavorites] = useState({});
   const [filter, setFilter] = useState("all");
 
@@ -34,13 +34,14 @@ const GridView = ({ subVenuesData, section }) => {
 
   const filteredVenues =
     filter === "all"
-      ? subVenuesData
-      : subVenuesData.filter((venue) => venue.type === filter);
+      ? subVendorsData
+      : subVendorsData.filter((venue) => venue.type === filter);
 
   return (
     <Row>
+      {/* Left Sidebar */}
       <Col xs={12} md={3}>
-        <DynamicAside section={section} />
+        <Asideview />
       </Col>
       <Col xs={12} md={9}>
         <Row className="venue-grid">
