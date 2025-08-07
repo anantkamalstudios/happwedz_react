@@ -18,9 +18,9 @@ import {
 import { BsLightningCharge } from "react-icons/bs";
 import { LuUsers } from "react-icons/lu";
 import { FaIndianRupeeSign } from "react-icons/fa6";
-import { venuesGrid } from "../../../data/venuesGrid";
+// import { subVenuesData } from "../../../data/subVenuesData";
 
-const GridView = () => {
+const GridView = ({ subVenuesData }) => {
   const [favorites, setFavorites] = useState({});
   const [filter, setFilter] = useState("all");
 
@@ -33,22 +33,16 @@ const GridView = () => {
 
   const filteredVenues =
     filter === "all"
-      ? venuesGrid
-      : venuesGrid.filter((venue) => venue.type === filter);
-
-  const filterOptions = [
-    { id: "all", label: "All Venues" },
-    { id: "banquet", label: "Banquet Halls" },
-    { id: "garden", label: "Garden Venues" },
-    { id: "beach", label: "Beach Venues" },
-    { id: "palace", label: "Palaces" },
-    { id: "resort", label: "Resorts" },
-  ];
+      ? subVenuesData
+      : subVenuesData.filter((venue) => venue.type === filter);
 
   return (
-    <div className="venue-grid-page">
-      {/* Venue Grid */}
-      <Container>
+    <Row>
+      {/* Left Sidebar */}
+      <Col xs={12} md={2}>
+        <h1>Hello</h1>
+      </Col>
+      <Col xs={12} md={10}>
         <Row className="venue-grid">
           {filteredVenues.map((v) => (
             <Col
@@ -128,8 +122,8 @@ const GridView = () => {
             </Col>
           ))}
         </Row>
-      </Container>
-    </div>
+      </Col>
+    </Row>
   );
 };
 
