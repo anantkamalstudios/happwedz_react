@@ -1,19 +1,13 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import Asideview from "../layouts/venus/Asideview";
-
-import VenueSearch from "../../components/layouts/venus/VenuesSearch.jsx";
-import ViewSwitcher from "../../components/layouts/venus/ViewSwitcher.jsx";
 
 const SubVenues = () => {
   const { slug } = useParams();
 
   return (
     <div>
-      <VenueSearch />
-      <ViewSwitcher />
-      <Asideview />
-
+      <h2>Sub Venue Page</h2>
+      <p>Slug: {slug}</p>
     </div>
   );
 };
