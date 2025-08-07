@@ -10,8 +10,6 @@ const FaqsSection = () => {
         setActiveIndex(activeIndex === index ? null : index);
     };
 
-
-
     return (
         <div className="my-5 py-4 faq-section">
             <Container>
