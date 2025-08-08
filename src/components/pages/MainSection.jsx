@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import VendorsSearch from "../layouts/vendors/VendorsSearch";
 import VenuesSearch from "../layouts/venus/VenuesSearch";
@@ -10,9 +10,16 @@ import FactorsList from "../layouts/Main/FactorsList";
 import FaqsSection from "../layouts/Main/FaqsSection";
 import TopSlider from "../layouts/photography/TopSlider";
 import SortSection from "../layouts/photography/SortSection";
+import GridImages from "../layouts/photography/GridImages";
+import GroomeSlider from "../layouts/twoSoul/GroomeSlider";
+import BrideSlider from "../layouts/twoSoul/BrideSlider";
+import MainPhotages from "../layouts/twoSoul/MainPhotages";
+import Detailed from "../layouts/Detailed";
 
 const MainSection = () => {
   const { section } = useParams();
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   if (section === "venues") {
     return (
@@ -49,10 +56,16 @@ const MainSection = () => {
       <>
         <VenuesSearch title="Photography" />
         {/* <MainByRegion /> */}
-        <TopSlider />
-        <SortSection />
-        <FactorsList />
-        <FaqsSection />
+
+        <TopSlider onCategorySelect={setSelectedCategory} />
+        <SortSection
+          category={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          onSearchChange={setSearchQuery}
+        />
+        <GridImages category={selectedCategory} searchQuery={searchQuery} />
+        {/* <FactorsList />
+        <FaqsSection /> */}
       </>
     );
   }
@@ -87,17 +100,16 @@ const MainSection = () => {
     );
   }
 
-  if (section === "by-theme") {
+  if (section === "twosoul") {
     return (
       <>
-        <VenuesSearch title="By Theme" />
+        <VenuesSearch title="Two Soul" />
         <MainByRegion />
-        <FindMain />
-        <MainHeroSection loc={"Panjab"} />
-        <MainHeroSection loc={"Karela "} />
-        <MainHeroSection loc={"Goa"} />
-        <FactorsList />
-        <FaqsSection />
+        <GroomeSlider />
+        <MainPhotages />
+        <BrideSlider />
+
+        {/* <FindMain /> */}
       </>
     );
   }
@@ -136,6 +148,7 @@ const MainSection = () => {
     return (
       <>
         <VenuesSearch title="Genie" />
+        <Detailed />
       </>
     );
   }

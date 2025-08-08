@@ -11,7 +11,7 @@ import {
 // import FILTER_OPTIONS from "../../../data/asideview";
 
 const FILTER_OPTIONS = {
-  One_Day_Wedding_Package: [
+  SpecialFilters: [
     "Under ₹25,000",
     "₹25,000 - ₹49,999",
     "₹50,000 - ₹74,999",
@@ -19,7 +19,7 @@ const FILTER_OPTIONS = {
     "₹1,00,000 - ₹1,24,999",
     "₹2,00,000 and more",
   ],
-  Three_Day_Wedding_Package: [
+  OneDayWeddingPackage: [
     "Under ₹70,000",
     "₹75,000 - ₹99,999",
     "₹1,00,000 - ₹1,49,999",
@@ -29,7 +29,16 @@ const FILTER_OPTIONS = {
     "₹3,00,000 - ₹3,99,999",
     "₹4,00,000 and more",
   ],
-  Pre_Wedding_Package: [
+  ThreeDayWeddingPackage: [
+    "Under ₹25,000",
+    "₹25,000 - ₹49,999",
+    "₹50,000 - ₹74,999",
+    "₹75,000 - ₹99,999",
+    "₹1,00,000 - ₹1,24,999",
+    "₹1,25,000 - ₹1,49,999",
+    "₹2,00,000 and more",
+  ],
+  PreWeddingPackage: [
     "Under ₹25,000",
     "₹25,000 - ₹49,999",
     "₹50,000 - ₹74,999",
@@ -65,9 +74,10 @@ const Asideview = () => {
     awardWinners: false,
   });
   const [sectionState, setSectionState] = useState({
-    One_Day_Wedding_Package: true,
-    Three_Day_Wedding_Package: true,
-    Pre_Wedding_Package: true,
+    SpecialFilters: true,
+    OneDayWeddingPackage: true,
+    ThreeDayWeddingPackage: true,
+    PreWeddingPackage: true,
     Services: true,
     Occasion: true,
   });
@@ -144,31 +154,41 @@ const Asideview = () => {
           <div className="d-flex justify-content-between align-items-center mb-2">
             <h6
               className="section-header m-0"
-              onClick={() => toggleSection("One_Day_Wedding_Package")}
+              onClick={() => toggleSection("OneDayWeddingPackage")}
             >
-              {renderIcon(sectionState.One_Day_Wedding_Package)} 1 Day Wedding
+              {renderIcon(sectionState.OneDayWeddingPackage)} 1 Day Wedding
               Package
             </h6>
           </div>
-          {sectionState.One_Day_Wedding_Package &&
-            renderCheckboxList("venue", FILTER_OPTIONS.One_Day_Wedding_Package)}
+          {sectionState.OneDayWeddingPackage &&
+            renderCheckboxList("venue", FILTER_OPTIONS.OneDayWeddingPackage)}
         </div>
 
         <div className="filter-section">
           <div className="d-flex justify-content-between align-items-center mb-2">
             <h6
               className="section-header m-0"
-              onClick={() => toggleSection("Three_Day_Wedding_Package")}
+              onClick={() => toggleSection("ThreeDayWeddingPackage")}
             >
-              {renderIcon(sectionState.Three_Day_Wedding_Package)} 3 Day Wedding
+              {renderIcon(sectionState.ThreeDayWeddingPackage)} 3 Day Wedding
               Package
             </h6>
           </div>
-          {sectionState.Three_Day_Wedding_Package &&
-            renderCheckboxList(
-              "venue",
-              FILTER_OPTIONS.Three_Day_Wedding_Package
-            )}
+          {sectionState.ThreeDayWeddingPackage &&
+            renderCheckboxList("venue", FILTER_OPTIONS.ThreeDayWeddingPackage)}
+        </div>
+
+        <div className="filter-section">
+          <div className="d-flex justify-content-between align-items-center mb-2">
+            <h6
+              className="section-header m-0"
+              onClick={() => toggleSection("PreWeddingPackage")}
+            >
+              {renderIcon(sectionState.PreWeddingPackage)} Pre Wedding Package
+            </h6>
+          </div>
+          {sectionState.PreWeddingPackage &&
+            renderCheckboxList("venue", FILTER_OPTIONS.PreWeddingPackage)}
         </div>
 
         <div className="filter-section">
@@ -184,18 +204,18 @@ const Asideview = () => {
             renderCheckboxList("venue", FILTER_OPTIONS.Services)}
         </div>
 
-        <div className="filter-section">
+        {/* <div className="filter-section">
           <div className="d-flex justify-content-between align-items-center mb-2">
             <h6
               className="section-header m-0"
               onClick={() => toggleSection("Pre_Wedding_Package")}
             >
-              {renderIcon(sectionState.Pre_Wedding_Package)} Pre Wedding Package
+              {renderIcon(sectionState.SpecialFilters)} Pre Special Filters
             </h6>
           </div>
           {sectionState.Pre_Wedding_Package &&
             renderCheckboxList("venue", FILTER_OPTIONS.Pre_Wedding_Package)}
-        </div>
+        </div> */}
 
         <div className="filter-section">
           <div className="d-flex justify-content-between align-items-center mb-2">

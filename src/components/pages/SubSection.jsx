@@ -7,6 +7,7 @@ import GridView from "../layouts/Main/GridView";
 import MapView from "../layouts/Main/MapView";
 import { subVenuesData } from "../../data/subVenuesData";
 import ViewSwitcher from "../layouts/Main/ViewSwitcher";
+import MainSearch from "../layouts/Main/MainSearch";
 
 const toTitleCase = (str) =>
   str.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
@@ -21,6 +22,8 @@ const SubSection = () => {
     <div className="container-fluid">
       {section === "venues" && <VenuesSearch title={title} />}
       {section === "vendors" && <VendorsSearch title={title} />}
+      {section === "photography" && <MainSearch title={title} />}
+      {section === "twosoul" && <MainSearch title={title} />}
 
       <ViewSwitcher view={view} setView={setView} />
       {view === "list" && (
