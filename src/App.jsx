@@ -37,6 +37,7 @@ function App() {
           <Route path="/customer-login" element={<CustomerLogin />} />
           <Route path="/vendor-login" element={<VendorLogin />} />
           <Route path="/vendor-register" element={<VendorRegister />} />
+          <Route path="/vendor-register" element={<VendorRegister />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

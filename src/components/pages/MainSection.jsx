@@ -97,8 +97,9 @@ const MainSection = () => {
         {/* <MainHeroSection loc={"Panjab"} />
         <MainHeroSection loc={"Karela "} />
         <MainHeroSection loc={"Goa"} />
+        */}
         <FactorsList />
-        <FaqsSection /> */}
+        <FaqsSection />
       </>
     );
   }
@@ -130,20 +131,20 @@ const MainSection = () => {
     );
   }
 
-  if (section === "matrimonial") {
-    return (
-      <>
-        <VenuesSearch title="Matrimonial" />
-        <MainByRegion />
-        <FindMain />
-        <MainHeroSection loc={"Panjab"} />
-        <MainHeroSection loc={"Karela "} />
-        <MainHeroSection loc={"Goa"} />
-        <FactorsList />
-        <FaqsSection />
-      </>
-    );
-  }
+  // if (section === "matrimonial") {
+  //   return (
+  //     <>
+  //       <VenuesSearch title="Matrimonial" />
+  //       <MainByRegion />
+  //       <FindMain />
+  //       <MainHeroSection loc={"Panjab"} />
+  //       <MainHeroSection loc={"Karela "} />
+  //       <MainHeroSection loc={"Goa"} />
+  //       <FactorsList />
+  //       <FaqsSection />
+  //     </>
+  //   );
+  // }
 
   if (section === "genie") {
     return (

@@ -1,296 +1,687 @@
-
-
-
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { Link } from "react-router-dom";
-import "bootstrap/dist/css/bootstrap.min.css";
+import React, { useState } from "react";
+import {
+  Form,
+  Button,
+  Container,
+  Row,
+  Col,
+  ProgressBar,
+  Accordion,
+} from "react-bootstrap";
+import {
+  FaBuilding,
+  FaUser,
+  FaDollarSign,
+  FaLock,
+  FaCheck,
+  FaPhone,
+  FaEnvelope,
+  FaGlobe,
+} from "react-icons/fa";
 
 const VendorRegister = () => {
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        password: "",
-        phone: "",
-        event_date: "",
-        country: "",
-        city: "",
-    });
+  const [step, setStep] = useState(1);
 
-    const [errors, setErrors] = useState({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [countries, setCountries] = useState([]);
-    const [cities, setCities] = useState([]);
+  const [validated, setValidated] = useState(false);
 
-    // Fetch countries list
-    useEffect(() => {
-        axios.get("https://restcountries.com/v3.1/all?fields=name,cca2").then((res) => {
-            const sorted = res.data
-                .map((c) => ({
-                    name: c.name.common,
-                    code: c.cca2,
-                }))
-                .sort((a, b) => a.name.localeCompare(b.name));
-            setCountries(sorted);
-        });
-    }, []);
+  const [formData, setFormData] = useState({
+    businessName: "",
+    businessType: "",
+    yearsInBusiness: "",
+    description: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+    services: [],
+    priceRange: "",
+    website: "",
+    username: "",
+    password: "",
+    confirmPassword: "",
+    acceptTerms: false,
+  });
 
+  const businessTypes = [
+    "Venue",
+    "Catering",
+    "Photography",
+    "Videography",
+    "Florist",
+    "DJ/Band",
+    "Makeup Artist",
+    "Decorator",
+    "Wedding Planner",
+    "Bakery",
+  ];
 
+  const serviceOptions = [
+    "Full Wedding Planning",
+    "Day-of Coordination",
+    "Venue Selection",
+    "Catering Services",
+    "Photography",
+    "Videography",
+    "Floral Design",
+    "Entertainment",
+    "Lighting & Decor",
+    "Transportation",
+    "Invitations",
+    "Wedding Cake",
+    "Hair & Makeup",
+    "Officiant Services",
+    "Rentals",
+  ];
 
-    useEffect(() => {
-        if (!formData.country) return;
+  const priceRanges = [
+    "Budget (Under ₹50,000)",
+    "Moderate (₹50,000 - ₹1,50,000)",
+    "Premium (₹1,50,000 - ₹3,00,000)",
+    "Luxury (₹3,00,000+)",
+  ];
 
-        axios.post("https://countriesnow.space/api/v0.1/countries/cities", {
-            country: formData.country,
-        })
-            .then((res) => {
-                if (res.data && res.data.data) {
-                    setCities(res.data.data);
-                } else {
-                    setCities([]);
-                }
-            })
-            .catch(() => setCities([]));
-    }, [formData.country]);
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
 
-    const validate = () => {
-        const newErrors = {};
-        if (!formData.name.trim()) newErrors.name = "Full name is required";
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-            newErrors.email = "Valid email is required";
-        if (formData.password.length < 6)
-            newErrors.password = "Password must be at least 6 characters";
-        if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
-        if (!formData.event_date) newErrors.event_date = "Event date is required";
-        if (!formData.city) newErrors.city = "City is required";
-        if (!formData.country) newErrors.country = "Country is required";
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-        if (errors[name]) {
-            setErrors((prev) => {
-                const newErrors = { ...prev };
-                delete newErrors[name];
-                return newErrors;
-            });
+    if (type === "checkbox") {
+      const newServices = [...formData.services];
+      if (checked) {
+        newServices.push(value);
+      } else {
+        const index = newServices.indexOf(value);
+        if (index > -1) {
+          newServices.splice(index, 1);
         }
-    };
+      }
+      setFormData({ ...formData, services: newServices });
+    } else if (type === "radio") {
+      setFormData({ ...formData, [name]: value });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (validate()) {
-            setIsSubmitting(true);
-            console.log("Form Submitted:", formData);
-            setTimeout(() => {
-                alert("Registration successful!");
-                setIsSubmitting(false);
-            }, 1500);
-        }
-    };
+  const handleNext = (e) => {
+    e.preventDefault();
 
-    return (
-        <div className="container py-5" style={{ maxWidth: "1200px" }}>
-            <div className="row g-0 shadow-lg rounded-4 overflow-hidden bg-white">
-                <div
-                    className="col-lg-5 d-none d-lg-block position-relative"
-                    style={{
-                        background:
-                            "linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop') center/cover",
-                        minHeight: "600px",
-                    }}
-                >
-                    <div className="position-absolute bottom-0 start-0 p-5 text-white">
-                        <h2 className="display-5 fw-light mb-3">
-                            Your Perfect Wedding Starts Here
-                        </h2>
-                        <p className="mb-0">
-                            Join thousands of couples who planned their dream wedding with us
-                        </p>
-                    </div>
-                </div>
+    let isValid = true;
 
-                <div className="col-lg-7 p-5">
-                    <div className="text-center mb-5">
-                        <h2 className="fw-bold text-dark mb-2">Wedding Registration</h2>
-                        <p className="text-muted">
-                            Create your account to start planning your special day
-                        </p>
-                    </div>
+    if (step === 1) {
+      if (
+        !formData.businessName ||
+        !formData.businessType ||
+        !formData.description
+      ) {
+        isValid = false;
+      }
+    } else if (step === 2) {
+      if (
+        !formData.firstName ||
+        !formData.lastName ||
+        !formData.email ||
+        !formData.phone
+      ) {
+        isValid = false;
+      }
+    } else if (step === 3) {
+      if (formData.services.length === 0 || !formData.priceRange) {
+        isValid = false;
+      }
+    }
 
-                    <form onSubmit={handleSubmit} noValidate>
-                        <div className="row g-3 mb-4">
-                            <div className="col-md-6">
-                                <div className="form-floating">
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        className={`form-control ${errors.name ? "is-invalid" : ""}`}
-                                        placeholder="Full Name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                    <label>Full Name</label>
-                                    {errors.name && <div className="invalid-feedback">{errors.name}</div>}
-                                </div>
-                            </div>
+    if (isValid) {
+      setStep(step + 1);
+      setValidated(false);
+    } else {
+      setValidated(true);
+    }
+  };
 
-                            <div className="col-md-6">
-                                <div className="form-floating">
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        className={`form-control ${errors.email ? "is-invalid" : ""}`}
-                                        placeholder="Email"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                    <label>Email</label>
-                                    {errors.email && <div className="invalid-feedback">{errors.email}</div>}
-                                </div>
-                            </div>
+  const handlePrev = () => {
+    setStep(step - 1);
+  };
 
-                            <div className="col-md-6">
-                                <div className="form-floating">
-                                    <input
-                                        type="password"
-                                        name="password"
-                                        className={`form-control ${errors.password ? "is-invalid" : ""}`}
-                                        placeholder="Password"
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                    <label>Password</label>
-                                    {errors.password && <div className="invalid-feedback">{errors.password}</div>}
-                                </div>
-                            </div>
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-                            <div className="col-md-6">
-                                <div className="form-floating">
-                                    <input
-                                        type="tel"
-                                        name="phone"
-                                        className={`form-control ${errors.phone ? "is-invalid" : ""}`}
-                                        placeholder="Phone"
-                                        value={formData.phone}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                    <label>Phone</label>
-                                    {errors.phone && <div className="invalid-feedback">{errors.phone}</div>}
-                                </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div className="form-floating">
-                                    <input
-                                        type="text"
-                                        name="event_location"
-                                        className="form-control"
-                                        id="locationInput"
-                                        placeholder="Event Location"
-                                        value={formData.event_location}
-                                        onChange={handleChange}
-                                    />
-                                    <label htmlFor="locationInput">Wedding Venue</label>
-                                </div>
-                            </div>
+    // Final validation
+    if (
+      formData.username &&
+      formData.password &&
+      formData.password === formData.confirmPassword &&
+      formData.acceptTerms
+    ) {
+      // Submit form logic here
+      console.log("Form submitted:", formData);
+      alert("Thank you for signing up! Your vendor account is being reviewed.");
+    } else {
+      setValidated(true);
+    }
+  };
 
-                            {/* Country */}
-                            <div className="col-md-6">
-                                <div className="form-floating">
-                                    <select
-                                        name="country"
-                                        className={`form-select ${errors.country ? "is-invalid" : ""}`}
-                                        value={formData.country}
-                                        onChange={handleChange}
-                                    >
-                                        <option value="">Select country</option>
-                                        {countries.map((c) => (
-                                            <option key={c.code} value={c.name}>
-                                                {c.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <label>Country</label>
-                                    {errors.country && <div className="invalid-feedback">{errors.country}</div>}
-                                </div>
-                            </div>
+  const progressPercentage = (step / 4) * 100;
 
-                            {/* City */}
-                            <div className="col-md-6">
-                                <div className="form-floating">
-                                    <select
-                                        name="city"
-                                        className={`form-select ${errors.city ? "is-invalid" : ""}`}
-                                        value={formData.city}
-                                        onChange={handleChange}
-                                    >
-                                        <option value="">Select city</option>
-                                        {cities.map((city, i) => (
-                                            <option key={i} value={city}>
-                                                {city}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <label>City</label>
-                                    {errors.city && <div className="invalid-feedback">{errors.city}</div>}
-                                </div>
-                            </div>
-
-                            <div className="col-md-6">
-                                <div className="form-floating">
-                                    <input
-                                        type="date"
-                                        name="event_date"
-                                        className={`form-control ${errors.event_date ? "is-invalid" : ""}`}
-                                        value={formData.event_date}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                    <label>Wedding Date</label>
-                                    {errors.event_date && <div className="invalid-feedback">{errors.event_date}</div>}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="d-grid mb-4">
-                            <button
-                                type="submit"
-                                className="btn btn-lg fw-medium py-3"
-                                disabled={isSubmitting}
-                                style={{
-                                    background: "linear-gradient(135deg, #e93b98ff 0%, #fd76bcff 100%)",
-                                }}
-                            >
-                                {isSubmitting && (
-                                    <span className="spinner-border spinner-border-sm me-2"></span>
-                                )}
-                                Create Wedding Account
-                            </button>
-                        </div>
-
-                        <div className="text-center d-flex justify-content-between">
-                            <p className="text-muted">
-                                I have an account?
-                                <Link to="/customer-login" className="fw-semibold px-2">Login</Link>
-                            </p>
-                            <p className="text-muted">
-                                I Am Vendor?
-                                <Link to="/vendor-register" className="fw-semibold px-2">Vendor</Link>
-                            </p>
-                        </div>
-                    </form>
-                </div>
-            </div>
+  return (
+    <div className="vendor-signup-form container-fluid">
+      <div className="card shadow-sm shadow-sm">
+        <div className="card-header p-4">
+          <h2 className="mb-0">Vendor Signup</h2>
+          <p className="mb-0">
+            Create your professional vendor profile in minutes
+          </p>
         </div>
-    );
+
+        <div className="card-body p-4">
+          <div className="mb-4">
+            <ProgressBar
+              now={progressPercentage}
+              variant="primary"
+              className="mb-3"
+              style={{ height: "20px" }}
+              label={`Step ${step} of 4`}
+            />
+            <div className="d-flex justify-content-between">
+              <span className={`step-indicator ${step >= 1 ? "active" : ""}`}>
+                <span className="step-number">1</span> Business Info
+              </span>
+              <span className={`step-indicator ${step >= 2 ? "active" : ""}`}>
+                <span className="step-number">2</span> Contact Info
+              </span>
+              <span className={`step-indicator ${step >= 3 ? "active" : ""}`}>
+                <span className="step-number">3</span> Services
+              </span>
+              <span className={`step-indicator ${step >= 4 ? "active" : ""}`}>
+                <span className="step-number">4</span> Account
+              </span>
+            </div>
+          </div>
+
+          <Form
+            className="custom-form"
+            noValidate
+            validated={validated}
+            onSubmit={step < 4 ? handleNext : handleSubmit}
+          >
+            {step === 1 && (
+              <div className="form-step">
+                <h3 className="mb-4 d-flex align-items-center">
+                  {" "}
+                  Business Information
+                </h3>
+
+                <Row className="mb-3">
+                  <Col md={6}>
+                    <Form.Group controlId="businessName">
+                      <Form.Label>
+                        Business Name <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        required
+                        type="text"
+                        name="businessName"
+                        value={formData.businessName}
+                        onChange={handleChange}
+                        placeholder="Enter your business name"
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        Please enter your business name.
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={6}>
+                    <Form.Group controlId="businessType">
+                      <Form.Label>
+                        Business Type <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Select
+                        required
+                        name="businessType"
+                        value={formData.businessType}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select business type</option>
+                        {businessTypes.map((type, index) => (
+                          <option key={index} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      <Form.Control.Feedback type="invalid">
+                        Please select your business type.
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row className="mb-3">
+                  <Col md={6}>
+                    <Form.Group controlId="yearsInBusiness">
+                      <Form.Label>Years in Business</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="yearsInBusiness"
+                        value={formData.yearsInBusiness}
+                        onChange={handleChange}
+                        min="0"
+                        placeholder="Number of years"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Form.Group className="mb-4" controlId="description">
+                  <Form.Label>
+                    Business Description <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Control
+                    required
+                    as="textarea"
+                    rows={4}
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder="Describe your business, services, and what makes you unique"
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    Please enter a business description.
+                  </Form.Control.Feedback>
+                  <Form.Text muted>
+                    This will be displayed on your public profile. Minimum 100
+                    characters recommended.
+                  </Form.Text>
+                </Form.Group>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="form-step">
+                <h3 className="mb-4 d-flex align-items-center">
+                  <FaUser className="me-2 text-primary" /> Contact Information
+                </h3>
+
+                <Row className="mb-3">
+                  <Col md={6}>
+                    <Form.Group controlId="firstName">
+                      <Form.Label>
+                        First Name <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        required
+                        type="text"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleChange}
+                        placeholder="Enter first name"
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        Please enter your first name.
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={6}>
+                    <Form.Group controlId="lastName">
+                      <Form.Label>
+                        Last Name <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        required
+                        type="text"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleChange}
+                        placeholder="Enter last name"
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        Please enter your last name.
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row className="mb-3">
+                  <Col md={6}>
+                    <Form.Group controlId="email">
+                      <Form.Label>
+                        Email <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        required
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        placeholder="Enter email address"
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        Please enter a valid email address.
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={6}>
+                    <Form.Group controlId="phone">
+                      <Form.Label>
+                        Phone <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        required
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        placeholder="Enter phone number"
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        Please enter your phone number.
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Form.Group className="mb-3" controlId="address">
+                  <Form.Label>Business Address</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    placeholder="Street address"
+                  />
+                </Form.Group>
+
+                <Row className="mb-4">
+                  <Col md={6}>
+                    <Form.Group controlId="city">
+                      <Form.Label>City</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="city"
+                        value={formData.city}
+                        onChange={handleChange}
+                        placeholder="City"
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={3}>
+                    <Form.Group controlId="state">
+                      <Form.Label>State</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="state"
+                        value={formData.state}
+                        onChange={handleChange}
+                        placeholder="State"
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={3}>
+                    <Form.Group controlId="zip">
+                      <Form.Label>ZIP Code</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="zip"
+                        value={formData.zip}
+                        onChange={handleChange}
+                        placeholder="ZIP code"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="form-step">
+                <h3 className="mb-4 d-flex align-items-center">
+                  {" "}
+                  Service Information
+                </h3>
+
+                <Form.Group className="mb-4" controlId="services">
+                  <Form.Label>
+                    Services Offered <span className="text-danger">*</span>
+                  </Form.Label>
+                  <div className="service-checkboxes">
+                    <Row>
+                      {serviceOptions.map((service, index) => (
+                        <Col key={index} md={6} className="mb-2">
+                          <Form.Check
+                            type="checkbox"
+                            id={`service-${index}`}
+                            label={service}
+                            value={service}
+                            checked={formData.services.includes(service)}
+                            onChange={handleChange}
+                          />
+                        </Col>
+                      ))}
+                    </Row>
+                  </div>
+                  {validated && formData.services.length === 0 && (
+                    <div className="text-danger small">
+                      Please select at least one service.
+                    </div>
+                  )}
+                </Form.Group>
+
+                <Row className="mb-4">
+                  <Col md={6}>
+                    <Form.Group controlId="priceRange">
+                      <Form.Label>
+                        Price Range <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Select
+                        required
+                        name="priceRange"
+                        value={formData.priceRange}
+                        onChange={handleChange}
+                      >
+                        <option value="">
+                          Select your typical price range
+                        </option>
+                        {priceRanges.map((range, index) => (
+                          <option key={index} value={range}>
+                            {range}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      <Form.Control.Feedback type="invalid">
+                        Please select your price range.
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={6}>
+                    <Form.Group controlId="website">
+                      <Form.Label>Website</Form.Label>
+                      <Form.Control
+                        type="url"
+                        name="website"
+                        value={formData.website}
+                        onChange={handleChange}
+                        placeholder="https://yourbusiness.com"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </div>
+            )}
+
+            {step === 4 && (
+              <div className="form-step">
+                <h3 className="mb-4 d-flex align-items-center">
+                  Account Setup
+                </h3>
+
+                <Row className="mb-3">
+                  <Col md={6}>
+                    <Form.Group controlId="username">
+                      <Form.Label>
+                        Username <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        required
+                        type="text"
+                        name="username"
+                        value={formData.username}
+                        onChange={handleChange}
+                        placeholder="Choose a username"
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        Please choose a username.
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row className="mb-3">
+                  <Col md={6}>
+                    <Form.Group controlId="password">
+                      <Form.Label>
+                        Password <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        required
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        placeholder="Create a password"
+                      />
+                      <Form.Text muted>
+                        Minimum 8 characters with at least 1 number and 1
+                        special character
+                      </Form.Text>
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={6}>
+                    <Form.Group controlId="confirmPassword">
+                      <Form.Label>
+                        Confirm Password <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        required
+                        type="password"
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        placeholder="Confirm your password"
+                      />
+                      {validated &&
+                        formData.password !== formData.confirmPassword && (
+                          <div className="text-danger small">
+                            Passwords do not match.
+                          </div>
+                        )}
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Form.Group className="mb-4" controlId="acceptTerms">
+                  <Form.Check
+                    required
+                    type="checkbox"
+                    label={
+                      <span>
+                        I agree to the <a href="#">Terms of Service</a> and{" "}
+                        <a href="#">Privacy Policy</a>{" "}
+                        <span className="text-danger">*</span>
+                      </span>
+                    }
+                    name="acceptTerms"
+                    checked={formData.acceptTerms}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        acceptTerms: e.target.checked,
+                      })
+                    }
+                  />
+                  {validated && !formData.acceptTerms && (
+                    <div className="text-danger small">
+                      You must accept the terms to proceed.
+                    </div>
+                  )}
+                </Form.Group>
+
+                <div className="benefits-card bg-light p-4 rounded mb-4">
+                  <h5 className="mb-3">Premium Vendor Benefits</h5>
+                  <ul className="benefits-list">
+                    <li>
+                      <FaCheck className="text-success me-2" /> Featured
+                      placement in search results
+                    </li>
+                    <li>
+                      <FaCheck className="text-success me-2" /> Unlimited photo
+                      uploads
+                    </li>
+                    <li>
+                      <FaCheck className="text-success me-2" /> Detailed
+                      analytics dashboard
+                    </li>
+                    <li>
+                      <FaCheck className="text-success me-2" /> Direct messaging
+                      with clients
+                    </li>
+                    <li>
+                      <FaCheck className="text-success me-2" /> Customizable
+                      profile page
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            <div className="d-flex justify-content-between mt-4">
+              {step > 1 && (
+                <Button variant="outline-primary" onClick={handlePrev}>
+                  Previous
+                </Button>
+              )}
+
+              {step < 4 ? (
+                <Button variant="primary" type="submit">
+                  Next Step <i className="ms-2 fas fa-arrow-right"></i>
+                </Button>
+              ) : (
+                <Button variant="success" type="submit">
+                  Complete Registration <FaCheck className="ms-2" />
+                </Button>
+              )}
+            </div>
+          </Form>
+        </div>
+
+        {/* <div className="card-footer bg-light p-4">
+          <div className="text-center">
+            <p className="mb-2">
+              Already have an account? <a href="#">Sign in</a>
+            </p>
+            <div className="d-flex justify-content-center gap-3">
+              <span>
+                <FaPhone className="me-2 text-primary" /> +91 98765 43210
+              </span>
+              <span>
+                <FaEnvelope className="me-2 text-primary" /> support@vendors.com
+              </span>
+              <span>
+                <FaGlobe className="me-2 text-primary" /> www.vendorsnetwork.com
+              </span>
+            </div>
+          </div>
+        </div> */}
+      </div>
+    </div>
+  );
 };
 
 export default VendorRegister;

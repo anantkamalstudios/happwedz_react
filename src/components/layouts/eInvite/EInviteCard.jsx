@@ -1,5 +1,4 @@
 import React from "react";
-import "./EInviteCard.css";
 
 const EInviteCard = ({ image, title, price, zoom }) => {
   return (

@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
+import { Autoplay } from "swiper/modules";
 import "swiper/css";
-import "swiper/css/navigation";
+
 import EInviteCard from "./EInviteCard";
-import { Container } from "react-bootstrap";
-import "./MainEInvites.css";
 
 const sampleData = [
   {
@@ -40,23 +38,21 @@ const sampleData = [
   },
 ];
 
-const MainEInvites = () => {
+const CardSlider = ({ title, data }) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [viewClicked, setViewClicked] = useState(false);
-
-  const handleViewAllClick = () => {
-    setViewClicked(true);
-    // Scroll or navigate logic can go here
-  };
 
   return (
-    <Container className="einvites-wrapper my-5">
-      <h1 className="section-title">Wedding E‑Invitations</h1>
+    <div className="wrapper-einvites my-5">
+      <h1 className="einvite-title">{title}</h1>
 
       <Swiper
         spaceBetween={30}
-        navigation
-        loop={false}
+        loop={true}
+        autoplay={{
+          delay: 2500, // ⏳ 2.5s delay before next slide
+          disableOnInteraction: false, // keeps autoplay after interaction
+        }}
+        onSwiper={(swiper) => setActiveIndex(swiper.activeIndex)}
         onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
         breakpoints={{
           0: { slidesPerView: 1 },
@@ -64,9 +60,9 @@ const MainEInvites = () => {
           768: { slidesPerView: 3 },
           992: { slidesPerView: 4 },
         }}
-        modules={[Navigation]}
+        modules={[Autoplay]}
       >
-        {sampleData.map((item, idx) => (
+        {data.map((item, idx) => (
           <SwiperSlide key={idx}>
             <EInviteCard {...item} zoom={idx === activeIndex} />
           </SwiperSlide>
@@ -74,14 +70,21 @@ const MainEInvites = () => {
       </Swiper>
 
       <div className="view-all-wrapper">
-        <button
-          className={`view-all-button ${viewClicked ? "clicked" : ""}`}
-          onClick={handleViewAllClick}
-        >
+        <button className="view-all-button detailed-btn-hover-pink">
           View All
         </button>
       </div>
-    </Container>
+    </div>
+  );
+};
+
+const MainEInvites = () => {
+  return (
+    <div className="container">
+      <CardSlider title="Wedding E-Invitations" data={sampleData} />
+      <CardSlider title="Save The Date" data={sampleData} />
+      <CardSlider title="Wedding Videos" data={sampleData} />
+    </div>
   );
 };
 
