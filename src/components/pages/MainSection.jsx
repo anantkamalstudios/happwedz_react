@@ -10,6 +10,7 @@ import FactorsList from "../layouts/Main/FactorsList";
 import FaqsSection from "../layouts/Main/FaqsSection";
 import TopSlider from "../layouts/photography/TopSlider";
 import SortSection from "../layouts/photography/SortSection";
+import MainEInvites from "../layouts/eInvite/MainEInvites";
 
 const MainSection = () => {
   const { section } = useParams();
@@ -76,13 +77,14 @@ const MainSection = () => {
     return (
       <>
         <VenuesSearch title="E Invites" />
-        <MainByRegion />
-        <FindMain />
-        <MainHeroSection loc={"Panjab"} />
+        {/* <MainByRegion /> */}
+        <MainEInvites />
+        {/* <FindMain /> */}
+        {/* <MainHeroSection loc={"Panjab"} />
         <MainHeroSection loc={"Karela "} />
         <MainHeroSection loc={"Goa"} />
         <FactorsList />
-        <FaqsSection />
+        <FaqsSection /> */}
       </>
     );
   }
