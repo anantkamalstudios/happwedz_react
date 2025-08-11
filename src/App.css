@@ -1953,3 +1953,12 @@ body {
   color: white !important;
   border-color: #e83581 !important;
 }
+
+.thumbnail-item.blurred img {
+  filter: blur(3px);
+  transition: filter 0.3s ease;
+}
+
+.thumbnail-item img {
+  transition: filter 0.3s ease;
+}

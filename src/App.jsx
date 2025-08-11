@@ -15,6 +15,7 @@ import Vendors from "./components/pages/Vendors";
 import SubVendors from "./components/pages/SubVendors";
 import MainSection from "./components/pages/MainSection";
 import SubSection from "./components/pages/SubSection";
+import Detailed from "./components/layouts/Detailed";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/:section" element={<MainSection />} />
           <Route path="/:section/:slug" element={<SubSection />} />
+          <Route path="/details/:section/:slug" element={<Detailed />} />
 
           {/* <Route path="/venus" element={<Venus />} />
           <Route path="/venues/:slug" element={<SubVenues />} />

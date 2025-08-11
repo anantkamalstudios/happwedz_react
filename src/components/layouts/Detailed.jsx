@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import { FaLocationDot } from "react-icons/fa6";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -29,6 +29,7 @@ const Detailed = () => {
     "https://cdn0.weddingwire.in/vendor/4255/original/960/jpg/photographer-avshkaar-photography-weddingphotography-2_15_314255-165946397244869.webp"
   );
 
+  const [hoveredIndex, setHoveredIndex] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
 
   const images = [
@@ -54,6 +55,14 @@ const Detailed = () => {
     { icon: <FaParking />, name: "Ample Parking" },
     { icon: <FaGlassCheers />, name: "Bar Services" },
   ];
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "smooth",
+    });
+  }, []);
 
   return (
     <div className="venue-detail-page">
@@ -84,9 +93,9 @@ const Detailed = () => {
                 spaceBetween={10}
                 slidesPerView={4}
                 autoplay={{
-                  delay: 0,
+                  delay: 3000,
                   disableOnInteraction: false,
-                }} // speed of continuous scroll
+                }}
                 loop={true}
                 grabCursor={true}
                 freeMode={true}
@@ -96,8 +105,14 @@ const Detailed = () => {
                     <div
                       className={`thumbnail-item ${
                         mainImage === img ? "active" : ""
+                      } ${
+                        hoveredIndex !== null && hoveredIndex !== idx
+                          ? "blurred"
+                          : ""
                       }`}
                       onClick={() => setMainImage(img)}
+                      onMouseEnter={() => setHoveredIndex(idx)}
+                      onMouseLeave={() => setHoveredIndex(null)}
                     >
                       <img
                         src={img}

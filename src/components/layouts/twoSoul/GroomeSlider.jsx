@@ -10,7 +10,6 @@ const GroomeSlider = () => {
       loop: true,
       speed: 8000,
       spaceBetween: 20,
-      slidesPerView: "auto",
       autoplay: {
         delay: 0,
         disableOnInteraction: false,

@@ -19,6 +19,7 @@ import { BsLightningCharge } from "react-icons/bs";
 import { LuUsers } from "react-icons/lu";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import DynamicAside from "../aside/DynamicAside";
+import { Link } from "react-router-dom";
 // import { subVenuesData } from "../../../data/subVenuesData";
 
 const GridView = ({ subVenuesData, section }) => {
@@ -54,72 +55,77 @@ const GridView = ({ subVenuesData, section }) => {
               lg={4}
               className="mb-4 rounded-4"
             >
-              <Card className="venue-card h-100 rounded-4">
-                <div className="card-image-wrapper">
-                  <Card.Img
-                    variant="top"
-                    src={v.image}
-                    alt={v.name}
-                    className="venue-image"
-                  />
-                  <button
-                    className="btn-glass position-absolute top-0 end-0 m-2 rounded-circle"
-                    onClick={() => toggleFavorite(v.id)}
-                  >
-                    {favorites[v.id] ? (
-                      <FaHeart className="text-danger flip-icon" />
-                    ) : (
-                      <FaRegHeart className="text-white flip-icon" />
-                    )}
-                  </button>
-
-                  <div className="price-tag">
-                    <FaIndianRupeeSign /> {v.price}
-                  </div>
-                </div>
-                <Card.Body className="d-flex flex-column">
-                  <Card.Title as="h5" className="venue-name">
-                    {v.name}
-                  </Card.Title>
-                  <div className="text-muted small venue-location">
-                    {v.location}
-                  </div>
-
-                  <div className="d-flex align-items-center my-2">
-                    <div className="rating-badge">
-                      <FaStar className="text-warning me-1" />
-                      <span>{v.rating}</span>
-                      <span className="text-muted ms-1">({v.reviews})</span>
-                    </div>
-                    <div className="ms-3 capacity-badge">
-                      <span className="text-muted">
-                        <LuUsers className="text-dark me-1" />
-                      </span>{" "}
-                      {v.capacity}
-                    </div>
-                  </div>
-
-                  <div className="mt-auto">
-                    <button className="w-100 details-btn">
-                      Request Pricing
+              <Link
+                to={`/details/info/${v.slug}`}
+                className="text-decoration-none"
+              >
+                <Card className="venue-card h-100 rounded-4">
+                  <div className="card-image-wrapper">
+                    <Card.Img
+                      variant="top"
+                      src={v.image}
+                      alt={v.name}
+                      className="venue-image"
+                    />
+                    <button
+                      className="btn-glass position-absolute top-0 end-0 m-2 rounded-circle"
+                      onClick={() => toggleFavorite(v.id)}
+                    >
+                      {favorites[v.id] ? (
+                        <FaHeart className="text-danger flip-icon" />
+                      ) : (
+                        <FaRegHeart className="text-white flip-icon" />
+                      )}
                     </button>
-                  </div>
 
-                  <div
-                    className="text-muted small venue-location d-flex justify-content-center mt-2"
-                    style={{ minHeight: "20px" }}
-                  >
-                    {v.call ? (
-                      <div className="d-flex align-items-center">
-                        <BsLightningCharge color="orange" className="me-1" />{" "}
-                        {v.call}
-                      </div>
-                    ) : (
-                      <span>&nbsp;</span>
-                    )}
+                    <div className="price-tag">
+                      <FaIndianRupeeSign /> {v.price}
+                    </div>
                   </div>
-                </Card.Body>
-              </Card>
+                  <Card.Body className="d-flex flex-column">
+                    <Card.Title as="h5" className="venue-name">
+                      {v.name}
+                    </Card.Title>
+                    <div className="text-muted small venue-location">
+                      {v.location}
+                    </div>
+
+                    <div className="d-flex align-items-center my-2">
+                      <div className="rating-badge">
+                        <FaStar className="text-warning me-1" />
+                        <span>{v.rating}</span>
+                        <span className="text-muted ms-1">({v.reviews})</span>
+                      </div>
+                      <div className="ms-3 capacity-badge">
+                        <span className="text-muted">
+                          <LuUsers className="text-dark me-1" />
+                        </span>{" "}
+                        {v.capacity}
+                      </div>
+                    </div>
+
+                    <div className="mt-auto">
+                      <button className="w-100 details-btn">
+                        Request Pricing
+                      </button>
+                    </div>
+
+                    <div
+                      className="text-muted small venue-location d-flex justify-content-center mt-2"
+                      style={{ minHeight: "20px" }}
+                    >
+                      {v.call ? (
+                        <div className="d-flex align-items-center">
+                          <BsLightningCharge color="orange" className="me-1" />{" "}
+                          {v.call}
+                        </div>
+                      ) : (
+                        <span>&nbsp;</span>
+                      )}
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Link>
             </Col>
           ))}
         </Row>

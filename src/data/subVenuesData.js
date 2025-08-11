@@ -1,6 +1,7 @@
 export const subVenuesData = [
   {
     id: 1,
+    slug: "wedding-venue-1",
     name: "Royal Banquet Hall",
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
@@ -15,6 +16,7 @@ export const subVenuesData = [
   },
   {
     id: 2,
+    slug: "wedding-venue-2",
     name: "Grand Sapphire Palace",
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
@@ -28,6 +30,7 @@ export const subVenuesData = [
   },
   {
     id: 3,
+    slug: "wedding-venue-3",
     name: "The Majestic Ballroom",
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
@@ -41,6 +44,7 @@ export const subVenuesData = [
   },
   {
     id: 4,
+    slug: "wedding-venue-4",
     name: "Emerald Garden Venue",
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
@@ -55,6 +59,7 @@ export const subVenuesData = [
   },
   {
     id: 5,
+    slug: "wedding-venue-5",
     name: "Oceanview Terrace",
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
@@ -69,6 +74,7 @@ export const subVenuesData = [
   },
   {
     id: 6,
+    slug: "wedding-venue-6",
     name: "Crystal Palace",
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
@@ -82,6 +88,7 @@ export const subVenuesData = [
   },
   {
     id: 7,
+    slug: "wedding-venue-7",
     name: "Sunset Pavilion",
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
@@ -96,6 +103,7 @@ export const subVenuesData = [
   },
   {
     id: 8,
+    slug: "wedding-venue-8",
     name: "The Imperial Courtyard",
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
@@ -109,6 +117,7 @@ export const subVenuesData = [
   },
   {
     id: 9,
+    slug: "wedding-venue-9",
     name: "Lush Green Lawns",
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
@@ -122,6 +131,7 @@ export const subVenuesData = [
   },
   {
     id: 10,
+    slug: "wedding-venue-10",
     name: "Celestial Banquets",
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
@@ -136,6 +146,7 @@ export const subVenuesData = [
   },
   {
     id: 11,
+    slug: "wedding-venue-11",
     name: "Lakeview Celebrations",
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
