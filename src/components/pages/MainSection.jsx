@@ -10,15 +10,12 @@ import FactorsList from "../layouts/Main/FactorsList";
 import FaqsSection from "../layouts/Main/FaqsSection";
 import TopSlider from "../layouts/photography/TopSlider";
 import SortSection from "../layouts/photography/SortSection";
-<<<<<<< HEAD
 import MainEInvites from "../layouts/eInvite/MainEInvites";
-=======
 import GridImages from "../layouts/photography/GridImages";
 import GroomeSlider from "../layouts/twoSoul/GroomeSlider";
 import BrideSlider from "../layouts/twoSoul/BrideSlider";
 import MainPhotages from "../layouts/twoSoul/MainPhotages";
 import Detailed from "../layouts/Detailed";
->>>>>>> df70229cb0cafe20efc32154d5b058efd9a5edc5
 
 const MainSection = () => {
   const { section } = useParams();
@@ -99,8 +96,9 @@ const MainSection = () => {
         {/* <MainHeroSection loc={"Panjab"} />
         <MainHeroSection loc={"Karela "} />
         <MainHeroSection loc={"Goa"} />
+        */}
         <FactorsList />
-        <FaqsSection /> */}
+        <FaqsSection />
       </>
     );
   }
@@ -134,20 +132,20 @@ const MainSection = () => {
     );
   }
 
-  if (section === "matrimonial") {
-    return (
-      <>
-        <VenuesSearch title="Matrimonial" />
-        <MainByRegion />
-        <FindMain />
-        <MainHeroSection loc={"Panjab"} />
-        <MainHeroSection loc={"Karela "} />
-        <MainHeroSection loc={"Goa"} />
-        <FactorsList />
-        <FaqsSection />
-      </>
-    );
-  }
+  // if (section === "matrimonial") {
+  //   return (
+  //     <>
+  //       <VenuesSearch title="Matrimonial" />
+  //       <MainByRegion />
+  //       <FindMain />
+  //       <MainHeroSection loc={"Panjab"} />
+  //       <MainHeroSection loc={"Karela "} />
+  //       <MainHeroSection loc={"Goa"} />
+  //       <FactorsList />
+  //       <FaqsSection />
+  //     </>
+  //   );
+  // }
 
   if (section === "genie") {
     return (
