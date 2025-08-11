@@ -16,6 +16,10 @@ import GroomeSlider from "../layouts/twoSoul/GroomeSlider";
 import BrideSlider from "../layouts/twoSoul/BrideSlider";
 import MainPhotages from "../layouts/twoSoul/MainPhotages";
 import Detailed from "../layouts/Detailed";
+import Dashboard from "./adminVendor/Dashboard";
+import Requests from "./adminVendor/Requests";
+import Reviews from "./adminVendor/Reviews";
+import Settings from "./adminVendor/Settings";
 
 const MainSection = () => {
   const { section } = useParams();
@@ -150,8 +154,12 @@ const MainSection = () => {
   if (section === "genie") {
     return (
       <>
-        <VenuesSearch title="Genie" />
-        <Detailed />
+        {/* <VenuesSearch title="Genie" />
+        <Detailed /> */}
+        <Dashboard />
+        <Requests />
+        <Reviews />
+        <Settings />
       </>
     );
   }
