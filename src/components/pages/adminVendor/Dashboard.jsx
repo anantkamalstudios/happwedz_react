@@ -7,11 +7,6 @@ import {
   FiMessageSquare,
   FiUserPlus,
 } from "react-icons/fi";
-import DashboardChart from "../../components/admin/DashboardChart";
-import BookingTable from "../../components/admin/BookingTable";
-import RequestTable from "../../components/admin/RequestTable";
-import ReviewList from "../../components/admin/ReviewList";
-import NotificationList from "../../components/admin/NotificationList";
 
 const Dashboard = () => {
   // Widget data
@@ -94,9 +89,7 @@ const Dashboard = () => {
             <Card.Header>
               <Card.Title>Performance Analytics</Card.Title>
             </Card.Header>
-            <Card.Body>
-              <DashboardChart />
-            </Card.Body>
+            <Card.Body>{/* <DashboardChart /> */}</Card.Body>
           </Card>
 
           {/* Bookings Table */}
@@ -107,9 +100,7 @@ const Dashboard = () => {
                 View All
               </a>
             </Card.Header>
-            <Card.Body className="p-0">
-              <BookingTable />
-            </Card.Body>
+            <Card.Body className="p-0">{/* <BookingTable /> */}</Card.Body>
           </Card>
         </Col>
 
@@ -122,9 +113,7 @@ const Dashboard = () => {
                 Manage
               </a>
             </Card.Header>
-            <Card.Body className="p-0">
-              <RequestTable />
-            </Card.Body>
+            <Card.Body className="p-0">{/* <RequestTable /> */}</Card.Body>
           </Card>
 
           {/* Reviews Card */}
@@ -135,9 +124,7 @@ const Dashboard = () => {
                 View All
               </a>
             </Card.Header>
-            <Card.Body className="p-0">
-              <ReviewList />
-            </Card.Body>
+            <Card.Body className="p-0">{/* <ReviewList /> */}</Card.Body>
           </Card>
 
           {/* Notifications Card */}
@@ -148,9 +135,7 @@ const Dashboard = () => {
                 View All
               </a>
             </Card.Header>
-            <Card.Body className="p-0">
-              <NotificationList />
-            </Card.Body>
+            <Card.Body className="p-0">{/* <NotificationList /> */}</Card.Body>
           </Card>
         </Col>
       </Row>

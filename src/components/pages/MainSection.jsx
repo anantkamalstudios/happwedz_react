@@ -155,12 +155,6 @@ const MainSection = () => {
       <>
         <VenuesSearch title="Genie" />
         <PricingModal />
-        {/* <VenuesSearch title="Genie" />
-        <Detailed /> */}
-        <Dashboard />
-        <Requests />
-        <Reviews />
-        <Settings />
       </>
     );
   }

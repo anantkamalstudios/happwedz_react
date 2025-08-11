@@ -194,7 +194,7 @@ const Header = () => {
 
             {/* Bottom */}
             <div className="col-12 py-2">
-              <div className="container">
+              <div className="container" style={{ backgroundColor: "#e72e77" }}>
                 <div className="row justify-content-center">
                   <div className="col-lg-12 d-flex flex-column flex-lg-row align-items-center justify-content-between">
                     <div className="mb-3 text-center d-none d-lg-block">

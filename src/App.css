@@ -637,11 +637,10 @@ body {
 }
 
 .pink-gradient-bg {
-  background: linear-gradient(135deg, #e83581, #ff5ca8);
+  background: #b4245d;
   color: #fff;
   padding: 1rem;
   /* Adjust spacing */
-  border-radius: 8px;
   /* Rounded corners if needed */
 }
 
@@ -2160,7 +2159,7 @@ body {
 
 .nav-link.active,
 .nav-link:hover {
-  background: #f8f9fa;
+  /* background: #f8f9fa; */
   border-radius: 4px;
 }
 
