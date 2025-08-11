@@ -16,6 +16,8 @@ const Main = () => {
         return <HomeAdmin />;
       case "vendor-store-front":
         return <Storefront />;
+      case "vendor-reviews":
+        return <ReviewsPage />;
       default:
         return <HomeAdmin />;
     }

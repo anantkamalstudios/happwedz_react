@@ -2802,7 +2802,7 @@ body {
     font-size: 0.85rem;
   }
 }
-/* src/App.css */
+
 .leads-dashboard-page {
   padding: 20px;
 }
@@ -2933,30 +2933,6 @@ body {
     display: none;
   }
 }
-/* src/App.css */
-:root {
-  --primary: #8e44ad;
-  --primary-light: #f0e6f5;
-  --secondary: #e67e22;
-  --light: #f8f9fa;
-  --dark: #343a40;
-  --gray: #6c757d;
-  --light-gray: #e9ecef;
-  --border: #dee2e6;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: "Poppins", sans-serif;
-  background-color: #f5f7fa;
-  color: var(--dark);
-  line-height: 1.6;
-}
 
 .vendor-dashboard {
   display: flex;
@@ -2965,7 +2941,7 @@ body {
 }
 
 /* Top Navigation */
-.top-navbar {
+/* .top-navbar {
   position: sticky;
   top: 0;
   z-index: 1030;
@@ -2975,17 +2951,17 @@ body {
 .logo {
   font-size: 1.5rem;
   font-weight: 700;
-}
+} */
 
 /* Secondary Navigation */
-.secondary-navbar {
+/* .secondary-navbar {
   position: sticky;
   top: 70px;
   z-index: 1020;
   padding: 0;
-}
+} */
 
-.nav-link-main {
+/* .nav-link-main {
   display: flex;
   align-items: center;
   padding: 15px 20px;
@@ -2994,14 +2970,14 @@ body {
   transition: all 0.3s ease;
   text-decoration: none;
   position: relative;
-}
+} */
 
-.nav-link-main:hover,
+/* .nav-link-main:hover,
 .nav-link-main.active {
   color: var(--primary);
   background-color: var(--primary-light);
-}
-
+} */
+/* 
 .nav-link-main.active::after {
   content: "";
   position: absolute;
@@ -3014,7 +2990,7 @@ body {
 
 .nav-icon {
   margin-right: 10px;
-}
+} */
 
 .user-info {
   padding: 10px 15px;
@@ -3053,7 +3029,7 @@ body {
   display: flex;
 }
 
-.nav-link-sub {
+/* .nav-link-sub {
   display: flex;
   align-items: center;
   padding: 10px 15px;
@@ -3069,13 +3045,13 @@ body {
 .nav-link-sub.active {
   color: var(--primary);
   background-color: var(--primary-light);
-}
+} */
 
 /* Main Content */
-.main-content {
+/* .main-content {
   padding: 30px;
   flex: 1;
-}
+} */
 
 @media (max-width: 992px) {
   .main-content {
@@ -3185,7 +3161,7 @@ body {
     margin-bottom: 15px;
   }
 }
-/* src/pages/adminvendor/ReviewsPage.css */
+
 .reviews-page {
   display: flex;
   min-height: 100vh;
@@ -3203,7 +3179,7 @@ body {
   flex-direction: column;
 }
 
-.nav-item {
+/* .nav-item {
   padding: 15px 25px;
   display: flex;
   align-items: center;
@@ -3212,12 +3188,12 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
   border-left: 4px solid transparent;
-}
+} */
 
-.nav-item:hover {
+/* .nav-item:hover {
   background-color: rgba(255, 255, 255, 0.1);
-}
-
+} */
+/* 
 .nav-item.active {
   background-color: rgba(214, 121, 175, 0.15);
   border-left: 4px solid #3498db;
@@ -3227,7 +3203,7 @@ body {
 .nav-item.zoom-text.active {
   transform: scale(1.05);
   font-weight: bold;
-}
+} */
 
 .business-info {
   margin-top: auto;
