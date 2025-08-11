@@ -13,12 +13,8 @@ import VendorRegister from "./components/auth/VendorRegister";
 import NotFound from "./components/pages/NotFound";
 import MainSection from "./components/pages/MainSection";
 import SubSection from "./components/pages/SubSection";
-// Admin panel pages (corrected path)
-import Dashboard from "./components/pages/adminVendor/Dashboard";
-import Requests from "./components/pages/adminVendor/Requests";
-import Reviews from "./components/pages/adminVendor/Reviews";
-// import Notifications from "./components/pages/adminVendor/Notifications";
-import Settings from "./components/pages/adminVendor/Settings";
+import HomeAdmin from "./components/pages/adminVendor/homeadmin";
+import Main from "./components/pages/adminVendor/Main";
 
 function App() {
   return (
@@ -34,14 +30,9 @@ function App() {
           <Route path="/customer-login" element={<CustomerLogin />} />
           <Route path="/vendor-login" element={<VendorLogin />} />
           <Route path="/vendor-register" element={<VendorRegister />} />
-
-          {/* Admin panel routes */}
-          <Route path="/admin" element={<Dashboard />}>
-            <Route path="requests" element={<Requests />} />
-            <Route path="reviews" element={<Reviews />} />
-            {/* <Route path="notifications" element={<Notifications />} /> */}
-            <Route path="settings" element={<Settings />} />
-          </Route>
+          <Route path="/vendor-register" element={<HomeAdmin />} />
+          {/* Vendor */}
+          <Route path="/vendor-dashboard" element={<Main />} />
 
           {/* 404 */}
           <Route path="*" element={<NotFound />} />
