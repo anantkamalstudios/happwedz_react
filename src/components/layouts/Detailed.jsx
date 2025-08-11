@@ -250,12 +250,51 @@ const Detailed = () => {
                 </div>
 
                 <div className="action-buttons">
-                  <Button
+                  <div class="margin-b-50 d-flex h-center cursor-pointer">
+                    <div style={{ width: "500px" }}>
+                      <a
+                        class="btn btn-bordered tangerine btn-tangerine w-100"
+                        href="/wedding-invitations/wedding-card-designs"
+                      >
+                        View all
+                        <span class="margin-l-5">
+                          <span class="isvg loaded">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="7.05"
+                              height="12"
+                              viewBox="0 0 7.05 12"
+                            >
+                              <g
+                                id="prefix__next___m8sqL9yk"
+                                transform="translate(-101.478)"
+                              >
+                                <g
+                                  id="prefix__Group_1560___m8sqL9yk"
+                                  data-name="Group 1560"
+                                  transform="translate(101.478)"
+                                >
+                                  <path
+                                    id="prefix__Path_1253___m8sqL9yk"
+                                    fill="#fe8e00"
+                                    d="M108.336 5.532L103 .192a.658.658 0 0 0-.928 0l-.393.393a.657.657 0 0 0 0 .928L106.159 6l-4.489 4.489a.658.658 0 0 0 0 .928l.393.393a.658.658 0 0 0 .928 0l5.345-5.345a.662.662 0 0 0 0-.932z"
+                                    data-name="Path 1253"
+                                    transform="translate(-101.478)"
+                                  ></path>
+                                </g>
+                              </g>
+                            </svg>
+                          </span>
+                        </span>
+                      </a>
+                    </div>
+                  </div>
+                  {/* <Button
                     variant="outline-light"
                     className="w-100 mb-3 border text-black detailed-btn-hover-pink"
                   >
                     Request Pricing & Availability
-                  </Button>
+                  </Button> */}
                   {/* <Button variant="outline-primary" className="w-100">
                     Schedule a Tour
                   </Button> */}

@@ -1,6 +1,6 @@
 import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
+import { Autoplay, Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import regions from "../../../data/regions";
@@ -10,10 +10,15 @@ const MainByRegion = () => {
       <h3 className="fw-bold mb-4">Venues by region</h3>
 
       <Swiper
-        modules={[Navigation]}
+        modules={[Navigation, Autoplay]}
         spaceBetween={8}
         slidesPerView={6.2}
         navigation
+        autoplay={{
+          delay: 3000,
+          disableOnInteraction: false,
+        }}
+        loop={true}
         breakpoints={{
           320: { slidesPerView: 2.5, spaceBetween: 6 },
           576: { slidesPerView: 3.5, spaceBetween: 6 },

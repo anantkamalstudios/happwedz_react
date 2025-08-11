@@ -225,7 +225,7 @@ body {
 }
 
 .mega-dropdown-wrapper .dropdown-menu {
-  top: 100%;
+  top: 80%;
   left: 0;
   border-radius: 1rem;
   background-color: #fff;
@@ -392,6 +392,7 @@ body {
 }
 
 .floral-svg {
+  display: none;
   width: 250px;
   height: 250px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='blob:https://web.whatsapp.com/a7a05615-5375-4735-8954-cdd6b49635fe' viewBox='0 0 200 200'%3E%3Cpath fill='%23e9b0ce' fill-opacity='0.1' d='M44.3,-48.8C55.4,-40.7,61.2,-22.7,61.4,-4.5C61.5,13.7,56,32.1,45.9,41.1C35.8,50.1,21.1,49.7,3.4,53.9C-14.3,58.1,-28.6,67,-39.1,62.3C-49.5,57.5,-56.1,39.2,-61.3,19.8C-66.4,0.4,-70.1,-20.1,-63.8,-36.1C-57.4,-52.1,-41.1,-63.6,-23.8,-69.2C-6.6,-74.8,11.7,-74.6,27.5,-68.1C43.4,-61.7,56.8,-49.1,61.8,-34.3C66.8,-19.4,63.4,-2.4,59.6,12.1C55.8,26.6,51.6,38.8,43.3,47.2C35,55.6,22.6,60.3,8.2,65.6C-6.2,70.9,-20.6,76.9,-31.3,73.1C-42.1,69.3,-49.3,55.7,-55.4,41.6C-61.5,27.4,-66.6,12.7,-67.2,-2.3C-67.8,-17.4,-63.9,-34.8,-55.1,-45.5C-46.2,-56.2,-32.4,-60.1,-17.2,-65.8C-1.9,-71.4,14.7,-78.7,26.5,-75.5C38.3,-72.4,45.3,-58.7,51.5,-44.6C57.7,-30.5,63.1,-15.9,64.1,-0.8C65.1,14.2,61.7,28.9,54.1,39.8C46.5,50.6,34.7,57.6,21.7,63.7C8.7,69.9,-5.5,75.2,-19.1,74.4C-32.7,73.5,-45.7,66.5,-53.3,55.1C-60.9,43.7,-63.1,27.8,-64.9,11.6C-66.6,-4.6,-67.9,-21.1,-62.6,-34.5C-57.4,-47.9,-45.6,-58.1,-32.6,-65.1C-19.7,-72.1,-5.5,-75.9,8.3,-73.9C22.1,-71.8,36.1,-63.9,44.3,-48.8Z' transform='translate(100 100)'/%3E%3C/svg%3E");
@@ -539,6 +540,7 @@ body {
 
 .swiper-button-prev:after,
 .swiper-button-next:after {
+  display: none;
   font-size: 20px;
   font-weight: bold;
 }
@@ -1449,6 +1451,7 @@ body {
 /* End */
 .category-swiper .swiper-button-next,
 .category-swiper .swiper-button-prev {
+  display: none;
   width: 24px;
   height: 24px;
   background-color: #e83581;
@@ -1460,15 +1463,18 @@ body {
 
 .category-swiper .swiper-button-next::after,
 .category-swiper .swiper-button-prev::after {
+  display: none;
   font-size: 12px;
   font-weight: bold;
 }
 
 .category-swiper .swiper-button-next {
+  display: none;
   right: 0px;
 }
 
 .category-swiper .swiper-button-prev {
+  display: none;
   left: 0px;
 }
 
@@ -1961,4 +1967,177 @@ body {
 
 .thumbnail-item img {
   transition: filter 0.3s ease;
+}
+
+.btn-bordered.tangerine {
+  border-color: #fe8e00;
+  color: #fe8e00;
+}
+
+/* Pricing Model */
+.pricing-model .modal-content {
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border: none;
+}
+
+.pricing-model .modal-header {
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  color: white;
+  padding: 20px 25px;
+  border-bottom: none;
+}
+
+.pricing-model .modal-title {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.pricing-model .modal-body {
+  padding: 30px;
+}
+
+.pricing-model .form-label {
+  font-weight: 500;
+  color: #4a5568;
+  margin-bottom: 8px;
+}
+
+.pricing-model .form-control,
+.pricing-model .form-select {
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 15px;
+  transition: all 0.3s;
+}
+
+.pricing-model .form-control:focus,
+.pricing-model .form-select:focus {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+}
+
+.pricing-model .form-control::placeholder {
+  color: #a0aec0;
+}
+
+.pricing-model textarea.form-control {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.pricing-model .btn-send {
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  border: none;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.pricing-model .btn-send:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(37, 117, 252, 0.4);
+}
+
+.pricing-model .input-group-text {
+  background-color: #f8f9fa;
+  border: 2px solid #e2e8f0;
+  border-right: none;
+  color: #4a5568;
+}
+
+.pricing-model .form-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a0aec0;
+  font-size: 18px;
+}
+
+.pricing-model .form-group {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.pricing-model .modal-footer {
+  background-color: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  padding: 15px 25px;
+  justify-content: center;
+}
+
+.pricing-model .modal-footer p {
+  margin: 0;
+  font-size: 14px;
+  color: #718096;
+}
+
+.pricing-model .contact-info {
+  display: flex;
+  gap: 15px;
+  margin-top: 5px;
+  justify-content: center;
+}
+
+.pricing-model .contact-info a {
+  color: #4a5568;
+  transition: color 0.3s;
+}
+
+.pricing-model .contact-info a:hover {
+  color: #2575fc;
+}
+
+.pricing-model .required:after {
+  content: " *";
+  color: #e53e3e;
+}
+
+.custom-form .form-control {
+  border-radius: 0 !important;
+  height: 50px;
+  font-size: 1.1rem;
+  padding: 10px 15px;
+}
+
+.custom-form textarea.form-control {
+  height: auto;
+}
+
+.custom-form .form-control:focus {
+  border-color: #e83581;
+  box-shadow: 0 0 0 0.2rem rgba(232, 53, 129, 0.25);
+}
+
+.custom-form .form-control:hover {
+  border-color: #e83581;
+}
+
+.custom-form .btn-primary {
+  background-color: #e83581;
+  border: none;
+}
+
+.custom-form .btn-primary:hover {
+  background-color: #d0246d;
+}
+
+.react-datepicker-wrapper {
+  width: 100% !important;
+}
+
+.react-datepicker__input-container {
+  width: 100% !important;
+}
+
+.custom-calendar {
+  font-size: 14px;
+  width: 100%;
 }

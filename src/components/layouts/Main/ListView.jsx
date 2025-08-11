@@ -7,7 +7,7 @@ import { FaIndianRupeeSign } from "react-icons/fa6";
 import DynamicAside from "../aside/DynamicAside";
 import { Link } from "react-router-dom";
 
-const ListView = ({ subVenuesData, section }) => {
+const ListView = ({ subVenuesData, section, handleShow }) => {
   const [favorites, setFavorites] = useState({});
   const [filter, setFilter] = useState("all");
 
@@ -36,41 +36,41 @@ const ListView = ({ subVenuesData, section }) => {
               key={venue.id}
               className="venue-card mb-4 rounded-4 shadow-lg"
             >
-              <Link
-                to={`/details/info/${venue.slug}`}
-                className="text-decoration-none"
-              >
-                <Row className="g-0">
-                  {/* Image */}
-                  <Col xs={12} md={4} className="position-relative">
-                    <div className="position-relative h-100">
-                      <Card.Img
-                        src={venue.image}
-                        alt={venue.name}
-                        className="img-fluid rounded-start w-100 h-100 object-fit-cover"
-                        style={{ maxHeight: "220px" }}
-                      />
-                      <button
-                        className="btn-glass position-absolute top-0 end-0 m-2 rounded-circle"
-                        onClick={() => toggleFavorite(venue.id)}
-                      >
-                        {favorites[venue.id] ? (
-                          <FaHeart className="text-danger" />
-                        ) : (
-                          <FaRegHeart className="text-white" />
-                        )}
-                      </button>
-                      <div className="price-tag position-absolute bottom-0 start-0 text-white px-2 py-1">
-                        <FaIndianRupeeSign size={12} /> {venue.price}
-                      </div>
+              <Row className="g-0">
+                {/* Image */}
+                <Col xs={12} md={4} className="position-relative">
+                  <div className="position-relative h-100">
+                    <Card.Img
+                      src={venue.image}
+                      alt={venue.name}
+                      className="img-fluid rounded-start w-100 h-100 object-fit-cover"
+                      style={{ maxHeight: "220px" }}
+                    />
+                    <button
+                      className="btn-glass position-absolute top-0 end-0 m-2 rounded-circle"
+                      onClick={() => toggleFavorite(venue.id)}
+                    >
+                      {favorites[venue.id] ? (
+                        <FaHeart className="text-danger" />
+                      ) : (
+                        <FaRegHeart className="text-white" />
+                      )}
+                    </button>
+                    <div className="price-tag position-absolute bottom-0 start-0 text-white px-2 py-1">
+                      <FaIndianRupeeSign size={12} /> {venue.price}
                     </div>
-                  </Col>
+                  </div>
+                </Col>
 
-                  {/* Details */}
-                  <Col
-                    xs={12}
-                    md={8}
-                    className="p-3 d-flex flex-column justify-content-between"
+                {/* Details */}
+                <Col
+                  xs={12}
+                  md={8}
+                  className="p-3 d-flex flex-column justify-content-between"
+                >
+                  <Link
+                    to={`/details/info/${venue.slug}`}
+                    className="text-decoration-none"
                   >
                     <div>
                       <Card.Title as="h5" className="mb-2">
@@ -110,15 +110,15 @@ const ListView = ({ subVenuesData, section }) => {
                         )}
                       </div>
                     </div>
+                  </Link>
 
-                    <div className="mt-2">
-                      <button className="w-100 details-btn">
-                        Request Pricing
-                      </button>
-                    </div>
-                  </Col>
-                </Row>
-              </Link>
+                  <div className="mt-2">
+                    <button className="w-100 details-btn" onClick={handleShow}>
+                      Request Pricing
+                    </button>
+                  </div>
+                </Col>
+              </Row>
             </Card>
           ))}
         </Col>

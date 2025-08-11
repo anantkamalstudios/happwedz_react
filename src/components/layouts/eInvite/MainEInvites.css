@@ -11,7 +11,7 @@
   margin-bottom: 30px;
   text-align: center;
 }
-
+/* 
 .swiper-button-prev,
 .swiper-button-next {
   color: #333;
@@ -26,7 +26,7 @@
 .swiper-button-next:hover {
   color: #ff4081;
   background: #fff0f5;
-}
+} */
 
 .view-all-wrapper {
   text-align: center;
@@ -85,7 +85,7 @@
   background-color: #009688;
 }
 /* Add to MainEInvites.css */
-
+/* 
 .swiper-button-next,
 .swiper-button-prev {
   background-color: rgba(0, 0, 0, 0.4);
@@ -99,4 +99,4 @@
 .swiper-button-next:hover,
 .swiper-button-prev:hover {
   background-color: #ff4081;
-}
+} */
