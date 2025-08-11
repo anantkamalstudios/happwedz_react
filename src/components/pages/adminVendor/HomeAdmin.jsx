@@ -469,7 +469,7 @@ const HomeAdmin = () => {
       </Row>
 
       {/* Leads Table */}
-      <Card>
+      {/* {/* <Card>
         <Card.Body>
           <div className="d-flex justify-content-between align-items-center mb-4">
             <Card.Title className="mb-0">Recent Leads</Card.Title>
@@ -603,7 +603,7 @@ const HomeAdmin = () => {
             </div>
           </div>
         </Card.Body>
-      </Card>
+      </Card> */}
 
       {/* Phone number views */}
       <Card className="mt-4">
