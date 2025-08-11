@@ -1,0 +1,76 @@
+import React, { useState } from "react";
+import { FaQuestion, FaRegBuilding } from "react-icons/fa";
+import {
+  FaMapMarkerAlt,
+  FaQuestionCircle,
+  FaBullhorn,
+  FaCamera,
+  FaVideo,
+  FaCalendarAlt,
+  FaHandshake,
+  FaUsers,
+  FaShareAlt,
+  FaRing,
+} from "react-icons/fa";
+import { Nav } from "react-bootstrap";
+import { CiLocationOn } from "react-icons/ci";
+
+const Storefront = () => {
+  const [active, setActive] = useState("business");
+
+  const menuItems = [
+    { id: "business", label: "Business details", icon: <FaRegBuilding /> },
+    { id: "location", label: "Location and map", icon: <CiLocationOn /> },
+    { id: "faq", label: "FAQ", icon: <FaQuestion /> },
+    { id: "promotions", label: "Promotions", icon: <FaBullhorn /> },
+    { id: "photos", label: "Photos", icon: <FaCamera /> },
+    { id: "videos", label: "Videos", icon: <FaVideo /> },
+    { id: "events", label: "Events", icon: <FaCalendarAlt /> },
+    { id: "vendors", label: "Preferred vendors", icon: <FaHandshake /> },
+    { id: "team", label: "Meet the team", icon: <FaUsers /> },
+    { id: "social", label: "Social networks", icon: <FaShareAlt /> },
+    { id: "button", label: "WeddingWire button", icon: <FaRing /> },
+  ];
+
+  return (
+    <div className="container-fluid py-3">
+      <div className="row">
+        {/* Sidebar */}
+        <div className="col-md-3 border-end">
+          <Nav className="flex-column nav-pills">
+            {menuItems.map((item) => (
+              <Nav.Link
+                key={item.id}
+                onClick={() => setActive(item.id)}
+                active={active === item.id}
+                className={`d-flex align-items-center gap-2 ${
+                  active === item.id
+                    ? "text-white bg-primary"
+                    : "text-secondary"
+                }`}
+                style={{ fontSize: "14px" }}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </Nav.Link>
+            ))}
+          </Nav>
+        </div>
+
+        {/* Main Content */}
+        <div className="col-md-9">
+          <h5 className="mb-3 text-capitalize">
+            {menuItems.find((m) => m.id === active)?.label}
+          </h5>
+          <div className="p-3 border rounded bg-light">
+            <p>
+              Content for <strong>{active}</strong> will go here...
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Storefront;

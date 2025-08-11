@@ -15,12 +15,7 @@ import GridImages from "../layouts/photography/GridImages";
 import GroomeSlider from "../layouts/twoSoul/GroomeSlider";
 import BrideSlider from "../layouts/twoSoul/BrideSlider";
 import MainPhotages from "../layouts/twoSoul/MainPhotages";
-import Detailed from "../layouts/Detailed";
 import PricingModal from "../layouts/PricingModal";
-import Dashboard from "./adminVendor/Dashboard";
-import Requests from "./adminVendor/Requests";
-import Reviews from "./adminVendor/Reviews";
-import Settings from "./adminVendor/Settings";
 
 const MainSection = () => {
   const { section } = useParams();
