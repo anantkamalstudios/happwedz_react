@@ -503,7 +503,7 @@ const Header = () => {
                       </li>
 
                       {/* Real Weddings Dropdown */}
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
                             className="nav-link dropdown-toggle text-white"
@@ -517,8 +517,7 @@ const Header = () => {
 
                           <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
-                              <div className="row mt-5">
-                                {/* By City */}
+                              <div className="row mt-5"> 
                                 <div className="col-6 col-md-3">
                                   <h6 className="fw-semibold text-secondary mb-3">
                                     By City
@@ -544,9 +543,7 @@ const Header = () => {
                                       </li>
                                     ))}
                                   </ul>
-                                </div>
-
-                                {/* By Culture */}
+                                </div> 
                                 <div className="col-6 col-md-3">
                                   <h6 className="fw-semibold text-secondary mb-3">
                                     By Culture
@@ -574,8 +571,7 @@ const Header = () => {
                                     ))}
                                   </ul>
                                 </div>
-
-                                {/* By Theme */}
+                                
                                 <div className="col-6 col-md-3">
                                   <h6 className="fw-semibold text-secondary mb-3">
                                     By Theme
@@ -604,7 +600,7 @@ const Header = () => {
                                   </ul>
                                 </div>
 
-                                {/* Latest Real Weddings with Images */}
+
                                 <div className="col-12 col-md-3">
                                   <h6 className="fw-semibold text-secondary mb-3">
                                     Latest Real Weddings
@@ -655,9 +651,8 @@ const Header = () => {
                             </div>
                           </div>
                         </div>
-                      </li>
+                      </li> */}
 
-                      {/* E-invites Dropdown */}
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
@@ -712,10 +707,17 @@ const Header = () => {
                       {/* photo Dropdown */}
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
-                          <Link
+                          {/* <Link
                             className="nav-link dropdown-toggle text-white"
                             to="/twosoul"
-                            state={{ title: "TwoSoul" }}
+                            state={{ title: "Two Soul" }}
+                            id="photoDropdown"
+                            role="button"
+                          > */}
+                          <Link
+                            className="nav-link dropdown-toggle text-white"
+                            to="#"
+                            state={{ title: "twosoul" }}
                             id="photoDropdown"
                             role="button"
                           >
@@ -798,6 +800,35 @@ const Header = () => {
                         </div>
                       </li>
 
+                      {/* Login Dropdown */}
+                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper">
+                          <Link
+                            className="nav-link text-white"
+                            to="/customer-login"
+                            state={{ title: "Login" }}
+                            id="photoDropdown"
+                            role="button"
+                          >
+                            Login
+                          </Link>
+                        </div>
+                      </li>
+
+                      {/* Login Dropdown */}
+                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper">
+                          <Link
+                            className="nav-link text-white"
+                            to="/customer-register"
+                            state={{ title: "Signup" }}
+                            id="photoDropdown"
+                            role="button"
+                          >
+                            Sign-up
+                          </Link>
+                        </div>
+                      </li>
                       {/* {["Genie"].map((item) => (
                         <li className="nav-item" key={item}>
                           <a className="nav-link text-white" href="#">

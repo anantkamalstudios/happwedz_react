@@ -1,6 +1,7 @@
 import VenuesAsideview from "./VenuesAsideview";
 import VendorAsideview from "./VendorAsideview";
 import PhotoGraphyAsideView from "./PhotoGraphyAsideView";
+import GroomeAsideView from "./GroomeAsideView";
 
 const DynamicAside = ({ section }) => {
   switch (section) {
@@ -10,6 +11,8 @@ const DynamicAside = ({ section }) => {
       return <VendorAsideview />;
     case "photography":
       return <PhotoGraphyAsideView />;
+    case "two-soul":
+      return <GroomeAsideView />;
     default:
       return null;
   }

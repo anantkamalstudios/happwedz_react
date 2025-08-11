@@ -1471,3 +1471,485 @@ body {
 .category-swiper .swiper-button-prev {
   left: 0px;
 }
+
+/* Photogrpahy */
+.category-wrapper {
+  overflow: hidden;
+  display: inline-block;
+  border-radius: 8px;
+}
+
+.category-image {
+  transition: transform 0.3s ease-in-out;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.category-wrapper:hover .category-image {
+  transform: scale(1.2);
+}
+
+.masonry {
+  column-count: 3;
+  column-gap: 1rem;
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+}
+
+/* Card image styling */
+.masonry-item img {
+  border-radius: 8px;
+  width: 100%;
+  display: block;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .masonry {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 576px) {
+  .masonry {
+    column-count: 1;
+  }
+}
+
+/* Details Page */
+.venue-detail-page {
+  font-family: "Poppins", sans-serif;
+  background-color: #fafafa;
+  color: #333;
+}
+
+.venue-hero {
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url("https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?q=80&w=2070&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  padding-top: 80px;
+}
+
+.venue-hero-content {
+  color: white;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.venue-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.venue-subtitle {
+  font-size: 1.3rem;
+  opacity: 0.9;
+  margin-bottom: 1.5rem;
+}
+
+.main-image-container {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  height: 500px;
+}
+
+.main-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.main-image-container:hover .main-image {
+  transform: scale(1.02);
+}
+
+.favorite-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  color: #e83e8c;
+  font-size: 1.2rem;
+  z-index: 10;
+}
+
+.thumbnail-gallery {
+  margin-top: 20px;
+}
+
+.thumbnail-item {
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  height: 120px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.thumbnail-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.thumbnail-item.active {
+  border: 2px solid #e83e8c;
+}
+
+.thumbnail-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.section-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1.5rem;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.section-title::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: #e83e8c;
+  border-radius: 3px;
+}
+
+.description-text {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #555;
+  margin-bottom: 1.2rem;
+}
+
+.venue-details-card {
+  background: white;
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 100px;
+}
+
+.rating-badge {
+  background: rgba(255, 193, 7, 0.15);
+  color: #333;
+  padding: 8px 15px;
+  border-radius: 30px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.rating-value {
+  font-weight: 600;
+  margin: 0 5px;
+}
+
+.reviews {
+  color: #000000;
+  font-size: 0.5rem;
+}
+
+.location {
+  display: flex;
+  align-items: center;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tag {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.tag.resort {
+  background: rgba(232, 62, 140, 0.1);
+  color: #e83e8c;
+}
+
+.tag.destination {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.tag.eco {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.pricing {
+  padding: 15px 0;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  margin: 20px 0;
+}
+
+.price-title {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.price-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #e83e8c;
+}
+
+.price-note {
+  font-size: 0.9rem;
+  color: #888;
+  margin-top: 5px;
+}
+
+.contact-info {
+  margin: 20px 0;
+}
+
+.contact-title {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.action-buttons .btn {
+  border-radius: 10px;
+  padding: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: #e83e8c;
+  border-color: #e83e8c;
+}
+
+.btn-primary:hover {
+  background: #d62a7a;
+  border-color: #d62a7a;
+  transform: translateY(-2px);
+}
+
+.btn-outline-primary {
+  color: #e83e8c;
+  border-color: #e83e8c;
+}
+
+.btn-outline-primary:hover {
+  background: rgba(232, 62, 140, 0.1);
+  color: #e83e8c;
+  border-color: #e83e8c;
+}
+
+.venue-map {
+  border-radius: 12px;
+  overflow: hidden;
+  height: 200px;
+}
+
+.map-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
+    url("https://images.unsplash.com/photo-1573455494060-c5595004fb6c?q=80&w=2071&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.map-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.amenity-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+}
+
+.amenity-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.amenity-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(232, 62, 140, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e83e8c;
+  margin-right: 12px;
+  font-size: 1rem;
+}
+
+.testimonial-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  height: 100%;
+}
+
+.rating {
+  color: #ffd700;
+  margin-bottom: 10px;
+}
+
+.testimonial-text {
+  font-style: italic;
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+.testimonial-author {
+  font-size: 0.9rem;
+  color: #888;
+  font-weight: 500;
+}
+
+.similar-venues {
+  background: linear-gradient(135deg, #fef5f9, #fff9fb);
+  border-top: 1px solid #f0f0f0;
+}
+
+.similar-venue-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.similar-venue-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(232, 62, 140, 0.15);
+}
+
+.similar-venue-card .venue-image {
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+}
+
+.similar-venue-card .venue-info {
+  padding: 20px;
+}
+
+.similar-venue-card h5 {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.similar-venue-card .location {
+  color: #666;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.similar-venue-card .rating {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.similar-venue-card .price {
+  font-weight: 600;
+  color: #e83e8c;
+}
+
+@media (max-width: 992px) {
+  .main-image-container {
+    height: 400px;
+  }
+
+  .venue-hero {
+    height: 300px;
+  }
+
+  .venue-title {
+    font-size: 2.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-image-container {
+    height: 300px;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .venue-details-card {
+    margin-top: 30px;
+    position: static;
+  }
+}
+
+.detailed-btn-hover-pink:hover {
+  background-color: #e83581 !important;
+  color: white !important;
+  border-color: #e83581 !important;
+}

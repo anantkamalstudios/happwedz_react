@@ -54,7 +54,7 @@ const ListView = ({ subVenuesData, section }) => {
                         <FaRegHeart className="text-white" />
                       )}
                     </button>
-                    <div className="price-tag position-absolute bottom-0 start-0 bg-dark text-white px-2 py-1 rounded-top">
+                    <div className="price-tag position-absolute bottom-0 start-0 text-white px-2 py-1">
                       <FaIndianRupeeSign size={12} /> {venue.price}
                     </div>
                   </div>
