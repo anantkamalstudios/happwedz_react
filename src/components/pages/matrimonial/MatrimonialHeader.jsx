@@ -114,8 +114,8 @@ const MatrimonialHeader = () => {
       <nav className="navbar">
         <div className="container">
           <div className="logo">
-            <FiHeart className="heart-icon" />
-            <h1>ShaadiSathi</h1>
+            {/* <FiHeart className="heart-icon" />
+            <h1>ShaadiSathi</h1> */}
           </div>
 
           <div className="nav-menu">

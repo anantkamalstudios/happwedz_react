@@ -115,8 +115,8 @@ const MatrimonialHome = () => {
       <nav className="navbar">
         <div className="container">
           <div className="logo">
-            <FiHeart className="heart-icon" />
-            <h1>ShaadiSathi</h1>
+            {/* <FiHeart className="heart-icon" />
+            <h1>ShaadiSathi</h1> */}
           </div>
 
           <div className="nav-menu">
@@ -288,10 +288,10 @@ const MatrimonialHome = () => {
           </div>
 
           <div className="nav-actions">
-            <div className="search-box">
+            {/* <div className="search-box">
               <FiSearch className="search-icon" />
               <input type="text" placeholder="Search profiles..." />
-            </div>
+            </div> */}
             <button
               className="login-btn"
               onClick={(e) => {

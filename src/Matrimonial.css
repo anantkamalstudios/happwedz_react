@@ -279,8 +279,8 @@
 }
 
 .matrimonial-container .login-btn {
-  background-color: var(--matrimonial-primary);
-  color: var(--matrimonial-white);
+  background: white;
+  color: black;
   border: none;
   padding: 10px 20px;
   border-radius: 4px;
