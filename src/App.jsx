@@ -19,6 +19,8 @@ import HomeAdmin from "./components/pages/adminVendor/homeadmin";
 import Main from "./components/pages/adminVendor/Main";
 import MatrimonialHome from "./components/pages/matrimonial/MatrimonialHome";
 import Search from "./components/pages/matrimonial/Search";
+import MatrimonialMain from "./components/pages/matrimonial/MatrimonialMain";
+import ProfileMatrimonial from "./components/pages/matrimonial/ProfileMatrimonial";
 
 function App() {
   return (
@@ -40,8 +42,11 @@ function App() {
 
           {/* Vendor Admin panel routes */}
           {/* <Route path="/vendor-dashboard" element={<Main />} /> */}
-          <Route path="/matrimonial" element={<MatrimonialHome />} />
+          <Route path="/matrimonial" element={<MatrimonialMain />} />
           <Route path="/matrimonial-search" element={<Search />} />
+          <Route path="/ProfileMatrimonial" element={<ProfileMatrimonial />} />
+
+          <Route path="/" element={<Search />} />
           <Route
             path="/vendor-dashboard"
             element={<Navigate to="/vendors/vendor-home" />}

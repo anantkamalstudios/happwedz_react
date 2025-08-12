@@ -1,4 +1,3 @@
-// src/components/pages/matrimonial/home/MatrimonialHome.jsx
 import React, { useState, useEffect } from "react";
 import {
   FiUser,
@@ -13,7 +12,7 @@ import {
 import "../../../Matrimonial.css"; // Keep this import
 import { Link } from "react-router-dom";
 
-const MatrimonialHome = () => {
+const MatrimonialHeader = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
@@ -125,7 +124,7 @@ const MatrimonialHome = () => {
               onMouseEnter={() => handleDropdownHover("matches")}
             >
               <span>
-                <div classname="dropdown"></div>
+                <div className="dropdown"></div>
               </span>
               <span>
                 Matches <FiChevronDown />
@@ -172,18 +171,7 @@ const MatrimonialHome = () => {
                       <h4>Basic Search</h4>
                       <a href="/">By ID</a>
                       <a href="/">By Name</a>
-                      <a href="/">By Education</a>
-                    </div>
-                    <div className="submenu-column">
-                      <h4>Advanced Search</h4>
                       <Link to="/matrimonial-search">Custom Search</Link>
-                      <a href="/">Keyword Search</a>
-                      <a href="/">Horoscope Match</a>
-                    </div>
-                    <div className="submenu-column">
-                      <h4>Saved Searches</h4>
-                      <a href="/">My Saved Searches</a>
-                      <a href="/">Recommended Searches</a>
                     </div>
                   </div>
                 </div>
@@ -288,10 +276,10 @@ const MatrimonialHome = () => {
           </div>
 
           <div className="nav-actions">
-            {/* <div className="search-box">
+            <div className="search-box">
               <FiSearch className="search-icon" />
               <input type="text" placeholder="Search profiles..." />
-            </div> */}
+            </div>
             <button
               className="login-btn"
               onClick={(e) => {
@@ -443,79 +431,8 @@ const MatrimonialHome = () => {
           </div>
         </div>
       </div>
-
-      {/* Membership Plans */}
-      <div className="membership-section">
-        <div className="container">
-          <h2>Choose Your Membership Plan</h2>
-          <p className="subtitle">
-            Find the perfect plan to meet your matchmaking needs
-          </p>
-
-          <div className="plans-container">
-            {plans.map((plan) => (
-              <div
-                key={plan.id}
-                className={`plan-card ${
-                  plan.name === "Gold" ? "recommended" : ""
-                }`}
-              >
-                {plan.name === "Gold" && (
-                  <div className="recommended-badge">Most Popular</div>
-                )}
-                <h3>{plan.name} Plan</h3>
-                <div className="price">
-                  {plan.price} <span>/{plan.duration}</span>
-                </div>
-                <ul className="features">
-                  {plan.features.map((feature, index) => (
-                    <li key={index}>
-                      <FiChevronRight className="feature-icon" size={20} />{" "}
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <button className="select-plan-btn">Select Plan</button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Success Stories */}
-      <div className="success-section">
-        <div className="container">
-          <h2>Successful Matches</h2>
-          <p className="subtitle">
-            Join thousands of happy couples who found their life partners
-          </p>
-
-          <div className="success-stories-container">
-            {successStories.map((story) => (
-              <div key={story.id} className="success-card">
-                <div className={`couple-img ${story.img}`}></div>
-                <h4>{story.name}</h4>
-                <p>Married: {story.date}</p>
-              </div>
-            ))}
-            {successStories.map((story) => (
-              <div key={`${story.id}-clone`} className="success-card">
-                <div className={`couple-img ${story.img}`}></div>
-                <h4>{story.name}</h4>
-                <p>Married: {story.date}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="view-all-stories">
-            <button className="view-stories-btn">
-              View All Success Stories
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
 
-export default MatrimonialHome;
+export default MatrimonialHeader;
