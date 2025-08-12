@@ -829,6 +829,21 @@ const Header = () => {
                           </Link>
                         </div>
                       </li>
+
+                      {/* Vendor Dashboard */}
+                      <li className="nav-Vendor Dashboard mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper">
+                          <Link
+                            className="nav-link text-white"
+                            to="/vendor-dashboard"
+                            state={{ title: "vendor dashboard" }}
+                            id="photoDropdown"
+                            role="button"
+                          >
+                            Dashboard
+                          </Link>
+                        </div>
+                      </li>
                       {/* {["Genie"].map((item) => (
                         <li className="nav-item" key={item}>
                           <a className="nav-link text-white" href="#">

@@ -1,4 +1,3 @@
-// src/pages/adminvendor/ReviewsPage.jsx
 import React, { useState, useEffect } from "react";
 import {
   FaStar,
@@ -10,7 +9,6 @@ import {
   FaPaperPlane,
   FaTrash,
 } from "react-icons/fa";
-// import "./ReviewsPage.css";
 
 const ReviewsPage = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -22,7 +20,6 @@ const ReviewsPage = () => {
   const [businessName, setBusinessName] = useState("Your Business Name");
   const [editingBusinessName, setEditingBusinessName] = useState(false);
 
-  // Mock data - replace with your actual data source
   const reviewsData = [
     {
       id: 1,

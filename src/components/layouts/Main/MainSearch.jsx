@@ -32,7 +32,7 @@ const MainSearch = ({ title }) => {
           <div
             className="search-bar p-3"
             style={{
-              backgroundColor: "#f8f9fa",
+              // backgroundColor: "#f8f9fa",
               borderRadius: "50px",
               boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
             }}
