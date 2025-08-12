@@ -15,7 +15,10 @@ import MainSection from "./components/pages/MainSection";
 import SubSection from "./components/pages/SubSection";
 import Detailed from "./components/layouts/Detailed";
 import HomeAdmin from "./components/pages/adminVendor/homeadmin";
+
 import Main from "./components/pages/adminVendor/Main";
+import MatrimonialHome from "./components/pages/matrimonial/MatrimonialHome";
+import Search from "./components/pages/matrimonial/Search";
 
 function App() {
   return (
@@ -37,6 +40,8 @@ function App() {
 
           {/* Vendor Admin panel routes */}
           {/* <Route path="/vendor-dashboard" element={<Main />} /> */}
+          <Route path="/matrimonial" element={<MatrimonialHome />} />
+          <Route path="/matrimonial-search" element={<Search />} />
           <Route
             path="/vendor-dashboard"
             element={<Navigate to="/vendors/vendor-home" />}

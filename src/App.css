@@ -303,8 +303,8 @@ body {
   padding: 15px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
-  width: 100px;
-  height: 100px;
+  width: 30px;
+  height: 30px;
   display: flex;
   flex-direction: column;
   justify-content: center;

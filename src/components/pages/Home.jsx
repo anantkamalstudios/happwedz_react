@@ -13,7 +13,7 @@ const Home = () => {
     <>
       <Herosection />
       <WeddingCategories />
-      {/* <HomePage /> */}
+
       <VenueSlider />
       <RealWeddings />
       <PlanningToolsCTA />
