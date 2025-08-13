@@ -54,7 +54,6 @@ function App() {
         <Route path="/matrimonial-search" element={<Search />} />
         <Route path="/matrimonial-register" element={<MatrimonialRegister />} />
       </Route>
-      <Route path="/Checklist" element={<Checklist />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
