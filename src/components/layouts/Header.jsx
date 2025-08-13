@@ -177,12 +177,12 @@ const Header = () => {
                       </svg>
                     </a>
 
-                    <a
-                      href="/customer-login"
+                    <Link
+                      to="/user-dashboard"
                       className="text-white text-decoration-none"
                     >
-                      Login
-                    </a>
+                      User Dashboard
+                    </Link>
                     <a href="#" className="text-white text-decoration-none">
                       SignUp
                     </a>
