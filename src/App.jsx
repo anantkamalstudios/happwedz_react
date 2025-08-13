@@ -41,7 +41,8 @@ function App() {
           element={<Navigate to="/vendor-dashboard/vendor-home" />}
         />
         <Route path="/vendor-dashboard/:slug" element={<Main />} />
-        <Route path="/user-dashboard" element={<UserDashboardMain />} />
+        <Route path="/user-dashboard/:slug" element={<UserDashboardMain />} />
+        {/* <Route path="/user-dashboard" element={<UserDashboardMain />} /> */}
       </Route>
 
       <Route element={<MatrimonialLayout />}>
