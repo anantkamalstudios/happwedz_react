@@ -22,6 +22,7 @@ import VideoGallery from "./subVendors/VideoGallery";
 import Event from "./subVendors/Event";
 import EndorsementForm from "./subVendors/EndorsementForm";
 import OwnersManager from "./subVendors/OwnersManager";
+import SocialDetails from "./subVendors/SocialDetails";
 
 const Storefront = () => {
   const [active, setActive] = useState("business");
@@ -59,7 +60,7 @@ const Storefront = () => {
       case "team":
         return <OwnersManager />;
       case "social":
-      // return <FAQ />;
+        return <SocialDetails />;
       default:
         return (
           <div className="p-3 border rounded bg-white">

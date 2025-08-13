@@ -40,8 +40,15 @@ export default function OwnersManager() {
 
   return (
     <div className="p-4">
-      <Button variant="primary" onClick={openModal}>
-        Add Members
+      <Button
+        variant="primary"
+        style={{
+          background: "linear-gradient(to right, #ff6a88, #ff99ac)",
+          border: "1px solid white",
+        }}
+        onClick={openModal}
+      >
+        Create New Event
       </Button>
 
       {/* Modal */}

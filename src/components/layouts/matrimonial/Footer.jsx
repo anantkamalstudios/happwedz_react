@@ -1,4 +1,3 @@
-// src/components/pages/matrimonial/Footer.jsx
 import React from "react";
 import "../../../Matrimonial.css";
 const Footer = () => {

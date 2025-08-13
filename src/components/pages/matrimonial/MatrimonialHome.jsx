@@ -1,4 +1,3 @@
-// src/components/pages/matrimonial/home/MatrimonialHome.jsx
 import React, { useState, useEffect } from "react";
 import {
   FiUser,
@@ -10,7 +9,7 @@ import {
   FiChevronDown,
   FiChevronRight,
 } from "react-icons/fi";
-import "../../../Matrimonial.css"; // Keep this import
+import "../../../Matrimonial.css";
 import { Link } from "react-router-dom";
 
 const MatrimonialHome = () => {
@@ -18,29 +17,22 @@ const MatrimonialHome = () => {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
 
-  // Toggle login modal
   const toggleLogin = () => {
     setIsLoginOpen(!isLoginOpen);
   };
 
-  // Handle dropdown hover
   const handleDropdownHover = (menu) => {
     setActiveDropdown(menu);
     setActiveSubmenu(null);
   };
-
-  // Handle submenu hover
   const handleSubmenuHover = (submenu) => {
     setActiveSubmenu(submenu);
   };
-
-  // Handle menu close
   const closeMenus = () => {
     setActiveDropdown(null);
     setActiveSubmenu(null);
   };
 
-  // Sample data for successful matches
   const successStories = [
     { id: 1, name: "Raj & Priya", date: "Mar 2023", img: "couple1" },
     { id: 2, name: "Amit & Neha", date: "Jan 2023", img: "couple2" },

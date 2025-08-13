@@ -14,51 +14,44 @@ import NotFound from "./components/pages/NotFound";
 import MainSection from "./components/pages/MainSection";
 import SubSection from "./components/pages/SubSection";
 import Detailed from "./components/layouts/Detailed";
-import HomeAdmin from "./components/pages/adminVendor/homeadmin";
 
 import Main from "./components/pages/adminVendor/Main";
-import MatrimonialHome from "./components/pages/matrimonial/MatrimonialHome";
 import Search from "./components/pages/matrimonial/Search";
 import MatrimonialMain from "./components/pages/matrimonial/MatrimonialMain";
 import ProfileMatrimonial from "./components/pages/matrimonial/ProfileMatrimonial";
+import MainLayout from "./components/layouts/MainLayout";
+import MatrimonialLayout from "./components/layouts/MatrimonialLayout";
 
 function App() {
   return (
-    <>
-      <Header />
-      <main style={{ minHeight: "70vh" }}>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/:section" element={<MainSection />} />
-          <Route path="/:section/:slug" element={<SubSection />} />
-          <Route path="/details/:section/:slug" element={<Detailed />} />
+    <Routes>
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/:section" element={<MainSection />} />
+        <Route path="/:section/:slug" element={<SubSection />} />
+        <Route path="/details/:section/:slug" element={<Detailed />} />
+        <Route path="/customer-login" element={<CustomerLogin />} />
+        <Route path="/customer-register" element={<CustomerRegister />} />
+        <Route path="/vendor-login" element={<VendorLogin />} />
+        <Route path="/vendor-register" element={<VendorRegister />} />
+        <Route
+          path="/vendor-dashboard"
+          element={<Navigate to="/vendors/vendor-home" />}
+        />
+        <Route path="/vendors/:slug" element={<Main />} />
+      </Route>
 
-          <Route path="/customer-register" element={<CustomerRegister />} />
-          <Route path="/customer-login" element={<CustomerLogin />} />
-          <Route path="/vendor-login" element={<VendorLogin />} />
-          <Route path="/vendor-register" element={<VendorRegister />} />
-          <Route path="/vendor-register" element={<VendorRegister />} />
+      <Route element={<MatrimonialLayout />}>
+        <Route path="/matrimonial" element={<MatrimonialMain />} />
+        <Route
+          path="/ProfileMatrimonial/:matchType"
+          element={<ProfileMatrimonial />}
+        />
+        <Route path="/matrimonial-search" element={<Search />} />
+      </Route>
 
-          {/* Vendor Admin panel routes */}
-          {/* <Route path="/vendor-dashboard" element={<Main />} /> */}
-          <Route path="/matrimonial" element={<MatrimonialMain />} />
-          <Route path="/matrimonial-search" element={<Search />} />
-          <Route path="/ProfileMatrimonial" element={<ProfileMatrimonial />} />
-
-          <Route path="/" element={<Search />} />
-          <Route
-            path="/vendor-dashboard"
-            element={<Navigate to="/vendors/vendor-home" />}
-          />
-          <Route path="/vendors/:slug" element={<Main />} />
-
-          {/* 404 */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
-      <Footer />
-    </>
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
 

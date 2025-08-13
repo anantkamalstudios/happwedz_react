@@ -1,18 +1,15 @@
 import React from "react";
-
-import MatrimonialHome from "./MatrimonialHome";
-import Footer from "./Footer";
-import ProfileMatrimonial from "./ProfileMatrimonial";
-import MatrimonialHeader from "./matrimonialHeader";
+import Navbar from "../../layouts/matrimonial/Navbar";
+import Hero from "./Home/Hero";
+import MembersPlan from "./Home/MembersPlan";
+import HomeSlider from "./Home/HomeSlider";
 
 const MatrimonialMain = () => {
   return (
     <div>
-      {/* {/* <MatrimonialHeader /><MatrimonialHome />  */}
-      {/* <MatrimonialHeader /> */}
-      <MatrimonialHome />
-      {/* <Footer /> */}
-      {/* <ProfileMatrimonial /> */}
+      <Hero />
+      <MembersPlan />
+      <HomeSlider />
     </div>
   );
 };

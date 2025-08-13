@@ -250,15 +250,15 @@ const Detailed = () => {
                 </div>
 
                 <div className="action-buttons">
-                  <div class="margin-b-50 d-flex h-center cursor-pointer">
+                  <div className="margin-b-50 d-flex h-center cursor-pointer">
                     <div style={{ width: "500px" }}>
                       <a
-                        class="btn btn-bordered tangerine btn-tangerine w-100"
+                        className="btn btn-bordered tangerine btn-tangerine w-100"
                         href="/wedding-invitations/wedding-card-designs"
                       >
                         View all
-                        <span class="margin-l-5">
-                          <span class="isvg loaded">
+                        <span className="margin-l-5">
+                          <span className="isvg loaded">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               width="7.05"
