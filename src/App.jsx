@@ -22,6 +22,7 @@ import ProfileMatrimonial from "./components/pages/matrimonial/ProfileMatrimonia
 import MainLayout from "./components/layouts/MainLayout";
 import MatrimonialLayout from "./components/layouts/MatrimonialLayout";
 import MatrimonialRegister from "./components/pages/matrimonial/MatrimonialRegister";
+import Checklist from "./components/pages/userDashboard/checklist/Checklist";
 
 function App() {
   return (
@@ -51,7 +52,7 @@ function App() {
         <Route path="/matrimonial-search" element={<Search />} />
         <Route path="/matrimonial-register" element={<MatrimonialRegister />} />
       </Route>
-
+      <Route path="/Checklist" element={<Checklist />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
