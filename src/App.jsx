@@ -22,6 +22,7 @@ import ProfileMatrimonial from "./components/pages/matrimonial/ProfileMatrimonia
 import MainLayout from "./components/layouts/MainLayout";
 import MatrimonialLayout from "./components/layouts/MatrimonialLayout";
 import MatrimonialRegister from "./components/pages/matrimonial/MatrimonialRegister";
+import UserDashboardMain from "./components/pages/userDashboard/UserDashboardMain";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
           element={<Navigate to="/vendor-dashboard/vendor-home" />}
         />
         <Route path="/vendor-dashboard/:slug" element={<Main />} />
+        <Route path="/user-dashboard" element={<UserDashboardMain />} />
       </Route>
 
       <Route element={<MatrimonialLayout />}>
