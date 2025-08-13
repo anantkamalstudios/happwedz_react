@@ -1,13 +1,14 @@
 // src/components/pages/matrimonial/home/MatrimonialHome.jsx
 import React, { useState, useEffect } from "react";
 import { FiUser, FiLock, FiChevronDown, FiChevronRight } from "react-icons/fi";
+import { Link, useNavigate } from "react-router-dom";
 import "../../../Matrimonial.css";
-import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
+  const navigate = useNavigate();
 
   const toggleLogin = () => {
     setIsLoginOpen(!isLoginOpen);
@@ -17,12 +18,9 @@ const Navbar = () => {
     setActiveDropdown(menu);
     setActiveSubmenu(null);
   };
+
   const handleSubmenuHover = (submenu) => {
     setActiveSubmenu(submenu);
-  };
-  const closeMenus = () => {
-    setActiveDropdown(null);
-    setActiveSubmenu(null);
   };
 
   useEffect(() => {
@@ -51,16 +49,12 @@ const Navbar = () => {
     <div className="matrimonial-container">
       <nav className="navbar">
         <div className="container">
-          <div className="logo">
-            {/* <FiHeart className="heart-icon" />
-            <h1>ShaadiSathi</h1> */}
-          </div>
+          <div className="logo">{/* Logo here if needed */}</div>
 
           <div className="nav-menu">
             <div className="nav-item">
               <Link to="/">HappyWedz</Link>
             </div>
-
             <div className="nav-item">
               <Link to="/matrimonial">Home</Link>
             </div>
@@ -69,9 +63,6 @@ const Navbar = () => {
               className="nav-item"
               onMouseEnter={() => handleDropdownHover("matches")}
             >
-              <span>
-                <div classname="dropdown"></div>
-              </span>
               <span>
                 Matches <FiChevronDown />
               </span>
@@ -116,40 +107,8 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* <div
-              className="nav-item"
-              onMouseEnter={() => handleDropdownHover("search")}
-            >
-              <span>
-                Search <FiChevronDown />
-              </span>
-              {activeDropdown === "search" && (
-                <div className="dropdown">
-                  <div className="dropdown-content">
-                    <div className="submenu-column">
-                      <h4>Basic Search</h4>
-                      <a href="/">By ID</a>
-                      <a href="/">By Name</a>
-                      <a href="/">By Education</a>
-                    </div>
-                    <div className="submenu-column">
-                      <h4>Advanced Search</h4>
-                      <Link to="/matrimonial-search">Custom Search</Link>
-                      <a href="/">Keyword Search</a>
-                      <a href="/">Horoscope Match</a>
-                    </div>
-                    <div className="submenu-column">
-                      <h4>Saved Searches</h4>
-                      <a href="/">My Saved Searches</a>
-                      <a href="/">Recommended Searches</a>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div> */}
-
             <div className="nav-item">
-              <a href="/">Search</a>
+              <Link to="/matrimonial-search">Search</Link>
             </div>
 
             <div
@@ -217,7 +176,6 @@ const Navbar = () => {
                         </div>
                       )}
                     </div>
-
                     <div className="submenu-column">
                       <h4>Regional</h4>
                       <a href="/">North Indian</a>
@@ -225,7 +183,6 @@ const Navbar = () => {
                       <a href="/">Bengali</a>
                       <a href="/">Marathi</a>
                     </div>
-
                     <div className="submenu-column">
                       <h4>NRI</h4>
                       <a href="/">USA Matches</a>
@@ -241,21 +198,15 @@ const Navbar = () => {
             <div className="nav-item">
               <a href="/">Horoscope</a>
             </div>
-
             <div className="nav-item">
               <a href="/">Blog</a>
             </div>
-
             <div className="nav-item">
               <a href="/">Success Stories</a>
             </div>
           </div>
 
           <div className="nav-actions">
-            {/* <div className="search-box">
-              <FiSearch className="search-icon" />
-              <input type="text" placeholder="Search profiles..." />
-            </div> */}
             <button
               className="login-btn"
               onClick={(e) => {
@@ -268,6 +219,51 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
+
+      {/* Login Modal */}
+      {isLoginOpen && (
+        <div className="login-modal" onClick={toggleLogin}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Login to Your Account</h2>
+              <button className="close-btn" onClick={toggleLogin}>
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <FiUser className="input-icon" />
+                <input type="text" placeholder="Email or Mobile" />
+              </div>
+              <div className="form-group">
+                <FiLock className="input-icon" />
+                <input type="password" placeholder="Password" />
+              </div>
+              <div className="remember-forgot">
+                <label>
+                  <input type="checkbox" /> Remember me
+                </label>
+                <a href="/">Forgot Password?</a>
+              </div>
+              <button className="login-button">Login</button>
+              <div className="divider">or</div>
+              <button
+                className="signup-button"
+                onClick={() => navigate("/matrimonial-register")}
+              >
+                Create New Account
+              </button>
+            </div>
+            <div className="modal-footer">
+              <p>
+                By logging in, you agree to our{" "}
+                <a href="/">Terms & Conditions</a> and{" "}
+                <a href="/">Privacy Policy</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -21,6 +21,7 @@ import MatrimonialMain from "./components/pages/matrimonial/MatrimonialMain";
 import ProfileMatrimonial from "./components/pages/matrimonial/ProfileMatrimonial";
 import MainLayout from "./components/layouts/MainLayout";
 import MatrimonialLayout from "./components/layouts/MatrimonialLayout";
+import MatrimonialRegister from "./components/pages/matrimonial/MatrimonialRegister";
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
           element={<ProfileMatrimonial />}
         />
         <Route path="/matrimonial-search" element={<Search />} />
+        <Route path="/matrimonial-register" element={<MatrimonialRegister />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />
