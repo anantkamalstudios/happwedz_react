@@ -11,11 +11,13 @@ import {
 } from "react-icons/fi";
 import "../../../Matrimonial.css";
 import { Link } from "react-router-dom";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const MatrimonialHeader = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Toggle login modal
   const toggleLogin = () => {
@@ -293,7 +295,6 @@ const MatrimonialHeader = () => {
         </div>
       </nav>
 
-      {/* Login Modal */}
       {isLoginOpen && (
         <div className="login-modal">
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -308,9 +309,18 @@ const MatrimonialHeader = () => {
                 <FiUser className="input-icon" />
                 <input type="text" placeholder="Email or Mobile" />
               </div>
-              <div className="form-group">
+              <div className="form-group password-group">
                 <FiLock className="input-icon" />
-                <input type="password" placeholder="Password" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                />
+                <span
+                  className="toggle-password"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FiEyeOff /> : <FiEye />}
+                </span>
               </div>
               <div className="remember-forgot">
                 <label>
@@ -318,9 +328,9 @@ const MatrimonialHeader = () => {
                 </label>
                 <a href="/">Forgot Password?</a>
               </div>
-              <button className="login-button">Login</button>
-              <div className="divider">or</div>
-              <button className="signup-button">Create New Account</button>
+              {/* <button className="login-button">Login</button>
+                  <div className="divider">or</div>
+                  <button className="signup-button">Create New Account</button> */}
             </div>
             <div className="modal-footer">
               <p>
@@ -332,7 +342,6 @@ const MatrimonialHeader = () => {
           </div>
         </div>
       )}
-
       {/* Hero Section */}
       <div className="hero-section">
         <div className="container">

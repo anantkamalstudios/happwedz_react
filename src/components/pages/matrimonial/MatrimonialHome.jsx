@@ -11,11 +11,13 @@ import {
 } from "react-icons/fi";
 import "../../../Matrimonial.css";
 import { Link } from "react-router-dom";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const MatrimonialHome = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const toggleLogin = () => {
     setIsLoginOpen(!isLoginOpen);
@@ -296,8 +298,6 @@ const MatrimonialHome = () => {
           </div>
         </div>
       </nav>
-
-      {/* Login Modal */}
       {isLoginOpen && (
         <div className="login-modal">
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -312,9 +312,18 @@ const MatrimonialHome = () => {
                 <FiUser className="input-icon" />
                 <input type="text" placeholder="Email or Mobile" />
               </div>
-              <div className="form-group">
+              <div className="form-group password-group">
                 <FiLock className="input-icon" />
-                <input type="password" placeholder="Password" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                />
+                <span
+                  className="toggle-password"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FiEyeOff /> : <FiEye />}
+                </span>
               </div>
               <div className="remember-forgot">
                 <label>
@@ -322,9 +331,9 @@ const MatrimonialHome = () => {
                 </label>
                 <a href="/">Forgot Password?</a>
               </div>
-              <button className="login-button">Login</button>
+              {/* <button className="login-button">Login</button>
               <div className="divider">or</div>
-              <button className="signup-button">Create New Account</button>
+              <button className="signup-button">Create New Account</button> */}
             </div>
             <div className="modal-footer">
               <p>

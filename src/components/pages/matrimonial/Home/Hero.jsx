@@ -59,8 +59,8 @@ const Hero = () => {
                 <a href="/">Forgot Password?</a>
               </div>
               <button className="login-button">Login</button>
-              <div className="divider">or</div>
-              <button className="signup-button">Create New Account</button>
+              {/* <div className="divider">or</div>
+              <button className="signup-button">Create New Account</button> */}
             </div>
             <div className="modal-footer">
               <p>

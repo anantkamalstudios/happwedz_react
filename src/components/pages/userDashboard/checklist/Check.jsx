@@ -177,9 +177,13 @@ const Check = () => {
         {/* Left sidebar */}
         <div className="wc-sidebar col-md-3">
           <div className="wc-card card mb-4">
-            <div className="wc-card-header card-header bg-primary text-white">
+            <div
+              className="wc-card-header card-header text-white"
+              style={{ backgroundColor: "#e24582" }}
+            >
               <h5 className="mb-0">STATUS</h5>
             </div>
+
             <div className="wc-card-body card-body">
               <ul className="wc-list-group list-group">
                 <li
@@ -220,7 +224,10 @@ const Check = () => {
           </div>
 
           <div className="wc-card card mb-4">
-            <div className="wc-card-header card-header bg-primary text-white">
+            <div
+              className="wc-card-header card-header text-white"
+              style={{ backgroundColor: "#e24582" }}
+            >
               <h5 className="mb-0">DATE</h5>
             </div>
             <div className="wc-card-body card-body">
@@ -246,7 +253,10 @@ const Check = () => {
           </div>
 
           <div className="wc-card card">
-            <div className="wc-card-header card-header bg-primary text-white">
+            <div
+              className="wc-card-header card-header text-white"
+              style={{ backgroundColor: "#e24582" }}
+            >
               <h5 className="mb-0">CATEGORY</h5>
             </div>
             <div className="wc-card-body card-body">

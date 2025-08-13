@@ -3,11 +3,13 @@ import React, { useState, useEffect } from "react";
 import { FiUser, FiLock, FiChevronDown, FiChevronRight } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
 import "../../../Matrimonial.css";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const Navbar = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const toggleLogin = () => {
@@ -235,9 +237,18 @@ const Navbar = () => {
                 <FiUser className="input-icon" />
                 <input type="text" placeholder="Email or Mobile" />
               </div>
-              <div className="form-group">
+              <div className="form-group password-group">
                 <FiLock className="input-icon" />
-                <input type="password" placeholder="Password" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                />
+                <span
+                  className="toggle-password"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FiEyeOff /> : <FiEye />}
+                </span>
               </div>
               <div className="remember-forgot">
                 <label>
@@ -246,13 +257,13 @@ const Navbar = () => {
                 <a href="/">Forgot Password?</a>
               </div>
               <button className="login-button">Login</button>
-              <div className="divider">or</div>
-              <button
+              {/* <div className="divider">or</div> */}
+              {/* <button
                 className="signup-button"
                 onClick={() => navigate("/matrimonial-register")}
               >
                 Create New Account
-              </button>
+              </button> */}
             </div>
             <div className="modal-footer">
               <p>
