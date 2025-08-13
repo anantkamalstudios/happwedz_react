@@ -2,10 +2,10 @@ import React from "react";
 import UserDashboardNavbar from "../../layouts/UserDashboardNavbar";
 import { useParams } from "react-router-dom";
 import MyWedding from "./myWedding/MyWedding";
-import CheckList from "./checklist/CheckList";
 import Vendors from "./vendors/Vendors";
 import Guest from "./guestList/Guest";
 import Budget from "./budget/Budget";
+import Checklist from "./checklist/Checklist";
 
 const UserDashboardMain = () => {
   const { slug } = useParams();
@@ -15,7 +15,7 @@ const UserDashboardMain = () => {
       case "my-wedding":
         return <MyWedding />;
       case "checklist":
-        return <CheckList />;
+        return <Checklist />;
       case "vendor":
         return <Vendors />;
       case "guest-list":
@@ -36,3 +36,4 @@ const UserDashboardMain = () => {
 };
 
 export default UserDashboardMain;
+S;
