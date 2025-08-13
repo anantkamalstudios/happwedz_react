@@ -3,7 +3,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { FaCheck, FaPlus, FaDownload, FaPrint, FaTrash } from "react-icons/fa";
 
 const Check = () => {
-  // Sample initial tasks
   const initialTasks = [
     {
       id: 1,
@@ -76,7 +75,6 @@ const Check = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
 
-  // Categories and periods for filtering
   const categories = [
     "All",
     "Essential",
