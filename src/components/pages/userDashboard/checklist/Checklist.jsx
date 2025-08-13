@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaCheck, FaPlus, FaDownload, FaPrint, FaTrash } from "react-icons/fa";
 
-const Checklist = () => {
+const CheckList = () => {
   // Sample initial tasks
   const initialTasks = [
     {
@@ -424,4 +424,4 @@ const Checklist = () => {
   );
 };
 
-export default Checklist;
+export default CheckList;
