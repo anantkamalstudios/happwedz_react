@@ -292,9 +292,8 @@
 .matrimonial-container .login-btn:hover {
   background-color: var(--matrimonial-primary-dark);
 }
-
 /* Login Modal */
-.matrimonial-container .login-modal {
+.login-modal {
   position: fixed;
   top: 0;
   left: 0;
@@ -307,68 +306,90 @@
   z-index: 2000;
 }
 
-.matrimonial-container .modal-content {
-  background: var(--matrimonial-white);
+.modal-content {
+  background: #fff;
   border-radius: 8px;
   width: 100%;
   max-width: 400px;
-  box-shadow: var(--matrimonial-shadow);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   overflow: hidden;
 }
 
-.matrimonial-container .modal-header {
-  background: var(--matrimonial-primary);
-  color: var(--matrimonial-white);
+.modal-header {
+  background: #d81b60;
+  color: #fff;
   padding: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.matrimonial-container .modal-header h2 {
+.modal-header h2 {
   font-size: 22px;
+  margin: 0;
 }
 
-.matrimonial-container .close-btn {
+.close-btn {
   background: none;
   border: none;
-  color: var(--matrimonial-white);
+  color: #fff;
   font-size: 24px;
   cursor: pointer;
+  padding: 0;
+  line-height: 1;
 }
 
-.matrimonial-container .modal-body {
+.modal-body {
   padding: 30px;
 }
 
-.matrimonial-container .form-group {
+.form-group {
   margin-bottom: 20px;
+  position: relative;
 }
 
-.matrimonial-container .form-group .input-icon {
+.form-group .input-icon {
   position: absolute;
   left: 15px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--matrimonial-gray);
+  color: #757575;
+  font-size: 18px;
 }
 
-.matrimonial-container .form-group input {
+.form-group input {
   width: 100%;
   padding: 12px 15px 12px 40px;
-  border: 1px solid var(--matrimonial-light-gray);
+  border: 1px solid #e0e0e0;
   border-radius: 4px;
   font-size: 16px;
-  transition: var(--matrimonial-transition);
+  transition: all 0.3s ease;
 }
 
-.matrimonial-container .form-group input:focus {
-  border-color: var(--matrimonial-primary);
+.form-group input:focus {
+  border-color: #d81b60;
   outline: none;
   box-shadow: 0 0 0 2px rgba(216, 27, 96, 0.2);
 }
 
-.matrimonial-container .remember-forgot {
+.password-group {
+  position: relative;
+}
+
+.password-group .toggle-password {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #757575;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+}
+
+.remember-forgot {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -376,14 +397,21 @@
   font-size: 14px;
 }
 
-.matrimonial-container .remember-forgot a {
-  color: var(--matrimonial-primary);
+.remember-forgot label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #616161;
+}
+
+.remember-forgot a {
+  color: #d81b60;
   text-decoration: none;
 }
 
-.matrimonial-container .login-button {
-  background-color: var(--matrimonial-primary);
-  color: var(--matrimonial-white);
+.login-button {
+  background-color: #d81b60;
+  color: #fff;
   border: none;
   width: 100%;
   padding: 12px;
@@ -391,66 +419,66 @@
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-  transition: var(--matrimonial-transition);
+  transition: all 0.3s ease;
   margin-bottom: 20px;
 }
 
-.matrimonial-container .login-button:hover {
-  background-color: var(--matrimonial-primary-dark);
+.login-button:hover {
+  background-color: #c2185b;
 }
 
-.matrimonial-container .divider {
+.divider {
   position: relative;
   text-align: center;
   margin: 20px 0;
-  color: var(--matrimonial-gray);
+  color: #757575;
 }
 
-.matrimonial-container .divider::before {
+.divider::before {
   content: "";
   position: absolute;
   top: 50%;
   left: 0;
   right: 0;
   height: 1px;
-  background: var(--matrimonial-light-gray);
+  background: #e0e0e0;
   z-index: 1;
 }
 
-.matrimonial-container .divider span {
+.divider span {
   position: relative;
-  background: var(--matrimonial-white);
+  background: #fff;
   padding: 0 15px;
   z-index: 2;
 }
 
-.matrimonial-container .signup-button {
+.signup-button {
   background-color: transparent;
-  color: var(--matrimonial-primary);
-  border: 2px solid var(--matrimonial-primary);
+  color: #d81b60;
+  border: 2px solid #d81b60;
   width: 100%;
   padding: 12px;
   border-radius: 4px;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-  transition: var(--matrimonial-transition);
+  transition: all 0.3s ease;
 }
 
-.matrimonial-container .signup-button:hover {
+.signup-button:hover {
   background-color: rgba(216, 27, 96, 0.1);
 }
 
-.matrimonial-container .modal-footer {
+.modal-footer {
   padding: 15px 30px;
   text-align: center;
   font-size: 14px;
-  color: var(--matrimonial-gray);
-  border-top: 1px solid var(--matrimonial-light-gray);
+  color: #757575;
+  border-top: 1px solid #e0e0e0;
 }
 
-.matrimonial-container .modal-footer a {
-  color: var(--matrimonial-primary);
+.modal-footer a {
+  color: #d81b60;
   text-decoration: none;
 }
 
@@ -509,6 +537,18 @@
 .matrimonial-container .stat-item p {
   font-size: 16px;
   opacity: 0.8;
+}
+.password-group {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #757575;
 }
 
 .matrimonial-container .registration-form {
