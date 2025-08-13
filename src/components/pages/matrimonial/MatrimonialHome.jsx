@@ -150,7 +150,7 @@ const MatrimonialHome = () => {
               )}
             </div>
 
-            <div
+            {/* <div
               className="nav-item"
               onMouseEnter={() => handleDropdownHover("search")}
             >
@@ -180,7 +180,7 @@ const MatrimonialHome = () => {
                   </div>
                 </div>
               )}
-            </div>
+            </div> */}
 
             <div
               className="nav-item"

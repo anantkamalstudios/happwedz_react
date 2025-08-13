@@ -1666,7 +1666,7 @@ select {
 
 .brahmin-more-filters-toggle {
   cursor: pointer;
-  color: #0077b6;
+  color: #e24582;
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -1740,5 +1740,122 @@ select {
   }
   .brahmin-profile-img {
     height: 180px;
+  }
+}
+.matrimonial-registration {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.matrimonial-registration .card {
+  border: none;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.matrimonial-registration .card-header {
+  padding: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.matrimonial-registration .nav-tabs {
+  border-bottom: none;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.matrimonial-registration .nav-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.matrimonial-registration .nav-link {
+  border: none;
+  color: #6c757d;
+  font-weight: 500;
+  padding: 1rem 1.5rem;
+  position: relative;
+}
+
+.matrimonial-registration .nav-link.active {
+  color: #e24582;
+  background-color: transparent;
+}
+
+.matrimonial-registration .nav-link.active:after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: #e24582;
+}
+
+.matrimonial-registration .nav-link:not(.active):hover {
+  color: #e24582;
+  background-color: rgba(13, 110, 253, 0.05);
+}
+
+.matrimonial-registration .nav-link[disabled] {
+  color: #adb5bd;
+  pointer-events: none;
+}
+
+.matrimonial-registration .form-label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.matrimonial-registration .btn-group {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+
+.matrimonial-registration .btn-group .btn {
+  padding: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.matrimonial-registration textarea {
+  min-height: 150px;
+}
+
+@media (max-width: 767.98px) {
+  .matrimonial-registration .container {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .matrimonial-registration .card-body {
+    padding: 1.5rem;
+  }
+
+  .matrimonial-registration .btn-group .btn {
+    font-size: 0.8rem;
+    padding: 0.4rem;
+  }
+
+  .matrimonial-registration .nav-link {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .matrimonial-registration .card-body {
+    padding: 1rem;
+  }
+
+  .matrimonial-registration .row > div {
+    margin-bottom: 1rem;
+  }
+
+  .matrimonial-registration .btn-group {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
