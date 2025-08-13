@@ -197,15 +197,15 @@ const Navbar = () => {
               )}
             </div>
 
-            <div className="nav-item">
+            {/* <div className="nav-item">
               <a href="/">Horoscope</a>
-            </div>
-            <div className="nav-item">
+            </div> */}
+            {/* <div className="nav-item">
               <a href="/">Blog</a>
             </div>
             <div className="nav-item">
               <a href="/">Success Stories</a>
-            </div>
+            </div> */}
           </div>
 
           <div className="nav-actions">
