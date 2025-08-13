@@ -54,7 +54,7 @@ const Navbar = () => {
 
   const handleTabClick = (tab) => {
     setActiveTab(tab.id);
-    navigate(`/vendors/${tab.slug}`);
+    navigate(`/vendor-dashboard/${tab.slug}`);
   };
 
   return (

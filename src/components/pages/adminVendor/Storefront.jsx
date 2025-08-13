@@ -82,11 +82,17 @@ const Storefront = () => {
                 onClick={() => setActive(item.id)}
                 active={active === item.id}
                 className={`d-flex align-items-center gap-2 ${
-                  active === item.id
-                    ? "text-white bg-primary"
-                    : "text-secondary"
+                  active === item.id ? "text-white" : "text-secondary"
                 }`}
-                style={{ fontSize: "14px" }}
+                style={
+                  active === item.id
+                    ? {
+                        background:
+                          "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)",
+                        fontSize: "14px",
+                      }
+                    : {}
+                }
               >
                 {item.icon}
                 <span>{item.label}</span>
@@ -96,12 +102,7 @@ const Storefront = () => {
         </div>
 
         {/* Main Content */}
-        <div className="col-md-9">
-          {/* <h5 className="mb-3 text-capitalize">
-            {menuItems.find((m) => m.id === active)?.label}
-          </h5> */}
-          {renderContent()}
-        </div>
+        <div className="col-md-9">{renderContent()}</div>
       </div>
     </div>
   );

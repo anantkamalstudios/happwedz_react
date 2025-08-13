@@ -45,7 +45,6 @@ const SubSection = () => {
       {view === "map" && (
         <MapView subVenuesData={subVenuesData} section={section} />
       )}
-      +
       <PricingModal show={show} handleClose={handleClose} />
     </div>
   );

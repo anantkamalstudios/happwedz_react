@@ -268,7 +268,14 @@ export default function PromoForm() {
               </div>
 
               <div className="form-actions">
-                <button type="submit" className="btn-primary">
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)",
+                  }}
+                >
                   Save Promotion
                 </button>
                 <button
@@ -379,7 +386,13 @@ export default function PromoForm() {
                 </div>
 
                 <div className="preview-actions">
-                  <button className="action-button apply-btn">
+                  <button
+                    className="action-button apply-btn"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)",
+                    }}
+                  >
                     Apply Code
                   </button>
                   <button className="action-button share-btn">

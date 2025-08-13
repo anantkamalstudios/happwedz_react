@@ -36,9 +36,9 @@ function App() {
         <Route path="/vendor-register" element={<VendorRegister />} />
         <Route
           path="/vendor-dashboard"
-          element={<Navigate to="/vendors/vendor-home" />}
+          element={<Navigate to="/vendor-dashboard/vendor-home" />}
         />
-        <Route path="/vendors/:slug" element={<Main />} />
+        <Route path="/vendor-dashboard/:slug" element={<Main />} />
       </Route>
 
       <Route element={<MatrimonialLayout />}>

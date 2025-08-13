@@ -85,7 +85,7 @@ const EnquiryManagement = () => {
             <div className="main-card">
               <div className="row g-0">
                 {/* Sidebar */}
-                <div className="col-md-3">
+                <div className="col-md-2">
                   <div className="sidebar">
                     <div className="sidebar-header">
                       <div className="d-flex align-items-center">
@@ -134,7 +134,7 @@ const EnquiryManagement = () => {
                 </div>
 
                 {/* Main Content */}
-                <div className="col-md-9">
+                <div className="col-md-10">
                   <div className="main-content">
                     {/* Header with Search */}
                     <div className="content-header">
@@ -147,6 +147,7 @@ const EnquiryManagement = () => {
                               placeholder="Search enquiries..."
                               value={searchTerm}
                               onChange={(e) => setSearchTerm(e.target.value)}
+                              style={{ padding: "10px 10px" }}
                             />
                             <Search className="search-icon" size={18} />
                           </div>

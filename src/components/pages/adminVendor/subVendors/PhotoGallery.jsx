@@ -68,32 +68,6 @@ const PhotoGallery = () => {
 
   return (
     <div className="container my-5">
-      {/* Header with wave effect */}
-      {/* <div className="text-center mb-5 py-5 position-relative overflow-hidden">
-        <div
-          className="position-absolute top-0 start-0 w-100 h-100 bg-primary bg-gradient"
-          style={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            zIndex: -1,
-          }}
-        >
-          <div className="position-absolute bottom-0 w-100">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
-              <path
-                fill="#ffffff"
-                fillOpacity="1"
-                d="M0,224L48,218.7C96,213,192,203,288,181.3C384,160,480,128,576,138.7C672,149,768,203,864,208C960,213,1056,171,1152,160C1248,149,1344,171,1392,181.3L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-              ></path>
-            </svg>
-          </div>
-        </div>
-
-        <h1 className="display-5 fw-bold text-white">Gallery Management</h1>
-        <p className="fs-5 text-white-50 mb-0">
-          Upload your best photos to showcase your work
-        </p>
-      </div> */}
-
       {/* Upload Card */}
       <div className="card shadow-lg border-0 rounded-3 overflow-hidden">
         <div className="card-body p-4 p-md-5">
@@ -155,6 +129,9 @@ const PhotoGallery = () => {
 
             <button
               className="btn btn-primary px-4 rounded-pill fw-medium"
+              style={{
+                background: "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)",
+              }}
               onClick={handleButtonClick}
               disabled={images.length >= 8}
             >

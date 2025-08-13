@@ -9,7 +9,7 @@ import {
   FiChevronDown,
   FiChevronRight,
 } from "react-icons/fi";
-import "../../../Matrimonial.css"; // Keep this import
+import "../../../Matrimonial.css";
 import { Link } from "react-router-dom";
 
 const MatrimonialHeader = () => {

@@ -2,14 +2,7 @@ import React, { useState } from "react";
 import { Col, Form } from "react-bootstrap";
 import { MdClear } from "react-icons/md";
 import { CiFilter } from "react-icons/ci";
-import {
-  FaTags,
-  FaTrophy,
-  FaChevronDown,
-  FaChevronRight,
-} from "react-icons/fa";
-
-// import FILTER_OPTIONS from "../../../data/asideview";
+import { FaChevronDown, FaChevronRight } from "react-icons/fa";
 
 const FILTER_OPTIONS = {
   One_Day_Wedding_Package: [
@@ -66,6 +59,7 @@ const Asideview = () => {
     deals: false,
     awardWinners: false,
   });
+
   const [sectionState, setSectionState] = useState({
     One_Day_Wedding_Package: true,
     Three_Day_Wedding_Package: true,
