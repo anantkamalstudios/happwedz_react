@@ -4645,3 +4645,1404 @@ input:checked + .slider:before {
     padding: 10px 12px;
   }
 }
+/* Wedding Guest List - Subtle Pink & White Theme */
+.wgl-container {
+  font-family: "Arial", sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #ffffff;
+  min-height: 100vh;
+}
+
+.wgl-header {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f0f0f0;
+}
+
+.wgl-title {
+  color: #333;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.wgl-stats-container {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.wgl-stat-card {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 15px;
+  flex: 1;
+  text-align: center;
+  border: 1px solid #eee;
+}
+
+.wgl-stat-number {
+  color: #e75480;
+  margin: 0;
+  font-size: 24px;
+}
+
+.wgl-stat-label {
+  color: #555;
+  margin: 5px 0 0;
+  font-weight: 500;
+}
+
+.wgl-stat-sublabel {
+  color: #888;
+  margin: 5px 0 0;
+  font-size: 13px;
+}
+
+.wgl-status-sublabels {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 5px;
+}
+
+.wgl-status-sublabel {
+  color: #888;
+  font-size: 12px;
+}
+
+.wgl-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.wgl-search-container {
+  position: relative;
+  flex-grow: 1;
+}
+
+.wgl-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #e75480;
+}
+
+.wgl-search-input {
+  width: 100%;
+  padding: 10px 15px 10px 40px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 15px;
+  transition: all 0.2s;
+}
+
+.wgl-search-input:focus {
+  outline: none;
+  border-color: #e75480;
+  box-shadow: 0 0 0 2px rgba(231, 84, 128, 0.1);
+}
+
+.wgl-button-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.wgl-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.wgl-button-primary {
+  background-color: #e75480;
+  color: white;
+}
+
+.wgl-button-primary:hover {
+  background-color: #d1426d;
+}
+
+.wgl-button-secondary {
+  background-color: white;
+  color: #555;
+  border: 1px solid #ddd;
+}
+
+.wgl-button-secondary:hover {
+  background-color: #f9f9f9;
+  border-color: #ccc;
+}
+
+.wgl-button-icon {
+  font-size: 13px;
+}
+
+.wgl-add-guest-form {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eee;
+}
+
+.wgl-form-title {
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.wgl-form-input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 15px;
+  margin-bottom: 15px;
+}
+
+.wgl-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.wgl-button-cancel {
+  background-color: white;
+  color: #555;
+  border: 1px solid #ddd;
+}
+
+.wgl-button-save {
+  background-color: #e75480;
+  color: white;
+}
+
+.wgl-filter-container {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.wgl-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wgl-filter-label {
+  color: #555;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.wgl-filter-select {
+  padding: 7px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: white;
+  color: #333;
+  font-size: 14px;
+}
+
+.wgl-guest-list {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eee;
+}
+
+.wgl-guest-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.wgl-table-header {
+  background-color: #f9f9f9;
+  color: #333;
+  padding: 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.wgl-guest-row {
+  border-bottom: 1px solid #eee;
+}
+
+.wgl-guest-row:last-child {
+  border-bottom: none;
+}
+
+.wgl-guest-row:hover {
+  background-color: #fafafa;
+}
+
+.wgl-guest-name,
+.wgl-guest-group,
+.wgl-guest-status,
+.wgl-guest-type,
+.wgl-guest-menu,
+.wgl-guest-actions {
+  padding: 14px;
+  font-size: 14px;
+}
+
+.wgl-status-select {
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background-color: white;
+  font-size: 13px;
+}
+
+.wgl-status-attending {
+  color: #388e3c;
+  border-color: #c8e6c9;
+}
+
+.wgl-status-pending {
+  color: #ff8f00;
+  border-color: #ffe0b2;
+}
+
+.wgl-status-declined {
+  color: #d32f2f;
+  border-color: #ffcdd2;
+}
+
+.wgl-action-button {
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wgl-action-delete {
+  background-color: #f9f9f9;
+  color: #d32f2f;
+  border: 1px solid #ffcdd2;
+}
+
+.wgl-action-delete:hover {
+  background-color: #ffebee;
+}
+
+.wgl-empty-state {
+  padding: 40px;
+  text-align: center;
+  color: #888;
+}
+
+@media (max-width: 768px) {
+  .wgl-stats-container {
+    flex-direction: column;
+  }
+
+  .wgl-controls {
+    flex-direction: column;
+  }
+
+  .wgl-button-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .wgl-button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .wgl-guest-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .wgl-filter-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .wgl-filter-group {
+    width: 100%;
+  }
+
+  .wgl-filter-select {
+    flex-grow: 1;
+  }
+}
+/* Add Form Styles */
+.wgl-add-form {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Message Dropdown Styles */
+.wgl-message-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.wgl-dropdown-icon {
+  margin-left: 8px;
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+
+.wgl-message-dropdown button {
+  display: flex;
+  align-items: center;
+}
+
+.wgl-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  min-width: 150px;
+  margin-top: 5px;
+}
+
+.wgl-dropdown-menu button {
+  width: 100%;
+  padding: 10px 15px;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #333;
+  cursor: pointer;
+}
+
+.wgl-dropdown-menu button:hover {
+  background-color: #f5f5f5;
+}
+
+/* Show dropdown icon rotated when open */
+.wgl-message-dropdown button[aria-expanded="true"] .wgl-dropdown-icon {
+  transform: rotate(180deg);
+}
+/* Wedding Budget CSS - Pink & White Theme */
+.wb-container {
+  font-family: "Montserrat", sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+}
+
+/* Header Styles */
+.wb-header {
+  margin-bottom: 30px;
+}
+
+.wb-title {
+  font-size: 28px;
+  color: #d81b60; /* Dark pink */
+  margin-bottom: 25px;
+  font-weight: 600;
+}
+
+/* Budget Summary Cards */
+.wb-budget-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.wb-budget-card {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(216, 27, 96, 0.1);
+  border: 1px solid #ffcdd2; /* Light pink border */
+}
+
+.wb-budget-label {
+  font-size: 14px;
+  color: #e91e63; /* Medium pink */
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.wb-budget-amount {
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wb-over-budget {
+  color: #f44336; /* Red for over budget */
+}
+
+/* Edit Button Styles */
+.wb-edit-button {
+  background: none;
+  border: none;
+  color: #e91e63;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 5px;
+}
+
+.wb-edit-button:hover {
+  color: #d81b60;
+}
+
+/* Budget Edit Form */
+.wb-budget-edit {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.wb-input {
+  padding: 8px 12px;
+  border: 1px solid #ffcdd2;
+  border-radius: 6px;
+  flex: 1;
+  font-size: 16px;
+}
+
+.wb-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.wb-save-button {
+  background-color: #4caf50; /* Green */
+  color: white;
+}
+
+.wb-cancel-button {
+  background-color: #f44336; /* Red */
+  color: white;
+}
+
+/* Categories Container */
+.wb-categories-container {
+  display: flex;
+  gap: 30px;
+}
+
+/* Categories List (Left Sidebar) */
+.wb-categories-list {
+  width: 300px;
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 10px rgba(216, 27, 96, 0.1);
+  height: fit-content;
+}
+
+.wb-section-title {
+  font-size: 18px;
+  color: #d81b60;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.wb-category-item {
+  margin-bottom: 10px;
+}
+
+.wb-category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background-color: #fce4ec; /* Very light pink */
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.wb-category-header:hover {
+  background-color: #f8bbd0; /* Lighter pink */
+}
+
+.wb-category-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.wb-category-icon {
+  font-size: 14px;
+  color: #e91e63;
+}
+
+.wb-category-amount {
+  font-weight: 500;
+  color: #333;
+}
+
+/* Subcategories List */
+.wb-subcategories-list {
+  padding: 10px 0 0 20px;
+}
+
+.wb-subcategory-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #ffebee; /* Very light pink */
+}
+
+.wb-subcategory-name {
+  flex: 1;
+  font-size: 14px;
+}
+
+.wb-subcategory-details {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.wb-small-input {
+  width: 90px;
+  padding: 5px 8px;
+  border: 1px solid #ffcdd2;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.wb-currency {
+  color: #e91e63;
+  font-size: 14px;
+}
+
+.wb-delete-button {
+  background: none;
+  border: none;
+  color: #f44336;
+  cursor: pointer;
+  margin-left: 10px;
+  font-size: 14px;
+}
+
+/* Add Expense Form */
+.wb-add-expense {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.wb-add-expense input[type="text"] {
+  flex: 2;
+  min-width: 150px;
+}
+
+.wb-add-expense input[type="number"] {
+  width: 90px;
+}
+
+.wb-add-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 15px;
+  background-color: #e91e63;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.wb-add-button:hover {
+  background-color: #d81b60;
+}
+
+/* Expense Details (Right Panel) */
+.wb-expense-details {
+  flex: 1;
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(216, 27, 96, 0.1);
+}
+
+.wb-pie-chart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.wb-pie-chart-message {
+  text-align: center;
+  color: #e91e63;
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.wb-pie-chart-wrapper {
+  width: 100%;
+  height: 400px;
+}
+
+/* Category Summary */
+.wb-category-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #ffcdd2;
+}
+
+.wb-category-title {
+  font-size: 20px;
+  color: #d81b60;
+  font-weight: 600;
+}
+
+.wb-category-total {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* Expense Table */
+.wb-expense-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.wb-expense-table th {
+  text-align: left;
+  padding: 12px;
+  background-color: #fce4ec;
+  color: #d81b60;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.wb-expense-table td {
+  padding: 12px;
+  border-bottom: 1px solid #ffebee;
+  font-size: 14px;
+}
+
+.wb-currency-input {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.wb-table-input {
+  width: 100px;
+  padding: 6px 8px;
+  border: 1px solid #ffcdd2;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 900px) {
+  .wb-categories-container {
+    flex-direction: column;
+  }
+
+  .wb-categories-list {
+    width: 100%;
+  }
+
+  .wb-budget-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .wb-budget-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .wb-expense-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .wb-add-expense {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wb-add-expense input {
+    width: 100% !important;
+  }
+
+  .wb-add-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Pie Chart Customization */
+.recharts-legend-item-text {
+  color: #333 !important;
+}
+
+.recharts-tooltip {
+  background-color: #fff !important;
+  border: 1px solid #ffcdd2 !important;
+  border-radius: 6px !important;
+  padding: 10px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.recharts-tooltip-label {
+  color: #d81b60 !important;
+  font-weight: 500 !important;
+  margin-bottom: 5px !important;
+}
+
+.recharts-tooltip-item-value {
+  color: #333 !important;
+}
+/* Wedding Budget CSS - Pink & White Theme */
+.wb-container {
+  font-family: "Montserrat", sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+}
+
+/* Header Styles */
+.wb-header {
+  margin-bottom: 30px;
+}
+
+.wb-title {
+  font-size: 28px;
+  color: #d81b60; /* Dark pink */
+  margin-bottom: 25px;
+  font-weight: 600;
+}
+
+/* Budget Summary Cards */
+.wb-budget-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.wb-budget-card {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(216, 27, 96, 0.1);
+  border: 1px solid #ffcdd2; /* Light pink border */
+}
+
+.wb-budget-label {
+  font-size: 14px;
+  color: #e91e63; /* Medium pink */
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.wb-budget-amount {
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wb-over-budget {
+  color: #f44336; /* Red for over budget */
+}
+
+/* Edit Button Styles */
+.wb-edit-button {
+  background: none;
+  border: none;
+  color: #e91e63;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 5px;
+}
+
+.wb-edit-button:hover {
+  color: #d81b60;
+}
+
+/* Budget Edit Form */
+.wb-budget-edit {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.wb-input {
+  padding: 8px 12px;
+  border: 1px solid #ffcdd2;
+  border-radius: 6px;
+  flex: 1;
+  font-size: 16px;
+}
+
+.wb-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.wb-save-button {
+  background-color: #4caf50; /* Green */
+  color: white;
+}
+
+.wb-cancel-button {
+  background-color: #f44336; /* Red */
+  color: white;
+}
+
+/* Categories Container */
+.wb-categories-container {
+  display: flex;
+  gap: 30px;
+}
+
+/* Categories List (Left Sidebar) */
+.wb-categories-list {
+  width: 300px;
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 10px rgba(216, 27, 96, 0.1);
+  height: fit-content;
+}
+
+.wb-section-title {
+  font-size: 18px;
+  color: #d81b60;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.wb-category-item {
+  margin-bottom: 10px;
+}
+
+.wb-category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background-color: #fce4ec; /* Very light pink */
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.wb-category-header:hover {
+  background-color: #f8bbd0; /* Lighter pink */
+}
+
+.wb-category-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.wb-category-icon {
+  font-size: 14px;
+  color: #e91e63;
+}
+
+.wb-category-amount {
+  font-weight: 500;
+  color: #333;
+}
+
+/* Subcategories List */
+.wb-subcategories-list {
+  padding: 10px 0 0 20px;
+}
+
+.wb-subcategory-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #ffebee; /* Very light pink */
+}
+
+.wb-subcategory-name {
+  flex: 1;
+  font-size: 14px;
+}
+
+.wb-subcategory-details {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.wb-small-input {
+  width: 90px;
+  padding: 5px 8px;
+  border: 1px solid #ffcdd2;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.wb-currency {
+  color: #e91e63;
+  font-size: 14px;
+}
+
+.wb-delete-button {
+  background: none;
+  border: none;
+  color: #f44336;
+  cursor: pointer;
+  margin-left: 10px;
+  font-size: 14px;
+}
+
+/* Add Expense Form */
+.wb-add-expense {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.wb-add-expense input[type="text"] {
+  flex: 2;
+  min-width: 150px;
+}
+
+.wb-add-expense input[type="number"] {
+  width: 90px;
+}
+
+.wb-add-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 15px;
+  background-color: #e91e63;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.wb-add-button:hover {
+  background-color: #d81b60;
+}
+
+/* Expense Details (Right Panel) */
+.wb-expense-details {
+  flex: 1;
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(216, 27, 96, 0.1);
+}
+
+.wb-pie-chart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.wb-pie-chart-message {
+  text-align: center;
+  color: #e91e63;
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.wb-pie-chart-wrapper {
+  width: 100%;
+  height: 400px;
+}
+
+/* Category Summary */
+.wb-category-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #ffcdd2;
+}
+
+.wb-category-title {
+  font-size: 20px;
+  color: #d81b60;
+  font-weight: 600;
+}
+
+.wb-category-total {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* Expense Table */
+.wb-expense-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.wb-expense-table th {
+  text-align: left;
+  padding: 12px;
+  background-color: #fce4ec;
+  color: #d81b60;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.wb-expense-table td {
+  padding: 12px;
+  border-bottom: 1px solid #ffebee;
+  font-size: 14px;
+}
+
+.wb-currency-input {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.wb-table-input {
+  width: 100px;
+  padding: 6px 8px;
+  border: 1px solid #ffcdd2;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 900px) {
+  .wb-categories-container {
+    flex-direction: column;
+  }
+
+  .wb-categories-list {
+    width: 100%;
+  }
+
+  .wb-budget-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .wb-budget-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .wb-expense-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .wb-add-expense {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wb-add-expense input {
+    width: 100% !important;
+  }
+
+  .wb-add-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Pie Chart Customization */
+.recharts-legend-item-text {
+  color: #333 !important;
+}
+
+.recharts-tooltip {
+  background-color: #fff !important;
+  border: 1px solid #ffcdd2 !important;
+  border-radius: 6px !important;
+  padding: 10px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.recharts-tooltip-label {
+  color: #d81b60 !important;
+  font-weight: 500 !important;
+  margin-bottom: 5px !important;
+}
+
+.recharts-tooltip-item-value {
+  color: #333 !important;
+}
+/* Refined Wedding-themed colors */
+:root {
+  --primary-pink: #e91e63; /* More sophisticated pink */
+  --light-pink: #fce4ec; /* Very subtle pink */
+  --dark-pink: #c2185b; /* Darker accent pink */
+  --white: #ffffff;
+  --light-gray: #f5f5f5;
+  --medium-gray: #e0e0e0;
+  --dark-gray: #616161; /* Darker gray for better contrast */
+  --text-color: #424242; /* Primary text color */
+}
+
+/* Base styles */
+.vendors-container {
+  font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  color: var(--text-color);
+  background-color: var(--white);
+}
+
+.vendors-header {
+  margin-bottom: 30px;
+}
+
+.vendors-header h1 {
+  font-size: 32px;
+  color: var(--dark-pink); /* Only header in pink */
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+/* Stats section - more neutral */
+.vendors-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+}
+
+.stat-box {
+  background-color: var(--white);
+  border-radius: 10px;
+  padding: 15px 20px;
+  min-width: 150px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--medium-gray);
+}
+
+.stat-number {
+  display: block;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--dark-pink); /* Pink only for numbers */
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--dark-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Primary action button keeps pink */
+.add-vendor-btn {
+  background-color: var(--primary-pink);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 12px 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.add-vendor-btn:hover {
+  background-color: var(--dark-pink);
+  transform: translateY(-2px);
+}
+
+/* Divider - more subtle */
+.divider {
+  height: 1px;
+  background-color: var(--medium-gray);
+  margin: 30px 0;
+}
+
+/* Search prompt - neutral colors */
+.search-prompt {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.search-prompt h2 {
+  font-size: 24px;
+  color: var(--text-color); /* Changed from pink */
+  margin-bottom: 10px;
+}
+
+.search-prompt p {
+  color: var(--dark-gray);
+  font-size: 16px;
+}
+
+/* Vendor categories - more neutral cards */
+.vendor-categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.category-card {
+  background-color: var(--white);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--medium-gray);
+  transition: all 0.3s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.category-card h3 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: var(--text-color); /* Changed from pink */
+}
+
+/* Completed state gets subtle pink accent */
+.category-card.completed {
+  border-left: 4px solid var(--primary-pink);
+  background-color: var(--white);
+}
+
+/* Find button - now more subtle */
+.find-btn {
+  background-color: var(--white);
+  color: var(--primary-pink);
+  border: 1px solid var(--primary-pink);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+}
+
+.find-btn:hover {
+  background-color: var(--primary-pink);
+  color: var(--white);
+}
+
+/* Completed badge - keeps pink as status indicator */
+.completed-badge {
+  background-color: var(--primary-pink);
+  color: white;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .vendors-stats {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .stat-box {
+    width: 100%;
+  }
+
+  .vendor-categories {
+    grid-template-columns: 1fr;
+  }
+
+  .vendors-header h1 {
+    font-size: 28px;
+  }
+}
+
+/* Animation for completed cards */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.category-card.completed {
+  animation: fadeIn 0.5s ease forwards;
+}

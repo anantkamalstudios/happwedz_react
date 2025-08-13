@@ -38,7 +38,7 @@ const UserDashboardNavbar = () => {
     },
     {
       id: "budget",
-      slug: "Budget",
+      slug: "budget",
       label: "budget",
       icon: <PiPiggyBankLight size={20} />,
     },

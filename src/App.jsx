@@ -42,7 +42,7 @@ function App() {
         />
         <Route path="/vendor-dashboard/:slug" element={<Main />} />
         <Route path="/user-dashboard/:slug" element={<UserDashboardMain />} />
-        {/* <Route path="/user-dashboard" element={<UserDashboardMain />} /> */}
+        <Route path="/user-dashboard" element={<UserDashboardMain />} />
       </Route>
 
       <Route element={<MatrimonialLayout />}>
@@ -54,6 +54,7 @@ function App() {
         <Route path="/matrimonial-search" element={<Search />} />
         <Route path="/matrimonial-register" element={<MatrimonialRegister />} />
       </Route>
+
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

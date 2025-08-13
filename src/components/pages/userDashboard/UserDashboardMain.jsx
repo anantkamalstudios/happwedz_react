@@ -20,7 +20,7 @@ const UserDashboardMain = () => {
         return <Vendors />;
       case "guest-list":
         return <Guest />;
-      case "guest-list":
+      case "budget":
         return <Budget />;
       default:
         return <MyWedding />;
