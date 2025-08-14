@@ -35,6 +35,7 @@ const ProfileMatrimonial = () => {
   const [activeTab, setActiveTab] = useState("grooms");
   const [sortBy, setSortBy] = useState("recent");
   const [showMoreFilters, setShowMoreFilters] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Filter states
   const [selectedCities, setSelectedCities] = useState(["All Cities"]);
@@ -361,23 +362,36 @@ const ProfileMatrimonial = () => {
                 <FilterSection title="City">
                   <div className="search-box">
                     <FiSearch className="search-icon" />
-                    <input type="text" placeholder="Search city..." />
+                    <input
+                      type="text"
+                      placeholder="Search city..."
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      value={searchTerm}
+                    />
                   </div>
                   <div className="filter-options">
-                    {cities.map((city) => (
-                      <label key={city} className="filter-option">
-                        <input
-                          type="checkbox"
-                          checked={selectedCities.includes(city)}
-                          onChange={() => handleCityToggle(city)}
-                        />
-                        <span className="checkmark"></span>
-                        <span className="option-label">{city}</span>
-                      </label>
-                    ))}
+                    {cities
+                      .filter((city) =>
+                        city.toLowerCase().includes(searchTerm.toLowerCase())
+                      )
+                      .map((city) => (
+                        <label key={city} className="filter-option">
+                          <input
+                            type="checkbox"
+                            checked={selectedCities.includes(city)}
+                            onChange={() => handleCityToggle(city)}
+                          />
+                          <span className="checkmark"></span>
+                          <span className="option-label">{city}</span>
+                        </label>
+                      ))}
+                    {cities.filter((city) =>
+                      city.toLowerCase().includes(searchTerm.toLowerCase())
+                    ).length === 0 && (
+                      <div className="no-results">No cities found</div>
+                    )}
                   </div>
                 </FilterSection>
-
                 <FilterSection title="Age">
                   <div className="range-filter">
                     <div className="range-values">

@@ -113,7 +113,7 @@ const Navbar = () => {
               <Link to="/matrimonial-search">Search</Link>
             </div>
 
-            <div
+            {/* <div
               className="nav-item"
               onMouseEnter={() => handleDropdownHover("community")}
             >
@@ -195,7 +195,7 @@ const Navbar = () => {
                   </div>
                 </div>
               )}
-            </div>
+            </div> */}
 
             {/* <div className="nav-item">
               <a href="/">Horoscope</a>

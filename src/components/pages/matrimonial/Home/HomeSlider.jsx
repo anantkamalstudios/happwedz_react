@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import "../../../../Matrimonial.css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
@@ -45,52 +45,58 @@ const HomeSlider = () => {
     },
   ];
 
-  useEffect(() => {
-    const scrollContainer = document.querySelector(
-      ".success-stories-container"
-    );
-    let scrollAmount = 0;
-
-    const autoScroll = setInterval(() => {
-      if (scrollContainer) {
-        scrollAmount += 1;
-        if (scrollAmount >= scrollContainer.scrollWidth / 2) {
-          scrollAmount = 0;
-        }
-        scrollContainer.scrollTo({
-          left: scrollAmount,
-          behavior: "smooth",
-        });
-      }
-    }, 50);
-
-    return () => clearInterval(autoScroll);
-  }, []);
-
   return (
     <div className="success-stories-container container-fluid">
       <Swiper
         modules={[Autoplay]}
         autoplay={{ delay: 2500, disableOnInteraction: false }}
         loop={true}
-        spaceBetween={20}
+        spaceBetween={30} // Increased space between slides
         slidesPerView={3}
         breakpoints={{
-          320: { slidesPerView: 1 },
-          640: { slidesPerView: 2 },
-          1024: { slidesPerView: 3 },
+          320: {
+            slidesPerView: 1,
+            spaceBetween: 20, // Space for mobile
+          },
+          640: {
+            slidesPerView: 2,
+            spaceBetween: 25, // Space for tablet
+          },
+          1024: {
+            slidesPerView: 3,
+            spaceBetween: 30, // Space for desktop
+          },
         }}
       >
         {successStories.map((story) => (
           <SwiperSlide key={story.id}>
-            <div className="success-card">
+            <div
+              className="success-card"
+              style={{
+                margin: "0 10px", // Added horizontal margin
+                padding: "10px",
+                background: "white",
+                borderRadius: "10px",
+                overflow: "hidden",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+              }}
+            >
               <img
                 src={story.img}
                 alt={`${story.name} wedding`}
-                className="couple-img"
+                style={{
+                  width: "100%",
+                  height: "200px",
+                  objectFit: "cover",
+                  borderRadius: "8px",
+                }}
               />
-              <h4>{story.name}</h4>
-              <p>Married: {story.date}</p>
+              <h4 style={{ margin: "10px 0 5px 0", textAlign: "center" }}>
+                {story.name}
+              </h4>
+              <p style={{ margin: 0, textAlign: "center", color: "#666" }}>
+                Married: {story.date}
+              </p>
             </div>
           </SwiperSlide>
         ))}

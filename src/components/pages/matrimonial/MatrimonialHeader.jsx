@@ -368,7 +368,7 @@ const MatrimonialHeader = () => {
               </div>
             </div>
 
-            <div className="registration-form">
+            {/* <div className="registration-form">
               <h2>Register for Free</h2>
               <form>
                 <div className="form-group">
@@ -436,7 +436,7 @@ const MatrimonialHeader = () => {
                   <a href="/">Privacy Policy</a>
                 </p>
               </form>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

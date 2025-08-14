@@ -251,47 +251,95 @@ const MatrimonialRegistration = () => {
                     )}
                   </div>
                 </div>
-
                 <div className="mb-3">
-                  <label className="form-label">
-                    <FaUser className="me-2" />
-                    {getNameLabel()} *
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "5px",
+                      fontWeight: "500",
+                      color: "#333",
+                    }}
+                  >
+                    <FaUser style={{ marginRight: "8px" }} />
+                    {getNameLabel()} <span style={{ color: "#d81b60" }}>*</span>
                   </label>
-                  <div className="input-group">
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      marginBottom: "5px",
+                    }}
+                  >
                     <input
                       type="text"
-                      className={`form-control ${
-                        errors.name ? "is-invalid" : ""
-                      }`}
+                      style={{
+                        flex: 1,
+                        padding: "10px",
+                        border: `1px solid ${errors.name ? "#f44336" : "#ddd"}`,
+                        borderRadius: "4px",
+                        fontSize: "14px",
+                      }}
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
                       required
                     />
-                    <div className="input-group-text">
-                      <div className="form-check form-switch">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          name="showName"
-                          checked={formData.showName}
-                          onChange={handleChange}
-                        />
-                        <label className="form-check-label small">
-                          Show to All
-                        </label>
-                      </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "5px",
+                        padding: "0 10px",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        id="showNameToggle"
+                        name="showName"
+                        checked={formData.showName}
+                        onChange={handleChange}
+                        style={{
+                          width: "16px",
+                          height: "16px",
+                          margin: 0,
+                        }}
+                      />
+                      <label
+                        htmlFor="showNameToggle"
+                        style={{
+                          fontSize: "14px",
+                          margin: 0,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Show to All
+                      </label>
                     </div>
-                    {errors.name && (
-                      <div className="invalid-feedback">{errors.name}</div>
-                    )}
                   </div>
-                  <small className="text-muted">
+                  {errors.name && (
+                    <div
+                      style={{
+                        color: "#f44336",
+                        fontSize: "12px",
+                        marginTop: "5px",
+                      }}
+                    >
+                      {errors.name}
+                    </div>
+                  )}
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      color: "#666",
+                      margin: "5px 0 0",
+                      fontStyle: "italic",
+                    }}
+                  >
                     If you wish to hide your name from others, click on settings
                     icon and choose the setting
-                  </small>
+                  </p>
                 </div>
-
                 <div className="row">
                   <div className="col-md-6 mb-3">
                     <label className="form-label">

@@ -4504,174 +4504,6 @@ input:checked + .slider:before {
     transform: scale(1);
   }
 }
-/* Wedding Checklist Pink & White Theme - Add to your app.css */
-.wc-container {
-  background-color: #fff9fb;
-  min-height: 100vh;
-}
-
-.wc-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  margin-bottom: 24px;
-  border: 1px solid #ffe6ee;
-}
-
-.wc-card-header {
-  border-bottom: 1px solid #ffe6ee;
-  background-color: #ff85a2 !important;
-  color: white !important;
-  font-weight: 600;
-  border-radius: 12px 12px 0 0 !important;
-}
-
-.wc-list-item {
-  cursor: pointer;
-  border-left: none;
-  border-right: none;
-  border-color: #ffe6ee;
-  transition: all 0.3s ease;
-  padding: 12px 16px;
-}
-
-.wc-list-item.wc-active {
-  background-color: #ffebf1;
-  color: #d23369;
-  font-weight: 500;
-}
-
-.wc-list-item:hover:not(.wc-active) {
-  background-color: #fff0f5;
-}
-
-.wc-badge {
-  font-weight: 500;
-  font-size: 0.8rem;
-}
-
-.wc-task-checkbox {
-  width: 24px;
-  height: 24px;
-  border: 2px solid #ffb3c6;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.wc-task-checkbox.wc-completed {
-  background-color: #ffebf1;
-  border-color: #ff85a2;
-}
-
-.wc-task-text {
-  font-weight: 500;
-  color: #4a4a4a;
-}
-
-.wc-task-meta span {
-  background-color: #ffebf1;
-  color: #d23369;
-  padding: 3px 10px;
-  border-radius: 12px;
-  display: inline-block;
-  font-size: 0.8rem;
-  margin-right: 8px;
-}
-
-.wc-btn {
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.wc-btn.btn-primary {
-  background-color: #ff85a2;
-  border-color: #ff85a2;
-}
-
-.wc-btn.btn-primary:hover {
-  background-color: #ff6b91;
-  border-color: #ff6b91;
-}
-
-.wc-btn.btn-outline-secondary {
-  color: #ff85a2;
-  border-color: #ff85a2;
-}
-
-.wc-btn.btn-outline-secondary:hover {
-  background-color: #ffebf1;
-}
-
-.wc-form-control,
-.wc-form-select {
-  border-radius: 8px;
-  border: 1px solid #ffc6d5;
-  padding: 8px 12px;
-}
-
-.wc-form-control:focus,
-.wc-form-select:focus {
-  border-color: #ff85a2;
-  box-shadow: 0 0 0 0.25rem rgba(255, 133, 162, 0.25);
-}
-
-.wc-form-label {
-  color: #d23369;
-  font-weight: 500;
-  margin-bottom: 6px;
-}
-
-.wc-progress h5 {
-  color: #4a4a4a;
-}
-
-.wc-completed {
-  color: #ff85a2 !important;
-  font-weight: 600;
-}
-
-.wc-total {
-  color: #d23369 !important;
-  font-weight: 600;
-}
-
-.wc-alert {
-  border-radius: 8px;
-  background-color: #ffebf1;
-  border-color: #ffc6d5;
-  color: #d23369;
-}
-
-/* Responsive styles */
-@media (max-width: 768px) {
-  .wc-container {
-    padding: 16px;
-  }
-
-  .wc-row {
-    flex-direction: column;
-  }
-
-  .wc-sidebar,
-  .wc-main-content {
-    width: 100%;
-    padding: 0;
-  }
-
-  .wc-card {
-    margin-bottom: 16px;
-  }
-
-  .wc-list-item {
-    padding: 10px 12px;
-  }
-}
-
 /* User guest  */
 /* Wedding Dashboard Styles */
 .wedding-dashboard {
@@ -5209,57 +5041,153 @@ input:checked + .slider:before {
     justify-content: space-between;
   }
 }
-
-/* Wedding Checklist Pink & White Theme - Add to your app.css */
+/* Main container styles */
 .wc-container {
-  background-color: #fff9fb;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f9f9f9;
   min-height: 100vh;
 }
 
+/* Card styles */
 .wc-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  margin-bottom: 24px;
-  border: 1px solid #ffe6ee;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
 }
 
 .wc-card-header {
-  border-bottom: 1px solid #ffe6ee;
-  background-color: #ff85a2 !important;
-  color: white !important;
-  font-weight: 600;
-  border-radius: 12px 12px 0 0 !important;
+  border-radius: 8px 8px 0 0 !important;
+  padding: 12px 15px;
+  background-color: #d81b60 !important;
+}
+
+/* Sidebar styles */
+.wc-sidebar {
+  padding-right: 15px;
+}
+
+.wc-list-group {
+  border-radius: 6px;
 }
 
 .wc-list-item {
+  border: 1px solid #eee;
+  padding: 12px 15px;
   cursor: pointer;
-  border-left: none;
-  border-right: none;
-  border-color: #ffe6ee;
-  transition: all 0.3s ease;
-  padding: 12px 16px;
+  transition: all 0.2s ease;
+}
+
+.wc-list-item:hover {
+  background-color: #f8f8f8;
 }
 
 .wc-list-item.wc-active {
-  background-color: #ffebf1;
-  color: #d23369;
-  font-weight: 500;
-}
-
-.wc-list-item:hover:not(.wc-active) {
-  background-color: #fff0f5;
+  background-color: #fce4ec;
+  border-left: 3px solid #d81b60;
 }
 
 .wc-badge {
   font-weight: 500;
-  font-size: 0.8rem;
+}
+
+/* Main content styles */
+.wc-main-content {
+  padding-left: 15px;
+}
+
+.wc-progress {
+  background-color: white;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  border-left: 3px solid #d81b60;
+}
+
+.wc-completed {
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.wc-total {
+  color: #2196f3;
+  font-weight: 600;
+}
+
+/* Form styles */
+.wc-add-task {
+  border: 1px solid #eee;
+}
+
+.wc-form-label {
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.wc-form-control,
+.wc-form-select {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.wc-form-control:focus,
+.wc-form-select:focus {
+  border-color: #d81b60;
+  box-shadow: 0 0 0 2px rgba(216, 27, 96, 0.1);
+}
+
+/* Button styles */
+.wc-btn {
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: #d81b60;
+  border-color: #d81b60;
+}
+
+.btn-primary:hover {
+  background-color: #c2185b;
+  border-color: #c2185b;
+}
+
+.btn-outline-secondary {
+  color: #555;
+  border-color: #ddd;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #f5f5f5;
+  border-color: #ccc;
+}
+
+.btn-outline-danger {
+  color: #f44336;
+  border-color: #f44336;
+}
+
+.btn-outline-danger:hover {
+  background-color: #f44336;
+  color: white;
+}
+
+/* Task list styles */
+.wc-task-list {
+  margin-top: 20px;
 }
 
 .wc-task-checkbox {
-  width: 24px;
-  height: 24px;
-  border: 2px solid #ffb3c6;
-  border-radius: 6px;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5267,114 +5195,41 @@ input:checked + .slider:before {
   transition: all 0.2s ease;
 }
 
+.wc-task-checkbox:hover {
+  border-color: #d81b60;
+}
+
 .wc-task-checkbox.wc-completed {
-  background-color: #ffebf1;
-  border-color: #ff85a2;
+  background-color: #e8f5e9;
+  border-color: #4caf50;
 }
 
 .wc-task-text {
   font-weight: 500;
-  color: #4a4a4a;
+  color: #333;
 }
 
-.wc-task-meta span {
-  background-color: #ffebf1;
-  color: #d23369;
-  padding: 3px 10px;
-  border-radius: 12px;
-  display: inline-block;
-  font-size: 0.8rem;
-  margin-right: 8px;
+.wc-task-meta {
+  color: #888;
 }
 
-.wc-btn {
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.wc-btn.btn-primary {
-  background-color: #ff85a2;
-  border-color: #ff85a2;
-}
-
-.wc-btn.btn-primary:hover {
-  background-color: #ff6b91;
-  border-color: #ff6b91;
-}
-
-.wc-btn.btn-outline-secondary {
-  color: #ff85a2;
-  border-color: #ff85a2;
-}
-
-.wc-btn.btn-outline-secondary:hover {
-  background-color: #ffebf1;
-}
-
-.wc-form-control,
-.wc-form-select {
-  border-radius: 8px;
-  border: 1px solid #ffc6d5;
-  padding: 8px 12px;
-}
-
-.wc-form-control:focus,
-.wc-form-select:focus {
-  border-color: #ff85a2;
-  box-shadow: 0 0 0 0.25rem rgba(255, 133, 162, 0.25);
-}
-
-.wc-form-label {
-  color: #d23369;
-  font-weight: 500;
-  margin-bottom: 6px;
-}
-
-.wc-progress h5 {
-  color: #4a4a4a;
-}
-
-.wc-completed {
-  color: #ff85a2 !important;
-  font-weight: 600;
-}
-
-.wc-total {
-  color: #d23369 !important;
-  font-weight: 600;
-}
-
+/* Alert styles */
 .wc-alert {
-  border-radius: 8px;
-  background-color: #ffebf1;
-  border-color: #ffc6d5;
-  color: #d23369;
+  border-radius: 6px;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border: none;
 }
 
-/* Responsive styles */
+/* Responsive adjustments */
 @media (max-width: 768px) {
-  .wc-container {
-    padding: 16px;
+  .wc-sidebar {
+    padding-right: 0;
+    margin-bottom: 20px;
   }
 
-  .wc-row {
-    flex-direction: column;
-  }
-
-  .wc-sidebar,
   .wc-main-content {
-    width: 100%;
-    padding: 0;
-  }
-
-  .wc-card {
-    margin-bottom: 16px;
-  }
-
-  .wc-list-item {
-    padding: 10px 12px;
+    padding-left: 0;
   }
 }
 /* Wedding Guest List - Subtle Pink & White Theme */
