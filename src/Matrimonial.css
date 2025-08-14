@@ -119,13 +119,14 @@
 }
 
 .matrimonial-container .nav-item {
+  color: white;
   position: relative;
   margin: 0 15px;
 }
 
 .matrimonial-container .nav-item span,
 .matrimonial-container .nav-item a {
-  color: var(--matrimonial-dark);
+  color: white;
   text-decoration: none;
   font-weight: 500;
   display: flex;
@@ -136,7 +137,6 @@
 
 .matrimonial-container .nav-item span:hover,
 .matrimonial-container .nav-item a:hover {
-  color: var(--matrimonial-primary);
 }
 
 .matrimonial-container .nav-item svg {
