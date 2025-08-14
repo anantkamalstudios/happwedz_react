@@ -51,10 +51,6 @@ const MatrimonialRegistration = () => {
     const newErrors = {};
 
     if (step === 1) {
-      if (!formData.profileFor.trim())
-        newErrors.profileFor = "Profile for is required";
-      if (!formData.profileType.trim())
-        newErrors.profileType = "Profile type is required";
       if (!formData.name.trim()) newErrors.name = "Name is required";
       if (!formData.dob) newErrors.dob = "Date of birth is required";
     }
@@ -75,25 +71,6 @@ const MatrimonialRegistration = () => {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
-
-    // Update married/unmarried counts when total siblings change
-    if (name === "brothers") {
-      const brothersCount = parseInt(value) || 0;
-      setFormData((prev) => ({
-        ...prev,
-        brothers: brothersCount,
-        marriedBrothers: Math.min(prev.marriedBrothers, brothersCount),
-        unmarriedBrothers: Math.min(prev.unmarriedBrothers, brothersCount),
-      }));
-    } else if (name === "sisters") {
-      const sistersCount = parseInt(value) || 0;
-      setFormData((prev) => ({
-        ...prev,
-        sisters: sistersCount,
-        marriedSisters: Math.min(prev.marriedSisters, sistersCount),
-        unmarriedSisters: Math.min(prev.unmarriedSisters, sistersCount),
-      }));
-    }
 
     // Clear error when field is changed
     if (errors[name]) {
@@ -197,71 +174,13 @@ const MatrimonialRegistration = () => {
 
             {step === 1 && (
               <div className="profile-details">
-                <div className="row">
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label">
-                      <FaUser className="me-2" />
-                      Creating Profile For *
-                    </label>
-                    <select
-                      className={`form-select ${
-                        errors.profileFor ? "is-invalid" : ""
-                      }`}
-                      name="profileFor"
-                      value={formData.profileFor}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">Select</option>
-                      <option value="self">Self</option>
-                      <option value="son">Son</option>
-                      <option value="daughter">Daughter</option>
-                      <option value="brother">Brother</option>
-                      <option value="sister">Sister</option>
-                    </select>
-                    {errors.profileFor && (
-                      <div className="invalid-feedback">
-                        {errors.profileFor}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label">
-                      <FaVenusMars className="me-2" />
-                      Profile Type *
-                    </label>
-                    <select
-                      className={`form-select ${
-                        errors.profileType ? "is-invalid" : ""
-                      }`}
-                      name="profileType"
-                      value={formData.profileType}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">Select</option>
-                      <option value="bride">Bride</option>
-                      <option value="groom">Groom</option>
-                    </select>
-                    {errors.profileType && (
-                      <div className="invalid-feedback">
-                        {errors.profileType}
-                      </div>
-                    )}
-                  </div>
-                </div>
                 <div className="mb-3">
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: "5px",
-                      fontWeight: "500",
-                      color: "#333",
-                    }}
-                  >
-                    <FaUser style={{ marginRight: "8px" }} />
-                    {getNameLabel()} <span style={{ color: "#d81b60" }}>*</span>
+                  <label className="form-label">
+                    <FaUser className="me-2" />
+                    {formData.profileType === "bride"
+                      ? "Bride's"
+                      : "Groom's"}{" "}
+                    Name *
                   </label>
                   <div
                     style={{
@@ -543,62 +462,31 @@ const MatrimonialRegistration = () => {
                       ))}
                     </div>
                   </div>
-                  {formData.brothers > 0 && (
-                    <>
-                      <div className="col-md-4">
-                        <label className="form-label">How many married?</label>
-                        <div className="btn-group w-100">
-                          {[0, 1, 2, 3].map((num) => (
-                            <button
-                              key={`married-brothers-${num}`}
-                              type="button"
-                              className={`btn ${
-                                formData.marriedBrothers === num
-                                  ? "btn-primary"
-                                  : "btn-outline-primary"
-                              }`}
-                              onClick={() =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  marriedBrothers: num,
-                                }))
-                              }
-                              disabled={num > formData.brothers}
-                            >
-                              {num === 3 ? "3+" : num}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-md-4">
-                        <label className="form-label">
-                          How many unmarried?
-                        </label>
-                        <div className="btn-group w-100">
-                          {[0, 1, 2, 3].map((num) => (
-                            <button
-                              key={`unmarried-brothers-${num}`}
-                              type="button"
-                              className={`btn ${
-                                formData.unmarriedBrothers === num
-                                  ? "btn-primary"
-                                  : "btn-outline-primary"
-                              }`}
-                              onClick={() =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  unmarriedBrothers: num,
-                                }))
-                              }
-                              disabled={num > formData.brothers}
-                            >
-                              {num === 3 ? "3+" : num}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
+                  <div className="col-md-6">
+                    <label className="form-label">How many married?</label>
+                    <div className="btn-group w-100">
+                      {[0, 1, 2, 3].map((num) => (
+                        <button
+                          key={`married-brothers-${num}`}
+                          type="button"
+                          className={`btn ${
+                            formData.marriedBrothers === num
+                              ? "btn-primary"
+                              : "btn-outline-primary"
+                          }`}
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              marriedBrothers: num,
+                            }))
+                          }
+                          disabled={num > formData.brothers}
+                        >
+                          {num === 3 ? "3+" : num}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 <h5 className="mb-3">Sisters</h5>
@@ -624,92 +512,30 @@ const MatrimonialRegistration = () => {
                       ))}
                     </div>
                   </div>
-                  {formData.sisters > 0 && (
-                    <>
-                      <div className="col-md-4">
-                        <label className="form-label">How many married?</label>
-                        <div className="btn-group w-100">
-                          {[0, 1, 2, 3].map((num) => (
-                            <button
-                              key={`married-sisters-${num}`}
-                              type="button"
-                              className={`btn ${
-                                formData.marriedSisters === num
-                                  ? "btn-primary"
-                                  : "btn-outline-primary"
-                              }`}
-                              onClick={() =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  marriedSisters: num,
-                                }))
-                              }
-                              disabled={num > formData.sisters}
-                            >
-                              {num === 3 ? "3+" : num}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-md-4">
-                        <label className="form-label">
-                          How many unmarried?
-                        </label>
-                        <div className="btn-group w-100">
-                          {[0, 1, 2, 3].map((num) => (
-                            <button
-                              key={`unmarried-sisters-${num}`}
-                              type="button"
-                              className={`btn ${
-                                formData.unmarriedSisters === num
-                                  ? "btn-primary"
-                                  : "btn-outline-primary"
-                              }`}
-                              onClick={() =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  unmarriedSisters: num,
-                                }))
-                              }
-                              disabled={num > formData.sisters}
-                            >
-                              {num === 3 ? "3+" : num}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <div className="row mb-4">
                   <div className="col-md-6">
-                    <label className="form-label">
-                      <FaBriefcase className="me-2" />
-                      Father's Occupation
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="fatherOccupation"
-                      value={formData.fatherOccupation}
-                      onChange={handleChange}
-                      placeholder="Enter father's occupation"
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">
-                      <FaBriefcase className="me-2" />
-                      Mother's Occupation
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="motherOccupation"
-                      value={formData.motherOccupation}
-                      onChange={handleChange}
-                      placeholder="Enter mother's occupation"
-                    />
+                    <label className="form-label">How many married?</label>
+                    <div className="btn-group w-100">
+                      {[0, 1, 2, 3].map((num) => (
+                        <button
+                          key={`married-sisters-${num}`}
+                          type="button"
+                          className={`btn ${
+                            formData.marriedSisters === num
+                              ? "btn-primary"
+                              : "btn-outline-primary"
+                          }`}
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              marriedSisters: num,
+                            }))
+                          }
+                          disabled={num > formData.sisters}
+                        >
+                          {num === 3 ? "3+" : num}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -812,13 +638,7 @@ const MatrimonialRegistration = () => {
                           }`}
                           name="phone"
                           value={formData.phone}
-                          onChange={(e) => {
-                            // Only allow digits and limit to 10 characters
-                            const value = e.target.value
-                              .replace(/\D/g, "")
-                              .slice(0, 10);
-                            setFormData((prev) => ({ ...prev, phone: value }));
-                          }}
+                          onChange={handleChange}
                           maxLength="10"
                           pattern="\d{10}"
                           placeholder="Enter 10 digit mobile number"
