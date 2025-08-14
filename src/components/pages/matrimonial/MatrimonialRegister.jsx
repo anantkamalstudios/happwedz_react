@@ -13,13 +13,16 @@ import {
   FaLock,
   FaShieldAlt,
   FaQuestionCircle,
+  FaBriefcase,
+  FaHome,
 } from "react-icons/fa";
 
 const MatrimonialRegistration = () => {
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
-    profileType: "bride",
+    profileFor: "",
+    profileType: "",
     name: "",
     showName: true,
     dob: "",
@@ -30,29 +33,36 @@ const MatrimonialRegistration = () => {
     manglik: "non-manglik",
     phone: "",
     phoneVerified: false,
+    familyType: "",
     brothers: 0,
     marriedBrothers: 0,
+    unmarriedBrothers: 0,
     sisters: 0,
     marriedSisters: 0,
+    unmarriedSisters: 0,
+    fatherOccupation: "",
+    motherOccupation: "",
     aboutYourself: "",
+    hobbies: "",
+    partnerExpectations: "",
   });
 
   const validateStep = (step) => {
     const newErrors = {};
 
     if (step === 1) {
+      if (!formData.profileFor.trim())
+        newErrors.profileFor = "Profile for is required";
+      if (!formData.profileType.trim())
+        newErrors.profileType = "Profile type is required";
       if (!formData.name.trim()) newErrors.name = "Name is required";
       if (!formData.dob) newErrors.dob = "Date of birth is required";
-      if (!formData.motherTongue)
-        newErrors.motherTongue = "Mother tongue is required";
-      if (!formData.religion) newErrors.religion = "Religion is required";
-      if (!formData.caste) newErrors.caste = "Caste is required";
     }
 
     if (step === 4 && !formData.phoneVerified) {
       if (!formData.phone) newErrors.phone = "Phone number is required";
       else if (!/^\d{10}$/.test(formData.phone))
-        newErrors.phone = "Invalid phone number";
+        newErrors.phone = "Phone number must be exactly 10 digits";
     }
 
     setErrors(newErrors);
@@ -65,6 +75,25 @@ const MatrimonialRegistration = () => {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+
+    // Update married/unmarried counts when total siblings change
+    if (name === "brothers") {
+      const brothersCount = parseInt(value) || 0;
+      setFormData((prev) => ({
+        ...prev,
+        brothers: brothersCount,
+        marriedBrothers: Math.min(prev.marriedBrothers, brothersCount),
+        unmarriedBrothers: Math.min(prev.unmarriedBrothers, brothersCount),
+      }));
+    } else if (name === "sisters") {
+      const sistersCount = parseInt(value) || 0;
+      setFormData((prev) => ({
+        ...prev,
+        sisters: sistersCount,
+        marriedSisters: Math.min(prev.marriedSisters, sistersCount),
+        unmarriedSisters: Math.min(prev.unmarriedSisters, sistersCount),
+      }));
+    }
 
     // Clear error when field is changed
     if (errors[name]) {
@@ -103,7 +132,7 @@ const MatrimonialRegistration = () => {
       return;
     }
     if (!/^\d{10}$/.test(formData.phone)) {
-      setErrors({ phone: "Invalid phone number" });
+      setErrors({ phone: "Phone number must be exactly 10 digits" });
       return;
     }
 
@@ -111,17 +140,15 @@ const MatrimonialRegistration = () => {
     setFormData((prev) => ({ ...prev, phoneVerified: true }));
   };
 
+  const getNameLabel = () => {
+    if (formData.profileType === "bride") return "Bride's Name";
+    if (formData.profileType === "groom") return "Groom's Name";
+    return "Name";
+  };
+
   return (
     <div className="matrimonial-registration">
       <div className="container py-4 py-md-5">
-        {/* <div className="text-center mb-4"> */}
-        {/* <h2 className="text-primary">
-            <FaHeart className="me-2" />
-            JeevanSaathi
-          </h2> */}
-        {/* <p className="text-muted">Find your perfect life partner</p>
-        </div> */}
-
         <div className="card shadow-sm">
           <div className="card-header bg-white">
             <ul className="nav nav-tabs card-header-tabs flex-nowrap overflow-auto">
@@ -170,13 +197,65 @@ const MatrimonialRegistration = () => {
 
             {step === 1 && (
               <div className="profile-details">
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">
+                      <FaUser className="me-2" />
+                      Creating Profile For *
+                    </label>
+                    <select
+                      className={`form-select ${
+                        errors.profileFor ? "is-invalid" : ""
+                      }`}
+                      name="profileFor"
+                      value={formData.profileFor}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select</option>
+                      <option value="self">Self</option>
+                      <option value="son">Son</option>
+                      <option value="daughter">Daughter</option>
+                      <option value="brother">Brother</option>
+                      <option value="sister">Sister</option>
+                    </select>
+                    {errors.profileFor && (
+                      <div className="invalid-feedback">
+                        {errors.profileFor}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">
+                      <FaVenusMars className="me-2" />
+                      Profile Type *
+                    </label>
+                    <select
+                      className={`form-select ${
+                        errors.profileType ? "is-invalid" : ""
+                      }`}
+                      name="profileType"
+                      value={formData.profileType}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select</option>
+                      <option value="bride">Bride</option>
+                      <option value="groom">Groom</option>
+                    </select>
+                    {errors.profileType && (
+                      <div className="invalid-feedback">
+                        {errors.profileType}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="mb-3">
                   <label className="form-label">
                     <FaUser className="me-2" />
-                    {formData.profileType === "bride"
-                      ? "Bride's"
-                      : "Groom's"}{" "}
-                    Name *
+                    {getNameLabel()} *
                   </label>
                   <div className="input-group">
                     <input
@@ -237,16 +316,13 @@ const MatrimonialRegistration = () => {
                   <div className="col-md-6 mb-3">
                     <label className="form-label">
                       <FaLanguage className="me-2" />
-                      Mother tongue *
+                      Mother tongue
                     </label>
                     <select
-                      className={`form-select ${
-                        errors.motherTongue ? "is-invalid" : ""
-                      }`}
+                      className="form-select"
                       name="motherTongue"
                       value={formData.motherTongue}
                       onChange={handleChange}
-                      required
                     >
                       <option value="">Select</option>
                       <option value="hindi">Hindi</option>
@@ -256,11 +332,6 @@ const MatrimonialRegistration = () => {
                       <option value="telugu">Telugu</option>
                       <option value="marathi">Marathi</option>
                     </select>
-                    {errors.motherTongue && (
-                      <div className="invalid-feedback">
-                        {errors.motherTongue}
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -268,16 +339,13 @@ const MatrimonialRegistration = () => {
                   <div className="col-md-6 mb-3">
                     <label className="form-label">
                       <FaVenusMars className="me-2" />
-                      Religion *
+                      Religion
                     </label>
                     <select
-                      className={`form-select ${
-                        errors.religion ? "is-invalid" : ""
-                      }`}
+                      className="form-select"
                       name="religion"
                       value={formData.religion}
                       onChange={handleChange}
-                      required
                     >
                       <option value="">Select</option>
                       <option value="hindu">Hindu</option>
@@ -286,24 +354,18 @@ const MatrimonialRegistration = () => {
                       <option value="sikh">Sikh</option>
                       <option value="jain">Jain</option>
                     </select>
-                    {errors.religion && (
-                      <div className="invalid-feedback">{errors.religion}</div>
-                    )}
                   </div>
 
                   <div className="col-md-6 mb-3">
                     <label className="form-label">
                       <FaUsers className="me-2" />
-                      Caste *
+                      Caste
                     </label>
                     <select
-                      className={`form-select ${
-                        errors.caste ? "is-invalid" : ""
-                      }`}
+                      className="form-select"
                       name="caste"
                       value={formData.caste}
                       onChange={handleChange}
-                      required
                       disabled={!formData.religion}
                     >
                       <option value="">Select</option>
@@ -321,9 +383,6 @@ const MatrimonialRegistration = () => {
                         </>
                       )}
                     </select>
-                    {errors.caste && (
-                      <div className="invalid-feedback">{errors.caste}</div>
-                    )}
                   </div>
                 </div>
 
@@ -343,7 +402,7 @@ const MatrimonialRegistration = () => {
                 <div className="mb-4">
                   <label className="form-label">
                     <i className="fas fa-star me-2"></i>
-                    Are you manglik? *
+                    Are you manglik?
                   </label>
                   <div>
                     <div className="form-check form-check-inline">
@@ -395,9 +454,27 @@ const MatrimonialRegistration = () => {
 
             {step === 2 && (
               <div className="family-details">
+                <div className="mb-4">
+                  <label className="form-label">
+                    <FaHome className="me-2" />
+                    Family Type
+                  </label>
+                  <select
+                    className="form-select"
+                    name="familyType"
+                    value={formData.familyType}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select</option>
+                    <option value="joint">Joint Family</option>
+                    <option value="nuclear">Nuclear Family</option>
+                    <option value="separate">Separate Family</option>
+                  </select>
+                </div>
+
                 <h5 className="mb-3">Brothers</h5>
                 <div className="row mb-4">
-                  <div className="col-md-6">
+                  <div className="col-md-4">
                     <label className="form-label">How many brothers?</label>
                     <div className="btn-group w-100">
                       {[0, 1, 2, 3].map((num) => (
@@ -418,36 +495,67 @@ const MatrimonialRegistration = () => {
                       ))}
                     </div>
                   </div>
-                  <div className="col-md-6">
-                    <label className="form-label">How many married?</label>
-                    <div className="btn-group w-100">
-                      {[0, 1, 2, 3].map((num) => (
-                        <button
-                          key={`married-brothers-${num}`}
-                          type="button"
-                          className={`btn ${
-                            formData.marriedBrothers === num
-                              ? "btn-primary"
-                              : "btn-outline-primary"
-                          }`}
-                          onClick={() =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              marriedBrothers: num,
-                            }))
-                          }
-                          disabled={num > formData.brothers}
-                        >
-                          {num === 3 ? "3+" : num}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  {formData.brothers > 0 && (
+                    <>
+                      <div className="col-md-4">
+                        <label className="form-label">How many married?</label>
+                        <div className="btn-group w-100">
+                          {[0, 1, 2, 3].map((num) => (
+                            <button
+                              key={`married-brothers-${num}`}
+                              type="button"
+                              className={`btn ${
+                                formData.marriedBrothers === num
+                                  ? "btn-primary"
+                                  : "btn-outline-primary"
+                              }`}
+                              onClick={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  marriedBrothers: num,
+                                }))
+                              }
+                              disabled={num > formData.brothers}
+                            >
+                              {num === 3 ? "3+" : num}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="col-md-4">
+                        <label className="form-label">
+                          How many unmarried?
+                        </label>
+                        <div className="btn-group w-100">
+                          {[0, 1, 2, 3].map((num) => (
+                            <button
+                              key={`unmarried-brothers-${num}`}
+                              type="button"
+                              className={`btn ${
+                                formData.unmarriedBrothers === num
+                                  ? "btn-primary"
+                                  : "btn-outline-primary"
+                              }`}
+                              onClick={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  unmarriedBrothers: num,
+                                }))
+                              }
+                              disabled={num > formData.brothers}
+                            >
+                              {num === 3 ? "3+" : num}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <h5 className="mb-3">Sisters</h5>
                 <div className="row mb-4">
-                  <div className="col-md-6">
+                  <div className="col-md-4">
                     <label className="form-label">How many sisters?</label>
                     <div className="btn-group w-100">
                       {[0, 1, 2, 3].map((num) => (
@@ -468,30 +576,92 @@ const MatrimonialRegistration = () => {
                       ))}
                     </div>
                   </div>
+                  {formData.sisters > 0 && (
+                    <>
+                      <div className="col-md-4">
+                        <label className="form-label">How many married?</label>
+                        <div className="btn-group w-100">
+                          {[0, 1, 2, 3].map((num) => (
+                            <button
+                              key={`married-sisters-${num}`}
+                              type="button"
+                              className={`btn ${
+                                formData.marriedSisters === num
+                                  ? "btn-primary"
+                                  : "btn-outline-primary"
+                              }`}
+                              onClick={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  marriedSisters: num,
+                                }))
+                              }
+                              disabled={num > formData.sisters}
+                            >
+                              {num === 3 ? "3+" : num}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="col-md-4">
+                        <label className="form-label">
+                          How many unmarried?
+                        </label>
+                        <div className="btn-group w-100">
+                          {[0, 1, 2, 3].map((num) => (
+                            <button
+                              key={`unmarried-sisters-${num}`}
+                              type="button"
+                              className={`btn ${
+                                formData.unmarriedSisters === num
+                                  ? "btn-primary"
+                                  : "btn-outline-primary"
+                              }`}
+                              onClick={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  unmarriedSisters: num,
+                                }))
+                              }
+                              disabled={num > formData.sisters}
+                            >
+                              {num === 3 ? "3+" : num}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="row mb-4">
                   <div className="col-md-6">
-                    <label className="form-label">How many married?</label>
-                    <div className="btn-group w-100">
-                      {[0, 1, 2, 3].map((num) => (
-                        <button
-                          key={`married-sisters-${num}`}
-                          type="button"
-                          className={`btn ${
-                            formData.marriedSisters === num
-                              ? "btn-primary"
-                              : "btn-outline-primary"
-                          }`}
-                          onClick={() =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              marriedSisters: num,
-                            }))
-                          }
-                          disabled={num > formData.sisters}
-                        >
-                          {num === 3 ? "3+" : num}
-                        </button>
-                      ))}
-                    </div>
+                    <label className="form-label">
+                      <FaBriefcase className="me-2" />
+                      Father's Occupation
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="fatherOccupation"
+                      value={formData.fatherOccupation}
+                      onChange={handleChange}
+                      placeholder="Enter father's occupation"
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">
+                      <FaBriefcase className="me-2" />
+                      Mother's Occupation
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="motherOccupation"
+                      value={formData.motherOccupation}
+                      onChange={handleChange}
+                      placeholder="Enter mother's occupation"
+                    />
                   </div>
                 </div>
 
@@ -515,7 +685,7 @@ const MatrimonialRegistration = () => {
                     partner, etc.
                   </p>
                   <textarea
-                    className="form-control"
+                    className="form-control mb-3"
                     rows="6"
                     name="aboutYourself"
                     value={formData.aboutYourself}
@@ -526,6 +696,37 @@ const MatrimonialRegistration = () => {
                     <a href="#">
                       <FaQuestionCircle className="me-1" /> Need help writing?
                     </a>
+                  </div>
+                </div>
+
+                <div className="row mb-4">
+                  <div className="col-md-6">
+                    <label className="form-label">
+                      <FaHeart className="me-2" />
+                      Hobbies & Interests
+                    </label>
+                    <textarea
+                      className="form-control"
+                      rows="4"
+                      name="hobbies"
+                      value={formData.hobbies}
+                      onChange={handleChange}
+                      placeholder="Reading, traveling, cooking, sports, music, etc."
+                    ></textarea>
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">
+                      <FaUsers className="me-2" />
+                      Partner Expectations
+                    </label>
+                    <textarea
+                      className="form-control"
+                      rows="4"
+                      name="partnerExpectations"
+                      value={formData.partnerExpectations}
+                      onChange={handleChange}
+                      placeholder="What are you looking for in your ideal partner?"
+                    ></textarea>
                   </div>
                 </div>
 
@@ -563,8 +764,16 @@ const MatrimonialRegistration = () => {
                           }`}
                           name="phone"
                           value={formData.phone}
-                          onChange={handleChange}
+                          onChange={(e) => {
+                            // Only allow digits and limit to 10 characters
+                            const value = e.target.value
+                              .replace(/\D/g, "")
+                              .slice(0, 10);
+                            setFormData((prev) => ({ ...prev, phone: value }));
+                          }}
                           maxLength="10"
+                          pattern="\d{10}"
+                          placeholder="Enter 10 digit mobile number"
                           required
                         />
                         {errors.phone && (

@@ -216,7 +216,16 @@ const Navbar = () => {
                 toggleLogin();
               }}
             >
-              Login / Register
+              Login
+            </button>
+            <button
+              className="login-btn "
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate("/matrimonial-register");
+              }}
+            >
+              Register
             </button>
           </div>
         </div>
@@ -256,14 +265,16 @@ const Navbar = () => {
                 </label>
                 <a href="/">Forgot Password?</a>
               </div>
-              <button className="login-button">Login</button>
-              {/* <div className="divider">or</div> */}
-              {/* <button
-                className="signup-button"
-                onClick={() => navigate("/matrimonial-register")}
+              <button
+                className="login-button"
+                onClick={() => {
+                  // Your login logic here
+                  // After successful login and navigation:
+                  toggleLogin(); // This will close the modal
+                }}
               >
-                Create New Account
-              </button> */}
+                Login
+              </button>
             </div>
             <div className="modal-footer">
               <p>
