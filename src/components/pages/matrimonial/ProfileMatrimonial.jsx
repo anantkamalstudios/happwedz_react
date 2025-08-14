@@ -375,14 +375,14 @@ const ProfileMatrimonial = () => {
                     <div className="range-slider">
                       <input
                         type="range"
-                        min="18"
+                        min="16"
                         max="60"
                         value={ageRange.min}
                         onChange={(e) => setAgeRange({...ageRange, min: e.target.value})}
                       />
                       <input
                         type="range"
-                        min="18"
+                        min="16"
                         max="60"
                         value={ageRange.max}
                         onChange={(e) => setAgeRange({...ageRange, max: e.target.value})}
@@ -397,7 +397,7 @@ const ProfileMatrimonial = () => {
                       value={heightRange.min}
                       onChange={(e) => setHeightRange({...heightRange, min: e.target.value})}
                     >
-                      {["4'8\"", "5'0\"", "5'2\"", "5'4\"", "5'6\"", "5'8\"", "5'10\""].map(h => (
+                      {["3'2\"","3'6\"","3'8\"", "4'0\"","4'2\"","4'8\"","5'0\"", "5'2\"", "5'4\"", "5'6\"", "5'8\"", "5'10\""].map(h => (
                         <option key={h} value={h}>{h}</option>
                       ))}
                     </select>
@@ -406,7 +406,7 @@ const ProfileMatrimonial = () => {
                       value={heightRange.max}
                       onChange={(e) => setHeightRange({...heightRange, max: e.target.value})}
                     >
-                      {["5'4\"", "5'6\"", "5'8\"", "5'10\"", "6'0\"", "6'2\"", "6'4\""].map(h => (
+                      {["5'4\"", "5'6\"", "5'8\"", "5'10\"", "6'0\"", "6'2\"", "6'4\"", "6'6\"", "6'8\"", "7'2\"", "7'4\"", "7'6\""].map(h => (
                         <option key={h} value={h}>{h}</option>
                       ))}
                     </select>
