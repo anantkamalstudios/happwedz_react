@@ -1,5 +1,5 @@
 // src/components/pages/matrimonial/BrahminMatrimonial.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiFilter,
   FiHeart,
@@ -9,126 +9,44 @@ import {
   FiEye,
   FiChevronDown,
   FiChevronRight,
+  FiChevronUp,
+  FiX,
+  FiSearch
 } from "react-icons/fi";
 import "../../../Matrimonial.css";
 import { useParams } from "react-router-dom";
+
+const FilterSection = ({ title, children, defaultOpen = true }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  
+  return (
+    <div className="filter-section">
+      <div className="filter-header" onClick={() => setIsOpen(!isOpen)}>
+        <h4>{title}</h4>
+        {isOpen ? <FiChevronUp size={18} /> : <FiChevronDown size={18} />}
+      </div>
+      {isOpen && <div className="filter-content">{children}</div>}
+    </div>
+  );
+};
+
 const ProfileMatrimonial = () => {
   const { matchType } = useParams();
   const [activeTab, setActiveTab] = useState("grooms");
   const [sortBy, setSortBy] = useState("recent");
-  const [cityFilter, setCityFilter] = useState("all");
   const [showMoreFilters, setShowMoreFilters] = useState(false);
-  console.log(matchType);
-  const profiles = {
-    grooms: [
-      {
-        id: 1,
-        name: "Rajesh Sharma",
-        age: 32,
-        height: "5'10\"",
-        education: "MBA, IIM Ahmedabad",
-        profession: "Senior Manager at Deloitte",
-        location: "Mumbai, India",
-        income: "₹25-30 LPA",
-        family: "Brahmin, Iyer, Vegetarian",
-        image:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NHx8cG9ydHJhaXR8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60",
-      },
-      {
-        id: 2,
-        name: "Vikram Iyer",
-        age: 29,
-        height: "5'9\"",
-        education: "MS in Computer Science",
-        profession: "Software Engineer at Google",
-        location: "Bangalore, India",
-        income: "₹35-40 LPA",
-        family: "Brahmin, Iyer, Vegetarian",
-        image:
-          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8OHx8cG9ydHJhaXR8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60",
-      },
-      {
-        id: 3,
-        name: "Arun Kumar",
-        age: 34,
-        height: "5'11\"",
-        education: "CA, CFA",
-        profession: "Finance Director at HDFC",
-        location: "Delhi, India",
-        income: "₹45-50 LPA",
-        family: "Brahmin, Iyengar, Vegetarian",
-        image:
-          "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8cG9ydHJhaXR8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60",
-      },
-      {
-        id: 4,
-        name: "Suresh Menon",
-        age: 31,
-        height: "5'8\"",
-        education: "B.Tech, IIT Bombay",
-        profession: "Product Manager at Amazon",
-        location: "Hyderabad, India",
-        income: "₹30-35 LPA",
-        family: "Brahmin, Namboothiri, Vegetarian",
-        image:
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTB8fHBvcnRyYWl0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
-      },
-    ],
-    brides: [
-      {
-        id: 1,
-        name: "Priya Sharma",
-        age: 26,
-        height: "5'4\"",
-        education: "M.Sc Biotechnology",
-        profession: "Research Scientist",
-        location: "Chennai, India",
-        income: "₹8-10 LPA",
-        family: "Brahmin, Iyer, Vegetarian",
-        image:
-          "https://images.unsplash.com/photo-1554151228-14d9def656e4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTd8fHBvcnRyYWl0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
-      },
-      {
-        id: 2,
-        name: "Ananya Iyer",
-        age: 28,
-        height: "5'5\"",
-        education: "MBA, Symbiosis",
-        profession: "Marketing Manager",
-        location: "Pune, India",
-        income: "₹12-15 LPA",
-        family: "Brahmin, Iyengar, Vegetarian",
-        image:
-          "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTR8fHBvcnRyYWl0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
-      },
-      {
-        id: 3,
-        name: "Divya Kumar",
-        age: 25,
-        height: "5'3\"",
-        education: "B.Com, CA Inter",
-        profession: "Chartered Accountant",
-        location: "Kolkata, India",
-        income: "₹15-18 LPA",
-        family: "Brahmin, Niyogi, Vegetarian",
-        image:
-          "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MjB8fHBvcnRyYWl0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
-      },
-      {
-        id: 4,
-        name: "Shruti Nair",
-        age: 27,
-        height: "5'6\"",
-        education: "M.Tech Computer Science",
-        profession: "Data Scientist",
-        location: "Bangalore, India",
-        income: "₹18-20 LPA",
-        family: "Brahmin, Saraswat, Vegetarian",
-        image:
-          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8OHx8cG9ydHJhaXR8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60",
-      },
-    ],
-  };
+  
+  // Filter states
+  const [selectedCities, setSelectedCities] = useState(["All Cities"]);
+  const [ageRange, setAgeRange] = useState({ min: 25, max: 35 });
+  const [heightRange, setHeightRange] = useState({ min: "5'4\"", max: "6'0\"" });
+  const [maritalStatus, setMaritalStatus] = useState(["Never Married"]);
+  const [education, setEducation] = useState("");
+  const [profession, setProfession] = useState("");
+  const [income, setIncome] = useState("");
+  const [diet, setDiet] = useState(["Vegetarian"]);
+  const [motherTongue, setMotherTongue] = useState("");
+  const [community, setCommunity] = useState("");
 
   const cities = [
     "All Cities",
@@ -140,6 +58,9 @@ const ProfileMatrimonial = () => {
     "Pune",
     "Kolkata",
     "Ahmedabad",
+    "Surat",
+    "Jaipur",
+    "Lucknow"
   ];
 
   const subCommunities = [
@@ -155,10 +76,138 @@ const ProfileMatrimonial = () => {
     "Kashmiri Pandit",
   ];
 
+  const profiles = {
+    grooms: [
+      {
+        id: 1,
+        name: "Rajesh Sharma",
+        age: 32,
+        height: "5'10\"",
+        education: "MBA, IIM Ahmedabad",
+        profession: "Senior Manager at Deloitte",
+        location: "Mumbai, India",
+        income: "₹25-30 LPA",
+        family: "Brahmin, Iyer, Vegetarian",
+        image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NHx8cG9ydHJhaXR8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60",
+      },
+      {
+        id: 2,
+        name: "Vikram Iyer",
+        age: 29,
+        height: "5'9\"",
+        education: "MS in Computer Science",
+        profession: "Software Engineer at Google",
+        location: "Bangalore, India",
+        income: "₹35-40 LPA",
+        family: "Brahmin, Iyer, Vegetarian",
+        image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8OHx8cG9ydHJhaXR8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60",
+      },
+      {
+        id: 3,
+        name: "Arun Kumar",
+        age: 34,
+        height: "5'11\"",
+        education: "CA, CFA",
+        profession: "Finance Director at HDFC",
+        location: "Delhi, India",
+        income: "₹45-50 LPA",
+        family: "Brahmin, Iyengar, Vegetarian",
+        image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8cG9ydHJhaXR8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60",
+      },
+      {
+        id: 4,
+        name: "Suresh Menon",
+        age: 31,
+        height: "5'8\"",
+        education: "B.Tech, IIT Bombay",
+        profession: "Product Manager at Amazon",
+        location: "Hyderabad, India",
+        income: "₹30-35 LPA",
+        family: "Brahmin, Namboothiri, Vegetarian",
+        image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTB8fHBvcnRyYWl0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
+      },
+    ],
+    brides: [
+      {
+        id: 1,
+        name: "Priya Sharma",
+        age: 26,
+        height: "5'4\"",
+        education: "M.Sc Biotechnology",
+        profession: "Research Scientist",
+        location: "Chennai, India",
+        income: "₹8-10 LPA",
+        family: "Brahmin, Iyer, Vegetarian",
+        image: "https://images.unsplash.com/photo-1554151228-14d9def656e4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTd8fHBvcnRyYWl0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
+      },
+      {
+        id: 2,
+        name: "Ananya Iyer",
+        age: 28,
+        height: "5'5\"",
+        education: "MBA, Symbiosis",
+        profession: "Marketing Manager",
+        location: "Pune, India",
+        income: "₹12-15 LPA",
+        family: "Brahmin, Iyengar, Vegetarian",
+        image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTR8fHBvcnRyYWl0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
+      },
+      {
+        id: 3,
+        name: "Divya Kumar",
+        age: 25,
+        height: "5'3\"",
+        education: "B.Com, CA Inter",
+        profession: "Chartered Accountant",
+        location: "Kolkata, India",
+        income: "₹15-18 LPA",
+        family: "Brahmin, Niyogi, Vegetarian",
+        image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MjB8fHBvcnRyYWl0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
+      },
+      {
+        id: 4,
+        name: "Shruti Nair",
+        age: 27,
+        height: "5'6\"",
+        education: "M.Tech Computer Science",
+        profession: "Data Scientist",
+        location: "Bangalore, India",
+        income: "₹18-20 LPA",
+        family: "Brahmin, Saraswat, Vegetarian",
+        image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8OHx8cG9ydHJhaXR8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60",
+      },
+    ],
+  };
+
+  const handleCityToggle = (city) => {
+    if (city === "All Cities") {
+      setSelectedCities(["All Cities"]);
+    } else {
+      if (selectedCities.includes(city)) {
+        setSelectedCities(selectedCities.filter(c => c !== city));
+      } else {
+        setSelectedCities(selectedCities.filter(c => c !== "All Cities").concat(city));
+      }
+    }
+  };
+
+  const resetAllFilters = () => {
+    setSelectedCities(["All Cities"]);
+    setAgeRange({ min: 25, max: 35 });
+    setHeightRange({ min: "5'4\"", max: "6'0\"" });
+    setMaritalStatus(["Never Married"]);
+    setEducation("");
+    setProfession("");
+    setIncome("");
+    setDiet(["Vegetarian"]);
+    setMotherTongue("");
+    setCommunity("");
+  };
+
   return (
     <>
       <div className="brahmin-matrimonial-page">
-        {/* Page Header */}
+        {/* Page Header - Keep existing */}
         <div className="brahmin-page-header">
           <div className="container">
             <h1>{matchType} Matrimony</h1>
@@ -185,6 +234,7 @@ const ProfileMatrimonial = () => {
 
         <div className="container brahmin-main-content">
           <div className="brahmin-content-wrapper">
+            {/* Profiles Column - Keep existing */}
             <div className="brahmin-profiles-column">
               <div className="brahmin-profile-tabs">
                 <button
@@ -285,208 +335,220 @@ const ProfileMatrimonial = () => {
               </div>
             </div>
 
-            {/* Right Column - Filters */}
+            {/* Filters Column - Updated with new design */}
             <div className="brahmin-filters-column">
-              <div className="brahmin-filter-card">
-                <h3>Filter by City</h3>
-                <div className="brahmin-city-filter">
-                  {cities.map((city) => (
-                    <button
-                      key={city}
-                      className={`brahmin-city-btn ${
-                        cityFilter === city ? "active" : ""
-                      }`}
-                      onClick={() => setCityFilter(city)}
-                    >
-                      {city}
-                    </button>
-                  ))}
+              <div className="filter-panel">
+                <div className="filter-panel-header">
+                  <h3>Refine Search</h3>
+                  <button className="reset-all" onClick={resetAllFilters}>
+                    <FiX size={16} /> Reset All
+                  </button>
                 </div>
-              </div>
-              <div className="brahmin-filter-card">
-                <h3>Refine Your Search</h3>
-                <div className="brahmin-filter-group">
-                  <label>Age Range</label>
-                  <div className="brahmin-range-inputs">
-                    <select className="brahmin-range-select">
-                      <option>18</option>
-                      <option>20</option>
-                      <option>22</option>
-                      <option>25</option>
-                      <option>28</option>
-                      <option selected>30</option>
-                      <option>35</option>
-                      <option>40</option>
-                    </select>
-                    <span>to</span>
-                    <select className="brahmin-range-select">
-                      <option>25</option>
-                      <option>28</option>
-                      <option>30</option>
-                      <option>32</option>
-                      <option selected>35</option>
-                      <option>40</option>
-                      <option>45</option>
-                      <option>50</option>
-                    </select>
+
+                <FilterSection title="City">
+                  <div className="search-box">
+                    <FiSearch className="search-icon" />
+                    <input type="text" placeholder="Search city..." />
                   </div>
-                </div>
-
-                <div className="brahmin-filter-group">
-                  <label>Height</label>
-                  <div className="brahmin-range-inputs">
-                    <select className="brahmin-range-select">
-                      <option>4'8"</option>
-                      <option>5'0"</option>
-                      <option>5'2"</option>
-                      <option selected>5'4"</option>
-                      <option>5'6"</option>
-                      <option>5'8"</option>
-                    </select>
-                    <span>to</span>
-                    <select className="brahmin-range-select">
-                      <option>5'8"</option>
-                      <option>5'10"</option>
-                      <option selected>6'0"</option>
-                      <option>6'2"</option>
-                      <option>6'4"</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="brahmin-filter-group">
-                  <label>Marital Status</label>
-                  <div className="brahmin-checkbox-group">
-                    <label className="brahmin-checkbox-label">
-                      <input
-                        type="checkbox"
-                        defaultChecked
-                        className="brahmin-checkbox"
-                      />{" "}
-                      Never Married
-                    </label>
-                    <label className="brahmin-checkbox-label">
-                      <input type="checkbox" className="brahmin-checkbox" />{" "}
-                      Divorced
-                    </label>
-                    <label className="brahmin-checkbox-label">
-                      <input type="checkbox" className="brahmin-checkbox" />{" "}
-                      Widowed
-                    </label>
-                  </div>
-                </div>
-
-                <div className="brahmin-filter-group">
-                  <label>Education</label>
-                  <select className="brahmin-filter-select">
-                    <option>Any</option>
-                    <option>B.Tech/B.E.</option>
-                    <option>MBA/PGDM</option>
-                    <option>M.Tech</option>
-                    <option>CA</option>
-                    <option>Medical</option>
-                    <option>Ph.D</option>
-                  </select>
-                </div>
-
-                <div className="brahmin-filter-group">
-                  <label>Profession</label>
-                  <select className="brahmin-filter-select">
-                    <option>Any</option>
-                    <option>Software Professional</option>
-                    <option>Doctor</option>
-                    <option>Civil Services</option>
-                    <option>Business</option>
-                    <option>Teacher</option>
-                    <option>Government Employee</option>
-                  </select>
-                </div>
-
-                <div
-                  className="brahmin-more-filters-toggle"
-                  onClick={() => setShowMoreFilters(!showMoreFilters)}
-                >
-                  More Filters{" "}
-                  <FiChevronDown
-                    className={`brahmin-icon ${
-                      showMoreFilters ? "rotate" : ""
-                    }`}
-                  />
-                </div>
-
-                {showMoreFilters && (
-                  <div className="brahmin-more-filters">
-                    <div className="brahmin-filter-group">
-                      <label>Income</label>
-                      <select className="brahmin-filter-select">
-                        <option>Any</option>
-                        <option>No Income</option>
-                        <option>Below ₹1 Lakh</option>
-                        <option>₹1-2 Lakhs</option>
-                        <option>₹2-5 Lakhs</option>
-                        <option>₹5-10 Lakhs</option>
-                        <option>₹10+ Lakhs</option>
-                      </select>
-                    </div>
-
-                    <div className="brahmin-filter-group">
-                      <label>Diet</label>
-                      <div className="brahmin-checkbox-group">
-                        <label className="brahmin-checkbox-label">
-                          <input type="checkbox" className="brahmin-checkbox" />{" "}
-                          Vegetarian
-                        </label>
-                        <label className="brahmin-checkbox-label">
-                          <input type="checkbox" className="brahmin-checkbox" />{" "}
-                          Non-Vegetarian
-                        </label>
-                        <label className="brahmin-checkbox-label">
-                          <input type="checkbox" className="brahmin-checkbox" />{" "}
-                          Eggetarian
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="brahmin-filter-group">
-                      <label>Mother Tongue</label>
-                      <select className="brahmin-filter-select">
-                        <option>Any</option>
-                        <option>Hindi</option>
-                        <option>Marathi</option>
-                        <option>Tamil</option>
-                        <option>Telugu</option>
-                        <option>Bengali</option>
-                        <option>Malayalam</option>
-                      </select>
-                    </div>
-                  </div>
-                )}
-
-                <button className="brahmin-apply-btn">Apply Filters</button>
-                <button className="brahmin-reset-btn">Reset Filters</button>
-              </div>
-
-              <div className="brahmin-info-card">
-                <h3>Brahmin Matrimony</h3>
-                <p>
-                  Brahmin matrimony is one of the oldest and most respected
-                  communities in India. Brahmin brides and grooms are known for
-                  their strong cultural values and education.
-                </p>
-                <p>
-                  Find your perfect match from sub-communities like Iyer,
-                  Iyengar, Namboothiri, Saraswat, and more.
-                </p>
-
-                <div className="brahmin-sub-communities">
-                  <h4>Popular Sub-Communities</h4>
-                  <div className="brahmin-community-list">
-                    {subCommunities.map((community) => (
-                      <div key={community} className="brahmin-community-item">
-                        {community} <FiChevronRight className="brahmin-icon" />
-                      </div>
+                  <div className="filter-options">
+                    {cities.map(city => (
+                      <label key={city} className="filter-option">
+                        <input
+                          type="checkbox"
+                          checked={selectedCities.includes(city)}
+                          onChange={() => handleCityToggle(city)}
+                        />
+                        <span className="checkmark"></span>
+                        <span className="option-label">{city}</span>
+                      </label>
                     ))}
                   </div>
+                </FilterSection>
+
+                <FilterSection title="Age">
+                  <div className="range-filter">
+                    <div className="range-values">
+                      <span>{ageRange.min} yrs</span>
+                      <span>to</span>
+                      <span>{ageRange.max} yrs</span>
+                    </div>
+                    <div className="range-slider">
+                      <input
+                        type="range"
+                        min="18"
+                        max="60"
+                        value={ageRange.min}
+                        onChange={(e) => setAgeRange({...ageRange, min: e.target.value})}
+                      />
+                      <input
+                        type="range"
+                        min="18"
+                        max="60"
+                        value={ageRange.max}
+                        onChange={(e) => setAgeRange({...ageRange, max: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                </FilterSection>
+
+                <FilterSection title="Height">
+                  <div className="height-filter">
+                    <select
+                      value={heightRange.min}
+                      onChange={(e) => setHeightRange({...heightRange, min: e.target.value})}
+                    >
+                      {["4'8\"", "5'0\"", "5'2\"", "5'4\"", "5'6\"", "5'8\"", "5'10\""].map(h => (
+                        <option key={h} value={h}>{h}</option>
+                      ))}
+                    </select>
+                    <span>to</span>
+                    <select
+                      value={heightRange.max}
+                      onChange={(e) => setHeightRange({...heightRange, max: e.target.value})}
+                    >
+                      {["5'4\"", "5'6\"", "5'8\"", "5'10\"", "6'0\"", "6'2\"", "6'4\""].map(h => (
+                        <option key={h} value={h}>{h}</option>
+                      ))}
+                    </select>
+                  </div>
+                </FilterSection>
+
+                <FilterSection title="Marital Status">
+                  <div className="filter-options">
+                    {["Never Married", "Divorced", "Widowed", "Separated"].map(status => (
+                      <label key={status} className="filter-option">
+                        <input
+                          type="checkbox"
+                          checked={maritalStatus.includes(status)}
+                          onChange={() => {
+                            if (maritalStatus.includes(status)) {
+                              setMaritalStatus(maritalStatus.filter(s => s !== status));
+                            } else {
+                              setMaritalStatus([...maritalStatus, status]);
+                            }
+                          }}
+                        />
+                        <span className="checkmark"></span>
+                        <span className="option-label">{status}</span>
+                      </label>
+                    ))}
+                  </div>
+                </FilterSection>
+
+                <FilterSection title="Education">
+                  <select
+                    value={education}
+                    onChange={(e) => setEducation(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="">Any Education</option>
+                    <option value="B.Tech">B.Tech/B.E.</option>
+                    <option value="MBA">MBA/PGDM</option>
+                    <option value="M.Tech">M.Tech</option>
+                    <option value="CA">CA</option>
+                    <option value="Medical">Medical</option>
+                    <option value="Ph.D">Ph.D</option>
+                  </select>
+                </FilterSection>
+
+                <FilterSection title="Profession">
+                  <select
+                    value={profession}
+                    onChange={(e) => setProfession(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="">Any Profession</option>
+                    <option value="Software">Software Professional</option>
+                    <option value="Doctor">Doctor</option>
+                    <option value="Civil">Civil Services</option>
+                    <option value="Business">Business</option>
+                    <option value="Teacher">Teacher</option>
+                  </select>
+                </FilterSection>
+
+                <FilterSection title="Annual Income">
+                  <select
+                    value={income}
+                    onChange={(e) => setIncome(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="">Any Income</option>
+                    <option value="0-5">Below ₹5 Lakhs</option>
+                    <option value="5-10">₹5-10 Lakhs</option>
+                    <option value="10-20">₹10-20 Lakhs</option>
+                    <option value="20+">₹20+ Lakhs</option>
+                  </select>
+                </FilterSection>
+
+                <FilterSection title="Diet">
+                  <div className="filter-options">
+                    {["Vegetarian", "Non-Vegetarian", "Eggetarian", "Jain"].map(d => (
+                      <label key={d} className="filter-option">
+                        <input
+                          type="checkbox"
+                          checked={diet.includes(d)}
+                          onChange={() => {
+                            if (diet.includes(d)) {
+                              setDiet(diet.filter(item => item !== d));
+                            } else {
+                              setDiet([...diet, d]);
+                            }
+                          }}
+                        />
+                        <span className="checkmark"></span>
+                        <span className="option-label">{d}</span>
+                      </label>
+                    ))}
+                  </div>
+                </FilterSection>
+
+                <FilterSection title="Mother Tongue">
+                  <select
+                    value={motherTongue}
+                    onChange={(e) => setMotherTongue(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="">Any Language</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="Marathi">Marathi</option>
+                    <option value="Tamil">Tamil</option>
+                    <option value="Telugu">Telugu</option>
+                    <option value="Bengali">Bengali</option>
+                  </select>
+                </FilterSection>
+
+                <FilterSection title="Community">
+                  <select
+                    value={community}
+                    onChange={(e) => setCommunity(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="">Any Community</option>
+                    {subCommunities.map(comm => (
+                      <option key={comm} value={comm}>{comm}</option>
+                    ))}
+                  </select>
+                </FilterSection>
+
+                <button className="apply-filters-btn">Apply Filters</button>
+              </div>
+
+              <div className="info-card">
+                <h3>Brahmin Matrimony</h3>
+                <p>
+                  Find your perfect Brahmin life partner from thousands of verified
+                  profiles. Our platform specializes in connecting Brahmin brides
+                  and grooms who value tradition, education, and compatibility.
+                </p>
+                <div className="community-list">
+                  <h4>Popular Sub-Communities</h4>
+                  <ul>
+                    {subCommunities.map(community => (
+                      <li key={community}>
+                        <a href="#">{community}</a>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </div>

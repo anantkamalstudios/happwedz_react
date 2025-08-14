@@ -209,72 +209,83 @@ const Navbar = () => {
           </div>
 
           <div className="nav-actions">
-            <button
-              className="login-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleLogin();
-              }}
-            >
-              Login / Register
-            </button>
-          </div>
-        </div>
-      </nav>
+  <button
+    className="login-btn"
+    onClick={(e) => {
+      e.stopPropagation();
+      toggleLogin();
+    }}
+  >
+    Login
+  </button>
+  <button
+    className="login-btn "
+    onClick={(e) => {
+      e.stopPropagation();
+      navigate("/matrimonial-register");
+    }}
+  >
+    Register
+  </button>
+</div>
+</div>
+</nav>
 
-      {/* Login Modal */}
-      {isLoginOpen && (
-        <div className="login-modal" onClick={toggleLogin}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Login to Your Account</h2>
-              <button className="close-btn" onClick={toggleLogin}>
-                ×
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="form-group">
-                <FiUser className="input-icon" />
-                <input type="text" placeholder="Email or Mobile" />
-              </div>
-              <div className="form-group password-group">
-                <FiLock className="input-icon" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password"
-                />
-                <span
-                  className="toggle-password"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <FiEyeOff /> : <FiEye />}
-                </span>
-              </div>
-              <div className="remember-forgot">
-                <label>
-                  <input type="checkbox" /> Remember me
-                </label>
-                <a href="/">Forgot Password?</a>
-              </div>
-              <button className="login-button">Login</button>
-              {/* <div className="divider">or</div> */}
-              {/* <button
-                className="signup-button"
-                onClick={() => navigate("/matrimonial-register")}
-              >
-                Create New Account
-              </button> */}
-            </div>
-            <div className="modal-footer">
-              <p>
-                By logging in, you agree to our{" "}
-                <a href="/">Terms & Conditions</a> and{" "}
-                <a href="/">Privacy Policy</a>
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+{/* Login Modal */}
+{isLoginOpen && (
+<div className="login-modal" onClick={toggleLogin}>
+  <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-header">
+      <h2>Login to Your Account</h2>
+      <button className="close-btn" onClick={toggleLogin}>
+        ×
+      </button>
+    </div>
+    <div className="modal-body">
+      <div className="form-group">
+        <FiUser className="input-icon" />
+        <input type="text" placeholder="Email or Mobile" />
+      </div>
+      <div className="form-group password-group">
+        <FiLock className="input-icon" />
+        <input
+          type={showPassword ? "text" : "password"}
+          placeholder="Password"
+        />
+        <span
+          className="toggle-password"
+          onClick={() => setShowPassword(!showPassword)}
+        >
+          {showPassword ? <FiEyeOff /> : <FiEye />}
+        </span>
+      </div>
+      <div className="remember-forgot">
+        <label>
+          <input type="checkbox" /> Remember me
+        </label>
+        <a href="/">Forgot Password?</a>
+      </div>
+      <button 
+        className="login-button"
+        onClick={() => {
+          // Your login logic here
+          // After successful login and navigation:
+          toggleLogin(); // This will close the modal
+        }}
+      >
+        Login
+      </button>
+    </div>
+    <div className="modal-footer">
+      <p>
+        By logging in, you agree to our{" "}
+        <a href="/">Terms & Conditions</a> and{" "}
+        <a href="/">Privacy Policy</a>
+      </p>
+    </div>
+  </div>
+</div>
+)}
     </div>
   );
 };
