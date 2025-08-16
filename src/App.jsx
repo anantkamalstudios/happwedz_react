@@ -21,8 +21,11 @@ import MatrimonialMain from "./components/pages/matrimonial/MatrimonialMain";
 import ProfileMatrimonial from "./components/pages/matrimonial/ProfileMatrimonial";
 import MainLayout from "./components/layouts/MainLayout";
 import MatrimonialLayout from "./components/layouts/MatrimonialLayout";
-import MatrimonialRegister from "./components/pages/matrimonial/MatrimonialRegister";
+import MatrimonialRegister from "./components/pages/matrimonial/MatrimonialRegistration";
 import UserDashboardMain from "./components/pages/userDashboard/UserDashboardMain";
+import MatrimonialDashboard from "./components/pages/matrimonial/dashboard/MatrimonialDashboard";
+import EditProfile from "./components/pages/matrimonial/dashboard/EditProfile";
+// import DashboardLayout from "./components/pages/matrimonial/dashboard/DashboardLayout";
 
 function App() {
   return (
@@ -53,6 +56,12 @@ function App() {
         />
         <Route path="/matrimonial-search" element={<Search />} />
         <Route path="/matrimonial-register" element={<MatrimonialRegister />} />
+        {/* <Route path="/matrimonial-Dashboard" element={<DashboardLayout />} /> */}
+        <Route
+          path="/matrimonial-Dashboard"
+          element={<MatrimonialDashboard />}
+        />
+        <Route path="/edit-profile" element={<EditProfile />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

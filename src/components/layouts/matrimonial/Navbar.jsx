@@ -112,6 +112,12 @@ const Navbar = () => {
             <div className="nav-item">
               <Link to="/matrimonial-search">Search</Link>
             </div>
+            <div className="nav-item">
+              <Link to="/matrimonial-dashboard">Dashboard</Link>
+            </div>
+            <div className="nav-item">
+              <Link to="/edit-profile">Edit-profile</Link>
+            </div>
 
             {/* <div
               className="nav-item"

@@ -83,7 +83,13 @@ const LocationModalWithCategories = () => {
         Select Location
       </Button>
 
-      <Modal show={show} onHide={handleClose} size="xl" centered>
+      <Modal
+        show={show}
+        onHide={handleClose}
+        size="xl"
+        centered
+        dialogClassName="custom-modal-width"
+      >
         <Modal.Body>
           <Form.Control
             type="text"
