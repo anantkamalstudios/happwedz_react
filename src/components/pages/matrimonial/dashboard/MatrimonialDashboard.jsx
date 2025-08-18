@@ -20,7 +20,7 @@ import {
   ThumbsUp,
   X,
 } from "lucide-react";
-import "../../../../Matrimonialdashboard.css";
+
 import { Link } from "react-router-dom";
 
 const sampleProfiles = [
@@ -342,10 +342,10 @@ const MatrimonialDashboard = () => {
       <header className="matrimonial-dashboard__header">
         <nav className="matrimonial-dashboard__nav">
           <div className="matrimonial-dashboard__user">
-            <div className="matrimonial-dashboard__notification">
+            {/* <div className="matrimonial-dashboard__notification">
               <Bell size={20} />
               <span className="matrimonial-dashboard__badge">3</span>
-            </div>
+            </div> */}
             <Link to="/edit-profile">
               <img
                 src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face"

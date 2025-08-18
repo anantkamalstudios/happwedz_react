@@ -10,7 +10,6 @@ import {
   MessageCircle,
   UserCheck,
 } from "lucide-react";
-import "../../../../Matrimonialdashboard.css";
 
 const Home = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);

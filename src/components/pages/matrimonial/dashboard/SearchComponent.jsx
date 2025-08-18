@@ -16,7 +16,6 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import "./MatrimonialSearch.css";
 
 const SearchComponent = () => {
   const [expanded, setExpanded] = useState(true);

@@ -9505,10 +9505,10 @@ input:checked + .slider:before {
   gap: 1rem;
 }
 
-.matrimonial-dashboard__notification {
+/* .matrimonial-dashboard__notification {
   position: relative;
   cursor: pointer;
-}
+} */
 
 .matrimonial-dashboard__badge {
   position: absolute;
@@ -10515,7 +10515,7 @@ input:checked + .slider:before {
   min-height: 100vh;
   padding: 20px;
   background-color: #f9f3f6;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Card Styles */
@@ -10685,8 +10685,12 @@ input:checked + .slider:before {
 }
 
 @keyframes weddingwire-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Message Styles */
@@ -10766,34 +10770,34 @@ input:checked + .slider:before {
   .weddingwire-auth-container {
     padding: 10px;
   }
-  
+
   .weddingwire-auth-card {
     border-radius: 8px;
   }
-  
+
   .weddingwire-auth-form-container,
   .weddingwire-auth-success-container {
     padding: 24px 20px;
   }
-  
+
   .weddingwire-auth-title {
     font-size: 20px;
   }
-  
+
   .weddingwire-auth-subtitle {
     font-size: 13px;
   }
-  
+
   .weddingwire-auth-otp-container {
     gap: 6px;
   }
-  
+
   .weddingwire-auth-otp-input {
     width: 36px;
     height: 45px;
     font-size: 16px;
   }
-  
+
   .weddingwire-auth-button {
     padding: 12px;
     font-size: 15px;
