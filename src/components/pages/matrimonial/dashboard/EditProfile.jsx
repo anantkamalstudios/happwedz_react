@@ -22,7 +22,6 @@ import {
   FiCheck,
   FiX,
 } from "react-icons/fi";
-import "../../../../Matrimonialdashboard.css";
 
 const EditProfile = () => {
   const [key, setKey] = useState("basic");
@@ -95,20 +94,21 @@ const EditProfile = () => {
     options = null
   ) => {
     return (
-      <div className="matrimonial">
-        <Form.Group className="form-group editable-field">
-          <Form.Label>
+      <div className="matrimony-edit-profile__editable-field">
+        <Form.Group className="form-group matrimony-edit-profile__form-group">
+          <Form.Label className="matrimony-edit-profile__form-label">
             {icon} {label}
           </Form.Label>
-          <div className="editable-container">
+          <div className="matrimony-edit-profile__editable-container">
             {editingField === fieldName ? (
-              <div className="editing-controls">
+              <div className="matrimony-edit-profile__editing-controls">
                 {type === "select" ? (
                   <Form.Control
                     as="select"
                     value={tempValue}
                     onChange={(e) => setTempValue(e.target.value)}
                     autoFocus
+                    className="matrimony-edit-profile__form-control"
                   >
                     {options.map((option) => (
                       <option key={option} value={option}>
@@ -123,6 +123,7 @@ const EditProfile = () => {
                     value={tempValue}
                     onChange={(e) => setTempValue(e.target.value)}
                     autoFocus
+                    className="matrimony-edit-profile__form-control"
                   />
                 ) : (
                   <Form.Control
@@ -130,31 +131,32 @@ const EditProfile = () => {
                     value={tempValue}
                     onChange={(e) => setTempValue(e.target.value)}
                     autoFocus
+                    className="matrimony-edit-profile__form-control"
                   />
                 )}
-                <div className="edit-actions">
+                <div className="matrimony-edit-profile__edit-actions">
                   <Button
                     variant="link"
                     onClick={saveEditing}
-                    className="text-success"
+                    className="matrimony-edit-profile__save-btn"
                   >
                     <FiCheck />
                   </Button>
                   <Button
                     variant="link"
                     onClick={cancelEditing}
-                    className="text-danger"
+                    className="matrimony-edit-profile__cancel-btn"
                   >
                     <FiX />
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="display-value">
+              <div className="matrimony-edit-profile__display-value">
                 <span>{formData[fieldName]}</span>
                 <Button
                   variant="link"
-                  className="edit-btn"
+                  className="matrimony-edit-profile__edit-btn"
                   onClick={() => startEditing(fieldName)}
                 >
                   <FiEdit2 size={14} />
@@ -168,25 +170,33 @@ const EditProfile = () => {
   };
 
   return (
-    <Container fluid className="edit-profile-container">
+    <Container fluid className="matrimony-edit-profile">
       <Row className="justify-content-center">
         <Col lg={10} xl={8}>
-          <Card className="profile-card">
-            <Card.Header className="profile-header">
-              <h2>Edit Profile</h2>
-              <p>Complete your profile to get better matches</p>
+          <Card className="matrimony-edit-profile__card">
+            <Card.Header className="matrimony-edit-profile__header">
+              <h2 className="matrimony-edit-profile__title">Edit Profile</h2>
+              <p className="matrimony-edit-profile__subtitle">
+                Complete your profile to get better matches
+              </p>
             </Card.Header>
 
-            <Card.Body>
+            <Card.Body className="matrimony-edit-profile__body">
               <Row>
-                <Col md={4} className="text-center">
-                  <div className="profile-pic-container">
+                <Col
+                  md={4}
+                  className="text-center matrimony-edit-profile__sidebar"
+                >
+                  <div className="matrimony-edit-profile__pic-container">
                     <Image
                       src={profilePic}
                       roundedCircle
-                      className="profile-pic"
+                      className="matrimony-edit-profile__pic"
                     />
-                    <label htmlFor="profile-upload" className="upload-btn">
+                    <label
+                      htmlFor="profile-upload"
+                      className="matrimony-edit-profile__upload-btn"
+                    >
                       <FiCamera /> Change Photo
                     </label>
                     <input
@@ -197,22 +207,31 @@ const EditProfile = () => {
                       style={{ display: "none" }}
                     />
                   </div>
-                  <div className="profile-completion mt-3">
-                    <div className="completion-bar">
-                      <div className="progress" style={{ width: "75%" }}></div>
+                  <div className="matrimony-edit-profile__completion mt-3">
+                    <div className="matrimony-edit-profile__completion-bar">
+                      <div
+                        className="matrimony-edit-profile__progress"
+                        style={{ width: "75%" }}
+                      ></div>
                     </div>
-                    <p>Profile 75% complete</p>
+                    <p className="matrimony-edit-profile__completion-text">
+                      Profile 75% complete
+                    </p>
                   </div>
                 </Col>
 
-                <Col md={8}>
+                <Col md={8} className="matrimony-edit-profile__main-content">
                   <Tabs
                     activeKey={key}
                     onSelect={(k) => setKey(k)}
-                    className="profile-tabs"
+                    className="matrimony-edit-profile__tabs"
                   >
-                    <Tab eventKey="basic" title="Basic Details">
-                      <Form className="profile-form">
+                    <Tab
+                      eventKey="basic"
+                      title="Basic Details"
+                      className="matrimony-edit-profile__tab"
+                    >
+                      <Form className="matrimony-edit-profile__form">
                         {renderEditableField("name", "Full Name", <FiUser />)}
 
                         <Row>
@@ -269,8 +288,12 @@ const EditProfile = () => {
                       </Form>
                     </Tab>
 
-                    <Tab eventKey="religious" title="Religious Background">
-                      <Form className="profile-form">
+                    <Tab
+                      eventKey="religious"
+                      title="Religious Background"
+                      className="matrimony-edit-profile__tab"
+                    >
+                      <Form className="matrimony-edit-profile__form">
                         <Row>
                           <Col md={6}>
                             {renderEditableField(
@@ -302,8 +325,12 @@ const EditProfile = () => {
                       </Form>
                     </Tab>
 
-                    <Tab eventKey="professional" title="Professional Details">
-                      <Form className="profile-form">
+                    <Tab
+                      eventKey="professional"
+                      title="Professional Details"
+                      className="matrimony-edit-profile__tab"
+                    >
+                      <Form className="matrimony-edit-profile__form">
                         {renderEditableField(
                           "education",
                           "Education",
@@ -338,8 +365,12 @@ const EditProfile = () => {
                       </Form>
                     </Tab>
 
-                    <Tab eventKey="personal" title="Personal Info">
-                      <Form className="profile-form">
+                    <Tab
+                      eventKey="personal"
+                      title="Personal Info"
+                      className="matrimony-edit-profile__tab"
+                    >
+                      <Form className="matrimony-edit-profile__form">
                         {renderEditableField(
                           "about",
                           "About Me",
@@ -356,11 +387,17 @@ const EditProfile = () => {
                     </Tab>
                   </Tabs>
 
-                  <div className="form-actions">
-                    <Button variant="outline-secondary" className="mr-3 mb-2">
+                  <div className="matrimony-edit-profile__actions">
+                    <Button
+                      variant="outline-secondary"
+                      className="matrimony-edit-profile__cancel-btn"
+                    >
                       Cancel
                     </Button>
-                    <Button variant="primary" className="mb-2">
+                    <Button
+                      variant="primary"
+                      className="matrimony-edit-profile__save-btn"
+                    >
                       <FiSave /> Save Changes
                     </Button>
                   </div>

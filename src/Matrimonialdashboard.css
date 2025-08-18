@@ -1,684 +1,5 @@
-/* Matrimonial.css - Pink & White Theme */
-/* 
-/* ========== BASE STYLES ========== */
-:root {
-  --mtu-primary-pink: #e83e8c;
-  --mtu-secondary-pink: #d63384;
-  --mtu-dark-pink: #c2185b;
-  --mtu-light-pink: #f8bbd0;
-  --mtu-white: #ffffff;
-  --mtu-light-gray: #f8f9fa;
-  --mtu-gray: #6c757d;
-  --mtu-dark-gray: #343a40;
-  --mtu-border-color: #e9ecef;
-  --mtu-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
-  --mtu-gradient-primary: linear-gradient(135deg, #e83e8c 0%, #d63384 100%);
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  font-size: 16px;
-}
-
-body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.6;
-  color: var(--mtu-dark-gray);
-  background-color: var(--mtu-light-gray);
-}
-
-a {
-  text-decoration: none;
-  color: inherit;
-}
-
-button {
-  cursor: pointer;
-  font-family: inherit;
-}
-
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-/* Matrimonialdashboard.css */
-.matrimonial .mtu-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  border: none;
-}
-
-.matrimonial .mtu-btn-primary {
-  background: var(--mtu-gradient-primary);
-  color: var(--mtu-white);
-}
-
-.matrimonial .mtu-btn-primary:hover {
-  background: var(--mtu-dark-pink);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(232, 62, 140, 0.3);
-}
-
-.matrimonial .mtu-btn-secondary {
-  background: var(--mtu-white);
-  color: var(--mtu-primary-pink);
-  border: 1px solid var(--mtu-primary-pink);
-}
-
-.matrimonial .mtu-btn-secondary:hover {
-  background: var(--mtu-light-pink);
-  transform: translateY(-2px);
-}
-
-.matrimonial .mtu-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.matrimonial .mtu-form-input,
-.matrimonial .mtu-form-select {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--mtu-border-color);
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  background-color: var(--mtu-white);
-}
-
-.matrimonial .mtu-form-input:focus,
-.matrimonial .mtu-form-select:focus {
-  outline: none;
-  border-color: var(--mtu-primary-pink);
-  box-shadow: 0 0 0 0.2rem rgba(232, 62, 140, 0.25);
-}
-
-.matrimonial .mtu-form-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 16px 12px;
-}
-
-.matrimonial .mtu-form-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--mtu-dark-gray);
-}
-
-/* ========== LAYOUT STYLES ========== */
-.matrimonial .mtu-root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.matrimonial .mtu-header-wrapper {
-  background: var(--mtu-white);
-  box-shadow: var(--mtu-shadow);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-.matrimonial .mtu-navigation-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 1rem 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.matrimonial .mtu-brand-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--mtu-primary-pink);
-}
-
-.matrimonial .mtu-nav-menu {
-  display: flex;
-  list-style: none;
-  gap: 2rem;
-}
-
-.matrimonial .mtu-nav-item a {
-  font-weight: 500;
-  transition: color 0.3s ease;
-}
-
-.matrimonial .mtu-nav-item a:hover {
-  color: var(--mtu-primary-pink);
-}
-
-.matrimonial .mtu-user-profile {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.matrimonial .mtu-notification-icon {
-  position: relative;
-  cursor: pointer;
-}
-
-.matrimonial .mtu-notification-badge {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background: var(--mtu-primary-pink);
-  color: var(--mtu-white);
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
-
-.matrimonial .mtu-profile-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--mtu-primary-pink);
-}
-
-.matrimonial .mtu-dashboard-container {
-  flex: 1;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem;
-  width: 100%;
-}
-
-.matrimonial .mtu-dashboard-grid {
-  display: grid;
-  grid-template-columns: 250px 1fr;
-  gap: 2rem;
-}
-
-.matrimonial .mtu-sidebar-panel {
-  background: var(--mtu-white);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: var(--mtu-shadow);
-  height: fit-content;
-  border: 1px solid var(--mtu-border-color);
-}
-
-.matrimonial .mtu-sidebar-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--mtu-dark-gray);
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--mtu-light-pink);
-}
-
-.matrimonial .mtu-sidebar-menu {
-  list-style: none;
-}
-
-.matrimonial .mtu-sidebar-item {
-  margin-bottom: 0.5rem;
-}
-
-.matrimonial .mtu-sidebar-link {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  color: var(--mtu-gray);
-  transition: all 0.3s ease;
-}
-
-.matrimonial .mtu-sidebar-link:hover {
-  background: var(--mtu-light-pink);
-  color: var(--mtu-dark-pink);
-}
-
-.matrimonial .mtu-sidebar-link.active {
-  background: var(--mtu-gradient-primary);
-  color: var(--mtu-white);
-}
-
-.matrimonial .mtu-sidebar-icon {
-  width: 20px;
-  height: 20px;
-}
-
-.matrimonial .mtu-main-content {
-  flex: 1;
-}
-
-.matrimonial .mtu-content-header {
-  margin-bottom: 2rem;
-}
-
-.matrimonial .mtu-page-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--mtu-dark-gray);
-  margin-bottom: 0.5rem;
-}
-
-.matrimonial .mtu-breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--mtu-gray);
-  font-size: 0.9rem;
-}
-
-.matrimonial .mtu-breadcrumb-separator {
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  background: var(--mtu-gray);
-  border-radius: 50%;
-}
-
-/* ========== CARD STYLES ========== */
-.matrimonial .mtu-profile-card {
-  background: var(--mtu-white);
-  border-radius: 1rem;
-  overflow: hidden;
-  box-shadow: var(--mtu-shadow);
-  border: 1px solid var(--mtu-border-color);
-  transition: all 0.3s ease;
-}
-
-.matrimonial .mtu-profile-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
-
-.matrimonial .mtu-profile-image-container {
-  position: relative;
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-}
-
-.matrimonial .mtu-profile-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.matrimonial .mtu-profile-card:hover .mtu-profile-image {
-  transform: scale(1.05);
-}
-
-.matrimonial .mtu-profile-status {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--mtu-white);
-}
-
-.matrimonial .mtu-profile-status.online {
-  background: #10b981;
-}
-
-.matrimonial .mtu-profile-status.offline {
-  background: var(--mtu-gray);
-}
-
-.matrimonial .mtu-profile-content {
-  padding: 1.5rem;
-}
-
-.matrimonial .mtu-profile-name {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--mtu-dark-gray);
-  margin-bottom: 0.5rem;
-}
-
-.matrimonial .mtu-profile-details {
-  color: var(--mtu-gray);
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
-}
-
-.matrimonial .mtu-profile-details p {
-  margin-bottom: 0.25rem;
-  display: flex;
-  align-items: center;
-}
-
-.matrimonial .mtu-profile-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.matrimonial .mtu-profile-tag {
-  background: var(--mtu-light-pink);
-  color: var(--mtu-dark-pink);
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.matrimonial .mtu-profile-actions {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.matrimonial .mtu-profile-actions .mtu-btn {
-  flex: 1;
-  padding: 0.5rem;
-  font-size: 0.9rem;
-}
-
-/* ========== STATS GRID ========== */
-.matrimonial .mtu-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.matrimonial .mtu-stat-card {
-  background: var(--mtu-white);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: var(--mtu-shadow);
-  border: 1px solid var(--mtu-border-color);
-}
-
-.matrimonial .mtu-stat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.matrimonial .mtu-stat-title {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--mtu-gray);
-}
-
-.matrimonial .mtu-stat-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--mtu-light-pink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--mtu-primary-pink);
-}
-
-.matrimonial .mtu-stat-value {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--mtu-dark-gray);
-  margin-bottom: 0.5rem;
-}
-
-.matrimonial .mtu-stat-change {
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.matrimonial .mtu-stat-change.positive {
-  color: #10b981;
-}
-
-.matrimonial .mtu-stat-change.negative {
-  color: #ef4444;
-}
-
-/* ========== SEARCH SECTION ========== */
-.matrimonial .mtu-search-section {
-  background: var(--mtu-white);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  box-shadow: var(--mtu-shadow);
-  border: 1px solid var(--mtu-border-color);
-}
-
-.matrimonial .mtu-search-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.matrimonial .mtu-search-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--mtu-dark-gray);
-  margin: 0;
-}
-
-.matrimonial .mtu-search-form {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.matrimonial .mtu-search-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-}
-
-/* ========== PROFILES GRID ========== */
-.matrimonial .mtu-profiles-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-/* ========== MODAL STYLES ========== */
-.matrimonial .mtu-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
-}
-
-.matrimonial .mtu-modal-content {
-  background: var(--mtu-white);
-  border-radius: 1rem;
-  max-width: 800px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  animation: mtu-modal-fadeIn 0.3s ease;
-}
-
-@keyframes mtu-modal-fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.matrimonial .mtu-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--mtu-border-color);
-  position: sticky;
-  top: 0;
-  background: var(--mtu-white);
-  z-index: 10;
-}
-
-.matrimonial .mtu-modal-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--mtu-dark-gray);
-  margin: 0;
-}
-
-.matrimonial .mtu-modal-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: var(--mtu-gray);
-  cursor: pointer;
-  transition: color 0.3s ease;
-}
-
-.matrimonial .mtu-modal-close:hover {
-  color: var(--mtu-primary-pink);
-}
-
-.matrimonial .mtu-modal-body {
-  padding: 1.5rem;
-}
-
-/* ========== LOADING ANIMATION ========== */
-.matrimonial .mtu-loading-skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: mtu-shimmer 1.5s infinite;
-  border-radius: 0.25rem;
-}
-
-@keyframes mtu-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-/* ========== ANIMATIONS ========== */
-@keyframes mtu-pulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.1;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 0.2;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0.1;
-  }
-}
-
-/* ========== RESPONSIVE STYLES ========== */
-@media (max-width: 1024px) {
-  .matrimonial .mtu-dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .matrimonial .mtu-sidebar-panel {
-    position: sticky;
-    top: 80px;
-    z-index: 100;
-  }
-}
-
-@media (max-width: 768px) {
-  .matrimonial {
-    font-size: 14px;
-  }
-
-  .matrimonial .mtu-navigation-container {
-    padding: 1rem;
-  }
-
-  .matrimonial .mtu-nav-menu {
-    display: none;
-  }
-
-  .matrimonial .mtu-dashboard-container {
-    padding: 1rem;
-  }
-
-  .matrimonial .mtu-search-form {
-    grid-template-columns: 1fr;
-  }
-
-  .matrimonial .mtu-profiles-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .matrimonial .mtu-stats-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 480px) {
-  .matrimonial .mtu-stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .matrimonial .mtu-profile-actions {
-    flex-direction: column;
-  }
-
-  .matrimonial .mtu-search-actions {
-    flex-direction: column;
-  }
-
-  .matrimonial .mtu-btn {
-    width: 100%;
-  }
-}
-/* Matrimonial.css - White & Dark Pink Theme */
-/* Dark Pink & White Theme */
-:root {
+/* Matrimonial.css - White & Dark Pink Theme with consistent class prefixes */
+.matrimonial {
   --primary-color: #e83e8c;
   --primary-dark: #d2337c;
   --primary-light: #f8bbd0;
@@ -689,20 +10,20 @@ img {
   --border-color: #dee2e6;
 }
 
-.edit-profile-container {
+.matrimonial .edit-profile-container {
   padding: 2rem 0;
   background-color: #fafafa;
   min-height: 100vh;
 }
 
-.profile-card {
+.matrimonial .profile-card {
   border: none;
   border-radius: 10px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
-.profile-header {
+.matrimonial .profile-header {
   background: linear-gradient(
     135deg,
     var(--primary-color),
@@ -714,22 +35,22 @@ img {
   border-bottom: none;
 }
 
-.profile-header h2 {
+.matrimonial .profile-header h2 {
   font-weight: 600;
   margin-bottom: 0.5rem;
 }
 
-.profile-header p {
+.matrimonial .profile-header p {
   margin-bottom: 0;
   opacity: 0.9;
 }
 
-.profile-pic-container {
+.matrimonial .profile-pic-container {
   position: relative;
   margin-bottom: 1rem;
 }
 
-.profile-pic {
+.matrimonial .profile-pic {
   width: 150px;
   height: 150px;
   object-fit: cover;
@@ -737,9 +58,8 @@ img {
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
 }
 
-.upload-btn {
+.matrimonial .upload-btn {
   align-items: center;
-
   bottom: 10px;
   right: 30px;
   background: var(--primary-color);
@@ -752,19 +72,19 @@ img {
   transition: all 0.3s ease;
 }
 
-.upload-btn:hover {
+.matrimonial .upload-btn:hover {
   background: var(--primary-dark);
   transform: translateY(-2px);
 }
 
-.profile-completion {
+.matrimonial .profile-completion {
   background: white;
   padding: 1rem;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.completion-bar {
+.matrimonial .completion-bar {
   height: 8px;
   background: #e9ecef;
   border-radius: 4px;
@@ -772,7 +92,7 @@ img {
   margin-bottom: 0.5rem;
 }
 
-.completion-bar .progress {
+.matrimonial .completion-bar .progress {
   height: 100%;
   background: linear-gradient(
     to right,
@@ -782,11 +102,11 @@ img {
   border-radius: 4px;
 }
 
-.profile-tabs {
+.matrimonial .profile-tabs {
   margin-bottom: 1.5rem;
 }
 
-.profile-tabs .nav-link {
+.matrimonial .profile-tabs .nav-link {
   color: var(--secondary-color);
   border: none;
   padding: 0.75rem 1.5rem;
@@ -794,21 +114,21 @@ img {
   transition: all 0.3s ease;
 }
 
-.profile-tabs .nav-link.active {
+.matrimonial .profile-tabs .nav-link.active {
   color: var(--primary-color);
   background: transparent;
   border-bottom: 3px solid var(--primary-color);
 }
 
-.profile-tabs .nav-link:hover:not(.active) {
+.matrimonial .profile-tabs .nav-link:hover:not(.active) {
   color: var(--primary-dark);
 }
 
-.profile-form .form-group {
+.matrimonial .profile-form .form-group {
   margin-bottom: 1.5rem;
 }
 
-.profile-form .form-label {
+.matrimonial .profile-form .form-label {
   font-weight: 500;
   color: var(--dark-color);
   display: flex;
@@ -816,24 +136,24 @@ img {
   margin-bottom: 0.5rem;
 }
 
-.profile-form .form-label svg {
+.matrimonial .profile-form .form-label svg {
   margin-right: 8px;
   color: var(--primary-color);
 }
 
-.profile-form .form-control {
+.matrimonial .profile-form .form-control {
   border-radius: 8px;
   padding: 0.75rem 1rem;
   border: 1px solid var(--border-color);
   transition: all 0.3s ease;
 }
 
-.profile-form .form-control:focus {
+.matrimonial .profile-form .form-control:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 0.2rem rgba(125, 65, 93, 0.25);
+  box-shadow: 0 0 0 0.2rem rgba(232, 62, 140, 0.25);
 }
 
-.form-actions {
+.matrimonial .form-actions {
   display: flex;
   justify-content: flex-end;
   padding: 1rem 0;
@@ -841,7 +161,7 @@ img {
   margin-top: 1rem;
 }
 
-.btn-primary {
+.matrimonial .btn-primary {
   background-color: var(--primary-color);
   border-color: var(--primary-color);
   padding: 0.5rem 1.5rem;
@@ -850,38 +170,38 @@ img {
   transition: all 0.3s ease;
 }
 
-.btn-primary:hover {
+.matrimonial .btn-primary:hover {
   background-color: var(--primary-dark);
   border-color: var(--primary-dark);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(232, 62, 140, 0.3);
 }
 
-.btn-outline-secondary {
+.matrimonial .btn-outline-secondary {
   padding: 0.5rem 1.5rem;
   border-radius: 50px;
   font-weight: 500;
   transition: all 0.3s ease;
 }
 
-.btn-outline-secondary:hover {
+.matrimonial .btn-outline-secondary:hover {
   transform: translateY(-2px);
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .profile-pic {
+  .matrimonial .profile-pic {
     width: 120px;
     height: 120px;
   }
 
-  .upload-btn {
+  .matrimonial .upload-btn {
     right: 20px;
     padding: 5px 10px;
     font-size: 0.7rem;
   }
 
-  .profile-tabs .nav-link {
+  .matrimonial .profile-tabs .nav-link {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
   }

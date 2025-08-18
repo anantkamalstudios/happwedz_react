@@ -274,7 +274,7 @@ const Navbar = () => {
                   <label>
                     <input type="checkbox" /> Remember me
                   </label>
-                  <a href="/">Forgot Password?</a>
+                  <Link to="/user-forgot-password">Forgot Password?</Link>
                 </div>
                 <button
                   className="login-button"

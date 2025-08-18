@@ -117,12 +117,12 @@ const CustomerLogin = () => {
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className="text-secondary"
               />
-              <a
-                href="#forgot-password"
+              <Link
+                to="user-forgot-password"
                 className="text-decoration-none wedding-link"
               >
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             <Button
