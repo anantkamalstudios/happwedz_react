@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "./BasicInformation.css"; // Add this line to import the responsive CSS
 
 const BasicInformation = ({
   formData,

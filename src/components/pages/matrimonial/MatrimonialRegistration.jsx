@@ -147,17 +147,16 @@ const MatrimonialRegistration = () => {
   };
 
   return (
-    <div className="matrimonial" style={{ minHeight: "100vh" }}>
+    <div className="matrimonial">
       <div className="matrimonial-registration">
-        <div className="container py-3 py-md-4">
+        <div className="container py-4 py-md-5">
           <div className="card shadow-sm">
-            <div className="card-header bg-white px-2 px-md-3">
-              <ul className="nav nav-tabs card-header-tabs flex-nowrap overflow-auto pb-1">
+            <div className="card-header bg-white">
+              <ul className="nav nav-tabs card-header-tabs flex-nowrap overflow-auto">
                 <li className="nav-item flex-shrink-0">
                   <button
                     className={`nav-link ${step === 1 ? "active" : ""}`}
                     onClick={() => setStep(1)}
-                    style={{ whiteSpace: "nowrap" }}
                   >
                     Profile Details
                   </button>
@@ -167,7 +166,6 @@ const MatrimonialRegistration = () => {
                     className={`nav-link ${step === 2 ? "active" : ""}`}
                     onClick={() => setStep(2)}
                     disabled={step < 2}
-                    style={{ whiteSpace: "nowrap" }}
                   >
                     Family Details
                   </button>
@@ -177,7 +175,6 @@ const MatrimonialRegistration = () => {
                     className={`nav-link ${step === 3 ? "active" : ""}`}
                     onClick={() => setStep(3)}
                     disabled={step < 3}
-                    style={{ whiteSpace: "nowrap" }}
                   >
                     About Yourself
                   </button>
@@ -187,7 +184,6 @@ const MatrimonialRegistration = () => {
                     className={`nav-link ${step === 4 ? "active" : ""}`}
                     onClick={() => setStep(4)}
                     disabled={step < 4}
-                    style={{ whiteSpace: "nowrap" }}
                   >
                     Phone Verification
                   </button>
@@ -195,18 +191,15 @@ const MatrimonialRegistration = () => {
               </ul>
             </div>
 
-            <div className="card-body p-2 p-md-4">
-              <h4
-                className="mb-3 mb-md-4 text-center text-md-start"
-                style={{ color: "#d63384" }}
-              >
+            <div className="card-body p-3 p-md-4">
+              <h4 className="mb-4" style={{ color: "#d63384" }}>
                 Hi! You are joining the Best Matchmaking Experience.
               </h4>
 
               {step === 1 && (
                 <div className="profile-details">
-                  <div className="row g-2 g-md-3">
-                    <div className="col-12 col-md-6">
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
                       <label className="form-label">
                         <FaUser className="me-2" />
                         Creating Profile For *
@@ -234,7 +227,7 @@ const MatrimonialRegistration = () => {
                       )}
                     </div>
 
-                    <div className="col-12 col-md-6">
+                    <div className="col-md-6 mb-3">
                       <label className="form-label">
                         <FaVenusMars className="me-2" />
                         Profile Type *
@@ -259,51 +252,100 @@ const MatrimonialRegistration = () => {
                       )}
                     </div>
                   </div>
-
-                  <div className="mt-3">
-                    <label className="form-label">
-                      <FaUser className="me-2" />
-                      {getNameLabel()} <span className="text-danger">*</span>
+                  <div className="mb-3">
+                    <label
+                      style={{
+                        display: "block",
+                        marginBottom: "5px",
+                        fontWeight: "500",
+                        color: "#333",
+                      }}
+                    >
+                      <FaUser style={{ marginRight: "8px" }} />
+                      {getNameLabel()}{" "}
+                      <span style={{ color: "#d81b60" }}>*</span>
                     </label>
-                    <div className="d-flex align-items-center gap-2 mb-1">
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        marginBottom: "5px",
+                      }}
+                    >
                       <input
                         type="text"
-                        className={`form-control ${
-                          errors.name ? "is-invalid" : ""
-                        }`}
+                        style={{
+                          flex: 1,
+                          padding: "10px",
+                          border: `1px solid ${
+                            errors.name ? "#f44336" : "#ddd"
+                          }`,
+                          borderRadius: "4px",
+                          fontSize: "14px",
+                        }}
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
                         required
                       />
-                      <div className="form-check form-switch d-flex align-items-center">
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "5px",
+                          padding: "0 10px",
+                        }}
+                      >
                         <input
-                          className="form-check-input"
                           type="checkbox"
                           id="showNameToggle"
                           name="showName"
                           checked={formData.showName}
                           onChange={handleChange}
+                          style={{
+                            width: "16px",
+                            height: "16px",
+                            margin: 0,
+                          }}
                         />
                         <label
-                          className="form-check-label ms-2 small"
                           htmlFor="showNameToggle"
+                          style={{
+                            fontSize: "14px",
+                            margin: 0,
+                            cursor: "pointer",
+                          }}
                         >
                           Show to All
                         </label>
                       </div>
                     </div>
                     {errors.name && (
-                      <div className="text-danger small">{errors.name}</div>
+                      <div
+                        style={{
+                          color: "#f44336",
+                          fontSize: "12px",
+                          marginTop: "5px",
+                        }}
+                      >
+                        {errors.name}
+                      </div>
                     )}
-                    <p className="small text-muted mb-0">
+                    <p
+                      style={{
+                        fontSize: "12px",
+                        color: "#666",
+                        margin: "5px 0 0",
+                        fontStyle: "italic",
+                      }}
+                    >
                       If you wish to hide your name from others, click on
                       settings icon and choose the setting
                     </p>
                   </div>
-
-                  <div className="row g-2 g-md-3 mt-3">
-                    <div className="col-12 col-md-6">
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
                       <label className="form-label">
                         <FaBirthdayCake className="me-2" />
                         Date of Birth *
@@ -323,7 +365,7 @@ const MatrimonialRegistration = () => {
                       )}
                     </div>
 
-                    <div className="col-12 col-md-6">
+                    <div className="col-md-6 mb-3">
                       <label className="form-label">
                         <FaLanguage className="me-2" />
                         Mother tongue
@@ -345,8 +387,8 @@ const MatrimonialRegistration = () => {
                     </div>
                   </div>
 
-                  <div className="row g-2 g-md-3 mt-3">
-                    <div className="col-12 col-md-6">
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
                       <label className="form-label">
                         <FaVenusMars className="me-2" />
                         Religion
@@ -366,7 +408,7 @@ const MatrimonialRegistration = () => {
                       </select>
                     </div>
 
-                    <div className="col-12 col-md-6">
+                    <div className="col-md-6 mb-3">
                       <label className="form-label">
                         <FaUsers className="me-2" />
                         Caste
@@ -396,27 +438,26 @@ const MatrimonialRegistration = () => {
                     </div>
                   </div>
 
-                  <div className="form-check mt-3">
+                  <div className="mb-3 form-check">
                     <input
                       type="checkbox"
                       className="form-check-input"
                       name="casteNoBar"
                       checked={formData.casteNoBar}
                       onChange={handleChange}
-                      id="casteNoBar"
                     />
-                    <label className="form-check-label" htmlFor="casteNoBar">
+                    <label className="form-check-label">
                       Caste no bar (I am open to marry people of all castes)
                     </label>
                   </div>
 
-                  <div className="mt-3">
-                    <label className="form-label d-block">
+                  <div className="mb-4">
+                    <label className="form-label">
                       <i className="fas fa-star me-2"></i>
                       Are you manglik?
                     </label>
-                    <div className="d-flex flex-wrap gap-2">
-                      <div className="form-check">
+                    <div>
+                      <div className="form-check form-check-inline">
                         <input
                           className="form-check-input"
                           type="radio"
@@ -424,13 +465,10 @@ const MatrimonialRegistration = () => {
                           value="manglik"
                           checked={formData.manglik === "manglik"}
                           onChange={handleChange}
-                          id="manglik"
                         />
-                        <label className="form-check-label" htmlFor="manglik">
-                          Manglik
-                        </label>
+                        <label className="form-check-label">Manglik</label>
                       </div>
-                      <div className="form-check">
+                      <div className="form-check form-check-inline">
                         <input
                           className="form-check-input"
                           type="radio"
@@ -438,16 +476,10 @@ const MatrimonialRegistration = () => {
                           value="non-manglik"
                           checked={formData.manglik === "non-manglik"}
                           onChange={handleChange}
-                          id="non-manglik"
                         />
-                        <label
-                          className="form-check-label"
-                          htmlFor="non-manglik"
-                        >
-                          Non-manglik
-                        </label>
+                        <label className="form-check-label">Non-manglik</label>
                       </div>
-                      <div className="form-check">
+                      <div className="form-check form-check-inline">
                         <input
                           className="form-check-input"
                           type="radio"
@@ -455,16 +487,13 @@ const MatrimonialRegistration = () => {
                           value="dont-know"
                           checked={formData.manglik === "dont-know"}
                           onChange={handleChange}
-                          id="dont-know"
                         />
-                        <label className="form-check-label" htmlFor="dont-know">
-                          Don't know
-                        </label>
+                        <label className="form-check-label">Don't know</label>
                       </div>
                     </div>
                   </div>
 
-                  <div className="d-flex justify-content-between mt-4">
+                  <div className="d-flex justify-content-between">
                     <button className="btn btn-light" disabled>
                       Back
                     </button>
@@ -477,7 +506,7 @@ const MatrimonialRegistration = () => {
 
               {step === 2 && (
                 <div className="family-details">
-                  <div className="mb-3">
+                  <div className="mb-4">
                     <label className="form-label">
                       <FaHome className="me-2" />
                       Family Type
@@ -495,9 +524,9 @@ const MatrimonialRegistration = () => {
                     </select>
                   </div>
 
-                  <h5 className="mt-4 mb-3">Brothers</h5>
-                  <div className="row g-2 g-md-3 mb-4">
-                    <div className="col-12 col-md-4">
+                  <h5 className="mb-3">Brothers</h5>
+                  <div className="row mb-4">
+                    <div className="col-md-4">
                       <label className="form-label">How many brothers?</label>
                       <div className="btn-group w-100">
                         {[0, 1, 2, 3].map((num) => (
@@ -523,7 +552,7 @@ const MatrimonialRegistration = () => {
                     </div>
                     {formData.brothers > 0 && (
                       <>
-                        <div className="col-12 col-md-4">
+                        <div className="col-md-4">
                           <label className="form-label">
                             How many married?
                           </label>
@@ -550,7 +579,7 @@ const MatrimonialRegistration = () => {
                             ))}
                           </div>
                         </div>
-                        <div className="col-12 col-md-4">
+                        <div className="col-md-4">
                           <label className="form-label">
                             How many unmarried?
                           </label>
@@ -581,9 +610,9 @@ const MatrimonialRegistration = () => {
                     )}
                   </div>
 
-                  <h5 className="mt-4 mb-3">Sisters</h5>
-                  <div className="row g-2 g-md-3 mb-4">
-                    <div className="col-12 col-md-4">
+                  <h5 className="mb-3">Sisters</h5>
+                  <div className="row mb-4">
+                    <div className="col-md-4">
                       <label className="form-label">How many sisters?</label>
                       <div className="btn-group w-100">
                         {[0, 1, 2, 3].map((num) => (
@@ -606,7 +635,7 @@ const MatrimonialRegistration = () => {
                     </div>
                     {formData.sisters > 0 && (
                       <>
-                        <div className="col-12 col-md-4">
+                        <div className="col-md-4">
                           <label className="form-label">
                             How many married?
                           </label>
@@ -633,7 +662,7 @@ const MatrimonialRegistration = () => {
                             ))}
                           </div>
                         </div>
-                        <div className="col-12 col-md-4">
+                        <div className="col-md-4">
                           <label className="form-label">
                             How many unmarried?
                           </label>
@@ -664,8 +693,8 @@ const MatrimonialRegistration = () => {
                     )}
                   </div>
 
-                  <div className="row g-2 g-md-3 mb-4">
-                    <div className="col-12 col-md-6">
+                  <div className="row mb-4">
+                    <div className="col-md-6">
                       <label className="form-label">
                         <FaBriefcase className="me-2" />
                         Father's Occupation
@@ -679,7 +708,7 @@ const MatrimonialRegistration = () => {
                         placeholder="Enter father's occupation"
                       />
                     </div>
-                    <div className="col-12 col-md-6">
+                    <div className="col-md-6">
                       <label className="form-label">
                         <FaBriefcase className="me-2" />
                         Mother's Occupation
@@ -695,7 +724,7 @@ const MatrimonialRegistration = () => {
                     </div>
                   </div>
 
-                  <div className="d-flex justify-content-between mt-4">
+                  <div className="d-flex justify-content-between">
                     <button className="btn btn-light" onClick={prevStep}>
                       Back
                     </button>
@@ -729,8 +758,8 @@ const MatrimonialRegistration = () => {
                     </div>
                   </div>
 
-                  <div className="row g-2 g-md-3 mb-4">
-                    <div className="col-12 col-md-6">
+                  <div className="row mb-4">
+                    <div className="col-md-6">
                       <label className="form-label">
                         <FaHeart className="me-2" />
                         Hobbies & Interests
@@ -744,7 +773,7 @@ const MatrimonialRegistration = () => {
                         placeholder="Reading, traveling, cooking, sports, music, etc."
                       ></textarea>
                     </div>
-                    <div className="col-12 col-md-6">
+                    <div className="col-md-6">
                       <label className="form-label">
                         <FaUsers className="me-2" />
                         Partner Expectations
@@ -798,6 +827,7 @@ const MatrimonialRegistration = () => {
                             name="phone"
                             value={formData.phone}
                             onChange={(e) => {
+                              // Only allow digits and limit to 10 characters
                               const value = e.target.value
                                 .replace(/\D/g, "")
                                 .slice(0, 10);
@@ -849,31 +879,31 @@ const MatrimonialRegistration = () => {
               )}
 
               {step < 4 && (
-                <div className="mt-4 mt-md-5 pt-4 border-top">
+                <div className="mt-5 pt-4 border-top">
                   <h5 className="text-center mb-3">WHY REGISTER</h5>
-                  <div className="row g-2 g-md-3 text-center">
-                    <div className="col-6 col-md-3">
-                      <div className="p-2 p-md-3 bg-light rounded h-100">
+                  <div className="row text-center">
+                    <div className="col-6 col-md-3 mb-3">
+                      <div className="p-3 bg-light rounded h-100">
                         <FaUsers className="text-primary mb-2 fs-4" />
                         <h6 className="mb-0">Lakhs of Genuine Profiles</h6>
                       </div>
                     </div>
-                    <div className="col-6 col-md-3">
-                      <div className="p-2 p-md-3 bg-light rounded h-100">
+                    <div className="col-6 col-md-3 mb-3">
+                      <div className="p-3 bg-light rounded h-100">
                         <FaCheckCircle className="text-primary mb-2 fs-4" />
                         <h6 className="mb-0">
                           Many Verified by Personal Visit
                         </h6>
                       </div>
                     </div>
-                    <div className="col-6 col-md-3">
-                      <div className="p-2 p-md-3 bg-light rounded h-100">
+                    <div className="col-6 col-md-3 mb-3">
+                      <div className="p-3 bg-light rounded h-100">
                         <FaLock className="text-primary mb-2 fs-4" />
                         <h6 className="mb-0">Secure & Family Friendly</h6>
                       </div>
                     </div>
-                    <div className="col-6 col-md-3">
-                      <div className="p-2 p-md-3 bg-light rounded h-100">
+                    <div className="col-6 col-md-3 mb-3">
+                      <div className="p-3 bg-light rounded h-100">
                         <FaShieldAlt className="text-primary mb-2 fs-4" />
                         <h6 className="mb-0">Strict Privacy Control</h6>
                       </div>

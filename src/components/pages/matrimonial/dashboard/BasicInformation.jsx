@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   User,
   Calendar,
@@ -125,18 +125,48 @@ const BasicInformation = () => {
   };
 
   const InfoSection = ({ title, icon: Icon, children, sectionKey }) => (
-    <div className="mtu-profile-section">
-      <div className="mtu-section-header">
-        <h3 className="mtu-section-title">
-          <Icon className="mtu-section-icon" />
+    <div
+      className="mtu-profile-section"
+      style={{
+        background: "var(--mtu-white)",
+        borderRadius: "1rem",
+        padding: "2rem",
+        marginBottom: "2rem",
+        boxShadow: "var(--mtu-shadow)",
+        border: "1px solid var(--mtu-border-color)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "1.5rem",
+          paddingBottom: "0.5rem",
+          borderBottom: "2px solid var(--mtu-light-pink)",
+        }}
+      >
+        <h3
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            fontSize: "1.3rem",
+            fontWeight: "600",
+            color: "var(--mtu-dark-gray)",
+            margin: 0,
+          }}
+        >
+          <Icon size={24} color="var(--mtu-primary-pink)" />
           {title}
         </h3>
         {!isEditing && sectionKey && (
           <button
             onClick={handleEdit}
-            className="mtu-btn mtu-btn-secondary mtu-edit-btn"
+            className="mtu-btn mtu-btn-secondary"
+            style={{ padding: "0.5rem 1rem", fontSize: "0.9rem" }}
           >
-            <Edit3 className="mtu-btn-icon" />
+            <Edit3 size={16} />
             Edit
           </button>
         )}
@@ -153,8 +183,18 @@ const BasicInformation = () => {
     type = "text",
     options = [],
   }) => (
-    <div className="mtu-info-field">
-      <label className="mtu-field-label">{label}</label>
+    <div style={{ marginBottom: "1rem" }}>
+      <label
+        style={{
+          display: "block",
+          fontWeight: "600",
+          color: "var(--mtu-dark-gray)",
+          marginBottom: "0.5rem",
+          fontSize: "0.9rem",
+        }}
+      >
+        {label}
+      </label>
       {isEditing ? (
         type === "select" ? (
           <select
@@ -174,6 +214,7 @@ const BasicInformation = () => {
             value={editData[section]?.[field] || editData[field] || ""}
             onChange={(e) => handleInputChange(section, field, e.target.value)}
             rows={4}
+            style={{ resize: "vertical" }}
           />
         ) : (
           <input
@@ -184,7 +225,17 @@ const BasicInformation = () => {
           />
         )
       ) : (
-        <p className="mtu-field-value">{value || "Not specified"}</p>
+        <p
+          style={{
+            color: "var(--mtu-gray)",
+            padding: "0.75rem",
+            background: "var(--mtu-light-gray)",
+            borderRadius: "0.5rem",
+            margin: 0,
+          }}
+        >
+          {value || "Not specified"}
+        </p>
       )}
     </div>
   );
@@ -196,7 +247,7 @@ const BasicInformation = () => {
           {/* Header */}
           <div className="mtu-content-header">
             <h1 className="mtu-page-title">
-              <User className="mtu-title-icon" />
+              <User size={32} />
               Profile Information
             </h1>
             <div className="mtu-breadcrumb">
@@ -208,16 +259,27 @@ const BasicInformation = () => {
 
           {/* Action Buttons */}
           {isEditing && (
-            <div className="mtu-action-buttons">
+            <div
+              style={{
+                background: "var(--mtu-white)",
+                padding: "1rem 2rem",
+                borderRadius: "1rem",
+                marginBottom: "2rem",
+                boxShadow: "var(--mtu-shadow)",
+                display: "flex",
+                gap: "1rem",
+                justifyContent: "flex-end",
+              }}
+            >
               <button
                 onClick={handleCancel}
                 className="mtu-btn mtu-btn-secondary"
               >
-                <X className="mtu-btn-icon" />
+                <X size={16} />
                 Cancel
               </button>
               <button onClick={handleSave} className="mtu-btn mtu-btn-primary">
-                <Save className="mtu-btn-icon" />
+                <Save size={16} />
                 Save Changes
               </button>
             </div>
@@ -225,32 +287,69 @@ const BasicInformation = () => {
 
           {/* Profile Picture Section */}
           <InfoSection title="Profile Picture" icon={Camera}>
-            <div className="mtu-profile-pic-container">
-              <div className="mtu-profile-pic-wrapper">
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "2rem",
+                flexWrap: "wrap",
+              }}
+            >
+              <div style={{ position: "relative" }}>
                 <img
                   src={profileData.profilePicture}
                   alt="Profile"
-                  className="mtu-profile-pic"
+                  style={{
+                    width: "150px",
+                    height: "150px",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    border: "4px solid var(--mtu-primary-pink)",
+                  }}
                 />
                 {isEditing && (
-                  <button className="mtu-change-photo-btn">
-                    <Camera className="mtu-btn-icon" />
+                  <button
+                    style={{
+                      position: "absolute",
+                      bottom: "10px",
+                      right: "10px",
+                      background: "var(--mtu-primary-pink)",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: "40px",
+                      height: "40px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <Camera size={20} />
                   </button>
                 )}
               </div>
-              <div className="mtu-profile-info">
-                <h4 className="mtu-profile-name">
+              <div>
+                <h4
+                  style={{
+                    color: "var(--mtu-dark-gray)",
+                    marginBottom: "0.5rem",
+                  }}
+                >
                   {profileData.personalInfo.firstName}{" "}
                   {profileData.personalInfo.lastName}
                 </h4>
-                <p className="mtu-profile-location">
+                <p style={{ color: "var(--mtu-gray)", marginBottom: "1rem" }}>
                   {profileData.personalInfo.age} years •{" "}
                   {profileData.contactInfo.city},{" "}
                   {profileData.contactInfo.state}
                 </p>
                 {isEditing && (
-                  <button className="mtu-btn mtu-btn-primary mtu-change-photo-text-btn">
-                    <Camera className="mtu-btn-icon" />
+                  <button
+                    className="mtu-btn mtu-btn-primary"
+                    style={{ fontSize: "0.9rem" }}
+                  >
+                    <Camera size={16} />
                     Change Photo
                   </button>
                 )}
@@ -258,24 +357,63 @@ const BasicInformation = () => {
             </div>
 
             {/* Photo Gallery */}
-            <div className="mtu-gallery-section">
-              <h4 className="mtu-gallery-title">Photo Gallery</h4>
-              <div className="mtu-gallery-grid">
+            <div style={{ marginTop: "2rem" }}>
+              <h4
+                style={{ color: "var(--mtu-dark-gray)", marginBottom: "1rem" }}
+              >
+                Photo Gallery
+              </h4>
+              <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
                 {profileData.gallery.map((photo, index) => (
-                  <div key={index} className="mtu-gallery-item">
+                  <div key={index} style={{ position: "relative" }}>
                     <img
                       src={photo}
                       alt={`Gallery ${index + 1}`}
-                      className="mtu-gallery-image"
+                      style={{
+                        width: "100px",
+                        height: "100px",
+                        borderRadius: "0.5rem",
+                        objectFit: "cover",
+                        border: "2px solid var(--mtu-border-color)",
+                      }}
                     />
                     {isEditing && (
-                      <button className="mtu-remove-photo-btn"></button>
+                      <button
+                        style={{
+                          position: "absolute",
+                          top: "5px",
+                          right: "5px",
+                          background: "rgba(255, 0, 0, 0.8)",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "50%",
+                          width: "24px",
+                          height: "24px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                        }}
+                      ></button>
                     )}
                   </div>
                 ))}
                 {isEditing && (
-                  <div className="mtu-add-photo-btn">
-                    <Camera className="mtu-add-photo-icon" />
+                  <div
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      border: "2px dashed var(--mtu-primary-pink)",
+                      borderRadius: "0.5rem",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      color: "var(--mtu-primary-pink)",
+                    }}
+                  >
+                    <Camera size={24} />
                   </div>
                 )}
               </div>
@@ -288,7 +426,13 @@ const BasicInformation = () => {
             icon={User}
             sectionKey="personalInfo"
           >
-            <div className="mtu-info-grid">
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                gap: "1rem",
+              }}
+            >
               <InfoField
                 label="First Name"
                 value={profileData.personalInfo.firstName}
@@ -379,7 +523,13 @@ const BasicInformation = () => {
             icon={Phone}
             sectionKey="contactInfo"
           >
-            <div className="mtu-info-grid">
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                gap: "1rem",
+              }}
+            >
               <InfoField
                 label="Email Address"
                 value={profileData.contactInfo.email}
@@ -438,7 +588,13 @@ const BasicInformation = () => {
             icon={Briefcase}
             sectionKey="professionalInfo"
           >
-            <div className="mtu-info-grid">
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                gap: "1rem",
+              }}
+            >
               <InfoField
                 label="Education"
                 value={profileData.professionalInfo.education}
@@ -496,7 +652,13 @@ const BasicInformation = () => {
             icon={User}
             sectionKey="familyInfo"
           >
-            <div className="mtu-info-grid">
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                gap: "1rem",
+              }}
+            >
               <InfoField
                 label="Father's Name"
                 value={profileData.familyInfo.fatherName}
@@ -566,7 +728,13 @@ const BasicInformation = () => {
             icon={Heart}
             sectionKey="lifestyle"
           >
-            <div className="mtu-info-grid">
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                gap: "1rem",
+              }}
+            >
               <InfoField
                 label="Diet"
                 value={profileData.lifestyle.diet}
@@ -615,7 +783,14 @@ const BasicInformation = () => {
                 section="lifestyle"
               />
             </div>
-            <div className="mtu-textarea-grid">
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr",
+                gap: "1rem",
+                marginTop: "1rem",
+              }}
+            >
               <InfoField
                 label="Hobbies"
                 value={profileData.lifestyle.hobbies}
@@ -639,7 +814,13 @@ const BasicInformation = () => {
             icon={Heart}
             sectionKey="partnerPreferences"
           >
-            <div className="mtu-info-grid">
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                gap: "1rem",
+              }}
+            >
               <InfoField
                 label="Age Range"
                 value={profileData.partnerPreferences.ageRange}
@@ -712,23 +893,82 @@ const BasicInformation = () => {
           </InfoSection>
 
           {/* Profile Completion Status */}
-          <div className="mtu-profile-completion">
-            <h3 className="mtu-completion-title">
-              <Check className="mtu-section-icon" />
+          <div
+            style={{
+              background: "var(--mtu-white)",
+              borderRadius: "1rem",
+              padding: "2rem",
+              marginBottom: "2rem",
+              boxShadow: "var(--mtu-shadow)",
+              border: "1px solid var(--mtu-border-color)",
+            }}
+          >
+            <h3
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                fontSize: "1.3rem",
+                fontWeight: "600",
+                color: "var(--mtu-dark-gray)",
+                marginBottom: "1.5rem",
+              }}
+            >
+              <Check size={24} color="var(--mtu-primary-pink)" />
               Profile Completion Status
             </h3>
 
-            <div className="mtu-completion-progress">
-              <div className="mtu-progress-header">
-                <span className="mtu-progress-label">Profile Completion</span>
-                <span className="mtu-progress-percent">85%</span>
+            <div style={{ marginBottom: "1rem" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "0.5rem",
+                }}
+              >
+                <span
+                  style={{ fontWeight: "600", color: "var(--mtu-dark-gray)" }}
+                >
+                  Profile Completion
+                </span>
+                <span
+                  style={{
+                    fontWeight: "600",
+                    color: "var(--mtu-primary-pink)",
+                  }}
+                >
+                  85%
+                </span>
               </div>
-              <div className="mtu-progress-bar">
-                <div className="mtu-progress-fill"></div>
+              <div
+                style={{
+                  width: "100%",
+                  height: "10px",
+                  background: "var(--mtu-light-gray)",
+                  borderRadius: "5px",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    width: "85%",
+                    height: "100%",
+                    background: "var(--mtu-gradient-primary)",
+                    borderRadius: "5px",
+                  }}
+                />
               </div>
             </div>
 
-            <div className="mtu-completion-checklist">
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                gap: "1rem",
+                marginTop: "1.5rem",
+              }}
+            >
               {[
                 { label: "Basic Information", completed: true },
                 { label: "Contact Details", completed: true },
@@ -741,34 +981,87 @@ const BasicInformation = () => {
               ].map((item, index) => (
                 <div
                   key={index}
-                  className={`mtu-checklist-item ${
-                    item.completed ? "completed" : ""
-                  }`}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    padding: "0.5rem",
+                    background: item.completed
+                      ? "var(--mtu-light-pink)"
+                      : "var(--mtu-light-gray)",
+                    borderRadius: "0.5rem",
+                  }}
                 >
                   <div
-                    className={`mtu-checklist-icon ${
-                      item.completed ? "completed" : ""
-                    }`}
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                      borderRadius: "50%",
+                      background: item.completed
+                        ? "var(--mtu-primary-pink)"
+                        : "var(--mtu-gray)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "white",
+                    }}
                   >
                     {item.completed ? "✓" : "•"}
                   </div>
-                  <span className="mtu-checklist-label">{item.label}</span>
+                  <span
+                    style={{
+                      fontSize: "0.9rem",
+                      color: item.completed
+                        ? "var(--mtu-dark-pink)"
+                        : "var(--mtu-gray)",
+                      fontWeight: item.completed ? "600" : "500",
+                    }}
+                  >
+                    {item.label}
+                  </span>
                 </div>
               ))}
             </div>
 
-            <div className="mtu-completion-cta">
-              <h4 className="mtu-cta-title">Complete Your Profile</h4>
-              <p className="mtu-cta-text">
+            <div
+              style={{
+                marginTop: "1.5rem",
+                padding: "1rem",
+                background: "var(--mtu-light-pink)",
+                borderRadius: "0.5rem",
+                border: "1px solid var(--mtu-secondary-pink)",
+              }}
+            >
+              <h4
+                style={{
+                  color: "var(--mtu-dark-pink)",
+                  marginBottom: "0.5rem",
+                }}
+              >
+                Complete Your Profile
+              </h4>
+              <p
+                style={{
+                  color: "var(--mtu-dark-gray)",
+                  fontSize: "0.9rem",
+                  marginBottom: "1rem",
+                }}
+              >
                 Add more photos and horoscope details to increase your profile
                 visibility by 40%
               </p>
-              <div className="mtu-cta-buttons">
-                <button className="mtu-btn mtu-btn-primary">
-                  <Camera className="mtu-btn-icon" />
+              <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+                <button
+                  className="mtu-btn mtu-btn-primary"
+                  style={{ fontSize: "0.9rem" }}
+                >
+                  <Camera size={16} />
                   Add Photos
                 </button>
-                <button className="mtu-btn mtu-btn-secondary">
+                <button
+                  className="mtu-btn mtu-btn-secondary"
+                  style={{ fontSize: "0.9rem" }}
+                >
                   Add Horoscope
                 </button>
               </div>
@@ -776,13 +1069,37 @@ const BasicInformation = () => {
           </div>
 
           {/* Privacy Settings */}
-          <div className="mtu-privacy-settings">
-            <h3 className="mtu-privacy-title">
-              <User className="mtu-section-icon" />
+          <div
+            style={{
+              background: "var(--mtu-white)",
+              borderRadius: "1rem",
+              padding: "2rem",
+              boxShadow: "var(--mtu-shadow)",
+              border: "1px solid var(--mtu-border-color)",
+            }}
+          >
+            <h3
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                fontSize: "1.3rem",
+                fontWeight: "600",
+                color: "var(--mtu-dark-gray)",
+                marginBottom: "1.5rem",
+              }}
+            >
+              <User size={24} color="var(--mtu-primary-pink)" />
               Privacy Settings
             </h3>
 
-            <div className="mtu-privacy-grid">
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                gap: "1rem",
+              }}
+            >
               {[
                 {
                   label: "Show contact number",
@@ -805,20 +1122,79 @@ const BasicInformation = () => {
                   enabled: true,
                 },
               ].map((setting, index) => (
-                <div key={index} className="mtu-privacy-item">
+                <div
+                  key={index}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "1rem",
+                    background: "var(--mtu-light-gray)",
+                    borderRadius: "0.5rem",
+                  }}
+                >
                   <div>
-                    <h4 className="mtu-privacy-item-label">{setting.label}</h4>
-                    <p className="mtu-privacy-item-desc">
+                    <h4
+                      style={{
+                        color: "var(--mtu-dark-gray)",
+                        marginBottom: "0.25rem",
+                        fontSize: "1rem",
+                      }}
+                    >
+                      {setting.label}
+                    </h4>
+                    <p
+                      style={{
+                        color: "var(--mtu-gray)",
+                        fontSize: "0.8rem",
+                        margin: 0,
+                      }}
+                    >
                       {setting.description}
                     </p>
                   </div>
-                  <label className="mtu-switch">
+                  <label
+                    style={{
+                      position: "relative",
+                      display: "inline-block",
+                      width: "50px",
+                      height: "24px",
+                    }}
+                  >
                     <input
                       type="checkbox"
                       defaultChecked={setting.enabled}
-                      className="mtu-switch-input"
+                      style={{ display: "none" }}
                     />
-                    <span className="mtu-switch-slider"></span>
+                    <span
+                      style={{
+                        position: "absolute",
+                        cursor: "pointer",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: setting.enabled
+                          ? "var(--mtu-primary-pink)"
+                          : "var(--mtu-gray)",
+                        borderRadius: "24px",
+                        transition: "0.3s",
+                      }}
+                    >
+                      <span
+                        style={{
+                          position: "absolute",
+                          content: '""',
+                          height: "18px",
+                          width: "18px",
+                          left: setting.enabled ? "29px" : "3px",
+                          bottom: "3px",
+                          background: "white",
+                          borderRadius: "50%",
+                          transition: "0.3s",
+                        }}
+                      />
+                    </span>
                   </label>
                 </div>
               ))}

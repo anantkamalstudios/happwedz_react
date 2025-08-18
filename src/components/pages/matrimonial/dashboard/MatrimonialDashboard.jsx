@@ -19,11 +19,9 @@ import {
   Eye,
   ThumbsUp,
   X,
-  Menu,
 } from "lucide-react";
 import "../../../../Matrimonialdashboard.css";
 import { Link } from "react-router-dom";
-
 const sampleProfiles = [
   {
     id: 1,
@@ -127,8 +125,8 @@ const MatrimonialDashboard = () => {
     newMatches: 25,
     messages: 12,
   });
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Simulate real-time updates
   useEffect(() => {
     const interval = setInterval(() => {
       setStats((prev) => ({
@@ -204,15 +202,21 @@ const MatrimonialDashboard = () => {
         <h3 className="mtu-profile-name">{profile.name}</h3>
         <div className="mtu-profile-details">
           <p>
-            <MapPin className="mtu-detail-icon" />
+            <MapPin
+              size={14}
+              style={{ display: "inline", marginRight: "5px" }}
+            />
             {profile.location}
           </p>
           <p>
-            <Calendar className="mtu-detail-icon" />
+            <Calendar
+              size={14}
+              style={{ display: "inline", marginRight: "5px" }}
+            />
             {profile.age} years
           </p>
           <p>
-            <User className="mtu-detail-icon" />
+            <User size={14} style={{ display: "inline", marginRight: "5px" }} />
             {profile.profession}
           </p>
         </div>
@@ -228,11 +232,11 @@ const MatrimonialDashboard = () => {
             className="mtu-btn mtu-btn-primary"
             onClick={() => setSelectedProfile(profile)}
           >
-            <Heart className="mtu-btn-icon" />
+            <Heart size={16} />
             View Profile
           </button>
           <button className="mtu-btn mtu-btn-secondary">
-            <MessageCircle className="mtu-btn-icon" />
+            <MessageCircle size={16} />
             Message
           </button>
         </div>
@@ -245,7 +249,7 @@ const MatrimonialDashboard = () => {
       <div className="mtu-stat-header">
         <span className="mtu-stat-title">{title}</span>
         <div className="mtu-stat-icon">
-          <Icon className="mtu-stat-icon-svg" />
+          <Icon size={20} />
         </div>
       </div>
       <div className="mtu-stat-value">{value.toLocaleString()}</div>
@@ -264,7 +268,7 @@ const MatrimonialDashboard = () => {
     <div>
       <div className="mtu-content-header">
         <h1 className="mtu-page-title">
-          <Activity className="mtu-title-icon" />
+          <Activity size={32} />
           Dashboard Overview
         </h1>
         <div className="mtu-breadcrumb">
@@ -365,7 +369,7 @@ const MatrimonialDashboard = () => {
             Clear Filters
           </button>
           <button className="mtu-btn mtu-btn-primary" onClick={applyFilters}>
-            <Search className="mtu-btn-icon" />
+            <Search size={16} />
             Search Profiles
           </button>
         </div>
@@ -378,12 +382,11 @@ const MatrimonialDashboard = () => {
       </div>
     </div>
   );
-
   const renderProfiles = () => (
     <div>
       <div className="mtu-content-header">
         <h1 className="mtu-page-title">
-          <Users className="mtu-title-icon" />
+          <Users size={32} />
           Browse Profiles
         </h1>
         <div className="mtu-breadcrumb">
@@ -396,7 +399,7 @@ const MatrimonialDashboard = () => {
         <div className="mtu-search-header">
           <h2 className="mtu-search-title">Filter Profiles</h2>
           <button className="mtu-btn mtu-btn-primary">
-            <Filter className="mtu-btn-icon" />
+            <Filter size={16} />
             Advanced Filters
           </button>
         </div>
@@ -448,7 +451,7 @@ const MatrimonialDashboard = () => {
         <div className="mtu-search-actions">
           <button className="mtu-btn mtu-btn-secondary">Reset</button>
           <button className="mtu-btn mtu-btn-primary" onClick={applyFilters}>
-            <Search className="mtu-btn-icon" />
+            <Search size={16} />
             Apply Filters
           </button>
         </div>
@@ -466,7 +469,7 @@ const MatrimonialDashboard = () => {
     <div>
       <div className="mtu-content-header">
         <h1 className="mtu-page-title">
-          <Heart className="mtu-title-icon" />
+          <Heart size={32} />
           My Matches
         </h1>
         <div className="mtu-breadcrumb">
@@ -493,7 +496,7 @@ const MatrimonialDashboard = () => {
     <div>
       <div className="mtu-content-header">
         <h1 className="mtu-page-title">
-          <MessageCircle className="mtu-title-icon" />
+          <MessageCircle size={32} />
           Messages
         </h1>
         <div className="mtu-breadcrumb">
@@ -505,23 +508,47 @@ const MatrimonialDashboard = () => {
         <div className="mtu-search-header">
           <h2 className="mtu-search-title">Recent Conversations</h2>
         </div>
-        <div className="mtu-messages-list">
+        <div style={{ display: "grid", gap: "1rem" }}>
           {filteredProfiles.slice(0, 3).map((profile) => (
-            <div key={profile.id} className="mtu-message-item">
+            <div
+              key={profile.id}
+              style={{
+                background: "var(--mtu-white)",
+                padding: "1.5rem",
+                borderRadius: "0.5rem",
+                border: "1px solid var(--mtu-border-color)",
+                display: "flex",
+                alignItems: "center",
+                gap: "1rem",
+              }}
+            >
               <img
                 src={profile.image}
                 alt={profile.name}
-                className="mtu-message-avatar"
+                style={{
+                  width: "50px",
+                  height: "50px",
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                }}
               />
-              <div className="mtu-message-content">
-                <h4 className="mtu-message-name">{profile.name}</h4>
-                <p className="mtu-message-preview">
+              <div style={{ flex: 1 }}>
+                <h4 style={{ margin: 0, color: "var(--mtu-dark-gray)" }}>
+                  {profile.name}
+                </h4>
+                <p
+                  style={{
+                    margin: "0.25rem 0",
+                    color: "var(--mtu-gray)",
+                    fontSize: "0.9rem",
+                  }}
+                >
                   Last message: Hi! I'm interested in your profile...
                 </p>
-                <small className="mtu-message-time">2 hours ago</small>
+                <small style={{ color: "var(--mtu-gray)" }}>2 hours ago</small>
               </div>
               <button className="mtu-btn mtu-btn-primary">
-                <MessageCircle className="mtu-btn-icon" />
+                <MessageCircle size={16} />
                 Reply
               </button>
             </div>
@@ -535,6 +562,8 @@ const MatrimonialDashboard = () => {
     switch (activeSection) {
       case "dashboard":
         return renderDashboard();
+      case "edit-profile":
+        return renderEditProfile();
       case "profiles":
         return renderProfiles();
       case "matches":
@@ -552,13 +581,13 @@ const MatrimonialDashboard = () => {
           <div>
             <div className="mtu-content-header">
               <h1 className="mtu-page-title">
-                <Settings className="mtu-title-icon" />
+                <Settings size={32} />
                 Account Settings
               </h1>
             </div>
             <div className="mtu-search-section">
               <h2 className="mtu-search-title">Profile Settings</h2>
-              <p className="mtu-settings-description">
+              <p style={{ color: "var(--mtu-gray)" }}>
                 Manage your account preferences and privacy settings.
               </p>
             </div>
@@ -575,15 +604,27 @@ const MatrimonialDashboard = () => {
         {/* Header */}
         <header className="mtu-header-wrapper">
           <nav className="mtu-navigation-container">
-            <button
-              className="mtu-mobile-menu-toggle"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              <Menu size={24} />
-            </button>
+            {/* <a href="#" className="mtu-brand-logo">
+            <Heart size={28} />
+            SoulMate Connect
+          </a>
+          <ul className="mtu-nav-menu">
+            <li className="mtu-nav-item">
+              <a href="#">Home</a>
+            </li>
+            <li className="mtu-nav-item">
+              <a href="#">About</a>
+            </li>
+            <li className="mtu-nav-item">
+              <a href="#">Success Stories</a>
+            </li>
+            <li className="mtu-nav-item">
+              <a href="#">Help</a>
+            </li> */}
+            {/* </ul> */}
             <div className="mtu-user-profile">
               <div className="mtu-notification-icon">
-                <Bell className="mtu-notification-bell" />
+                <Bell size={20} />
                 <span className="mtu-notification-badge">3</span>
               </div>
               <Link to="/edit-profile">
@@ -596,52 +637,6 @@ const MatrimonialDashboard = () => {
             </div>
           </nav>
         </header>
-
-        {/* Mobile Menu Overlay */}
-        {mobileMenuOpen && (
-          <div
-            className="mtu-mobile-menu-overlay"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            <div
-              className="mtu-mobile-menu"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="mtu-mobile-menu-header">
-                <h2>Menu</h2>
-                <button
-                  className="mtu-mobile-menu-close"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <X size={24} />
-                </button>
-              </div>
-              <ul className="mtu-mobile-sidebar-menu">
-                {sidebarItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <li key={item.id} className="mtu-mobile-sidebar-item">
-                      <a
-                        href="#"
-                        className={`mtu-mobile-sidebar-link ${
-                          activeSection === item.id ? "active" : ""
-                        }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setActiveSection(item.id);
-                          setMobileMenuOpen(false);
-                        }}
-                      >
-                        <Icon className="mtu-mobile-sidebar-icon" />
-                        {item.label}
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
-        )}
 
         {/* Main Dashboard */}
         <div className="mtu-dashboard-container">
@@ -664,7 +659,7 @@ const MatrimonialDashboard = () => {
                           setActiveSection(item.id);
                         }}
                       >
-                        <Icon className="mtu-sidebar-icon" />
+                        <Icon size={20} className="mtu-sidebar-icon" />
                         {item.label}
                       </a>
                     </li>
@@ -694,54 +689,95 @@ const MatrimonialDashboard = () => {
                   className="mtu-modal-close"
                   onClick={() => setSelectedProfile(null)}
                 >
-                  <X className="mtu-modal-close-icon" />
+                  <X size={20} />
                 </button>
               </div>
-              <div className="mtu-modal-body">
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "200px 1fr",
+                  gap: "2rem",
+                }}
+              >
                 <img
                   src={selectedProfile.image}
                   alt={selectedProfile.name}
-                  className="mtu-modal-profile-image"
+                  style={{
+                    width: "100%",
+                    borderRadius: "0.5rem",
+                    objectFit: "cover",
+                  }}
                 />
-                <div className="mtu-modal-profile-content">
-                  <h3 className="mtu-modal-profile-name">
+                <div>
+                  <h3
+                    style={{
+                      color: "var(--mtu-dark-gray)",
+                      marginBottom: "1rem",
+                    }}
+                  >
                     {selectedProfile.name}, {selectedProfile.age}
                   </h3>
-                  <div className="mtu-modal-profile-details">
+                  <div style={{ marginBottom: "1rem" }}>
                     <p>
-                      <MapPin className="mtu-modal-detail-icon" />
+                      <MapPin
+                        size={16}
+                        style={{
+                          display: "inline",
+                          marginRight: "8px",
+                          color: "var(--mtu-primary-pink)",
+                        }}
+                      />
                       {selectedProfile.location}
                     </p>
                     <p>
-                      <User className="mtu-modal-detail-icon" />
+                      <User
+                        size={16}
+                        style={{
+                          display: "inline",
+                          marginRight: "8px",
+                          color: "var(--mtu-primary-pink)",
+                        }}
+                      />
                       {selectedProfile.profession}
                     </p>
                     <p>
-                      <Calendar className="mtu-modal-detail-icon" />
+                      <Calendar
+                        size={16}
+                        style={{
+                          display: "inline",
+                          marginRight: "8px",
+                          color: "var(--mtu-primary-pink)",
+                        }}
+                      />
                       {selectedProfile.education}
                     </p>
                   </div>
-                  <div className="mtu-modal-profile-tags">
+                  <div
+                    className="mtu-profile-tags"
+                    style={{ marginBottom: "1rem" }}
+                  >
                     {selectedProfile.tags.map((tag, index) => (
-                      <span key={index} className="mtu-modal-profile-tag">
+                      <span key={index} className="mtu-profile-tag">
                         {tag}
                       </span>
                     ))}
                   </div>
-                  <p className="mtu-modal-profile-about">
+                  <p
+                    style={{ color: "var(--mtu-gray)", marginBottom: "1.5rem" }}
+                  >
                     {selectedProfile.about}
                   </p>
-                  <div className="mtu-modal-profile-actions">
+                  <div style={{ display: "flex", gap: "1rem" }}>
                     <button className="mtu-btn mtu-btn-primary">
-                      <Heart className="mtu-btn-icon" />
+                      <Heart size={16} />
                       Express Interest
                     </button>
                     <button className="mtu-btn mtu-btn-secondary">
-                      <MessageCircle className="mtu-btn-icon" />
+                      <MessageCircle size={16} />
                       Send Message
                     </button>
                     <button className="mtu-btn mtu-btn-secondary">
-                      <Phone className="mtu-btn-icon" />
+                      <Phone size={16} />
                       Contact
                     </button>
                   </div>

@@ -95,103 +95,98 @@ const EditProfile = () => {
     options = null
   ) => {
     return (
-      <Form.Group className="form-group editable-field">
-        <Form.Label>
-          {icon} {label}
-        </Form.Label>
-        <div className="editable-container">
-          {editingField === fieldName ? (
-            <div className="editing-controls">
-              {type === "select" ? (
-                <Form.Control
-                  as="select"
-                  value={tempValue}
-                  onChange={(e) => setTempValue(e.target.value)}
-                  autoFocus
-                >
-                  {options.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </Form.Control>
-              ) : type === "textarea" ? (
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  value={tempValue}
-                  onChange={(e) => setTempValue(e.target.value)}
-                  autoFocus
-                />
-              ) : (
-                <Form.Control
-                  type={type}
-                  value={tempValue}
-                  onChange={(e) => setTempValue(e.target.value)}
-                  autoFocus
-                />
-              )}
-              <div className="edit-actions d-flex">
+      <div className="matrimonial">
+        <Form.Group className="form-group editable-field">
+          <Form.Label>
+            {icon} {label}
+          </Form.Label>
+          <div className="editable-container">
+            {editingField === fieldName ? (
+              <div className="editing-controls">
+                {type === "select" ? (
+                  <Form.Control
+                    as="select"
+                    value={tempValue}
+                    onChange={(e) => setTempValue(e.target.value)}
+                    autoFocus
+                  >
+                    {options.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </Form.Control>
+                ) : type === "textarea" ? (
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    value={tempValue}
+                    onChange={(e) => setTempValue(e.target.value)}
+                    autoFocus
+                  />
+                ) : (
+                  <Form.Control
+                    type={type}
+                    value={tempValue}
+                    onChange={(e) => setTempValue(e.target.value)}
+                    autoFocus
+                  />
+                )}
+                <div className="edit-actions">
+                  <Button
+                    variant="link"
+                    onClick={saveEditing}
+                    className="text-success"
+                  >
+                    <FiCheck />
+                  </Button>
+                  <Button
+                    variant="link"
+                    onClick={cancelEditing}
+                    className="text-danger"
+                  >
+                    <FiX />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="display-value">
+                <span>{formData[fieldName]}</span>
                 <Button
                   variant="link"
-                  onClick={saveEditing}
-                  className="text-success p-0 mr-2"
+                  className="edit-btn"
+                  onClick={() => startEditing(fieldName)}
                 >
-                  <FiCheck />
-                </Button>
-                <Button
-                  variant="link"
-                  onClick={cancelEditing}
-                  className="text-danger p-0"
-                >
-                  <FiX />
+                  <FiEdit2 size={14} />
                 </Button>
               </div>
-            </div>
-          ) : (
-            <div className="d-flex justify-content-between align-items-center">
-              <span>{formData[fieldName]}</span>
-              <Button
-                variant="link"
-                className="edit-btn p-0 ml-2"
-                onClick={() => startEditing(fieldName)}
-              >
-                <FiEdit2 size={14} />
-              </Button>
-            </div>
-          )}
-        </div>
-      </Form.Group>
+            )}
+          </div>
+        </Form.Group>
+      </div>
     );
   };
 
   return (
-    <Container fluid className="edit-profile-container py-4">
+    <Container fluid className="edit-profile-container">
       <Row className="justify-content-center">
-        <Col xs={12} md={11} lg={10} xl={8}>
-          <Card className="profile-card shadow-sm">
-            <Card.Header className="profile-header text-center text-md-left">
-              <h2 className="mb-1">Edit Profile</h2>
-              <p className="mb-0">
-                Complete your profile to get better matches
-              </p>
+        <Col lg={10} xl={8}>
+          <Card className="profile-card">
+            <Card.Header className="profile-header">
+              <h2>Edit Profile</h2>
+              <p>Complete your profile to get better matches</p>
             </Card.Header>
 
             <Card.Body>
               <Row>
-                {/* Profile Picture Section */}
-                <Col xs={12} md={4} className="text-center mb-4 mb-md-0">
-                  <div className="profile-pic-container mx-auto">
+                <Col md={4} className="text-center">
+                  <div className="profile-pic-container">
                     <Image
                       src={profilePic}
                       roundedCircle
                       className="profile-pic"
-                      fluid
                     />
-                    <label
-                      htmlFor="profile-upload"
-                      className="upload-btn mt-2 d-inline-block"
-                    >
+                    <label htmlFor="profile-upload" className="upload-btn">
                       <FiCamera /> Change Photo
                     </label>
                     <input
@@ -206,26 +201,22 @@ const EditProfile = () => {
                     <div className="completion-bar">
                       <div className="progress" style={{ width: "75%" }}></div>
                     </div>
-                    <p className="small text-muted mb-0">
-                      Profile 75% complete
-                    </p>
+                    <p>Profile 75% complete</p>
                   </div>
                 </Col>
 
-                {/* Form Section */}
-                <Col xs={12} md={8}>
+                <Col md={8}>
                   <Tabs
                     activeKey={key}
                     onSelect={(k) => setKey(k)}
-                    className="profile-tabs mb-3"
+                    className="profile-tabs"
                   >
-                    {/* Basic Details */}
                     <Tab eventKey="basic" title="Basic Details">
                       <Form className="profile-form">
                         {renderEditableField("name", "Full Name", <FiUser />)}
 
                         <Row>
-                          <Col xs={12} md={6}>
+                          <Col md={6}>
                             {renderEditableField(
                               "email",
                               "Email",
@@ -233,7 +224,7 @@ const EditProfile = () => {
                               "email"
                             )}
                           </Col>
-                          <Col xs={12} md={6}>
+                          <Col md={6}>
                             {renderEditableField(
                               "phone",
                               "Phone",
@@ -244,7 +235,7 @@ const EditProfile = () => {
                         </Row>
 
                         <Row>
-                          <Col xs={12} md={6}>
+                          <Col md={6}>
                             {renderEditableField(
                               "dob",
                               "Date of Birth",
@@ -252,7 +243,7 @@ const EditProfile = () => {
                               "date"
                             )}
                           </Col>
-                          <Col xs={12} md={6}>
+                          <Col md={6}>
                             {renderEditableField(
                               "height",
                               "Height",
@@ -278,11 +269,10 @@ const EditProfile = () => {
                       </Form>
                     </Tab>
 
-                    {/* Religious Background */}
                     <Tab eventKey="religious" title="Religious Background">
                       <Form className="profile-form">
                         <Row>
-                          <Col xs={12} md={6}>
+                          <Col md={6}>
                             {renderEditableField(
                               "religion",
                               "Religion",
@@ -291,7 +281,7 @@ const EditProfile = () => {
                               ["Hindu", "Muslim", "Christian", "Sikh", "Other"]
                             )}
                           </Col>
-                          <Col xs={12} md={6}>
+                          <Col md={6}>
                             {renderEditableField(
                               "caste",
                               "Caste",
@@ -312,7 +302,6 @@ const EditProfile = () => {
                       </Form>
                     </Tab>
 
-                    {/* Professional Details */}
                     <Tab eventKey="professional" title="Professional Details">
                       <Form className="profile-form">
                         {renderEditableField(
@@ -349,7 +338,6 @@ const EditProfile = () => {
                       </Form>
                     </Tab>
 
-                    {/* Personal Info */}
                     <Tab eventKey="personal" title="Personal Info">
                       <Form className="profile-form">
                         {renderEditableField(
@@ -368,14 +356,11 @@ const EditProfile = () => {
                     </Tab>
                   </Tabs>
 
-                  <div className="form-actions d-flex flex-wrap justify-content-end">
-                    <Button
-                      variant="outline-secondary"
-                      className="mr-2 mb-2 mb-md-0"
-                    >
+                  <div className="form-actions">
+                    <Button variant="outline-secondary" className="mr-3 mb-2">
                       Cancel
                     </Button>
-                    <Button variant="primary">
+                    <Button variant="primary" className="mb-2">
                       <FiSave /> Save Changes
                     </Button>
                   </div>
