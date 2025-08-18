@@ -41,6 +41,7 @@ function App() {
         <Route path="/vendor-login" element={<VendorLogin />} />
         <Route path="/vendor-register" element={<VendorRegister />} />
         <Route path="/user-forgot-password" element={<ForgotPassword />} />
+
         <Route
           path="/vendor-dashboard"
           element={<Navigate to="/vendor-dashboard/vendor-home" />}
