@@ -48,72 +48,83 @@ const Navbar = () => {
   }, []);
 
   return (
-    <div className="matrimonial-container">
-      <nav className="navbar">
-        <div className="container">
-          <div className="logo">{/* Logo here if needed */}</div>
+    <div className="matrimonial">
+      <div className="matrimonial-container">
+        <nav className="navbar">
+          <div className="container">
+            <div className="logo">{/* Logo here if needed */}</div>
 
-          <div className="nav-menu">
-            <div className="nav-item">
-              <Link to="/">HappyWedz</Link>
-            </div>
-            <div className="nav-item">
-              <Link to="/matrimonial">Home</Link>
-            </div>
+            <div className="nav-menu">
+              <div className="nav-item">
+                <Link to="/">HappyWedz</Link>
+              </div>
+              <div className="nav-item">
+                <Link to="/matrimonial">Home</Link>
+              </div>
 
-            <div
-              className="nav-item"
-              onMouseEnter={() => handleDropdownHover("matches")}
-            >
-              <span>
-                Matches <FiChevronDown />
-              </span>
-              {activeDropdown === "matches" && (
-                <div className="dropdown">
-                  <div className="dropdown-content">
-                    <div className="submenu-column">
-                      <h4>By Preference</h4>
-                      <Link to="/ProfileMatrimonial/Brahmin">New Matches</Link>
-                      <Link to="/ProfileMatrimonial/premium">
-                        Premium Matches
-                      </Link>
-                      <Link to="/ProfileMatrimonial/near-me">
-                        Matches Near You
-                      </Link>
-                    </div>
-                    <div className="submenu-column">
-                      <Link to="/ProfileMatrimonial/Hindu">Hindu Matches</Link>
-                      <Link to="/ProfileMatrimonial/Muslim">
-                        Muslim Matches
-                      </Link>
-                      <Link to="/ProfileMatrimonial/Christian">
-                        Christian Matches
-                      </Link>
-                      <Link to="/ProfileMatrimonial/Sikh">Sikh Matches</Link>
-                    </div>
-                    <div className="submenu-column">
-                      <h4>By Profession</h4>
-                      <Link to="/ProfileMatrimonial/Doctor">
-                        Doctor Matches
-                      </Link>
-                      <Link to="/ProfileMatrimonial/Engineer">
-                        Engineer Matches
-                      </Link>
-                      <Link to="/ProfileMatrimonial/Engineer">
-                        CA/CS Matches
-                      </Link>
-                      <Link to="/ProfileMatrimonial/Gov">Govt. Employee</Link>
+              <div
+                className="nav-item"
+                onMouseEnter={() => handleDropdownHover("matches")}
+              >
+                <span>
+                  Matches <FiChevronDown />
+                </span>
+                {activeDropdown === "matches" && (
+                  <div className="dropdown">
+                    <div className="dropdown-content">
+                      <div className="submenu-column">
+                        <h4>By Preference</h4>
+                        <Link to="/ProfileMatrimonial/Brahmin">
+                          New Matches
+                        </Link>
+                        <Link to="/ProfileMatrimonial/premium">
+                          Premium Matches
+                        </Link>
+                        <Link to="/ProfileMatrimonial/near-me">
+                          Matches Near You
+                        </Link>
+                      </div>
+                      <div className="submenu-column">
+                        <Link to="/ProfileMatrimonial/Hindu">
+                          Hindu Matches
+                        </Link>
+                        <Link to="/ProfileMatrimonial/Muslim">
+                          Muslim Matches
+                        </Link>
+                        <Link to="/ProfileMatrimonial/Christian">
+                          Christian Matches
+                        </Link>
+                        <Link to="/ProfileMatrimonial/Sikh">Sikh Matches</Link>
+                      </div>
+                      <div className="submenu-column">
+                        <h4>By Profession</h4>
+                        <Link to="/ProfileMatrimonial/Doctor">
+                          Doctor Matches
+                        </Link>
+                        <Link to="/ProfileMatrimonial/Engineer">
+                          Engineer Matches
+                        </Link>
+                        <Link to="/ProfileMatrimonial/Engineer">
+                          CA/CS Matches
+                        </Link>
+                        <Link to="/ProfileMatrimonial/Gov">Govt. Employee</Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            <div className="nav-item">
-              <Link to="/matrimonial-search">Search</Link>
-            </div>
+              <div className="nav-item">
+                <Link to="/matrimonial-search">Search</Link>
+              </div>
+              <div className="nav-item">
+                <Link to="/matrimonial-dashboard">Dashboard</Link>
+              </div>
+              <div className="nav-item">
+                <Link to="/edit-profile">Edit-profile</Link>
+              </div>
 
-            <div
+              {/* <div
               className="nav-item"
               onMouseEnter={() => handleDropdownHover("community")}
             >
@@ -195,97 +206,98 @@ const Navbar = () => {
                   </div>
                 </div>
               )}
-            </div>
+            </div> */}
 
-            {/* <div className="nav-item">
+              {/* <div className="nav-item">
               <a href="/">Horoscope</a>
             </div> */}
-            {/* <div className="nav-item">
+              {/* <div className="nav-item">
               <a href="/">Blog</a>
             </div>
             <div className="nav-item">
               <a href="/">Success Stories</a>
             </div> */}
+            </div>
+
+            <div className="nav-actions">
+              <button
+                className="login-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleLogin();
+                }}
+              >
+                Login
+              </button>
+              <button
+                className="login-btn "
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate("/matrimonial-register");
+                }}
+              >
+                Register
+              </button>
+            </div>
           </div>
+        </nav>
 
-          <div className="nav-actions">
-  <button
-    className="login-btn"
-    onClick={(e) => {
-      e.stopPropagation();
-      toggleLogin();
-    }}
-  >
-    Login
-  </button>
-  <button
-    className="login-btn "
-    onClick={(e) => {
-      e.stopPropagation();
-      navigate("/matrimonial-register");
-    }}
-  >
-    Register
-  </button>
-</div>
-</div>
-</nav>
-
-{/* Login Modal */}
-{isLoginOpen && (
-<div className="login-modal" onClick={toggleLogin}>
-  <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-    <div className="modal-header">
-      <h2>Login to Your Account</h2>
-      <button className="close-btn" onClick={toggleLogin}>
-        ×
-      </button>
-    </div>
-    <div className="modal-body">
-      <div className="form-group">
-        <FiUser className="input-icon" />
-        <input type="text" placeholder="Email or Mobile" />
+        {/* Login Modal */}
+        {isLoginOpen && (
+          <div className="login-modal" onClick={toggleLogin}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>Login to Your Account</h2>
+                <button className="close-btn" onClick={toggleLogin}>
+                  ×
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="form-group">
+                  <FiUser className="input-icon" />
+                  <input type="text" placeholder="Email or Mobile" />
+                </div>
+                <div className="form-group password-group">
+                  <FiLock className="input-icon" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                  />
+                  <span
+                    className="toggle-password"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <FiEyeOff /> : <FiEye />}
+                  </span>
+                </div>
+                <div className="remember-forgot">
+                  <label>
+                    <input type="checkbox" /> Remember me
+                  </label>
+                  <Link to="/user-forgot-password">Forgot Password?</Link>
+                </div>
+                <button
+                  className="login-button"
+                  onClick={() => {
+                    // Your login logic here
+                    // After successful login and navigation:
+                    toggleLogin(); // This will close the modal
+                  }}
+                >
+                  Login
+                </button>
+              </div>
+              <div className="modal-footer">
+                <p>
+                  By logging in, you agree to our{" "}
+                  <a href="/">Terms & Conditions</a> and{" "}
+                  <a href="/">Privacy Policy</a>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-      <div className="form-group password-group">
-        <FiLock className="input-icon" />
-        <input
-          type={showPassword ? "text" : "password"}
-          placeholder="Password"
-        />
-        <span
-          className="toggle-password"
-          onClick={() => setShowPassword(!showPassword)}
-        >
-          {showPassword ? <FiEyeOff /> : <FiEye />}
-        </span>
-      </div>
-      <div className="remember-forgot">
-        <label>
-          <input type="checkbox" /> Remember me
-        </label>
-        <a href="/">Forgot Password?</a>
-      </div>
-      <button 
-        className="login-button"
-        onClick={() => {
-          // Your login logic here
-          // After successful login and navigation:
-          toggleLogin(); // This will close the modal
-        }}
-      >
-        Login
-      </button>
-    </div>
-    <div className="modal-footer">
-      <p>
-        By logging in, you agree to our{" "}
-        <a href="/">Terms & Conditions</a> and{" "}
-        <a href="/">Privacy Policy</a>
-      </p>
-    </div>
-  </div>
-</div>
-)}
     </div>
   );
 };

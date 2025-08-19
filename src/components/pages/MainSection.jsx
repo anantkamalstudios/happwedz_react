@@ -16,6 +16,7 @@ import GroomeSlider from "../layouts/twoSoul/GroomeSlider";
 import BrideSlider from "../layouts/twoSoul/BrideSlider";
 import MainPhotages from "../layouts/twoSoul/MainPhotages";
 import PricingModal from "../layouts/PricingModal";
+import WeddingCardDesigns from "../layouts/eInvite/WeddingCardDesigns";
 
 const MainSection = () => {
   const { section } = useParams();
@@ -92,6 +93,23 @@ const MainSection = () => {
         <VenuesSearch title="E Invites" />
         {/* <MainByRegion /> */}
         <MainEInvites />
+        {/* <FindMain /> */}
+        {/* <MainHeroSection loc={"Panjab"} />
+        <MainHeroSection loc={"Karela "} />
+        <MainHeroSection loc={"Goa"} />
+        */}
+        <FactorsList />
+        <FaqsSection />
+      </>
+    );
+  }
+  if (section === "e-invite-wedding-card-designs") {
+    return (
+      <>
+        {/* <VenuesSearch title="E Invites" /> */}
+        {/* <MainByRegion /> */}
+        {/* <MainEInvites /> */}
+        <WeddingCardDesigns />
         {/* <FindMain /> */}
         {/* <MainHeroSection loc={"Panjab"} />
         <MainHeroSection loc={"Karela "} />

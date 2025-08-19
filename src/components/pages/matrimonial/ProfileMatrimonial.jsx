@@ -1,4 +1,3 @@
-// src/components/pages/matrimonial/BrahminMatrimonial.jsx
 import React, { useState, useEffect } from "react";
 import {
   FiFilter,
@@ -219,142 +218,53 @@ const ProfileMatrimonial = () => {
 
   return (
     <>
-      <div className="brahmin-matrimonial-page">
-        {/* Page Header - Keep existing */}
-        <div className="brahmin-page-header">
-          <div className="container">
-            <h1>{matchType} Matrimony</h1>
-            <p>
-              Find your perfect Brahmin life partner from thousands of verified
-              profiles
-            </p>
-            <div className="brahmin-stats">
-              <div className="stat-item">
-                <strong>10,000+</strong>
-                <span>Active Profiles</span>
-              </div>
-              <div className="stat-item">
-                <strong>5,000+</strong>
-                <span>Success Stories</span>
-              </div>
-              <div className="stat-item">
-                <strong>20+</strong>
-                <span>Years Experience</span>
+      <div className="matrimonial">
+        <div className="brahmin-matrimonial-page">
+          {/* Page Header - Keep existing */}
+          <div className="brahmin-page-header">
+            <div className="container">
+              <h1>{matchType} Matrimony</h1>
+              <p>
+                Find your perfect Brahmin life partner from thousands of
+                verified profiles
+              </p>
+              <div className="brahmin-stats">
+                <div className="stat-item">
+                  <strong>10,000+</strong>
+                  <span>Active Profiles</span>
+                </div>
+                <div className="stat-item">
+                  <strong>5,000+</strong>
+                  <span>Success Stories</span>
+                </div>
+                <div className="stat-item">
+                  <strong>20+</strong>
+                  <span>Years Experience</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="container brahmin-main-content">
-          <div className="brahmin-content-wrapper">
-            {/* Profiles Column - Keep existing */}
-            <div className="brahmin-profiles-column">
-              <div className="brahmin-profile-tabs">
-                <button
-                  className={`brahmin-tab-btn ${
-                    activeTab === "grooms" ? "active" : ""
-                  }`}
-                  onClick={() => setActiveTab("grooms")}
-                >
-                  Grooms
-                </button>
-                <button
-                  className={`brahmin-tab-btn ${
-                    activeTab === "brides" ? "active" : ""
-                  }`}
-                  onClick={() => setActiveTab("brides")}
-                >
-                  Brides
-                </button>
-              </div>
-
-              <div className="brahmin-sorting-options">
-                <div className="brahmin-sort-by">
-                  <FiFilter className="brahmin-icon" />
-                  <span>Sort By:</span>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="brahmin-sort-select"
+          <div className="container brahmin-main-content">
+            <div className="brahmin-content-wrapper">
+              {/* Profiles Column - Keep existing */}
+              <div className="brahmin-profiles-column">
+                <div className="brahmin-profile-tabs">
+                  <button
+                    className={`brahmin-tab-btn ${
+                      activeTab === "grooms" ? "active" : ""
+                    }`}
+                    onClick={() => setActiveTab("grooms")}
                   >
-                    <option value="recent">Recently Added</option>
-                    <option value="popular">Most Popular</option>
-                    <option value="income">Income: High to Low</option>
-                    <option value="age">Age: Low to High</option>
-                  </select>
-                </div>
-
-                <div className="brahmin-results-count">
-                  Showing {profiles[activeTab].length} profiles
-                </div>
-              </div>
-
-              <div className="brahmin-profiles-grid">
-                {profiles[activeTab].map((profile) => (
-                  <div key={profile.id} className="brahmin-profile-card">
-                    <div className="brahmin-profile-badge">Premium</div>
-                    <div className="brahmin-profile-image">
-                      <img
-                        src={profile.image}
-                        alt={profile.name}
-                        className="brahmin-profile-img"
-                      />
-                      <div className="brahmin-profile-actions">
-                        <button className="brahmin-action-btn">
-                          <FiHeart />
-                        </button>
-                        <button className="brahmin-action-btn">
-                          <FiBookmark />
-                        </button>
-                        <button className="brahmin-action-btn">
-                          <FiShare2 />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="brahmin-profile-info">
-                      <h3>{profile.name}</h3>
-                      <div className="brahmin-profile-details">
-                        <p>
-                          {profile.age} yrs, {profile.height}
-                        </p>
-                        <p>{profile.education}</p>
-                        <p>{profile.profession}</p>
-                        <p>
-                          <FiMapPin className="brahmin-icon" />{" "}
-                          {profile.location}
-                        </p>
-                        <p>Annual Income: {profile.income}</p>
-                        <p>Family: {profile.family}</p>
-                      </div>
-                      <div className="brahmin-profile-cta">
-                        <button className="brahmin-view-btn">
-                          <FiEye className="brahmin-icon" />
-                        </button>
-                        <button className="brahmin-express-btn">
-                          <FiHeart className="brahmin-icon" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="brahmin-pagination">
-                <button className="brahmin-page-btn active">1</button>
-                <button className="brahmin-page-btn">2</button>
-                <button className="brahmin-page-btn">3</button>
-                <button className="brahmin-page-btn">4</button>
-                <button className="brahmin-page-btn next">Next →</button>
-              </div>
-            </div>
-
-            {/* Filters Column - Updated with new design */}
-            <div className="brahmin-filters-column">
-              <div className="filter-panel">
-                <div className="filter-panel-header">
-                  <h3>Refine Search</h3>
-                  <button className="reset-all" onClick={resetAllFilters}>
-                    <FiX size={16} /> Reset All
+                    Grooms
+                  </button>
+                  <button
+                    className={`brahmin-tab-btn ${
+                      activeTab === "brides" ? "active" : ""
+                    }`}
+                    onClick={() => setActiveTab("brides")}
+                  >
+                    Brides
                   </button>
                 </div>
 
@@ -463,11 +373,30 @@ const ProfileMatrimonial = () => {
                     </select>
                   </div>
                 </FilterSection>
+                <div className="brahmin-sorting-options">
+                  <div className="brahmin-sort-by">
+                    <FiFilter className="brahmin-icon" />
+                    <span>Sort By:</span>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="brahmin-sort-select"
+                    >
+                      <option value="recent">Recently Added</option>
+                      <option value="popular">Most Popular</option>
+                      <option value="income">Income: High to Low</option>
+                      <option value="age">Age: Low to High</option>
+                    </select>
+                  </div>
 
-                <FilterSection title="Marital Status">
-                  <div className="filter-options">
-                    {["Never Married", "Divorced", "Widowed", "Separated"].map(
-                      (status) => (
+                  <FilterSection title="Marital Status">
+                    <div className="filter-options">
+                      {[
+                        "Never Married",
+                        "Divorced",
+                        "Widowed",
+                        "Separated",
+                      ].map((status) => (
                         <label key={status} className="filter-option">
                           <input
                             type="checkbox"
@@ -485,60 +414,66 @@ const ProfileMatrimonial = () => {
                           <span className="checkmark"></span>
                           <span className="option-label">{status}</span>
                         </label>
-                      )
-                    )}
-                  </div>
-                </FilterSection>
+                      ))}
+                      <div className="brahmin-results-count">
+                        Showing {profiles[activeTab].length} profiles
+                      </div>
+                    </div>
+                  </FilterSection>
 
-                <FilterSection title="Education">
-                  <select
-                    value={education}
-                    onChange={(e) => setEducation(e.target.value)}
-                    className="filter-select"
-                  >
-                    <option value="">Any Education</option>
-                    <option value="B.Tech">B.Tech/B.E.</option>
-                    <option value="MBA">MBA/PGDM</option>
-                    <option value="M.Tech">M.Tech</option>
-                    <option value="CA">CA</option>
-                    <option value="Medical">Medical</option>
-                    <option value="Ph.D">Ph.D</option>
-                  </select>
-                </FilterSection>
+                  <FilterSection title="Education">
+                    <select
+                      value={education}
+                      onChange={(e) => setEducation(e.target.value)}
+                      className="filter-select"
+                    >
+                      <option value="">Any Education</option>
+                      <option value="B.Tech">B.Tech/B.E.</option>
+                      <option value="MBA">MBA/PGDM</option>
+                      <option value="M.Tech">M.Tech</option>
+                      <option value="CA">CA</option>
+                      <option value="Medical">Medical</option>
+                      <option value="Ph.D">Ph.D</option>
+                    </select>
+                  </FilterSection>
 
-                <FilterSection title="Profession">
-                  <select
-                    value={profession}
-                    onChange={(e) => setProfession(e.target.value)}
-                    className="filter-select"
-                  >
-                    <option value="">Any Profession</option>
-                    <option value="Software">Software Professional</option>
-                    <option value="Doctor">Doctor</option>
-                    <option value="Civil">Civil Services</option>
-                    <option value="Business">Business</option>
-                    <option value="Teacher">Teacher</option>
-                  </select>
-                </FilterSection>
+                  <FilterSection title="Profession">
+                    <select
+                      value={profession}
+                      onChange={(e) => setProfession(e.target.value)}
+                      className="filter-select"
+                    >
+                      <option value="">Any Profession</option>
+                      <option value="Software">Software Professional</option>
+                      <option value="Doctor">Doctor</option>
+                      <option value="Civil">Civil Services</option>
+                      <option value="Business">Business</option>
+                      <option value="Teacher">Teacher</option>
+                    </select>
+                  </FilterSection>
 
-                <FilterSection title="Annual Income">
-                  <select
-                    value={income}
-                    onChange={(e) => setIncome(e.target.value)}
-                    className="filter-select"
-                  >
-                    <option value="">Any Income</option>
-                    <option value="0-5">Below ₹5 Lakhs</option>
-                    <option value="5-10">₹5-10 Lakhs</option>
-                    <option value="10-20">₹10-20 Lakhs</option>
-                    <option value="20+">₹20+ Lakhs</option>
-                  </select>
-                </FilterSection>
+                  <FilterSection title="Annual Income">
+                    <select
+                      value={income}
+                      onChange={(e) => setIncome(e.target.value)}
+                      className="filter-select"
+                    >
+                      <option value="">Any Income</option>
+                      <option value="0-5">Below ₹5 Lakhs</option>
+                      <option value="5-10">₹5-10 Lakhs</option>
+                      <option value="10-20">₹10-20 Lakhs</option>
+                      <option value="20+">₹20+ Lakhs</option>
+                    </select>
+                  </FilterSection>
 
-                <FilterSection title="Diet">
-                  <div className="filter-options">
-                    {["Vegetarian", "Non-Vegetarian", "Eggetarian", "Jain"].map(
-                      (d) => (
+                  <FilterSection title="Diet">
+                    <div className="filter-options">
+                      {[
+                        "Vegetarian",
+                        "Non-Vegetarian",
+                        "Eggetarian",
+                        "Jain",
+                      ].map((d) => (
                         <label key={d} className="filter-option">
                           <input
                             type="checkbox"
@@ -554,61 +489,408 @@ const ProfileMatrimonial = () => {
                           <span className="checkmark"></span>
                           <span className="option-label">{d}</span>
                         </label>
-                      )
-                    )}
+                      ))}
+                    </div>
+                  </FilterSection>
+
+                  <FilterSection title="Mother Tongue">
+                    <select
+                      value={motherTongue}
+                      onChange={(e) => setMotherTongue(e.target.value)}
+                      className="filter-select"
+                    >
+                      <option value="">Any Language</option>
+                      <option value="Hindi">Hindi</option>
+                      <option value="Marathi">Marathi</option>
+                      <option value="Tamil">Tamil</option>
+                      <option value="Telugu">Telugu</option>
+                      <option value="Bengali">Bengali</option>
+                    </select>
+                  </FilterSection>
+
+                  <FilterSection title="Community">
+                    <select
+                      value={community}
+                      onChange={(e) => setCommunity(e.target.value)}
+                      className="filter-select"
+                    >
+                      <option value="">Any Community</option>
+                      {subCommunities.map((comm) => (
+                        <option key={comm} value={comm}>
+                          {comm}
+                        </option>
+                      ))}
+                    </select>
+                  </FilterSection>
+
+                  <button className="apply-filters-btn">Apply Filters</button>
+                </div>
+
+                <div className="info-card">
+                  <h3>Brahmin Matrimony</h3>
+                  <p>
+                    Find your perfect Brahmin life partner from thousands of
+                    verified profiles. Our platform specializes in connecting
+                    Brahmin brides and grooms who value tradition, education,
+                    and compatibility.
+                  </p>
+                  <div className="community-list">
+                    <h4>Popular Sub-Communities</h4>
+                    <ul>
+                      {subCommunities.map((community) => (
+                        <li key={community}>
+                          <a href="#">{community}</a>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="brahmin-profiles-grid">
+                      {profiles[activeTab].map((profile) => (
+                        <div key={profile.id} className="brahmin-profile-card">
+                          <div className="brahmin-profile-badge">Premium</div>
+                          <div className="brahmin-profile-image">
+                            <img
+                              src={profile.image}
+                              alt={profile.name}
+                              className="brahmin-profile-img"
+                            />
+                            <div className="brahmin-profile-actions">
+                              <button className="brahmin-action-btn">
+                                <FiHeart />
+                              </button>
+                              <button className="brahmin-action-btn">
+                                <FiBookmark />
+                              </button>
+                              <button className="brahmin-action-btn">
+                                <FiShare2 />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="brahmin-profile-info">
+                            <h3>{profile.name}</h3>
+                            <div className="brahmin-profile-details">
+                              <p>
+                                {profile.age} yrs, {profile.height}
+                              </p>
+                              <p>{profile.education}</p>
+                              <p>{profile.profession}</p>
+                              <p>
+                                <FiMapPin className="brahmin-icon" />{" "}
+                                {profile.location}
+                              </p>
+                              <p>Annual Income: {profile.income}</p>
+                              <p>Family: {profile.family}</p>
+                            </div>
+                            <div className="brahmin-profile-cta">
+                              <button className="brahmin-view-btn">
+                                <FiEye className="brahmin-icon" />
+                              </button>
+                              <button className="brahmin-express-btn">
+                                <FiHeart className="brahmin-icon" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="brahmin-pagination">
+                      <button className="brahmin-page-btn active">1</button>
+                      <button className="brahmin-page-btn">2</button>
+                      <button className="brahmin-page-btn">3</button>
+                      <button className="brahmin-page-btn">4</button>
+                      <button className="brahmin-page-btn next">Next →</button>
+                    </div>
                   </div>
-                </FilterSection>
 
-                <FilterSection title="Mother Tongue">
-                  <select
-                    value={motherTongue}
-                    onChange={(e) => setMotherTongue(e.target.value)}
-                    className="filter-select"
-                  >
-                    <option value="">Any Language</option>
-                    <option value="Hindi">Hindi</option>
-                    <option value="Marathi">Marathi</option>
-                    <option value="Tamil">Tamil</option>
-                    <option value="Telugu">Telugu</option>
-                    <option value="Bengali">Bengali</option>
-                  </select>
-                </FilterSection>
+                  {/* Filters Column - Updated with new design */}
+                  <div className="brahmin-filters-column">
+                    <div className="filter-panel">
+                      <div className="filter-panel-header">
+                        <h3>Refine Search</h3>
+                        <button className="reset-all" onClick={resetAllFilters}>
+                          <FiX size={16} /> Reset All
+                        </button>
+                      </div>
 
-                <FilterSection title="Community">
-                  <select
-                    value={community}
-                    onChange={(e) => setCommunity(e.target.value)}
-                    className="filter-select"
-                  >
-                    <option value="">Any Community</option>
-                    {subCommunities.map((comm) => (
-                      <option key={comm} value={comm}>
-                        {comm}
-                      </option>
-                    ))}
-                  </select>
-                </FilterSection>
+                      <FilterSection title="City">
+                        <div className="search-box">
+                          <FiSearch className="search-icon" />
+                          <input type="text" placeholder="Search city..." />
+                        </div>
+                        <div className="filter-options">
+                          {cities.map((city) => (
+                            <label key={city} className="filter-option">
+                              <input
+                                type="checkbox"
+                                checked={selectedCities.includes(city)}
+                                onChange={() => handleCityToggle(city)}
+                              />
+                              <span className="checkmark"></span>
+                              <span className="option-label">{city}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </FilterSection>
 
-                <button className="apply-filters-btn">Apply Filters</button>
-              </div>
+                      <FilterSection title="Age">
+                        <div className="range-filter">
+                          <div className="range-values">
+                            <span>{ageRange.min} yrs</span>
+                            <span>to</span>
+                            <span>{ageRange.max} yrs</span>
+                          </div>
+                          <div className="range-slider">
+                            <input
+                              type="range"
+                              min="16"
+                              max="60"
+                              value={ageRange.min}
+                              onChange={(e) =>
+                                setAgeRange({
+                                  ...ageRange,
+                                  min: e.target.value,
+                                })
+                              }
+                            />
+                            <input
+                              type="range"
+                              min="16"
+                              max="60"
+                              value={ageRange.max}
+                              onChange={(e) =>
+                                setAgeRange({
+                                  ...ageRange,
+                                  max: e.target.value,
+                                })
+                              }
+                            />
+                          </div>
+                        </div>
+                      </FilterSection>
 
-              <div className="info-card">
-                <h3>Brahmin Matrimony</h3>
-                <p>
-                  Find your perfect Brahmin life partner from thousands of
-                  verified profiles. Our platform specializes in connecting
-                  Brahmin brides and grooms who value tradition, education, and
-                  compatibility.
-                </p>
-                <div className="community-list">
-                  <h4>Popular Sub-Communities</h4>
-                  <ul>
-                    {subCommunities.map((community) => (
-                      <li key={community}>
-                        <a href="#">{community}</a>
-                      </li>
-                    ))}
-                  </ul>
+                      <FilterSection title="Height">
+                        <div className="height-filter">
+                          <select
+                            value={heightRange.min}
+                            onChange={(e) =>
+                              setHeightRange({
+                                ...heightRange,
+                                min: e.target.value,
+                              })
+                            }
+                          >
+                            {[
+                              "3'2\"",
+                              "3'6\"",
+                              "3'8\"",
+                              "4'0\"",
+                              "4'2\"",
+                              "4'8\"",
+                              "5'0\"",
+                              "5'2\"",
+                              "5'4\"",
+                              "5'6\"",
+                              "5'8\"",
+                              "5'10\"",
+                            ].map((h) => (
+                              <option key={h} value={h}>
+                                {h}
+                              </option>
+                            ))}
+                          </select>
+                          <span>to</span>
+                          <select
+                            value={heightRange.max}
+                            onChange={(e) =>
+                              setHeightRange({
+                                ...heightRange,
+                                max: e.target.value,
+                              })
+                            }
+                          >
+                            {[
+                              "5'4\"",
+                              "5'6\"",
+                              "5'8\"",
+                              "5'10\"",
+                              "6'0\"",
+                              "6'2\"",
+                              "6'4\"",
+                              "6'6\"",
+                              "6'8\"",
+                              "7'2\"",
+                              "7'4\"",
+                              "7'6\"",
+                            ].map((h) => (
+                              <option key={h} value={h}>
+                                {h}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </FilterSection>
+
+                      <FilterSection title="Marital Status">
+                        <div className="filter-options">
+                          {[
+                            "Never Married",
+                            "Divorced",
+                            "Widowed",
+                            "Separated",
+                          ].map((status) => (
+                            <label key={status} className="filter-option">
+                              <input
+                                type="checkbox"
+                                checked={maritalStatus.includes(status)}
+                                onChange={() => {
+                                  if (maritalStatus.includes(status)) {
+                                    setMaritalStatus(
+                                      maritalStatus.filter((s) => s !== status)
+                                    );
+                                  } else {
+                                    setMaritalStatus([
+                                      ...maritalStatus,
+                                      status,
+                                    ]);
+                                  }
+                                }}
+                              />
+                              <span className="checkmark"></span>
+                              <span className="option-label">{status}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </FilterSection>
+
+                      <FilterSection title="Education">
+                        <select
+                          value={education}
+                          onChange={(e) => setEducation(e.target.value)}
+                          className="filter-select"
+                        >
+                          <option value="">Any Education</option>
+                          <option value="B.Tech">B.Tech/B.E.</option>
+                          <option value="MBA">MBA/PGDM</option>
+                          <option value="M.Tech">M.Tech</option>
+                          <option value="CA">CA</option>
+                          <option value="Medical">Medical</option>
+                          <option value="Ph.D">Ph.D</option>
+                        </select>
+                      </FilterSection>
+
+                      <FilterSection title="Profession">
+                        <select
+                          value={profession}
+                          onChange={(e) => setProfession(e.target.value)}
+                          className="filter-select"
+                        >
+                          <option value="">Any Profession</option>
+                          <option value="Software">
+                            Software Professional
+                          </option>
+                          <option value="Doctor">Doctor</option>
+                          <option value="Civil">Civil Services</option>
+                          <option value="Business">Business</option>
+                          <option value="Teacher">Teacher</option>
+                        </select>
+                      </FilterSection>
+
+                      <FilterSection title="Annual Income">
+                        <select
+                          value={income}
+                          onChange={(e) => setIncome(e.target.value)}
+                          className="filter-select"
+                        >
+                          <option value="">Any Income</option>
+                          <option value="0-5">Below ₹5 Lakhs</option>
+                          <option value="5-10">₹5-10 Lakhs</option>
+                          <option value="10-20">₹10-20 Lakhs</option>
+                          <option value="20+">₹20+ Lakhs</option>
+                        </select>
+                      </FilterSection>
+
+                      <FilterSection title="Diet">
+                        <div className="filter-options">
+                          {[
+                            "Vegetarian",
+                            "Non-Vegetarian",
+                            "Eggetarian",
+                            "Jain",
+                          ].map((d) => (
+                            <label key={d} className="filter-option">
+                              <input
+                                type="checkbox"
+                                checked={diet.includes(d)}
+                                onChange={() => {
+                                  if (diet.includes(d)) {
+                                    setDiet(diet.filter((item) => item !== d));
+                                  } else {
+                                    setDiet([...diet, d]);
+                                  }
+                                }}
+                              />
+                              <span className="checkmark"></span>
+                              <span className="option-label">{d}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </FilterSection>
+
+                      <FilterSection title="Mother Tongue">
+                        <select
+                          value={motherTongue}
+                          onChange={(e) => setMotherTongue(e.target.value)}
+                          className="filter-select"
+                        >
+                          <option value="">Any Language</option>
+                          <option value="Hindi">Hindi</option>
+                          <option value="Marathi">Marathi</option>
+                          <option value="Tamil">Tamil</option>
+                          <option value="Telugu">Telugu</option>
+                          <option value="Bengali">Bengali</option>
+                        </select>
+                      </FilterSection>
+
+                      <FilterSection title="Community">
+                        <select
+                          value={community}
+                          onChange={(e) => setCommunity(e.target.value)}
+                          className="filter-select"
+                        >
+                          <option value="">Any Community</option>
+                          {subCommunities.map((comm) => (
+                            <option key={comm} value={comm}>
+                              {comm}
+                            </option>
+                          ))}
+                        </select>
+                      </FilterSection>
+
+                      <button className="apply-filters-btn">
+                        Apply Filters
+                      </button>
+                    </div>
+
+                    <div className="info-card">
+                      <h3>Brahmin Matrimony</h3>
+                      <p>
+                        Find your perfect Brahmin life partner from thousands of
+                        verified profiles. Our platform specializes in
+                        connecting Brahmin brides and grooms who value
+                        tradition, education, and compatibility.
+                      </p>
+                      <div className="community-list">
+                        <h4>Popular Sub-Communities</h4>
+                        <ul>
+                          {subCommunities.map((community) => (
+                            <li key={community}>
+                              <a href="#">{community}</a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

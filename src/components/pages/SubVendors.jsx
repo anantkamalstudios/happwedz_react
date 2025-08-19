@@ -25,11 +25,13 @@ const SubVendors = () => {
 
   return (
     <div className="container-fluid">
-      <VendorsSearch title={title} />
-      <ViewSwitcher view={view} setView={setView} />
-      {view === "list" && <ListView subVendorsData={subVendorsData} />}
-      {view === "images" && <GridView subVendorsData={subVendorsData} />}
-      {view === "map" && <MapView subVendorsData={subVendorsData} />}
+      <div className="container-fluid">
+        <VendorsSearch title={title} />
+        <ViewSwitcher view={view} setView={setView} />
+        {view === "list" && <ListView subVendorsData={subVendorsData} />}
+        {view === "images" && <GridView subVendorsData={subVendorsData} />}
+        {view === "map" && <MapView subVendorsData={subVendorsData} />}
+      </div>
     </div>
   );
 };

@@ -177,10 +177,7 @@ const Check = () => {
         {/* Left sidebar */}
         <div className="wc-sidebar col-md-3">
           <div className="wc-card card mb-4">
-            <div
-              className="wc-card-header card-header text-white"
-              style={{ backgroundColor: "#e24582" }}
-            >
+            <div className="wc-card-header card-header text-white">
               <h5 className="mb-0">STATUS</h5>
             </div>
 
@@ -224,10 +221,7 @@ const Check = () => {
           </div>
 
           <div className="wc-card card mb-4">
-            <div
-              className="wc-card-header card-header text-white"
-              style={{ backgroundColor: "#e24582" }}
-            >
+            <div className="wc-card-header card-header text-white">
               <h5 className="mb-0">DATE</h5>
             </div>
             <div className="wc-card-body card-body">
@@ -253,10 +247,7 @@ const Check = () => {
           </div>
 
           <div className="wc-card card">
-            <div
-              className="wc-card-header card-header text-white"
-              style={{ backgroundColor: "#e24582" }}
-            >
+            <div className="wc-card-header card-header text-white">
               <h5 className="mb-0">CATEGORY</h5>
             </div>
             <div className="wc-card-body card-body">
@@ -287,7 +278,7 @@ const Check = () => {
           <div className="wc-card card">
             <div className="wc-card-header card-header bg-white">
               <div className="d-flex justify-content-between align-items-center">
-                <h2 className="mb-0">Checklist</h2>
+                <h5 className="mb-0">Checklist</h5>
                 <div className="d-flex">
                   <button className="wc-btn btn btn-outline-secondary me-2">
                     <FaDownload className="me-1" /> Download
