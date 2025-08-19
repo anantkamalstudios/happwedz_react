@@ -11,14 +11,14 @@ import {
   FiChevronRight,
   FiChevronUp,
   FiX,
-  FiSearch
+  FiSearch,
 } from "react-icons/fi";
 import "../../../Matrimonial.css";
 import { useParams } from "react-router-dom";
 
 const FilterSection = ({ title, children, defaultOpen = true }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  
+
   return (
     <div className="filter-section">
       <div className="filter-header" onClick={() => setIsOpen(!isOpen)}>
@@ -35,11 +35,14 @@ const ProfileMatrimonial = () => {
   const [activeTab, setActiveTab] = useState("grooms");
   const [sortBy, setSortBy] = useState("recent");
   const [showMoreFilters, setShowMoreFilters] = useState(false);
-  
+
   // Filter states
   const [selectedCities, setSelectedCities] = useState(["All Cities"]);
   const [ageRange, setAgeRange] = useState({ min: 25, max: 35 });
-  const [heightRange, setHeightRange] = useState({ min: "5'4\"", max: "6'0\"" });
+  const [heightRange, setHeightRange] = useState({
+    min: "5'4\"",
+    max: "6'0\"",
+  });
   const [maritalStatus, setMaritalStatus] = useState(["Never Married"]);
   const [education, setEducation] = useState("");
   const [profession, setProfession] = useState("");
@@ -60,7 +63,7 @@ const ProfileMatrimonial = () => {
     "Ahmedabad",
     "Surat",
     "Jaipur",
-    "Lucknow"
+    "Lucknow",
   ];
 
   const subCommunities = [
@@ -88,7 +91,8 @@ const ProfileMatrimonial = () => {
         location: "Mumbai, India",
         income: "₹25-30 LPA",
         family: "Brahmin, Iyer, Vegetarian",
-        image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NHx8cG9ydHJhaXR8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60",
+        image:
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NHx8cG9ydHJhaXR8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60",
       },
       {
         id: 2,
@@ -100,7 +104,8 @@ const ProfileMatrimonial = () => {
         location: "Bangalore, India",
         income: "₹35-40 LPA",
         family: "Brahmin, Iyer, Vegetarian",
-        image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8OHx8cG9ydHJhaXR8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60",
+        image:
+          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8OHx8cG9ydHJhaXR8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60",
       },
       {
         id: 3,
@@ -112,7 +117,8 @@ const ProfileMatrimonial = () => {
         location: "Delhi, India",
         income: "₹45-50 LPA",
         family: "Brahmin, Iyengar, Vegetarian",
-        image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8cG9ydHJhaXR8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60",
+        image:
+          "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8cG9ydHJhaXR8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60",
       },
       {
         id: 4,
@@ -124,7 +130,8 @@ const ProfileMatrimonial = () => {
         location: "Hyderabad, India",
         income: "₹30-35 LPA",
         family: "Brahmin, Namboothiri, Vegetarian",
-        image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTB8fHBvcnRyYWl0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
+        image:
+          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTB8fHBvcnRyYWl0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
       },
     ],
     brides: [
@@ -138,7 +145,8 @@ const ProfileMatrimonial = () => {
         location: "Chennai, India",
         income: "₹8-10 LPA",
         family: "Brahmin, Iyer, Vegetarian",
-        image: "https://images.unsplash.com/photo-1554151228-14d9def656e4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTd8fHBvcnRyYWl0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
+        image:
+          "https://images.unsplash.com/photo-1554151228-14d9def656e4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTd8fHBvcnRyYWl0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
       },
       {
         id: 2,
@@ -150,7 +158,8 @@ const ProfileMatrimonial = () => {
         location: "Pune, India",
         income: "₹12-15 LPA",
         family: "Brahmin, Iyengar, Vegetarian",
-        image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTR8fHBvcnRyYWl0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
+        image:
+          "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTR8fHBvcnRyYWl0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
       },
       {
         id: 3,
@@ -162,7 +171,8 @@ const ProfileMatrimonial = () => {
         location: "Kolkata, India",
         income: "₹15-18 LPA",
         family: "Brahmin, Niyogi, Vegetarian",
-        image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MjB8fHBvcnRyYWl0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
+        image:
+          "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MjB8fHBvcnRyYWl0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
       },
       {
         id: 4,
@@ -174,7 +184,8 @@ const ProfileMatrimonial = () => {
         location: "Bangalore, India",
         income: "₹18-20 LPA",
         family: "Brahmin, Saraswat, Vegetarian",
-        image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8OHx8cG9ydHJhaXR8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60",
+        image:
+          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8OHx8cG9ydHJhaXR8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60",
       },
     ],
   };
@@ -184,9 +195,11 @@ const ProfileMatrimonial = () => {
       setSelectedCities(["All Cities"]);
     } else {
       if (selectedCities.includes(city)) {
-        setSelectedCities(selectedCities.filter(c => c !== city));
+        setSelectedCities(selectedCities.filter((c) => c !== city));
       } else {
-        setSelectedCities(selectedCities.filter(c => c !== "All Cities").concat(city));
+        setSelectedCities(
+          selectedCities.filter((c) => c !== "All Cities").concat(city)
+        );
       }
     }
   };
@@ -351,7 +364,7 @@ const ProfileMatrimonial = () => {
                     <input type="text" placeholder="Search city..." />
                   </div>
                   <div className="filter-options">
-                    {cities.map(city => (
+                    {cities.map((city) => (
                       <label key={city} className="filter-option">
                         <input
                           type="checkbox"
@@ -378,14 +391,18 @@ const ProfileMatrimonial = () => {
                         min="16"
                         max="60"
                         value={ageRange.min}
-                        onChange={(e) => setAgeRange({...ageRange, min: e.target.value})}
+                        onChange={(e) =>
+                          setAgeRange({ ...ageRange, min: e.target.value })
+                        }
                       />
                       <input
                         type="range"
                         min="16"
                         max="60"
                         value={ageRange.max}
-                        onChange={(e) => setAgeRange({...ageRange, max: e.target.value})}
+                        onChange={(e) =>
+                          setAgeRange({ ...ageRange, max: e.target.value })
+                        }
                       />
                     </div>
                   </div>
@@ -395,19 +412,53 @@ const ProfileMatrimonial = () => {
                   <div className="height-filter">
                     <select
                       value={heightRange.min}
-                      onChange={(e) => setHeightRange({...heightRange, min: e.target.value})}
+                      onChange={(e) =>
+                        setHeightRange({ ...heightRange, min: e.target.value })
+                      }
                     >
-                      {["3'2\"","3'6\"","3'8\"", "4'0\"","4'2\"","4'8\"","5'0\"", "5'2\"", "5'4\"", "5'6\"", "5'8\"", "5'10\""].map(h => (
-                        <option key={h} value={h}>{h}</option>
+                      {[
+                        "3'2\"",
+                        "3'6\"",
+                        "3'8\"",
+                        "4'0\"",
+                        "4'2\"",
+                        "4'8\"",
+                        "5'0\"",
+                        "5'2\"",
+                        "5'4\"",
+                        "5'6\"",
+                        "5'8\"",
+                        "5'10\"",
+                      ].map((h) => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
                       ))}
                     </select>
                     <span>to</span>
                     <select
                       value={heightRange.max}
-                      onChange={(e) => setHeightRange({...heightRange, max: e.target.value})}
+                      onChange={(e) =>
+                        setHeightRange({ ...heightRange, max: e.target.value })
+                      }
                     >
-                      {["5'4\"", "5'6\"", "5'8\"", "5'10\"", "6'0\"", "6'2\"", "6'4\"", "6'6\"", "6'8\"", "7'2\"", "7'4\"", "7'6\""].map(h => (
-                        <option key={h} value={h}>{h}</option>
+                      {[
+                        "5'4\"",
+                        "5'6\"",
+                        "5'8\"",
+                        "5'10\"",
+                        "6'0\"",
+                        "6'2\"",
+                        "6'4\"",
+                        "6'6\"",
+                        "6'8\"",
+                        "7'2\"",
+                        "7'4\"",
+                        "7'6\"",
+                      ].map((h) => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -415,23 +466,27 @@ const ProfileMatrimonial = () => {
 
                 <FilterSection title="Marital Status">
                   <div className="filter-options">
-                    {["Never Married", "Divorced", "Widowed", "Separated"].map(status => (
-                      <label key={status} className="filter-option">
-                        <input
-                          type="checkbox"
-                          checked={maritalStatus.includes(status)}
-                          onChange={() => {
-                            if (maritalStatus.includes(status)) {
-                              setMaritalStatus(maritalStatus.filter(s => s !== status));
-                            } else {
-                              setMaritalStatus([...maritalStatus, status]);
-                            }
-                          }}
-                        />
-                        <span className="checkmark"></span>
-                        <span className="option-label">{status}</span>
-                      </label>
-                    ))}
+                    {["Never Married", "Divorced", "Widowed", "Separated"].map(
+                      (status) => (
+                        <label key={status} className="filter-option">
+                          <input
+                            type="checkbox"
+                            checked={maritalStatus.includes(status)}
+                            onChange={() => {
+                              if (maritalStatus.includes(status)) {
+                                setMaritalStatus(
+                                  maritalStatus.filter((s) => s !== status)
+                                );
+                              } else {
+                                setMaritalStatus([...maritalStatus, status]);
+                              }
+                            }}
+                          />
+                          <span className="checkmark"></span>
+                          <span className="option-label">{status}</span>
+                        </label>
+                      )
+                    )}
                   </div>
                 </FilterSection>
 
@@ -482,23 +537,25 @@ const ProfileMatrimonial = () => {
 
                 <FilterSection title="Diet">
                   <div className="filter-options">
-                    {["Vegetarian", "Non-Vegetarian", "Eggetarian", "Jain"].map(d => (
-                      <label key={d} className="filter-option">
-                        <input
-                          type="checkbox"
-                          checked={diet.includes(d)}
-                          onChange={() => {
-                            if (diet.includes(d)) {
-                              setDiet(diet.filter(item => item !== d));
-                            } else {
-                              setDiet([...diet, d]);
-                            }
-                          }}
-                        />
-                        <span className="checkmark"></span>
-                        <span className="option-label">{d}</span>
-                      </label>
-                    ))}
+                    {["Vegetarian", "Non-Vegetarian", "Eggetarian", "Jain"].map(
+                      (d) => (
+                        <label key={d} className="filter-option">
+                          <input
+                            type="checkbox"
+                            checked={diet.includes(d)}
+                            onChange={() => {
+                              if (diet.includes(d)) {
+                                setDiet(diet.filter((item) => item !== d));
+                              } else {
+                                setDiet([...diet, d]);
+                              }
+                            }}
+                          />
+                          <span className="checkmark"></span>
+                          <span className="option-label">{d}</span>
+                        </label>
+                      )
+                    )}
                   </div>
                 </FilterSection>
 
@@ -524,8 +581,10 @@ const ProfileMatrimonial = () => {
                     className="filter-select"
                   >
                     <option value="">Any Community</option>
-                    {subCommunities.map(comm => (
-                      <option key={comm} value={comm}>{comm}</option>
+                    {subCommunities.map((comm) => (
+                      <option key={comm} value={comm}>
+                        {comm}
+                      </option>
                     ))}
                   </select>
                 </FilterSection>
@@ -536,14 +595,15 @@ const ProfileMatrimonial = () => {
               <div className="info-card">
                 <h3>Brahmin Matrimony</h3>
                 <p>
-                  Find your perfect Brahmin life partner from thousands of verified
-                  profiles. Our platform specializes in connecting Brahmin brides
-                  and grooms who value tradition, education, and compatibility.
+                  Find your perfect Brahmin life partner from thousands of
+                  verified profiles. Our platform specializes in connecting
+                  Brahmin brides and grooms who value tradition, education, and
+                  compatibility.
                 </p>
                 <div className="community-list">
                   <h4>Popular Sub-Communities</h4>
                   <ul>
-                    {subCommunities.map(community => (
+                    {subCommunities.map((community) => (
                       <li key={community}>
                         <a href="#">{community}</a>
                       </li>

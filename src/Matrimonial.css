@@ -282,7 +282,7 @@
   background-color: var(--matrimonial-primary-dark);
 }
 /* Login Modal */
-.login-modal {
+.matrimonial-container .login-modal {
   position: fixed;
   top: 0;
   left: 0;
@@ -295,7 +295,7 @@
   z-index: 2000;
 }
 
-.modal-content {
+.matrimonial-container .modal-content {
   background: #fff;
   border-radius: 8px;
   width: 100%;
@@ -304,7 +304,7 @@
   overflow: hidden;
 }
 
-.modal-header {
+.matrimonial-container .modal-header {
   background: #d81b60;
   color: #fff;
   padding: 20px;
@@ -313,12 +313,12 @@
   align-items: center;
 }
 
-.modal-header h2 {
+.matrimonial-container .modal-header h2 {
   font-size: 22px;
   margin: 0;
 }
 
-.close-btn {
+.matrimonial-container .close-btn {
   background: none;
   border: none;
   color: #fff;
@@ -328,16 +328,16 @@
   line-height: 1;
 }
 
-.modal-body {
+.matrimonial-container .modal-body {
   padding: 30px;
 }
 
-.form-group {
+.matrimonial-container .form-group {
   margin-bottom: 20px;
   position: relative;
 }
 
-.form-group .input-icon {
+.matrimonial-container .form-group .input-icon {
   position: absolute;
   left: 15px;
   top: 50%;
@@ -346,7 +346,7 @@
   font-size: 18px;
 }
 
-.form-group input {
+.matrimonial-container .form-group input {
   width: 100%;
   padding: 12px 15px 12px 40px;
   border: 1px solid #e0e0e0;
@@ -355,17 +355,17 @@
   transition: all 0.3s ease;
 }
 
-.form-group input:focus {
+.matrimonial-container .form-group input:focus {
   border-color: #d81b60;
   outline: none;
   box-shadow: 0 0 0 2px rgba(216, 27, 96, 0.2);
 }
 
-.password-group {
+.matrimonial-container .password-group {
   position: relative;
 }
 
-.password-group .toggle-password {
+.matrimonial-container .password-group .toggle-password {
   position: absolute;
   right: 15px;
   top: 50%;
@@ -378,7 +378,7 @@
   padding: 0;
 }
 
-.remember-forgot {
+.matrimonial-container .remember-forgot {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -386,19 +386,19 @@
   font-size: 14px;
 }
 
-.remember-forgot label {
+.matrimonial-container .remember-forgot label {
   display: flex;
   align-items: center;
   gap: 8px;
   color: #616161;
 }
 
-.remember-forgot a {
+.matrimonial-container .remember-forgot a {
   color: #d81b60;
   text-decoration: none;
 }
 
-.login-button {
+.matrimonial-container .login-button {
   background-color: #d81b60;
   color: #fff;
   border: none;
@@ -412,18 +412,18 @@
   margin-bottom: 20px;
 }
 
-.login-button:hover {
+.matrimonial-container .login-button:hover {
   background-color: #c2185b;
 }
 
-.divider {
+.matrimonial-container .divider {
   position: relative;
   text-align: center;
   margin: 20px 0;
   color: #757575;
 }
 
-.divider::before {
+.matrimonial-container .divider::before {
   content: "";
   position: absolute;
   top: 50%;
@@ -434,14 +434,14 @@
   z-index: 1;
 }
 
-.divider span {
+.matrimonial-container .divider span {
   position: relative;
   background: #fff;
   padding: 0 15px;
   z-index: 2;
 }
 
-.signup-button {
+.matrimonial-container .signup-button {
   background-color: transparent;
   color: #d81b60;
   border: 2px solid #d81b60;
@@ -454,11 +454,11 @@
   transition: all 0.3s ease;
 }
 
-.signup-button:hover {
+.matrimonial-container .signup-button:hover {
   background-color: rgba(216, 27, 96, 0.1);
 }
 
-.modal-footer {
+.matrimonial-container .modal-footer {
   padding: 15px 30px;
   text-align: center;
   font-size: 14px;
@@ -466,7 +466,7 @@
   border-top: 1px solid #e0e0e0;
 }
 
-.modal-footer a {
+.matrimonial-container .modal-footer a {
   color: #d81b60;
   text-decoration: none;
 }
