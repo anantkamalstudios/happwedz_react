@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, Links } from "react-router-dom";
 import { Modal, Button, Form } from "react-bootstrap";
 import LocationModalWithCategories from "./LocationModalWithCategories";
+import { RiMenuFill } from "react-icons/ri";
 
 const Header = () => {
   const toSlug = (text) =>
@@ -27,7 +28,7 @@ const Header = () => {
             aria-expanded="false"
             aria-label="Toggle navigation"
           >
-            <span className="navbar-toggler-icon custom-toggler-icon"></span>
+            <RiMenuFill color="white" size={35} />
           </button>
         </div>
 

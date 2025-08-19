@@ -13,7 +13,6 @@ const Home = () => {
     <>
       <Herosection />
       <WeddingCategories />
-
       <VenueSlider />
       <RealWeddings />
       <PlanningToolsCTA />
