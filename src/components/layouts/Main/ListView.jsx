@@ -44,7 +44,6 @@ const ListView = ({ subVenuesData, section, handleShow }) => {
                       src={venue.image}
                       alt={venue.name}
                       className="img-fluid rounded-start w-100 h-100 object-fit-cover"
-                      style={{ maxHeight: "220px" }}
                     />
                     <button
                       className="btn-glass position-absolute top-0 end-0 m-2 rounded-circle"

@@ -30,6 +30,10 @@
   font-family: "Poppins", sans-serif;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   padding: 0;
   margin: 0;
@@ -1471,6 +1475,264 @@ body {
   .search-btn::after {
     content: "🔍";
   }
+}
+
+/* latest List view */
+
+.venue-card .card-title {
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1.4;
+  margin-bottom: 0.75rem;
+  transition: color 0.3s ease;
+}
+
+.venue-card .card-title:hover {
+  color: #374151;
+}
+
+.venue-card .text-muted {
+  color: #6b7280 !important;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.venue-card .text-muted.small {
+  font-size: 0.875rem;
+}
+
+.venue-card .text-muted.small.mb-2:last-of-type {
+  color: #9ca3af !important;
+  font-weight: 500;
+}
+
+.venue-card .d-flex.flex-wrap.gap-2 {
+  margin: 1rem 0;
+}
+
+.venue-card .d-flex.align-items-center {
+  /* background: #f8f9fa; */
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  /* border: 1px solid #e5e7eb; */
+  transition: all 0.3s ease;
+}
+
+/* Rating Specific */
+.venue-card .d-flex.align-items-center:first-child {
+  background: #fef3c7;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+.venue-card .d-flex.align-items-center:first-child:hover {
+  background: #fde68a;
+}
+
+/* Capacity Specific */
+.venue-card .d-flex.align-items-center:nth-child(2) {
+  background: #e0f2fe;
+  border-color: #b3e5fc;
+  color: #0277bd;
+}
+
+.venue-card .d-flex.align-items-center:nth-child(2):hover {
+  background: #b3e5fc;
+}
+
+/* Call/Lightning Specific */
+.venue-card .d-flex.align-items-center:last-child {
+  color: #f57c00;
+}
+
+.venue-card .d-flex.align-items-center:last-child:hover {
+}
+
+/* Icons */
+.venue-card .text-warning {
+  color: #f59e0b !important;
+}
+
+.venue-card .text-dark {
+  color: #374151 !important;
+}
+
+/* Details Button */
+.details-btn {
+  background: #ffffff;
+  color: #374151;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.025em;
+}
+
+.details-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.details-btn:hover::before {
+  left: 100%;
+}
+
+.details-btn:hover {
+  background: #1f2937;
+  color: #ffffff;
+  border-color: #1f2937;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(31, 41, 55, 0.15);
+}
+
+.details-btn:active {
+  transform: translateY(0);
+  transition: transform 0.1s;
+}
+
+/* Link Styles */
+.venue-card a.text-decoration-none {
+  color: inherit;
+  display: block;
+}
+
+.venue-card a.text-decoration-none:hover {
+  color: inherit;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .venue-card {
+    margin-bottom: 1rem;
+    border-radius: 12px;
+  }
+
+  .venue-card .card-title {
+    font-size: 1.1rem;
+  }
+
+  .btn-glass {
+    width: 36px;
+    height: 36px;
+  }
+
+  .price-tag {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+
+  .details-btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+
+  .venue-card .d-flex.align-items-center {
+    padding: 4px 10px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .venue-card .d-flex.flex-wrap.gap-2 {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .venue-card .d-flex.align-items-center {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .price-tag {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    margin-top: 8px;
+    align-self: flex-start;
+  }
+}
+
+/* Loading States */
+.venue-card.loading {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.venue-card.loading::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Focus States for Accessibility */
+.details-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+}
+
+.btn-glass:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Container Improvements */
+.venue-card .row.g-0 {
+  height: 100%;
+}
+
+.venue-card .col-md-4 .position-relative {
+  min-height: 220px;
+}
+
+.venue-card .col-md-8 {
+  display: flex;
+  flex-direction: column;
+}
+
+.venue-card .col-md-8 > * {
+  flex-shrink: 0;
+}
+
+.venue-card .col-md-8 .mt-2 {
+  margin-top: auto !important;
 }
 
 /* End */
@@ -4504,56 +4766,687 @@ input:checked + .slider:before {
     transform: scale(1);
   }
 }
-/* Wedding Checklist Pink & White Theme - Add to your app.css */
-.wc-container {
-  background-color: #fff9fb;
+/* User guest  */
+/* Wedding Dashboard Styles */
+.wedding-dashboard {
+  background-color: #f8f9fa;
   min-height: 100vh;
 }
 
-.wc-card {
+/* Header Styles */
+.dashboard-header {
+  text-align: center;
+  padding: 2rem 0;
+  background: white;
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  margin-bottom: 24px;
-  border: 1px solid #ffe6ee;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.wc-card-header {
-  border-bottom: 1px solid #ffe6ee;
-  background-color: #ff85a2 !important;
-  color: white !important;
+.dashboard-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-subtitle {
+  font-size: 1.2rem;
+  color: #718096;
+  margin: 0;
+}
+
+/* Section Titles */
+.section-title {
+  font-size: 1.5rem;
   font-weight: 600;
-  border-radius: 12px 12px 0 0 !important;
+  color: #2d3748;
+  margin-bottom: 1.5rem;
+  padding-left: 1rem;
 }
 
-.wc-list-item {
-  cursor: pointer;
-  border-left: none;
-  border-right: none;
-  border-color: #ffe6ee;
+/* Vendor Cards */
+.vendor-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  height: 100%;
   transition: all 0.3s ease;
-  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.wc-list-item.wc-active {
-  background-color: #ffebf1;
-  color: #d23369;
+.vendor-card:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  border-color: #e91e63;
+}
+
+.vendor-icon {
+  color: #e91e63;
+  background: #fce4ec;
+  padding: 12px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.vendor-content {
+  flex: 1;
+}
+
+.vendor-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.25rem;
+}
+
+.vendor-subtitle {
+  font-size: 0.9rem;
+  color: #718096;
+  margin-bottom: 0.25rem;
+}
+
+.vendor-count {
+  font-size: 0.8rem;
+  color: #e91e63;
   font-weight: 500;
 }
 
-.wc-list-item:hover:not(.wc-active) {
-  background-color: #fff0f5;
+.vendor-action {
+  flex-shrink: 0;
+}
+
+.btn-explore {
+  background: #e91e63;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-explore:hover {
+  background: #c2185b;
+  transform: scale(1.05);
+}
+
+/* Dashboard Cards */
+.dashboard-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  height: fit-content;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.card-header {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.task-progress {
+  font-size: 0.9rem;
+  color: #718096;
+  background: #f1f5f9;
+  padding: 0.25rem 0.75rem;
+  border-radius: 15px;
+}
+
+/* Progress Bar */
+.progress-bar-container {
+  margin-bottom: 1.5rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #e91e63, #f06292);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.85rem;
+  color: #718096;
+  float: right;
+  margin-top: 0.5rem;
+}
+
+/* Tasks List */
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.task-item:hover {
+  background: #f8fafc;
+}
+
+.task-item.completed {
+  opacity: 0.7;
+}
+
+.task-item.completed .task-name {
+  text-decoration: line-through;
+  color: #718096;
+}
+
+.task-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.task-checkbox:hover {
+  border-color: #e91e63;
+}
+
+.task-item.completed .task-checkbox {
+  background: #e91e63;
+  border-color: #e91e63;
+  color: white;
+}
+
+.task-content {
+  flex: 1;
+}
+
+.task-name {
+  font-weight: 500;
+  color: #2d3748;
+  margin-bottom: 0.25rem;
+}
+
+.task-meta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.task-deadline {
+  font-size: 0.85rem;
+  color: #718096;
+}
+
+.task-priority {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.task-priority.high {
+  background: #fed7d7;
+  color: #c53030;
+}
+
+.task-priority.medium {
+  background: #feebc8;
+  color: #dd6b20;
+}
+
+.task-priority.low {
+  background: #c6f6d5;
+  color: #38a169;
+}
+
+.add-task-btn {
+  background: none;
+  border: 1px dashed #cbd5e0;
+  color: #718096;
+  padding: 0.75rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.add-task-btn:hover {
+  border-color: #e91e63;
+  color: #e91e63;
+  background: #fce4ec;
+}
+
+/* Guest Stats */
+.guest-stats {
+  margin-bottom: 1.5rem;
+}
+
+.guest-stat {
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.stat-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.guest-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn-action {
+  background: #e91e63;
+  color: white;
+  border: none;
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.btn-action:hover {
+  background: #c2185b;
+}
+
+.btn-action-outline {
+  background: transparent;
+  color: #e91e63;
+  border: 1px solid #e91e63;
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.btn-action-outline:hover {
+  background: #fce4ec;
+}
+
+.btn-small {
+  background: #f1f5f9;
+  color: #718096;
+  border: none;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-small:hover {
+  background: #e2e8f0;
+}
+
+/* Budget Styles */
+.budget-overview {
+  margin-bottom: 1.5rem;
+}
+
+.budget-total {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.budget-amount {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.budget-label {
+  font-size: 0.9rem;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.budget-breakdown {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.budget-item {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+.budget-spent {
+  color: #e91e63;
+  font-weight: 500;
+}
+
+.budget-remaining {
+  color: #38a169;
+  font-weight: 500;
+}
+
+.budget-progress {
+  margin-bottom: 1.5rem;
+}
+
+.budget-bar {
+  width: 100%;
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.budget-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #e91e63, #f06292);
+  transition: width 0.3s ease;
+}
+
+.budget-percentage {
+  font-size: 0.85rem;
+  color: #718096;
+  float: right;
+}
+
+.budget-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.category-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.category-item:last-child {
+  border-bottom: none;
+}
+
+/* Quick Actions */
+.quick-actions-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.quick-actions-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 1rem;
+}
+
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.quick-action-btn {
+  background: #f8fafc;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.quick-action-btn:hover {
+  background: #fce4ec;
+  border-color: #e91e63;
+  color: #e91e63;
+  transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-title {
+    font-size: 2rem;
+  }
+
+  .dashboard-subtitle {
+    font-size: 1rem;
+  }
+
+  .vendor-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .guest-actions {
+    flex-direction: column;
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .budget-breakdown {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .budget-item {
+    justify-content: space-between;
+  }
+}
+/* Main container styles */
+.wc-container {
+}
+
+/* Card styles */
+.wc-card {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+}
+
+.wc-card-header {
+  border-radius: 8px 8px 0 0 !important;
+  padding: 12px 15px;
+  background-color: #d81b60 !important;
+}
+
+/* Sidebar styles */
+.wc-sidebar {
+  padding-right: 15px;
+}
+
+.wc-list-group {
+  border-radius: 6px;
+}
+
+.wc-list-item {
+  border: 1px solid #eee;
+  padding: 12px 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wc-list-item:hover {
+  background-color: #f8f8f8;
+}
+
+.wc-list-item.wc-active {
+  background-color: #fce4ec;
+  border-left: 3px solid #d81b60;
 }
 
 .wc-badge {
   font-weight: 500;
-  font-size: 0.8rem;
+}
+
+/* Main content styles */
+.wc-main-content {
+  padding-left: 15px;
+}
+
+.wc-progress {
+  background-color: white;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  border-left: 3px solid #d81b60;
+}
+
+.wc-completed {
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.wc-total {
+  color: #2196f3;
+  font-weight: 600;
+}
+
+/* Form styles */
+.wc-add-task {
+  border: 1px solid #eee;
+}
+
+.wc-form-label {
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.wc-form-control,
+.wc-form-select {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.wc-form-control:focus,
+.wc-form-select:focus {
+  border-color: #d81b60;
+  box-shadow: 0 0 0 2px rgba(216, 27, 96, 0.1);
+}
+
+/* Button styles */
+.wc-btn {
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: #d81b60;
+  border-color: #d81b60;
+}
+
+.btn-primary:hover {
+  background-color: #c2185b;
+  border-color: #c2185b;
+}
+
+.btn-outline-secondary {
+  color: #555;
+  border-color: #ddd;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #f5f5f5;
+  border-color: #ccc;
+}
+
+.btn-outline-danger {
+  color: #f44336;
+  border-color: #f44336;
+}
+
+.btn-outline-danger:hover {
+  background-color: #f44336;
+  color: white;
+}
+
+/* Task list styles */
+.wc-task-list {
+  margin-top: 20px;
 }
 
 .wc-task-checkbox {
-  width: 24px;
-  height: 24px;
-  border: 2px solid #ffb3c6;
-  border-radius: 6px;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4561,114 +5454,41 @@ input:checked + .slider:before {
   transition: all 0.2s ease;
 }
 
+.wc-task-checkbox:hover {
+  border-color: #d81b60;
+}
+
 .wc-task-checkbox.wc-completed {
-  background-color: #ffebf1;
-  border-color: #ff85a2;
+  background-color: #e8f5e9;
+  border-color: #4caf50;
 }
 
 .wc-task-text {
   font-weight: 500;
-  color: #4a4a4a;
+  color: #333;
 }
 
-.wc-task-meta span {
-  background-color: #ffebf1;
-  color: #d23369;
-  padding: 3px 10px;
-  border-radius: 12px;
-  display: inline-block;
-  font-size: 0.8rem;
-  margin-right: 8px;
+.wc-task-meta {
+  color: #888;
 }
 
-.wc-btn {
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.wc-btn.btn-primary {
-  background-color: #ff85a2;
-  border-color: #ff85a2;
-}
-
-.wc-btn.btn-primary:hover {
-  background-color: #ff6b91;
-  border-color: #ff6b91;
-}
-
-.wc-btn.btn-outline-secondary {
-  color: #ff85a2;
-  border-color: #ff85a2;
-}
-
-.wc-btn.btn-outline-secondary:hover {
-  background-color: #ffebf1;
-}
-
-.wc-form-control,
-.wc-form-select {
-  border-radius: 8px;
-  border: 1px solid #ffc6d5;
-  padding: 8px 12px;
-}
-
-.wc-form-control:focus,
-.wc-form-select:focus {
-  border-color: #ff85a2;
-  box-shadow: 0 0 0 0.25rem rgba(255, 133, 162, 0.25);
-}
-
-.wc-form-label {
-  color: #d23369;
-  font-weight: 500;
-  margin-bottom: 6px;
-}
-
-.wc-progress h5 {
-  color: #4a4a4a;
-}
-
-.wc-completed {
-  color: #ff85a2 !important;
-  font-weight: 600;
-}
-
-.wc-total {
-  color: #d23369 !important;
-  font-weight: 600;
-}
-
+/* Alert styles */
 .wc-alert {
-  border-radius: 8px;
-  background-color: #ffebf1;
-  border-color: #ffc6d5;
-  color: #d23369;
+  border-radius: 6px;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border: none;
 }
 
-/* Responsive styles */
+/* Responsive adjustments */
 @media (max-width: 768px) {
-  .wc-container {
-    padding: 16px;
+  .wc-sidebar {
+    padding-right: 0;
+    margin-bottom: 20px;
   }
 
-  .wc-row {
-    flex-direction: column;
-  }
-
-  .wc-sidebar,
   .wc-main-content {
-    width: 100%;
-    padding: 0;
-  }
-
-  .wc-card {
-    margin-bottom: 16px;
-  }
-
-  .wc-list-item {
-    padding: 10px 12px;
+    padding-left: 0;
   }
 }
 
@@ -5208,12 +6028,6 @@ input:checked + .slider:before {
   .budget-item {
     justify-content: space-between;
   }
-}
-
-/* Wedding Checklist Pink & White Theme - Add to your app.css */
-.wc-container {
-  background-color: #fff9fb;
-  min-height: 100vh;
 }
 
 .wc-card {
@@ -7894,4 +8708,3218 @@ input:checked + .slider:before {
 
 .community-list a:hover {
   text-decoration: underline;
+}
+/* Matrimonial Components - Unique CSS with Dark Pink & White Theme */
+/* All classes prefixed with "matrimony-" to avoid conflicts */
+
+/* Color Variables */
+.matrimony-profile,
+.matrimony-edit-profile,
+.matrimonial-dashboard,
+.matrimonial-search-container {
+  --mkp-primary: #be185d;
+  --mkp-primary-light: #ec4899;
+  --mkp-primary-dark: #9d174d;
+  --mkp-secondary: #f3f4f6;
+  --mkp-white: #ffffff;
+  --mkp-gray-50: #f9fafb;
+  --mkp-gray-100: #f3f4f6;
+  --mkp-gray-200: #e5e7eb;
+  --mkp-gray-300: #d1d5db;
+  --mkp-gray-500: #6b7280;
+  --mkp-gray-700: #374151;
+  --mkp-gray-800: #1f2937;
+  --mkp-success: #059669;
+  --mkp-error: #dc2626;
+  --mkp-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --mkp-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --mkp-radius: 8px;
+  --mkp-radius-lg: 12px;
+}
+
+/* Global Styles for Matrimony Components */
+.matrimony-profile *,
+.matrimony-edit-profile *,
+.matrimonial-dashboard *,
+.matrimonial-search-container * {
+  box-sizing: border-box;
+}
+
+/* === BASIC INFORMATION COMPONENT === */
+.matrimony-profile {
+  min-height: 100vh;
+  background: linear-gradient(
+    135deg,
+    var(--mkp-gray-50) 0%,
+    var(--mkp-white) 100%
+  );
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+}
+
+.matrimony-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.matrimony-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 2rem 0;
+  background: linear-gradient(
+    135deg,
+    var(--mkp-primary) 0%,
+    var(--mkp-primary-light) 100%
+  );
+  border-radius: var(--mkp-radius-lg);
+  color: var(--mkp-white);
+  box-shadow: var(--mkp-shadow-lg);
+}
+
+.matrimony-page-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.matrimony-title-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.matrimony-breadcrumb {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+}
+
+.matrimony-breadcrumb-separator::before {
+  content: "→";
+  margin: 0 0.5rem;
+}
+
+.matrimony-action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.matrimony-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--mkp-radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.matrimony-btn-primary {
+  background: var(--mkp-primary);
+  color: var(--mkp-white);
+}
+
+.matrimony-btn-primary:hover {
+  background: var(--mkp-primary-dark);
+  transform: translateY(-1px);
+}
+
+.matrimony-btn-secondary {
+  background: var(--mkp-white);
+  color: var(--mkp-primary);
+  border: 2px solid var(--mkp-primary);
+}
+
+.matrimony-btn-secondary:hover {
+  background: var(--mkp-primary);
+  color: var(--mkp-white);
+}
+
+.matrimony-btn-edit {
+  background: var(--mkp-gray-100);
+  color: var(--mkp-gray-700);
+  border: 1px solid var(--mkp-gray-200);
+}
+
+.matrimony-btn-edit:hover {
+  background: var(--mkp-primary-light);
+  color: var(--mkp-white);
+}
+
+.matrimony-btn-save {
+  background: var(--mkp-success);
+  color: var(--mkp-white);
+}
+
+.matrimony-btn-cancel {
+  background: var(--mkp-error);
+  color: var(--mkp-white);
+}
+
+.matrimony-btn-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.matrimony-profile-section {
+  background: var(--mkp-white);
+  border-radius: var(--mkp-radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--mkp-shadow);
+  border: 1px solid var(--mkp-gray-100);
+}
+
+.matrimony-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--mkp-gray-100);
+}
+
+.matrimony-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--mkp-primary);
+  margin: 0;
+}
+
+.matrimony-section-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--mkp-primary-light);
+}
+
+.matrimony-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.matrimony-textarea-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.matrimony-info-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.matrimony-field-label {
+  font-weight: 600;
+  color: var(--mkp-gray-700);
+  font-size: 0.9rem;
+}
+
+.matrimony-field-value {
+  color: var(--mkp-gray-800);
+  font-size: 1rem;
+  margin: 0;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--mkp-gray-100);
+}
+
+.matrimony-form-input,
+.matrimony-form-select,
+.matrimony-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--mkp-gray-200);
+  border-radius: var(--mkp-radius);
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.matrimony-form-input:focus,
+.matrimony-form-select:focus,
+.matrimony-textarea:focus {
+  outline: none;
+  border-color: var(--mkp-primary);
+  box-shadow: 0 0 0 3px rgba(190, 24, 93, 0.1);
+}
+
+.matrimony-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Profile Picture Styles */
+.matrimony-profile-pic-container {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.matrimony-profile-pic-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.matrimony-profile-pic {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--mkp-primary-light);
+  box-shadow: var(--mkp-shadow-lg);
+}
+
+.matrimony-upload-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: var(--mkp-primary);
+  color: var(--mkp-white);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--mkp-shadow);
+}
+
+.matrimony-upload-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.matrimony-profile-info {
+  flex: 1;
+}
+
+.matrimony-profile-name {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--mkp-gray-800);
+  margin: 0 0 0.5rem 0;
+}
+
+.matrimony-profile-location {
+  color: var(--mkp-gray-500);
+  font-size: 1.1rem;
+  margin: 0 0 1rem 0;
+}
+
+/* Gallery Styles */
+.matrimony-gallery-section {
+  margin-top: 2rem;
+}
+
+.matrimony-gallery-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--mkp-gray-700);
+  margin-bottom: 1rem;
+}
+
+.matrimony-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.matrimony-gallery-item {
+  position: relative;
+  border-radius: var(--mkp-radius);
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+
+.matrimony-gallery-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.matrimony-gallery-image:hover {
+  transform: scale(1.05);
+}
+
+.matrimony-delete-photo-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(239, 68, 68, 0.9);
+  color: var(--mkp-white);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.matrimony-add-photo-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mkp-gray-100);
+  border: 2px dashed var(--mkp-gray-300);
+  border-radius: var(--mkp-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  aspect-ratio: 1;
+}
+
+.matrimony-add-photo-btn:hover {
+  background: var(--mkp-primary-light);
+  border-color: var(--mkp-primary);
+  color: var(--mkp-white);
+}
+
+.matrimony-add-photo-icon {
+  width: 2rem;
+  height: 2rem;
+}
+
+/* Completion Status Styles */
+.matrimony-completion-status {
+  background: var(--mkp-gray-50);
+  padding: 1.5rem;
+  border-radius: var(--mkp-radius);
+  margin-bottom: 2rem;
+}
+
+.matrimony-completion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.matrimony-completion-label {
+  font-weight: 600;
+  color: var(--mkp-gray-700);
+}
+
+.matrimony-completion-percent {
+  font-weight: 700;
+  color: var(--mkp-primary);
+  font-size: 1.1rem;
+}
+
+.matrimony-completion-bar {
+  height: 8px;
+  background: var(--mkp-gray-200);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.matrimony-completion-progress {
+  height: 100%;
+  width: 85%;
+  background: linear-gradient(
+    90deg,
+    var(--mkp-primary) 0%,
+    var(--mkp-primary-light) 100%
+  );
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.matrimony-completion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.matrimony-completion-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+}
+
+.matrimony-completion-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  background: var(--mkp-gray-200);
+  color: var(--mkp-gray-500);
+}
+
+.matrimony-completion-badge.completed {
+  background: var(--mkp-success);
+  color: var(--mkp-white);
+}
+
+.matrimony-completion-item-label {
+  color: var(--mkp-gray-700);
+  font-size: 0.9rem;
+}
+
+.matrimony-completion-cta {
+  text-align: center;
+  padding: 2rem;
+  background: linear-gradient(
+    135deg,
+    var(--mkp-primary) 0%,
+    var(--mkp-primary-light) 100%
+  );
+  border-radius: var(--mkp-radius);
+  color: var(--mkp-white);
+}
+
+.matrimony-cta-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.matrimony-cta-description {
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+}
+
+.matrimony-cta-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Privacy Settings */
+.matrimony-privacy-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.matrimony-privacy-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background: var(--mkp-gray-50);
+  border-radius: var(--mkp-radius);
+  border: 1px solid var(--mkp-gray-200);
+}
+
+.matrimony-privacy-label {
+  font-weight: 600;
+  color: var(--mkp-gray-800);
+  margin-bottom: 0.25rem;
+}
+
+.matrimony-privacy-description {
+  color: var(--mkp-gray-500);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Toggle Switch */
+.matrimony-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.matrimony-switch-input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.matrimony-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--mkp-gray-300);
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.matrimony-switch-slider.enabled {
+  background: var(--mkp-primary);
+}
+
+.matrimony-switch-thumb {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background: var(--mkp-white);
+  transition: 0.4s;
+  border-radius: 50%;
+  box-shadow: var(--mkp-shadow);
+}
+
+.matrimony-switch-slider.enabled .matrimony-switch-thumb {
+  transform: translateX(26px);
+}
+
+/* === EDIT PROFILE COMPONENT === */
+.matrimony-edit-profile {
+  background: var(--mkp-gray-50);
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.matrimony-edit-profile__card {
+  background: var(--mkp-white);
+  border-radius: var(--mkp-radius-lg);
+  box-shadow: var(--mkp-shadow-lg);
+  border: none;
+  overflow: hidden;
+}
+
+.matrimony-edit-profile__header {
+  background: linear-gradient(
+    135deg,
+    var(--mkp-primary) 0%,
+    var(--mkp-primary-light) 100%
+  );
+  color: var(--mkp-white);
+  padding: 2rem;
+  text-align: center;
+}
+
+.matrimony-edit-profile__title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.matrimony-edit-profile__subtitle {
+  opacity: 0.9;
+  margin: 0;
+}
+
+.matrimony-edit-profile__body {
+  padding: 2rem;
+}
+
+.matrimony-edit-profile__sidebar {
+  border-right: 1px solid var(--mkp-gray-200);
+  padding-right: 2rem;
+}
+
+.matrimony-edit-profile__pic-container {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.matrimony-edit-profile__pic {
+  width: 150px;
+  height: 150px;
+  border: 4px solid var(--mkp-primary-light);
+  box-shadow: var(--mkp-shadow-lg);
+}
+
+.matrimony-edit-profile__completion {
+  background: var(--mkp-gray-50);
+  padding: 1rem;
+  border-radius: var(--mkp-radius);
+}
+
+.matrimony-edit-profile__completion-bar {
+  height: 8px;
+  background: var(--mkp-gray-200);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.matrimony-edit-profile__progress {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--mkp-primary) 0%,
+    var(--mkp-primary-light) 100%
+  );
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.matrimony-edit-profile__completion-text {
+  font-size: 0.9rem;
+  color: var(--mkp-gray-600);
+  margin: 0;
+}
+
+.matrimony-edit-profile__main-content {
+  padding-left: 2rem;
+}
+
+.matrimony-edit-profile__tabs .nav-link {
+  color: var(--mkp-gray-600);
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+}
+
+.matrimony-edit-profile__tabs .nav-link.active {
+  color: var(--mkp-primary);
+  border-bottom-color: var(--mkp-primary);
+  background: none;
+}
+
+.matrimony-edit-profile__form {
+  padding: 2rem 0;
+}
+
+.matrimony-edit-profile__form-group {
+  margin-bottom: 1.5rem;
+}
+
+.matrimony-edit-profile__form-label {
+  font-weight: 600;
+  color: var(--mkp-gray-700);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.matrimony-edit-profile__editable-container {
+  position: relative;
+}
+
+.matrimony-edit-profile__display-value {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--mkp-gray-50);
+  border: 1px solid var(--mkp-gray-200);
+  border-radius: var(--mkp-radius);
+}
+
+.matrimony-edit-profile__edit-btn {
+  color: var(--mkp-primary);
+  padding: 0.25rem;
+  border: none;
+  background: none;
+}
+
+.matrimony-edit-profile__editing-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.matrimony-edit-profile__form-control {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--mkp-primary);
+  border-radius: var(--mkp-radius);
+}
+
+.matrimony-edit-profile__edit-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.matrimony-edit-profile__save-btn,
+.matrimony-edit-profile__cancel-btn {
+  padding: 0.5rem;
+  border: none;
+  border-radius: var(--mkp-radius);
+  cursor: pointer;
+}
+
+.matrimony-edit-profile__save-btn {
+  color: var(--mkp-success);
+}
+
+.matrimony-edit-profile__cancel-btn {
+  color: var(--mkp-error);
+}
+
+.matrimony-edit-profile__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--mkp-gray-200);
+}
+
+/* === MATRIMONIAL DASHBOARD === */
+.matrimonial-dashboard {
+  background: var(--mkp-gray-50);
+  min-height: 100vh;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.matrimonial-dashboard__header {
+  background: linear-gradient(
+    135deg,
+    var(--mkp-primary) 0%,
+    var(--mkp-primary-light) 100%
+  );
+  color: var(--mkp-white);
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--mkp-shadow);
+}
+
+.matrimonial-dashboard__nav {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* .matrimonial-dashboard__notification {
+  position: relative;
+  cursor: pointer;
+} */
+
+.matrimonial-dashboard__badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--mkp-error);
+  color: var(--mkp-white);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.matrimonial-dashboard__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--mkp-white);
+  cursor: pointer;
+}
+
+.matrimonial-dashboard__container {
+  display: flex;
+  min-height: calc(100vh - 80px);
+}
+
+.matrimonial-dashboard__sidebar {
+  width: 280px;
+  background: var(--mkp-white);
+  box-shadow: var(--mkp-shadow);
+  padding: 2rem 0;
+}
+
+.matrimonial-dashboard__sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.matrimonial-dashboard__sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  color: var(--mkp-gray-700);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border-left: 4px solid transparent;
+}
+
+.matrimonial-dashboard__sidebar-link:hover {
+  background: var(--mkp-gray-50);
+  color: var(--mkp-primary);
+  text-decoration: none;
+}
+
+.matrimonial-dashboard__sidebar-link.active {
+  background: rgba(190, 24, 93, 0.1);
+  color: var(--mkp-primary);
+  border-left-color: var(--mkp-primary);
+}
+
+.matrimonial-dashboard__main {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.matrimonial-dashboard__content-header {
+  margin-bottom: 2rem;
+}
+
+.matrimonial-dashboard__page-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--mkp-gray-800);
+  margin: 0;
+}
+
+.matrimonial-dashboard__stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.matrimonial-dashboard__stat-card {
+  background: var(--mkp-white);
+  padding: 2rem;
+  border-radius: var(--mkp-radius-lg);
+  box-shadow: var(--mkp-shadow);
+  border: 1px solid var(--mkp-gray-100);
+  transition: transform 0.2s ease;
+}
+
+.matrimonial-dashboard__stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--mkp-shadow-lg);
+}
+
+.matrimonial-dashboard__stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.matrimonial-dashboard__stat-title {
+  color: var(--mkp-gray-600);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.matrimonial-dashboard__stat-icon {
+  background: rgba(190, 24, 93, 0.1);
+  padding: 0.75rem;
+  border-radius: var(--mkp-radius);
+  color: var(--mkp-primary);
+}
+
+.matrimonial-dashboard__stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--mkp-gray-800);
+  margin-bottom: 0.5rem;
+}
+
+.matrimonial-dashboard__stat-change {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.matrimonial-dashboard__stat-change.positive {
+  color: var(--mkp-success);
+}
+
+.matrimonial-dashboard__stat-change.negative {
+  color: var(--mkp-error);
+}
+
+.matrimonial-dashboard__profiles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.matrimonial-dashboard__profile-card {
+  background: var(--mkp-white);
+  border-radius: var(--mkp-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--mkp-shadow);
+  transition: all 0.3s ease;
+  border: 1px solid var(--mkp-gray-100);
+}
+
+.matrimonial-dashboard__profile-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--mkp-shadow-lg);
+}
+
+.matrimonial-dashboard__profile-image-container {
+  position: relative;
+  height: 300px;
+  overflow: hidden;
+}
+
+.matrimonial-dashboard__profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.matrimonial-dashboard__profile-card:hover
+  .matrimonial-dashboard__profile-image {
+  transform: scale(1.05);
+}
+
+.matrimonial-dashboard__profile-status {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.matrimonial-dashboard__profile-status.online {
+  background: var(--mkp-success);
+  color: var(--mkp-white);
+}
+
+.matrimonial-dashboard__profile-status.offline {
+  background: var(--mkp-gray-400);
+  color: var(--mkp-white);
+}
+
+.matrimonial-dashboard__profile-content {
+  padding: 1.5rem;
+}
+
+.matrimonial-dashboard__profile-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--mkp-gray-800);
+  margin-bottom: 1rem;
+}
+
+.matrimonial-dashboard__profile-details {
+  margin-bottom: 1rem;
+}
+
+.matrimonial-dashboard__profile-details p {
+  display: flex;
+  align-items: center;
+  color: var(--mkp-gray-600);
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.matrimonial-dashboard__profile-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.matrimonial-dashboard__profile-tag {
+  background: rgba(190, 24, 93, 0.1);
+  color: var(--mkp-primary);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.matrimonial-dashboard__profile-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.matrimonial-dashboard__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: var(--mkp-radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  flex: 1;
+  justify-content: center;
+}
+
+.matrimonial-dashboard__btn-primary {
+  background: var(--mkp-primary);
+  color: var(--mkp-white);
+}
+
+.matrimonial-dashboard__btn-primary:hover {
+  background: var(--mkp-primary-dark);
+  transform: translateY(-1px);
+}
+
+.matrimonial-dashboard__btn-secondary {
+  background: var(--mkp-white);
+  color: var(--mkp-primary);
+  border: 2px solid var(--mkp-primary);
+}
+
+.matrimonial-dashboard__btn-secondary:hover {
+  background: var(--mkp-primary);
+  color: var(--mkp-white);
+}
+
+.matrimonial-dashboard__btn-outline {
+  background: transparent;
+  color: var(--mkp-gray-600);
+  border: 1px solid var(--mkp-gray-300);
+}
+
+.matrimonial-dashboard__btn-outline:hover {
+  background: var(--mkp-gray-50);
+  border-color: var(--mkp-primary);
+  color: var(--mkp-primary);
+}
+
+/* === PREMIUM BANNER === */
+.matrimonial-premium-banner {
+  background: linear-gradient(
+    135deg,
+    var(--mkp-primary) 0%,
+    var(--mkp-primary-light) 100%
+  );
+  color: var(--mkp-white);
+  padding: 2rem;
+  border-radius: var(--mkp-radius-lg);
+  text-align: center;
+  margin-bottom: 2rem;
+  box-shadow: var(--mkp-shadow-lg);
+}
+
+.matrimonial-premium-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.matrimonial-premium-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+}
+
+.matrimonial-premium-features li {
+  padding: 0.5rem 0;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.matrimonial-premium-features li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--mkp-white);
+  font-weight: 700;
+}
+
+.matrimonial-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: var(--mkp-white);
+  color: var(--mkp-primary);
+  border: none;
+  border-radius: var(--mkp-radius);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.matrimonial-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--mkp-shadow-lg);
+}
+
+.matrimonial-btn-primary {
+  background: var(--mkp-white);
+  color: var(--mkp-primary);
+}
+
+/* === PROFILE CARD COMPONENT === */
+.matrimonial-dashboard-profile-card {
+  background: var(--mkp-white);
+  border-radius: var(--mkp-radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--mkp-shadow);
+  border: 1px solid var(--mkp-gray-100);
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.matrimonial-dashboard-profile-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--mkp-shadow-lg);
+}
+
+.matrimonial-dashboard-profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--mkp-gray-100);
+}
+
+.matrimonial-dashboard-profile-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--mkp-gray-800);
+  margin: 0 0 0.25rem 0;
+}
+
+.matrimonial-dashboard-profile-meta {
+  color: var(--mkp-gray-500);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.matrimonial-dashboard-profile-id {
+  background: var(--mkp-primary);
+  color: var(--mkp-white);
+  padding: 0.5rem 1rem;
+  border-radius: var(--mkp-radius);
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.matrimonial-dashboard-profile-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.matrimonial-dashboard-profile-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--mkp-gray-600);
+  font-size: 0.9rem;
+  background: var(--mkp-gray-50);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--mkp-radius);
+}
+
+.matrimonial-dashboard-profile-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.matrimonial-dashboard-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: var(--mkp-radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+  justify-content: center;
+}
+
+.matrimonial-dashboard-btn-primary {
+  background: var(--mkp-primary);
+  color: var(--mkp-white);
+}
+
+.matrimonial-dashboard-btn-primary:hover {
+  background: var(--mkp-primary-dark);
+  transform: translateY(-1px);
+}
+
+.matrimonial-dashboard-btn-outline {
+  background: transparent;
+  color: var(--mkp-primary);
+  border: 2px solid var(--mkp-primary);
+}
+
+.matrimonial-dashboard-btn-outline:hover {
+  background: var(--mkp-primary);
+  color: var(--mkp-white);
+}
+
+/* === SEARCH COMPONENT === */
+.matrimonial-search-container {
+  display: flex;
+  background: var(--mkp-gray-50);
+  min-height: 100vh;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.matrimonial-sidebar {
+  width: 320px;
+  background: var(--mkp-white);
+  box-shadow: var(--mkp-shadow);
+  padding: 2rem;
+  transition: width 0.3s ease;
+}
+
+.matrimonial-sidebar.collapsed {
+  width: 80px;
+  overflow: hidden;
+}
+
+.matrimonial-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--mkp-gray-100);
+}
+
+.matrimonial-sidebar-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--mkp-primary);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.matrimonial-toggle-btn {
+  background: none;
+  border: none;
+  color: var(--mkp-gray-500);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--mkp-radius);
+  transition: all 0.2s ease;
+}
+
+.matrimonial-toggle-btn:hover {
+  background: var(--mkp-gray-100);
+  color: var(--mkp-primary);
+}
+
+.matrimonial-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.matrimonial-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.matrimonial-filter-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--mkp-gray-700);
+  font-size: 0.9rem;
+}
+
+.matrimonial-filter-group input,
+.matrimonial-filter-group select {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--mkp-gray-200);
+  border-radius: var(--mkp-radius);
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease;
+}
+
+.matrimonial-filter-group input:focus,
+.matrimonial-filter-group select:focus {
+  outline: none;
+  border-color: var(--mkp-primary);
+  box-shadow: 0 0 0 3px rgba(190, 24, 93, 0.1);
+}
+
+.matrimonial-saved-searches {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--mkp-gray-200);
+}
+
+.matrimonial-saved-searches h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--mkp-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.matrimonial-saved-searches ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.matrimonial-saved-searches li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--mkp-gray-50);
+  border-radius: var(--mkp-radius);
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--mkp-gray-700);
+}
+
+.matrimonial-profiles {
+  flex: 1;
+  padding: 2rem;
+}
+
+.matrimonial-searchbar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  background: var(--mkp-white);
+  padding: 1.5rem;
+  border-radius: var(--mkp-radius-lg);
+  box-shadow: var(--mkp-shadow);
+}
+
+.matrimonial-searchbar input {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  border: 2px solid var(--mkp-gray-200);
+  border-radius: var(--mkp-radius);
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.matrimonial-searchbar input:focus {
+  outline: none;
+  border-color: var(--mkp-primary);
+  box-shadow: 0 0 0 3px rgba(190, 24, 93, 0.1);
+}
+
+.matrimonial-searchbar button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: var(--mkp-primary);
+  color: var(--mkp-white);
+  border: none;
+  border-radius: var(--mkp-radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.matrimonial-searchbar button:hover {
+  background: var(--mkp-primary-dark);
+  transform: translateY(-1px);
+}
+
+.matrimonial-profile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.matrimonial-profile-card {
+  background: var(--mkp-white);
+  border-radius: var(--mkp-radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--mkp-shadow);
+  border: 1px solid var(--mkp-gray-100);
+  transition: all 0.3s ease;
+}
+
+.matrimonial-profile-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--mkp-shadow-lg);
+}
+
+.matrimonial-profile-info h3 {
+  color: var(--mkp-gray-800);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.matrimonial-profile-info p {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--mkp-gray-600);
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.matrimonial-profile-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--mkp-gray-100);
+}
+
+.matrimonial-profile-actions button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: var(--mkp-radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+  justify-content: center;
+}
+
+.matrimonial-profile-actions button:first-child {
+  background: var(--mkp-primary);
+  color: var(--mkp-white);
+}
+
+.matrimonial-profile-actions button:first-child:hover {
+  background: var(--mkp-primary-dark);
+}
+
+.matrimonial-profile-actions button:not(:first-child) {
+  background: var(--mkp-gray-100);
+  color: var(--mkp-gray-700);
+}
+
+.matrimonial-profile-actions button:not(:first-child):hover {
+  background: var(--mkp-primary-light);
+  color: var(--mkp-white);
+}
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 1024px) {
+  .matrimony-container {
+    padding: 1rem;
+  }
+
+  .matrimony-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .matrimonial-dashboard__container {
+    flex-direction: column;
+  }
+
+  .matrimonial-dashboard__sidebar {
+    width: 100%;
+    order: 2;
+  }
+
+  .matrimonial-dashboard__main {
+    order: 1;
+  }
+
+  .matrimonial-dashboard__stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .matrimonial-dashboard__profiles-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .matrimony-page-title {
+    font-size: 2rem;
+  }
+
+  .matrimony-title-icon {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .matrimony-profile-pic-container {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .matrimony-info-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .matrimony-action-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .matrimonial-dashboard__stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .matrimonial-dashboard__profiles-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .matrimonial-search-container {
+    flex-direction: column;
+  }
+
+  .matrimonial-sidebar {
+    width: 100%;
+  }
+
+  .matrimonial-searchbar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .matrimonial-profile-actions {
+    flex-direction: column;
+  }
+
+  .matrimonial-dashboard-profile-actions {
+    flex-direction: column;
+  }
+
+  .matrimonial-dashboard-profile-details {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .matrimony-container {
+    padding: 0.5rem;
+  }
+
+  .matrimony-profile-section {
+    padding: 1rem;
+  }
+
+  .matrimony-page-title {
+    font-size: 1.5rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .matrimony-completion-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .matrimony-cta-buttons {
+    flex-direction: column;
+  }
+
+  .matrimonial-dashboard__sidebar-link {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .matrimonial-dashboard__main {
+    padding: 1rem;
+  }
+
+  .matrimonial-premium-banner {
+    padding: 1.5rem;
+  }
+
+  .matrimonial-premium-title {
+    font-size: 1.25rem;
+  }
+}
+
+/* === ANIMATION UTILITIES === */
+@keyframes mkp-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mkp-slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes mkp-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.matrimony-profile-section {
+  animation: mkp-fadeIn 0.6s ease-out;
+}
+
+.matrimonial-dashboard__profile-card {
+  animation: mkp-fadeIn 0.6s ease-out;
+}
+
+.matrimonial-dashboard__sidebar {
+  animation: mkp-slideIn 0.4s ease-out;
+}
+
+/* Loading States */
+.matrimony-loading {
+  animation: mkp-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Focus States for Accessibility */
+.matrimony-btn:focus,
+.matrimonial-dashboard__btn:focus,
+.matrimonial-btn:focus {
+  outline: 2px solid var(--mkp-primary);
+  outline-offset: 2px;
+}
+
+.matrimony-form-input:focus,
+.matrimony-form-select:focus {
+  box-shadow: 0 0 0 3px rgba(190, 24, 93, 0.2);
+}
+
+/* Custom Scrollbar */
+.matrimonial-dashboard__main::-webkit-scrollbar,
+.matrimonial-profiles::-webkit-scrollbar {
+  width: 8px;
+}
+
+.matrimonial-dashboard__main::-webkit-scrollbar-track,
+.matrimonial-profiles::-webkit-scrollbar-track {
+  background: var(--mkp-gray-100);
+  border-radius: 4px;
+}
+
+.matrimonial-dashboard__main::-webkit-scrollbar-thumb,
+.matrimonial-profiles::-webkit-scrollbar-thumb {
+  background: var(--mkp-primary-light);
+  border-radius: 4px;
+}
+
+.matrimonial-dashboard__main::-webkit-scrollbar-thumb:hover,
+.matrimonial-profiles::-webkit-scrollbar-thumb:hover {
+  background: var(--mkp-primary);
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .matrimony-profile,
+  .matrimony-edit-profile,
+  .matrimonial-dashboard,
+  .matrimonial-search-container {
+    --mkp-primary: #a21caf;
+    --mkp-primary-light: #d946ef;
+    --mkp-primary-dark: #86198f;
+  }
+
+  .matrimony-profile-section,
+  .matrimonial-dashboard__profile-card,
+  .matrimonial-dashboard__stat-card {
+    border: 2px solid var(--mkp-gray-300);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .matrimony-profile-section,
+  .matrimonial-dashboard__profile-card,
+  .matrimonial-dashboard__sidebar,
+  .matrimony-btn,
+  .matrimonial-dashboard__btn,
+  .matrimonial-btn {
+    animation: none;
+    transition: none;
+  }
+
+  .matrimony-gallery-image:hover,
+  .matrimonial-dashboard__profile-image:hover {
+    transform: none;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .matrimony-action-buttons,
+  .matrimonial-dashboard__sidebar,
+  .matrimonial-sidebar,
+  .matrimony-btn,
+  .matrimonial-dashboard__btn,
+  .matrimonial-btn {
+    display: none !important;
+  }
+
+  .matrimony-profile,
+  .matrimony-edit-profile,
+  .matrimonial-dashboard {
+    background: var(--mkp-white) !important;
+    box-shadow: none !important;
+  }
+
+  .matrimony-profile-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+/* Main Container */
+.weddingwire-auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background-color: #f9f3f6;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Card Styles */
+.weddingwire-auth-card {
+  width: 100%;
+  max-width: 480px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* Header Styles */
+.weddingwire-auth-header {
+  padding: 24px;
+  text-align: center;
+  background-color: #e83e8c;
+  color: white;
+}
+
+.weddingwire-auth-tagline {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Form Container */
+.weddingwire-auth-form-container {
+  padding: 32px;
+}
+
+.weddingwire-auth-title {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
+
+.weddingwire-auth-subtitle {
+  margin: 0 0 24px 0;
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+}
+
+/* Form Styles */
+.weddingwire-auth-form {
+  margin-bottom: 24px;
+}
+
+.weddingwire-auth-input-group {
+  margin-bottom: 20px;
+}
+
+.weddingwire-auth-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #444;
+}
+
+.weddingwire-auth-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.weddingwire-auth-input-icon {
+  position: absolute;
+  left: 12px;
+  color: #888;
+  width: 18px;
+  height: 18px;
+}
+
+.weddingwire-auth-input {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.weddingwire-auth-input:focus {
+  outline: none;
+  border-color: #e83e8c;
+  box-shadow: 0 0 0 2px rgba(232, 62, 140, 0.2);
+}
+
+/* OTP Styles */
+.weddingwire-auth-otp-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.weddingwire-auth-otp-input {
+  width: 40px;
+  height: 50px;
+  text-align: center;
+  font-size: 18px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.weddingwire-auth-otp-input:focus {
+  outline: none;
+  border-color: #e83e8c;
+  box-shadow: 0 0 0 2px rgba(232, 62, 140, 0.2);
+}
+
+.weddingwire-auth-resend {
+  background: none;
+  border: none;
+  color: #e83e8c;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.weddingwire-auth-resend:hover {
+  color: #d2337d;
+}
+
+.weddingwire-auth-resend:disabled {
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+/* Button Styles */
+.weddingwire-auth-button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.weddingwire-auth-button-primary {
+  background-color: #e83e8c;
+  color: white;
+}
+
+.weddingwire-auth-button-primary:hover {
+  background-color: #d2337d;
+}
+
+.weddingwire-auth-button-primary:disabled {
+  background-color: #f8b1d0;
+  cursor: not-allowed;
+}
+
+.weddingwire-auth-spinner {
+  animation: weddingwire-spin 1s linear infinite;
+}
+
+@keyframes weddingwire-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Message Styles */
+.weddingwire-auth-message {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weddingwire-auth-message-success {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.weddingwire-auth-message-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Success Screen */
+.weddingwire-auth-success-container {
+  padding: 40px 32px;
+  text-align: center;
+}
+
+.weddingwire-auth-success-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 20px;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.weddingwire-auth-success-message {
+  margin: 20px 0;
+  padding: 12px;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Footer Links */
+.weddingwire-auth-footer {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+}
+
+.weddingwire-auth-link {
+  color: #e83e8c;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.weddingwire-auth-link:hover {
+  text-decoration: underline;
+}
+
+.weddingwire-auth-link-icon {
+  margin-right: 6px;
+}
+
+/* Responsive Styles */
+@media (max-width: 576px) {
+  .weddingwire-auth-container {
+    padding: 10px;
+  }
+
+  .weddingwire-auth-card {
+    border-radius: 8px;
+  }
+
+  .weddingwire-auth-form-container,
+  .weddingwire-auth-success-container {
+    padding: 24px 20px;
+  }
+
+  .weddingwire-auth-title {
+    font-size: 20px;
+  }
+
+  .weddingwire-auth-subtitle {
+    font-size: 13px;
+  }
+
+  .weddingwire-auth-otp-container {
+    gap: 6px;
+  }
+
+  .weddingwire-auth-otp-input {
+    width: 36px;
+    height: 45px;
+    font-size: 16px;
+  }
+
+  .weddingwire-auth-button {
+    padding: 12px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 400px) {
+  .weddingwire-auth-otp-input {
+    width: 30px;
+    height: 40px;
+    font-size: 15px;
+  }
+}
+
+/* Wedding Card Styles */
+
+.wc-page-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fce4ec 0%, #ffffff 50%, #f8bbd9 100%);
+}
+
+.wc-header {
+  background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
+  color: white;
+  padding: 4rem 0 3rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.wc-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="hearts" patternUnits="userSpaceOnUse" width="20" height="20"><path d="M10,6 C6,2 2,6 6,10 C2,6 6,14 10,10 C14,6 18,2 14,6 C18,10 14,14 10,10" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23hearts)"/></svg>')
+    repeat;
+  opacity: 0.1;
+}
+
+.wc-header-content {
+  position: relative;
+  z-index: 1;
+}
+
+.wc-main-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.wc-subtitle {
+  font-size: 1.25rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.wc-nav-section {
+  background: white;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.wc-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.wc-nav-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.wc-tab {
+  padding: 1.5rem 2rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #666;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wc-tab:hover {
+  color: #e91e63;
+  background: #fce4ec;
+}
+
+.wc-tab-active {
+  color: #e91e63;
+  border-bottom-color: #e91e63;
+  background: #fce4ec;
+}
+
+.wc-tab-count {
+  background: #e91e63;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.wc-filters-section {
+  background: white;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.wc-filters-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.wc-search-bar {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+}
+
+.wc-search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #9ca3af;
+}
+
+.wc-search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  border: 2px solid #f0f0f0;
+  border-radius: 25px;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.wc-search-input:focus {
+  border-color: #e91e63;
+  box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
+}
+
+.wc-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wc-filter-select {
+  padding: 0.75rem 1rem;
+  border: 2px solid #f0f0f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  cursor: pointer;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.wc-filter-select:focus {
+  border-color: #e91e63;
+}
+
+.wc-main-content {
+  padding: 3rem 0;
+}
+
+.wc-section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.wc-section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.wc-section-subtitle {
+  font-size: 1.125rem;
+  color: #666;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.wc-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.wc-card-container {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.wc-card-container:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 40px rgba(233, 30, 99, 0.2);
+}
+
+.wc-card-image-wrapper {
+  position: relative;
+  aspect-ratio: 3/4;
+  overflow: hidden;
+}
+
+.wc-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.wc-card-container:hover .wc-card-image {
+  transform: scale(1.05);
+}
+
+.wc-card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(233, 30, 99, 0.8) 100%
+  );
+  opacity: 0;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wc-card-container:hover .wc-card-overlay {
+  opacity: 1;
+}
+
+.wc-card-overlay-content {
+  text-align: center;
+  transform: translateY(20px);
+  transition: transform 0.3s ease;
+}
+
+.wc-card-container:hover .wc-card-overlay-content {
+  transform: translateY(0);
+}
+
+.wc-play-button {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.wc-play-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.wc-preview-btn,
+.wc-customize-btn {
+  display: block;
+  width: 80%;
+  margin: 0.5rem auto;
+  padding: 0.75rem 1rem;
+  border: 2px solid white;
+  background: transparent;
+  color: white;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.wc-customize-btn {
+  background: white;
+  color: #e91e63;
+}
+
+.wc-preview-btn:hover {
+  background: white;
+  color: #e91e63;
+}
+
+.wc-customize-btn:hover {
+  background: #e91e63;
+  color: white;
+}
+
+.wc-card-heart {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: white;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.wc-card-info {
+  padding: 1.5rem;
+}
+
+.wc-card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.wc-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wc-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.wc-duration {
+  background: #f8bbd9;
+  color: #c2185b;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .wc-main-title {
+    font-size: 2.5rem;
+  }
+
+  .wc-nav-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .wc-tab {
+    padding: 1rem 1.5rem;
+    white-space: nowrap;
+  }
+
+  .wc-filters-wrapper {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .wc-search-bar {
+    max-width: none;
+  }
+
+  .wc-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .wc-section-title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .wc-main-title {
+    font-size: 2rem;
+  }
+
+  .wc-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .wc-tab {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .wc-header {
+    padding: 2rem 0;
+  }
+}
+
+/* Animations */
+@keyframes wc-fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.wc-card-container {
+  animation: wc-fadeInUp 0.6s ease forwards;
+}
+
+.wc-card-container:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.wc-card-container:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.wc-card-container:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.wc-card-container:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.wc-card-container:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.wc-card-container:nth-child(6) {
+  animation-delay: 0.6s;
+}
+.wc-card-container:nth-child(7) {
+  animation-delay: 0.7s;
+}
+.wc-card-container:nth-child(8) {
+  animation-delay: 0.8s;
+}
+
+/* Hover Effects */
+.wc-card-heart:hover {
+  transform: scale(1.1);
+}
+
+.wc-tab-count {
+  transition: all 0.3s ease;
+}
+
+.wc-tab:hover .wc-tab-count {
+  background: #c2185b;
+}
+
+.wc-tab-active .wc-tab-count {
+  background: #c2185b;
+}
+/* WeddingLegalTerms.css */
+.wedding-legal-container {
+  max-width: 100%;
+  margin: 0 auto;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Header Styles */
+.wedding-legal-header {
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 15px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.wedding-legal-nav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wedding-legal-logo {
+  display: flex;
+  align-items: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #e47272;
+}
+
+.wedding-legal-logo i {
+  margin-right: 10px;
+}
+
+.wedding-legal-navlinks {
+  display: flex;
+  list-style: none;
+  gap: 30px;
+}
+
+.wedding-legal-navlinks a {
+  text-decoration: none;
+  color: #555;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.wedding-legal-navlinks a:hover {
+  color: #e47272;
+}
+
+.wedding-legal-auth {
+  display: flex;
+  gap: 15px;
+}
+
+.wedding-legal-login,
+.wedding-legal-signup {
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.wedding-legal-login {
+  background-color: transparent;
+  border: 1px solid #e47272;
+  color: #e47272;
+}
+
+.wedding-legal-login:hover {
+  background-color: #f9f2f2;
+}
+
+.wedding-legal-signup {
+  background-color: #e47272;
+  border: 1px solid #e47272;
+  color: white;
+}
+
+.wedding-legal-signup:hover {
+  background-color: #d86262;
+}
+
+/* Hero Section */
+.wedding-legal-hero {
+  background: linear-gradient(135deg, #f9f2f2 0%, #f5e6e6 100%);
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.wedding-legal-herotitle {
+  font-size: 36px;
+  color: #333;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.wedding-legal-herosubtitle {
+  font-size: 18px;
+  color: #666;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Main Content */
+.wedding-legal-content {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+  display: flex;
+  gap: 40px;
+}
+
+.wedding-legal-sidebar {
+  flex: 0 0 250px;
+}
+
+.wedding-legal-sidebartitle {
+  font-size: 18px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  color: #333;
+}
+
+.wedding-legal-sidelinks {
+  list-style: none;
+}
+
+.wedding-legal-sidelinks li {
+  margin-bottom: 10px;
+}
+
+.wedding-legal-sidelink {
+  width: 100%;
+  padding: 12px 15px;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #555;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.wedding-legal-sidelink:hover {
+  background-color: #f9f2f2;
+  color: #e47272;
+}
+
+.wedding-legal-sidelink.active {
+  background-color: #e47272;
+  color: white;
+}
+
+.wedding-legal-main {
+  flex: 1;
+}
+
+.wedding-legal-section {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+  margin-bottom: 30px;
+}
+
+.wedding-legal-sectiontitle {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.wedding-legal-sectioncontent {
+  line-height: 1.8;
+}
+
+.wedding-legal-paragraph {
+  margin-bottom: 15px;
+  color: #555;
+}
+
+.wedding-legal-update {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  border-left: 4px solid #e47272;
+}
+
+.wedding-legal-updatetitle {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.wedding-legal-updatedate {
+  font-weight: 600;
+  color: #e47272;
+  margin-bottom: 10px;
+}
+
+.wedding-legal-updatetext {
+  color: #666;
+  line-height: 1.6;
+}
+
+/* Footer */
+.wedding-legal-footer {
+  background-color: #2d3748;
+  color: white;
+  padding: 50px 0 20px;
+}
+
+.wedding-legal-footercontent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  margin-bottom: 30px;
+}
+
+.wedding-legal-footersection {
+  flex: 1;
+  min-width: 200px;
+}
+
+.wedding-legal-footertitle {
+  font-size: 18px;
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+.wedding-legal-footerlinks {
+  list-style: none;
+}
+
+.wedding-legal-footerlinks li {
+  margin-bottom: 10px;
+}
+
+.wedding-legal-footerlinks a {
+  color: #cbd5e0;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.wedding-legal-footerlinks a:hover {
+  color: white;
+}
+
+.wedding-legal-socialicons {
+  display: flex;
+  gap: 15px;
+}
+
+.wedding-legal-socialicon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.wedding-legal-socialicon:hover {
+  background-color: #e47272;
+  transform: translateY(-3px);
+}
+
+.wedding-legal-footercopyright {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid #4a5568;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: #cbd5e0;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .wedding-legal-content {
+    flex-direction: column;
+  }
+  
+  .wedding-legal-sidebar {
+    flex: 1;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .wedding-legal-nav {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .wedding-legal-navlinks {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+  }
+  
+  .wedding-legal-footercontent {
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .wedding-legal-section {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .wedding-legal-herotitle {
+    font-size: 28px;
+  }
+  
+  .wedding-legal-herosubtitle {
+    font-size: 16px;
+  }
+  
+  .wedding-legal-auth {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .wedding-legal-login,
+  .wedding-legal-signup {
+    width: 100%;
+  }
+}
+/* CancellationPolicy.css */
+.policy-container {
+  max-width: 100%;
+  margin: 0 auto;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Header Styles */
+.policy-header {
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 15px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.policy-nav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.policy-logo {
+  display: flex;
+  align-items: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #e47272;
+}
+
+.policy-logo i {
+  margin-right: 10px;
+}
+
+.policy-navlinks {
+  display: flex;
+  list-style: none;
+  gap: 30px;
+}
+
+.policy-navlinks a {
+  text-decoration: none;
+  color: #555;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.policy-navlinks a:hover {
+  color: #e47272;
+}
+
+.policy-auth {
+  display: flex;
+  gap: 15px;
+}
+
+.policy-login,
+.policy-signup {
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.policy-login {
+  background-color: transparent;
+  border: 1px solid #e47272;
+  color: #e47272;
+}
+
+.policy-login:hover {
+  background-color: #f9f2f2;
+}
+
+.policy-signup {
+  background-color: #e47272;
+  border: 1px solid #e47272;
+  color: white;
+}
+
+.policy-signup:hover {
+  background-color: #d86262;
+}
+
+/* Hero Section */
+.policy-hero {
+  background: linear-gradient(135deg, #f9f2f2 0%, #f5e6e6 100%);
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.policy-herotitle {
+  font-size: 36px;
+  color: #333;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.policy-herosubtitle {
+  font-size: 18px;
+  color: #666;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Main Content */
+.policy-content {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.policy-main {
+  background-color: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+}
+
+.policy-section {
+  margin-bottom: 30px;
+}
+
+.policy-sectiontitle {
+  font-size: 28px;
+  color: #333;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.policy-subtitle {
+  font-size: 20px;
+  color: #333;
+  margin: 25px 0 15px;
+}
+
+.policy-paragraph {
+  margin-bottom: 15px;
+  color: #555;
+  line-height: 1.8;
+}
+
+.policy-list {
+  margin: 15px 0;
+  padding-left: 20px;
+}
+
+.policy-list li {
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.policy-update {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  border-left: 4px solid #e47272;
+}
+
+.policy-updatetitle {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.policy-updatetext {
+  color: #666;
+  line-height: 1.6;
+}
+
+/* Footer */
+.policy-footer {
+  background-color: #2d3748;
+  color: white;
+  padding: 50px 0 20px;
+}
+
+.policy-footercontent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  margin-bottom: 30px;
+}
+
+.policy-footersection {
+  flex: 1;
+  min-width: 200px;
+}
+
+.policy-footertitle {
+  font-size: 18px;
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+.policy-footerlinks {
+  list-style: none;
+}
+
+.policy-footerlinks li {
+  margin-bottom: 10px;
+}
+
+.policy-footerlinks a {
+  color: #cbd5e0;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.policy-footerlinks a:hover {
+  color: white;
+}
+
+.policy-socialicons {
+  display: flex;
+  gap: 15px;
+}
+
+.policy-socialicon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.policy-socialicon:hover {
+  background-color: #e47272;
+  transform: translateY(-3px);
+}
+
+.policy-footercopyright {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid #4a5568;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: #cbd5e0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .policy-nav {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .policy-navlinks {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+  }
+  
+  .policy-footercontent {
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .policy-main {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .policy-herotitle {
+    font-size: 28px;
+  }
+  
+  .policy-herosubtitle {
+    font-size: 16px;
+  }
+  
+  .policy-auth {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .policy-login,
+  .policy-signup {
+    width: 100%;
+  }
+  
+  .policy-sectiontitle {
+    font-size: 24px;
+  }
+  
+  .policy-subtitle {
+    font-size: 18px;
+  }
 }

@@ -1,4 +1,4 @@
-
+import { Link } from 'react-router-dom'; 
 import React from "react";
 
 const Footer = () => {
@@ -67,9 +67,19 @@ const Footer = () => {
 
                     <div className="col-12 col-md-6">
                         <ul className="footer-list list-unstyled d-flex flex-wrap pt-3">
-                            <li className="me-3"><a href="#terms">Terms &amp; Conditions</a></li>
-                            <li className="me-3"><a href="#privacy">Privacy Policy</a></li>
-                            <li><a href="#cancellation">Cancellation Policy</a></li>
+                            <li className="me-3"> <Link
+                  to="/terms"
+                  className="me-3"
+                >
+                  Terms&Condition
+                </Link></li>
+                           
+                              <li className="me-3"> <Link
+                  to="/cancellation"
+                  className="me-3"
+                >
+                  Cancellation Policy 
+                </Link></li>
                         </ul>
                     </div>
 

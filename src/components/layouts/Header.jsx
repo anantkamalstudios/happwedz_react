@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, Links } from "react-router-dom";
 import { Modal, Button, Form } from "react-bootstrap";
 import LocationModalWithCategories from "./LocationModalWithCategories";
+import { RiMenuFill } from "react-icons/ri";
 
 const Header = () => {
   const toSlug = (text) =>
@@ -27,7 +28,7 @@ const Header = () => {
             aria-expanded="false"
             aria-label="Toggle navigation"
           >
-            <span className="navbar-toggler-icon custom-toggler-icon"></span>
+            <RiMenuFill color="white" size={35} />
           </button>
         </div>
 
@@ -668,36 +669,49 @@ const Header = () => {
                           <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
                               <div className="row g-4">
-                                {[
-                                  {
-                                    title: "Wedding Invitation Maker",
-                                    items: [
-                                      "Wedding Card Designs",
-                                      "Invitation Video Templates",
-                                      "Save the Date Templates",
-                                    ],
-                                  },
-                                ].map((section, i) => (
-                                  <div className="col-6 col-md-3" key={i}>
-                                    <h6 className="fw-semibold text-secondary mb-3">
-                                      {section.title}
-                                    </h6>
-                                    <ul className="list-unstyled">
-                                      {section.items.map((item, idx) => (
-                                        <li key={idx}>
-                                          <Link
-                                            to={`/e-invite/${toSlug(item)}`}
-                                            state={{ title: item }}
-                                            className="dropdown-link small d-block mb-2"
-                                          >
-                                            <i className="bi bi-chevron-right me-2 text-muted"></i>
-                                            {item}
-                                          </Link>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                ))}
+                                <div className="col-6 col-md-3">
+                                  <h6 className="fw-semibold text-secondary mb-3">
+                                    Wedding Invitation Maker
+                                  </h6>
+                                  <ul className="list-unstyled">
+                                    <li>
+                                      <Link
+                                        to="/e-invite-wedding-card-designs"
+                                        state={{
+                                          title: "Wedding Card Designs",
+                                        }}
+                                        className="dropdown-link small d-block mb-2"
+                                      >
+                                        <i className="bi bi-chevron-right me-2 text-muted"></i>
+                                        Wedding Card Designs
+                                      </Link>
+                                    </li>
+                                    <li>
+                                      <Link
+                                        to="/e-invite/invitation-video-templates"
+                                        state={{
+                                          title: "Invitation Video Templates",
+                                        }}
+                                        className="dropdown-link small d-block mb-2"
+                                      >
+                                        <i className="bi bi-chevron-right me-2 text-muted"></i>
+                                        Invitation Video Templates
+                                      </Link>
+                                    </li>
+                                    <li>
+                                      <Link
+                                        to="/e-invite/save-the-date-templates"
+                                        state={{
+                                          title: "Save the Date Templates",
+                                        }}
+                                        className="dropdown-link small d-block mb-2"
+                                      >
+                                        <i className="bi bi-chevron-right me-2 text-muted"></i>
+                                        Save the Date Templates
+                                      </Link>
+                                    </li>
+                                  </ul>
+                                </div>
                               </div>
                             </div>
                           </div>

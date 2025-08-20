@@ -165,6 +165,7 @@ const blogsCarousel = () => {
           <div
             className="swiper-button-prev"
             style={{
+              display: "none",
               color: "#8a5a76",
               left: "-40px",
               width: "48px",
@@ -178,6 +179,7 @@ const blogsCarousel = () => {
           <div
             className="swiper-button-next"
             style={{
+              display: "none",
               color: "#8a5a76",
               right: "-40px",
               width: "48px",
