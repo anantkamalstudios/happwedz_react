@@ -91,7 +91,7 @@ const TermsCondition = () => {
     <div className="wedding-legal-container">
       <header className="wedding-legal-header">
         <div className="wedding-legal-nav">
-          <div className="wedding-legal-logo">
+          {/* <div className="wedding-legal-logo">
             <i className="fas fa-ring"></i>
             <span>WeddingWire</span>
           </div>
@@ -104,7 +104,7 @@ const TermsCondition = () => {
           <div className="wedding-legal-auth">
             <button className="wedding-legal-login">Log In</button>
             <button className="wedding-legal-signup">Sign Up</button>
-          </div>
+          </div> */}
         </div>
       </header>
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import './CancellationPolicy.css';
+
 
 const CancellationPolicy = () => {
   return (
