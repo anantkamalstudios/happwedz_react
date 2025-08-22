@@ -120,9 +120,6 @@ const Footer = () => {
               <li>
                 <a href="#invitation-maker">Wedding Invitation Maker</a>
               </li>
-              {/* <li><a href="#card-designs">Wedding Card Designs</a></li>
-                            <li><a href="#save-the-date">Save the Date Templates</a></li>
-                            <li><a href="#invitation-video">Invitation Vid</a></li> */}
             </ul>
           </div>
         </div>

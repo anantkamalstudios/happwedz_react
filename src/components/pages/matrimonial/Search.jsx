@@ -154,15 +154,26 @@ const Search = () => {
         <div className="search-form">
           {searchType === "profileId" ? (
             <div className="profile-id-search">
-              <div className="input-container">
+              <div
+                className="input-row"
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: "12px",
+                }}
+              >
                 <input
                   type="text"
                   placeholder="Enter Profile ID"
                   className="profile-input"
                   value={profileId}
                   onChange={(e) => setProfileId(e.target.value)}
+                  style={{ flex: "1 1 auto" }}
                 />
-                <button className="search-btn">Find Profile</button>
+                <button className="search-btn" style={{ whiteSpace: "nowrap" }}>
+                  Find Profile
+                </button>
               </div>
             </div>
           ) : (

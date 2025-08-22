@@ -384,7 +384,7 @@ const MyWedding = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="row mt-4">
+        {/* <div className="row mt-4">
           <div className="col-12">
             <div className="quick-actions-card">
               <h5 className="quick-actions-title">Quick Actions</h5>
@@ -408,7 +408,7 @@ const MyWedding = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -6,46 +6,70 @@ import ListView from "../layouts/Main/ListView";
 import GridView from "../layouts/Main/GridView";
 import MapView from "../layouts/Main/MapView";
 import { subVenuesData } from "../../data/subVenuesData";
+import { subVendorsData } from "../../data/subVendorsData";
+import { twoSouls } from "../../data/twoSouls";
 import ViewSwitcher from "../layouts/Main/ViewSwitcher";
 import MainSearch from "../layouts/Main/MainSearch";
 import PricingModal from "../layouts/PricingModal";
+import Photos from "../layouts/photography/Photos";
 
 const toTitleCase = (str) =>
   str.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
 const SubSection = () => {
   const { section, slug } = useParams();
+  console.log(section);
   const title = slug ? toTitleCase(slug) : "";
   const [show, setShow] = useState(false);
+  const [view, setView] = useState("list");
+
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-  const [view, setView] = useState("list");
+
+  let dataToSend = subVenuesData;
+  if (section === "vendors") {
+    dataToSend = subVendorsData;
+  } else if (section === "two-soul") {
+    dataToSend = twoSouls;
+  }
 
   return (
     <div className="container-fluid">
       {section === "venues" && <VenuesSearch title={title} />}
       {section === "vendors" && <VendorsSearch title={title} />}
-      {section === "photography" && <MainSearch title={title} />}
-      {section === "twosoul" && <MainSearch title={title} />}
-      <ViewSwitcher view={view} setView={setView} />
-      {view === "list" && (
-        <ListView
-          subVenuesData={subVenuesData}
-          section={section}
-          handleShow={handleShow}
-        />
+      {(section === "photography" || section === "two-soul") && (
+        <MainSearch title={title} />
       )}
-      {view === "images" && (
-        <GridView
-          subVenuesData={subVenuesData}
-          section={section}
-          handleShow={handleShow}
-        />
+
+      {section === "photography" ? (
+        <Photos title={title} />
+      ) : (
+        <>
+          <ViewSwitcher view={view} setView={setView} />
+
+          {view === "list" && (
+            <ListView
+              subVenuesData={dataToSend}
+              section={section}
+              handleShow={handleShow}
+            />
+          )}
+
+          {view === "images" && (
+            <GridView
+              subVenuesData={dataToSend}
+              section={section}
+              handleShow={handleShow}
+            />
+          )}
+
+          {view === "map" && (
+            <MapView subVenuesData={dataToSend} section={section} />
+          )}
+
+          <PricingModal show={show} handleClose={handleClose} />
+        </>
       )}
-      {view === "map" && (
-        <MapView subVenuesData={subVenuesData} section={section} />
-      )}
-      <PricingModal show={show} handleClose={handleClose} />
     </div>
   );
 };

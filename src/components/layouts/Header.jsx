@@ -746,7 +746,7 @@ const Header = () => {
                           <Link
                             className="nav-link dropdown-toggle text-white"
                             to="#"
-                            state={{ title: "twosoul" }}
+                            state={{ title: "two-soul" }}
                             id="photoDropdown"
                             role="button"
                           >

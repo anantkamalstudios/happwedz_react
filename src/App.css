@@ -284,8 +284,6 @@ body {
   border: none;
 }
 
-/* login  */
-/* * Login Form */
 */ .wedding-login-container {
   background: linear-gradient(135deg, #fdf5f8 0%, #f8f4fa 100%);
   font-family: "Poppins", sans-serif;
@@ -667,11 +665,9 @@ body {
 }
 
 .pink-gradient-bg {
-  background: #b4245d;
+  background: #ed1173;
   color: #fff;
   padding: 1rem;
-  /* Adjust spacing */
-  /* Rounded corners if needed */
 }
 
 .top-venues-search {
@@ -1052,77 +1048,100 @@ body {
   margin-bottom: 30px;
 }
 
-.filter-toggle-btn {
-  background-color: var(--bs-primary);
-  color: white;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
-  margin-bottom: 15px;
-}
-
 .filter-sidebar {
+  background: #fafbfc;
+  border-radius: 14px;
+  box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.06);
+  padding: 24px 18px;
+}
+
+/* Section header */
+.section-header {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #222;
+  cursor: pointer;
+  margin-bottom: 8px;
+  padding: 4px 0;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+}
+.section-header:hover {
+  color: #e83581;
+}
+
+/* Divider between sections */
+.filter-section:not(:last-child) {
+  border-bottom: 1px solid #eee;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+}
+
+/* Custom checkbox */
+.custom-checkbox-label {
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: #333;
+  margin-bottom: 8px;
+  cursor: pointer;
+  gap: 8px;
+  padding-left: 2px;
+  user-select: none;
+}
+
+.custom-checkbox {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #bbb;
+  border-radius: 4px;
   background: #fff;
-  padding: 20px;
-  overflow-y: auto;
-  transition: all 0.3s ease;
+  margin-right: 6px;
+  position: relative;
+  transition: border-color 0.2s;
 }
 
-.clear-filters-wrapper {
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 0.5rem;
+.custom-checkbox:checked {
+  border-color: #e83581;
+  background: #e83581;
 }
 
-.clear-filters-wrapper button.clear-btn-filter {
-  background-color: #e83e8ce6;
-  font-weight: 500;
-  font-size: 0.85rem;
-  color: white;
-  transition: all 0.2s ease;
+.custom-checkbox:checked + .checkmark:after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
-.clear-filters-wrapper button.clear-btn-filter:hover {
-  background-color: #e83e8ce6;
-  border-color: #ffffffe6;
-  color: #fff;
+.checkmark {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  display: inline-block;
 }
 
+.custom-checkbox-label:hover .custom-checkbox {
+  border-color: #e83581;
+}
+
+/* Responsive adjustments */
 @media (max-width: 991px) {
   .filter-sidebar {
-    position: fixed;
-    top: 0;
-    left: -300px;
-    width: 210px;
-    height: 100vh;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+    padding: 18px 8px;
   }
-
-  .filter-sidebar.show {
-    left: 0;
+  .section-header {
+    font-size: 0.98rem;
   }
-
-  .sidebar-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-  }
-}
-
-@media (min-width: 992px) {
-  .filter-sidebar {
-    position: sticky;
-    top: 20px;
-  }
-
-  .venue-filter-container {
-    width: 250px;
-    flex: 0 0 250px;
+  .custom-checkbox-label {
+    font-size: 0.93rem;
   }
 }
 
@@ -1471,10 +1490,7 @@ body {
   .search-btn .btn-text {
     display: none;
   }
-
-  .search-btn::after {
-    content: "🔍";
-  }
+ 
 }
 
 /* latest List view */
@@ -4861,7 +4877,7 @@ input:checked + .slider:before {
 }
 
 .btn-explore {
-  background: #e91e63;
+  background: #ed1173;
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -4987,7 +5003,7 @@ input:checked + .slider:before {
 }
 
 .task-item.completed .task-checkbox {
-  background: #e91e63;
+  background: #ed1173;
   border-color: #e91e63;
   color: white;
 }
@@ -5088,7 +5104,7 @@ input:checked + .slider:before {
 }
 
 .btn-action {
-  background: #e91e63;
+  background: #ed1173;
   color: white;
   border: none;
   padding: 0.625rem 1.25rem;
@@ -5318,7 +5334,7 @@ input:checked + .slider:before {
 .wc-card-header {
   border-radius: 8px 8px 0 0 !important;
   padding: 12px 15px;
-  background-color: #d81b60 !important;
+  background-color: #ed1173 !important;
 }
 
 /* Sidebar styles */
@@ -5408,7 +5424,7 @@ input:checked + .slider:before {
 }
 
 .btn-primary {
-  background-color: #d81b60;
+  background-color: var(--primary-pink);
   border-color: #d81b60;
 }
 
@@ -5587,7 +5603,7 @@ input:checked + .slider:before {
 }
 
 .btn-explore {
-  background: #e91e63;
+  background: #ed1173;
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -5713,7 +5729,7 @@ input:checked + .slider:before {
 }
 
 .task-item.completed .task-checkbox {
-  background: #e91e63;
+  background: #ed1173;
   border-color: #e91e63;
   color: white;
 }
@@ -5814,7 +5830,7 @@ input:checked + .slider:before {
 }
 
 .btn-action {
-  background: #e91e63;
+  background: #ed1173;
   color: white;
   border: none;
   padding: 0.625rem 1.25rem;
@@ -6039,7 +6055,7 @@ input:checked + .slider:before {
 
 .wc-card-header {
   border-bottom: 1px solid #ffe6ee;
-  background-color: #ff85a2 !important;
+  background-color: #ed1173 !important;
   color: white !important;
   font-weight: 600;
   border-radius: 12px 12px 0 0 !important;
@@ -10897,7 +10913,7 @@ input:checked + .slider:before {
 }
 
 .wc-tab-count {
-  background: #e91e63;
+  background: #ed1173;
   color: white;
   padding: 0.25rem 0.5rem;
   border-radius: 12px;
@@ -11107,7 +11123,7 @@ input:checked + .slider:before {
 }
 
 .wc-customize-btn:hover {
-  background: #e91e63;
+  background: #ed1173;
   color: white;
 }
 
@@ -11273,7 +11289,7 @@ input:checked + .slider:before {
 .wedding-legal-container {
   max-width: 100%;
   margin: 0 auto;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: "Helvetica Neue", Arial, sans-serif;
   color: #333;
   line-height: 1.6;
 }
@@ -11569,7 +11585,7 @@ input:checked + .slider:before {
   .wedding-legal-content {
     flex-direction: column;
   }
-  
+
   .wedding-legal-sidebar {
     flex: 1;
     width: 100%;
@@ -11581,18 +11597,18 @@ input:checked + .slider:before {
     flex-direction: column;
     gap: 15px;
   }
-  
+
   .wedding-legal-navlinks {
     flex-wrap: wrap;
     justify-content: center;
     gap: 15px;
   }
-  
+
   .wedding-legal-footercontent {
     flex-direction: column;
     gap: 30px;
   }
-  
+
   .wedding-legal-section {
     padding: 20px;
   }
@@ -11602,16 +11618,16 @@ input:checked + .slider:before {
   .wedding-legal-herotitle {
     font-size: 28px;
   }
-  
+
   .wedding-legal-herosubtitle {
     font-size: 16px;
   }
-  
+
   .wedding-legal-auth {
     flex-direction: column;
     width: 100%;
   }
-  
+
   .wedding-legal-login,
   .wedding-legal-signup {
     width: 100%;
@@ -11621,7 +11637,7 @@ input:checked + .slider:before {
 .policy-container {
   max-width: 100%;
   margin: 0 auto;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: "Helvetica Neue", Arial, sans-serif;
   color: #333;
   line-height: 1.6;
 }
@@ -11879,18 +11895,18 @@ input:checked + .slider:before {
     flex-direction: column;
     gap: 15px;
   }
-  
+
   .policy-navlinks {
     flex-wrap: wrap;
     justify-content: center;
     gap: 15px;
   }
-  
+
   .policy-footercontent {
     flex-direction: column;
     gap: 30px;
   }
-  
+
   .policy-main {
     padding: 20px;
   }
@@ -11900,25 +11916,25 @@ input:checked + .slider:before {
   .policy-herotitle {
     font-size: 28px;
   }
-  
+
   .policy-herosubtitle {
     font-size: 16px;
   }
-  
+
   .policy-auth {
     flex-direction: column;
     width: 100%;
   }
-  
+
   .policy-login,
   .policy-signup {
     width: 100%;
   }
-  
+
   .policy-sectiontitle {
     font-size: 24px;
   }
-  
+
   .policy-subtitle {
     font-size: 18px;
   }
