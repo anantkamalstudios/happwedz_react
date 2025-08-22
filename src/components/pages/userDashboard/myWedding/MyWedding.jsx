@@ -173,7 +173,14 @@ const MyWedding = () => {
             <h3 className="section-title">Find & Book Your Wedding Vendors</h3>
             <div className="row">
               {vendorCategories.map((category, index) => (
-                <div key={index} className="col-lg-4 col-md-6 mb-3">
+                <div
+                  key={index}
+                  className="col-lg-4 col-md-6 mb-3"
+                  onClick={() => {
+                    window.location.href = `/vendors/${toSlug(category.title)}`;
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
                   <div className="vendor-card">
                     <div className="vendor-icon">{category.icon}</div>
                     <div className="vendor-content">
@@ -186,8 +193,8 @@ const MyWedding = () => {
                     <div className="vendor-action">
                       <Link
                         to={`/vendors/${toSlug(category.title)}`}
-                        state={{ title: category }}
                         className="btn-explore"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         Explore
                       </Link>
