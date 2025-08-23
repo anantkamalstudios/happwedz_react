@@ -156,7 +156,7 @@ const MyWedding = () => {
     <div className="wedding-dashboard">
       <div className="container-fluid py-4">
         {/* Header Section */}
-        <div className="row mb-4">
+        {/* <div className="row mb-4">
           <div className="col-12">
             <div className="dashboard-header">
               <h1 className="dashboard-title">Your Wedding Planning Journey</h1>
@@ -165,7 +165,7 @@ const MyWedding = () => {
               </p>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Vendor Categories Grid */}
         <div className="row mb-5">

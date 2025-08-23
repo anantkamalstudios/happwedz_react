@@ -51,7 +51,6 @@ const MatrimonialHeader = () => {
     { id: 6, name: "Arjun & Pooja", date: "Jun 2022", img: "couple6" },
   ];
 
-  // Membership plans
   const plans = [
     {
       id: 1,

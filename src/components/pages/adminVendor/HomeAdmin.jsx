@@ -283,58 +283,6 @@ const HomeAdmin = () => {
     },
   };
 
-  // Status badge component
-  const StatusBadge = ({ status }) => {
-    let variant;
-    switch (status.toLowerCase()) {
-      case "new":
-        variant = "primary";
-        break;
-      case "contacted":
-        variant = "info";
-        break;
-      case "follow up":
-        variant = "warning";
-        break;
-      case "converted":
-        variant = "success";
-        break;
-      case "lost":
-        variant = "danger";
-        break;
-      default:
-        variant = "secondary";
-    }
-    return (
-      <Badge bg={variant} className="text-uppercase">
-        {status}
-      </Badge>
-    );
-  };
-
-  // Priority badge component
-  const PriorityBadge = ({ priority }) => {
-    let variant;
-    switch (priority.toLowerCase()) {
-      case "high":
-        variant = "danger";
-        break;
-      case "medium":
-        variant = "warning";
-        break;
-      case "low":
-        variant = "success";
-        break;
-      default:
-        variant = "secondary";
-    }
-    return (
-      <Badge bg={variant} className="text-uppercase">
-        {priority}
-      </Badge>
-    );
-  };
-
   return (
     <Container fluid className="leads-dashboard-page">
       <div className="page-header mb-4">

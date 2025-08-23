@@ -58,17 +58,16 @@ const UserDashboardNavbar = () => {
 
   return (
     <div className="tabs-container border-bottom py-2 px-3 mt-3">
-      <div className="d-flex gap-4 flex-nowrap">
+      <div className="d-flex gap-5 flex-nowrap justify-content-center">
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            className={`btn border-0 d-flex flex-column align-items-center p-0 ${
-              activeTab === tab.id ? "text-primary" : "text-dark"
-            }`}
+            className="btn border-0 d-flex flex-column align-items-center p-0"
             style={{
               background: "transparent",
               fontSize: "14px",
               minWidth: "70px",
+              color: activeTab === tab.id ? "#ed1173" : "#212529",
             }}
             onClick={() => handleTabClick(tab)}
           >

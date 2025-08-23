@@ -263,7 +263,7 @@ const MatrimonialRegistration = () => {
                     >
                       <FaUser style={{ marginRight: "8px" }} />
                       {getNameLabel()}{" "}
-                      <span style={{ color: "#d81b60" }}>*</span>
+                      <span style={{ color: "#ed1173" }}>*</span>
                     </label>
                     <div
                       style={{

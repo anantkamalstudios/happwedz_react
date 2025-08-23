@@ -270,7 +270,7 @@ export default function PromoForm() {
               <div className="form-actions">
                 <button
                   type="submit"
-                  className="btn-primary"
+                  className="btn-primary folder-item"
                   style={{
                     background:
                       "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)",
@@ -280,14 +280,19 @@ export default function PromoForm() {
                 </button>
                 <button
                   type="button"
-                  className="btn-secondary"
+                  className="btn-secondary folder-item"
                   onClick={resetForm}
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    textAlign: "center",
+                  }}
                 >
                   Reset
                 </button>
                 <button
                   type="button"
-                  className="btn-preview"
+                  className="btn-preview folder-item border"
                   onClick={() => alert("Preview opened")}
                 >
                   Preview
@@ -387,15 +392,22 @@ export default function PromoForm() {
 
                 <div className="preview-actions">
                   <button
-                    className="action-button apply-btn"
+                    className="btn-primary folder-item"
                     style={{
                       background:
                         "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)",
                     }}
                   >
-                    Apply Code
+                    Save Promotion
                   </button>
-                  <button className="action-button share-btn">
+                  <button
+                    className="action-button folder-item text-center"
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      textAlign: "center",
+                    }}
+                  >
                     Share Offer
                   </button>
                 </div>

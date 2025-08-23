@@ -66,7 +66,14 @@ const Navbar = () => {
 
             <div className={`nav-menu ${menuOpen ? "active" : ""}`}>
               <div className="nav-item">
-                <Link to="/">HappyWedz</Link>
+                <Link className="navbar-brand-logo" to="/">
+                  <img
+                    src="/images/logo.webp"
+                    alt="HappyWedz"
+                    height="30"
+                    className="mx-auto d-block"
+                  />
+                </Link>
               </div>
               <div className="nav-item">
                 <Link to="/matrimonial">Home</Link>

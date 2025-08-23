@@ -31,18 +31,18 @@ const Navbar = () => {
       label: "Enquiries",
       icon: <GoMail size={20} />,
     },
-    {
-      id: "reviews",
-      slug: "vendor-reviews",
-      label: "Reviews",
-      icon: <FaRegStar size={20} />,
-    },
     // {
-    //   id: "settings",
-    //   slug: "vendor-setting",
-    //   label: "Settings",
-    //   icon: <IoSettingsOutline size={20} />,
+    //   id: "reviews",
+    //   slug: "vendor-reviews",
+    //   label: "Reviews",
+    //   icon: <FaRegStar size={20} />,
     // },
+    {
+      id: "settings",
+      slug: "vendor-setting",
+      label: "Settings",
+      icon: <IoSettingsOutline size={20} />,
+    },
   ];
 
   useEffect(() => {

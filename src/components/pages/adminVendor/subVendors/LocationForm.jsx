@@ -116,7 +116,7 @@ const LocationForm = () => {
           </div>
         </div>
       )}
-      <button className="btn btn-danger mt-2">Submit</button>
+      <button className="btn btn-primary mt-2 folder-item">Submit</button>
     </div>
   );
 };
