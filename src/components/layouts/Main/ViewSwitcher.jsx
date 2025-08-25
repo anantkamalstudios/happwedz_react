@@ -8,25 +8,19 @@ const ViewSwitcher = ({ view, setView }) => {
         <div className="view-switcher">
           <button
             onClick={() => setView("list")}
-            className={
-              view === "list switch-btn" ? "active switch-btn" : "switch-btn"
-            }
+            className={view === "list" ? "switch-btn active" : "switch-btn"}
           >
             <FaList className="me-1" /> List
           </button>
           <button
             onClick={() => setView("images")}
-            className={
-              view === "images switch-btn" ? "active switch-btn" : " switch-btn"
-            }
+            className={view === "images" ? "switch-btn active" : "switch-btn"}
           >
             <FaTh className="me-1" /> Images
           </button>
           <button
             onClick={() => setView("map")}
-            className={
-              view === "map switch-btn" ? "active switch-btn" : " switch-btn"
-            }
+            className={view === "map" ? "switch-btn active" : "switch-btn"}
           >
             <FaMapMarkerAlt className="me-1" /> Map
           </button>

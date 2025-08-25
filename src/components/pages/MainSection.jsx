@@ -17,6 +17,7 @@ import BrideSlider from "../layouts/twoSoul/BrideSlider";
 import MainPhotages from "../layouts/twoSoul/MainPhotages";
 import PricingModal from "../layouts/PricingModal";
 import WeddingCardDesigns from "../layouts/eInvite/WeddingCardDesigns";
+import MainSearch from "../layouts/Main/MainSearch";
 
 const MainSection = () => {
   const { section } = useParams();
@@ -26,7 +27,7 @@ const MainSection = () => {
   if (section === "venues") {
     return (
       <>
-        <VendorsSearch />
+        <MainSearch />
         <MainByRegion />
         <FindMain />
         <MainHeroSection loc={"Panjab"} />
@@ -41,7 +42,7 @@ const MainSection = () => {
   if (section === "vendors") {
     return (
       <>
-        <VenuesSearch title="Wedding Vendor" />
+        <MainSearch title="Wedding Vendor" />
         <MainByRegion />
         <FindMain />
         <MainHeroSection loc={"Panjab"} />
@@ -56,7 +57,7 @@ const MainSection = () => {
   if (section === "photography") {
     return (
       <>
-        <VenuesSearch title="Photography" />
+        <MainSearch title="Photography" />
         {/* <MainByRegion /> */}
 
         <TopSlider onCategorySelect={setSelectedCategory} />
@@ -75,7 +76,7 @@ const MainSection = () => {
   if (section === "real-wedding") {
     return (
       <>
-        <VenuesSearch title="Real Wedding" />
+        <MainSearch title="Real Wedding" />
         <MainByRegion />
         <FindMain />
         <MainHeroSection loc={"Panjab"} />
@@ -90,7 +91,7 @@ const MainSection = () => {
   if (section === "e-invites") {
     return (
       <>
-        <VenuesSearch title="E Invites" />
+        <MainSearch title="E Invites" />
         {/* <MainByRegion /> */}
         <MainEInvites />
         {/* <FindMain /> */}
@@ -124,7 +125,7 @@ const MainSection = () => {
   if (section === "twosoul") {
     return (
       <>
-        <VenuesSearch title="Two Soul" />
+        <MainSearch title="Two Soul" />
         <MainByRegion />
         <GroomeSlider />
         <MainPhotages />
@@ -136,7 +137,7 @@ const MainSection = () => {
   if (section === "latest-real-weddings") {
     return (
       <>
-        <VenuesSearch title="latest Real Weddings" />
+        <MainSearch title="latest Real Weddings" />
         <MainByRegion />
         <FindMain />
         <MainHeroSection loc={"Panjab"} />
@@ -166,7 +167,7 @@ const MainSection = () => {
   if (section === "genie") {
     return (
       <>
-        <VenuesSearch title="Genie" />
+        <MainSearch title="Genie" />
         <PricingModal />
       </>
     );

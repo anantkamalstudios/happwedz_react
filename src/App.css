@@ -1,6 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
+
 :root {
   --primary-pink: #ed1173;
+  --primary-color: #ed1173;
   --light-pink: #fce4ec;
   --medium-pink: #f8bbd9;
   --dark-pink: #ad1457;
@@ -24,6 +27,7 @@
   --sidebar-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --sidebar-width: 280px;
   --sidebar-collapsed-width: 72px;
+  --rubik-font: "Rubik", sans-serif;
 }
 
 * {
@@ -206,6 +210,23 @@ body {
   perspective: 1000px;
 }
 
+.setting-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  background: #f9eef7;
+  font-size: 2.5rem;
+  color: #d8a1bd;
+  transition: all 0.3s ease;
+}
+
+.setting-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  background-color: #f8f9fa;
+  transition: transform 0.6s ease;
+  perspective: 1000px;
+}
+
 .tool-card:hover .tool-icon-img {
   transform: rotateY(360deg);
   transition: transform 0.6s ease;
@@ -220,6 +241,12 @@ body {
 }
 
 .tool-card:hover .icon-wrapper {
+  background: linear-gradient(135deg, #fa4df1 0%, #d8aca1 100%);
+  color: white;
+  transform: scale(1.1);
+}
+
+.tool-card:hover .setting-icon-wrapper {
   background: linear-gradient(135deg, #fa4df1 0%, #d8aca1 100%);
   color: white;
   transform: scale(1.1);
@@ -796,7 +823,6 @@ body {
   letter-spacing: 1px;
   position: relative;
 }
-
 .elegant-title::after {
   content: "";
   display: block;
@@ -1213,6 +1239,27 @@ body {
   color: black;
 }
 
+/* ViewSwitcher - pink active styles */
+.view-switcher .switch-btn {
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease,
+    box-shadow 180ms ease, transform 180ms ease;
+}
+.view-switcher .switch-btn.active {
+  background: #ed1173;
+  color: #fff;
+  border-color: #ed1173;
+  box-shadow: 0 6px 14px rgba(237, 17, 115, 0.28);
+}
+.view-switcher .switch-btn:not(.active):hover {
+  background: rgba(237, 17, 115, 0.08);
+  color: #ed1173;
+  border-color: rgba(237, 17, 115, 0.35);
+}
+.view-switcher .switch-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(237, 17, 115, 0.3);
+}
+
 /* Venues Grid */
 .venue-grid-page {
   font-family: "Poppins", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -1574,7 +1621,6 @@ body {
 .venue-card .text-dark {
   color: #374151 !important;
 }
-
 /* Details Button */
 .details-btn {
   background: #ffffff;
@@ -1589,7 +1635,6 @@ body {
   overflow: hidden;
   letter-spacing: 0.025em;
 }
-
 .details-btn::before {
   content: "";
   position: absolute;
@@ -1611,9 +1656,9 @@ body {
 }
 
 .details-btn:hover {
-  background: #1f2937;
+  background: #ed1173;
   color: #ffffff;
-  border-color: #1f2937;
+  border-color: #ffffff;
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(31, 41, 55, 0.15);
 }
@@ -2375,7 +2420,6 @@ body {
   margin-bottom: 6px;
   color: #222;
 }
-
 .invitation-info p {
   font-size: 14px;
   color: #666;
@@ -2387,7 +2431,6 @@ body {
   text-align: center;
   margin-top: 30px;
 }
-
 .view-all-button {
   background-color: white;
   color: #000;
@@ -3174,7 +3217,6 @@ body {
   font-weight: 500;
   padding: 6px 10px;
 }
-
 .progress {
   height: 10px;
   border-radius: 5px;
@@ -3185,7 +3227,6 @@ body {
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
-
 .tabs .nav-link {
   color: #6c757d;
   font-weight: 500;
@@ -3971,7 +4012,6 @@ body {
 .form-group {
   margin-bottom: 22px;
 }
-
 .form-row {
   display: flex;
   gap: 20px;
@@ -3982,7 +4022,6 @@ body {
   flex: 1;
   margin-bottom: 0;
 }
-
 label {
   display: block;
   margin-bottom: 8px;
@@ -4777,7 +4816,6 @@ input:checked + .slider:before {
   background-color: #f8f9fa;
   min-height: 100vh;
 }
-
 /* Header Styles */
 .dashboard-header {
   text-align: center;
@@ -5574,13 +5612,11 @@ input:checked + .slider:before {
   color: #2d3748;
   margin-bottom: 0.25rem;
 }
-
 .vendor-subtitle {
   font-size: 0.9rem;
   color: #718096;
   margin-bottom: 0.25rem;
 }
-
 .vendor-count {
   font-size: 0.8rem;
   color: #e91e63;
@@ -6373,13 +6409,11 @@ input:checked + .slider:before {
   font-size: 15px;
   margin-bottom: 15px;
 }
-
 .wgl-form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
 }
-
 .wgl-button-cancel {
   background-color: white;
   color: #555;
@@ -7173,12 +7207,10 @@ input:checked + .slider:before {
   padding: 8px 0;
   border-bottom: 1px solid #ffebee; /* Very light pink */
 }
-
 .wb-subcategory-name {
   flex: 1;
   font-size: 14px;
 }
-
 .wb-subcategory-details {
   display: flex;
   align-items: center;
@@ -7608,7 +7640,7 @@ input:checked + .slider:before {
 .reviews {
   /* max-width: 1200px; */
   margin: 0 auto;
-  padding: 2rem;
+  padding: 5px;
   font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, var(--light-pink) 0%, var(--white) 100%);
   border-radius: 16px;
@@ -7970,6 +8002,109 @@ input:checked + .slider:before {
   }
 }
 
+/* Aside font scope: use Rubik only for sidebars */
+.aside-rubik,
+.aside-rubik * {
+  font-family: var(--rubik-font) !important;
+}
+/* WeddingCategories - Elegant Card Grid (wcg) */
+.wcg-grid .wcg-card {
+  background: #fff;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 280ms ease, box-shadow 280ms ease;
+  cursor: pointer;
+}
+.wcg-grid .wcg-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.14);
+}
+.wcg-grid .wcg-image-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+}
+.wcg-grid .wcg-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 600ms ease;
+}
+/* Smooth pan instead of aggressive scale */
+.wcg-grid .wcg-card:hover .wcg-image {
+  transform: translate3d(0, -2%, 0) scale(1.015);
+}
+.wcg-grid .wcg-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.12) 0%,
+    rgba(0, 0, 0, 0.32) 75%,
+    rgba(0, 0, 0, 0.44) 100%
+  );
+  transition: background 280ms ease;
+}
+.wcg-grid .wcg-card:hover .wcg-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.18) 0%,
+    rgba(0, 0, 0, 0.4) 75%,
+    rgba(0, 0, 0, 0.52) 100%
+  );
+}
+.wcg-grid .wcg-heading {
+  color: #fff;
+  font-weight: 800;
+}
+.wcg-grid .wcg-count.badge {
+  background: #ffffff;
+  color: #1f2d3a;
+}
+.wcg-grid .wcg-content {
+  padding: 1rem 1rem;
+}
+@media (min-width: 768px) {
+  .wcg-grid .wcg-content {
+    padding: 1.25rem 1.5rem;
+  }
+}
+.wcg-grid .wcg-pills .badge {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #f8f9fa;
+  color: #6c757d;
+  font-weight: 500;
+  transition: color 200ms ease, background 200ms ease, border-color 200ms ease;
+}
+.wcg-grid .wcg-card:hover .wcg-pills .badge {
+  border-color: rgba(0, 0, 0, 0.14);
+  background: #ffffff;
+}
+.wcg-grid .wcg-actions .btn {
+  transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease,
+    color 200ms ease, border-color 200ms ease;
+}
+.wcg-grid .wcg-actions .btn-primary {
+  box-shadow: 0 6px 14px rgba(255, 105, 135, 0.25);
+}
+.wcg-grid .wcg-actions .btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(255, 105, 135, 0.35);
+}
+.wcg-grid .wcg-actions .btn-outline-primary:hover {
+  background: var(--bs-primary, #0d6efd);
+  color: #fff;
+}
+/* Subcategories reveal */
+.wcg-grid .wcg-subcats a.wedding-link {
+  color: #6c757d;
+  text-decoration: none;
+}
+.wcg-grid .wcg-subcats a.wedding-link:hover {
+  color: #0d6efd;
+  text-decoration: underline;
+}
 @media (max-width: 576px) {
   .reviews__filters .row {
     flex-direction: column;
@@ -8666,7 +8801,6 @@ input:checked + .slider:before {
 .apply-filters-btn:hover {
   background: #c53030;
 }
-
 .info-card {
   background: #fff;
   border-radius: 8px;
@@ -8680,7 +8814,6 @@ input:checked + .slider:before {
   color: #333;
   font-size: 18px;
 }
-
 .info-card p {
   color: #555;
   font-size: 14px;
@@ -8766,7 +8899,6 @@ input:checked + .slider:before {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   line-height: 1.6;
 }
-
 .matrimony-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -9469,7 +9601,6 @@ input:checked + .slider:before {
 .matrimony-edit-profile__cancel-btn {
   color: var(--mkp-error);
 }
-
 .matrimony-edit-profile__actions {
   display: flex;
   justify-content: flex-end;
@@ -9477,7 +9608,6 @@ input:checked + .slider:before {
   padding-top: 2rem;
   border-top: 1px solid var(--mkp-gray-200);
 }
-
 /* === MATRIMONIAL DASHBOARD === */
 .matrimonial-dashboard {
   background: var(--mkp-gray-50);
@@ -9562,7 +9692,6 @@ input:checked + .slider:before {
   transition: all 0.2s ease;
   border-left: 4px solid transparent;
 }
-
 .matrimonial-dashboard__sidebar-link:hover {
   background: var(--mkp-gray-50);
   color: var(--mkp-primary);
@@ -10262,7 +10391,6 @@ input:checked + .slider:before {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
 }
-
 @media (max-width: 768px) {
   .matrimony-page-title {
     font-size: 2rem;
@@ -10323,7 +10451,6 @@ input:checked + .slider:before {
     gap: 0.5rem;
   }
 }
-
 @media (max-width: 480px) {
   .matrimony-container {
     padding: 0.5rem;
@@ -11062,7 +11189,6 @@ input:checked + .slider:before {
 .wc-card-container:hover .wc-card-overlay {
   opacity: 1;
 }
-
 .wc-card-overlay-content {
   text-align: center;
   transform: translateY(20px);
@@ -11120,7 +11246,6 @@ input:checked + .slider:before {
   background: #ed1173;
   color: white;
 }
-
 .wc-card-heart {
   position: absolute;
   top: 1rem;
@@ -11855,7 +11980,6 @@ input:checked + .slider:before {
   display: flex;
   gap: 15px;
 }
-
 .policy-socialicon {
   width: 40px;
   height: 40px;
@@ -11905,7 +12029,6 @@ input:checked + .slider:before {
     padding: 20px;
   }
 }
-
 @media (max-width: 480px) {
   .policy-herotitle {
     font-size: 28px;
@@ -12015,6 +12138,18 @@ input:checked + .slider:before {
 }
 
 .icon-wrapper {
+  width: 100px;
+  height: 100px;
+  background-color: #ed1173;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  margin-right: 15px;
+}
+
+.setting-icon-wrapper {
   width: 40px;
   height: 40px;
   background-color: #ed1173;

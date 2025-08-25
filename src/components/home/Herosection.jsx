@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
-import herosection from "../../assets/Herosection.jpg";
+import herosection from "../../assets/Hero_2.jpg";
 import { categories, locations, popularSearches } from "../../data/herosection";
 
 const RotatingWordHeadline = () => {

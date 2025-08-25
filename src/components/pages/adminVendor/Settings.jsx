@@ -116,7 +116,7 @@ const Settings = () => {
               <Card className="settings-card">
                 <Card.Header>
                   <div className="d-flex align-items-center">
-                    <div className="icon-wrapper">
+                    <div className="setting-icon-wrapper">
                       <FiUser size={20} />
                     </div>
                     <h5 className="card-title mb-0 text-black">
@@ -189,7 +189,7 @@ const Settings = () => {
               <Card className="settings-card">
                 <Card.Header>
                   <div className="d-flex align-items-center">
-                    <div className="icon-wrapper">
+                    <div className="setting-icon-wrapper">
                       <FiBell size={20} />
                     </div>
                     <h5 className="card-title mb-0 text-black">
@@ -261,7 +261,7 @@ const Settings = () => {
               <Card className="settings-card">
                 <Card.Header>
                   <div className="d-flex align-items-center">
-                    <div className="icon-wrapper">
+                    <div className="setting-icon-wrapper">
                       <FiShield size={20} />
                     </div>
                     <h5 className="card-title mb-0 text-black">
@@ -329,7 +329,7 @@ const Settings = () => {
               <Card className="settings-card">
                 <Card.Header>
                   <div className="d-flex align-items-center">
-                    <div className="icon-wrapper">
+                    <div className="setting-icon-wrapper">
                       <FiClock size={20} />
                     </div>
                     <h5 className="card-title mb-0 text-black">
@@ -404,7 +404,7 @@ const Settings = () => {
               <Card className="settings-card">
                 <Card.Header>
                   <div className="d-flex align-items-center">
-                    <div className="icon-wrapper">
+                    <div className="setting-icon-wrapper">
                       <FiCreditCard size={20} />
                     </div>
                     <h5 className="card-title mb-0 text-black">
@@ -458,7 +458,7 @@ const Settings = () => {
               <Card className="settings-card">
                 <Card.Header>
                   <div className="d-flex align-items-center">
-                    <div className="icon-wrapper">
+                    <div className="setting-icon-wrapper">
                       <FiEye size={20} />
                     </div>
                     <h5 className="card-title mb-0 text-black">

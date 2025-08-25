@@ -131,7 +131,7 @@ const VendorDashboard = () => {
                     as={Link}
                     to={item.path}
                     className={`nav-link-main ${
-                      isActive(item.path) ? "active" : ""
+                      isActive(item.path) ? "primary-bg" : ""
                     }`}
                   >
                     <span className="nav-icon">{item.icon}</span>

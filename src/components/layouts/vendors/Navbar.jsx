@@ -64,12 +64,13 @@ const Navbar = () => {
           <button
             key={tab.id}
             className={`btn border-0 d-flex flex-column align-items-center p-0 ${
-              activeTab === tab.id ? "text-primary" : "text-dark"
+              activeTab === tab.id ? "active-tab" : ""
             }`}
             style={{
               background: "transparent",
               fontSize: "14px",
               minWidth: "70px",
+              color: activeTab === tab.id ? "var(--primary-color)" : "#2c3e50",
             }}
             onClick={() => handleTabClick(tab)}
           >
