@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { Heart, Play, Calendar, Star, Filter, Search } from "lucide-react";
+import CardEditor from "./CardEditor";
+import { useNavigate } from "react-router-dom";
 
 const WeddingCardDesigns = () => {
   const [activeTab, setActiveTab] = useState("wedding");
   const [selectedFilter, setSelectedFilter] = useState("all");
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const navigate = useNavigate();
 
-  // Wedding Card Designs Data
   const weddingCards = [
     {
       id: 1,
@@ -221,6 +224,64 @@ const WeddingCardDesigns = () => {
     );
   };
 
+  const handleEditTemplate = (template) => {
+    const editorUrl = `/editor?template=${encodeURIComponent(
+      JSON.stringify(template)
+    )}`;
+    navigate(editorUrl);
+  };
+
+  // const CardComponent = ({ item, type }) => (
+  //   <div className="card h-100 shadow-sm">
+  //     <div className="position-relative">
+  //       <img
+  //         src={item.image}
+  //         alt={item.name}
+  //         className="card-img-top"
+  //         style={{ height: "250px", objectFit: "cover" }}
+  //       />
+
+  //       {/* Overlay */}
+  //       <div className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center opacity-0 hover-opacity-100 bg-dark bg-opacity-50 transition-all">
+  //         <div className="text-center">
+  //           {type === "video" && (
+  //             <div className="mb-3">
+  //               <Play className="text-white" size={48} />
+  //             </div>
+  //           )}
+  //           <button className="btn btn-light btn-sm me-2 mb-2">
+  //             Quick Preview
+  //           </button>
+  //           <button
+  //             className="btn btn-primary btn-sm mb-2"
+  //             onClick={() => handleEditTemplate(item)}
+  //           >
+  //             Customize Now
+  //           </button>
+  //         </div>
+  //       </div>
+
+  //       {/* Heart Icon */}
+  //       <div className="position-absolute top-0 end-0 p-2">
+  //         <Heart className="text-pink-500 cursor-pointer" size={20} />
+  //       </div>
+  //     </div>
+
+  //     <div className="card-body">
+  //       <h5 className="card-title">{item.name}</h5>
+  //       <div className="d-flex align-items-center justify-content-between">
+  //         <div className="d-flex align-items-center">
+  //           <Star className="text-warning me-1" size={16} />
+  //           <span className="small text-muted">{item.rating}</span>
+  //         </div>
+  //         {type === "video" && (
+  //           <span className="badge bg-secondary">{item.duration}</span>
+  //         )}
+  //       </div>
+  //     </div>
+  //   </div>
+  // );
+
   const CardComponent = ({ item, type }) => (
     <div className="wc-card-container group">
       <div className="wc-card-image-wrapper">
@@ -233,7 +294,12 @@ const WeddingCardDesigns = () => {
               </div>
             )}
             <button className="wc-preview-btn">Quick Preview</button>
-            <button className="wc-customize-btn">Customize Now</button>
+            <button
+              className="wc-customize-btn"
+              onClick={() => handleEditTemplate(item)}
+            >
+              Customize Now
+            </button>
           </div>
         </div>
         <div className="wc-card-heart">
@@ -256,7 +322,7 @@ const WeddingCardDesigns = () => {
   );
 
   return (
-    <div className="wc-page-container">
+    <div className="min-vh-100" style={{ backgroundColor: "#f8f9fa" }}>
       {/* Header */}
       <header className="wc-header">
         <div className="wc-header-content">
@@ -266,91 +332,125 @@ const WeddingCardDesigns = () => {
           </p>
         </div>
       </header>
-
       {/* Navigation Tabs */}
-      <div className="wc-nav-section">
-        <div className="wc-container">
-          <nav className="wc-nav-tabs">
-            <button
-              className={`wc-tab ${
-                activeTab === "wedding" ? "wc-tab-active" : ""
-              }`}
-              onClick={() => setActiveTab("wedding")}
-            >
-              Wedding Cards
-              <span className="wc-tab-count">{weddingCards.length}</span>
-            </button>
-            <button
-              className={`wc-tab ${
-                activeTab === "video" ? "wc-tab-active" : ""
-              }`}
-              onClick={() => setActiveTab("video")}
-            >
-              Video Cards
-              <span className="wc-tab-count">{videoCards.length}</span>
-            </button>
-            <button
-              className={`wc-tab ${
-                activeTab === "savedate" ? "wc-tab-active" : ""
-              }`}
-              onClick={() => setActiveTab("savedate")}
-            >
-              Save the Date
-              <span className="wc-tab-count">{saveTheDateCards.length}</span>
-            </button>
-          </nav>
+      <div className="bg-white shadow-sm">
+        <div className="container">
+          <ul className="nav nav-pills nav-fill py-3">
+            <li className="nav-item">
+              <button
+                className={`nav-link ${
+                  activeTab === "wedding" ? "active primary-b" : ""
+                }`}
+                onClick={() => setActiveTab("wedding")}
+                style={
+                  activeTab === "wedding"
+                    ? { background: "var(--primary-color)", color: "#fff" }
+                    : {}
+                }
+              >
+                Wedding Cards
+                <span className="badge bg-secondary ms-2">
+                  {weddingCards.length}
+                </span>
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
+                className={`nav-link ${
+                  activeTab === "video" ? "active primary-b" : ""
+                }`}
+                onClick={() => setActiveTab("video")}
+                style={
+                  activeTab === "video"
+                    ? { background: "var(--primary-color)", color: "#fff" }
+                    : {}
+                }
+              >
+                Video Cards
+                <span className="badge bg-secondary ms-2">
+                  {videoCards.length}
+                </span>
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
+                className={`nav-link ${
+                  activeTab === "savedate" ? "active primary-b" : ""
+                }`}
+                onClick={() => setActiveTab("savedate")}
+                style={
+                  activeTab === "savedate"
+                    ? { background: "var(--primary-color)", color: "#fff" }
+                    : {}
+                }
+              >
+                Save the Date
+                <span className="badge bg-secondary ms-2">
+                  {saveTheDateCards.length}
+                </span>
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
-
       {/* Filters and Search */}
-      <div className="wc-filters-section">
-        <div className="wc-container">
-          <div className="wc-filters-wrapper">
-            <div className="wc-search-bar">
-              <Search className="wc-search-icon" />
-              <input
-                type="text"
-                placeholder="Search designs..."
-                className="wc-search-input"
-              />
+      <div className="bg-light py-3">
+        <div className="container">
+          <div className="row align-items-center">
+            <div className="col-md-6">
+              <div className="input-group">
+                <span className="input-group-text">
+                  <Search size={16} />
+                </span>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search designs..."
+                />
+              </div>
             </div>
-            <div className="wc-filters">
-              <Filter className="w-5 h-5 text-gray-500" />
-              <select
-                value={selectedFilter}
-                onChange={(e) => setSelectedFilter(e.target.value)}
-                className="wc-filter-select"
-              >
-                <option value="all">All Themes</option>
-                <option value="traditional">Traditional</option>
-                <option value="modern">Modern</option>
-                <option value="floral">Floral</option>
-                <option value="romantic">Romantic</option>
-                <option value="vintage">Vintage</option>
-                <option value="elegant">Elegant</option>
-              </select>
+            <div className="col-md-6">
+              <div className="input-group">
+                <span className="input-group-text">
+                  <Filter size={16} />
+                </span>
+                <select
+                  className="form-select"
+                  value={selectedFilter}
+                  onChange={(e) => setSelectedFilter(e.target.value)}
+                >
+                  <option value="all">All Themes</option>
+                  <option value="traditional">Traditional</option>
+                  <option value="modern">Modern</option>
+                  <option value="floral">Floral</option>
+                  <option value="romantic">Romantic</option>
+                  <option value="vintage">Vintage</option>
+                  <option value="elegant">Elegant</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
       </div>
-
       {/* Cards Grid */}
-      <main className="wc-main-content">
-        <div className="wc-container">
-          <div className="wc-section-header">
-            <h2 className="wc-section-title">
+      <main className="py-5">
+        <div className="container">
+          <div className="text-center mb-5">
+            <h2 className="h3">
               {activeTab === "wedding" && "Wedding Card Designs"}
               {activeTab === "video" && "Video Invitation Templates"}
               {activeTab === "savedate" && "Save the Date Templates"}
             </h2>
-            <p className="wc-section-subtitle">
+            <p className="text-muted">
               Choose from our beautiful collection of {activeTab} templates
             </p>
           </div>
 
-          <div className="wc-cards-grid">
+          <div className="row g-4">
             {getFilteredData().map((item) => (
-              <CardComponent key={item.id} item={item} type={activeTab} />
+              <div key={item.id} className="col-lg-4 col-md-6">
+                <CardComponent item={item} type={activeTab} />
+              </div>
             ))}
           </div>
         </div>

@@ -51,6 +51,10 @@ body {
   background-color: var(--primary-color);
 }
 
+.primary-b {
+  background: var(--primary-color);
+}
+
 .primary-text {
   color: var(--primary-color);
 }
@@ -11404,6 +11408,8 @@ input:checked + .slider:before {
 .wc-tab-active .wc-tab-count {
   background: #c2185b;
 }
+/* End Einvite section */
+
 /* WeddingLegalTerms.css */
 .wedding-legal-container {
   max-width: 100%;

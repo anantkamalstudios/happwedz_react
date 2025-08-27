@@ -28,6 +28,7 @@ import EditProfile from "./components/pages/matrimonial/dashboard/EditProfile";
 import ForgotPassword from "./components/auth/ForgotPassword";
 import TermsCondition from "./components/pages/TermsCondition";
 import CancellationPolicy from "./components/pages/CancellationPolicy";
+import CardEditorPage from "./components/CardEditorPage";
 // import DashboardLayout from "./components/pages/matrimonial/dashboard/DashboardLayout";
 
 function App() {
@@ -43,8 +44,8 @@ function App() {
         <Route path="/vendor-login" element={<VendorLogin />} />
         <Route path="/vendor-register" element={<VendorRegister />} />
         <Route path="/user-forgot-password" element={<ForgotPassword />} />
-         <Route path="/terms" element={<TermsCondition/>} />
-         <Route path="/cancellation" element={<CancellationPolicy/>} />
+        <Route path="/terms" element={<TermsCondition />} />
+        <Route path="/cancellation" element={<CancellationPolicy />} />
         <Route
           path="/vendor-dashboard"
           element={<Navigate to="/vendor-dashboard/vendor-home" />}
@@ -52,6 +53,9 @@ function App() {
         <Route path="/vendor-dashboard/:slug" element={<Main />} />
         <Route path="/user-dashboard/:slug" element={<UserDashboardMain />} />
         <Route path="/user-dashboard" element={<UserDashboardMain />} />
+
+        <Route path="/editor" element={<CardEditorPage />} />
+        <Route path="/editor/:templateId" element={<CardEditorPage />} />
       </Route>
 
       <Route element={<MatrimonialLayout />}>
