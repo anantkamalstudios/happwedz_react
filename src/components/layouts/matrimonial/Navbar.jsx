@@ -1,4 +1,5 @@
 // src/components/pages/matrimonial/home/MatrimonialHome.jsx
+import { FcGoogle } from "react-icons/fc";
 import React, { useState, useEffect } from "react";
 import { FiUser, FiLock, FiChevronDown, FiChevronRight } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
@@ -56,7 +57,9 @@ const Navbar = () => {
 
             <div className="nav-menu">
               <div className="nav-item">
-                <Link to="/">HappyWedz</Link>
+                <Link className="navbar-brand" to="/">
+                  <img src="/images/logo.webp" alt="HappyWedz" height="40" />
+                </Link>
               </div>
               <div className="nav-item">
                 <Link to="/matrimonial">Home</Link>
@@ -286,8 +289,26 @@ const Navbar = () => {
                 >
                   Login
                 </button>
+
+                {/* Added divider and Google sign-in */}
+                <div className="or-divider">or</div>
+                <button
+                  className="google-login-btn"
+                  onClick={() => {
+                    /* Add Google login logic */
+                  }}
+                >
+                  <FcGoogle size={18} style={{ marginRight: "10px" }} />
+                  Sign in with Google
+                </button>
               </div>
               <div className="modal-footer">
+                <p className="create-account-link">
+                  Don't have an account?{" "}
+                  <Link to="/matrimonial-register" onClick={toggleLogin}>
+                    Create new account
+                  </Link>
+                </p>
                 <p>
                   By logging in, you agree to our{" "}
                   <a href="/">Terms & Conditions</a> and{" "}

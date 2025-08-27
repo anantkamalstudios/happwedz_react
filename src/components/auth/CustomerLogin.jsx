@@ -118,10 +118,10 @@ const CustomerLogin = () => {
                 className="text-secondary"
               />
               <Link
-                to="user-forgot-password"
                 className="text-decoration-none wedding-link"
+                to="/user-forgot-password"
               >
-                Forgot password?
+                Forgot Password?
               </Link>
             </div>
 
