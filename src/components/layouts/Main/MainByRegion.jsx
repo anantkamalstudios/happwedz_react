@@ -1,10 +1,18 @@
 import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
+import { useNavigate } from "react-router-dom";
 import "swiper/css";
-import "swiper/css/navigation";
 import regions from "../../../data/regions";
+
 const MainByRegion = () => {
+  const navigate = useNavigate();
+
+  const handleRegionClick = (regionName) => {
+    const slug = regionName.toLowerCase().replace(/\s+/g, "-");
+    navigate(`/venues/${slug}`);
+  };
+
   return (
     <div className="venue-region-section px-4 my-5">
       <h3 className="fw-bold mb-4">Venues by region</h3>
@@ -13,7 +21,6 @@ const MainByRegion = () => {
         modules={[Navigation, Autoplay]}
         spaceBetween={8}
         slidesPerView={6.2}
-        navigation
         autoplay={{
           delay: 3000,
           disableOnInteraction: false,
@@ -29,7 +36,11 @@ const MainByRegion = () => {
       >
         {regions.map((region) => (
           <SwiperSlide key={region.id}>
-            <div className="text-center region-slide-card">
+            <div
+              className="text-center region-slide-card cursor-pointer"
+              onClick={() => handleRegionClick(region.name)}
+              style={{ cursor: "pointer" }}
+            >
               <div className="region-slide-card">
                 <div className="region-img-wrapper mb-2">
                   <img

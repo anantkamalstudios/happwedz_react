@@ -156,7 +156,7 @@ const MyWedding = () => {
     <div className="wedding-dashboard">
       <div className="container-fluid py-4">
         {/* Header Section */}
-        <div className="row mb-4">
+        {/* <div className="row mb-4">
           <div className="col-12">
             <div className="dashboard-header">
               <h1 className="dashboard-title">Your Wedding Planning Journey</h1>
@@ -165,7 +165,7 @@ const MyWedding = () => {
               </p>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Vendor Categories Grid */}
         <div className="row mb-5">
@@ -173,7 +173,14 @@ const MyWedding = () => {
             <h3 className="section-title">Find & Book Your Wedding Vendors</h3>
             <div className="row">
               {vendorCategories.map((category, index) => (
-                <div key={index} className="col-lg-4 col-md-6 mb-3">
+                <div
+                  key={index}
+                  className="col-lg-4 col-md-6 mb-3"
+                  onClick={() => {
+                    window.location.href = `/vendors/${toSlug(category.title)}`;
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
                   <div className="vendor-card">
                     <div className="vendor-icon">{category.icon}</div>
                     <div className="vendor-content">
@@ -186,8 +193,8 @@ const MyWedding = () => {
                     <div className="vendor-action">
                       <Link
                         to={`/vendors/${toSlug(category.title)}`}
-                        state={{ title: category }}
                         className="btn-explore"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         Explore
                       </Link>
@@ -377,7 +384,7 @@ const MyWedding = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="row mt-4">
+        {/* <div className="row mt-4">
           <div className="col-12">
             <div className="quick-actions-card">
               <h5 className="quick-actions-title">Quick Actions</h5>
@@ -401,7 +408,7 @@ const MyWedding = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

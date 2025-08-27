@@ -13,7 +13,7 @@ const WeddingCardDesigns = () => {
       theme: "traditional",
       culture: "indian",
       image:
-        "https://via.placeholder.com/300x400/E91E63/FFFFFF?text=Royal+Elegance",
+        "https://image.wedmegood.com/e-invite-images/5921489f-e0f7-411a-8b19-a85f2c11d2e9-1.JPEG",
       rating: 4.8,
     },
     {
@@ -22,7 +22,7 @@ const WeddingCardDesigns = () => {
       theme: "modern",
       culture: "western",
       image:
-        "https://via.placeholder.com/300x400/F8BBD9/FFFFFF?text=Blush+Romance",
+        "https://image.wedmegood.com/e-invite-images/5921489f-e0f7-411a-8b19-a85f2c11d2e9-1.JPEG",
       rating: 4.9,
     },
     {
@@ -31,7 +31,7 @@ const WeddingCardDesigns = () => {
       theme: "floral",
       culture: "indian",
       image:
-        "https://via.placeholder.com/300x400/E91E63/FFFFFF?text=Pink+Petals",
+        "https://image.wedmegood.com/e-invite-images/5921489f-e0f7-411a-8b19-a85f2c11d2e9-1.JPEG",
       rating: 4.7,
     },
     {
@@ -40,7 +40,7 @@ const WeddingCardDesigns = () => {
       theme: "traditional",
       culture: "indian",
       image:
-        "https://via.placeholder.com/300x400/C2185B/FFFFFF?text=Crimson+Dreams",
+        "https://image.wedmegood.com/e-invite-images/5921489f-e0f7-411a-8b19-a85f2c11d2e9-1.JPEG",
       rating: 4.6,
     },
     {
@@ -49,7 +49,7 @@ const WeddingCardDesigns = () => {
       theme: "floral",
       culture: "western",
       image:
-        "https://via.placeholder.com/300x400/F8BBD9/FFFFFF?text=Rose+Garden",
+        "https://image.wedmegood.com/e-invite-images/5921489f-e0f7-411a-8b19-a85f2c11d2e9-1.JPEG",
       rating: 4.8,
     },
     {
@@ -58,7 +58,7 @@ const WeddingCardDesigns = () => {
       theme: "vintage",
       culture: "western",
       image:
-        "https://via.placeholder.com/300x400/E91E63/FFFFFF?text=Vintage+Pink",
+        "https://image.wedmegood.com/e-invite-images/96d644fc-5760-4732-b7e7-7283f9ffc903-1.JPEG",
       rating: 4.5,
     },
     {
@@ -67,7 +67,7 @@ const WeddingCardDesigns = () => {
       theme: "traditional",
       culture: "indian",
       image:
-        "https://via.placeholder.com/300x400/C2185B/FFFFFF?text=Maharani+Palace",
+        "https://image.wedmegood.com/e-invite-images/96d644fc-5760-4732-b7e7-7283f9ffc903-1.JPEG",
       rating: 4.9,
     },
     {
@@ -76,7 +76,7 @@ const WeddingCardDesigns = () => {
       theme: "floral",
       culture: "asian",
       image:
-        "https://via.placeholder.com/300x400/F8BBD9/FFFFFF?text=Cherry+Blossom",
+        "https://image.wedmegood.com/e-invite-images/96d644fc-5760-4732-b7e7-7283f9ffc903-1.JPEG",
       rating: 4.7,
     },
   ];
@@ -89,7 +89,7 @@ const WeddingCardDesigns = () => {
       theme: "romantic",
       duration: "2:30",
       image:
-        "https://via.placeholder.com/300x400/E91E63/FFFFFF?text=Romantic+Slideshow",
+        "https://image.wedmegood.com/e-invite-images/5b8ae9dc-c18b-4712-a2b7-b112f081acac-Love_Meadows.JPEG",
       rating: 4.8,
     },
     {
@@ -98,7 +98,7 @@ const WeddingCardDesigns = () => {
       theme: "animated",
       duration: "1:45",
       image:
-        "https://via.placeholder.com/300x400/F8BBD9/FFFFFF?text=Love+Story+Animation",
+        "https://image.wedmegood.com/e-invite-images/5b8ae9dc-c18b-4712-a2b7-b112f081acac-Love_Meadows.JPEG",
       rating: 4.9,
     },
     {
@@ -107,7 +107,7 @@ const WeddingCardDesigns = () => {
       theme: "elegant",
       duration: "2:00",
       image:
-        "https://via.placeholder.com/300x400/C2185B/FFFFFF?text=Pink+Elegance+Video",
+        "https://image.wedmegood.com/e-invite-images/5b8ae9dc-c18b-4712-a2b7-b112f081acac-Love_Meadows.JPEG",
       rating: 4.7,
     },
     {
@@ -116,7 +116,7 @@ const WeddingCardDesigns = () => {
       theme: "bollywood",
       duration: "3:00",
       image:
-        "https://via.placeholder.com/300x400/E91E63/FFFFFF?text=Bollywood+Romance",
+        "https://image.wedmegood.com/e-invite-images/5b8ae9dc-c18b-4712-a2b7-b112f081acac-Love_Meadows.JPEG",
       rating: 4.6,
     },
     {
@@ -125,7 +125,7 @@ const WeddingCardDesigns = () => {
       theme: "minimalist",
       duration: "1:30",
       image:
-        "https://via.placeholder.com/300x400/F8BBD9/FFFFFF?text=Minimalist+Motion",
+        "https://image.wedmegood.com/e-invite-images/5b8ae9dc-c18b-4712-a2b7-b112f081acac-Love_Meadows.JPEG",
       rating: 4.8,
     },
     {
@@ -134,7 +134,7 @@ const WeddingCardDesigns = () => {
       theme: "floral",
       duration: "2:15",
       image:
-        "https://via.placeholder.com/300x400/C2185B/FFFFFF?text=Floral+Fantasy",
+        "https://image.wedmegood.com/e-invite-images/5b8ae9dc-c18b-4712-a2b7-b112f081acac-Love_Meadows.JPEG",
       rating: 4.5,
     },
   ];
@@ -147,7 +147,7 @@ const WeddingCardDesigns = () => {
       theme: "modern",
       style: "card",
       image:
-        "https://via.placeholder.com/300x400/E91E63/FFFFFF?text=Pink+Announcement",
+        "https://image.wedmegood.com/e-invite-images/1f0581db-53fd-4b8d-bc42-58e7dcfbd4d9-Artboard_2.JPEG",
       rating: 4.8,
     },
     {
@@ -156,7 +156,7 @@ const WeddingCardDesigns = () => {
       theme: "floral",
       style: "postcard",
       image:
-        "https://via.placeholder.com/300x400/F8BBD9/FFFFFF?text=Floral+Notice",
+        "https://image.wedmegood.com/e-invite-images/1f0581db-53fd-4b8d-bc42-58e7dcfbd4d9-Artboard_2.JPEG",
       rating: 4.9,
     },
     {
@@ -165,7 +165,7 @@ const WeddingCardDesigns = () => {
       theme: "elegant",
       style: "calendar",
       image:
-        "https://via.placeholder.com/300x400/C2185B/FFFFFF?text=Elegant+Calendar",
+        "https://image.wedmegood.com/e-invite-images/1f0581db-53fd-4b8d-bc42-58e7dcfbd4d9-Artboard_2.JPEG",
       rating: 4.7,
     },
     {
@@ -174,7 +174,7 @@ const WeddingCardDesigns = () => {
       theme: "romantic",
       style: "card",
       image:
-        "https://via.placeholder.com/300x400/E91E63/FFFFFF?text=Rose+Reminder",
+        "https://image.wedmegood.com/e-invite-images/1f0581db-53fd-4b8d-bc42-58e7dcfbd4d9-Artboard_2.JPEG",
       rating: 4.6,
     },
     {
@@ -183,7 +183,7 @@ const WeddingCardDesigns = () => {
       theme: "vintage",
       style: "postcard",
       image:
-        "https://via.placeholder.com/300x400/F8BBD9/FFFFFF?text=Vintage+Save",
+        "https://image.wedmegood.com/e-invite-images/1f0581db-53fd-4b8d-bc42-58e7dcfbd4d9-Artboard_2.JPEG",
       rating: 4.8,
     },
     {
@@ -192,7 +192,7 @@ const WeddingCardDesigns = () => {
       theme: "dreamy",
       style: "card",
       image:
-        "https://via.placeholder.com/300x400/C2185B/FFFFFF?text=Dreamy+Date",
+        "https://image.wedmegood.com/e-invite-images/1f0581db-53fd-4b8d-bc42-58e7dcfbd4d9-Artboard_2.JPEG",
       rating: 4.5,
     },
   ];

@@ -75,7 +75,7 @@ const VideoGallery = () => {
       <div className="card shadow-lg border-0 rounded-3 overflow-hidden">
         <div className="card-body p-4 p-md-5">
           <h3 className="mb-4 text-center text-gradient">
-            <span className="text-primary">
+            <span className="primary-text">
               Upload your best videos to showcase your work
             </span>
           </h3>

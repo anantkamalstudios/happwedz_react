@@ -26,6 +26,8 @@ import UserDashboardMain from "./components/pages/userDashboard/UserDashboardMai
 import MatrimonialDashboard from "./components/pages/matrimonial/dashboard/MatrimonialDashboard";
 import EditProfile from "./components/pages/matrimonial/dashboard/EditProfile";
 import ForgotPassword from "./components/auth/ForgotPassword";
+import TermsCondition from "./components/pages/TermsCondition";
+import CancellationPolicy from "./components/pages/CancellationPolicy";
 // import DashboardLayout from "./components/pages/matrimonial/dashboard/DashboardLayout";
 
 function App() {
@@ -41,7 +43,8 @@ function App() {
         <Route path="/vendor-login" element={<VendorLogin />} />
         <Route path="/vendor-register" element={<VendorRegister />} />
         <Route path="/user-forgot-password" element={<ForgotPassword />} />
-
+         <Route path="/terms" element={<TermsCondition/>} />
+         <Route path="/cancellation" element={<CancellationPolicy/>} />
         <Route
           path="/vendor-dashboard"
           element={<Navigate to="/vendor-dashboard/vendor-home" />}

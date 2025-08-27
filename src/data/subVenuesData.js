@@ -6,13 +6,14 @@ export const subVenuesData = [
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
     location: "Hyderabad, Banjara Hills",
+    venueType: "Banquet Halls",
     rating: 4.8,
     reviews: 120,
     capacity: 1000,
     call: "Responds within 24 hours",
     price: "1.5 Lakh",
     image:
-      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+      "https://cdn0.weddingwire.in/vendor/1921/3_2/640/jpg/banquet_15_321921-170298256598167.webp",
   },
   {
     id: 2,
@@ -21,12 +22,13 @@ export const subVenuesData = [
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
     location: "Mumbai, Andheri West",
+    venueType: "Wedding Resorts",
     rating: 4.6,
     reviews: 98,
     capacity: 1000,
     price: "2 Lakh",
     image:
-      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+      "https://cdn0.weddingwire.in/vendor/4642/3_2/640/jpg/sterling-subuthi-spa-ayurveda-centre_15_464642-170902994948401.webp",
   },
   {
     id: 3,
@@ -35,12 +37,13 @@ export const subVenuesData = [
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
     location: "Delhi, Connaught Place",
+    venueType: "Banquet Halls",
     rating: 4.9,
     reviews: 150,
     capacity: 1000,
     price: "2.5 Lakh",
     image:
-      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+      "https://cdn0.weddingwire.in/vendor/4642/3_2/640/jpg/sterling-subuthi-spa-ayurveda-centre_15_464642-170902994948401.webp",
   },
   {
     id: 4,
@@ -49,13 +52,14 @@ export const subVenuesData = [
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
     location: "Bengaluru, Whitefield",
+    venueType: "Marriage Garden / Lawns",
     rating: 4.7,
     reviews: 87,
     capacity: 1000,
     call: "Responds within 24 hours",
     price: "1.8 Lakh",
     image:
-      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+      "https://cdn0.weddingwire.in/vendor/4642/3_2/640/jpg/sterling-subuthi-spa-ayurveda-centre_15_464642-170902994948401.webp",
   },
   {
     id: 5,
@@ -64,13 +68,14 @@ export const subVenuesData = [
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
     location: "Goa, Panaji",
+    venueType: "Destination Wedding Venues",
     rating: 4.5,
     reviews: 76,
     capacity: 1000,
     call: "Responds within 24 hours",
     price: "3 Lakh",
     image:
-      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+      "https://cdn0.weddingwire.in/vendor/4642/3_2/640/jpg/sterling-subuthi-spa-ayurveda-centre_15_464642-170902994948401.webp",
   },
   {
     id: 6,
@@ -79,12 +84,13 @@ export const subVenuesData = [
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
     location: "Jaipur, C-Scheme",
+    venueType: "Banquet Halls",
     rating: 4.4,
     reviews: 110,
     capacity: 1000,
     price: "1.2 Lakh",
     image:
-      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+      "https://cdn0.weddingwire.in/vendor/4642/3_2/640/jpg/sterling-subuthi-spa-ayurveda-centre_15_464642-170902994948401.webp",
   },
   {
     id: 7,
@@ -93,13 +99,14 @@ export const subVenuesData = [
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
     location: "Chennai, ECR",
+    venueType: "Small Function / Party Halls",
     rating: 4.3,
     reviews: 64,
     capacity: 1000,
     call: "Responds within 24 hours",
     price: "1.6 Lakh",
     image:
-      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+      "https://cdn0.weddingwire.in/vendor/4642/3_2/640/jpg/sterling-subuthi-spa-ayurveda-centre_15_464642-170902994948401.webp",
   },
   {
     id: 8,
@@ -108,12 +115,13 @@ export const subVenuesData = [
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
     location: "Kolkata, Salt Lake",
+    venueType: "4 Star & Above Wedding Hotels",
     rating: 4.6,
     reviews: 102,
     capacity: 1000,
     price: "2.2 Lakh",
     image:
-      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+      "https://cdn0.weddingwire.in/vendor/4642/3_2/640/jpg/sterling-subuthi-spa-ayurveda-centre_15_464642-170902994948401.webp",
   },
   {
     id: 9,
@@ -122,12 +130,13 @@ export const subVenuesData = [
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
     location: "Pune, Koregaon Park",
+    venueType: "Marriage Garden / Lawns",
     rating: 4.2,
     reviews: 54,
     capacity: 1000,
     price: "1 Lakh",
     image:
-      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+      "https://cdn0.weddingwire.in/vendor/4642/3_2/640/jpg/sterling-subuthi-spa-ayurveda-centre_15_464642-170902994948401.webp",
   },
   {
     id: 10,
@@ -136,13 +145,14 @@ export const subVenuesData = [
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
     location: "Ahmedabad, SG Highway",
+    venueType: "Banquet Halls",
     rating: 4.5,
     reviews: 89,
     capacity: 1000,
     call: "Responds within 24 hours",
     price: "1.7 Lakh",
     image:
-      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+      "https://cdn0.weddingwire.in/vendor/4642/3_2/640/jpg/sterling-subuthi-spa-ayurveda-centre_15_464642-170902994948401.webp",
   },
   {
     id: 11,
@@ -151,11 +161,12 @@ export const subVenuesData = [
     description:
       "Woodrose Club is a popular banquet hall in Bangalore where you can host all of your wedding functions. Whether hosting an intimate Haldi function, a fun sangeet ceremony, or hosting a grand wedding ceremony and reception, Woodrose Club caters to all kinds of events. It also comes with many added services for your convenience. Be it a pre-wedding, wedding or post-wedding function, any ceremony can be beautifully conducted at this venue.",
     location: "Udaipur, Fateh Sagar",
+    venueType: "Destination Wedding Venues",
     rating: 4.9,
     reviews: 135,
     capacity: 1000,
     price: "3.5 Lakh",
     image:
-      "https://cdn0.weddingwire.in/vendor/0220/3_2/640/png/2024-04-07-1_15_420220-175284486615045.webp",
+      "https://cdn0.weddingwire.in/vendor/4642/3_2/640/jpg/sterling-subuthi-spa-ayurveda-centre_15_464642-170902994948401.webp",
   },
 ];

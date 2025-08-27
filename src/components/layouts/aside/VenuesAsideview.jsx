@@ -137,7 +137,7 @@ const Asideview = () => {
         lg="auto"
         className={`venue-filter-container ${
           showMobileFilters ? "d-block" : "d-none"
-        } d-lg-block`}
+        } d-lg-block aside-rubik`}
       >
         <div className="filter-sidebar show shadow-lg rounded">
           {isAnyFilterSelected && (

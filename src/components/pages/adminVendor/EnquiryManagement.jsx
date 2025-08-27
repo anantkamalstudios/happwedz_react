@@ -113,7 +113,7 @@ const EnquiryManagement = () => {
                     </div>
 
                     {/* Tools Section */}
-                    <div className="tools-section">
+                    {/* <div className="tools-section">
                       <div className="section-title">Tools</div>
                       {tools.map((tool) => (
                         <div
@@ -129,7 +129,7 @@ const EnquiryManagement = () => {
                           )}
                         </div>
                       ))}
-                    </div>
+                    </div> */}
                   </div>
                 </div>
 
@@ -139,12 +139,11 @@ const EnquiryManagement = () => {
                     {/* Header with Search */}
                     <div className="content-header">
                       <div className="row align-items-center">
-                        <div className="col-md-8">
+                        <div className="col-md-12">
                           <div className="search-bar">
                             <input
                               type="text"
                               className="form-control search-input"
-                              placeholder="Search enquiries..."
                               value={searchTerm}
                               onChange={(e) => setSearchTerm(e.target.value)}
                               style={{ padding: "10px 10px" }}
@@ -152,12 +151,12 @@ const EnquiryManagement = () => {
                             <Search className="search-icon" size={18} />
                           </div>
                         </div>
-                        <div className="col-md-4 text-end">
+                        {/* <div className="col-md-4 text-end">
                           <button className="filter-button">
                             <Filter size={16} className="me-2" />
                             Filters
                           </button>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
 

@@ -136,7 +136,11 @@ const Asideview = () => {
   );
 
   return (
-    <Col xs={12} lg="auto" className="venue-filter-container shadow">
+    <Col
+      xs={12}
+      lg="auto"
+      className="venue-filter-container shadow aside-rubik"
+    >
       <div className="filter-sidebar show shadow-lg rounded">
         {isAnyFilterSelected && (
           <div className="clear-filters-wrapper d-flex justify-content-between align-items-center mb-4 p-2 bg-light rounded">

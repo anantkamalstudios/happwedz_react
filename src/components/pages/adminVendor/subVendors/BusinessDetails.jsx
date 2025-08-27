@@ -1,9 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 
 const BusinessDetails = () => {
+  const [showPasswordFields, setShowPasswordFields] = React.useState(false);
+  const [currentPassword, setCurrentPassword] = React.useState("");
+  const [newPassword, setNewPassword] = React.useState("");
+  const [confirmPassword, setConfirmPassword] = React.useState("");
+
   return (
     <div className="my-5">
-      {/* Login Information */}
       <div className="p-3 border rounded mb-4 bg-white">
         <h6 className="mb-3 fw-bold">Login Information</h6>
         <div className="mb-3">
@@ -15,10 +19,70 @@ const BusinessDetails = () => {
           />
         </div>
         <div className="mb-3">
-          <a href="">Reset Password</a>
+          {!showPasswordFields ? (
+            <button
+              type="button"
+              className="btn btn-link text-danger p-0"
+              onClick={() => setShowPasswordFields(true)}
+              style={{ textDecoration: "none" }}
+            >
+              Reset Password
+            </button>
+          ) : (
+            <div>
+              <div className="mb-3">
+                <label className="form-label">Your Password</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  placeholder="Enter your current password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                />
+                <div className="mt-3">
+                  <a
+                    href="#"
+                    style={{
+                      fontSize: "0.9em",
+                      color: "red",
+                      textDecoration: "none",
+                    }}
+                  >
+                    Forgot password?
+                  </a>
+                </div>
+              </div>
+              <div className="mb-3">
+                <label className="form-label">New Password</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  placeholder="Enter new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Confirm Password</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  placeholder="Confirm new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </div>
+              <button
+                type="button"
+                className="btn btn-primary"
+                // onClick={handlePasswordSubmit} // implement as needed
+              >
+                Submit
+              </button>
+            </div>
+          )}
         </div>
       </div>
-
       {/* About Section */}
       <div className="p-3 border rounded mb-4 bg-white">
         <h6 className="mb-3 fw-bold">About</h6>
@@ -28,7 +92,6 @@ const BusinessDetails = () => {
           placeholder="Write about your business..."
         ></textarea>
       </div>
-
       {/* Contact Details */}
       <div className="p-3 border rounded bg-white">
         <h6 className="mb-3 fw-bold">Contact Details</h6>
@@ -81,7 +144,7 @@ const BusinessDetails = () => {
           />
         </div>
       </div>
-      <button className="btn btn-danger mt-2">Submit</button>
+      <button className="btn btn-primary mt-2 folder-item">Submit</button>
     </div>
   );
 };

@@ -5,12 +5,14 @@ import { FiUser, FiLock, FiChevronDown, FiChevronRight } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
 import "../../../Matrimonial.css";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { RiMenuFill } from "react-icons/ri";
 
 const Navbar = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   const toggleLogin = () => {
@@ -52,13 +54,26 @@ const Navbar = () => {
     <div className="matrimonial">
       <div className="matrimonial-container">
         <nav className="navbar">
-          <div className="container">
-            <div className="logo">{/* Logo here if needed */}</div>
+          <div className="container px-2">
+            <button
+              className="d-lg-none navbar-toggler"
+              type="button"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle navigation"
+            >
+              <RiMenuFill color="white" size={35} />
+            </button>
+            {/* <div className="logo"></div> */}
 
-            <div className="nav-menu">
+            <div className={`nav-menu ${menuOpen ? "active" : ""}`}>
               <div className="nav-item">
-                <Link className="navbar-brand" to="/">
-                  <img src="/images/logo.webp" alt="HappyWedz" height="40" />
+                <Link className="navbar-brand-logo" to="/">
+                  <img
+                    src="/images/logo.webp"
+                    alt="HappyWedz"
+                    height="30"
+                    className="mx-auto d-block"
+                  />
                 </Link>
               </div>
               <div className="nav-item">
@@ -126,100 +141,6 @@ const Navbar = () => {
               <div className="nav-item">
                 <Link to="/edit-profile">Edit-profile</Link>
               </div>
-
-              {/* <div
-              className="nav-item"
-              onMouseEnter={() => handleDropdownHover("community")}
-            >
-              <span>
-                Community <FiChevronDown />
-              </span>
-              {activeDropdown === "community" && (
-                <div className="dropdown">
-                  <div className="dropdown-content">
-                    <div
-                      className="submenu-column"
-                      onMouseEnter={() => handleSubmenuHover("religion")}
-                    >
-                      <h4>Religion</h4>
-                      <a href="/">
-                        Hindu <FiChevronRight />
-                      </a>
-                      <a href="/">
-                        Muslim <FiChevronRight />
-                      </a>
-                      <a href="/">
-                        Christian <FiChevronRight />
-                      </a>
-                      <a href="/">
-                        Sikh <FiChevronRight />
-                      </a>
-
-                      {activeSubmenu === "religion" && (
-                        <div className="submenu-panel">
-                          <div className="submenu-content">
-                            <h5>Hindu</h5>
-                            <a href="/">Brahmin</a>
-                            <a href="/">Rajput</a>
-                            <a href="/">Maratha</a>
-                            <a href="/">Baniya</a>
-                            <a href="/">Kayastha</a>
-                            <a href="/">All Castes</a>
-                          </div>
-                          <div className="submenu-content">
-                            <h5>Muslim</h5>
-                            <a href="/">Sunni</a>
-                            <a href="/">Shia</a>
-                            <a href="/">Pathan</a>
-                            <a href="/">Mughal</a>
-                            <a href="/">All Sects</a>
-                          </div>
-                          <div className="submenu-content">
-                            <h5>Christian</h5>
-                            <a href="/">Catholic</a>
-                            <a href="/">Protestant</a>
-                            <a href="/">Orthodox</a>
-                            <a href="/">All Denominations</a>
-                          </div>
-                          <div className="submenu-content">
-                            <h5>Sikh</h5>
-                            <a href="/">Jat</a>
-                            <a href="/">Khatri</a>
-                            <a href="/">Arora</a>
-                            <a href="/">Ramgarhia</a>
-                            <a href="/">All Castes</a>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="submenu-column">
-                      <h4>Regional</h4>
-                      <a href="/">North Indian</a>
-                      <a href="/">South Indian</a>
-                      <a href="/">Bengali</a>
-                      <a href="/">Marathi</a>
-                    </div>
-                    <div className="submenu-column">
-                      <h4>NRI</h4>
-                      <a href="/">USA Matches</a>
-                      <a href="/">UK Matches</a>
-                      <a href="/">Canada Matches</a>
-                      <a href="/">Australia Matches</a>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div> */}
-
-              {/* <div className="nav-item">
-              <a href="/">Horoscope</a>
-            </div> */}
-              {/* <div className="nav-item">
-              <a href="/">Blog</a>
-            </div>
-            <div className="nav-item">
-              <a href="/">Success Stories</a>
-            </div> */}
             </div>
 
             <div className="nav-actions">
@@ -282,9 +203,7 @@ const Navbar = () => {
                 <button
                   className="login-button"
                   onClick={() => {
-                    // Your login logic here
-                    // After successful login and navigation:
-                    toggleLogin(); // This will close the modal
+                    toggleLogin();
                   }}
                 >
                   Login

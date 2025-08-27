@@ -7,6 +7,7 @@ import VendorDashboard from "./VendorDashboard";
 import StorefrontPage from "./StorefrontPage";
 import ReviewsPage from "./ReviewsPage";
 import EnquiryManagement from "./EnquiryManagement";
+import Settings from "./Settings";
 
 const Main = () => {
   const { slug } = useParams();
@@ -17,8 +18,8 @@ const Main = () => {
         return <HomeAdmin />;
       case "vendor-store-front":
         return <Storefront />;
-      case "vendor-reviews":
-        return <ReviewsPage />;
+      case "vendor-setting":
+        return <Settings />;
       case "vendor-enquiries":
         return <EnquiryManagement />;
       default:

@@ -1,68 +1,127 @@
 import React, { useState } from "react";
 import categories from "../../data/categories";
-const CategoryAccordion = () => {
-  const [openIndex, setOpenIndex] = useState(-1);
 
-  const toggle = (i) => {
-    setOpenIndex((prev) => (prev === i ? -1 : i));
-  };
+// Elegant Category Cards (replaces accordion)
+const CategoryAccordion = ({ onSelect }) => {
+  const [hoveredIndex, setHoveredIndex] = useState(-1);
+  const [expandedIndex, setExpandedIndex] = useState(-1); // for mobile tap expand
+
+  const handleEnter = (i) => setHoveredIndex(i);
+  const handleLeave = () => setHoveredIndex(-1);
+  const toggleExpand = (i) => setExpandedIndex((prev) => (prev === i ? -1 : i));
 
   return (
-    <div className="container py-5">
-      <h3 className="fw-bold mb-4 text-dark">Top Categories</h3>
-      <div className="row g-3">
+    <div className="container py-5 wcg-grid">
+      <div className="d-flex align-items-center justify-content-between mb-3">
+        <h3 className="fw-bold mb-0 text-dark">Explore by Category</h3>
+        <div className="text-muted small">
+          Curated for every style and budget
+        </div>
+      </div>
+
+      <div className="row g-3 g-md-4">
         {categories.map((cat, i) => {
-          const isOpen = openIndex === i;
+          const isExpanded = expandedIndex === i;
+          const previewItems = cat.items.slice(0, 3);
+          const remaining = Math.max(cat.items.length - previewItems.length, 0);
+
           return (
-            <div key={i} className="col-12 col-md-6">
-              <div className="category-accordion">
-                <div
-                  role="button"
-                  className="header-bar d-flex align-items-center justify-content-between"
-                  style={{ background: cat.bgColor }}
-                  onClick={() => toggle(i)}
-                  aria-expanded={isOpen}
-                >
-                  <div className="title-block">
-                    <div className="title-row d-flex align-items-center">
-                      <h5 className="mb-0 me-2">{cat.title}</h5>
-                      <div
-                        className={`chevron ${isOpen ? "open" : ""}`}
-                        aria-hidden="true"
-                      >
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                        >
-                          <path
-                            d="M6 9l6 6 6-6"
-                            stroke="#1f2d3a"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
+            <div key={i} className="col-12 col-sm-6 col-lg-4">
+              <div
+                className="wcg-card h-100"
+                onMouseEnter={() => handleEnter(i)}
+                onMouseLeave={handleLeave}
+                onClick={() => toggleExpand(i)}
+                role="button"
+                aria-expanded={isExpanded}
+                aria-label={`Open ${cat.title} category`}
+              >
+                {/* Image */}
+                <div className="wcg-image-wrapper">
+                  <img
+                    loading="lazy"
+                    src={cat.imageSrc}
+                    alt={cat.title}
+                    className="wcg-image"
+                    onError={(e) => {
+                      e.currentTarget.src = "/images/logo.webp";
+                      e.currentTarget.style.objectFit = "contain";
+                      e.currentTarget.style.padding = "12px";
+                      e.currentTarget.style.background = "#fafafa";
+                    }}
+                  />
+
+                  {/* Soft gradient overlay */}
+                  <div className="wcg-overlay" />
+
+                  {/* Title and subtitle over image */}
+                  <div className="position-absolute bottom-0 start-0 end-0 p-3 p-md-4 text-white">
+                    <div className="d-flex align-items-center justify-content-between">
+                      <div>
+                        <h5 className="mb-1 wcg-heading">{cat.title}</h5>
+                        {cat.subtitle && (
+                          <div className="small opacity-75">{cat.subtitle}</div>
+                        )}
                       </div>
+                      <span className="badge wcg-count rounded-pill">
+                        {cat.items.length}
+                      </span>
                     </div>
-                    <div className="subtitle">{cat.subtitle}</div>
-                  </div>
-                  <div className="circle-img-wrapper">
-                    <img loading="lazy" src={cat.imageSrc} alt={cat.title} />
                   </div>
                 </div>
 
-                <div className={`expandable ${isOpen ? "show" : ""}`}>
-                  <div className="row">
-                    {cat.items.map((it, idx) => (
-                      <div key={idx} className="col-6 col-lg-4 py-2">
-                        <a href="#" className="item-link">
-                          {it}
-                        </a>
-                      </div>
+                {/* Reveal content (hover on desktop, expand on mobile) */}
+                <div className="wcg-content">
+                  <div className="wcg-pills d-flex flex-wrap gap-2 mb-3">
+                    {previewItems.map((it, idx) => (
+                      <span key={idx} className="badge rounded-pill px-3 py-2">
+                        {it}
+                      </span>
                     ))}
+                    {remaining > 0 && (
+                      <span className="badge bg-white text-muted border rounded-pill px-3 py-2">
+                        +{remaining} more
+                      </span>
+                    )}
                   </div>
+
+                  <div className="wcg-actions d-flex justify-content-between align-items-center">
+                    <button
+                      type="button"
+                      className="btn btn-primary rounded-pill px-3"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onSelect) onSelect(cat);
+                      }}
+                    >
+                      Explore
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-outline-primary rounded-pill px-3"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleExpand(i);
+                      }}
+                      aria-label="Show subcategories"
+                    >
+                      {isExpanded ? "Hide" : "Subcategories"}
+                    </button>
+                  </div>
+
+                  {isExpanded && (
+                    <div className="wcg-subcats mt-3">
+                      <div className="row g-2">
+                        {cat.items.map((it, idx) => (
+                          <div key={idx} className="col-6">
+                            <a href="#" className="wedding-link small">
+                              {it}
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -109,10 +109,7 @@ const MatrimonialHome = () => {
         {/* Navigation Bar */}
         <nav className="navbar">
           <div className="container">
-            <div className="logo">
-              {/* <FiHeart className="heart-icon" />
-            <h1>ShaadiSathi</h1> */}
-            </div>
+            <div className="logo"></div>
 
             <div className="nav-menu">
               <div
@@ -152,39 +149,6 @@ const MatrimonialHome = () => {
                   </div>
                 )}
               </div>
-
-              {/* <div
-              className="nav-item"
-              onMouseEnter={() => handleDropdownHover("search")}
-            >
-              <span>
-                Search <FiChevronDown />
-              </span>
-              {activeDropdown === "search" && (
-                <div className="dropdown">
-                  <div className="dropdown-content">
-                    <div className="submenu-column">
-                      <h4>Basic Search</h4>
-                      <a href="/">By ID</a>
-                      <a href="/">By Name</a>
-                      <a href="/">By Education</a>
-                    </div>
-                    <div className="submenu-column">
-                      <h4>Advanced Search</h4>
-                      <Link to="/matrimonial-search">Custom Search</Link>
-                      <a href="/">Keyword Search</a>
-                      <a href="/">Horoscope Match</a>
-                    </div>
-                    <div className="submenu-column">
-                      <h4>Saved Searches</h4>
-                      <a href="/">My Saved Searches</a>
-                      <a href="/">Recommended Searches</a>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div> */}
-
               <div
                 className="nav-item"
                 onMouseEnter={() => handleDropdownHover("community")}

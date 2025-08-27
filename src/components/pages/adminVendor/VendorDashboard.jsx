@@ -30,23 +30,23 @@ const VendorDashboard = () => {
 
   // Main navigation items
   const mainNavItems = [
-    { id: "home", path: "/", icon: <RiHome5Line size={50} />, label: "Home" },
+    { id: "home", path: "/", icon: <RiHome5Line size={24} />, label: "Home" },
     {
       id: "reviews",
       path: "/reviews",
-      icon: <FiStar size={50} />,
+      icon: <FiStar size={24} />,
       label: "Reviews",
     },
     {
       id: "storefront",
       path: "/storefront",
-      icon: <FiShoppingBag size={50} />,
+      icon: <FiShoppingBag size={24} />,
       label: "Storefront",
     },
     {
       id: "settings",
       path: "/settings",
-      icon: <FiSettings size={50} />,
+      icon: <FiSettings size={24} />,
       label: "Settings",
     },
   ];
@@ -56,38 +56,37 @@ const VendorDashboard = () => {
     {
       id: "checklist",
       path: "/storefront",
-      icon: <FiCheckCircle size={100} />,
+      icon: <FiCheckCircle size={20} />,
       label: "Checklist",
     },
     {
       id: "portfolio",
       path: "/storefront/portfolio",
-      icon: <FiImage size={16} />,
+      icon: <FiImage size={20} />,
       label: "Portfolio",
     },
     {
       id: "services",
       path: "/storefront/services",
-      icon: <FiDollarSign size={16} />,
+      icon: <FiDollarSign size={20} />,
       label: "Services",
     },
     {
       id: "availability",
       path: "/storefront/availability",
-      icon: <FiCalendar size={16} />,
+      icon: <FiCalendar size={20} />,
       label: "Availability",
     },
     {
       id: "messages",
       path: "/storefront/messages",
-      icon: <FiMessageSquare size={16} />,
+      icon: <FiMessageSquare size={20} />,
       label: "Messages",
     },
   ];
 
   return (
     <div className="vendor-dashboard">
-      {/* Top Navigation Bar */}
       <Navbar bg="white" expand="lg" className="top-navbar shadow-sm">
         <Container fluid>
           <Navbar.Brand className="d-flex align-items-center">
@@ -132,7 +131,7 @@ const VendorDashboard = () => {
                     as={Link}
                     to={item.path}
                     className={`nav-link-main ${
-                      isActive(item.path) ? "active" : ""
+                      isActive(item.path) ? "primary-bg" : ""
                     }`}
                   >
                     <span className="nav-icon">{item.icon}</span>

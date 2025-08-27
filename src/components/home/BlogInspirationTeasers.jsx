@@ -86,13 +86,16 @@ const blogsCarousel = () => {
           {blogs.map((blogs, i) => (
             <SwiperSlide key={i}>
               <div
-                className="blog-blogs h-100 rounded-4 overflow-hidden position-relative shadow-lg"
+                className="blog-blogs rounded-4 overflow-hidden position-relative shadow-lg"
                 style={{
                   background: "#fff",
                   margin: "15px",
+                  height: "500px", // Fixed height for all cards
                   transition: "all 0.4s ease",
                   transform: activeIndex === i ? "scale(1)" : "scale(0.98)",
                   zIndex: activeIndex === i ? 10 : 1,
+                  display: "flex",
+                  flexDirection: "column",
                 }}
               >
                 <div
@@ -129,18 +132,37 @@ const blogsCarousel = () => {
                     </span>
                   </div>
                 </div>
-                <div className="p-4">
+                <div
+                  className="p-4"
+                  style={{ flex: 1, display: "flex", flexDirection: "column" }}
+                >
                   <h5
                     className="mb-3"
                     style={{
                       color: "#8a5a76",
                       fontWeight: 500,
                       lineHeight: 1.3,
+                      height: "60px",
+                      overflow: "hidden",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
                     }}
                   >
                     {blogs.title}
                   </h5>
-                  <p className="text-muted mb-4">{blogs.desc}</p>
+                  <p
+                    className="text-muted mb-4"
+                    style={{
+                      flex: 1,
+                      overflow: "hidden",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical",
+                    }}
+                  >
+                    {blogs.desc}
+                  </p>
                   <div className="d-flex align-items-center mb-3">
                     <div className="d-flex align-items-center me-3">
                       <svg
@@ -165,6 +187,7 @@ const blogsCarousel = () => {
           <div
             className="swiper-button-prev"
             style={{
+              display: "none",
               color: "#8a5a76",
               left: "-40px",
               width: "48px",
@@ -178,6 +201,7 @@ const blogsCarousel = () => {
           <div
             className="swiper-button-next"
             style={{
+              display: "none",
               color: "#8a5a76",
               right: "-40px",
               width: "48px",

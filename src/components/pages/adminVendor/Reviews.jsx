@@ -116,6 +116,63 @@ const ReviewsPage = () => {
 
   return (
     <div className="reviews-page">
+      <style>
+        {`
+          .reviews-page {
+            overflow-x: hidden;
+            max-width: 100vw;
+            display: flex;
+            height: 100vh;
+          }
+          
+          .vertical-nav {
+            width: 280px;
+            min-width: 280px;
+            overflow-y: auto;
+            overflow-x: hidden;
+          }
+          
+          .main-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px;
+            max-width: calc(100vw - 280px);
+          }
+          
+          .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+          }
+          
+          .reviews-list {
+            max-width: 100%;
+          }
+          
+          .review-card {
+            max-width: 100%;
+            word-wrap: break-word;
+          }
+          
+          @media (max-width: 768px) {
+            .reviews-page {
+              flex-direction: column;
+            }
+            
+            .vertical-nav {
+              width: 100%;
+              min-width: 100%;
+            }
+            
+            .main-content {
+              max-width: 100vw;
+            }
+          }
+        `}
+      </style>
+
       {/* Vertical Navigation */}
       <div className="vertical-nav">
         <div

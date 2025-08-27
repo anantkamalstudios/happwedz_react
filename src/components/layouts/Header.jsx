@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, Links } from "react-router-dom";
 import { Modal, Button, Form } from "react-bootstrap";
 import LocationModalWithCategories from "./LocationModalWithCategories";
+import { RiMenuFill } from "react-icons/ri";
 
 const Header = () => {
   const toSlug = (text) =>
@@ -27,7 +28,7 @@ const Header = () => {
             aria-expanded="false"
             aria-label="Toggle navigation"
           >
-            <span className="navbar-toggler-icon custom-toggler-icon"></span>
+            <RiMenuFill color="white" size={35} />
           </button>
         </div>
 
@@ -177,15 +178,30 @@ const Header = () => {
                       </svg>
                     </a>
 
-                    <Link
-                      to="/user-dashboard"
-                      className="text-white text-decoration-none"
-                    >
-                      User Dashboard
-                    </Link>
-                    <a href="#" className="text-white text-decoration-none">
-                      SignUp
-                    </a>
+                    <div className="dropdown-wrapper">
+                      <Link
+                        className="nav-link text-white"
+                        to="/customer-login"
+                        state={{ title: "Login" }}
+                        id="photoDropdown"
+                        role="button"
+                      >
+                        Login
+                      </Link>
+                    </div>
+
+                    {/* Login Dropdown */}
+                    <div className="dropdown-wrapper">
+                      <Link
+                        className="nav-link text-white"
+                        to="/customer-register"
+                        state={{ title: "Signup" }}
+                        id="photoDropdown"
+                        role="button"
+                      >
+                        Sign-up
+                      </Link>
+                    </div>
                     <div className="d-flex gap-3"></div>
                   </div>
                 </div>
@@ -685,9 +701,9 @@ const Header = () => {
                                         Wedding Card Designs
                                       </Link>
                                     </li>
-                                    <li>
+                                    {/* <li>
                                       <Link
-                                        to="/e-invite/invitation-video-templates"
+                                        to="/e-invite-invitation-video-templates"
                                         state={{
                                           title: "Invitation Video Templates",
                                         }}
@@ -708,7 +724,7 @@ const Header = () => {
                                         <i className="bi bi-chevron-right me-2 text-muted"></i>
                                         Save the Date Templates
                                       </Link>
-                                    </li>
+                                    </li> */}
                                   </ul>
                                 </div>
                               </div>
@@ -730,7 +746,7 @@ const Header = () => {
                           <Link
                             className="nav-link dropdown-toggle text-white"
                             to="#"
-                            state={{ title: "twosoul" }}
+                            state={{ title: "two-soul" }}
                             id="photoDropdown"
                             role="button"
                           >
@@ -814,7 +830,7 @@ const Header = () => {
                       </li>
 
                       {/* Login Dropdown */}
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
                             className="nav-link text-white"
@@ -827,8 +843,7 @@ const Header = () => {
                           </Link>
                         </div>
                       </li>
-
-                      {/* Login Dropdown */}
+ 
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
@@ -839,6 +854,18 @@ const Header = () => {
                             role="button"
                           >
                             Sign-up
+                          </Link>
+                        </div>
+                      </li> */}
+
+                      {/* Login Dropdown */}
+                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper">
+                          <Link
+                            to="/user-dashboard"
+                            className="nav-link text-white"
+                          >
+                            User Dashboard
                           </Link>
                         </div>
                       </li>

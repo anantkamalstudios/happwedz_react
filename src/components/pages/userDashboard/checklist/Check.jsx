@@ -190,7 +190,7 @@ const Check = () => {
                   onClick={() => setSelectedStatus("All")}
                 >
                   All
-                  <span className="wc-badge badge bg-primary rounded-pill">
+                  <span className="wc-badge badge  rounded-pill">
                     {tasks.length}
                   </span>
                 </li>
@@ -237,7 +237,7 @@ const Check = () => {
                       onClick={() => setSelectedPeriod(period)}
                     >
                       {period}
-                      <span className="wc-badge badge bg-primary rounded-pill">
+                      <span className="wc-badge badge  rounded-pill">
                         {countByPeriod[period] || 0}
                       </span>
                     </li>
@@ -263,7 +263,7 @@ const Check = () => {
                       onClick={() => setSelectedCategory(category)}
                     >
                       {category}
-                      <span className="wc-badge badge bg-primary rounded-pill">
+                      <span className="wc-badge badge  rounded-pill">
                         {countByCategory[category] || 0}
                       </span>
                     </li>
@@ -304,7 +304,7 @@ const Check = () => {
 
               {/* Add new task */}
               <div className="wc-add-task card mb-4">
-                <div className="wc-card-header card-header bg-light">
+                <div className="wc-card-header card-header bg-light text-black">
                   <h5 className="mb-0">Add a new task</h5>
                 </div>
                 <div className="wc-card-body card-body">
