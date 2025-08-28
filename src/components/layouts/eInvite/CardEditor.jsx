@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Download,
@@ -9,10 +10,9 @@ import {
   Save,
   Plus,
 } from "lucide-react";
-const fabricModule = await import("fabric");
-const fabric = fabricModule.fabric || fabricModule;
 
 const CardEditor = ({ template, onBack }) => {
+  const navigate = useNavigate();
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
   const [canvas, setCanvas] = useState(null);
@@ -296,6 +296,53 @@ const CardEditor = ({ template, onBack }) => {
     }
   };
 
+  // Drag and Drop image support
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    if (!canvas) return;
+
+    try {
+      const files = e.dataTransfer?.files;
+      if (!files || files.length === 0) return;
+      const file = files[0];
+      if (!file.type.startsWith("image/")) return;
+
+      const { fabric } = await import("fabric");
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        fabric.Image.fromURL(event.target.result, (img) => {
+          const maxWidth = canvas.width * 0.8;
+          const maxHeight = canvas.height * 0.8;
+
+          if (img.width > maxWidth) {
+            img.scaleToWidth(maxWidth);
+          }
+          if (img.height * img.scaleY > maxHeight) {
+            img.scaleToHeight(maxHeight);
+          }
+
+          img.set({
+            left: canvas.width / 2,
+            top: canvas.height / 2,
+            originX: "center",
+            originY: "center",
+          });
+
+          canvas.add(img);
+          canvas.setActiveObject(img);
+          canvas.renderAll();
+        });
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Error handling drop:", error);
+    }
+  };
+
   // Save project
   const saveProject = () => {
     if (!canvas) return;
@@ -385,7 +432,9 @@ const CardEditor = ({ template, onBack }) => {
         <div className="container-fluid">
           <button
             className="btn btn-outline-secondary d-flex align-items-center"
-            onClick={onBack}
+            onClick={() => {
+              navigate(-1);
+            }}
           >
             <ArrowLeft className="me-2" size={20} />
             Back to Templates
@@ -593,30 +642,34 @@ const CardEditor = ({ template, onBack }) => {
           <div className="col-xl-6 col-lg-8 mb-4">
             <div className="card">
               <div
-                className="card-body d-flex justify-content-center align-items-center"
+                className="card-body d-flex justify-content-center align-items-center position-relative"
                 style={{ minHeight: "750px" }}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
               >
-                {isLoading ? (
-                  <div className="text-center">
+                <canvas
+                  ref={canvasRef}
+                  style={{
+                    border: "2px solid #dee2e6",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                    maxWidth: "100%",
+                    height: "auto",
+                  }}
+                />
+                {isLoading && (
+                  <div
+                    className="position-absolute top-50 start-50 translate-middle text-center bg-white bg-opacity-75 p-4 rounded"
+                    style={{ zIndex: 2 }}
+                  >
                     <div
                       className="spinner-border text-primary mb-3"
                       role="status"
                     >
                       <span className="visually-hidden">Loading...</span>
                     </div>
-                    <p>Loading template...</p>
+                    <p className="mb-0">Loading template...</p>
                   </div>
-                ) : (
-                  <canvas
-                    ref={canvasRef}
-                    style={{
-                      border: "2px solid #dee2e6",
-                      borderRadius: "8px",
-                      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                      maxWidth: "100%",
-                      height: "auto",
-                    }}
-                  />
                 )}
               </div>
             </div>

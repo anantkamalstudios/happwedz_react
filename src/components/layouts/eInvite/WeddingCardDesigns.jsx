@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Heart, Play, Calendar, Star, Filter, Search } from "lucide-react";
-import CardEditor from "./CardEditor";
 import { useNavigate } from "react-router-dom";
 
 const WeddingCardDesigns = () => {
@@ -293,7 +292,7 @@ const WeddingCardDesigns = () => {
                 <Play className="w-8 h-8 text-white fill-current" />
               </div>
             )}
-            <button className="wc-preview-btn">Quick Preview</button>
+            {/* <button className="wc-preview-btn">Quick Preview</button> */}
             <button
               className="wc-customize-btn"
               onClick={() => handleEditTemplate(item)}
