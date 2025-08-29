@@ -202,6 +202,19 @@ const Header = () => {
                         Sign-up
                       </Link>
                     </div>
+
+                    {/* try Dropdown */}
+                    <div className="dropdown-wrapper">
+                      <Link
+                        className="nav-link text-white"
+                        to="/try"
+                        state={{ title: "Try" }}
+                        id="photoDropdown"
+                        role="button"
+                      >
+                        Try
+                      </Link>
+                    </div>
                     <div className="d-flex gap-3"></div>
                   </div>
                 </div>

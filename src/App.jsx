@@ -29,6 +29,8 @@ import ForgotPassword from "./components/auth/ForgotPassword";
 import TermsCondition from "./components/pages/TermsCondition";
 import CancellationPolicy from "./components/pages/CancellationPolicy";
 import CardEditorPage from "./components/CardEditorPage";
+import ProfileImageSelector from "./components/pages/ProfileImageSelector";
+import FinalLookPage from "./components/pages/FinalLookPage";
 // import DashboardLayout from "./components/pages/matrimonial/dashboard/DashboardLayout";
 
 function App() {
@@ -45,6 +47,8 @@ function App() {
         <Route path="/vendor-register" element={<VendorRegister />} />
         <Route path="/user-forgot-password" element={<ForgotPassword />} />
         <Route path="/terms" element={<TermsCondition />} />
+        <Route path="/try" element={<ProfileImageSelector />} />
+        <Route path="/finallook" element={<FinalLookPage />} />
         <Route path="/cancellation" element={<CancellationPolicy />} />
         <Route
           path="/vendor-dashboard"
