@@ -13,6 +13,9 @@ const ProfileImageSelector = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showInstructionsModal, setShowInstructionsModal] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [stream, setStream] = useState(null);
+  const videoRef = useRef(null);
 
   // State variables for makeup styling
   const [selectedCategory, setSelectedCategory] = useState("makeup");
@@ -273,6 +276,47 @@ const ProfileImageSelector = () => {
 
   const openImageOptions = () => {
     setShowInstructionsModal(true);
+  };
+
+  // Camera handling functions
+  const startCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
+        audio: false,
+      });
+      setStream(mediaStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+      setShowCameraModal(true);
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      alert(
+        "Unable to access camera. Please make sure you have given camera permissions."
+      );
+    }
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+      setStream(null);
+    }
+    setShowCameraModal(false);
+  };
+
+  const captureImage = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement("canvas");
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(videoRef.current, 0, 0);
+      const imageDataURL = canvas.toDataURL("image/jpeg");
+      setSelectedImage(imageDataURL);
+      stopCamera();
+    }
   };
 
   // Makeup styling handlers
@@ -677,6 +721,66 @@ const ProfileImageSelector = () => {
             box-shadow: none;
           }
 
+          /* Camera Modal Styles */
+          .msp-camera-modal {
+            background: #000;
+            width: 100%;
+            max-width: 640px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+          }
+
+          .msp-camera-content {
+            position: relative;
+            aspect-ratio: 4/3;
+            background: #000;
+          }
+
+          .msp-camera-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          .msp-camera-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 0 20px;
+          }
+
+          .msp-camera-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid #fff;
+            color: #fff;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+          }
+
+          .msp-camera-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+          }
+
+          .msp-camera-button.capture {
+            background: #fff;
+            color: #000;
+          }
+
+          .msp-camera-button.capture:hover {
+            transform: scale(1.1);
+          }
+
           /* Modal Styles */
           .msp-modal-overlay {
             position: fixed;
@@ -996,7 +1100,7 @@ const ProfileImageSelector = () => {
                     </div>
                   </div>
 
-                  <div className="msp-option-card">
+                  <div className="msp-option-card" onClick={startCamera}>
                     <div className="msp-option-icon">
                       <IoCameraOutline />
                     </div>
@@ -1291,6 +1395,39 @@ const ProfileImageSelector = () => {
                 >
                   Cancel
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Camera Modal */}
+        {showCameraModal && (
+          <div className="msp-modal-overlay">
+            <div className="msp-camera-modal">
+              <div className="msp-camera-content">
+                <video
+                  ref={videoRef}
+                  className="msp-camera-video"
+                  autoPlay
+                  playsInline
+                  muted
+                />
+                <div className="msp-camera-controls">
+                  <button
+                    className="msp-camera-button"
+                    onClick={stopCamera}
+                    aria-label="Close camera"
+                  >
+                    ✕
+                  </button>
+                  <button
+                    className="msp-camera-button capture"
+                    onClick={captureImage}
+                    aria-label="Take photo"
+                  >
+                    📸
+                  </button>
+                </div>
               </div>
             </div>
           </div>
