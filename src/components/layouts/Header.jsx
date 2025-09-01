@@ -47,7 +47,7 @@ const Header = () => {
               <div className="container">
                 <div className="row align-items-center gy-2">
                   {/* Left: Tagline */}
-                  <div className="col-12 col-sm-6 col-lg-6 text-center text-sm-start">
+                  <div className="col-12 col-sm-4 col-lg-4 text-center text-sm-start">
                     <a
                       className="nav-link text-white fw-semibold top-header-heading"
                       href="#"
@@ -62,7 +62,7 @@ const Header = () => {
                   </div>
 
                   {/* Right: Icons */}
-                  <div className="col-12 col-lg-3 d-flex justify-content-center justify-content-lg-end gap-3">
+                  <div className="col-12 col-lg-5 d-flex justify-content-center justify-content-lg-end gap-3">
                     <a className="nav-link text-white p-0" href="#">
                       {/* Book Icon */}
                       <svg
@@ -208,7 +208,7 @@ const Header = () => {
                       <Link
                         className="nav-link text-white"
                         to="/try"
-                        state={{ title: "try" }}
+                        state={{ title: "Try" }}
                         id="photoDropdown"
                         role="button"
                       >
@@ -225,13 +225,13 @@ const Header = () => {
             <div className="col-12 py-2">
               <div className="container">
                 <div className="row justify-content-center">
-                  <div className="col-lg-12 d-flex flex-column flex-lg-row align-items-center justify-content-between">
+                  <div className="col-lg-12 d-flex flex-column flex-lg-row align-items-center justify-content-evenly">
                     <div className="mb-3 text-center d-none d-lg-block">
                       <Link className="navbar-brand-logo" to="/">
                         <img
-                          src="happywedz_white.png"
+                          src="happywed_white.png"
                           alt="HappyWedz"
-                          height="35"
+                          height="80"
                           className="mx-auto d-block"
                         />
                       </Link>

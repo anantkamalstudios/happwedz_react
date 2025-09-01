@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { IoCameraOutline, IoCloudUploadOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import * as faceapi from "face-api.js";
 
 const ProfileImageSelector = () => {
   const navigate = useNavigate();
@@ -13,6 +14,14 @@ const ProfileImageSelector = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showInstructionsModal, setShowInstructionsModal] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [stream, setStream] = useState(null);
+  const [isCameraReady, setIsCameraReady] = useState(false);
+  const [countdown, setCountdown] = useState(null);
+  const [cameraError, setCameraError] = useState(null);
+  const [faceWarning, setFaceWarning] = useState("");
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
 
   // State variables for makeup styling
   const [selectedCategory, setSelectedCategory] = useState("makeup");
@@ -226,6 +235,19 @@ const ProfileImageSelector = () => {
     },
   ];
 
+  // Load face-api.js models once
+  React.useEffect(() => {
+    const loadModels = async () => {
+      const MODEL_URL = "/models"; // Place models in public/models
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
+      await faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+    };
+    loadModels();
+  }, []);
+
   // Image selection handlers
   const handleImageSelect = (event) => {
     const file = event.target.files[0];
@@ -273,6 +295,81 @@ const ProfileImageSelector = () => {
 
   const openImageOptions = () => {
     setShowInstructionsModal(true);
+  };
+
+  const startCamera = async () => {
+    try {
+      setShowCameraModal(true);
+      const constraints = {
+        video: {
+          facingMode: "user",
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          frameRate: { ideal: 30 },
+        },
+        audio: false,
+      };
+
+      const mediaStream = await navigator.mediaDevices.getUserMedia(
+        constraints
+      );
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+        await videoRef.current.play(); // Ensure video starts playing
+        setStream(mediaStream);
+        setIsCameraReady(true);
+        setCameraError(null);
+      }
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      setCameraError(
+        "Unable to access camera. Please make sure you have given camera permissions."
+      );
+    }
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+      setStream(null);
+    }
+    setShowCameraModal(false);
+  };
+
+  // Capture the full video frame and set as preview
+  const captureImage = async () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      // Set canvas size to match the full video resolution
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      // Draw the full video frame (no cropping)
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      // Get the image as a data URL
+      const imageDataURL = canvas.toDataURL("image/jpeg", 0.95);
+      const valid = await validateFace(imageDataURL);
+      if (valid) {
+        setSelectedImage(imageDataURL);
+        stopCamera();
+      }
+    }
+  };
+
+  // Countdown before capturing an image
+  const startCountdown = () => {
+    setCountdown(3); // Start countdown from 3 seconds
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer); // Stop the timer
+          captureImage(); // Capture the image
+          return null; // Reset countdown
+        }
+        return prev - 1; // Decrease countdown
+      });
+    }, 1000); // Decrease every second
   };
 
   // Makeup styling handlers
@@ -332,10 +429,48 @@ const ProfileImageSelector = () => {
     });
   };
 
+  // Face validation after capture
+  const validateFace = async (imageDataUrl) => {
+    setFaceWarning("");
+    const img = new window.Image();
+    img.src = imageDataUrl;
+    await new Promise((resolve) => (img.onload = resolve));
+    const detection = await faceapi
+      .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
+      .withFaceLandmarks()
+      .withFaceExpressions();
+    if (!detection) {
+      setFaceWarning("No face detected. Please look straight at the camera.");
+      return false;
+    }
+    // Check face orientation (yaw/pitch/roll)
+    const landmarks = detection.landmarks;
+    const leftEye = landmarks.getLeftEye();
+    const rightEye = landmarks.getRightEye();
+    const nose = landmarks.getNose();
+    if (leftEye && rightEye && nose) {
+      const eyeDist = Math.abs(leftEye[0].x - rightEye[3].x);
+      const noseToEye = Math.abs(
+        nose[3].x - (leftEye[0].x + rightEye[3].x) / 2
+      );
+      if (noseToEye > eyeDist * 0.2) {
+        setFaceWarning("Please look straight at the camera, not sideways.");
+        return false;
+      }
+    }
+    // Glasses/hat detection is advanced; here we just warn if eyes are not visible
+    // (for demo, real detection would need a custom model)
+    if (leftEye.length === 0 || rightEye.length === 0) {
+      setFaceWarning("Please remove glasses or hats covering your eyes.");
+      return false;
+    }
+    return true;
+  };
+
   return (
     <>
       <div className="msp-container">
-        <style jsx>{`
+        <style>{`
           .msp-container {
             min-height: 100vh;
             background: ${colors.white};
@@ -384,23 +519,53 @@ const ProfileImageSelector = () => {
 
           .msp-profile-container {
             width: 100%;
+            position: relative;
+            z-index: 1;
           }
 
           .msp-profile-image {
             width: 100%;
             height: 400px;
-            border-radius: 8px;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             background: ${colors.white};
             position: relative;
             margin-bottom: 20px;
+            transition: all 0.3s ease;
+          }
+
+          .msp-profile-image:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+          }
+
+          .msp-profile-image::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+              to bottom,
+              rgba(0, 0, 0, 0) 0%,
+              rgba(0, 0, 0, 0.02) 50%,
+              rgba(0, 0, 0, 0.1) 100%
+            );
+            z-index: 1;
+            pointer-events: none;
           }
 
           .msp-profile-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.3s ease;
+          }
+
+          .msp-profile-image:hover img {
+            transform: scale(1.05);
           }
 
           .msp-edit-btn {
@@ -437,43 +602,85 @@ const ProfileImageSelector = () => {
           }
 
           .msp-upload-options {
-            margin-top: 20px;
+            margin-top: 30px;
             width: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 0 10px;
           }
 
           .msp-option-card {
             background: ${colors.white};
-            border: 1px solid ${colors.border};
-            border-radius: 8px;
-            padding: 16px;
+            border: 2px solid ${colors.border};
+            border-radius: 16px;
+            padding: 24px 20px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s ease;
-            margin-bottom: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+          }
+
+          .msp-option-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+              45deg,
+              rgba(237, 17, 115, 0.05),
+              rgba(237, 17, 115, 0.02)
+            );
+            opacity: 0;
+            transition: opacity 0.3s ease;
           }
 
           .msp-option-card:hover {
             border-color: ${colors.primary};
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(237, 17, 115, 0.15);
+          }
+
+          .msp-option-card:hover::before {
+            opacity: 1;
           }
 
           .msp-option-icon {
-            font-size: 24px;
-            margin-bottom: 12px;
+            font-size: 32px;
+            margin-bottom: 16px;
             color: ${colors.primary};
+            background: rgba(237, 17, 115, 0.1);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            transition: all 0.3s ease;
+          }
+
+          .msp-option-card:hover .msp-option-icon {
+            transform: scale(1.1) rotate(5deg);
+            background: rgba(237, 17, 115, 0.15);
           }
 
           .msp-option-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             color: ${colors.darkText};
+            position: relative;
           }
 
           .msp-option-desc {
-            font-size: 12px;
+            font-size: 14px;
             color: ${colors.lightText};
+            line-height: 1.5;
+            position: relative;
           }
 
           .msp-right-panel {
@@ -675,6 +882,192 @@ const ProfileImageSelector = () => {
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
+          }
+
+          /* Camera Modal Styles */
+          .msp-camera-modal {
+            background: #000;
+            width: 100%;
+            max-width: 800px;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+          }
+
+          .msp-camera-content {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            background: #000;
+            overflow: hidden;
+          }
+
+          .msp-camera-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: linear-gradient(
+              to bottom,
+              rgba(0, 0, 0, 0.8),
+              transparent
+            );
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 2;
+          }
+
+          .msp-camera-title {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin: 0;
+          }
+
+          .msp-camera-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-color: #000;
+            transform: scaleX(-1); /* Mirror effect */
+          }
+
+          .msp-guide-text {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 4px 12px;
+            border-radius: 12px;
+          }
+
+          .msp-camera-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin: 20px;
+          }
+
+          // .msp-camera-guide {
+          //   position: absolute;
+          //   top: 50%;
+          //   left: 50%;
+          //   transform: translate(-50%, -50%);
+          //   width: 200px;
+          //   height: 200px;
+          //   border: 2px solid rgba(237, 17, 115, 0.5);
+          //   border-radius: 50%;
+          //   box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+          // }
+
+          .msp-camera-countdown {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 120px;
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            animation: pulse 1s infinite;
+          }
+
+          .msp-camera-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 0 20px;
+            z-index: 2;
+          }
+
+          .msp-camera-button {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            color: white;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 24px;
+          }
+
+          .msp-camera-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+          }
+
+          .msp-camera-button.capture {
+            background: ${colors.primaryPink};
+            border-color: ${colors.primaryPink};
+            width: 80px;
+            height: 80px;
+          }
+
+          .msp-camera-button.capture:hover {
+            background: ${colors.darkPink};
+            transform: scale(1.1);
+          }
+
+          .msp-camera-error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 80%;
+          }
+
+          .msp-face-warning {
+            color: #fff;
+            background: #ed1173;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin: 20px auto 0 auto;
+            text-align: center;
+            font-size: 1rem;
+            max-width: 90%;
+            box-shadow: 0 2px 8px rgba(237, 17, 115, 0.15);
+            z-index: 10;
+            position: relative;
+          }
+
+          @keyframes pulse {
+            0% {
+              transform: translate(-50%, -50%) scale(1);
+              opacity: 1;
+            }
+            50% {
+              transform: translate(-50%, -50%) scale(1.2);
+              opacity: 0.8;
+            }
+            100% {
+              transform: translate(-50%, -50%) scale(1);
+              opacity: 1;
+            }
           }
 
           /* Modal Styles */
@@ -934,7 +1327,6 @@ const ProfileImageSelector = () => {
             }
           }
         `}</style>
-
         <div className="msp-main-wrapper">
           <div className="msp-header">
             <h2>Create Your Look</h2>
@@ -996,7 +1388,7 @@ const ProfileImageSelector = () => {
                     </div>
                   </div>
 
-                  <div className="msp-option-card">
+                  <div className="msp-option-card" onClick={startCamera}>
                     <div className="msp-option-icon">
                       <IoCameraOutline />
                     </div>
@@ -1217,7 +1609,6 @@ const ProfileImageSelector = () => {
             </div>
           </div>
         </div>
-
         {/* Modals */}
         {showEditModal && (
           <div className="msp-modal-overlay">
@@ -1243,7 +1634,6 @@ const ProfileImageSelector = () => {
             </div>
           </div>
         )}
-
         {showInstructionsModal && (
           <div className="msp-modal-overlay">
             <div className="msp-instructions-modal">
@@ -1295,7 +1685,83 @@ const ProfileImageSelector = () => {
             </div>
           </div>
         )}
-
+        {/* Camera Modal */}
+        {showCameraModal && (
+          <div className="msp-modal-overlay">
+            <div className="msp-camera-modal">
+              <div className="msp-camera-header">
+                <h3 className="msp-camera-title">Take Your Photo</h3>
+                <button
+                  className="msp-camera-button"
+                  onClick={stopCamera}
+                  aria-label="Close camera"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="msp-camera-content">
+                {cameraError ? (
+                  <div className="msp-camera-error">
+                    <p>{cameraError}</p>
+                    <button
+                      className="msp-btn-primary"
+                      onClick={() => {
+                        setCameraError(null);
+                        startCamera();
+                      }}
+                    >
+                      Try Again
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <video
+                      ref={videoRef}
+                      className="msp-camera-video"
+                      autoPlay
+                      playsInline
+                      muted
+                    />
+                    <div className="msp-camera-overlay" />
+                    <div className="msp-camera-guide" />
+                    {countdown && (
+                      <div className="msp-camera-countdown">{countdown}</div>
+                    )}
+                    {isCameraReady && (
+                      <div className="msp-camera-controls">
+                        <button
+                          className="msp-camera-button"
+                          onClick={() => {
+                            if (videoRef.current.style.transform) {
+                              videoRef.current.style.transform = "";
+                            } else {
+                              videoRef.current.style.transform = "scaleX(-1)";
+                            }
+                          }}
+                          aria-label="Flip camera"
+                        >
+                          ⟲
+                        </button>
+                        <button
+                          className="msp-camera-button capture"
+                          onClick={startCountdown}
+                          aria-label="Take photo"
+                          disabled={!!countdown}
+                        >
+                          {countdown ? countdown : "📸"}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+              <canvas ref={canvasRef} style={{ display: "none" }} />
+              {faceWarning && (
+                <div className="msp-face-warning">{faceWarning}</div>
+              )}
+            </div>
+          </div>
+        )}{" "}
         {/* Hidden file inputs */}
         <input
           type="file"

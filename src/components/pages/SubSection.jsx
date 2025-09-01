@@ -6,12 +6,12 @@ import ListView from "../layouts/Main/ListView";
 import GridView from "../layouts/Main/GridView";
 import MapView from "../layouts/Main/MapView";
 import { subVenuesData } from "../../data/subVenuesData";
-import { subVendorsData } from "../../data/subVendorsData";
 import { twoSoul } from "../../data/twoSoul";
 import ViewSwitcher from "../layouts/Main/ViewSwitcher";
 import MainSearch from "../layouts/Main/MainSearch";
 import PricingModal from "../layouts/PricingModal";
 import Photos from "../layouts/photography/Photos";
+import { useVendors } from "../../hooks/useVendors";
 
 const toTitleCase = (str) =>
   str.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
@@ -23,6 +23,21 @@ const SubSection = () => {
   const [view, setView] = useState("list");
   const [isLoading, setIsLoading] = useState(true);
   const [showDebug, setShowDebug] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  // Use dynamic vendors hook when section is vendors
+  const {
+    vendors,
+    loading: vendorsLoading,
+    error: vendorsError,
+    refreshVendors,
+  } = useVendors({
+    search: searchQuery,
+    categoryId: selectedCategory,
+    limit: 20,
+    autoFetch: section === "vendors",
+  });
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -67,7 +82,7 @@ const SubSection = () => {
 
   let dataToSend = filteredVenuesData;
   if (section === "vendors") {
-    dataToSend = subVendorsData;
+    dataToSend = vendors; // Use dynamic vendors data
   } else if (section === "twosoul") {
     dataToSend = twoSoul;
   }
@@ -113,10 +128,63 @@ const SubSection = () => {
     return () => clearTimeout(timer);
   }, [slug, section]);
 
+  // Handle search and category changes for vendors
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
+
+  const handleCategoryChange = (categoryId) => {
+    setSelectedCategory(categoryId);
+  };
+
+  const handleRefresh = () => {
+    if (section === "vendors") {
+      refreshVendors();
+    }
+  };
+
+  // Show error state for vendors
+  if (section === "vendors" && vendorsError) {
+    return (
+      <div className="container-fluid">
+        <div className="alert alert-danger" role="alert">
+          <h4 className="alert-heading">Error Loading Vendors</h4>
+          <p>{vendorsError}</p>
+          <hr />
+          <button className="btn btn-outline-danger" onClick={handleRefresh}>
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state for vendors
+  if (section === "vendors" && vendorsLoading && vendors.length === 0) {
+    return (
+      <div className="container-fluid">
+        <div
+          className="d-flex justify-content-center align-items-center"
+          style={{ minHeight: "400px" }}
+        >
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container-fluid">
       {section === "venues" && <MainSearch title={title} />}
-      {section === "vendors" && <MainSearch title={title} />}
+      {section === "vendors" && (
+        <MainSearch
+          title={title}
+          onSearch={handleSearch}
+          onCategoryChange={handleCategoryChange}
+        />
+      )}
       {(section === "photography" || section === "twosoul") && (
         <MainSearch title={title} />
       )}
