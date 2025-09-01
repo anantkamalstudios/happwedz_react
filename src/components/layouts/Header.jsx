@@ -16,7 +16,7 @@ const Header = () => {
       <div className="container-fluid">
         <div className="d-flex d-lg-none justify-content-between align-items-center w-100 px-3 py-2">
           <Link className="navbar-brand" to="/">
-            <img src="/images/logo.webp" alt="HappyWedz" height="40" />
+            <img src="logo-no-bg.png" alt="HappyWedz" height="40" />
           </Link>
 
           <button
@@ -37,7 +37,7 @@ const Header = () => {
           id="mainNav"
         >
           {/* <a className="navbar-brand d-none d-lg-block" href="/">
-            <img src="/images/logo.webp" alt="HappyWedz" height="40" />
+            <img src="logo-no-bg.png" alt="HappyWedz" height="40" />
           </a> */}
         </div>
 
@@ -208,7 +208,7 @@ const Header = () => {
                       <Link
                         className="nav-link text-white"
                         to="/try"
-                        state={{ title: "Try" }}
+                        state={{ title: "try" }}
                         id="photoDropdown"
                         role="button"
                       >
@@ -229,7 +229,7 @@ const Header = () => {
                     <div className="mb-3 text-center d-none d-lg-block">
                       <Link className="navbar-brand-logo" to="/">
                         <img
-                          src="/images/logo.webp"
+                          src="happywedz_white.png"
                           alt="HappyWedz"
                           height="35"
                           className="mx-auto d-block"

@@ -69,7 +69,7 @@ const Navbar = () => {
               <div className="nav-item">
                 <Link className="navbar-brand-logo" to="/">
                   <img
-                    src="/images/logo.webp"
+                    src="logo-no-bg.png"
                     alt="HappyWedz"
                     height="30"
                     className="mx-auto d-block"

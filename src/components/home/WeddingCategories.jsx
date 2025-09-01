@@ -44,7 +44,7 @@ const CategoryAccordion = ({ onSelect }) => {
                     alt={cat.title}
                     className="wcg-image"
                     onError={(e) => {
-                      e.currentTarget.src = "/images/logo.webp";
+                      e.currentTarget.src = "logo-no-bg.png";
                       e.currentTarget.style.objectFit = "contain";
                       e.currentTarget.style.padding = "12px";
                       e.currentTarget.style.background = "#fafafa";

@@ -133,7 +133,7 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
                   className="w-100 h-100"
                   style={{ objectFit: "cover" }}
                   onError={(e) => {
-                    e.currentTarget.src = "/images/logo.webp";
+                    e.currentTarget.src = "logo-no-bg.png";
                     e.currentTarget.style.objectFit = "contain";
                   }}
                 />

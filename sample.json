@@ -1,0 +1,82 @@
+[
+  {
+    "id": 13,
+    "category_id": 3,
+    "status": "draft",
+    "vendor_type": "venue",
+    "name": "Swami naryanfgfdhg",
+    "slug": "royal-palace-banquet-hall-11",
+    "tagline": "The perfect place for your dream wedding",
+    "subtitle": "Luxurious venue with modern amenities",
+    "description": "Spacious banquet hall with indoor and outdoor options, catering, and premium services.",
+    "rating": "4.5",
+    "reviews_count": 0,
+    "badges": {
+      "top_rated": true
+    },
+    "media": {
+      "images": ["https://example.com/venue1.jpg"]
+    },
+    "contact": {
+      "email": "contact@royalpalace.com",
+      "phone": "+911234567890"
+    },
+    "location": {
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "address": "123 Palace Road, Mumbai",
+      "country": "India",
+      "zipcode": "400001"
+    },
+    "starting_price": "100000.00",
+    "price_unit": "per_event",
+    "price_range": {
+      "max": 500000,
+      "min": 100000
+    },
+    "currency": "INR",
+    "deals": [],
+    "packages": [],
+    "capacity_min": 100,
+    "capacity_max": 500,
+    "rooms": 10,
+    "car_parking": 50,
+    "hall_types_note": "Grand ballroom and outdoor garden",
+    "indoor_outdoor": "both",
+    "alcohol_policy": "allowed",
+    "dj_policy": "allowed",
+    "catering_policy": "external allowed",
+    "deco_policy": "allowed",
+    "timing_open": "10:00:00",
+    "timing_close": "23:00:00",
+    "timing_last_entry": "22:00:00",
+    "cancellation_policy": "Free cancellation up to 7 days before event",
+    "refund_policy": "Full refund for cancellations within policy",
+    "payment_terms": {
+      "full": "before_event",
+      "deposit": "50%"
+    },
+    "tnc": "Standard terms apply",
+    "blackout_dates": ["2025-12-25T05:00:00.000Z"],
+    "available_slots": [
+      {
+        "date": "2025-09-01",
+        "slot": "morning"
+      }
+    ],
+    "primary_cta": "enquire",
+    "cta_phone": "+911234567890",
+    "cta_url": "https://www.royalpalace.com/enquire",
+    "auto_reply": "Thank you for your enquiry!",
+    "is_featured": true,
+    "within_24hr_available": false,
+    "is_feature_available": true,
+    "sort_weight": 10,
+    "tags": ["luxury", "wedding"],
+    "owner_id": "admin_01",
+    "notes": "This is a featured venue",
+    "createdAt": "2025-09-01T07:28:24.547Z",
+    "updatedAt": "2025-09-01T07:28:24.547Z",
+    "deletedAt": null
+  }
+]

@@ -123,7 +123,7 @@ const MapView = ({ subVenuesData = [], section }) => {
                         borderRadius: 8,
                       }}
                       onError={(e) => {
-                        e.currentTarget.src = "/images/logo.webp";
+                        e.currentTarget.src = "logo-no-bg.png";
                         e.currentTarget.style.objectFit = "contain";
                         e.currentTarget.style.background = "#fafafa";
                       }}
