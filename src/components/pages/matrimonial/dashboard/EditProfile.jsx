@@ -26,7 +26,7 @@ import {
 const EditProfile = () => {
   const [key, setKey] = useState("basic");
   const [profilePic, setProfilePic] = useState(
-    "https://via.placeholder.com/150"
+    "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=80&h=80&fit=crop&crop=center&auto=format&q=60"
   );
   const [formData, setFormData] = useState({
     name: "Priya Sharma",
@@ -174,12 +174,12 @@ const EditProfile = () => {
       <Row className="justify-content-center">
         <Col lg={10} xl={8}>
           <Card className="matrimony-edit-profile__card">
-            <Card.Header className="matrimony-edit-profile__header">
+            <div className="matrimony-edit-profile__header">
               <h2 className="matrimony-edit-profile__title">Edit Profile</h2>
               <p className="matrimony-edit-profile__subtitle">
                 Complete your profile to get better matches
               </p>
-            </Card.Header>
+            </div>
 
             <Card.Body className="matrimony-edit-profile__body">
               <Row>

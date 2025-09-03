@@ -77,9 +77,6 @@ const Vendors = () => {
               OF {vendors.total} VENDORS BOOKED
             </span>
           </div>
-          <button className="add-vendor-btn">
-            <FaPlus /> Add vendor
-          </button>
         </div>
       </div>
 

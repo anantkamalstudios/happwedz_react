@@ -169,22 +169,28 @@ const VendorRegister = () => {
     <div className="vendor-signup-form container-fluid">
       <div className="card shadow-sm shadow-sm">
         <div className="card-header p-4">
-          <h2 className="mb-0">Vendor Signup</h2>
-          <p className="mb-0">
-            Create your professional vendor profile in minutes
-          </p>
+          <div className="row align-items-center">
+            <div className="col">
+              <h2 className="mb-0">Vendor Signup</h2>
+              <p className="mb-0 mt-2">
+                Create your professional vendor profile in minutes
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="card-body p-4">
           <div className="mb-4">
-            <ProgressBar
-              now={progressPercentage}
-              variant="primary"
-              className="mb-3"
-              style={{ height: "20px" }}
-              label={`Step ${step} of 4`}
-            />
-            <div className="d-flex justify-content-between">
+            <div>
+              <ProgressBar
+                now={progressPercentage}
+                variant="primary"
+                className="mb-3"
+                style={{ height: "auto" }}
+                label={`Step ${step} of 4`}
+              />
+            </div>
+            <div className="d-flex justify-content-between ">
               <span className={`step-indicator ${step >= 1 ? "active" : ""}`}>
                 <span className="step-number">1</span> Business Info
               </span>

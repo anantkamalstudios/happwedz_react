@@ -22,6 +22,12 @@ import {
 } from "lucide-react";
 
 import { Link } from "react-router-dom";
+import Matches from "./sections/Matches";
+import ActivitySection from "./sections/Activity";
+import MessagesSection from "./sections/Messages";
+import InterestsSection from "./sections/Interests";
+import AdvancedSearchSection from "./sections/AdvancedSearch";
+import ProfileSection from "./sections/Profile";
 
 const sampleProfiles = [
   {
@@ -110,7 +116,7 @@ const sampleProfiles = [
 ];
 
 const MatrimonialDashboard = () => {
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const [activeSection, setActiveSection] = useState("matches");
   const [profiles, setProfiles] = useState(sampleProfiles);
   const [filteredProfiles, setFilteredProfiles] = useState(sampleProfiles);
   const [searchFilters, setSearchFilters] = useState({
@@ -176,14 +182,12 @@ const MatrimonialDashboard = () => {
   };
 
   const sidebarItems = [
-    { id: "dashboard", label: "Dashboard", icon: Home },
-    { id: "profiles", label: "Browse Profiles", icon: Users },
     { id: "matches", label: "My Matches", icon: Heart },
+    { id: "activity", label: "Activity", icon: Activity },
     { id: "messages", label: "Messages", icon: MessageCircle },
-    { id: "interests", label: "Interest Sent", icon: UserCheck },
-    { id: "visitors", label: "Profile Visitors", icon: Eye },
+    // { id: "interests", label: "Interest Sent", icon: UserCheck },
     { id: "search", label: "Advanced Search", icon: Search },
-    { id: "settings", label: "Settings", icon: Settings },
+    { id: "profile", label: "Profile", icon: User },
   ];
 
   const ProfileCard = ({ profile }) => (
@@ -264,99 +268,73 @@ const MatrimonialDashboard = () => {
     </div>
   );
 
-  const renderDashboard = () => (
-    <div>
-      <div className="matrimonial-dashboard__content-header">
-        <h1 className="matrimonial-dashboard__page-title">
-          <Activity size={32} />
-          Dashboard Overview
-        </h1>
-      </div>
-
-      <div className="matrimonial-dashboard__stats-grid">
-        <StatCard
-          title="Total Profiles"
-          value={stats.totalProfiles}
-          icon={Users}
-          change={8.2}
-        />
-
-        <StatCard
-          title="Active Users"
-          value={stats.activeProfiles}
-          icon={UserCheck}
-          change={5.4}
-        />
-        <StatCard
-          title="New Matches"
-          value={stats.newMatches}
-          icon={Heart}
-          change={12.1}
-        />
-        <StatCard
-          title="Messages"
-          value={stats.messages}
-          icon={MessageCircle}
-          change={-2.3}
-        />
-      </div>
-
-      <div className="matrimonial-dashboard__profiles-grid">
-        {filteredProfiles.slice(0, 4).map((profile) => (
-          <ProfileCard key={profile.id} profile={profile} />
-        ))}
-      </div>
-    </div>
-  );
-
-  const renderProfiles = () => (
-    <div>
-      <div className="matrimonial-dashboard__content-header">
-        <h1 className="matrimonial-dashboard__page-title">
-          <Users size={32} />
-          Browse Profiles
-        </h1>
-      </div>
-
-      <div className="matrimonial-dashboard__profiles-grid">
-        {filteredProfiles.map((profile) => (
-          <ProfileCard key={profile.id} profile={profile} />
-        ))}
-      </div>
-    </div>
-  );
-
   const renderContent = () => {
     switch (activeSection) {
-      case "dashboard":
-        return renderDashboard();
-      case "profiles":
-        return renderProfiles();
+      case "matches":
+        return (
+          <Matches
+            profiles={filteredProfiles}
+            onSelectProfile={(p) => setSelectedProfile(p)}
+          />
+        );
+      case "activity":
+        return <ActivitySection />;
+      case "messages":
+        return <MessagesSection />;
+      case "interests":
+        return <InterestsSection />;
+      case "search":
+        return (
+          <AdvancedSearchSection
+            onApply={(filters) => {
+              let result = sampleProfiles;
+              if (filters.location) {
+                result = result.filter((p) =>
+                  p.location
+                    .toLowerCase()
+                    .includes(filters.location.toLowerCase())
+                );
+              }
+              if (filters.education) {
+                result = result.filter((p) =>
+                  p.education
+                    .toLowerCase()
+                    .includes(filters.education.toLowerCase())
+                );
+              }
+              if (filters.profession) {
+                result = result.filter((p) =>
+                  p.profession
+                    .toLowerCase()
+                    .includes(filters.profession.toLowerCase())
+                );
+              }
+              if (filters.ageFrom || filters.ageTo) {
+                result = result.filter(
+                  (p) =>
+                    p.age >= (Number(filters.ageFrom) || 0) &&
+                    p.age <= (Number(filters.ageTo) || 200)
+                );
+              }
+              setFilteredProfiles(result);
+              setActiveSection("matches");
+            }}
+          />
+        );
+      case "profile":
+        return <ProfileSection />;
       default:
-        return renderDashboard();
+        return (
+          <Matches
+            profiles={filteredProfiles}
+            onSelectProfile={(p) => setSelectedProfile(p)}
+          />
+        );
     }
   };
 
   return (
     <div className="matrimonial-dashboard">
-      <header className="matrimonial-dashboard__header">
-        <nav className="matrimonial-dashboard__nav">
-          <div className="matrimonial-dashboard__user">
-            {/* <div className="matrimonial-dashboard__notification">
-              <Bell size={20} />
-              <span className="matrimonial-dashboard__badge">3</span>
-            </div> */}
-            <Link to="/edit-profile">
-              <img
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face"
-                alt="Profile"
-                className="matrimonial-dashboard__avatar"
-              />
-            </Link>
-          </div>
-        </nav>
-      </header>
-
       <div className="matrimonial-dashboard__container">
         <aside className="matrimonial-dashboard__sidebar">
           <ul className="matrimonial-dashboard__sidebar-menu">

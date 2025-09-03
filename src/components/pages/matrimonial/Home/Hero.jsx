@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { FiUser, FiLock } from "react-icons/fi";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { EffectCoverflow, Autoplay, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/effect-coverflow";
+import "swiper/css/pagination";
 import "../../../../Matrimonial.css";
 
 const Hero = () => {
@@ -30,6 +35,16 @@ const Hero = () => {
 
     return () => clearInterval(autoScroll);
   }, []);
+
+  // Sample images for the swiper - you can replace these with your actual images
+  const swiperImages = [
+    "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+  ];
 
   return (
     <div className="matrimonial-container">
@@ -76,98 +91,80 @@ const Hero = () => {
       {/* Hero Section */}
       <div className="hero-section">
         <div className="container">
-          <div className="hero-content">
-            <div className="hero-text">
-              <h1>Find Your Perfect Life Partner</h1>
-              <p>
-                Trusted by millions of families to discover meaningful
-                connections
-              </p>
-              <div className="stats">
-                <div className="stat-item">
-                  <h3>10M+</h3>
-                  <p>Registered Users</p>
+          <div className="matrimonial-hero-content">
+            <div className="row">
+              <div className="d-flex justify-content-between">
+                <div className="col-md-8">
+                  <div className="hero-text">
+                    <h1>Find Your Perfect Life Partner</h1>
+                    <p>
+                      Trusted by millions of families to discover meaningful
+                      connections
+                    </p>
+                    <div className="stats">
+                      <div className="stat-item">
+                        <h3>10M+</h3>
+                        <p>Registered Users</p>
+                      </div>
+                      <div className="stat-item">
+                        <h3>500K+</h3>
+                        <p>Success Stories</p>
+                      </div>
+                      <div className="stat-item">
+                        <h3>20+</h3>
+                        <p>Years of Experience</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="stat-item">
-                  <h3>500K+</h3>
-                  <p>Success Stories</p>
-                </div>
-                <div className="stat-item">
-                  <h3>20+</h3>
-                  <p>Years of Experience</p>
+
+                <div className="col-md-4">
+                  <div className="hero-swiper-container">
+                    <Swiper
+                      effect={"coverflow"}
+                      grabCursor={true}
+                      centeredSlides={true}
+                      slidesPerView={"auto"}
+                      coverflowEffect={{
+                        rotate: 0,
+                        stretch: 0,
+                        depth: 100,
+                        modifier: 1,
+                        slideShadows: true,
+                      }}
+                      autoplay={{
+                        delay: 30000,
+                        disableOnInteraction: false,
+                      }}
+                      loop={true}
+                      pagination={{
+                        clickable: true,
+                      }}
+                      modules={[EffectCoverflow, Autoplay, Pagination]}
+                      className="hero-swiper"
+                    >
+                      {swiperImages.map((image, index) => (
+                        <SwiperSlide key={index} className="hero-swiper-slide">
+                          <div className="hero-image-container">
+                            <img
+                              src={image}
+                              alt={`Happy couple ${index + 1}`}
+                              className="hero-image"
+                            />
+                            <div className="hero-image-overlay">
+                              <div className="hero-image-text">
+                                <h3>Success Story {index + 1}</h3>
+                                <p>Another beautiful couple found love</p>
+                              </div>
+                            </div>
+                          </div>
+                        </SwiperSlide>
+                      ))}
+                    </Swiper>
+                  </div>
                 </div>
               </div>
             </div>
-
-            {/* <div className="registration-form">
-              <h2>Register for Free</h2>
-              <form>
-                <div className="form-group">
-                  <label>I am looking for</label>
-                  <div className="radio-group">
-                    <label>
-                      <input type="radio" name="gender" defaultChecked /> Bride
-                    </label>
-                    <label>
-                      <input type="radio" name="gender" /> Groom
-                    </label>
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Name</label>
-                    <input type="text" placeholder="Your Full Name" />
-                  </div>
-                  <div className="form-group">
-                    <label>Phone</label>
-                    <input type="tel" placeholder="Mobile Number" />
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label>Email</label>
-                  <input type="email" placeholder="Email Address" />
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Religion</label>
-                    <select>
-                      <option>Hindu</option>
-                      <option>Muslim</option>
-                      <option>Christian</option>
-                      <option>Sikh</option>
-                      <option>Other</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Community</label>
-                    <select>
-                      <option>Brahmin</option>
-                      <option>Rajput</option>
-                      <option>Maratha</option>
-                      <option>Baniya</option>
-                      <option>Other</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label>Password</label>
-                  <input type="password" placeholder="Create Password" />
-                </div>
-
-                <button type="submit" className="register-btn">
-                  Register Now
-                </button>
-
-                <p className="terms">
-                  By registering, you agree to our <a href="/">Terms</a> and{" "}
-                  <a href="/">Privacy Policy</a>
-                </p>
-              </form>
-            </div> */}
           </div>
         </div>
       </div>

@@ -114,7 +114,7 @@ const Search = () => {
 
   return (
     <div className="matrimonial">
-      <div className="search-container">
+      <div className="container my-5 shadow-lg rounded-3">
         <div className="search-header">
           <h2>Advanced Search</h2>
           <div className="search-toggle">
@@ -153,25 +153,21 @@ const Search = () => {
 
         <div className="search-form">
           {searchType === "profileId" ? (
-            <div className="profile-id-search">
-              <div
-                className="input-row"
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  gap: "12px",
-                }}
-              >
+            <div className="row align-items-center">
+              <div className="col-9">
                 <input
                   type="text"
                   placeholder="Enter Profile ID"
-                  className="profile-input"
+                  className="profile-input form-control"
                   value={profileId}
                   onChange={(e) => setProfileId(e.target.value)}
-                  style={{ flex: "1 1 auto" }}
                 />
-                <button className="search-btn" style={{ whiteSpace: "nowrap" }}>
+              </div>
+              <div className="col-3">
+                <button
+                  className="search-btn btn btn-primary w-100"
+                  style={{ whiteSpace: "nowrap" }}
+                >
                   Find Profile
                 </button>
               </div>

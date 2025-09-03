@@ -35,11 +35,7 @@ const Header = () => {
         <div
           className="collapse navbar-collapse justify-content-between"
           id="mainNav"
-        >
-          {/* <a className="navbar-brand d-none d-lg-block" href="/">
-            <img src="logo-no-bg.png" alt="HappyWedz" height="40" />
-          </a> */}
-        </div>
+        ></div>
 
         <div className="collapse navbar-collapse" id="mainNav">
           <div className="row">
