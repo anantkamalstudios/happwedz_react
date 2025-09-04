@@ -59,8 +59,7 @@ const Header = () => {
 
                   {/* Right: Icons */}
                   <div className="col-12 col-lg-5 d-flex justify-content-center justify-content-lg-end gap-3">
-                    <a className="nav-link text-white p-0" href="#">
-                      {/* Book Icon */}
+                    {/* <a className="nav-link text-white p-0" href="#"> 
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="24"
@@ -77,29 +76,36 @@ const Header = () => {
                         <path d="m16 12 2 2 4-4" />
                         <path d="M22 6V4a1 1 0 0 0-1-1h-5a4 4 0 0 0-4 4 4 4 0 0 0-4-4H3a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h6a3 3 0 0 1 3 3 3 3 0 0 1 3-3h6a1 1 0 0 0 1-1v-1.3" />
                       </svg>
-                    </a>
+                    </a> */}
 
-                    <a className="nav-link text-white p-0" href="#">
-                      {/* Android Icon */}
+                    <a
+                      className="d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
+                      href="#"
+                      style={{ minWidth: 120 }}
+                    >
                       <svg
-                        fill="#fff"
+                        fill="#34A853"
                         width="24px"
                         height="24px"
                         viewBox="-2 -2 24 24"
                         xmlns="http://www.w3.org/2000/svg"
-                        className="jam jam-android-circle me-2"
+                        className="jam jam-android-circle"
                       >
                         <path d="M6.39 8.248h-.026a.598.598 0 0 0-.596.596v2.594c0 .329.267.596.596.596h.026a.598.598 0 0 0 .596-.596V8.844a.598.598 0 0 0-.597-.596zM7.27 12.44c0 .3.247.546.548.546h.586v1.402c0 .329.268.596.596.596h.025a.598.598 0 0 0 .597-.596v-1.402h.818v1.402c0 .329.27.596.596.596h.026a.598.598 0 0 0 .596-.596v-1.402h.586c.3 0 .547-.245.547-.547V8.343H7.27v4.096zM11.406 5.859l.465-.718a.099.099 0 1 0-.166-.108l-.482.743a3.142 3.142 0 0 0-1.192-.232c-.427 0-.83.084-1.192.232l-.481-.743a.099.099 0 0 0-.137-.029.099.099 0 0 0-.03.137l.466.718c-.839.41-1.405 1.185-1.405 2.074 0 .055.004.109.009.162h5.541c.005-.053.008-.107.008-.162 0-.889-.566-1.663-1.404-2.074zm-2.66 1.284a.266.266 0 1 1 0-.532.266.266 0 0 1 0 .532zm2.57 0a.266.266 0 1 1-.001-.532.266.266 0 0 1 0 .532zM13.698 8.248h-.025a.598.598 0 0 0-.597.596v2.594c0 .329.27.596.597.596h.025a.597.597 0 0 0 .596-.596V8.844a.598.598 0 0 0-.596-.596z"></path>
                         <path d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0 2C4.477 20 0 15.523 0 10S4.477 0 10 0s10 4.477 10 10-4.477 10-10 10z"></path>
                       </svg>
+                      <span className="fw-semibold text-dark">PlayStore</span>
                     </a>
 
-                    <a className="nav-link text-white p-0" href="#">
-                      {/* App Store Icon */}
+                    <a
+                      className="d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
+                      href="#"
+                      style={{ minWidth: 120 }}
+                    >
                       <svg
-                        fill="#fff"
-                        width="24px"
-                        height="24px"
+                        fill="#000"
+                        width="22px"
+                        height="22px"
                         viewBox="0 0 24 24"
                         id="app-store"
                         data-name="Flat Line"
@@ -113,7 +119,7 @@ const Header = () => {
                           y2="17"
                           style={{
                             fill: "none",
-                            stroke: "#fff",
+                            stroke: "#000",
                             strokeLinecap: "round",
                             strokeLinejoin: "round",
                             strokeWidth: "2",
@@ -126,7 +132,7 @@ const Header = () => {
                           y2="10.72"
                           style={{
                             fill: "none",
-                            stroke: "#fff",
+                            stroke: "#000",
                             strokeLinecap: "round",
                             strokeLinejoin: "round",
                             strokeWidth: "2",
@@ -139,7 +145,7 @@ const Header = () => {
                           y2="3"
                           style={{
                             fill: "none",
-                            stroke: "#fff",
+                            stroke: "#000",
                             strokeLinecap: "round",
                             strokeLinejoin: "round",
                             strokeWidth: "2",
@@ -152,7 +158,7 @@ const Header = () => {
                           y2="21"
                           style={{
                             fill: "none",
-                            stroke: "#fff",
+                            stroke: "#000",
                             strokeLinecap: "round",
                             strokeLinejoin: "round",
                             strokeWidth: "2",
@@ -165,16 +171,17 @@ const Header = () => {
                           y2="17"
                           style={{
                             fill: "none",
-                            stroke: "#fff",
+                            stroke: "#000",
                             strokeLinecap: "round",
                             strokeLinejoin: "round",
                             strokeWidth: "2",
                           }}
                         ></line>
                       </svg>
+                      <span className="fw-semibold text-dark">AppStore</span>
                     </a>
 
-                    <div className="dropdown-wrapper">
+                    {/* <div className="dropdown-wrapper">
                       <Link
                         className="nav-link text-white"
                         to="/customer-login"
@@ -185,8 +192,7 @@ const Header = () => {
                         Login
                       </Link>
                     </div>
-
-                    {/* Login Dropdown */}
+ 
                     <div className="dropdown-wrapper">
                       <Link
                         className="nav-link text-white"
@@ -197,7 +203,7 @@ const Header = () => {
                       >
                         Sign-up
                       </Link>
-                    </div>
+                    </div> */}
 
                     {/* try Dropdown */}
                     <div className="dropdown-wrapper">
@@ -871,6 +877,33 @@ const Header = () => {
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
+                            to="/customer-login"
+                            className="nav-link text-white"
+                          >
+                            Login
+                          </Link>
+                        </div>
+                      </li>
+
+                      {/* Vendor Dashboard */}
+                      <li className="nav-Vendor Dashboard mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper">
+                          <Link
+                            className="nav-link text-white"
+                            to="/customer-register"
+                            state={{ title: "vendor dashboard" }}
+                            id="photoDropdown"
+                            role="button"
+                          >
+                            Sign
+                          </Link>
+                        </div>
+                      </li>
+
+                      {/* Login Dropdown */}
+                      {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper">
+                          <Link
                             to="/user-dashboard"
                             className="nav-link text-white"
                           >
@@ -878,8 +911,7 @@ const Header = () => {
                           </Link>
                         </div>
                       </li>
-
-                      {/* Vendor Dashboard */}
+ 
                       <li className="nav-Vendor Dashboard mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
@@ -892,7 +924,7 @@ const Header = () => {
                             Dashboard
                           </Link>
                         </div>
-                      </li>
+                      </li> */}
                       {/* {["Genie"].map((item) => (
                         <li className="nav-item" key={item}>
                           <a className="nav-link text-white" href="#">

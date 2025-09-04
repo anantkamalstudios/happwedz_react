@@ -282,9 +282,10 @@ const CustomerRegister = () => {
     email: "",
     password: "",
     phone: "",
-    event_date: "",
+    wedding_venues: "",
     country: "",
     city: "",
+    event_date: "",
   });
 
   const [errors, setErrors] = useState({});
