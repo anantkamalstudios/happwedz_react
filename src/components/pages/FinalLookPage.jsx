@@ -13,7 +13,7 @@ const FinalLookPage = () => {
 
   const profileImage =
     selectedImage ||
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='300' viewBox='0 0 200 300'%3E%3Crect width='200' height='300' fill='%23fce4ec'/%3E%3Ccircle cx='100' cy='100' r='30' fill='%23ed1173'/%3E%3Cpath d='M70 130 Q100 160 130 130' stroke='%23ed1173' stroke-width='3' fill='none'/%3E%3C/svg%3E";
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='300' viewBox='0 0 200 300'%3E%3Crect width='200' height='300' fill='%23fce4ec'/%3E%3Ccircle cx='100' cy='100' r='30' fill='%23ed1173'/%3E%3Cpath d='M70 130 Q100 160 130 130' stroke='%23ed1173' strokeWidth='3' fill='none'/%3E%3C/svg%3E";
 
   const colors = {
     primaryPink: "#ed1173",
@@ -55,7 +55,7 @@ const FinalLookPage = () => {
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src =
-                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='300' viewBox='0 0 200 300'%3E%3Crect width='200' height='300' fill='%23fce4ec'/%3E%3Ccircle cx='100' cy='100' r='30' fill='%23ed1173'/%3E%3Cpath d='M70 130 Q100 160 130 130' stroke='%23ed1173' stroke-width='3' fill='none'/%3E%3C/svg%3E";
+                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='300' viewBox='0 0 200 300'%3E%3Crect width='200' height='300' fill='%23fce4ec'/%3E%3Ccircle cx='100' cy='100' r='30' fill='%23ed1173'/%3E%3Cpath d='M70 130 Q100 160 130 130' stroke='%23ed1173' strokeWidth='3' fill='none'/%3E%3C/svg%3E";
                 }}
               />
             </div>

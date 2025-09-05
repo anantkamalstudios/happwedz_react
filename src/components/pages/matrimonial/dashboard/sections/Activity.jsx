@@ -1385,12 +1385,12 @@ const Activity = () => {
                           transform="matrix(1,0,0,1,113.1719970703125,88.83599853515625)"
                         >
                           <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                             fill-opacity="0"
                             stroke="rgb(250,140,141)"
                             stroke-opacity="1"
-                            stroke-width="20"
+                            strokeWidth="20"
                             d=" M54.005001068115234,-50.08599853515625 C54.005001068115234,-50.08599853515625 -51.20500183105469,48.4630012512207 -51.20500183105469,48.4630012512207 C-51.20500183105469,48.4630012512207 54.005001068115234,-50.08599853515625 54.005001068115234,-50.08599853515625z"
                           ></path>
                         </g>
@@ -1399,12 +1399,12 @@ const Activity = () => {
                           transform="matrix(0,1,-1,0,113.1719970703125,88.83599853515625)"
                         >
                           <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                             fill-opacity="0"
                             stroke="rgb(250,140,141)"
                             stroke-opacity="1"
-                            stroke-width="20"
+                            strokeWidth="20"
                             d=" M-51.20500183105469,48.4630012512207 C-51.20500183105469,48.4630012512207 -51.20500183105469,48.4630012512207 -51.20500183105469,48.4630012512207 C-51.20500183105469,48.4630012512207 54.005001068115234,-50.08599853515625 54.005001068115234,-50.08599853515625"
                           ></path>
                         </g>

@@ -198,9 +198,9 @@ const Header = () => {
                           height="20"
                           fill="none"
                           stroke="currentColor"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                           className="text-gray-800 w-full h-full"
                         >
                           {/* Face */}
@@ -887,6 +887,21 @@ const Header = () => {
                             role="button"
                           >
                             Genie
+                          </Link>
+                        </div>
+                      </li>
+
+                      {/* blog Dropdown */}
+                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper">
+                          <Link
+                            className="nav-link text-white"
+                            to="/blog"
+                            state={{ title: "Blog" }}
+                            id="blog"
+                            role="button"
+                          >
+                            Blog
                           </Link>
                         </div>
                       </li>

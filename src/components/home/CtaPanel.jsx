@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const CtaPanel = ({ img, title, link, subtitle, btnName }) => {
   return (
-    <div class="home-cta-section d-flex align-items-center justify-content-center my-5">
+    <div className="home-cta-section d-flex align-items-center justify-content-center my-5">
       <div className="container d-flex align-items-center justify-content-center">
         <div className="row w-100">
           <div className="col-12 col-lg-12">
