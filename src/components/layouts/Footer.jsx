@@ -6,33 +6,41 @@ const Footer = () => {
     <footer
       className="footer position-relative pt-0 mt-5"
       style={{
-        background: "#fefefe",
+        background:
+          "linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f1f3f4 100%)",
         color: "#222",
-        marginTop: "2rem",
+        marginTop: "3rem",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      {/* <div
+      {/* Decorative Top Border */}
+      <div
         style={{
           width: "100%",
-          lineHeight: 0,
-          transform: "translateY(-100%) rotate(180deg)",
+          height: "4px",
+          position: "absolute",
+          top: 0,
+          left: 0,
         }}
-      >
-        <svg
-          viewBox="0 0 1440 100"
-          width="100%"
-          height="100"
-          preserveAspectRatio="none"
-          style={{ display: "block" }}
-        >
-          <path
-            d="M0,80 C360,120 1080,0 1440,80 L1440,0 L0,0 Z"
-            fill="#fff"
-            stroke="#eee"
-            strokeWidth="2"
-          />
-        </svg>
-      </div> */}
+      />
+
+      {/* Subtle Pattern Overlay */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `
+            radial-gradient(circle at 20% 80%, rgba(232, 53, 129, 0.03) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(255, 107, 157, 0.03) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(232, 53, 129, 0.02) 0%, transparent 50%)
+          `,
+          pointerEvents: "none",
+        }}
+      />
 
       <div className="container" style={{ position: "relative", zIndex: 1 }}>
         <div className="row gy-4">
@@ -216,67 +224,6 @@ const Footer = () => {
           </p>
         </div>
       </div>
-
-      <style>{`
-        .footer { 
-          background: #fff;
-          color: #222;
-          box-shadow: 0 -2px 16px 0 rgba(0,0,0,0.04);
-        }
-        .footer-title,
-        .section-title {
-          text-transform: uppercase;
-          font-weight: 600;
-          margin-bottom: 0.75rem;
-          font-size: 0.9rem;
-          letter-spacing: 0.05em;
-          color: #111;
-        }
-        .footer-list {
-          list-style: none;
-          padding: 0;
-          margin: 0;
-        }
-        .footer-list li {
-          margin: 0.35rem 0;
-        }
-        .footer-list a {
-          color: #222;
-          text-decoration: none;
-          transition: color .2s;
-          font-size: 0.95rem;
-        }
-        .footer-list a:hover {
-          color: #e83581;
-        }
-        .social-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 38px;
-          height: 38px;
-          border-radius: 50%;
-          background: #f5f5f5;
-          color: #222;
-          text-decoration: none;
-          transition: transform .2s, background .2s;
-          font-size: 1.2rem;
-        }
-        .social-btn:hover {
-          background: #e83581;
-          color: #fff;
-          transform: scale(1.1);
-        }
-        .footer hr {
-          border-color: #eee;
-        }
-        .footer .small {
-          color: #888;
-        }
-        @media (max-width: 767px) {
-          .footer-list a { font-size: 0.9rem; }
-        }
-      `}</style>
     </footer>
   );
 };

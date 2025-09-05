@@ -16,7 +16,7 @@ const AppDownloadSection = () => {
       <div className="container d-flex flex-column flex-lg-row align-items-center justify-content-between gap-4">
         <div className="col-lg-12">
           <div
-            className="rounded-3 p-4 p-lg-5"
+            className="rounded-3 p-4"
             style={{
               maxWidth: "650px",
               left: "300px",

@@ -77,11 +77,10 @@ const Header = () => {
                         <path d="M22 6V4a1 1 0 0 0-1-1h-5a4 4 0 0 0-4 4 4 4 0 0 0-4-4H3a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h6a3 3 0 0 1 3 3 3 3 0 0 1 3-3h6a1 1 0 0 0 1-1v-1.3" />
                       </svg>
                     </a> */}
-
                     <a
-                      className="d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
-                      href="#"
+                      className="app-store-link d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
                       style={{ minWidth: 120 }}
+                      href="#"
                     >
                       <svg
                         fill="#34A853"
@@ -98,14 +97,14 @@ const Header = () => {
                     </a>
 
                     <a
-                      className="d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
+                      className=" app-store-link d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
                       href="#"
                       style={{ minWidth: 120 }}
                     >
                       <svg
                         fill="#000"
-                        width="22px"
-                        height="22px"
+                        width="20px"
+                        height="20px"
                         viewBox="0 0 24 24"
                         id="app-store"
                         data-name="Flat Line"
@@ -181,6 +180,66 @@ const Header = () => {
                       <span className="fw-semibold text-dark">AppStore</span>
                     </a>
 
+                    {/* try Dropdown */}
+                    <div className="dropdown-wrapper">
+                      <Link
+                        className="app-store-link-pulse d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
+                        style={{ minWidth: 120 }}
+                        to="/try"
+                        state={{ title: "Try" }}
+                        id="photoDropdown"
+                        role="button"
+                      >
+                        {/* Bride girl SVG icon for Design Studio */}
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          width="20"
+                          height="20"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          className="text-gray-800 w-full h-full"
+                        >
+                          {/* Face */}
+                          <circle
+                            cx="12"
+                            cy="9"
+                            r="3.2"
+                            fill="#fff"
+                            stroke="#000"
+                          />
+                          {/* Veil */}
+                          <path
+                            d="M4.5 20c0-4.5 3.5-8 7.5-8s7.5 3.5 7.5 8"
+                            fill="#FBCFE8"
+                            stroke="#D946EF"
+                          />
+                          {/* Dress */}
+                          <path
+                            d="M8 20c0-2.2 1.8-4 4-4s4 1.8 4 4"
+                            fill="#000"
+                            stroke="#000"
+                          />
+                          {/* Shoulders */}
+                          <path
+                            d="M9.5 13.5c.5.5 1.5.5 2.5.5s2-.1 2.5-.5"
+                            stroke="#000"
+                          />
+                          {/* Smile */}
+                          <path d="M11 10.5c.3.5 1.7.5 2 0" stroke="#000" />
+                          {/* Eyes */}
+                          <circle cx="11" cy="9" r="0.25" fill="#000" />
+                          <circle cx="13" cy="9" r="0.25" fill="#000" />
+                        </svg>
+                        <span className="fw-semibold text-dark">
+                          Design Studio
+                        </span>
+                      </Link>
+                    </div>
+
                     {/* <div className="dropdown-wrapper">
                       <Link
                         className="nav-link text-white"
@@ -205,18 +264,6 @@ const Header = () => {
                       </Link>
                     </div> */}
 
-                    {/* try Dropdown */}
-                    <div className="dropdown-wrapper">
-                      <Link
-                        className="nav-link text-white"
-                        to="/try"
-                        state={{ title: "Try" }}
-                        id="photoDropdown"
-                        role="button"
-                      >
-                        Try
-                      </Link>
-                    </div>
                     <div className="d-flex gap-3"></div>
                   </div>
                 </div>

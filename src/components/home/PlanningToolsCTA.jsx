@@ -7,9 +7,15 @@ const PlanningToolsCTA = () => {
       <section className="planning-tools-section  px-3 py-3">
         <div className="container">
           <div className="text-center mb-6">
-            <h3 className="display-5 fw-light mb-3" data-aos="fade-up">
-              Plan Your Perfect Day
-            </h3>
+            <h3 className="fw-bold mb-4 text-dark">Plan Your Perfect Day</h3>
+            <p
+              className="h6 text-muted mb-3"
+              data-aos="fade-up"
+              data-aos-delay="50"
+            >
+              Streamline your wedding planning with our intuitive tools and
+              resources
+            </p>
             <div
               className="divider mx-auto mb-4"
               data-aos="fade-up"

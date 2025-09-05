@@ -1,7 +1,5 @@
-import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
-import Header from "./components/layouts/Header";
-import Footer from "./components/layouts/Footer";
+import React, { useEffect } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import "./App.css";
 
 // Public pages
@@ -31,9 +29,16 @@ import CancellationPolicy from "./components/pages/CancellationPolicy";
 import CardEditorPage from "./components/CardEditorPage";
 import ProfileImageSelector from "./components/pages/ProfileImageSelector";
 import FinalLookPage from "./components/pages/FinalLookPage";
+import Blog from "./components/pages/Blog";
 // import DashboardLayout from "./components/pages/matrimonial/dashboard/DashboardLayout";
 
 function App() {
+  const location = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   return (
     <Routes>
       <Route element={<MainLayout />}>
@@ -48,6 +53,7 @@ function App() {
         <Route path="/user-forgot-password" element={<ForgotPassword />} />
         <Route path="/terms" element={<TermsCondition />} />
         <Route path="/try" element={<ProfileImageSelector />} />
+        <Route path="/blog" element={<Blog />} />
         <Route path="/finallook" element={<FinalLookPage />} />
         <Route path="/cancellation" element={<CancellationPolicy />} />
         <Route

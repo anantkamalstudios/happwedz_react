@@ -363,11 +363,11 @@ const CardEditor = ({ template, onBack }) => {
       const toast = document.createElement("div");
       toast.className = "toast show position-fixed top-0 end-0 m-3";
       toast.innerHTML = `
-        <div class="toast-header">
-          <strong class="me-auto">Success</strong>
-          <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
+        <div className="toast-header">
+          <strong className="me-auto">Success</strong>
+          <button type="button" className="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
         </div>
-        <div class="toast-body">
+        <div className="toast-body">
           Project saved successfully!
         </div>
       `;

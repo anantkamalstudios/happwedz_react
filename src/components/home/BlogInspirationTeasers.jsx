@@ -40,28 +40,13 @@ const blogsCarousel = () => {
         </svg>
       </div>
 
-      <div className="container position-relative" style={{ zIndex: 10 }}>
+      <div className="container position-relative mt-4" style={{ zIndex: 10 }}>
         <div className="text-center mb-6">
-          <h2
-            className="display-5 fw-light mb-3"
-            style={{
-              color: "#8a5a76",
-              fontWeight: 400,
-            }}
-          >
-            Inspiration Teasers
-          </h2>
-          <div
-            className="divider mx-auto mb-4"
-            style={{
-              width: "80px",
-              height: "2px",
-              background: "linear-gradient(to right, #e9b0ce, #d8a1bd)",
-            }}
-          ></div>
+          <h2 className="fw-bold text-dark mb-3">Inspiration Teasers</h2>
           <p
-            className="text-muted lead"
-            style={{ maxWidth: "600px", margin: "0 auto" }}
+            className="h6 text-muted mb-3"
+            data-aos="fade-up"
+            data-aos-delay="50"
           >
             Discover the latest trends, tips, and real wedding stories
           </p>
