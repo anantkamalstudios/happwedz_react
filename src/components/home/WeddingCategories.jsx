@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import categories from "../../data/categories";
+import { Link } from "react-router-dom";
 
-// Elegant Category Cards (replaces accordion)
 const CategoryAccordion = ({ onSelect }) => {
   const [hoveredIndex, setHoveredIndex] = useState(-1);
-  const [expandedIndex, setExpandedIndex] = useState(-1); // for mobile tap expand
+  const [expandedIndex, setExpandedIndex] = useState(-1);
 
   const handleEnter = (i) => setHoveredIndex(i);
   const handleLeave = () => setHoveredIndex(-1);
@@ -86,7 +86,8 @@ const CategoryAccordion = ({ onSelect }) => {
                   </div>
 
                   <div className="wcg-actions d-flex justify-content-between align-items-center">
-                    <button
+                    <Link
+                      to={`/${cat.slug}`}
                       type="button"
                       className="btn btn-primary rounded-pill px-3"
                       onClick={(e) => {
@@ -95,7 +96,7 @@ const CategoryAccordion = ({ onSelect }) => {
                       }}
                     >
                       Explore
-                    </button>
+                    </Link>
                     <button
                       type="button"
                       className="btn btn-outline-primary rounded-pill px-3"
@@ -114,9 +115,12 @@ const CategoryAccordion = ({ onSelect }) => {
                       <div className="row g-2">
                         {cat.items.map((it, idx) => (
                           <div key={idx} className="col-6">
-                            <a href="#" className="wedding-link small">
+                            <Link
+                              to={`/${cat.slug}`}
+                              className="wedding-link small"
+                            >
                               {it}
-                            </a>
+                            </Link>
                           </div>
                         ))}
                       </div>

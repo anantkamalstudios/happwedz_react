@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import Swiper from "swiper/bundle";
 import "swiper/css/bundle";
 import venues from "../../data/venue";
+import { Link } from "react-router-dom";
 
 const VenueSlider = () => {
   useEffect(() => {
@@ -41,7 +42,7 @@ const VenueSlider = () => {
           <h3 className="fw-bold mb-4 text-dark">Popular Venue Searches</h3>
         </div>
         <div className="col-md-2 ">
-          <a href="" className="text-decoration-none">
+          <Link to="/venues" className="text-decoration-none">
             <h6 className="fw-bold mb-4 text-dark">
               View All Venue{" "}
               <svg
@@ -59,7 +60,7 @@ const VenueSlider = () => {
                 <path d="m9 18 6-6-6-6" />
               </svg>
             </h6>
-          </a>
+          </Link>
         </div>
       </div>
 

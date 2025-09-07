@@ -1,29 +1,28 @@
-
 export const faqssection = [
-    {
-        question: "How to find the ideal wedding venue for your wedding functions?",
-        answer:
-            "When you have a clear vision for your wedding theme, finding that perfect wedding venue can be one of the most daunting tasks. Keep in mind that finding the ideal wedding venue is not just about how the property looks. Once you have an idea of your dates, guest list and budget you can begin shortlisting wedding venues. Cross-check the venue pricing to ensure it fits your wedding budget and your guest list size. Next, consider the weather and time of day to help you decide on the type of venue and if you'll be celebrating indoors or outdoors. Finally, shortlist wedding venues that will be able to create the wedding theme you want.",
-    },
-    {
-        question: "What's the ideal time to book a wedding venue?",
-        answer:
-            "We recommend booking 9-12 months in advance for peak season weddings. For off-season dates, 6-8 months is usually sufficient.",
-    },
-    {
-        question: "How many guests can wedding venues accommodate?",
-        answer:
-            "Venues range from intimate spaces for 50 guests to large banquet halls for 1000+ guests. Use our guest count filter to find perfect matches.",
-    },
-    {
-        question: "Can I see venue availability before contacting?",
-        answer:
-            "Many venues display real-time availability on their profiles. For others, you can send inquiries directly through our platform.",
-    },
-    {
-        question: "What areas have the most wedding venues?",
-        answer:
-            "Popular areas include Banjara Hills, Gachibowli, and Jubilee Hills. Use our location search to explore venues by area.",
-    },
+  {
+    question:
+      "Why is Shaadi.com better compared to other matrimonial websites?",
+    answer:
+      "Shaadi.com stands out as India's leading matchmaking platform with over 80 Lakh success stories, a testament to its trust and effectiveness. Unlike traditional matrimonial sites, Shaadi.com offers verified profiles, personalized matchmaking services, and advanced search tools that help users find compatible partners with ease and confidence. Its focus on safety, authenticity, and meaningful connections makes it a preferred choice for millions.",
+  },
+  {
+    question: "How does Shaadi.com ensure profile verification?",
+    answer:
+      "Shaadi.com employs multiple verification methods including phone verification, photo verification, and document verification. Our dedicated team manually reviews profiles to ensure authenticity. We also have advanced AI systems that detect and prevent fake profiles, ensuring a safe and trustworthy platform for all users.",
+  },
+  {
+    question: "What makes Shaadi.com's matchmaking services unique?",
+    answer:
+      "Our personalized matchmaking services are powered by advanced algorithms that consider compatibility factors like lifestyle, values, education, and family background. We also provide dedicated relationship managers for premium members who offer personalized assistance throughout the matchmaking journey.",
+  },
+  {
+    question: "How secure is my personal information on Shaadi.com?",
+    answer:
+      "Shaadi.com follows strict privacy protocols and uses industry-standard encryption to protect your personal data. You have complete control over who can view your profile and contact you. Our privacy settings allow you to share information selectively and maintain your anonymity until you're comfortable.",
+  },
+  {
+    question: "What are the success rates of Shaadi.com?",
+    answer:
+      "With over 80 Lakh success stories and counting, Shaadi.com has one of the highest success rates in the matrimonial industry. Our platform facilitates thousands of meaningful connections every month, with many leading to happy marriages across different communities and regions.",
+  },
 ];
-

@@ -127,7 +127,9 @@ const Detailed = () => {
             </div>
 
             <div className="venue-description mb-5">
-              <h3 className="section-title">About This Venue</h3>
+              <h3 className="details-section-title fw-bold fw-bold">
+                About This Venue
+              </h3>
               <p className="description-text">
                 Nestled in the heart of Nashik's wine country, Grape County Eco
                 Resort & Spa offers a luxurious setting for your dream wedding.
@@ -146,7 +148,9 @@ const Detailed = () => {
 
             {/* Amenities */}
             <div className="venue-amenities mb-5">
-              <h3 className="section-title">Amenities & Services</h3>
+              <h3 className="details-section-title fw-bold">
+                Amenities & Services
+              </h3>
               <Row>
                 {amenities.map((item, index) => (
                   <Col md={6} key={index}>
@@ -161,7 +165,9 @@ const Detailed = () => {
 
             {/* Testimonials */}
             <div className="testimonials mb-5">
-              <h3 className="section-title">What Couples Say</h3>
+              <h3 className="details-section-title fw-bold">
+                What Couples Say
+              </h3>
               <Row>
                 <Col md={6}>
                   <div className="testimonial-card">
@@ -316,7 +322,7 @@ const Detailed = () => {
       {/* Similar Venues */}
       <section className="similar-venues py-5">
         <Container>
-          <h3 className="section-title text-center mb-4">
+          <h3 className="details-section-title fw-bold text-center mb-4">
             Similar Venues You Might Like
           </h3>
           <Row>

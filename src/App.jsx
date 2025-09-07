@@ -7,6 +7,7 @@ import "./App.css";
 
 // Layout components (can be eagerly loaded)
 import NotFound from "./components/pages/NotFound";
+import BlogDetails from "./components/pages/BlogDetails";
 
 // Lazy loaded pages
 const Home = lazy(() => import("./components/pages/Home"));
@@ -77,6 +78,7 @@ function App() {
           <Route path="/terms" element={<TermsCondition />} />
           <Route path="/try" element={<ProfileImageSelector />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/blog-details" element={<BlogDetails />} />
           <Route path="/finallook" element={<FinalLookPage />} />
           <Route path="/cancellation" element={<CancellationPolicy />} />
           <Route

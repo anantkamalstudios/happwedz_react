@@ -68,16 +68,6 @@ const Herosection = () => {
           <Col xs={12} md={10}>
             <Form className="search-form d-flex flex-column flex-sm-row gap-3">
               <Form.Group className="flex-fill m-0">
-                <Form.Control
-                  type="text"
-                  placeholder="Type Vendor Name"
-                  aria-label="Vendor Name"
-                  className="form-control-lg"
-                  style={{ fontSize: "14px", padding: "0.5rem 0.75rem" }}
-                />
-              </Form.Group>
-
-              <Form.Group className="flex-fill m-0">
                 <Form.Select
                   aria-label="Select Category"
                   className="form-control-lg"

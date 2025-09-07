@@ -948,7 +948,7 @@ const Header = () => {
                       </li>
 
                       {/* Vendor Dashboard */}
-                      <li className="nav-Vendor Dashboard mega-dropdown-wrapper position-static">
+                      {/* <li className="nav-Vendor Dashboard mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
                             className="nav-link text-white"
@@ -960,7 +960,7 @@ const Header = () => {
                             Sign
                           </Link>
                         </div>
-                      </li>
+                      </li> */}
 
                       {/* Login Dropdown */}
                       {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">

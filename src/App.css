@@ -14251,3 +14251,142 @@ input:checked + .slider:before {
     justify-content: center;
   }
 }
+
+/* FAQ */
+.faq-section {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.faq-heading {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.faq-card {
+  background: #fff;
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  border: 1px solid #eaeaea;
+}
+
+.faq-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+.faq-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.faq-question {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #000;
+  margin: 0;
+}
+
+.faq-icon {
+  font-size: 1.5rem;
+  color: #000;
+  font-weight: bold;
+  transition: transform 0.3s ease;
+}
+
+.faq-card.active .faq-icon {
+  transform: rotate(180deg);
+  color: #2c3e50;
+}
+
+.faq-answer {
+  margin-top: 12px;
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.6;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Factors List */
+.factors-wrapper {
+  background-color: #fff9fc;
+  padding: 60px 0;
+}
+
+.factors-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #d63384;
+  margin-bottom: 10px;
+}
+
+.factors-subtitle {
+  font-size: 1.1rem;
+  color: #6c757d;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.factors-card {
+  border-radius: 15px;
+  padding: 18px;
+  transition: all 0.3s ease-in-out;
+  background-color: #ffffff;
+}
+
+.factors-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 10px 25px rgba(214, 51, 132, 0.15);
+}
+
+.factors-icon {
+  font-size: 1.6rem;
+  color: #d63384;
+  margin-top: 4px;
+}
+
+.factors-heading {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.factors-content {
+  color: #555;
+  font-size: 1rem;
+  margin-top: 5px;
+  line-height: 1.6;
+}
+
+.factors-info-card {
+  border-radius: 15px;
+  background-color: #fff4f9;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.factors-info-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(214, 51, 132, 0.1);
+}
+
+
+
+/* Blog details */
