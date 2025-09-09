@@ -6,6 +6,7 @@ import Vendors from "./vendors/Vendors";
 import Budget from "./budget/Budget";
 import Check from "./checklist/Check";
 import Guests from "./guests/Guests";
+import WishList from "./wishlist/WishList";
 
 const UserDashboardMain = () => {
   const { slug } = useParams();
@@ -22,6 +23,8 @@ const UserDashboardMain = () => {
         return <Guests />;
       case "budget":
         return <Budget />;
+      case "wishlist":
+        return <WishList />;
       default:
         return <MyWedding />;
     }

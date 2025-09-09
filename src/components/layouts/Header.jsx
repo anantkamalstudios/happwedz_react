@@ -14,7 +14,7 @@ const Header = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-light shadow-sm primary-bg p-0">
       <div className="container-fluid">
-        <div className="d-flex d-lg-none justify-content-between align-items-center w-100 px-3 py-2">
+        <div className="d-flex d-lg-none justify-content-between align-items-center px-3 py-2">
           <Link className="navbar-brand" to="/">
             <img src="logo-no-bg.png" alt="HappyWedz" height="40" />
           </Link>
@@ -963,7 +963,7 @@ const Header = () => {
                       </li> */}
 
                       {/* Login Dropdown */}
-                      {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
                             to="/user-dashboard"
@@ -973,7 +973,7 @@ const Header = () => {
                           </Link>
                         </div>
                       </li>
- 
+
                       <li className="nav-Vendor Dashboard mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
@@ -986,7 +986,7 @@ const Header = () => {
                             Dashboard
                           </Link>
                         </div>
-                      </li> */}
+                      </li>
                       {/* {["Genie"].map((item) => (
                         <li className="nav-item" key={item}>
                           <a className="nav-link text-white" href="#">

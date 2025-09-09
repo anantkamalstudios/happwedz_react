@@ -5,6 +5,7 @@ import { PiPiggyBankLight } from "react-icons/pi";
 import { IoLocationOutline } from "react-icons/io5";
 import { MdOutlineChecklist } from "react-icons/md";
 import { GiBigDiamondRing } from "react-icons/gi";
+import { FaHeart } from "react-icons/fa";
 
 const UserDashboardNavbar = () => {
   const { slug } = useParams();
@@ -41,6 +42,12 @@ const UserDashboardNavbar = () => {
       slug: "budget",
       label: "budget",
       icon: <PiPiggyBankLight size={20} />,
+    },
+    {
+      id: "wishlist",
+      slug: "wishlist",
+      label: "wishlist",
+      icon: <FaHeart size={20} />,
     },
   ];
 
