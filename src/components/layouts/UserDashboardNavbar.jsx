@@ -3,51 +3,191 @@ import { useNavigate, useParams } from "react-router-dom";
 import { BsPersonHeart } from "react-icons/bs";
 import { PiPiggyBankLight } from "react-icons/pi";
 import { IoLocationOutline } from "react-icons/io5";
-import { MdOutlineChecklist } from "react-icons/md";
+import { MdEventAvailable, MdOutlineChecklist } from "react-icons/md";
 import { GiBigDiamondRing } from "react-icons/gi";
-import { FaHeart } from "react-icons/fa";
+import {
+  FaCalendarCheck,
+  FaCameraRetro,
+  FaHeart,
+  FaRegCommentDots,
+} from "react-icons/fa";
 
 const UserDashboardNavbar = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("wedding");
 
+  // const tabs = [
+  //   {
+  //     id: "wedding",
+  //     slug: "my-wedding",
+  //     label: "My Wedding",
+  //     icon: <GiBigDiamondRing size={20} />,
+  //   },
+  //   {
+  //     id: "checklist",
+  //     slug: "checklist",
+  //     label: "checklist",
+  //     icon: <MdOutlineChecklist size={20} />,
+  //   },
+  //   {
+  //     id: "vendors",
+  //     slug: "vendor",
+  //     label: "vendors",
+  //     icon: <IoLocationOutline size={20} />,
+  //   },
+  //   {
+  //     id: "guest-list",
+  //     slug: "guest-list",
+  //     label: "Guest List",
+  //     icon: <BsPersonHeart size={20} />,
+  //   },
+  //   {
+  //     id: "budget",
+  //     slug: "budget",
+  //     label: "budget",
+  //     icon: <PiPiggyBankLight size={20} />,
+  //   },
+  //   {
+  //     id: "wishlist",
+  //     slug: "wishlist",
+  //     label: "wishlist",
+  //     icon: <FaHeart size={20} />,
+  //   },
+  //   {
+  //     id: "booking",
+  //     slug: "booking",
+  //     label: "booking",
+  //     icon: <MdEventAvailable size={20} />,
+  //   },
+  //   {
+  //     id: "message",
+  //     slug: "message",
+  //     label: "message",
+  //     icon: <FaRegCommentDots size={20} />,
+  //   },
+  //   {
+  //     id: "Real Wedding",
+  //     slug: "real-wedding",
+  //     label: "real-wedding",
+  //     icon: (
+  //       <img
+  //         src="/images/userDashboard/realwedding.svg"
+  //         alt="Real Wedding"
+  //         style={{ width: 40, height: 40 }}
+  //       />
+  //     ),
+  //   },
+  // ];
+
   const tabs = [
     {
       id: "wedding",
       slug: "my-wedding",
       label: "My Wedding",
-      icon: <GiBigDiamondRing size={20} />,
+      icon: (
+        <img
+          src="/images/userDashboard/wedding.png"
+          alt="My Wedding"
+          style={{ width: 44, height: 44, objectFit: "contain" }}
+        />
+      ),
     },
     {
       id: "checklist",
       slug: "checklist",
       label: "checklist",
-      icon: <MdOutlineChecklist size={20} />,
+      icon: (
+        <img
+          src="/images/userDashboard/checklist.png"
+          alt="Checklist"
+          style={{ width: 44, height: 44, objectFit: "contain" }}
+        />
+      ),
     },
     {
       id: "vendors",
       slug: "vendor",
       label: "vendors",
-      icon: <IoLocationOutline size={20} />,
+      icon: (
+        <img
+          src="/images/userDashboard/vendors.png"
+          alt="Vendors"
+          style={{ width: 44, height: 44, objectFit: "contain" }}
+        />
+      ),
     },
     {
       id: "guest-list",
       slug: "guest-list",
       label: "Guest List",
-      icon: <BsPersonHeart size={20} />,
+      icon: (
+        <img
+          src="/images/userDashboard/guests.png"
+          alt="Guest List"
+          style={{ width: 44, height: 44, objectFit: "contain" }}
+        />
+      ),
     },
     {
       id: "budget",
       slug: "budget",
       label: "budget",
-      icon: <PiPiggyBankLight size={20} />,
+      icon: (
+        <img
+          src="/images/userDashboard/budget.png"
+          alt="budget"
+          style={{ width: 44, height: 44, objectFit: "contain" }}
+        />
+      ),
     },
     {
       id: "wishlist",
       slug: "wishlist",
       label: "wishlist",
-      icon: <FaHeart size={20} />,
+      icon: (
+        <img
+          src="/images/userDashboard/wishlist.png"
+          alt="Wishlist"
+          style={{ width: 44, height: 44, objectFit: "contain" }}
+        />
+      ),
+    },
+    {
+      id: "booking",
+      slug: "booking",
+      label: "booking",
+      icon: (
+        <img
+          src="/images/userDashboard/booking.png"
+          alt="Booking"
+          style={{ width: 44, height: 44, objectFit: "contain" }}
+        />
+      ),
+    },
+    {
+      id: "message",
+      slug: "message",
+      label: "message",
+      icon: (
+        <img
+          src="/images/userDashboard/message.png"
+          alt="message"
+          style={{ width: 44, height: 44, objectFit: "contain" }}
+        />
+      ),
+    },
+    {
+      id: "Real Wedding",
+      slug: "real-wedding",
+      label: "real-wedding",
+      icon: (
+        <img
+          src="/images/userDashboard/rw.png"
+          alt="Real Wedding"
+          style={{ width: 44, height: 44, objectFit: "contain" }}
+        />
+      ),
     },
   ];
 

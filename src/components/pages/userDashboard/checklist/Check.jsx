@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaCheck, FaPlus, FaDownload, FaPrint, FaTrash } from "react-icons/fa";
+import { FiCheck, FiTrash } from "react-icons/fi";
 
 const Check = () => {
   const initialTasks = [
@@ -176,7 +177,7 @@ const Check = () => {
       <div className="wc-row row">
         {/* Left sidebar */}
         <div className="wc-sidebar col-md-3">
-          <div className="wc-card card mb-4">
+          <div className="wc-card card mb-4 border-0">
             <div className="wc-card-header card-header text-white">
               <h5 className="mb-0">STATUS</h5>
             </div>
@@ -220,7 +221,7 @@ const Check = () => {
             </div>
           </div>
 
-          <div className="wc-card card mb-4">
+          <div className="wc-card card mb-4 border-0">
             <div className="wc-card-header card-header text-white">
               <h5 className="mb-0">DATE</h5>
             </div>
@@ -246,7 +247,7 @@ const Check = () => {
             </div>
           </div>
 
-          <div className="wc-card card">
+          <div className="wc-card card border-0">
             <div className="wc-card-header card-header text-white">
               <h5 className="mb-0">CATEGORY</h5>
             </div>
@@ -381,7 +382,7 @@ const Check = () => {
                             onClick={() => toggleTask(task.id)}
                           >
                             {task.status && (
-                              <FaCheck className="text-success" />
+                              <FiCheck className="text-success" />
                             )}
                           </div>
                           <div className="flex-grow-1">
@@ -403,7 +404,7 @@ const Check = () => {
                             className="wc-btn btn btn-sm btn-outline-danger"
                             onClick={() => deleteTask(task.id)}
                           >
-                            <FaTrash />
+                            <FiTrash />
                           </button>
                         </div>
                       </li>

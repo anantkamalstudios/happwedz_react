@@ -18,6 +18,7 @@ import MainPhotages from "../layouts/twoSoul/MainPhotages";
 import PricingModal from "../layouts/PricingModal";
 import WeddingCardDesigns from "../layouts/eInvite/WeddingCardDesigns";
 import MainSearch from "../layouts/Main/MainSearch";
+import RealWedding from "./RealWedding";
 
 const MainSection = () => {
   const { section } = useParams();
@@ -77,11 +78,7 @@ const MainSection = () => {
     return (
       <>
         <MainSearch title="Real Wedding" />
-        <MainByRegion />
-        <FindMain />
-        <MainHeroSection loc={"Panjab"} />
-        <MainHeroSection loc={"Karela "} />
-        <MainHeroSection loc={"Goa"} />
+        <RealWedding />
         <FactorsList />
         <FaqsSection />
       </>

@@ -7,6 +7,9 @@ import Budget from "./budget/Budget";
 import Check from "./checklist/Check";
 import Guests from "./guests/Guests";
 import WishList from "./wishlist/WishList";
+import Booking from "./booking/Booking";
+import Messages from "./messages/Messages";
+import RealWeddingForm from "./realWeddingForm/RealWeddingForm";
 
 const UserDashboardMain = () => {
   const { slug } = useParams();
@@ -25,6 +28,12 @@ const UserDashboardMain = () => {
         return <Budget />;
       case "wishlist":
         return <WishList />;
+      case "booking":
+        return <Booking />;
+      case "message":
+        return <Messages />;
+      case "real-wedding":
+        return <RealWeddingForm />;
       default:
         return <MyWedding />;
     }

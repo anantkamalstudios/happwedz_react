@@ -906,6 +906,20 @@ const Header = () => {
                         </div>
                       </li>
 
+                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper">
+                          <Link
+                            className="nav-link text-white"
+                            to="/real-wedding"
+                            state={{ title: "Real Wedding" }}
+                            id="real-wedding"
+                            role="button"
+                          >
+                            Real Wedding
+                          </Link>
+                        </div>
+                      </li>
+
                       {/* Login Dropdown */}
                       {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
@@ -974,14 +988,11 @@ const Header = () => {
                         </div>
                       </li>
 
-                      <li className="nav-Vendor Dashboard mega-dropdown-wrapper position-static">
+                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            className="nav-link text-white"
                             to="/vendor-dashboard"
-                            state={{ title: "vendor dashboard" }}
-                            id="photoDropdown"
-                            role="button"
+                            className="nav-link text-white"
                           >
                             Dashboard
                           </Link>

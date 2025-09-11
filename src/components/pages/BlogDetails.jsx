@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { FaArrowLeft, FaChevronLeft } from "react-icons/fa";
+import { PiArrowBendUpLeftBold } from "react-icons/pi";
 
 const BlogDetails = ({ post, onBackClick }) => {
   useEffect(() => {
@@ -37,9 +38,25 @@ const BlogDetails = ({ post, onBackClick }) => {
               {/* Meta Information */}
               <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                  <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill me-3">
-                    {post.category}
-                  </span>
+                  <div className="d-flex align-items-center mb-4 gap-3">
+                    <button
+                      className="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+                      style={{
+                        borderRadius: "50%",
+                        width: "40px",
+                        height: "40px",
+                        padding: 0,
+                        fontSize: "1.2rem",
+                      }}
+                      onClick={onBackClick}
+                      aria-label="Back"
+                    >
+                      <FaChevronLeft />
+                    </button>
+                    <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
+                      {post.category}
+                    </span>
+                  </div>
                   <span
                     className={`badge ${getStatusBadgeClass(
                       post.status

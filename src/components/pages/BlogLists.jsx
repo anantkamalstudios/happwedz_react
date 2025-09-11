@@ -242,7 +242,6 @@ const BlogLists = ({ onPostClick }) => {
               {/* Search Bar */}
               <div className="blog-search-container">
                 <div className="search-input-group">
-                  <FaSearch className="search-icon" />
                   <input
                     type="text"
                     className="search-input"
@@ -391,56 +390,60 @@ const BlogLists = ({ onPostClick }) => {
               <div className="row">
                 {sortedBlogs.map((blog) => (
                   <div key={blog.id} className="col-lg-4 col-md-6 mb-4">
-                    <article className="blog-card">
-                      <div className="blog-image-container">
-                        <img
-                          src={blog.image}
-                          alt={blog.title}
-                          className="blog-image"
-                        />
-                        <div className="blog-actions">
-                          <button
-                            className={`action-btn ${
-                              likedPosts.has(blog.id) ? "liked" : ""
-                            }`}
-                            onClick={() => handleLike(blog.id)}
-                          >
-                            <FaHeart />
-                            <span>{blog.likes}</span>
-                          </button>
-                          <button
-                            className={`action-btn ${
-                              bookmarkedPosts.has(blog.id) ? "bookmarked" : ""
-                            }`}
-                            onClick={() => handleBookmark(blog.id)}
-                          >
-                            <FaBookmark />
-                          </button>
-                        </div>
-                        {blog.trending && (
-                          <div className="trending-badge">Trending</div>
-                        )}
-                      </div>
-
-                      <div className="blog-content">
-                        <div className="blog-meta">
-                          <span className="blog-category">{blog.category}</span>
-                          <span className="blog-date">{blog.date}</span>
+                    <div onClick={() => onPostClick(blog)}>
+                      <article className="blog-card">
+                        <div className="blog-image-container">
+                          <img
+                            src={blog.image}
+                            alt={blog.title}
+                            className="blog-image"
+                          />
+                          <div className="blog-actions">
+                            <button
+                              className={`action-btn ${
+                                likedPosts.has(blog.id) ? "liked" : ""
+                              }`}
+                              onClick={() => handleLike(blog.id)}
+                            >
+                              <FaHeart />
+                              <span>{blog.likes}</span>
+                            </button>
+                            <button
+                              className={`action-btn ${
+                                bookmarkedPosts.has(blog.id) ? "bookmarked" : ""
+                              }`}
+                              onClick={() => handleBookmark(blog.id)}
+                            >
+                              <FaBookmark />
+                            </button>
+                          </div>
+                          {blog.trending && (
+                            <div className="trending-badge">Trending</div>
+                          )}
                         </div>
 
-                        <h5 className="blog-title">{blog.title}</h5>
-                        <p className="blog-description">{blog.description}</p>
-
-                        <div className="blog-tags">
-                          {blog.tags.slice(0, 2).map((tag, index) => (
-                            <span key={index} className="blog-tag">
-                              <FaTag className="tag-icon" />
-                              {tag}
+                        <div className="blog-content">
+                          <div className="blog-meta">
+                            <span className="blog-category">
+                              {blog.category}
                             </span>
-                          ))}
+                            <span className="blog-date">{blog.date}</span>
+                          </div>
+
+                          <h5 className="blog-title">{blog.title}</h5>
+                          <p className="blog-description">{blog.description}</p>
+
+                          <div className="blog-tags">
+                            {blog.tags.slice(0, 2).map((tag, index) => (
+                              <span key={index} className="blog-tag">
+                                <FaTag className="tag-icon" />
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    </article>
+                      </article>
+                    </div>
                   </div>
                 ))}
               </div>

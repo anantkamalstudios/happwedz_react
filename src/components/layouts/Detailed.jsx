@@ -23,6 +23,8 @@ import {
   FaPhoneAlt,
   FaEnvelope,
 } from "react-icons/fa";
+import { GrFormNextLink } from "react-icons/gr";
+import ReviewSection from "../pages/ReviewSection";
 
 const Detailed = () => {
   const [mainImage, setMainImage] = useState(
@@ -56,6 +58,42 @@ const Detailed = () => {
     { icon: <FaGlassCheers />, name: "Bar Services" },
   ];
 
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [experience, setExperience] = useState("");
+  const [spent, setSpent] = useState("");
+  const [reviews, setReviews] = useState([]);
+
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const filePreviews = files.map((file) => URL.createObjectURL(file));
+    setImages((prev) => [...prev, ...filePreviews]);
+  };
+
+  const handleSubmit = () => {
+    if (!rating || !experience) {
+      alert("Please give a rating and write your experience.");
+      return;
+    }
+
+    const newReview = {
+      id: Date.now(),
+      rating,
+      experience,
+      spent,
+      images,
+      user: "You",
+      date: new Date().toLocaleDateString(),
+    };
+
+    setReviews((prev) => [newReview, ...prev]);
+    // Reset form
+    setRating(0);
+    setExperience("");
+    setSpent("");
+    setImages([]);
+  };
+
   useEffect(() => {
     window.scrollTo({
       top: 0,
@@ -63,6 +101,17 @@ const Detailed = () => {
       behavior: "smooth",
     });
   }, []);
+
+  // Define activeVendor with sample data
+  const activeVendor = {
+    id: 1,
+    name: "Grape County Eco Resort & Spa",
+    location: "Nashik, Maharashtra",
+    rating: 4.8,
+    reviews: 120,
+    image:
+      "https://cdn0.weddingwire.in/vendor/4255/original/960/jpg/photographer-avshkaar-photography-weddingphotography-2_15_314255-165946397244869.webp",
+  };
 
   return (
     <div className="venue-detail-page">
@@ -209,7 +258,6 @@ const Detailed = () => {
             </div>
           </Col>
 
-          {/* Right Side: Venue Details */}
           <Col lg={4}>
             <div className="venue-details-card">
               <div className="venue-info">
@@ -263,35 +311,7 @@ const Detailed = () => {
                         href="/wedding-invitations/wedding-card-designs"
                       >
                         View all
-                        <span className="margin-l-5">
-                          <span className="isvg loaded">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="7.05"
-                              height="12"
-                              viewBox="0 0 7.05 12"
-                            >
-                              <g
-                                id="prefix__next___m8sqL9yk"
-                                transform="translate(-101.478)"
-                              >
-                                <g
-                                  id="prefix__Group_1560___m8sqL9yk"
-                                  data-name="Group 1560"
-                                  transform="translate(101.478)"
-                                >
-                                  <path
-                                    id="prefix__Path_1253___m8sqL9yk"
-                                    fill="#fe8e00"
-                                    d="M108.336 5.532L103 .192a.658.658 0 0 0-.928 0l-.393.393a.657.657 0 0 0 0 .928L106.159 6l-4.489 4.489a.658.658 0 0 0 0 .928l.393.393a.658.658 0 0 0 .928 0l5.345-5.345a.662.662 0 0 0 0-.932z"
-                                    data-name="Path 1253"
-                                    transform="translate(-101.478)"
-                                  ></path>
-                                </g>
-                              </g>
-                            </svg>
-                          </span>
-                        </span>
+                        <GrFormNextLink className="pl-5" size={22} />
                       </a>
                     </div>
                   </div>
@@ -308,18 +328,34 @@ const Detailed = () => {
               </div>
 
               <div className="venue-map mt-4">
-                <div className="map-placeholder">
-                  <div className="map-overlay">
-                    <Button variant="light">View on Map</Button>
-                  </div>
+                <div
+                  className="mb-2 fw-semibold text-dark"
+                  style={{ fontSize: "1.05rem" }}
+                >
+                  View the venue location on Google Maps
                 </div>
+
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d119975.8600521573!2d73.71764683167392!3d19.998203172021707!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bddd290b09914b3%3A0xcb07845d9d28215c!2sNashik%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1757499953908!5m2!1sen!2sin"
+                  width="100%"
+                  height="350"
+                  style={{
+                    border: 0,
+                    borderRadius: "12px",
+                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.15)",
+                    cursor: "grab",
+                  }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Venue Location Map"
+                ></iframe>
               </div>
             </div>
           </Col>
         </Row>
       </Container>
 
-      {/* Similar Venues */}
       <section className="similar-venues py-5">
         <Container>
           <h3 className="details-section-title fw-bold text-center mb-4">
@@ -349,6 +385,10 @@ const Detailed = () => {
           </Row>
         </Container>
       </section>
+
+      <div className="py-5">
+        <ReviewSection vendor={activeVendor} />
+      </div>
     </div>
   );
 };
