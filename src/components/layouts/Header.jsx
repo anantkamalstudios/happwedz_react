@@ -977,7 +977,7 @@ const Header = () => {
                       </li> */}
 
                       {/* Login Dropdown */}
-                      {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
                             to="/user-dashboard"
@@ -997,7 +997,7 @@ const Header = () => {
                             Dashboard
                           </Link>
                         </div>
-                      </li> */}
+                      </li>
                       {/* {["Genie"].map((item) => (
                         <li className="nav-item" key={item}>
                           <a className="nav-link text-white" href="#">
