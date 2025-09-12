@@ -5,7 +5,7 @@ import { FaRegStar } from "react-icons/fa";
 import { GoMail } from "react-icons/go";
 import { IoSettingsOutline } from "react-icons/io5";
 import { IoStorefrontOutline } from "react-icons/io5";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 const Navbar = () => {
   const { slug } = useParams();
@@ -17,19 +17,19 @@ const Navbar = () => {
       id: "home",
       slug: "vendor-home",
       label: "Home",
-      icon: <LiaHomeSolid size={20} />,
+      icon: <LiaHomeSolid size={30} />,
     },
     {
       id: "storefront",
       slug: "vendor-store-front",
       label: "Storefront",
-      icon: <IoStorefrontOutline size={20} />,
+      icon: <IoStorefrontOutline size={30} />,
     },
     {
       id: "enquiries",
       slug: "vendor-enquiries",
       label: "Enquiries",
-      icon: <GoMail size={20} />,
+      icon: <GoMail size={30} />,
     },
     // {
     //   id: "reviews",
@@ -41,7 +41,7 @@ const Navbar = () => {
       id: "settings",
       slug: "vendor-setting",
       label: "Settings",
-      icon: <IoSettingsOutline size={20} />,
+      icon: <IoSettingsOutline size={30} />,
     },
   ];
 
@@ -56,28 +56,50 @@ const Navbar = () => {
     setActiveTab(tab.id);
     navigate(`/vendor-dashboard/${tab.slug}`);
   };
-
   return (
-    <div className="tabs-container border-bottom py-2 px-3 mt-3">
-      <div className="d-flex gap-4 flex-nowrap">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            className={`btn border-0 d-flex flex-column align-items-center p-0 ${
-              activeTab === tab.id ? "active-tab" : ""
-            }`}
+    <div className="tabs-container border-bottom py-2 px-5 mt-3 vendor-dashboard-navbar">
+      <div className="d-flex justify-content-between align-items-center">
+        {/* Left side: Tabs */}
+        <div className="d-flex gap-4 flex-wrap">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`btn border-0 d-flex flex-column align-items-center p-0 ${
+                activeTab === tab.id ? "active-tab" : ""
+              }`}
+              style={{
+                background: "transparent",
+                fontSize: "14px",
+                minWidth: "70px",
+                color:
+                  activeTab === tab.id ? "var(--primary-color)" : "#2c3e50",
+              }}
+              onClick={() => handleTabClick(tab)}
+            >
+              {tab.icon}
+              <span className="mt-1">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Right side: Go Premium */}
+        <div className="d-flex align-items-center gap-2 bg-light px-3 rounded-3">
+          <span
             style={{
-              background: "transparent",
-              fontSize: "14px",
-              minWidth: "70px",
-              color: activeTab === tab.id ? "var(--primary-color)" : "#2c3e50",
+              color: "#2c3e50",
+              fontWeight: "600",
+              fontSize: "18px",
             }}
-            onClick={() => handleTabClick(tab)}
           >
-            {tab.icon}
-            <span className="mt-1">{tab.label}</span>
-          </button>
-        ))}
+            Grow Your Business ·
+          </span>
+          <Link
+            to="/vendor-dashboard/upgrade/vendor-plan"
+            className="btn upgrade-btn border-0 p-0"
+          >
+            Upgrade Now
+          </Link>
+        </div>
       </div>
     </div>
   );

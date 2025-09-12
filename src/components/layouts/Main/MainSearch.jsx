@@ -1,11 +1,15 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Row, Col, Form, Button } from "react-bootstrap";
 import { CiSearch } from "react-icons/ci";
 import { FaMapMarkerAlt, FaSearch } from "react-icons/fa";
+import axios from "axios";
 
 const MainSearch = ({ title = "Find what you need", onSearch }) => {
   const [keyword, setKeyword] = useState("");
   const [place, setPlace] = useState("");
+  const [cities, setCities] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const placeholders = useMemo(() => {
     const t = (title || "").toLowerCase();
@@ -29,10 +33,32 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
     }
   };
 
+  // ✅ Fetch all Indian cities once on mount
+  useEffect(() => {
+    axios
+      .post("https://countriesnow.space/api/v0.1/countries/cities", {
+        country: "India",
+      })
+      .then((res) => {
+        if (res.data && res.data.data) {
+          setCities(res.data.data);
+        } else {
+          setCities([]);
+        }
+      })
+      .catch(() => setCities([]));
+  }, []);
+
+  // ✅ Filter cities locally
+  const filteredCities = cities.filter((city) =>
+    city.toLowerCase().startsWith(searchTerm.toLowerCase())
+  );
+
   return (
     <section
-      className="position-relative overflow-hidden"
+      className="position-relative"
       style={{
+        overflow: "visible",
         background:
           "linear-gradient(135deg, rgba(255, 114, 134, 0.08) 0%, rgba(137, 62, 247, 0.08) 100%)",
       }}
@@ -56,10 +82,14 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
                 location. Search and compare instantly.
               </p>
 
-              <Form onSubmit={handleSubmit} className="w-100">
+              <Form onSubmit={handleSubmit} className="w-100 position-relative">
                 <div
                   className="d-flex flex-column flex-md-row align-items-stretch rounded-pill bg-white shadow p-2 gap-2"
-                  style={{ maxWidth: 680 }}
+                  style={{
+                    maxWidth: 680,
+                    overflow: "visible",
+                    position: "relative",
+                  }}
                 >
                   <div className="d-flex align-items-center flex-grow-1 px-2">
                     <FaSearch className="me-2 text-muted" />
@@ -75,16 +105,58 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
 
                   <div className="vr d-none d-md-block" />
 
-                  <div className="d-flex align-items-center flex-grow-1 px-2">
+                  <div className="d-flex align-items-center flex-grow-1 px-2 position-relative">
                     <FaMapMarkerAlt className="me-2 text-muted" />
                     <Form.Control
                       value={place}
-                      onChange={(e) => setPlace(e.target.value)}
+                      onChange={(e) => {
+                        setPlace(e.target.value);
+                        setSearchTerm(e.target.value);
+                        setShowDropdown(true);
+                      }}
                       type="text"
                       placeholder={placeholders.placePh}
                       className="border-0 shadow-none"
                       style={{ background: "transparent" }}
+                      onFocus={() => setShowDropdown(true)}
+                      onBlur={() =>
+                        setTimeout(() => setShowDropdown(false), 200)
+                      }
                     />
+
+                    {showDropdown &&
+                      searchTerm &&
+                      filteredCities.length > 0 && (
+                        <div
+                          className="dropdown-menu show mt-2"
+                          style={{
+                            position: "absolute",
+                            top: "100%",
+                            left: "-100%",
+                            width: "100%",
+                            right: 0,
+                            zIndex: 99999,
+                            maxHeight: "200px",
+                            minWidth: "550px",
+                            overflowY: "auto",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+                            background: "#fff",
+                          }}
+                        >
+                          {filteredCities.map((city) => (
+                            <div
+                              key={city}
+                              className="dropdown-item"
+                              onMouseDown={() => {
+                                setPlace(city);
+                                setShowDropdown(false);
+                              }}
+                            >
+                              {city}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                   </div>
 
                   <Button
@@ -99,6 +171,7 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
                 </div>
               </Form>
 
+              {/* Quick Chips */}
               <div className="d-flex gap-2 mt-3 flex-wrap">
                 {[
                   "Banquet Halls",
@@ -138,26 +211,6 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
                   }}
                 />
               </div>
-              <div
-                className="position-absolute top-0 start-0 translate-middle d-none d-lg-block"
-                style={{
-                  width: 120,
-                  height: 120,
-                  background: "#fff",
-                  borderRadius: 24,
-                  opacity: 0.5,
-                }}
-              />
-              {/* <div
-                className="position-absolute bottom-0 end-0 translate-middle d-none d-lg-block"
-                style={{
-                  width: 140,
-                  height: 140,
-                  background: "#fff",
-                  borderRadius: 24,
-                  opacity: 0.5,
-                }}
-              /> */}
             </div>
           </Col>
         </Row>

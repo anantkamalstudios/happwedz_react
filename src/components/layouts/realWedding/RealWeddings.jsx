@@ -1,202 +1,203 @@
 import React, { useState } from "react";
 import { CiSearch } from "react-icons/ci";
+import logo from "../../../../public/happywed_white.png";
+
 import {
   FaHeart,
   FaEye,
-  FaMapMarkerAlt,
   FaCalendarAlt,
   FaShare,
   FaSearch,
   FaBars,
   FaUser,
   FaBell,
+  FaMapMarkerAlt,
 } from "react-icons/fa";
+import CtaPanel from "../../home/CtaPanel";
 
-const RealWeddings = () => {
+const RealWeddings = ({ onPostClick }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const weddings = [
     {
-      id: 1,
       title: "Diya and Anmol",
-      location: "Udaipur",
-      views: "8.2k",
-      images: [
+      slug: "diya-anmol-udaipur-2023",
+      weddingDate: "2023-11-25",
+      city: "Udaipur",
+      venues: ["City Palace", "Leela Palace"],
+
+      brideName: "Diya Sharma",
+      brideBio: "An architect with a love for heritage and culture.",
+      groomName: "Anmol Mehta",
+      groomBio: "An entrepreneur passionate about travel and luxury events.",
+
+      story:
+        "A royal-themed wedding set against the backdrop of Udaipur’s palaces, blending traditions with modern elegance.",
+
+      events: [
+        { name: "Mehendi", date: "2023-11-23", venue: "Leela Palace" },
+        {
+          name: "Sangeet",
+          date: "2023-11-24",
+          venue: "City Palace Courtyard",
+        },
+        {
+          name: "Wedding",
+          date: "2023-11-25",
+          venue: "Jagmandir Island Palace",
+        },
+      ],
+
+      vendors: [
+        { type: "Planner", name: "DreamWed Planners" },
+        { type: "Caterer", name: "Leela Palace Catering" },
+      ],
+
+      coverPhoto:
         "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=150&h=100&fit=crop",
-        "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=150&h=100&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-      ],
-      category: "Real Wedding",
-    },
-    {
-      id: 2,
-      title: "Mehaak and Gautam",
-      location: "Delhi",
-      views: "12.5k",
-      images: [
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=150&h=100&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-      ],
-      category: "Real Wedding",
-    },
-    {
-      id: 3,
-      title: "Upasana and Gaurav",
-      location: "Mumbai",
-      views: "9.8k",
-      images: [
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-      ],
-      category: "Real Wedding",
-    },
-    {
-      id: 4,
-      title: "Surbhi and Prashanth",
-      location: "Bangalore",
-      views: "15.2k",
-      images: [
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-      ],
-      category: "Real Wedding",
-    },
-    {
-      id: 5,
-      title: "Sangeeta and Aditya",
-      location: "Jaipur",
-      views: "7.9k",
-      images: [
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-      ],
-      category: "Real Wedding",
-    },
-    {
-      id: 6,
-      title: "Harshita and Jay",
-      location: "Goa",
-      views: "11.3k",
-      images: [
+      highlightPhotos: [
         "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1519741497674-611481863552?w=150&h=100&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=150&h=100&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-      ],
-      category: "Real Wedding",
-    },
-    {
-      id: 7,
-      title: "Puja and Harnarayan",
-      location: "Agra",
-      views: "6.7k",
-      images: [
         "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?w=150&h=100&fit=crop",
-        "https://images.unsplash.com/photo-1587271636175-90d58cdad458?w=150&h=100&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
       ],
-      category: "Real Wedding",
-    },
-    {
-      id: 8,
-      title: "Mahek and Abhilash",
-      location: "Kerala",
-      views: "13.8k",
-      images: [
+      allPhotos: [
         "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=800&h=600&fit=crop",
       ],
-      category: "Real Wedding",
+
+      themes: ["Royal", "Traditional"],
+      brideOutfit: "Red Sabyasachi Lehenga",
+      groomOutfit: "Ivory Sherwani by Manish Malhotra",
+      specialMoments: "Boat ride to the wedding venue at sunset.",
+
+      photographer: "LensArt Studio",
+      makeup: "Glow by Neha",
+      decor: "Royal Décor Udaipur",
+      additionalCredits: ["Fireworks by PyroShow India"],
+
+      status: "published",
+      featured: true,
     },
     {
-      id: 9,
-      title: "Namita and Devashish",
-      location: "Pune",
-      views: "10.1k",
-      images: [
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
+      title: "Lisha and Aman",
+      slug: "lisha-aman-goa-2024",
+      weddingDate: "2024-02-10",
+      city: "Goa",
+      venues: ["W Goa Resort", "Beachside Mandap"],
+
+      brideName: "Lisha Verma",
+      brideBio: "Fashion designer with a love for beach vibes.",
+      groomName: "Aman Kapoor",
+      groomBio: "Tech startup founder who enjoys surfing and music.",
+
+      story:
+        "A bohemian beach wedding with pastel décor, tropical vibes, and a lively celebration under the stars.",
+
+      events: [
+        { name: "Haldi", date: "2024-02-08", venue: "W Goa Poolside" },
+        { name: "Sangeet", date: "2024-02-09", venue: "Beach Shack" },
+        { name: "Wedding", date: "2024-02-10", venue: "Beachside Mandap" },
       ],
-      category: "Real Wedding",
+
+      vendors: [
+        { type: "Planner", name: "Beach Bliss Planners" },
+        { type: "DJ", name: "DJ Arjun" },
+      ],
+
+      coverPhoto:
+        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=600&fit=crop",
+      highlightPhotos: [
+        "https://images.unsplash.com/photo-1499955085172-a104c9463ece?w=800&h=600&fit=crop",
+        "https://images.unsplash.com/photo-1529634899531-2e66e46008b3?w=800&h=600&fit=crop",
+      ],
+      allPhotos: [
+        "https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=800&h=600&fit=crop",
+        "https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=800&h=600&fit=crop",
+      ],
+
+      themes: ["Bohemian", "Beach"],
+      brideOutfit: "Pastel Lehenga by Anita Dongre",
+      groomOutfit: "Linen Kurta with Floral Jacket",
+      specialMoments: "Vows exchanged during sunset by the sea.",
+
+      photographer: "Goa Wedding Shoots",
+      makeup: "BeachGlow Artists",
+      decor: "Tropical Décor Goa",
+      additionalCredits: ["Live Band: Ocean Beats"],
+
+      status: "published",
+      featured: false,
     },
     {
-      id: 10,
-      title: "Shilpa and Tushar",
-      location: "Chennai",
-      views: "8.5k",
-      images: [
-        "https://images.unsplash.com/photo-1587271636175-90d58cdad458?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=150&h=100&fit=crop",
-        "https://images.unsplash.com/photo-1519741497674-611481863552?w=150&h=100&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
+      title: "Meera and Kunal",
+      slug: "meera-kunal-jaipur-2024",
+      weddingDate: "2024-03-15",
+      city: "Jaipur",
+      venues: ["Rambagh Palace", "Samode Haveli"],
+
+      brideName: "Meera Joshi",
+      brideBio: "Doctor who loves history and culture.",
+      groomName: "Kunal Agarwal",
+      groomBio: "Investment banker with a flair for royal architecture.",
+
+      story:
+        "A grand Jaipur wedding showcasing vibrant colors, traditional Rajasthani music, and regal settings.",
+
+      events: [
+        { name: "Engagement", date: "2024-03-13", venue: "Samode Haveli" },
+        { name: "Sangeet", date: "2024-03-14", venue: "Rambagh Palace Lawn" },
+        {
+          name: "Wedding",
+          date: "2024-03-15",
+          venue: "Rambagh Palace Courtyard",
+        },
       ],
-      category: "Real Wedding",
-    },
-    {
-      id: 11,
-      title: "Kavita and Sameer",
-      location: "Kolkata",
-      views: "9.2k",
-      images: [
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
+
+      vendors: [
+        { type: "Planner", name: "Royal Rajasthan Planners" },
+        { type: "Decorator", name: "Heritage Décor Jaipur" },
       ],
-      category: "Real Wedding",
-    },
-    {
-      id: 12,
-      title: "Anita and Rajesh",
-      location: "Hyderabad",
-      views: "14.7k",
-      images: [
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&h=300&fit=crop",
+
+      coverPhoto:
+        "https://images.unsplash.com/photo-1524492449090-1a065f2d7d86?w=800&h=600&fit=crop",
+      highlightPhotos: [
+        "https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=800&h=600&fit=crop",
+        "https://images.unsplash.com/photo-1529042410759-befb1204b468?w=800&h=600&fit=crop",
       ],
-      category: "Real Wedding",
+      allPhotos: [
+        "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=800&h=600&fit=crop",
+        "https://images.unsplash.com/photo-1504198266285-165a9a6e2b2e?w=800&h=600&fit=crop",
+      ],
+
+      themes: ["Traditional", "Cultural"],
+      brideOutfit: "Pink Lehenga by Tarun Tahiliani",
+      groomOutfit: "Gold Embroidered Sherwani",
+      specialMoments: "Grand Baraat procession through the palace gates.",
+
+      photographer: "Royal Frames Jaipur",
+      makeup: "Glam by Ritu",
+      decor: "Jaipur Heritage Décor",
+      additionalCredits: ["Folk Dance Troupe"],
+
+      status: "published",
+      featured: true,
     },
   ];
 
   const filteredWeddings = weddings.filter(
     (wedding) =>
       wedding.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      wedding.location.toLowerCase().includes(searchTerm.toLowerCase())
+      wedding.city.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const WeddingCard = ({ wedding }) => (
-    <div className="col-lg-4 col-md-6 mb-5">
+    <div
+      className="col-lg-4 col-md-6 mb-5"
+      onClick={() => onPostClick(wedding)}
+    >
       <div className="wedding-card h-100">
         <div className="position-relative overflow-hidden rounded-3 mb-3 main-image-container">
           <img
-            src={wedding.images[0]}
+            src={wedding.coverPhoto}
             alt={wedding.title}
             className="main-image"
             style={{ objectFit: "cover", width: "100%" }}
@@ -216,15 +217,15 @@ const RealWeddings = () => {
               </div>
             </div>
           </div>
-          <div className="position-absolute top-0 start-0 p-3">
+          {/* <div className="position-absolute top-0 start-0 p-3">
             <span className="badge bg-white text-dark px-3 py-2 category-badge">
               {wedding.category}
             </span>
-          </div>
+          </div> */}
         </div>
 
         <div className="row g-2 mb-3">
-          {wedding.images.slice(1).map((img, index) => (
+          {wedding.highlightPhotos.map((img, index) => (
             <div key={index} className="col-6">
               <div className="position-relative overflow-hidden rounded-2 small-image-container">
                 <img
@@ -250,11 +251,11 @@ const RealWeddings = () => {
           <div className="d-flex justify-content-between align-items-center text-muted small">
             <span className="d-flex align-items-center">
               <FaMapMarkerAlt className="me-1" size={12} />
-              {wedding.location}
+              {wedding.city}
             </span>
             <span className="d-flex align-items-center">
-              <FaEye className="me-1" size={12} />
-              {wedding.views}
+              <FaCalendarAlt className="me-1" size={12} />
+              {new Date(wedding.weddingDate).toLocaleDateString()}
             </span>
           </div>
         </div>
@@ -289,6 +290,14 @@ const RealWeddings = () => {
         </div>
       </section>
 
+      <CtaPanel
+        img={logo}
+        title="Find Your Perfect Match with Our Trusted Matrimonial Services"
+        link="/matrimonial"
+        subtitle="Bringing Hearts Together for a Lifetime of Happiness"
+        btnName="Start Your Journey"
+      />
+
       {/* Wedding Gallery */}
       <section className="gallery-section py-5">
         <div className="container">
@@ -314,6 +323,14 @@ const RealWeddings = () => {
           </div>
         </div>
       </section>
+
+      <CtaPanel
+        img={logo}
+        title="Create Stunning Digital Wedding Invitations That Wow"
+        link="/e-invites"
+        subtitle="Design Beautiful E-Invites with Our Easy-to-Use Editor"
+        btnName="Create Your E-Invite"
+      />
     </div>
   );
 };

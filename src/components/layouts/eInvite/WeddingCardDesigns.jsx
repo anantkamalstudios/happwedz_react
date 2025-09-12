@@ -322,69 +322,102 @@ const WeddingCardDesigns = () => {
 
   return (
     <div className="min-vh-100" style={{ backgroundColor: "#f8f9fa" }}>
-      {/* Header */}
-      <header className="wc-header">
-        <div className="wc-header-content">
-          <h1 className="wc-main-title">Wedding Invitations</h1>
-          <p className="wc-subtitle">
-            Create beautiful wedding invitations that tell your love story
-          </p>
-        </div>
-      </header>
       {/* Navigation Tabs */}
-      <div className="bg-white shadow-sm">
+      <div className="bg-white shadow-sm rounded-pill my-3">
         <div className="container">
-          <ul className="nav nav-pills nav-fill py-3">
-            <li className="nav-item">
+          <ul className="nav nav-pills nav-fill py-2">
+            {/* Wedding Cards */}
+            <li className="nav-item px-2">
               <button
-                className={`nav-link ${
-                  activeTab === "wedding" ? "active primary-b" : ""
+                className={`nav-link fw-semibold rounded-pill ${
+                  activeTab === "wedding" ? "active" : ""
                 }`}
                 onClick={() => setActiveTab("wedding")}
-                style={
-                  activeTab === "wedding"
-                    ? { background: "var(--primary-color)", color: "#fff" }
-                    : {}
-                }
+                style={{
+                  background:
+                    activeTab === "wedding"
+                      ? "var(--primary-color)"
+                      : "#f8f9fa",
+                  color: activeTab === "wedding" ? "#fff" : "#6c757d",
+                  border: "1px solid #dee2e6",
+                  transition: "all 0.3s ease",
+                }}
               >
-                Wedding Cards
-                <span className="badge bg-secondary ms-2">
+                Wedding Cards{" "}
+                <span
+                  className="badge ms-2"
+                  style={{
+                    background: activeTab === "wedding" ? "#fff" : "#e9ecef",
+                    color:
+                      activeTab === "wedding"
+                        ? "var(--primary-color)"
+                        : "#6c757d",
+                  }}
+                >
                   {weddingCards.length}
                 </span>
               </button>
             </li>
-            <li className="nav-item">
+
+            {/* Video Cards */}
+            <li className="nav-item px-2">
               <button
-                className={`nav-link ${
-                  activeTab === "video" ? "active primary-b" : ""
+                className={`nav-link fw-semibold rounded-pill ${
+                  activeTab === "video" ? "active" : ""
                 }`}
                 onClick={() => setActiveTab("video")}
-                style={
-                  activeTab === "video"
-                    ? { background: "var(--primary-color)", color: "#fff" }
-                    : {}
-                }
+                style={{
+                  background:
+                    activeTab === "video" ? "var(--primary-color)" : "#f8f9fa",
+                  color: activeTab === "video" ? "#fff" : "#6c757d",
+                  border: "1px solid #dee2e6",
+                  transition: "all 0.3s ease",
+                }}
               >
-                Video Cards
-                <span className="badge bg-secondary ms-2">
+                Video Cards{" "}
+                <span
+                  className="badge ms-2"
+                  style={{
+                    background: activeTab === "video" ? "#fff" : "#e9ecef",
+                    color:
+                      activeTab === "video"
+                        ? "var(--primary-color)"
+                        : "#6c757d",
+                  }}
+                >
                   {videoCards.length}
                 </span>
               </button>
             </li>
-            <li className="nav-item">
+
+            {/* Save the Date */}
+            <li className="nav-item px-2">
               <button
-                className={`nav-link ${
-                  activeTab === "savedate" ? "active primary-b" : ""
+                className={`nav-link fw-semibold rounded-pill ${
+                  activeTab === "savedate" ? "active" : ""
                 }`}
                 onClick={() => setActiveTab("savedate")}
-                style={
-                  activeTab === "savedate"
-                    ? { background: "var(--primary-color)", color: "#fff" }
-                    : {}
-                }
+                style={{
+                  background:
+                    activeTab === "savedate"
+                      ? "var(--primary-color)"
+                      : "#f8f9fa",
+                  color: activeTab === "savedate" ? "#fff" : "#6c757d",
+                  border: "1px solid #dee2e6",
+                  transition: "all 0.3s ease",
+                }}
               >
-                Save the Date
-                <span className="badge bg-secondary ms-2">
+                Save the Date{" "}
+                <span
+                  className="badge ms-2"
+                  style={{
+                    background: activeTab === "savedate" ? "#fff" : "#e9ecef",
+                    color:
+                      activeTab === "savedate"
+                        ? "var(--primary-color)"
+                        : "#6c757d",
+                  }}
+                >
                   {saveTheDateCards.length}
                 </span>
               </button>
@@ -392,31 +425,50 @@ const WeddingCardDesigns = () => {
           </ul>
         </div>
       </div>
+
       {/* Filters and Search */}
       <div className="bg-light py-3">
         <div className="container">
-          <div className="row align-items-center">
+          <div className="row g-3 align-items-center">
+            {/* Search Box */}
             <div className="col-md-6">
               <div className="input-group">
-                <span className="input-group-text">
+                <span
+                  className="input-group-text bg-white border-1 rounded-0"
+                  style={{ boxShadow: "none" }}
+                >
                   <Search size={16} />
                 </span>
                 <input
                   type="text"
-                  className="form-control"
+                  className="form-control border-1 rounded-0 shadow-none"
                   placeholder="Search designs..."
+                  style={{
+                    padding: "1rem",
+                    boxShadow: "none",
+                    outline: "none",
+                  }}
                 />
               </div>
             </div>
+
+            {/* Filter Dropdown */}
             <div className="col-md-6">
               <div className="input-group">
-                <span className="input-group-text">
+                <span
+                  className="input-group-text bg-white border-1 rounded-0"
+                  style={{ boxShadow: "none" }}
+                >
                   <Filter size={16} />
                 </span>
                 <select
-                  className="form-select"
+                  className="form-select border-1 rounded-0 shadow-none"
                   value={selectedFilter}
                   onChange={(e) => setSelectedFilter(e.target.value)}
+                  style={{
+                    padding: "1rem",
+                    boxShadow: "none",
+                  }}
                 >
                   <option value="all">All Themes</option>
                   <option value="traditional">Traditional</option>
@@ -431,6 +483,7 @@ const WeddingCardDesigns = () => {
           </div>
         </div>
       </div>
+
       {/* Cards Grid */}
       <main className="py-5">
         <div className="container">

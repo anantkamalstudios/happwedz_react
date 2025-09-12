@@ -126,7 +126,7 @@ body {
   display: block;
   visibility: visible;
   opacity: 1;
-  top: 80%;
+  top: 90%;
 }
 
 .mega-dropdown {
@@ -14794,7 +14794,7 @@ input:checked + .slider:before {
   }
 }
 
-/* Real Wedding */ 
+/* Real Wedding */
 
 .bg-gradient {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -14909,8 +14909,8 @@ input:checked + .slider:before {
 
 .search-input,
 .hero-search {
-  border-radius: 25px;
-  border: 2px solid #e9ecef;
+  /* border-radius: 25px;
+  border: 2px solid #e9ecef; */
   transition: all 0.3s ease;
 }
 
@@ -14949,7 +14949,7 @@ input:checked + .slider:before {
   transform: translateY(-3px);
   box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
 }
- 
+
 .wedding-info {
   padding: 0 5px;
 }
@@ -14992,4 +14992,46 @@ input:checked + .slider:before {
 
 .hero-section .container {
   padding: 2rem 15px;
+}
+
+/* Vendor Dashboard Premium feature */
+.vendor-dashboard-navbar .upgrade-btn {
+  background: transparent;
+  color: #ff9b00;
+  font-weight: 600;
+  font-size: 25px;
+  position: relative;
+  overflow: hidden;
+  -webkit-text-stroke: 0 transparent;
+}
+
+.vendor-dashboard-navbar .upgrade-btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  transition: all 0.6s ease;
+}
+
+.vendor-dashboard-navbar .upgrade-btn:hover::after {
+  left: 100%;
+}
+
+.vendor-dashboard-navbar .upgrade-btn:hover {
+  color: #ffd700;
+  -webkit-text-stroke: 0.5px #ff9b00;
+  text-shadow: 0 0 2px #ff9b00;
+}
+
+/* Genie */
+.genie-service-page .hw-text-primary {
+  color: var(--primary-color);
 }

@@ -1,132 +1,143 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Row, Col } from "react-bootstrap";
+import axios from "axios";
 
-const cityCategories = {
-  "Top Cities": [
-    "All Cities",
-    "Delhi NCR",
-    "Mumbai",
-    "Bangalore",
-    "Hyderabad",
-    "Chennai",
-    "Pune",
-    "Lucknow",
-    "Jaipur",
-    "Kolkata",
-  ],
-  "Popular Cities": [
-    "Gurgaon",
-    "Goa",
-    "Udaipur",
-    "Chandigarh",
-    "Jim Corbett",
-    "Ahmedabad",
-    "Indore",
-    "Agra",
-    "Kanpur",
-    "Kochi",
-  ],
-  "Other Cities": [
-    "Nagpur",
-    "Dehradun",
-    "Thane",
-    "Surat",
-    "Vadodara",
-    "Raipur",
-    "Mysore",
-    "Hubli",
-    "Dhitara",
-    "Toranagallu",
-  ],
-  States: ["Kerala", "Rajasthan", "Himachal Pradesh", "Maharashtra"],
-  "International Cities": ["Dubai", "Thailand", "Bali", "Abu Dhabi"],
-};
-
-const LocationModalWithCategories = () => {
+const LocationModalWithAPI = () => {
   const [show, setShow] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [countries, setCountries] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState("India");
 
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
-
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
+  const cityCategories = {
+    "Top Cities": [
+      "All Cities",
+      "Delhi NCR",
+      "Mumbai",
+      "Bangalore",
+      "Hyderabad",
+      "Chennai",
+      "Pune",
+      "Lucknow",
+      "Jaipur",
+      "Kolkata",
+    ],
+    "Popular Cities": [
+      "Gurgaon",
+      "Goa",
+      "Udaipur",
+      "Chandigarh",
+      "Jim Corbett",
+      "Ahmedabad",
+      "Indore",
+      "Agra",
+      "Kanpur",
+      "Kochi",
+    ],
+    "Other Cities": [
+      "Nagpur",
+      "Dehradun",
+      "Thane",
+      "Surat",
+      "Vadodara",
+      "Raipur",
+      "Mysore",
+      "Hubli",
+      "Dhitara",
+      "Toranagallu",
+    ],
+    States: ["Kerala", "Rajasthan", "Himachal Pradesh", "Maharashtra"],
+    "International Cities": ["Dubai", "Thailand", "Bali", "Abu Dhabi"],
   };
 
-  const filterCities = (cities) =>
-    cities.filter((city) =>
-      city.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  // Fetch countries
+  useEffect(() => {
+    axios.get("https://restcountries.com/v3.1/all?fields=name").then((res) => {
+      const sorted = res.data
+        .map((c) => c.name.common)
+        .sort((a, b) => a.localeCompare(b));
+      setCountries(sorted);
+    });
+  }, []);
+
+  // Fetch cities when country changes
+  useEffect(() => {
+    if (!selectedCountry) return;
+
+    axios
+      .post("https://countriesnow.space/api/v0.1/countries/cities", {
+        country: selectedCountry,
+      })
+      .then((res) => {
+        if (res.data && res.data.data) {
+          setCities(res.data.data);
+        } else {
+          setCities([]);
+        }
+      })
+      .catch(() => setCities([]));
+  }, [selectedCountry]);
+
+  const filterCities = cities.filter((city) =>
+    city.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <>
-      <Button
-        variant="outline-light"
-        style={{ fontSize: "12px" }}
-        onClick={handleShow}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="lucide lucide-map-pin-icon lucide-map-pin"
-        >
-          <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
-          <circle cx="12" cy="10" r="3" />
-        </svg>{" "}
+      <Button variant="outline-light" onClick={() => setShow(true)}>
         Select Location
       </Button>
 
-      <Modal
-        show={show}
-        onHide={handleClose}
-        size="xl"
-        centered
-        dialogClassName="custom-modal-width"
-      >
+      <Modal show={show} onHide={() => setShow(false)} size="xl" centered>
         <Modal.Body>
+          <Form.Select
+            className="mb-3"
+            value={selectedCountry}
+            onChange={(e) => setSelectedCountry(e.target.value)}
+          >
+            <option value="">Select Country</option>
+            {countries.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </Form.Select>
+
+          {/* City Search */}
           <Form.Control
             type="text"
-            placeholder=" Search City, State..."
+            placeholder="Search city..."
             value={searchTerm}
-            onChange={handleSearch}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="mb-4 p-3"
           />
 
-          <Row>
-            {Object.entries(cityCategories).map(([category, cities]) => {
-              const filtered = filterCities(cities);
-              if (filtered.length === 0) return null;
-
-              return (
-                <Col key={category} md={4} className="mb-4">
-                  <h6 className="text-danger fw-bold">{category}</h6>
-                  <ul className="list-unstyled text-decoration-none">
-                    {filtered.map((city) => (
-                      <li key={city}>
-                        <a
-                          href="#"
-                          className="text-dark d-block py-1 text-decoration-none small"
-                        >
-                          {city}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
+          {/* Cities List */}
+          <div
+            style={{
+              padding: "1rem",
+              maxHeight: "700px",
+              overflowY: "auto",
+              overflowX: "hidden",
+            }}
+          >
+            <Row>
+              {filterCities.map((city) => (
+                <Col key={city} md={4} className="mb-2">
+                  <a
+                    href="#"
+                    className="text-dark d-block py-1 text-decoration-none small"
+                  >
+                    {city}
+                  </a>
                 </Col>
-              );
-            })}
-          </Row>
+              ))}
+            </Row>
+          </div>
         </Modal.Body>
       </Modal>
     </>
   );
 };
 
-export default LocationModalWithCategories;
+export default LocationModalWithAPI;

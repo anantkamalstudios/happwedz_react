@@ -19,6 +19,7 @@ import PricingModal from "../layouts/PricingModal";
 import WeddingCardDesigns from "../layouts/eInvite/WeddingCardDesigns";
 import MainSearch from "../layouts/Main/MainSearch";
 import RealWedding from "./RealWedding";
+import Genie from "./Genie";
 
 const MainSection = () => {
   const { section } = useParams();
@@ -90,7 +91,8 @@ const MainSection = () => {
       <>
         <MainSearch title="E Invites" />
         {/* <MainByRegion /> */}
-        <MainEInvites />
+        {/* <MainEInvites /> */}
+        <WeddingCardDesigns />
         {/* <FindMain /> */}
         {/* <MainHeroSection loc={"Panjab"} />
         <MainHeroSection loc={"Karela "} />
@@ -164,8 +166,7 @@ const MainSection = () => {
   if (section === "genie") {
     return (
       <>
-        <MainSearch title="Genie" />
-        <PricingModal />
+        <Genie />
       </>
     );
   }

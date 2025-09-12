@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Links } from "react-router-dom";
-import { Modal, Button, Form } from "react-bootstrap";
 import LocationModalWithCategories from "./LocationModalWithCategories";
 import { RiMenuFill } from "react-icons/ri";
 
@@ -16,7 +15,7 @@ const Header = () => {
       <div className="container-fluid">
         <div className="d-flex d-lg-none justify-content-between align-items-center px-3 py-2">
           <Link className="navbar-brand" to="/">
-            <img src="logo-no-bg.png" alt="HappyWedz" height="40" />
+            <img src="/images/logo.webp" alt="HappyWedz" height="30" />
           </Link>
 
           <button
@@ -278,9 +277,9 @@ const Header = () => {
                     <div className="mb-3 text-center d-none d-lg-block">
                       <Link className="navbar-brand-logo" to="/">
                         <img
-                          src="happywed_white.png"
+                          src="/images/logo.webp"
                           alt="HappyWedz"
-                          height="80"
+                          height="30"
                           className="mx-auto d-block"
                         />
                       </Link>
@@ -734,7 +733,8 @@ const Header = () => {
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            className="nav-link dropdown-toggle text-white"
+                            // className="nav-link dropdown-toggle text-white"
+                            className="nav-link text-white"
                             to="/e-invites"
                             state={{ title: "E-Invites" }}
                             id="photoDropdown"
@@ -743,7 +743,7 @@ const Header = () => {
                             E-Invites
                           </Link>
 
-                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                          {/* <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
                               <div className="row g-4">
                                 <div className="col-6 col-md-3">
@@ -763,7 +763,7 @@ const Header = () => {
                                         Wedding Card Designs
                                       </Link>
                                     </li>
-                                    {/* <li>
+                                    <li>
                                       <Link
                                         to="/e-invite-invitation-video-templates"
                                         state={{
@@ -786,12 +786,12 @@ const Header = () => {
                                         <i className="bi bi-chevron-right me-2 text-muted"></i>
                                         Save the Date Templates
                                       </Link>
-                                    </li> */}
+                                    </li>
                                   </ul>
                                 </div>
                               </div>
                             </div>
-                          </div>
+                          </div> */}
                         </div>
                       </li>
 
@@ -977,7 +977,7 @@ const Header = () => {
                       </li> */}
 
                       {/* Login Dropdown */}
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
                             to="/user-dashboard"
@@ -997,7 +997,7 @@ const Header = () => {
                             Dashboard
                           </Link>
                         </div>
-                      </li>
+                      </li> */}
                       {/* {["Genie"].map((item) => (
                         <li className="nav-item" key={item}>
                           <a className="nav-link text-white" href="#">

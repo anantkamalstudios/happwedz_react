@@ -6,6 +6,7 @@ import ListView from "../layouts/Main/ListView";
 import GridView from "../layouts/Main/GridView";
 import MapView from "../layouts/Main/MapView";
 import { subVenuesData } from "../../data/subVenuesData";
+import { subVendorsData } from "../../data/subVendorsData";
 import { twoSoul } from "../../data/twoSoul";
 import ViewSwitcher from "../layouts/Main/ViewSwitcher";
 import MainSearch from "../layouts/Main/MainSearch";
@@ -82,7 +83,8 @@ const SubSection = () => {
 
   let dataToSend = filteredVenuesData;
   if (section === "vendors") {
-    dataToSend = vendors; // Use dynamic vendors data
+    // dataToSend = vendors;
+    dataToSend = vendorsError ? subVendorsData : vendors;
   } else if (section === "twosoul") {
     dataToSend = twoSoul;
   }
@@ -128,7 +130,6 @@ const SubSection = () => {
     return () => clearTimeout(timer);
   }, [slug, section]);
 
-  // Handle search and category changes for vendors
   const handleSearch = (query) => {
     setSearchQuery(query);
   };
@@ -143,20 +144,20 @@ const SubSection = () => {
     }
   };
 
-  // Show error state for vendors
   if (section === "vendors" && vendorsError) {
-    return (
-      <div className="container-fluid">
-        <div className="alert alert-danger" role="alert">
-          <h4 className="alert-heading">Error Loading Vendors</h4>
-          <p>{vendorsError}</p>
-          <hr />
-          <button className="btn btn-outline-danger" onClick={handleRefresh}>
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
+    dataToSend = subVendorsData;
+    // return (
+    //   <div className="container-fluid">
+    //     <div className="alert alert-danger" role="alert">
+    //       <h4 className="alert-heading">Error Loading Vendors</h4>
+    //       <p>{vendorsError}</p>
+    //       <hr />
+    //       <button className="btn btn-outline-danger" onClick={handleRefresh}>
+    //         Try Again
+    //       </button>
+    //     </div>
+    //   </div>
+    // );
   }
 
   // Show loading state for vendors

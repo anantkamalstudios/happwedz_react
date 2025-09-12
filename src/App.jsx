@@ -55,6 +55,10 @@ const ProfileImageSelector = lazy(() =>
 );
 const FinalLookPage = lazy(() => import("./components/pages/FinalLookPage"));
 
+const VendorPremium = lazy(() =>
+  import("./components/pages/adminVendor/VendorPremium")
+);
+
 function App() {
   const location = useLocation();
 
@@ -86,6 +90,10 @@ function App() {
             element={<Navigate to="/vendor-dashboard/vendor-home" />}
           />
           <Route path="/vendor-dashboard/:slug" element={<Main />} />
+          <Route
+            path="/vendor-dashboard/upgrade/vendor-plan"
+            element={<VendorPremium />}
+          />
           <Route path="/user-dashboard/:slug" element={<UserDashboardMain />} />
           <Route path="/user-dashboard" element={<UserDashboardMain />} />
 
