@@ -57,10 +57,10 @@ const Navbar = () => {
     navigate(`/vendor-dashboard/${tab.slug}`);
   };
   return (
-    <div className="tabs-container border-bottom py-2 px-5 mt-3 vendor-dashboard-navbar">
-      <div className="d-flex justify-content-between align-items-center">
+    <div className="tabs-container border-bottom py-2 px-3 px-lg-5 mt-3 vendor-dashboard-navbar">
+      <div className="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
         {/* Left side: Tabs */}
-        <div className="d-flex gap-4 flex-wrap">
+        <div className="d-flex gap-3 gap-lg-4 flex-wrap justify-content-center justify-content-lg-start ">
           {tabs.map((tab) => (
             <button
               key={tab.id}

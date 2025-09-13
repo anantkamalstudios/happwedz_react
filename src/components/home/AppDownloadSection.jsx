@@ -13,7 +13,7 @@ const AppDownloadSection = () => {
         overflow: "hidden",
       }}
     >
-      <div className="container d-flex flex-column flex-lg-row align-items-center justify-content-between gap-4">
+      <div className="container d-none d-lg-flex align-items-center justify-content-between gap-4">
         <div className="col-lg-12">
           <div
             className="rounded-3 p-4"

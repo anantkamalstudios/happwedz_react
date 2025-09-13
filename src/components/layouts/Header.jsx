@@ -10,11 +10,29 @@ const Header = () => {
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9\-]/g, "") || "";
 
+  // Collapse navbar on route change
+  const location = window.location.pathname;
+  useEffect(() => {
+    const collapse = document.getElementById("mainNav");
+    if (collapse && collapse.classList.contains("show")) {
+      collapse.classList.remove("show");
+    }
+    // If using Bootstrap JS, trigger collapse
+    if (window.bootstrap && window.bootstrap.Collapse) {
+      try {
+        const bsCollapse =
+          window.bootstrap.Collapse.getOrCreateInstance(collapse);
+        bsCollapse.hide();
+      } catch {}
+    }
+  }, [location]);
+
   return (
     <nav className="navbar navbar-expand-lg navbar-light shadow-sm primary-bg p-0">
       <div className="container-fluid">
-        <div className="d-flex d-lg-none justify-content-between align-items-center px-3 py-2">
-          <Link className="navbar-brand" to="/">
+        {/* Mobile view: logo left + toggle right */}
+        <div className="d-flex d-lg-none justify-content-between align-items-center w-100 px-3 py-2">
+          <Link className="navbar-brand m-0" to="/">
             <img src="/images/logo.webp" alt="HappyWedz" height="30" />
           </Link>
 
@@ -58,27 +76,10 @@ const Header = () => {
 
                   {/* Right: Icons */}
                   <div className="col-12 col-lg-5 d-flex justify-content-center justify-content-lg-end gap-3">
-                    {/* <a className="nav-link text-white p-0" href="#"> 
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="lucide lucide-book-open-check-icon me-2"
-                      >
-                        <path d="M12 21V7" />
-                        <path d="m16 12 2 2 4-4" />
-                        <path d="M22 6V4a1 1 0 0 0-1-1h-5a4 4 0 0 0-4 4 4 4 0 0 0-4-4H3a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h6a3 3 0 0 1 3 3 3 3 0 0 1 3-3h6a1 1 0 0 0 1-1v-1.3" />
-                      </svg>
-                    </a> */}
+                    {/* PlayStore */}
                     <a
                       className="app-store-link d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
-                      style={{ minWidth: 120 }}
+                      style={{ minWidth: 0 }}
                       href="#"
                     >
                       <svg
@@ -92,21 +93,22 @@ const Header = () => {
                         <path d="M6.39 8.248h-.026a.598.598 0 0 0-.596.596v2.594c0 .329.267.596.596.596h.026a.598.598 0 0 0 .596-.596V8.844a.598.598 0 0 0-.597-.596zM7.27 12.44c0 .3.247.546.548.546h.586v1.402c0 .329.268.596.596.596h.025a.598.598 0 0 0 .597-.596v-1.402h.818v1.402c0 .329.27.596.596.596h.026a.598.598 0 0 0 .596-.596v-1.402h.586c.3 0 .547-.245.547-.547V8.343H7.27v4.096zM11.406 5.859l.465-.718a.099.099 0 1 0-.166-.108l-.482.743a3.142 3.142 0 0 0-1.192-.232c-.427 0-.83.084-1.192.232l-.481-.743a.099.099 0 0 0-.137-.029.099.099 0 0 0-.03.137l.466.718c-.839.41-1.405 1.185-1.405 2.074 0 .055.004.109.009.162h5.541c.005-.053.008-.107.008-.162 0-.889-.566-1.663-1.404-2.074zm-2.66 1.284a.266.266 0 1 1 0-.532.266.266 0 0 1 0 .532zm2.57 0a.266.266 0 1 1-.001-.532.266.266 0 0 1 0 .532zM13.698 8.248h-.025a.598.598 0 0 0-.597.596v2.594c0 .329.27.596.597.596h.025a.597.597 0 0 0 .596-.596V8.844a.598.598 0 0 0-.596-.596z"></path>
                         <path d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0 2C4.477 20 0 15.523 0 10S4.477 0 10 0s10 4.477 10 10-4.477 10-10 10z"></path>
                       </svg>
-                      <span className="fw-semibold text-dark">PlayStore</span>
+                      <span className="fw-semibold text-dark d-none d-lg-inline">
+                        PlayStore
+                      </span>
                     </a>
 
+                    {/* AppStore */}
                     <a
-                      className=" app-store-link d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
+                      className="app-store-link d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
                       href="#"
-                      style={{ minWidth: 120 }}
+                      style={{ minWidth: 0 }}
                     >
                       <svg
                         fill="#000"
                         width="20px"
                         height="20px"
                         viewBox="0 0 24 24"
-                        id="app-store"
-                        data-name="Flat Line"
                         xmlns="http://www.w3.org/2000/svg"
                         className="icon flat-line me-2"
                       >
@@ -115,155 +117,105 @@ const Header = () => {
                           y1="17"
                           x2="18"
                           y2="17"
-                          style={{
-                            fill: "none",
-                            stroke: "#000",
-                            strokeLinecap: "round",
-                            strokeLinejoin: "round",
-                            strokeWidth: "2",
-                          }}
+                          stroke="#000"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         ></line>
                         <line
                           x1="20"
                           y1="21"
                           x2="14.29"
                           y2="10.72"
-                          style={{
-                            fill: "none",
-                            stroke: "#000",
-                            strokeLinecap: "round",
-                            strokeLinejoin: "round",
-                            strokeWidth: "2",
-                          }}
+                          stroke="#000"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         ></line>
                         <line
                           x1="12"
                           y1="6.6"
                           x2="10"
                           y2="3"
-                          style={{
-                            fill: "none",
-                            stroke: "#000",
-                            strokeLinecap: "round",
-                            strokeLinejoin: "round",
-                            strokeWidth: "2",
-                          }}
+                          stroke="#000"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         ></line>
                         <line
                           x1="14"
                           y1="3"
                           x2="4"
                           y2="21"
-                          style={{
-                            fill: "none",
-                            stroke: "#000",
-                            strokeLinecap: "round",
-                            strokeLinejoin: "round",
-                            strokeWidth: "2",
-                          }}
+                          stroke="#000"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         ></line>
                         <line
                           x1="13"
                           y1="17"
                           x2="3"
                           y2="17"
-                          style={{
-                            fill: "none",
-                            stroke: "#000",
-                            strokeLinecap: "round",
-                            strokeLinejoin: "round",
-                            strokeWidth: "2",
-                          }}
-                        ></line>
-                      </svg>
-                      <span className="fw-semibold text-dark">AppStore</span>
-                    </a>
-
-                    {/* try Dropdown */}
-                    <div className="dropdown-wrapper">
-                      <Link
-                        className="app-store-link-pulse d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
-                        style={{ minWidth: 120 }}
-                        to="/try"
-                        state={{ title: "Try" }}
-                        id="photoDropdown"
-                        role="button"
-                      >
-                        {/* Bride girl SVG icon for Design Studio */}
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          width="20"
-                          height="20"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
+                          stroke="#000"
+                          strokeWidth="2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          className="text-gray-800 w-full h-full"
-                        >
-                          {/* Face */}
-                          <circle
-                            cx="12"
-                            cy="9"
-                            r="3.2"
-                            fill="#fff"
-                            stroke="#000"
-                          />
-                          {/* Veil */}
-                          <path
-                            d="M4.5 20c0-4.5 3.5-8 7.5-8s7.5 3.5 7.5 8"
-                            fill="#FBCFE8"
-                            stroke="#D946EF"
-                          />
-                          {/* Dress */}
-                          <path
-                            d="M8 20c0-2.2 1.8-4 4-4s4 1.8 4 4"
-                            fill="#000"
-                            stroke="#000"
-                          />
-                          {/* Shoulders */}
-                          <path
-                            d="M9.5 13.5c.5.5 1.5.5 2.5.5s2-.1 2.5-.5"
-                            stroke="#000"
-                          />
-                          {/* Smile */}
-                          <path d="M11 10.5c.3.5 1.7.5 2 0" stroke="#000" />
-                          {/* Eyes */}
-                          <circle cx="11" cy="9" r="0.25" fill="#000" />
-                          <circle cx="13" cy="9" r="0.25" fill="#000" />
-                        </svg>
-                        <span className="fw-semibold text-dark">
-                          Design Studio
-                        </span>
-                      </Link>
-                    </div>
+                        ></line>
+                      </svg>
+                      <span className="fw-semibold text-dark d-none d-lg-inline">
+                        AppStore
+                      </span>
+                    </a>
 
-                    {/* <div className="dropdown-wrapper">
-                      <Link
-                        className="nav-link text-white"
-                        to="/customer-login"
-                        state={{ title: "Login" }}
-                        id="photoDropdown"
-                        role="button"
+                    {/* Design Studio */}
+                    <Link
+                      className="app-store-link-pulse d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
+                      style={{ minWidth: 0 }}
+                      to="/try"
+                      state={{ title: "Try" }}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        width="20"
+                        height="20"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="text-gray-800"
                       >
-                        Login
-                      </Link>
-                    </div>
- 
-                    <div className="dropdown-wrapper">
-                      <Link
-                        className="nav-link text-white"
-                        to="/customer-register"
-                        state={{ title: "Signup" }}
-                        id="photoDropdown"
-                        role="button"
-                      >
-                        Sign-up
-                      </Link>
-                    </div> */}
-
-                    <div className="d-flex gap-3"></div>
+                        <circle
+                          cx="12"
+                          cy="9"
+                          r="3.2"
+                          fill="#fff"
+                          stroke="#000"
+                        />
+                        <path
+                          d="M4.5 20c0-4.5 3.5-8 7.5-8s7.5 3.5 7.5 8"
+                          fill="#FBCFE8"
+                          stroke="#D946EF"
+                        />
+                        <path
+                          d="M8 20c0-2.2 1.8-4 4-4s4 1.8 4 4"
+                          fill="#000"
+                          stroke="#000"
+                        />
+                        <path
+                          d="M9.5 13.5c.5.5 1.5.5 2.5.5s2-.1 2.5-.5"
+                          stroke="#000"
+                        />
+                        <path d="M11 10.5c.3.5 1.7.5 2 0" stroke="#000" />
+                        <circle cx="11" cy="9" r="0.25" fill="#000" />
+                        <circle cx="13" cy="9" r="0.25" fill="#000" />
+                      </svg>
+                      <span className="fw-semibold text-dark d-none d-lg-inline">
+                        Design Studio
+                      </span>
+                    </Link>
                   </div>
                 </div>
               </div>

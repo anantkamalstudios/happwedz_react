@@ -154,7 +154,7 @@ const Search = () => {
         <div className="search-form">
           {searchType === "profileId" ? (
             <div className="row align-items-center">
-              <div className="col-9">
+              <div className="col-12 col-md-9 mb-2 mb-md-0">
                 <input
                   type="text"
                   placeholder="Enter Profile ID"
@@ -163,9 +163,9 @@ const Search = () => {
                   onChange={(e) => setProfileId(e.target.value)}
                 />
               </div>
-              <div className="col-3">
+              <div className="col-12 col-md-3">
                 <button
-                  className="search-btn btn btn-primary w-100"
+                  className="search-btn btn btn-primary w-100 mt-2 mt-md-0"
                   style={{ whiteSpace: "nowrap" }}
                 >
                   Find Profile

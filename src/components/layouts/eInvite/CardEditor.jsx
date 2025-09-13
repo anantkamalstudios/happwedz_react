@@ -359,19 +359,29 @@ const CardEditor = ({ template, onBack }) => {
       const projectId = `wedding-card-${Date.now()}`;
       localStorage.setItem(projectId, JSON.stringify(projectData));
 
-      // Show success message
+      // Toast container
+      let toastContainer = document.getElementById("toast-container");
+      if (!toastContainer) {
+        toastContainer = document.createElement("div");
+        toastContainer.id = "toast-container";
+        toastContainer.className =
+          "position-fixed top-0 end-0 p-3 d-flex flex-column align-items-end";
+        document.body.appendChild(toastContainer);
+      }
+
+      // Toast element
       const toast = document.createElement("div");
-      toast.className = "toast show position-fixed top-0 end-0 m-3";
+      toast.className =
+        "toast align-items-center text-black bg-yellow rounded-pill shadow mb-2 show";
+      toast.style.minWidth = "250px";
       toast.innerHTML = `
-        <div className="toast-header">
-          <strong className="me-auto">Success</strong>
-          <button type="button" className="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
-        </div>
-        <div className="toast-body">
-          Project saved successfully!
-        </div>
-      `;
-      document.body.appendChild(toast);
+      <div class="d-flex justify-content-between align-items-center px-3 py-2">
+        <span>✅ Project saved successfully!</span>
+        <button type="button" class="btn-close btn-close-dark ms-2" data-bs-dismiss="toast"></button>
+      </div>
+    `;
+
+      toastContainer.appendChild(toast);
 
       setTimeout(() => {
         toast.remove();

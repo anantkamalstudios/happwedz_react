@@ -112,7 +112,6 @@ const LocationModalWithAPI = () => {
             className="mb-4 p-3"
           />
 
-          {/* Cities List */}
           <div
             style={{
               padding: "1rem",
@@ -121,18 +120,28 @@ const LocationModalWithAPI = () => {
               overflowX: "hidden",
             }}
           >
-            <Row>
-              {filterCities.map((city) => (
-                <Col key={city} md={4} className="mb-2">
-                  <a
-                    href="#"
-                    className="text-dark d-block py-1 text-decoration-none small"
+            {filterCities.length === 0 ? (
+              <div className="text-center text-muted py-3">
+                No cities found.
+              </div>
+            ) : (
+              <div className="d-flex flex-wrap justify-content-center">
+                {filterCities.map((city) => (
+                  <div
+                    key={city}
+                    className="p-2 text-center"
+                    style={{ minWidth: "150px" }}
                   >
-                    {city}
-                  </a>
-                </Col>
-              ))}
-            </Row>
+                    <a
+                      href="#"
+                      className="text-dark d-block py-2 text-decoration-none small border rounded"
+                    >
+                      {city}
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </Modal.Body>
       </Modal>

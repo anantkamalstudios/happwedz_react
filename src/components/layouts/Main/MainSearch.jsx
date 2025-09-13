@@ -84,14 +84,17 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
 
               <Form onSubmit={handleSubmit} className="w-100 position-relative">
                 <div
-                  className="d-flex flex-column flex-md-row align-items-stretch rounded-pill bg-white shadow p-2 gap-2"
+                  className="d-flex flex-column flex-md-row align-items-stretch rounded-pill p-2 gap-2"
                   style={{
                     maxWidth: 680,
                     overflow: "visible",
                     position: "relative",
                   }}
                 >
-                  <div className="d-flex align-items-center flex-grow-1 px-2">
+                  <div
+                    className="d-flex align-items-center flex-grow-1 px-2"
+                    style={{ border: "1px solid pink", borderRadius: "5px" }}
+                  >
                     <FaSearch className="me-2 text-muted" />
                     <Form.Control
                       value={keyword}
@@ -105,7 +108,10 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
 
                   <div className="vr d-none d-md-block" />
 
-                  <div className="d-flex align-items-center flex-grow-1 px-2 position-relative">
+                  <div
+                    className="d-flex align-items-center flex-grow-1 px-2 position-relative"
+                    style={{ border: "1px solid pink", borderRadius: "5px" }}
+                  >
                     <FaMapMarkerAlt className="me-2 text-muted" />
                     <Form.Control
                       value={place}
@@ -132,12 +138,9 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
                           style={{
                             position: "absolute",
                             top: "100%",
-                            left: "-100%",
                             width: "100%",
-                            right: 0,
                             zIndex: 99999,
                             maxHeight: "200px",
-                            minWidth: "550px",
                             overflowY: "auto",
                             boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
                             background: "#fff",

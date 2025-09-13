@@ -205,7 +205,13 @@ const UserDashboardNavbar = () => {
 
   return (
     <div className="tabs-container border-bottom py-2 px-3 mt-3">
-      <div className="d-flex gap-5 flex-nowrap justify-content-center">
+      <div
+        className="d-flex gap-5 flex-nowrap"
+        style={{
+          justifyContent: window.innerWidth > 768 ? "center" : "flex-start",
+          overflowX: "auto",
+        }}
+      >
         {tabs.map((tab) => (
           <button
             key={tab.id}

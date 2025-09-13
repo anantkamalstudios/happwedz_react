@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Modal, Button, Toast } from "react-bootstrap";
 
 const VendorBasicInfo = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,12 @@ const VendorBasicInfo = () => {
     subtitle: "",
     description: "",
   });
+
+  // Modal state for vendor request
+  const [showModal, setShowModal] = useState(false);
+  const [requestCategory, setRequestCategory] = useState("");
+  const [requestMsg, setRequestMsg] = useState("");
+  const [showToast, setShowToast] = useState(false);
 
   return (
     <div className="my-5">
@@ -79,7 +86,7 @@ const VendorBasicInfo = () => {
               placeholder="Detailed description of your business"
             />
           </div>
-          <div className="col-md-6 mb-3">
+          <div className="col-md-6 mb-3 position-relative">
             <label className="form-label fw-semibold">Vendor Type</label>
             <select
               className="form-select"
@@ -96,6 +103,76 @@ const VendorBasicInfo = () => {
               <option value="makeup">Makeup Artist</option>
               <option value="other">Other</option>
             </select>
+            {/* Clickable Note */}
+            <div
+              className="vendor-note mt-2 fw-semibold text-decoration-underline"
+              style={{ cursor: "pointer", fontSize: "14px", color: "red" }}
+              onClick={() => setShowModal(true)}
+              tabIndex={0}
+              role="button"
+            >
+              Note: If you want a different category, reach out to admin.
+            </div>
+            {/* Modal for request */}
+            <Modal
+              show={showModal}
+              onHide={() => setShowModal(false)}
+              centered
+              dialogClassName="vendor-request-modal"
+            >
+              <Modal.Header closeButton>
+                <Modal.Title>Request New Category</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <div className="mb-3">
+                  <label className="form-label">Category Type</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={requestCategory}
+                    onChange={(e) => setRequestCategory(e.target.value)}
+                    placeholder="e.g. Haldi, Mehndi, etc."
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Message</label>
+                  <textarea
+                    className="form-control"
+                    rows={3}
+                    value={requestMsg}
+                    onChange={(e) => setRequestMsg(e.target.value)}
+                    placeholder="Briefly describe why you need this category."
+                  />
+                </div>
+              </Modal.Body>
+              <Modal.Footer>
+                <button
+                  className="btn btn-primary mt-2 w-100 "
+                  onClick={() => {
+                    setShowModal(false);
+                    setShowToast(true);
+                    setRequestCategory("");
+                    setRequestMsg("");
+                  }}
+                  disabled={!requestCategory || !requestMsg}
+                >
+                  Save Basic Info
+                </button>
+              </Modal.Footer>
+            </Modal>
+            {/* Toast for feedback */}
+            <Toast
+              show={showToast}
+              onClose={() => setShowToast(false)}
+              delay={3000}
+              autohide
+              style={{ position: "fixed", top: 20, right: 20, zIndex: 9999 }}
+            >
+              <Toast.Header>
+                <strong className="me-auto">Info</strong>
+              </Toast.Header>
+              <Toast.Body>Thank you! We'll inform you soon.</Toast.Body>
+            </Toast>
           </div>
           <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">Status</label>
