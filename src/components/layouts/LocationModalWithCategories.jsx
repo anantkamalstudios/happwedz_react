@@ -60,7 +60,6 @@ const LocationModalWithAPI = () => {
     });
   }, []);
 
-  // Fetch cities when country changes
   useEffect(() => {
     if (!selectedCountry) return;
 

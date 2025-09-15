@@ -18,6 +18,8 @@ import {
   FaEnvelope,
   FaGlobe,
 } from "react-icons/fa";
+import { FcBusinessman } from "react-icons/fc";
+import { IoIosContact } from "react-icons/io";
 
 const VendorRegister = () => {
   const [step, setStep] = useState(1);
@@ -216,6 +218,7 @@ const VendorRegister = () => {
               <div className="form-step">
                 <h3 className="mb-4 d-flex align-items-center">
                   {" "}
+                  <FcBusinessman className="me-2" />
                   Business Information
                 </h3>
 
@@ -244,21 +247,16 @@ const VendorRegister = () => {
                       <Form.Label>
                         Business Type <span className="text-danger">*</span>
                       </Form.Label>
-                      <Form.Select
+                      <Form.Control
                         required
+                        type="text"
                         name="businessType"
                         value={formData.businessType}
                         onChange={handleChange}
-                      >
-                        <option value="">Select business type</option>
-                        {businessTypes.map((type, index) => (
-                          <option key={index} value={type}>
-                            {type}
-                          </option>
-                        ))}
-                      </Form.Select>
+                        placeholder="Enter your business type"
+                      />
                       <Form.Control.Feedback type="invalid">
-                        Please select your business type.
+                        Please enter your business type.
                       </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
@@ -307,7 +305,7 @@ const VendorRegister = () => {
             {step === 2 && (
               <div className="form-step">
                 <h3 className="mb-4 d-flex align-items-center">
-                  <FaUser className="me-2 text-primary" /> Contact Information
+                  <IoIosContact className="me-2" /> Contact Information
                 </h3>
 
                 <Row className="mb-3">

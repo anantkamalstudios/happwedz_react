@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FiMail, FiLock, FiCheck, FiArrowLeft, FiLoader } from "react-icons/fi";
+import { Link } from "react-router-dom";
 
 const ForgotPassword = () => {
   const [activeStep, setActiveStep] = useState("forgotPassword");
@@ -117,9 +118,9 @@ const ForgotPassword = () => {
 
             <div className="weddingwire-auth-footer">
               Remember your password?{" "}
-              <a href="#" className="weddingwire-auth-link">
+              <Link to="/customer-login" className="weddingwire-auth-link">
                 Log In
-              </a>
+              </Link>
             </div>
           </div>
         )}

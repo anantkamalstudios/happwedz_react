@@ -1,19 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 
-const VendorAvailability = () => {
-  const [formData, setFormData] = useState({
-    timing: { open: "", close: "", lastEntry: "" },
-    blackoutDates: [],
-    availableSlots: [{ date: "", timeFrom: "", timeTo: "" }],
-    isFeatureAvailable: "No",
-    within24HrAvailable: "No",
-  });
-
+const VendorAvailability = ({ formData, setFormData }) => {
   const handleNestedInputChange = (subSection, field, value) => {
     setFormData((prev) => ({
       ...prev,
       [subSection]: {
-        ...prev[subSection],
+        ...((prev && prev[subSection]) || {}),
         [field]: value,
       },
     }));
@@ -29,7 +21,7 @@ const VendorAvailability = () => {
             <input
               type="time"
               className="form-control"
-              value={formData.timing.open}
+              value={formData?.timing?.open || ""}
               onChange={(e) =>
                 handleNestedInputChange("timing", "open", e.target.value)
               }
@@ -40,7 +32,7 @@ const VendorAvailability = () => {
             <input
               type="time"
               className="form-control"
-              value={formData.timing.close}
+              value={formData?.timing?.close || ""}
               onChange={(e) =>
                 handleNestedInputChange("timing", "close", e.target.value)
               }
@@ -51,7 +43,7 @@ const VendorAvailability = () => {
             <input
               type="time"
               className="form-control"
-              value={formData.timing.lastEntry}
+              value={formData?.timing?.lastEntry || ""}
               onChange={(e) =>
                 handleNestedInputChange("timing", "lastEntry", e.target.value)
               }
@@ -61,7 +53,7 @@ const VendorAvailability = () => {
             <label className="form-label fw-semibold">Feature Available</label>
             <select
               className="form-select"
-              value={formData.isFeatureAvailable}
+              value={formData?.isFeatureAvailable || "No"}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
@@ -77,7 +69,7 @@ const VendorAvailability = () => {
             <label className="form-label fw-semibold">24hr Availability</label>
             <select
               className="form-select"
-              value={formData.within24HrAvailable}
+              value={formData?.within24HrAvailable || "No"}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,

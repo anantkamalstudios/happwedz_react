@@ -1,17 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Button, Toast } from "react-bootstrap";
 
-const VendorBasicInfo = () => {
-  const [formData, setFormData] = useState({
-    status: "draft",
-    vendorType: "venue",
-    name: "",
-    slug: "",
-    tagline: "",
-    subtitle: "",
-    description: "",
-  });
-
+const VendorBasicInfo = ({ formData, setFormData }) => {
   // Modal state for vendor request
   const [showModal, setShowModal] = useState(false);
   const [requestCategory, setRequestCategory] = useState("");

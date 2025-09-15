@@ -312,12 +312,12 @@ body {
 }
 
 .wedding-link {
-  color: #b57e9f !important;
+  color: #ed1173 !important;
   transition: all 0.3s ease;
 }
 
 .wedding-link:hover {
-  color: #8a5a76 !important;
+  color: #e40000 !important;
   letter-spacing: 0.5px;
 }
 
@@ -434,7 +434,7 @@ body {
 }
 
 .login-btn {
-  background: linear-gradient(135deg, #e9b0ce 0%, #d8a1bd 100%);
+  /* background: linear-gradient(135deg, #e9b0ce 0%, #d8a1bd 100%); */
   border: none;
   border-radius: 50px;
   font-weight: 500;
@@ -466,12 +466,12 @@ body {
 }
 
 .wedding-link {
-  color: #b57e9f !important;
+  color: #ed1173 !important;
   transition: all 0.3s ease;
 }
 
 .wedding-link:hover {
-  color: #8a5a76 !important;
+  color: #e40000 !important;
 }
 
 .floral-decoration {
@@ -627,13 +627,13 @@ body {
 }
 
 .wedding-link {
-  color: #b57e9f !important;
+  color: #ed1173 !important;
   transition: all 0.3s ease;
   font-weight: 500;
 }
 
 .wedding-link:hover {
-  color: #8a5a76 !important;
+  color: #e40000 !important;
   letter-spacing: 0.5px;
 }
 
@@ -2786,7 +2786,7 @@ body {
 }
 
 .step-indicator.active {
-  color: #0d6efd;
+  color: var(--primary-pink);
   font-weight: 600;
 }
 
@@ -2804,8 +2804,8 @@ body {
 }
 
 .step-indicator.active .step-number {
-  background: #0d6efd;
-  color: white;
+  background: #ffffff;
+  color: rgb(255, 6, 6);
 }
 
 .form-step {
@@ -15110,7 +15110,11 @@ input:checked + .slider:before {
 }
 
 .video-controls {
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
   backdrop-filter: blur(10px);
   border-radius: 8px;
   padding: 16px;
@@ -15254,7 +15258,7 @@ input:checked + .slider:before {
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: 50px;
   font-weight: bold;
   transition: all 0.3s ease;
   position: relative;
@@ -15267,13 +15271,13 @@ input:checked + .slider:before {
 }
 
 .step-indicator.active {
-  background: linear-gradient(135deg, #007bff, #0056b3);
+  background: var(--primary-pink);
   color: white;
   box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
 
 .step-indicator::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 100%;
@@ -15303,7 +15307,7 @@ input:checked + .slider:before {
 }
 
 .audio-track::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -15387,19 +15391,28 @@ input:checked + .slider:before {
 }
 
 .export-progress::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
   width: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
   animation: shimmer 2s infinite;
 }
 
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .video-preview-modal .modal-content {
@@ -15544,4 +15557,8 @@ input:checked + .slider:before {
 .timeline-track-element .drag-handle.right {
   left: auto;
   right: 0;
+}
+
+.header-cta {
+  font-size: 12px;
 }

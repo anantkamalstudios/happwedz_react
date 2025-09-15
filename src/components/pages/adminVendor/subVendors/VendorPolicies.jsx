@@ -1,18 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
 
-const VendorPolicies = () => {
-  const [formData, setFormData] = useState({
-    cancellationPolicy: "",
-    refundPolicy: "",
-    paymentTerms: { advancePercent: "", modes: [] },
-    tnc: "",
-  });
+const VendorPolicies = ({ formData, setFormData }) => {
+  const paymentTerms = formData.paymentTerms || {
+    advancePercent: "",
+    modes: [],
+  };
 
   const handleNestedInputChange = (subSection, field, value) => {
     setFormData((prev) => ({
       ...prev,
       [subSection]: {
-        ...prev[subSection],
+        ...(prev[subSection] || {}),
         [field]: value,
       },
     }));
@@ -30,7 +28,7 @@ const VendorPolicies = () => {
             <textarea
               className="form-control"
               rows="3"
-              value={formData.cancellationPolicy}
+              value={formData.cancellationPolicy || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
@@ -45,7 +43,7 @@ const VendorPolicies = () => {
             <textarea
               className="form-control"
               rows="3"
-              value={formData.refundPolicy}
+              value={formData.refundPolicy || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
@@ -60,7 +58,7 @@ const VendorPolicies = () => {
             <input
               type="number"
               className="form-control"
-              value={formData.paymentTerms.advancePercent}
+              value={paymentTerms.advancePercent}
               onChange={(e) =>
                 handleNestedInputChange(
                   "paymentTerms",
@@ -76,7 +74,7 @@ const VendorPolicies = () => {
             <textarea
               className="form-control"
               rows="4"
-              value={formData.tnc}
+              value={formData.tnc || ""}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, tnc: e.target.value }))
               }

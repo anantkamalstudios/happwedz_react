@@ -33,7 +33,7 @@ const VendorLogin = () => {
               "The best thing to hold onto in life is each other. Plan your
               perfect day with us."
             </p>
-            <div className="floral-divider my-5"></div>
+            {/* <div className="floral-divider my-5"></div> */}
           </div>
         </div>
 

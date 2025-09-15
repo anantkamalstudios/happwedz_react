@@ -1,30 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 
-const VendorPricing = () => {
-  const [formData, setFormData] = useState({
-    startingPrice: "",
-    priceUnit: "",
-    priceRange: { min: "", max: "" },
-    currency: "INR",
-    deals: [{ title: "", description: "", validTill: "" }],
-    packages: [
-      {
-        id: "",
-        name: "",
-        price: "",
-        priceUnit: "",
-        includes: [""],
-        addOns: [""],
-        terms: "",
-      },
-    ],
-  });
+const VendorPricing = ({ formData, setFormData }) => {
+  const priceRange = formData.priceRange || { min: "", max: "" };
 
   const handleNestedInputChange = (subSection, field, value) => {
     setFormData((prev) => ({
       ...prev,
       [subSection]: {
-        ...prev[subSection],
+        ...(prev[subSection] || {}),
         [field]: value,
       },
     }));
@@ -40,7 +23,7 @@ const VendorPricing = () => {
             <input
               type="number"
               className="form-control"
-              value={formData.startingPrice}
+              value={formData.startingPrice || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
@@ -54,7 +37,7 @@ const VendorPricing = () => {
             <label className="form-label fw-semibold">Price Unit</label>
             <select
               className="form-select"
-              value={formData.priceUnit}
+              value={formData.priceUnit || ""}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, priceUnit: e.target.value }))
               }
@@ -70,7 +53,7 @@ const VendorPricing = () => {
             <label className="form-label fw-semibold">Currency</label>
             <select
               className="form-select"
-              value={formData.currency}
+              value={formData.currency || ""}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, currency: e.target.value }))
               }
@@ -85,7 +68,7 @@ const VendorPricing = () => {
             <input
               type="number"
               className="form-control"
-              value={formData.priceRange.min}
+              value={priceRange.min}
               onChange={(e) =>
                 handleNestedInputChange("priceRange", "min", e.target.value)
               }
@@ -97,7 +80,7 @@ const VendorPricing = () => {
             <input
               type="number"
               className="form-control"
-              value={formData.priceRange.max}
+              value={priceRange.max}
               onChange={(e) =>
                 handleNestedInputChange("priceRange", "max", e.target.value)
               }

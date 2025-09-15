@@ -560,12 +560,8 @@ const CustomerRegister = () => {
             <div className="d-grid mb-4">
               <button
                 type="submit"
-                className="btn btn-lg fw-medium py-3"
+                className="btn btn-lg btn-primary fw-medium py-3"
                 disabled={isSubmitting}
-                style={{
-                  background:
-                    "linear-gradient(135deg, #e93b98ff 0%, #fd76bcff 100%)",
-                }}
               >
                 {isSubmitting && (
                   <span className="spinner-border spinner-border-sm me-2"></span>
@@ -577,13 +573,19 @@ const CustomerRegister = () => {
             <div className="text-center d-flex justify-content-between">
               <p className="text-muted">
                 I have an account?
-                <Link to="/customer-login" className="fw-semibold px-2">
+                <Link
+                  to="/customer-login"
+                  className="fw-semibold px-2 wedding-link"
+                >
                   Login
                 </Link>
               </p>
               <p className="text-muted">
                 I Am Vendor?
-                <Link to="/vendor-login" className="fw-semibold px-2">
+                <Link
+                  to="/vendor-login"
+                  className="fw-semibold px-2 wedding-link"
+                >
                   Vendor
                 </Link>
               </p>

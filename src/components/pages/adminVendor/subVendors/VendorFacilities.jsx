@@ -1,28 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 
-const VendorFacilities = () => {
-  const [formData, setFormData] = useState({
-    capacity: { min: "", max: "" },
-    rooms: "",
-    carParking: "",
-    hallTypes: [],
-    indoorOutdoor: "",
-    alcoholPolicy: "",
-    djPolicy: "",
-    cateringPolicy: "",
-    decoPolicy: "",
-    servicesOffered: [],
-    features: [],
-    cuisines: [],
-    specialties: [],
-    equipment: [],
-  });
+const VendorFacilities = ({ formData, setFormData }) => {
+  const capacity = formData.capacity || { min: "", max: "" };
 
   const handleNestedInputChange = (subSection, field, value) => {
     setFormData((prev) => ({
       ...prev,
       [subSection]: {
-        ...prev[subSection],
+        ...(prev[subSection] || {}),
         [field]: value,
       },
     }));
@@ -38,7 +23,7 @@ const VendorFacilities = () => {
             <input
               type="number"
               className="form-control"
-              value={formData.capacity.min}
+              value={capacity.min}
               onChange={(e) =>
                 handleNestedInputChange("capacity", "min", e.target.value)
               }
@@ -50,7 +35,7 @@ const VendorFacilities = () => {
             <input
               type="number"
               className="form-control"
-              value={formData.capacity.max}
+              value={capacity.max}
               onChange={(e) =>
                 handleNestedInputChange("capacity", "max", e.target.value)
               }
@@ -62,7 +47,7 @@ const VendorFacilities = () => {
             <input
               type="number"
               className="form-control"
-              value={formData.rooms}
+              value={formData.rooms || ""}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, rooms: e.target.value }))
               }
@@ -74,7 +59,7 @@ const VendorFacilities = () => {
             <input
               type="text"
               className="form-control"
-              value={formData.carParking}
+              value={formData.carParking || ""}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, carParking: e.target.value }))
               }
@@ -85,7 +70,7 @@ const VendorFacilities = () => {
             <label className="form-label fw-semibold">Indoor/Outdoor</label>
             <select
               className="form-select"
-              value={formData.indoorOutdoor}
+              value={formData.indoorOutdoor || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
@@ -103,7 +88,7 @@ const VendorFacilities = () => {
             <label className="form-label fw-semibold">Alcohol Policy</label>
             <select
               className="form-select"
-              value={formData.alcoholPolicy}
+              value={formData.alcoholPolicy || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,

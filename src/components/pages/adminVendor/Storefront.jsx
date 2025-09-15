@@ -42,9 +42,24 @@ import VendorFacilities from "./subVendors/VendorFacilities";
 import VendorPolicies from "./subVendors/VendorPolicies";
 import VendorAvailability from "./subVendors/VendorAvailability";
 import VendorMarketing from "./subVendors/VendorMarketing";
+import SuccessModal from "../../ui/SuccessModal";
 
 const Storefront = () => {
   const [active, setActive] = useState("business");
+  const [showModal, setShowModal] = useState(false);
+  // Centralized form data for all vendor sections
+  const [formData, setFormData] = useState(() => {
+    // Try to load from localStorage if available
+    const saved = localStorage.getItem("vendorFormData");
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  // Save handler (can be called from VendorMarketing)
+  const handleSave = () => {
+    localStorage.setItem("vendorFormData", JSON.stringify(formData));
+    setShowModal(true);
+    // You can replace this with an API call to save to DB
+  };
 
   const menuItems = [
     { id: "business", label: "Business details", icon: <FaRegBuilding /> },
@@ -93,23 +108,35 @@ const Storefront = () => {
         return <BusinessDetails />;
       // Vendor Form Sections
       case "vendor-basic":
-        return <VendorBasicInfo />;
+        return (
+          <VendorBasicInfo formData={formData} setFormData={setFormData} />
+        );
       case "vendor-contact":
-        return <VendorContact />;
+        return <VendorContact formData={formData} setFormData={setFormData} />;
       case "vendor-location":
-        return <VendorLocation />;
+        return <VendorLocation formData={formData} setFormData={setFormData} />;
       case "vendor-media":
-        return <VendorMedia />;
+        return <VendorMedia formData={formData} setFormData={setFormData} />;
       case "vendor-pricing":
-        return <VendorPricing />;
+        return <VendorPricing formData={formData} setFormData={setFormData} />;
       case "vendor-facilities":
-        return <VendorFacilities />;
+        return (
+          <VendorFacilities formData={formData} setFormData={setFormData} />
+        );
       case "vendor-policies":
-        return <VendorPolicies />;
+        return <VendorPolicies formData={formData} setFormData={setFormData} />;
       case "vendor-availability":
-        return <VendorAvailability />;
+        return (
+          <VendorAvailability formData={formData} setFormData={setFormData} />
+        );
       case "vendor-marketing":
-        return <VendorMarketing />;
+        return (
+          <VendorMarketing
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+          />
+        );
       // Original sections
       // case "location":
       //   return <LocationForm />;
@@ -170,6 +197,13 @@ const Storefront = () => {
         {/* Main Content */}
         <div className="col-md-9">{renderContent()}</div>
       </div>
+
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        message="Your details have been saved successfully!"
+      />
     </div>
   );
 };

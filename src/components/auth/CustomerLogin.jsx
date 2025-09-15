@@ -33,7 +33,7 @@ const CustomerLogin = () => {
               "The best thing to hold onto in life is each other. Plan your
               perfect day with us."
             </p>
-            <div className="floral-divider my-5"></div>
+            {/* <div className="floral-divider my-5"></div> */}
           </div>
         </div>
 
@@ -159,7 +159,7 @@ const CustomerLogin = () => {
 
             <div className="mt-5 text-center">
               <p className="text-muted">
-                Don't have an account? <link rel="stylesheet" href="" />
+                Don't have an account?{" "}
                 <Link
                   to="/customer-register"
                   className="text-decoration-none wedding-link fw-semibold"
@@ -167,16 +167,16 @@ const CustomerLogin = () => {
                   Sign up
                 </Link>
               </p>
-              {/* <p className="mt-3 small text-secondary">
-                By signing in, you agree to our{" "}
-                <a href="#terms" className="wedding-link">
-                  Terms of Service
-                </a>{" "}
-                and{" "}
-                <a href="#privacy" className="wedding-link">
-                  Privacy Policy
-                </a>
-              </p> */}
+
+              <p className="text-muted">
+                I am a{" "}
+                <Link
+                  to="/vendor-login"
+                  className="text-decoration-none fw-semibold wedding-link"
+                >
+                  vendor
+                </Link>
+              </p>
             </div>
           </Form>
         </div>

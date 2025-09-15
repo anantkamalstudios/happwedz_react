@@ -1,23 +1,21 @@
-import React, { useState } from "react";
+import React from "react";
 
-const VendorContact = () => {
-  const [formData, setFormData] = useState({
-    contact: {
-      contactName: "",
-      phone: "",
-      altPhone: "",
-      email: "",
-      website: "",
-      whatsappNumber: "",
-      inquiryEmail: "",
-    },
-  });
+const VendorContact = ({ formData, setFormData }) => {
+  const contact = formData.contact || {
+    contactName: "",
+    phone: "",
+    altPhone: "",
+    email: "",
+    website: "",
+    whatsappNumber: "",
+    inquiryEmail: "",
+  };
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
       contact: {
-        ...prev.contact,
+        ...((prev && prev.contact) || {}),
         [field]: value,
       },
     }));
@@ -33,7 +31,7 @@ const VendorContact = () => {
             <input
               type="text"
               className="form-control"
-              value={formData.contact.contactName}
+              value={contact.contactName}
               onChange={(e) => handleInputChange("contactName", e.target.value)}
               placeholder="Enter contact person name"
             />
@@ -43,7 +41,7 @@ const VendorContact = () => {
             <input
               type="tel"
               className="form-control"
-              value={formData.contact.phone}
+              value={contact.phone}
               onChange={(e) => handleInputChange("phone", e.target.value)}
               placeholder="Enter primary phone number"
             />
@@ -53,7 +51,7 @@ const VendorContact = () => {
             <input
               type="tel"
               className="form-control"
-              value={formData.contact.altPhone}
+              value={contact.altPhone}
               onChange={(e) => handleInputChange("altPhone", e.target.value)}
               placeholder="Enter alternative phone number"
             />
@@ -63,7 +61,7 @@ const VendorContact = () => {
             <input
               type="tel"
               className="form-control"
-              value={formData.contact.whatsappNumber}
+              value={contact.whatsappNumber}
               onChange={(e) =>
                 handleInputChange("whatsappNumber", e.target.value)
               }
@@ -75,7 +73,7 @@ const VendorContact = () => {
             <input
               type="email"
               className="form-control"
-              value={formData.contact.email}
+              value={contact.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
               placeholder="Enter email address"
             />
@@ -85,7 +83,7 @@ const VendorContact = () => {
             <input
               type="email"
               className="form-control"
-              value={formData.contact.inquiryEmail}
+              value={contact.inquiryEmail}
               onChange={(e) =>
                 handleInputChange("inquiryEmail", e.target.value)
               }
@@ -97,7 +95,7 @@ const VendorContact = () => {
             <input
               type="url"
               className="form-control"
-              value={formData.contact.website}
+              value={contact.website}
               onChange={(e) => handleInputChange("website", e.target.value)}
               placeholder="https://your-website.com"
             />

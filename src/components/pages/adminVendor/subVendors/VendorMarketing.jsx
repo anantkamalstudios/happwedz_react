@@ -1,17 +1,13 @@
 import React, { useState } from "react";
 
-const VendorMarketing = () => {
-  const [formData, setFormData] = useState({
-    primaryCTA: "enquire",
-    ctaPhone: "",
-    ctaUrl: "",
-    autoReply: "",
-    isFeatured: false,
-    sortWeight: "",
-    tags: [],
-    ownerId: "",
-    notes: "",
-  });
+const VendorMarketing = ({ formData, setFormData }) => {
+  React.useEffect(() => {
+    localStorage.setItem("vendorFormData", JSON.stringify(formData));
+  }, [formData]);
+
+  const onSave = () => {
+    alert("Details saved:\n" + JSON.stringify(formData, null, 2));
+  };
 
   return (
     <div className="my-5">
@@ -100,7 +96,9 @@ const VendorMarketing = () => {
             </div>
           </div>
         </div>
-        <button className="btn btn-primary mt-2">Save Marketing Details</button>
+        <button className="btn btn-primary mt-2" onClick={onSave}>
+          Save & Submit All Details
+        </button>
       </div>
     </div>
   );
