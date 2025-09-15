@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Heart, Play, Calendar, Star, Filter, Search } from "lucide-react";
+import {
+  Heart,
+  Play,
+  Calendar,
+  Star,
+  Filter,
+  Search,
+  Video,
+  Sparkles,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const WeddingCardDesigns = () => {
@@ -87,6 +96,21 @@ const WeddingCardDesigns = () => {
   const videoCards = [
     {
       id: 1,
+      name: "Floral Extravaganza",
+      theme: "floral",
+      duration: "2:30",
+      image:
+        "https://image.wedmegood.com/e-invite-images/5b8ae9dc-c18b-4712-a2b7-b112f081acac-Love_Meadows.JPEG",
+      videoUrl:
+        "https://videoinvites.wedmegood.com/1756195582718Floral+Extravaganza.mp4",
+      rating: 4.9,
+      downloads: 3200,
+      price: "Free",
+      features: ["Text Overlay", "Music Sync", "Transitions", "Floral Effects"],
+      colors: ["#FF6B9D", "#FFE4E1", "#FFFFFF", "#F8BBD9"],
+    },
+    {
+      id: 2,
       name: "Romantic Slideshow",
       theme: "romantic",
       duration: "2:30",
@@ -95,7 +119,7 @@ const WeddingCardDesigns = () => {
       rating: 4.8,
     },
     {
-      id: 2,
+      id: 3,
       name: "Love Story Animation",
       theme: "animated",
       duration: "1:45",
@@ -104,7 +128,7 @@ const WeddingCardDesigns = () => {
       rating: 4.9,
     },
     {
-      id: 3,
+      id: 4,
       name: "Pink Elegance Video",
       theme: "elegant",
       duration: "2:00",
@@ -113,7 +137,7 @@ const WeddingCardDesigns = () => {
       rating: 4.7,
     },
     {
-      id: 4,
+      id: 5,
       name: "Bollywood Romance",
       theme: "bollywood",
       duration: "3:00",
@@ -122,7 +146,7 @@ const WeddingCardDesigns = () => {
       rating: 4.6,
     },
     {
-      id: 5,
+      id: 6,
       name: "Minimalist Motion",
       theme: "minimalist",
       duration: "1:30",
@@ -131,7 +155,7 @@ const WeddingCardDesigns = () => {
       rating: 4.8,
     },
     {
-      id: 6,
+      id: 7,
       name: "Floral Fantasy",
       theme: "floral",
       duration: "2:15",
@@ -224,10 +248,26 @@ const WeddingCardDesigns = () => {
   };
 
   const handleEditTemplate = (template) => {
-    const editorUrl = `/editor?template=${encodeURIComponent(
-      JSON.stringify(template)
-    )}`;
-    navigate(editorUrl);
+    if (activeTab === "video") {
+      // For video cards, navigate to video editor
+      const videoTemplate = {
+        ...template,
+        videoUrl:
+          "https://videoinvites.wedmegood.com/1756195582718Floral+Extravaganza.mp4",
+        thumbnail: template.image,
+        category: template.theme,
+        features: ["Text Overlay", "Music Sync", "Transitions"],
+        colors: ["#FF6B9D", "#FFE4E1", "#FFFFFF"],
+        price: "Free",
+      };
+      navigate("/video-editor", { state: { template: videoTemplate } });
+    } else {
+      // For other cards, navigate to regular editor
+      const editorUrl = `/editor?template=${encodeURIComponent(
+        JSON.stringify(template)
+      )}`;
+      navigate(editorUrl);
+    }
   };
 
   // const CardComponent = ({ item, type }) => (

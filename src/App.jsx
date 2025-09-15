@@ -50,6 +50,13 @@ const CancellationPolicy = lazy(() =>
   import("./components/pages/CancellationPolicy")
 );
 const CardEditorPage = lazy(() => import("./components/CardEditorPage"));
+const VideoEditorPage = lazy(() => import("./components/VideoEditorPage"));
+const VideoTemplates = lazy(() =>
+  import("./components/layouts/eInvite/VideoTemplates")
+);
+const VideoEditorDemo = lazy(() =>
+  import("./components/layouts/eInvite/VideoEditorDemo")
+);
 const ProfileImageSelector = lazy(() =>
   import("./components/pages/ProfileImageSelector")
 );
@@ -99,6 +106,13 @@ function App() {
 
           <Route path="/editor" element={<CardEditorPage />} />
           <Route path="/editor/:templateId" element={<CardEditorPage />} />
+          <Route path="/video-templates" element={<VideoTemplates />} />
+          <Route path="/video-editor" element={<VideoEditorPage />} />
+          <Route
+            path="/video-editor/:templateId"
+            element={<VideoEditorPage />}
+          />
+          <Route path="/video-demo" element={<VideoEditorDemo />} />
         </Route>
 
         <Route element={<MatrimonialLayout />}>

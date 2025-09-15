@@ -49,8 +49,8 @@ const CardSlider = ({ title, data }) => {
         spaceBetween={30}
         loop={true}
         autoplay={{
-          delay: 2500, // ⏳ 2.5s delay before next slide
-          disableOnInteraction: false, // keeps autoplay after interaction
+          delay: 2500,
+          disableOnInteraction: false,
         }}
         onSwiper={(swiper) => setActiveIndex(swiper.activeIndex)}
         onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
