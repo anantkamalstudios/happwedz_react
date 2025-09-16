@@ -115,7 +115,7 @@ const HowItWorksSection = () => {
   // Animation function for counting
   const animateCount = (element, target) => {
     let current = 0;
-    const increment = target / 50; // 50 steps for smooth animation
+    const increment = target / 50;
     const timer = setInterval(() => {
       current += increment;
       if (current >= target) {

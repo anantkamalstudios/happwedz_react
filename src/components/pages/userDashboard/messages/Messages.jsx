@@ -177,8 +177,8 @@ const Messages = () => {
                     <div className="ms-3">
                       <div className="fw-bold">{v.name}</div>
                       <div className="small text-muted text-truncate">
-                        {v.description.length > 40
-                          ? v.description.slice(0, 40) + "..."
+                        {v.description.length > 30
+                          ? v.description.slice(0, 30) + "..."
                           : v.description}
                       </div>
                     </div>
