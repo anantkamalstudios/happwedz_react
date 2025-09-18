@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { IoCameraOutline, IoCloudUploadOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import * as faceapi from "face-api.js";
+import { beautyApi } from "../../services/api";
 
 const ProfileImageSelector = () => {
   const navigate = useNavigate();
@@ -33,6 +34,15 @@ const ProfileImageSelector = () => {
   });
   const [selectedDress, setSelectedDress] = useState(null);
   const [selectedLook, setSelectedLook] = useState(null);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+  const [apiProducts, setApiProducts] = useState({
+    lipstick: [],
+    blush: [],
+    eyeshadow: [],
+    foundation: [],
+  });
+  const [uploadingImageId, setUploadingImageId] = useState(null);
+  const [isApplying, setIsApplying] = useState(false);
 
   // Color scheme
   const colors = {
@@ -50,6 +60,7 @@ const ProfileImageSelector = () => {
     border: "#e0e0e0",
   };
 
+  // Fallback static products; UI prefers apiProducts when available
   const makeupProducts = {
     lipstick: [
       {
@@ -235,7 +246,7 @@ const ProfileImageSelector = () => {
     },
   ];
 
-  // Load face-api.js models once
+  // Load face-api.js models once and fetch makeup products
   React.useEffect(() => {
     const loadModels = async () => {
       const MODEL_URL = "/models"; // Place models in public/models
@@ -248,8 +259,52 @@ const ProfileImageSelector = () => {
     loadModels();
   }, []);
 
+  React.useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setIsLoadingProducts(true);
+        const response = await beautyApi.getFilteredProducts("Makeup");
+        const items = response?.data || response?.products || response || [];
+        console.log("ITEMS", items);
+        // Group into expected categories using API fields
+        const grouped = { lipstick: [], blush: [], eyeshadow: [], foundation: [] };
+        const inferType = (p) => {
+          const dc = (p.detailed_category || "").toString().toLowerCase();
+          if (dc.includes("lip")) return "lipstick"; // LipStick
+          if (dc.includes("blush")) return "blush";
+          if (dc.includes("eye")) return "eyeshadow"; // EyeShadow
+          if (dc.includes("foundation")) return "foundation";
+          return null;
+        };
+        items.forEach((item) => {
+          const id = item.id ?? item.product_id ?? item._id;
+          const name = item.brand_name || item.product_name || item.name || item.title || `Product ${id}`;
+          const colorRaw = item.product_color_hex || item.hex || item.tint || undefined;
+          const imageRaw = item.product_real_image || item.image || item.thumbnail || item.icon || undefined;
+          let color = typeof colorRaw === "string" ? colorRaw.trim() : colorRaw;
+          if (typeof color === "string" && color && !color.startsWith("#") && !color.startsWith("rgb")) {
+            color = `#${color}`;
+          }
+          let image = typeof imageRaw === "string" ? imageRaw.trim() : imageRaw;
+          if (typeof image === "string" && image && !image.startsWith("data:") && !image.startsWith("http")) {
+            image = `data:image/jpeg;base64,${image}`;
+          }
+          const normalized = { id, name, color, image, raw: item };
+          const key = inferType(item);
+          if (key && grouped[key]) grouped[key].push(normalized);
+        });
+        setApiProducts(grouped);
+      } catch (e) {
+        console.error("Failed to fetch products", e);
+      } finally {
+        setIsLoadingProducts(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
   // Image selection handlers
-  const handleImageSelect = (event) => {
+  const handleImageSelect = async (event) => {
     const file = event.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
@@ -263,10 +318,18 @@ const ProfileImageSelector = () => {
       const reader = new FileReader();
       reader.onload = (e) => setSelectedImage(e.target.result);
       reader.readAsDataURL(file);
+      // Upload to server to obtain image_id for processing
+      try {
+        const uploadRes = await beautyApi.uploadImage(file, "ORIGINAL");
+        const imageId = uploadRes?.data?.id || uploadRes?.id || uploadRes?.image_id;
+        if (imageId) setUploadingImageId(imageId);
+      } catch (e) {
+        console.error("Image upload failed", e);
+      }
     }
   };
 
-  const handleEditImage = (event) => {
+  const handleEditImage = async (event) => {
     const file = event.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
@@ -283,6 +346,13 @@ const ProfileImageSelector = () => {
         setShowEditModal(false);
       };
       reader.readAsDataURL(file);
+      try {
+        const uploadRes = await beautyApi.uploadImage(file, "original");
+        const imageId = uploadRes?.data?.id || uploadRes?.id || uploadRes?.image_id;
+        if (imageId) setUploadingImageId(imageId);
+      } catch (e) {
+        console.error("Image upload failed", e);
+      }
     }
   };
 
@@ -418,7 +488,75 @@ const ProfileImageSelector = () => {
     return false;
   };
 
-  const handleApply = () => {
+  const handleApply = async () => {
+    if (selectedCategory === "makeup") {
+      if (!uploadingImageId) {
+        alert("Please upload an image first.");
+        return;
+      }
+      const productIds = Object.values(selectedProducts)
+        .filter(Boolean)
+        .map((p) => p.id)
+        .filter((v) => v !== undefined && v !== null);
+      if (productIds.length === 0) {
+        alert("Please select at least one makeup product.");
+        return;
+      }
+      const payload = {
+        image_id: Number(uploadingImageId),
+        product_ids: productIds,
+        lipstick_intensity: 0.8,
+        blush_intensity: 0.2,
+        blush_radius: 60,
+        eyeshadow_intensity: 0.7,
+        eyeshadow_thickness: 20,
+        lens_intensity: 0.02,
+        lens_radius_scale: 4.8,
+        primer_intensity: 0.7,
+        primer_tint: "#f5e0d3",
+        foundation_intensity: 0.3,
+        foundation_tint: "#f5d6c6",
+        mascara_intensity: 0.7,
+        mascara_thickness: 1,
+      };
+      try {
+        setIsApplying(true);
+        const res = await beautyApi.applyMakeup(payload);
+        const processedId =
+          res?.data?.id ||
+          res?.id ||
+          res?.image_id ||
+          res?.processed_image_id ||
+          (Array.isArray(res?.applied_products) && res.applied_products[0]?.processed_image_id);
+        const processedUrl = res?.data?.url || res?.url;
+        if (processedId || processedUrl) {
+          const finalId = processedId || (processedUrl ? Number((processedUrl.split("/").pop() || "").trim()) : undefined);
+          navigate("/finallook", {
+            state: {
+              processedImageId: finalId,
+              processedImageUrl: processedUrl,
+              selectedProducts,
+            },
+          });
+        } else {
+          // Fallback: if API returns a url or image data
+          const url = res?.data?.url || res?.url || res?.image_url;
+          navigate("/finallook", {
+            state: {
+              selectedImage: url || selectedImage,
+              selectedProducts,
+            },
+          });
+        }
+      } catch (e) {
+        console.error("Apply makeup failed", e);
+        alert("Failed to apply makeup. Please try again.");
+      } finally {
+        setIsApplying(false);
+      }
+      return;
+    }
+    // Default behavior for other categories
     navigate("/finallook", {
       state: {
         selectedImage,
@@ -1434,7 +1572,7 @@ const ProfileImageSelector = () => {
                   <>
                     <div className="msp-section-title">Lipstick</div>
                     <div className="msp-products-grid">
-                      {makeupProducts.lipstick.map((product) => (
+                      {(isLoadingProducts ? [] : apiProducts.lipstick).map((product) => (
                         <div
                           key={product.id}
                           className={`msp-product-card ${
@@ -1450,17 +1588,22 @@ const ProfileImageSelector = () => {
                             <img src={product.image} alt={product.name} />
                           </div>
                           <div className="msp-product-name">{product.name}</div>
-                          <span
-                            className="msp-product-color"
-                            style={{ backgroundColor: product.color }}
-                          ></span>
+                          {product.color && (
+                            <span
+                              className="msp-product-color"
+                              style={{ backgroundColor: product.color }}
+                            ></span>
+                          )}
                         </div>
                       ))}
+                      {!isLoadingProducts && apiProducts.lipstick.length === 0 && (
+                        <div style={{ color: colors.grey }}>No lipstick products.</div>
+                      )}
                     </div>
 
                     <div className="msp-section-title">Blush</div>
                     <div className="msp-products-grid">
-                      {makeupProducts.blush.map((product) => (
+                      {(isLoadingProducts ? [] : apiProducts.blush).map((product) => (
                         <div
                           key={product.id}
                           className={`msp-product-card ${
@@ -1474,17 +1617,22 @@ const ProfileImageSelector = () => {
                             <img src={product.image} alt={product.name} />
                           </div>
                           <div className="msp-product-name">{product.name}</div>
-                          <span
-                            className="msp-product-color"
-                            style={{ backgroundColor: product.color }}
-                          ></span>
+                          {product.color && (
+                            <span
+                              className="msp-product-color"
+                              style={{ backgroundColor: product.color }}
+                            ></span>
+                          )}
                         </div>
                       ))}
+                      {!isLoadingProducts && apiProducts.blush.length === 0 && (
+                        <div style={{ color: colors.grey }}>No blush products.</div>
+                      )}
                     </div>
 
                     <div className="msp-section-title">Eyeshadow</div>
                     <div className="msp-products-grid">
-                      {makeupProducts.eyeshadow.map((product) => (
+                      {(isLoadingProducts ? [] : apiProducts.eyeshadow).map((product) => (
                         <div
                           key={product.id}
                           className={`msp-product-card ${
@@ -1500,17 +1648,22 @@ const ProfileImageSelector = () => {
                             <img src={product.image} alt={product.name} />
                           </div>
                           <div className="msp-product-name">{product.name}</div>
-                          <span
-                            className="msp-product-color"
-                            style={{ backgroundColor: product.color }}
-                          ></span>
+                          {product.color && (
+                            <span
+                              className="msp-product-color"
+                              style={{ backgroundColor: product.color }}
+                            ></span>
+                          )}
                         </div>
                       ))}
+                      {!isLoadingProducts && apiProducts.eyeshadow.length === 0 && (
+                        <div style={{ color: colors.grey }}>No eyeshadow products.</div>
+                      )}
                     </div>
 
                     <div className="msp-section-title">Foundation</div>
                     <div className="msp-products-grid">
-                      {makeupProducts.foundation.map((product) => (
+                      {(isLoadingProducts ? [] : apiProducts.foundation).map((product) => (
                         <div
                           key={product.id}
                           className={`msp-product-card ${
@@ -1526,12 +1679,17 @@ const ProfileImageSelector = () => {
                             <img src={product.image} alt={product.name} />
                           </div>
                           <div className="msp-product-name">{product.name}</div>
-                          <span
-                            className="msp-product-color"
-                            style={{ backgroundColor: product.color }}
-                          ></span>
+                          {product.color && (
+                            <span
+                              className="msp-product-color"
+                              style={{ backgroundColor: product.color }}
+                            ></span>
+                          )}
                         </div>
                       ))}
+                      {!isLoadingProducts && apiProducts.foundation.length === 0 && (
+                        <div style={{ color: colors.grey }}>No foundation products.</div>
+                      )}
                     </div>
                   </>
                 )}
