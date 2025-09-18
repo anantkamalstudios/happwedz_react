@@ -27,7 +27,6 @@ const SubSection = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-  // Use dynamic vendors hook when section is vendors
   const {
     vendors,
     loading: vendorsLoading,
@@ -83,7 +82,7 @@ const SubSection = () => {
 
   let dataToSend = filteredVenuesData;
   if (section === "vendors") {
-    // dataToSend = vendors;
+    dataToSend = vendors;
     dataToSend = vendorsError ? subVendorsData : vendors;
   } else if (section === "twosoul") {
     dataToSend = twoSoul;
@@ -146,18 +145,18 @@ const SubSection = () => {
 
   if (section === "vendors" && vendorsError) {
     dataToSend = subVendorsData;
-    // return (
-    //   <div className="container-fluid">
-    //     <div className="alert alert-danger" role="alert">
-    //       <h4 className="alert-heading">Error Loading Vendors</h4>
-    //       <p>{vendorsError}</p>
-    //       <hr />
-    //       <button className="btn btn-outline-danger" onClick={handleRefresh}>
-    //         Try Again
-    //       </button>
-    //     </div>
-    //   </div>
-    // );
+    return (
+      <div className="container-fluid">
+        <div className="alert alert-danger" role="alert">
+          <h4 className="alert-heading">Error Loading Vendors</h4>
+          <p>{vendorsError}</p>
+          <hr />
+          <button className="btn btn-outline-danger" onClick={handleRefresh}>
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
   }
 
   // Show loading state for vendors

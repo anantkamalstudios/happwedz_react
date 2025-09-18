@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://happywedz.salesnest.in/api";
+const API_BASE_URL = "https://happywedz.com/api";
 
 class VendorsApiService {
   constructor() {
@@ -173,8 +173,6 @@ class VendorsApiService {
   }
 }
 
-// Create and export a singleton instance
 export const vendorsApi = new VendorsApiService();
 
-// Export the class for testing purposes
 export { VendorsApiService };
