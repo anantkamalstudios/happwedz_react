@@ -1,5 +1,6 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { beautyApi } from "../../services/api";
 
 const FinalLookPage = () => {
   const location = useLocation();
@@ -10,8 +11,27 @@ const FinalLookPage = () => {
   const selectedProducts = location.state?.selectedProducts || {};
   const selectedDress = location.state?.selectedDress;
   const selectedLook = location.state?.selectedLook;
+  const processedImageId = location.state?.processedImageId;
+  const processedImageUrlFromState = location.state?.processedImageUrl;
+  const [fetchedImageUrl, setFetchedImageUrl] = React.useState(null);
+  const [isLoadingImage, setIsLoadingImage] = React.useState(false);
+
+  React.useEffect(() => {
+    // Prefer URL passed from apply API; otherwise construct from id
+    if (processedImageUrlFromState) {
+      setFetchedImageUrl(processedImageUrlFromState);
+      return;
+    }
+    if (processedImageId) {
+      // Construct direct image URL; dev proxy will forward /api
+      const base = import.meta.env.VITE_API_BASE_URL || "/api";
+      const url = `${base}/images/${processedImageId}`;
+      setFetchedImageUrl(url);
+    }
+  }, [processedImageId, processedImageUrlFromState]);
 
   const profileImage =
+    fetchedImageUrl ||
     selectedImage ||
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='300' viewBox='0 0 200 300'%3E%3Crect width='200' height='300' fill='%23fce4ec'/%3E%3Ccircle cx='100' cy='100' r='30' fill='%23ed1173'/%3E%3Cpath d='M70 130 Q100 160 130 130' stroke='%23ed1173' strokeWidth='3' fill='none'/%3E%3C/svg%3E";
 
