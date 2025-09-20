@@ -1,124 +1,183 @@
-import React from "react";
+import React, { useState } from "react";
 
 const VendorMedia = ({ formData, setFormData }) => {
   const media = formData.media || {
     coverImage: "",
     gallery: [],
-    video: { type: "", url: "", thumbnail: "" },
-    view360: { type: "", embedCode: "", panoImage: "", modelUrl: "" },
+    video: { url: "", thumbnails: [] },
     brochurePdf: "",
   };
 
-  const handleInputChange = (field, value) => {
+  const [preview, setPreview] = useState({
+    coverImage: "",
+    gallery: [],
+    videoThumbnails: [],
+    brochurePdf: "",
+  });
+
+  const handleFileChange = (field, file, multiple = false) => {
+    if (!file) return;
+
+    const fileName = file.name;
+    const fileUrl = URL.createObjectURL(file);
+
     setFormData((prev) => ({
       ...prev,
       media: {
         ...prev.media,
-        [field]: value,
+        [field]: multiple ? [...(prev.media[field] || []), fileName] : fileName,
       },
+    }));
+
+    setPreview((prev) => ({
+      ...prev,
+      [field]: multiple ? [...(prev[field] || []), fileUrl] : fileUrl,
     }));
   };
 
-  const handleNestedInputChange = (subSection, field, value) => {
+  const handleVideoThumbnailAdd = (files) => {
+    const fileArr = Array.from(files);
+    const fileNames = fileArr.map((f) => f.name);
+    const fileUrls = fileArr.map((f) => URL.createObjectURL(f));
+
     setFormData((prev) => ({
       ...prev,
       media: {
         ...prev.media,
-        [subSection]: {
-          ...prev.media[subSection],
-          [field]: value,
+        video: {
+          ...prev.media.video,
+          thumbnails: [...(prev.media.video?.thumbnails || []), ...fileNames],
         },
       },
     }));
-  };
 
-  // Add URL to gallery array
-  const handleAddUrl = () => {
-    if (formData.mediaUrl && formData.mediaUrl.trim() !== "") {
-      setFormData((prev) => ({
-        ...prev,
-        media: {
-          ...prev.media,
-          gallery: [...(prev.media.gallery || []), prev.mediaUrl],
-        },
-        mediaUrl: "",
-      }));
-    }
+    setPreview((prev) => ({
+      ...prev,
+      videoThumbnails: [...(prev.videoThumbnails || []), ...fileUrls],
+    }));
   };
 
   return (
     <div className="my-5">
       <div className="p-3 border rounded bg-white">
-        <h6 className="mb-3 fw-bold">Media & Gallery (URLs Only)</h6>
+        <h6 className="mb-3 fw-bold">Media & Gallery</h6>
         <div className="row">
-          {/* Cover Image URL */}
+          {/* Cover Image */}
           <div className="col-12 mb-3">
-            <label className="form-label fw-semibold">Cover Image URL</label>
+            <label className="form-label fw-semibold">Cover Image</label>
             <input
-              type="url"
+              type="file"
               className="form-control"
-              value={
-                typeof media.coverImage === "string" ? media.coverImage : ""
-              }
-              onChange={(e) => handleInputChange("coverImage", e.target.value)}
-              placeholder="https://example.com/cover.jpg"
-            />
-          </div>
-
-          {/* Video URL */}
-          <div className="col-12 mb-3">
-            <label className="form-label fw-semibold">Video URL</label>
-            <input
-              type="url"
-              className="form-control"
-              value={media.video?.url || ""}
+              accept="image/*"
               onChange={(e) =>
-                handleNestedInputChange("video", "url", e.target.value)
+                handleFileChange("coverImage", e.target.files[0])
               }
-              placeholder="https://example.com/video.mp4"
+            />
+            {preview.coverImage && (
+              <img
+                src={preview.coverImage}
+                alt="cover"
+                className="mt-2 rounded"
+                style={{ width: "180px", height: "120px", objectFit: "cover" }}
+              />
+            )}
+          </div>
+
+          {/* Video Upload */}
+          <div className="col-12 mb-3">
+            <label className="form-label fw-semibold">Video File</label>
+            <input
+              type="file"
+              className="form-control"
+              accept="video/*"
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  media: {
+                    ...prev.media,
+                    video: { ...prev.media.video, url: e.target.files[0].name },
+                  },
+                }))
+              }
             />
           </div>
 
-          {/* Video Thumbnail URL */}
+          {/* Video Thumbnails */}
           <div className="col-12 mb-3">
             <label className="form-label fw-semibold">
-              Video Thumbnail URL
+              Video Thumbnails (Multiple)
             </label>
             <input
-              type="url"
+              type="file"
               className="form-control"
-              value={
-                typeof media.video?.url === "string" ? media.video.url : ""
-              }
-              onChange={(e) =>
-                handleNestedInputChange("video", "url", e.target.value)
-              }
-              placeholder="https://example.com/video.mp4"
+              accept="image/*"
+              multiple
+              onChange={(e) => handleVideoThumbnailAdd(e.target.files)}
             />
-          </div>
-
-          {/* Brochure PDF URL */}
-          <div className="col-12 mb-3">
-            <label className="form-label fw-semibold">Brochure PDF URL</label>
-            <input
-              type="url"
-              className="form-control"
-              value={
-                typeof media.brochurePdf === "string" ? media.brochurePdf : ""
-              }
-              onChange={(e) => handleInputChange("brochurePdf", e.target.value)}
-              placeholder="https://example.com/brochure.pdf"
-            />
-          </div>
-
-          {/* Gallery List */}
-          <div className="col-12 mb-3">
-            <label className="form-label fw-semibold">Gallery URLs</label>
-            <ul>
-              {(media.gallery || []).map((url, idx) => (
-                <li key={idx}>{url}</li>
+            <div className="d-flex gap-2 flex-wrap mt-2">
+              {preview.videoThumbnails.map((thumb, idx) => (
+                <img
+                  key={idx}
+                  src={thumb}
+                  alt={`thumb-${idx}`}
+                  style={{
+                    width: "100px",
+                    height: "70px",
+                    objectFit: "cover",
+                    borderRadius: "6px",
+                  }}
+                />
               ))}
-            </ul>
+            </div>
+          </div>
+
+          {/* Gallery Images */}
+          <div className="col-12 mb-3">
+            <label className="form-label fw-semibold">Gallery Images</label>
+            <input
+              type="file"
+              className="form-control"
+              accept="image/*"
+              multiple
+              onChange={(e) =>
+                Array.from(e.target.files).forEach((file) =>
+                  handleFileChange("gallery", file, true)
+                )
+              }
+            />
+            <div className="d-flex gap-2 flex-wrap mt-2">
+              {preview.gallery.map((img, idx) => (
+                <img
+                  key={idx}
+                  src={img}
+                  alt={`gallery-${idx}`}
+                  style={{
+                    width: "100px",
+                    height: "70px",
+                    objectFit: "cover",
+                    borderRadius: "6px",
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Brochure PDF */}
+          <div className="col-12 mb-3">
+            <label className="form-label fw-semibold">Brochure PDF</label>
+            <input
+              type="file"
+              className="form-control"
+              accept="application/pdf"
+              onChange={(e) =>
+                handleFileChange("brochurePdf", e.target.files[0])
+              }
+            />
+            {media.brochurePdf && (
+              <p className="mt-2 small text-success">
+                Uploaded: {media.brochurePdf}
+              </p>
+            )}
           </div>
         </div>
 

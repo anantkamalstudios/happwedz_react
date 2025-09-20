@@ -47,22 +47,20 @@ import SuccessModal from "../../ui/SuccessModal";
 const Storefront = () => {
   const [active, setActive] = useState("business");
   const [showModal, setShowModal] = useState(false);
-  // Centralized form data for all vendor sections
   const [formData, setFormData] = useState(() => {
-    // Try to load from localStorage if available
     const saved = localStorage.getItem("vendorFormData");
     return saved ? JSON.parse(saved) : {};
   });
 
-  // Save handler (can be called from VendorMarketing)
   const handleSave = () => {
     localStorage.setItem("vendorFormData", JSON.stringify(formData));
     setShowModal(true);
-    // You can replace this with an API call to save to DB
   };
 
   const menuItems = [
     { id: "business", label: "Business details", icon: <FaRegBuilding /> },
+    { id: "faq", label: "FAQ", icon: <FaQuestion /> },
+    { id: "promotions", label: "Promotions", icon: <FaBullhorn /> },
     // Vendor Form Sections
     { id: "vendor-basic", label: "Basic Information", icon: <CiCircleInfo /> },
     { id: "vendor-contact", label: "Contact Details", icon: <FaPhone /> },
@@ -71,7 +69,11 @@ const Storefront = () => {
       label: "Location & Service Areas",
       icon: <FaMapMarkerAlt />,
     },
-    { id: "vendor-media", label: "Media & Gallery", icon: <FaImage /> },
+    // { id: "vendor-media", label: "Media & Gallery", icon: <FaImage /> },
+
+    { id: "photos", label: "Photos", icon: <FaCamera /> },
+    { id: "videos", label: "Videos", icon: <FaVideo /> },
+
     {
       id: "vendor-pricing",
       label: "Pricing & Packages",
@@ -91,10 +93,6 @@ const Storefront = () => {
     { id: "vendor-marketing", label: "Marketing & CTA", icon: <FaGift /> },
     // Original sections
     { id: "location", label: "Location and map", icon: <CiLocationOn /> },
-    // { id: "faq", label: "FAQ", icon: <FaQuestion /> },
-    // { id: "promotions", label: "Promotions", icon: <FaBullhorn /> },
-    // { id: "photos", label: "Photos", icon: <FaCamera /> },
-    // { id: "videos", label: "Videos", icon: <FaVideo /> },
     // { id: "events", label: "Events", icon: <FaCalendarAlt /> },
     // { id: "vendors", label: "Preferred vendors", icon: <FaHandshake /> },
     // { id: "team", label: "Meet the team", icon: <FaUsers /> },
@@ -106,6 +104,8 @@ const Storefront = () => {
     switch (active) {
       case "business":
         return <BusinessDetails />;
+      case "promotions":
+        return <PromoForm />;
       // Vendor Form Sections
       case "vendor-basic":
         return (
@@ -115,8 +115,12 @@ const Storefront = () => {
         return <VendorContact formData={formData} setFormData={setFormData} />;
       case "vendor-location":
         return <VendorLocation formData={formData} setFormData={setFormData} />;
-      case "vendor-media":
-        return <VendorMedia formData={formData} setFormData={setFormData} />;
+      case "photos":
+        return <PhotoGallery />;
+      case "videos":
+        return <VideoGallery />;
+      // case "vendor-media":
+      //   return <VendorMedia formData={formData} setFormData={setFormData} />;
       case "vendor-pricing":
         return <VendorPricing formData={formData} setFormData={setFormData} />;
       case "vendor-facilities":
@@ -164,7 +168,7 @@ const Storefront = () => {
   };
 
   return (
-    <div className="container-fluid py-3">
+    <div className="container py-3">
       <div className="row">
         {/* Sidebar */}
         <div className="col-md-3 border-end">

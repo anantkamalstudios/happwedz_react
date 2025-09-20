@@ -284,7 +284,7 @@ const HomeAdmin = () => {
   };
 
   return (
-    <Container fluid className="leads-dashboard-page">
+    <Container className="leads-dashboard-page">
       <div className="page-header mb-4">
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center align-items-start gap-3">
           <div>

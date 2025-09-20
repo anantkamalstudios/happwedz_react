@@ -56,6 +56,22 @@ body {
   margin: 0;
 }
 
+.wrapper {
+  max-width: 1200px;
+  min-width: 950px;
+  margin: 0 auto;
+  padding: 15px;
+  display: block;
+}
+
+.adminNav {
+  border-top: 1px solid #e8e8e8;
+  border-bottom: 1px solid #d9d9d9;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  background: #fff;
+}
+
 .navbar {
   background-color: var(--primary-color) !important;
 }
@@ -3961,8 +3977,6 @@ body {
 
 /* Styles for the elegant promotion form */
 .promo-form-container {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f8f9fa;
   min-height: 100vh;
   padding-bottom: 40px;
 }
