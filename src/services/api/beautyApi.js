@@ -24,7 +24,9 @@ class BeautyApiService {
     const response = await fetch(url, config);
     if (!response.ok) {
       const text = await response.text().catch(() => "");
-      throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
+      throw new Error(
+        `HTTP ${response.status}: ${text || response.statusText}`
+      );
     }
     return response.json().catch(() => ({}));
   }
@@ -44,7 +46,9 @@ class BeautyApiService {
     const response = await fetch(url, config);
     if (!response.ok) {
       const text = await response.text().catch(() => "");
-      throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
+      throw new Error(
+        `HTTP ${response.status}: ${text || response.statusText}`
+      );
     }
     return response.json().catch(() => ({}));
   }
@@ -84,5 +88,3 @@ class BeautyApiService {
 
 export const beautyApi = new BeautyApiService();
 export { BeautyApiService };
-
-

@@ -1,280 +1,9 @@
-// import React, { useState } from "react";
-// import { Link } from "react-router-dom";
-// import "bootstrap/dist/css/bootstrap.min.css";
-
-// const CustomerRegister = () => {
-//     const [formData, setFormData] = useState({
-//         name: "",
-//         email: "",
-//         password: "",
-//         event_location: "",
-//         country: "",
-//         event_date: "",
-//         phone: "",
-//     });
-
-//     const [errors, setErrors] = useState({});
-//     const [isSubmitting, setIsSubmitting] = useState(false);
-
-//     const validate = () => {
-//         const newErrors = {};
-//         if (!formData.name.trim()) newErrors.name = "Full name is required";
-//         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-//             newErrors.email = "Valid email is required";
-//         if (formData.password.length < 6)
-//             newErrors.password = "Password must be at least 6 characters";
-//         if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
-//         if (!formData.event_date) newErrors.event_date = "Event date is required";
-
-//         setErrors(newErrors);
-//         return Object.keys(newErrors).length === 0;
-//     };
-
-//     const handleChange = (e) => {
-//         const { name, value } = e.target;
-//         setFormData((prev) => ({ ...prev, [name]: value }));
-
-//         // Clear error when user starts typing
-//         if (errors[name]) {
-//             setErrors((prev) => {
-//                 const newErrors = { ...prev };
-//                 delete newErrors[name];
-//                 return newErrors;
-//             });
-//         }
-//     };
-
-//     const handleSubmit = (e) => {
-//         e.preventDefault();
-//         if (validate()) {
-//             setIsSubmitting(true);
-//             console.log("Form Data Submitted:", formData);
-//             // Simulate API call
-//             setTimeout(() => {
-//                 alert("Registration successful! We'll contact you soon.");
-//                 setIsSubmitting(false);
-//             }, 1500);
-//         }
-//     };
-
-//     return (
-//         <div className="container py-5" style={{ maxWidth: "1200px" }}>
-//             <div className="row g-0 shadow-lg rounded-4 overflow-hidden bg-white">
-//                 {/* Left side with elegant background */}
-//                 <div
-//                     className="col-lg-5 d-none d-lg-block position-relative"
-//                     style={{
-//                         background:
-//                             "linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop') center/cover",
-//                         minHeight: "600px",
-//                     }}
-//                 >
-//                     <div className="position-absolute bottom-0 start-0 p-5 text-white">
-//                         <h2 className="display-5 fw-light mb-3">
-//                             Your Perfect Wedding Starts Here
-//                         </h2>
-//                         <p className="mb-0">
-//                             Join thousands of couples who planned their dream wedding with us
-//                         </p>
-//                     </div>
-//                 </div>
-
-//                 {/* Right side form */}
-//                 <div className="col-lg-7 p-5">
-//                     <div className="text-center mb-5">
-//                         <h2 className="fw-bold text-dark mb-2">Wedding Registration</h2>
-//                         <p className="text-muted">
-//                             Create your account to start planning your special day
-//                         </p>
-//                     </div>
-
-//                     <form onSubmit={handleSubmit} className="needs-validation" noValidate>
-//                         <div className="row g-3 mb-4">
-//                             <div className="col-md-6">
-//                                 <div className="form-floating">
-//                                     <input
-//                                         type="text"
-//                                         name="name"
-//                                         className={`form-control ${errors.name ? "is-invalid" : ""
-//                                             }`}
-//                                         id="nameInput"
-//                                         placeholder="Full Name"
-//                                         value={formData.name}
-//                                         onChange={handleChange}
-//                                         required
-//                                     />
-//                                     <label htmlFor="nameInput">Full Name</label>
-//                                     {errors.name && (
-//                                         <div className="invalid-feedback">{errors.name}</div>
-//                                     )}
-//                                 </div>
-//                             </div>
-
-//                             <div className="col-md-6">
-//                                 <div className="form-floating">
-//                                     <input
-//                                         type="email"
-//                                         name="email"
-//                                         className={`form-control ${errors.email ? "is-invalid" : ""
-//                                             }`}
-//                                         id="emailInput"
-//                                         placeholder="Email"
-//                                         value={formData.email}
-//                                         onChange={handleChange}
-//                                         required
-//                                     />
-//                                     <label htmlFor="emailInput">Email</label>
-//                                     {errors.email && (
-//                                         <div className="invalid-feedback">{errors.email}</div>
-//                                     )}
-//                                 </div>
-//                             </div>
-
-//                             <div className="col-md-6">
-//                                 <div className="form-floating">
-//                                     <input
-//                                         type="password"
-//                                         name="password"
-//                                         className={`form-control ${errors.password ? "is-invalid" : ""
-//                                             }`}
-//                                         id="passwordInput"
-//                                         placeholder="Password"
-//                                         value={formData.password}
-//                                         onChange={handleChange}
-//                                         required
-//                                     />
-//                                     <label htmlFor="passwordInput">Password</label>
-//                                     {errors.password && (
-//                                         <div className="invalid-feedback">{errors.password}</div>
-//                                     )}
-//                                 </div>
-//                             </div>
-
-//                             <div className="col-md-6">
-//                                 <div className="form-floating">
-//                                     <input
-//                                         type="tel"
-//                                         name="phone"
-//                                         className={`form-control ${errors.phone ? "is-invalid" : ""
-//                                             }`}
-//                                         id="phoneInput"
-//                                         placeholder="Phone"
-//                                         value={formData.phone}
-//                                         onChange={handleChange}
-//                                         required
-//                                     />
-//                                     <label htmlFor="phoneInput">Phone</label>
-//                                     {errors.phone && (
-//                                         <div className="invalid-feedback">{errors.phone}</div>
-//                                     )}
-//                                 </div>
-//                             </div>
-
-//                             <div className="col-md-6">
-//                                 <div className="form-floating">
-//                                     <input
-//                                         type="text"
-//                                         name="event_location"
-//                                         className="form-control"
-//                                         id="locationInput"
-//                                         placeholder="Event Location"
-//                                         value={formData.event_location}
-//                                         onChange={handleChange}
-//                                     />
-//                                     <label htmlFor="locationInput">Wedding Venue</label>
-//                                 </div>
-//                             </div>
-
-//                             <div className="col-md-6">
-//                                 <div className="form-floating">
-//                                     <input
-//                                         type="text"
-//                                         name="country"
-//                                         className="form-control"
-//                                         id="countryInput"
-//                                         placeholder="Country"
-//                                         value={formData.country}
-//                                         onChange={handleChange}
-//                                     />
-//                                     <label htmlFor="countryInput">Country</label>
-//                                 </div>
-//                             </div>
-
-//                             <div className="col-12">
-//                                 <div className="form-floating">
-//                                     <input
-//                                         type="date"
-//                                         name="event_date"
-//                                         className={`form-control ${errors.event_date ? "is-invalid" : ""
-//                                             }`}
-//                                         id="dateInput"
-//                                         value={formData.event_date}
-//                                         onChange={handleChange}
-//                                         required
-//                                     />
-//                                     <label htmlFor="dateInput">Wedding Date</label>
-//                                     {errors.event_date && (
-//                                         <div className="invalid-feedback">{errors.event_date}</div>
-//                                     )}
-//                                 </div>
-//                             </div>
-//                         </div>
-
-//                         <div className="d-grid mb-4">
-//                             <button
-//                                 type="submit"
-//                                 className="btn btn-lg fw-medium py-3"
-//                                 disabled={isSubmitting}
-//                                 style={{
-//                                     background:
-//                                         "linear-gradient(135deg, #e93b98ff 0%, #fd76bcff 100%)",
-//                                 }}
-//                             >
-//                                 {isSubmitting ? (
-//                                     <span
-//                                         className="spinner-border spinner-border-sm me-2"
-//                                         role="status"
-//                                         aria-hidden="true"
-//                                     ></span>
-//                                 ) : null}
-//                                 Create Wedding Account
-//                             </button>
-//                         </div>
-
-//                         <div className="text-center d-flex justify-content-between">
-//                             <p className="text-muted">
-//                                 I have an account?
-//                                 <link rel="stylesheet" href="" />
-//                                 <Link
-//                                     to="/customer-login"
-//                                     className="text-decoration-none wedding-link fw-semibold p-2"
-//                                 >
-//                                     Login
-//                                 </Link>
-//                             </p>
-//                             <p className="text-muted">
-//                                 I Am Vendor?
-//                                 <a
-//                                     href="/vendor-login"
-//                                     className="text-decoration-none wedding-link fw-semibold p-2"
-//                                 >
-//                                     Vendor
-//                                 </a>
-//                             </p>
-//                         </div>
-//                     </form>
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default CustomerRegister;
-
 import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Link } from "react-router-dom";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "../../redux/authSlice";
+import { useSelector } from "react-redux";
 
 const CustomerRegister = () => {
   const [formData, setFormData] = useState({
@@ -282,16 +11,22 @@ const CustomerRegister = () => {
     email: "",
     password: "",
     phone: "",
-    wedding_venues: "",
+    weddingVenue: "",
     country: "",
     city: "",
-    event_date: "",
+    weddingDate: "",
+    profile_image: "",
+    coverImage: "",
+    captchaToken: "test-captcha-token",
   });
 
+  const dispatch = useDispatch();
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
+  const navigate = useNavigate();
+  const auth = useSelector((state) => state.auth);
 
   useEffect(() => {
     axios
@@ -309,7 +44,6 @@ const CustomerRegister = () => {
 
   useEffect(() => {
     if (!formData.country) return;
-
     axios
       .post("https://countriesnow.space/api/v0.1/countries/cities", {
         country: formData.country,
@@ -332,9 +66,12 @@ const CustomerRegister = () => {
     if (formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
     if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
-    if (!formData.event_date) newErrors.event_date = "Event date is required";
+    if (!formData.weddingDate)
+      newErrors.weddingDate = "Wedding date is required";
     if (!formData.city) newErrors.city = "City is required";
     if (!formData.country) newErrors.country = "Country is required";
+    if (!formData.weddingVenue.trim())
+      newErrors.weddingVenue = "Wedding venue is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -352,21 +89,58 @@ const CustomerRegister = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
       setIsSubmitting(true);
-      console.log("Form Submitted:", formData);
-      setTimeout(() => {
-        alert("Registration successful!");
-        setIsSubmitting(false);
-      }, 1500);
+
+      const payload = {
+        ...formData,
+        role: "user",
+      };
+
+      try {
+        const res = await fetch("https://happywedz.com/api/user/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+
+        if (data.success && data.user && data.token) {
+          dispatch(setCredentials({ user: data.user, token: data.token }));
+
+          alert(data.message || "Registration successful! Please login.");
+          setFormData({
+            name: "",
+            email: "",
+            password: "",
+            phone: "",
+            weddingVenue: "",
+            country: "",
+            city: "",
+            weddingDate: "",
+            profile_image: "",
+            coverImage: "",
+            captchaToken: "test-captcha-token",
+          });
+          navigate("/user-dashboard");
+        } else {
+          alert(data.message || "Registration failed");
+        }
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="container py-5" style={{ maxWidth: "1200px" }}>
       <div className="row g-0 shadow-lg rounded-4 overflow-hidden bg-white">
+        {/* Left Image */}
         <div
           className="col-lg-5 d-none d-lg-block position-relative"
           style={{
@@ -385,6 +159,7 @@ const CustomerRegister = () => {
           </div>
         </div>
 
+        {/* Right Form */}
         <div className="col-lg-7 p-5">
           <div className="text-center mb-5">
             <h2 className="fw-bold text-dark mb-2">Wedding Registration</h2>
@@ -395,6 +170,7 @@ const CustomerRegister = () => {
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="row g-3 mb-4">
+              {/* Name */}
               <div className="col-md-6">
                 <div className="form-floating">
                   <input
@@ -406,7 +182,6 @@ const CustomerRegister = () => {
                     placeholder="Full Name"
                     value={formData.name}
                     onChange={handleChange}
-                    required
                   />
                   <label>Full Name</label>
                   {errors.name && (
@@ -415,6 +190,7 @@ const CustomerRegister = () => {
                 </div>
               </div>
 
+              {/* Email */}
               <div className="col-md-6">
                 <div className="form-floating">
                   <input
@@ -426,7 +202,6 @@ const CustomerRegister = () => {
                     placeholder="Email"
                     value={formData.email}
                     onChange={handleChange}
-                    required
                   />
                   <label>Email</label>
                   {errors.email && (
@@ -435,6 +210,7 @@ const CustomerRegister = () => {
                 </div>
               </div>
 
+              {/* Password */}
               <div className="col-md-6">
                 <div className="form-floating">
                   <input
@@ -446,7 +222,6 @@ const CustomerRegister = () => {
                     placeholder="Password"
                     value={formData.password}
                     onChange={handleChange}
-                    required
                   />
                   <label>Password</label>
                   {errors.password && (
@@ -455,6 +230,7 @@ const CustomerRegister = () => {
                 </div>
               </div>
 
+              {/* Phone */}
               <div className="col-md-6">
                 <div className="form-floating">
                   <input
@@ -466,7 +242,6 @@ const CustomerRegister = () => {
                     placeholder="Phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    required
                   />
                   <label>Phone</label>
                   {errors.phone && (
@@ -474,18 +249,26 @@ const CustomerRegister = () => {
                   )}
                 </div>
               </div>
+
+              {/* Wedding Venue */}
               <div className="col-md-6">
                 <div className="form-floating">
                   <input
                     type="text"
-                    name="event_location"
-                    className="form-control"
-                    id="locationInput"
-                    placeholder="Event Location"
-                    value={formData.event_location}
+                    name="weddingVenue"
+                    className={`form-control ${
+                      errors.weddingVenue ? "is-invalid" : ""
+                    }`}
+                    placeholder="Wedding Venue"
+                    value={formData.weddingVenue}
                     onChange={handleChange}
                   />
-                  <label htmlFor="locationInput">Wedding Venue</label>
+                  <label>Wedding Venue</label>
+                  {errors.weddingVenue && (
+                    <div className="invalid-feedback">
+                      {errors.weddingVenue}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -537,21 +320,21 @@ const CustomerRegister = () => {
                 </div>
               </div>
 
+              {/* Wedding Date */}
               <div className="col-md-6">
                 <div className="form-floating">
                   <input
                     type="date"
-                    name="event_date"
+                    name="weddingDate"
                     className={`form-control ${
-                      errors.event_date ? "is-invalid" : ""
+                      errors.weddingDate ? "is-invalid" : ""
                     }`}
-                    value={formData.event_date}
+                    value={formData.weddingDate}
                     onChange={handleChange}
-                    required
                   />
                   <label>Wedding Date</label>
-                  {errors.event_date && (
-                    <div className="invalid-feedback">{errors.event_date}</div>
+                  {errors.weddingDate && (
+                    <div className="invalid-feedback">{errors.weddingDate}</div>
                   )}
                 </div>
               </div>

@@ -423,7 +423,6 @@ const CardEditor = ({ template, onBack }) => {
     }
   };
 
-  console.log("Template image:", template?.image);
   // Delete selected object
   const deleteSelected = () => {
     if (!canvas) return;

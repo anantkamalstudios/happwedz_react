@@ -33,7 +33,6 @@ const PricingModal = ({ show, handleClose }) => {
       return;
     }
 
-    console.log("Form submitted:", formData);
     alert("Thank you! Your pricing request has been submitted successfully.");
     setFormData({
       firstName: "",

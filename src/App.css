@@ -4852,8 +4852,7 @@ input:checked + .slider:before {
 }
 /* User guest  */
 /* Wedding Dashboard Styles */
-.wedding-dashboard {
-  background-color: #f8f9fa;
+.wedding-dashboard { 
   min-height: 100vh;
 }
 /* Header Styles */
@@ -5567,8 +5566,7 @@ input:checked + .slider:before {
 
 /* User guest  */
 /* Wedding Dashboard Styles */
-.wedding-dashboard {
-  background-color: #f8f9fa;
+.wedding-dashboard { 
   min-height: 100vh;
 }
 
@@ -15577,4 +15575,203 @@ input:checked + .slider:before {
   font-size: 12px;
 }
 
+/* Available Caleder */
+.vendor-available-calendar .ring-today {
+  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.5) !important;
+  animation: pulse-today 2s infinite;
+}
 
+@keyframes pulse-today {
+  0% {
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(255, 193, 7, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.5);
+  }
+}
+
+.vendor-available-calendar .calendar-grid .btn:hover:not(:disabled) {
+  transform: scale(1.05);
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+
+.vendor-available-calendar .calendar-grid .btn {
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.vendor-available-calendar .card {
+  transition: all 0.3s ease;
+  border: none !important;
+}
+
+.vendor-available-calendar .card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.vendor-available-calendar .card-header {
+  background: linear-gradient(
+    135deg,
+    #ff007f 0%,
+    #e5006d 100%
+  ) !important; /* Changed to pink gradient */
+  border-bottom: none;
+}
+
+.vendor-available-calendar .calendar-grid .btn-success {
+  background: linear-gradient(
+    135deg,
+    #ff73a1 0%,
+    #ff1f76 100%
+  ); /* Pink gradient */
+  border: none;
+}
+
+.vendor-available-calendar .calendar-grid .btn-danger {
+  background: linear-gradient(
+    135deg,
+    #ff4f5f 0%,
+    #ff7f7f 100%
+  ); /* Adjusted pink tones */
+  border: none;
+}
+
+.vendor-available-calendar .calendar-grid .btn-success:hover:not(:disabled) {
+  background: linear-gradient(
+    135deg,
+    #ff1f76 0%,
+    #ff73a1 100%
+  ); /* Pink gradient */
+  box-shadow: 0 4px 12px rgba(255, 55, 128, 0.4);
+}
+
+.vendor-available-calendar .calendar-grid .btn-danger:hover:not(:disabled) {
+  background: linear-gradient(
+    135deg,
+    #ff7f7f 0%,
+    #ff4f5f 100%
+  ); /* Adjusted pink tones */
+  box-shadow: 0 4px 12px rgba(255, 79, 95, 0.4);
+}
+
+.vendor-available-calendar .badge {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.vendor-available-calendar .dropdown-toggle::after {
+  margin-left: 0.5em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .vendor-available-calendar .calendar-grid .btn {
+    min-height: 35px !important;
+    font-size: 0.75rem !important;
+    padding: 0.25rem !important;
+  }
+
+  .vendor-available-calendar .card-body {
+    padding: 1rem !important;
+  }
+
+  .vendor-available-calendar .badge {
+    font-size: 0.7rem !important;
+    padding: 0.4rem 0.8rem !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .vendor-available-calendar .calendar-grid .btn {
+    min-height: 32px !important;
+    font-size: 0.7rem !important;
+  }
+
+  .vendor-available-calendar .card-header h5 {
+    font-size: 1rem;
+  }
+
+  .vendor-available-calendar .dropdown {
+    display: none; /* Hide dropdown on very small screens */
+  }
+}
+
+/* Loading animation for when calendar is being updated */
+.vendor-available-calendar .calendar-loading {
+  opacity: 0.6;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+/* Smooth transitions for state changes */
+.vendor-available-calendar .calendar-grid .btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.vendor-available-calendar .calendar-grid .btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.vendor-available-calendar .calendar-grid .btn:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+/* Focus states for accessibility */
+.vendor-available-calendar .calendar-grid .btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 123, 255, 0.25);
+}
+
+/* Statistics badges animation */
+.vendor-available-calendar .badge {
+  transition: all 0.3s ease;
+}
+
+.vendor-available-calendar .badge:hover {
+  transform: scale(1.05);
+}
+
+.vendor-available-calendar .calender-stat-card {
+  border: 1px solid #000;
+  background-color: white;
+  color: black;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+}
+
+.vendor-available-calendar .available-card {
+  border-color: #000;
+}
+
+.vendor-available-calendar .unavailable-card {
+  border-color: #000;
+}
+
+.vendor-available-calendar .total-card {
+  border-color: #000;
+}
+
+.vendor-available-calendar .calender-stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}

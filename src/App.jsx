@@ -8,6 +8,9 @@ import "./App.css";
 // Layout components (can be eagerly loaded)
 import NotFound from "./components/pages/NotFound";
 import BlogDetails from "./components/pages/BlogDetails";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "./redux/authSlice";
+import PrivateRoute from "./components/routes/PrivateRoute";
 
 // Lazy loaded pages
 const Home = lazy(() => import("./components/pages/Home"));
@@ -69,6 +72,16 @@ const VendorPremium = lazy(() =>
 function App() {
   const location = useLocation();
 
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+    if (user && token) {
+      dispatch(setCredentials({ user: JSON.parse(user), token }));
+    }
+  }, [dispatch]);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
@@ -101,8 +114,26 @@ function App() {
             path="/vendor-dashboard/upgrade/vendor-plan"
             element={<VendorPremium />}
           />
-          <Route path="/user-dashboard/:slug" element={<UserDashboardMain />} />
-          <Route path="/user-dashboard" element={<UserDashboardMain />} />
+
+          {/* <Route path="/user-dashboard/:slug" element={<UserDashboardMain />} />
+          <Route path="/user-dashboard" element={<UserDashboardMain />} /> */}
+
+          <Route
+            path="/user-dashboard"
+            element={
+              <PrivateRoute>
+                <UserDashboardMain />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/user-dashboard/:slug"
+            element={
+              <PrivateRoute>
+                <UserDashboardMain />
+              </PrivateRoute>
+            }
+          />
 
           <Route path="/editor" element={<CardEditorPage />} />
           <Route path="/editor/:templateId" element={<CardEditorPage />} />

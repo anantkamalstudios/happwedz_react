@@ -29,7 +29,7 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
     if (onSearch) {
       onSearch({ keyword, place });
     } else {
-      console.log("Search:", { keyword, place });
+      // console.log("Search:", { keyword, place });
     }
   };
 

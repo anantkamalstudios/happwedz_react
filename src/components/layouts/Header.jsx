@@ -2,8 +2,17 @@ import React, { useEffect, useState } from "react";
 import { Link, Links } from "react-router-dom";
 import LocationModalWithCategories from "./LocationModalWithCategories";
 import { RiMenuFill } from "react-icons/ri";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../redux/authSlice";
 
 const Header = () => {
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    dispatch(logout());
+  };
+
+  const auth = useSelector((state) => state.auth);
+
   const toSlug = (text) =>
     text
       ?.toLowerCase()
@@ -902,16 +911,30 @@ const Header = () => {
                       </li> */}
 
                       {/* Login Dropdown */}
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          <Link
-                            to="/customer-login"
-                            className="nav-link text-white"
-                          >
-                            Login
-                          </Link>
-                        </div>
-                      </li>
+                      {auth.user ? (
+                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                          <div className="dropdown-wrapper">
+                            <button
+                              onClick={handleLogout}
+                              className="nav-link text-white btn btn-link"
+                              style={{ textDecoration: "none" }}
+                            >
+                              Logout
+                            </button>
+                          </div>
+                        </li>
+                      ) : (
+                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                          <div className="dropdown-wrapper">
+                            <Link
+                              to="/customer-login"
+                              className="nav-link text-white"
+                            >
+                              Login
+                            </Link>
+                          </div>
+                        </li>
+                      )}
 
                       {/* Vendor Dashboard */}
                       {/* <li className="nav-Vendor Dashboard mega-dropdown-wrapper position-static">
@@ -929,16 +952,18 @@ const Header = () => {
                       </li> */}
 
                       {/* Login Dropdown */}
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          <Link
-                            to="/user-dashboard"
-                            className="nav-link text-white"
-                          >
-                            User Dashboard
-                          </Link>
-                        </div>
-                      </li>
+                      {auth.user && (
+                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                          <div className="dropdown-wrapper">
+                            <Link
+                              to="/user-dashboard"
+                              className="nav-link text-white"
+                            >
+                              User Dashboard
+                            </Link>
+                          </div>
+                        </li>
+                      )}
 
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">

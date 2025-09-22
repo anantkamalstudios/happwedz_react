@@ -9,7 +9,6 @@ const VendorLogin = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Login submitted:", { email, password, rememberMe });
   };
 
   return (

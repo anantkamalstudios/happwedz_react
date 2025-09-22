@@ -265,9 +265,14 @@ const ProfileImageSelector = () => {
         setIsLoadingProducts(true);
         const response = await beautyApi.getFilteredProducts("Makeup");
         const items = response?.data || response?.products || response || [];
-        console.log("ITEMS", items);
+        // console.log("ITEMS", items);
         // Group into expected categories using API fields
-        const grouped = { lipstick: [], blush: [], eyeshadow: [], foundation: [] };
+        const grouped = {
+          lipstick: [],
+          blush: [],
+          eyeshadow: [],
+          foundation: [],
+        };
         const inferType = (p) => {
           const dc = (p.detailed_category || "").toString().toLowerCase();
           if (dc.includes("lip")) return "lipstick"; // LipStick
@@ -278,15 +283,36 @@ const ProfileImageSelector = () => {
         };
         items.forEach((item) => {
           const id = item.id ?? item.product_id ?? item._id;
-          const name = item.brand_name || item.product_name || item.name || item.title || `Product ${id}`;
-          const colorRaw = item.product_color_hex || item.hex || item.tint || undefined;
-          const imageRaw = item.product_real_image || item.image || item.thumbnail || item.icon || undefined;
+          const name =
+            item.brand_name ||
+            item.product_name ||
+            item.name ||
+            item.title ||
+            `Product ${id}`;
+          const colorRaw =
+            item.product_color_hex || item.hex || item.tint || undefined;
+          const imageRaw =
+            item.product_real_image ||
+            item.image ||
+            item.thumbnail ||
+            item.icon ||
+            undefined;
           let color = typeof colorRaw === "string" ? colorRaw.trim() : colorRaw;
-          if (typeof color === "string" && color && !color.startsWith("#") && !color.startsWith("rgb")) {
+          if (
+            typeof color === "string" &&
+            color &&
+            !color.startsWith("#") &&
+            !color.startsWith("rgb")
+          ) {
             color = `#${color}`;
           }
           let image = typeof imageRaw === "string" ? imageRaw.trim() : imageRaw;
-          if (typeof image === "string" && image && !image.startsWith("data:") && !image.startsWith("http")) {
+          if (
+            typeof image === "string" &&
+            image &&
+            !image.startsWith("data:") &&
+            !image.startsWith("http")
+          ) {
             image = `data:image/jpeg;base64,${image}`;
           }
           const normalized = { id, name, color, image, raw: item };
@@ -321,7 +347,8 @@ const ProfileImageSelector = () => {
       // Upload to server to obtain image_id for processing
       try {
         const uploadRes = await beautyApi.uploadImage(file, "ORIGINAL");
-        const imageId = uploadRes?.data?.id || uploadRes?.id || uploadRes?.image_id;
+        const imageId =
+          uploadRes?.data?.id || uploadRes?.id || uploadRes?.image_id;
         if (imageId) setUploadingImageId(imageId);
       } catch (e) {
         console.error("Image upload failed", e);
@@ -348,7 +375,8 @@ const ProfileImageSelector = () => {
       reader.readAsDataURL(file);
       try {
         const uploadRes = await beautyApi.uploadImage(file, "original");
-        const imageId = uploadRes?.data?.id || uploadRes?.id || uploadRes?.image_id;
+        const imageId =
+          uploadRes?.data?.id || uploadRes?.id || uploadRes?.image_id;
         if (imageId) setUploadingImageId(imageId);
       } catch (e) {
         console.error("Image upload failed", e);
@@ -527,10 +555,15 @@ const ProfileImageSelector = () => {
           res?.id ||
           res?.image_id ||
           res?.processed_image_id ||
-          (Array.isArray(res?.applied_products) && res.applied_products[0]?.processed_image_id);
+          (Array.isArray(res?.applied_products) &&
+            res.applied_products[0]?.processed_image_id);
         const processedUrl = res?.data?.url || res?.url;
         if (processedId || processedUrl) {
-          const finalId = processedId || (processedUrl ? Number((processedUrl.split("/").pop() || "").trim()) : undefined);
+          const finalId =
+            processedId ||
+            (processedUrl
+              ? Number((processedUrl.split("/").pop() || "").trim())
+              : undefined);
           navigate("/finallook", {
             state: {
               processedImageId: finalId,
@@ -1572,124 +1605,153 @@ const ProfileImageSelector = () => {
                   <>
                     <div className="msp-section-title">Lipstick</div>
                     <div className="msp-products-grid">
-                      {(isLoadingProducts ? [] : apiProducts.lipstick).map((product) => (
-                        <div
-                          key={product.id}
-                          className={`msp-product-card ${
-                            selectedProducts.lipstick?.id === product.id
-                              ? "selected"
-                              : ""
-                          }`}
-                          onClick={() =>
-                            handleProductSelect("lipstick", product)
-                          }
-                        >
-                          <div className="msp-product-image">
-                            <img src={product.image} alt={product.name} />
+                      {(isLoadingProducts ? [] : apiProducts.lipstick).map(
+                        (product) => (
+                          <div
+                            key={product.id}
+                            className={`msp-product-card ${
+                              selectedProducts.lipstick?.id === product.id
+                                ? "selected"
+                                : ""
+                            }`}
+                            onClick={() =>
+                              handleProductSelect("lipstick", product)
+                            }
+                          >
+                            <div className="msp-product-image">
+                              <img src={product.image} alt={product.name} />
+                            </div>
+                            <div className="msp-product-name">
+                              {product.name}
+                            </div>
+                            {product.color && (
+                              <span
+                                className="msp-product-color"
+                                style={{ backgroundColor: product.color }}
+                              ></span>
+                            )}
                           </div>
-                          <div className="msp-product-name">{product.name}</div>
-                          {product.color && (
-                            <span
-                              className="msp-product-color"
-                              style={{ backgroundColor: product.color }}
-                            ></span>
-                          )}
-                        </div>
-                      ))}
-                      {!isLoadingProducts && apiProducts.lipstick.length === 0 && (
-                        <div style={{ color: colors.grey }}>No lipstick products.</div>
+                        )
                       )}
+                      {!isLoadingProducts &&
+                        apiProducts.lipstick.length === 0 && (
+                          <div style={{ color: colors.grey }}>
+                            No lipstick products.
+                          </div>
+                        )}
                     </div>
 
                     <div className="msp-section-title">Blush</div>
                     <div className="msp-products-grid">
-                      {(isLoadingProducts ? [] : apiProducts.blush).map((product) => (
-                        <div
-                          key={product.id}
-                          className={`msp-product-card ${
-                            selectedProducts.blush?.id === product.id
-                              ? "selected"
-                              : ""
-                          }`}
-                          onClick={() => handleProductSelect("blush", product)}
-                        >
-                          <div className="msp-product-image">
-                            <img src={product.image} alt={product.name} />
+                      {(isLoadingProducts ? [] : apiProducts.blush).map(
+                        (product) => (
+                          <div
+                            key={product.id}
+                            className={`msp-product-card ${
+                              selectedProducts.blush?.id === product.id
+                                ? "selected"
+                                : ""
+                            }`}
+                            onClick={() =>
+                              handleProductSelect("blush", product)
+                            }
+                          >
+                            <div className="msp-product-image">
+                              <img src={product.image} alt={product.name} />
+                            </div>
+                            <div className="msp-product-name">
+                              {product.name}
+                            </div>
+                            {product.color && (
+                              <span
+                                className="msp-product-color"
+                                style={{ backgroundColor: product.color }}
+                              ></span>
+                            )}
                           </div>
-                          <div className="msp-product-name">{product.name}</div>
-                          {product.color && (
-                            <span
-                              className="msp-product-color"
-                              style={{ backgroundColor: product.color }}
-                            ></span>
-                          )}
-                        </div>
-                      ))}
+                        )
+                      )}
                       {!isLoadingProducts && apiProducts.blush.length === 0 && (
-                        <div style={{ color: colors.grey }}>No blush products.</div>
+                        <div style={{ color: colors.grey }}>
+                          No blush products.
+                        </div>
                       )}
                     </div>
 
                     <div className="msp-section-title">Eyeshadow</div>
                     <div className="msp-products-grid">
-                      {(isLoadingProducts ? [] : apiProducts.eyeshadow).map((product) => (
-                        <div
-                          key={product.id}
-                          className={`msp-product-card ${
-                            selectedProducts.eyeshadow?.id === product.id
-                              ? "selected"
-                              : ""
-                          }`}
-                          onClick={() =>
-                            handleProductSelect("eyeshadow", product)
-                          }
-                        >
-                          <div className="msp-product-image">
-                            <img src={product.image} alt={product.name} />
+                      {(isLoadingProducts ? [] : apiProducts.eyeshadow).map(
+                        (product) => (
+                          <div
+                            key={product.id}
+                            className={`msp-product-card ${
+                              selectedProducts.eyeshadow?.id === product.id
+                                ? "selected"
+                                : ""
+                            }`}
+                            onClick={() =>
+                              handleProductSelect("eyeshadow", product)
+                            }
+                          >
+                            <div className="msp-product-image">
+                              <img src={product.image} alt={product.name} />
+                            </div>
+                            <div className="msp-product-name">
+                              {product.name}
+                            </div>
+                            {product.color && (
+                              <span
+                                className="msp-product-color"
+                                style={{ backgroundColor: product.color }}
+                              ></span>
+                            )}
                           </div>
-                          <div className="msp-product-name">{product.name}</div>
-                          {product.color && (
-                            <span
-                              className="msp-product-color"
-                              style={{ backgroundColor: product.color }}
-                            ></span>
-                          )}
-                        </div>
-                      ))}
-                      {!isLoadingProducts && apiProducts.eyeshadow.length === 0 && (
-                        <div style={{ color: colors.grey }}>No eyeshadow products.</div>
+                        )
                       )}
+                      {!isLoadingProducts &&
+                        apiProducts.eyeshadow.length === 0 && (
+                          <div style={{ color: colors.grey }}>
+                            No eyeshadow products.
+                          </div>
+                        )}
                     </div>
 
                     <div className="msp-section-title">Foundation</div>
                     <div className="msp-products-grid">
-                      {(isLoadingProducts ? [] : apiProducts.foundation).map((product) => (
-                        <div
-                          key={product.id}
-                          className={`msp-product-card ${
-                            selectedProducts.foundation?.id === product.id
-                              ? "selected"
-                              : ""
-                          }`}
-                          onClick={() =>
-                            handleProductSelect("foundation", product)
-                          }
-                        >
-                          <div className="msp-product-image">
-                            <img src={product.image} alt={product.name} />
+                      {(isLoadingProducts ? [] : apiProducts.foundation).map(
+                        (product) => (
+                          <div
+                            key={product.id}
+                            className={`msp-product-card ${
+                              selectedProducts.foundation?.id === product.id
+                                ? "selected"
+                                : ""
+                            }`}
+                            onClick={() =>
+                              handleProductSelect("foundation", product)
+                            }
+                          >
+                            <div className="msp-product-image">
+                              <img src={product.image} alt={product.name} />
+                            </div>
+                            <div className="msp-product-name">
+                              {product.name}
+                            </div>
+                            {product.color && (
+                              <span
+                                className="msp-product-color"
+                                style={{ backgroundColor: product.color }}
+                              ></span>
+                            )}
                           </div>
-                          <div className="msp-product-name">{product.name}</div>
-                          {product.color && (
-                            <span
-                              className="msp-product-color"
-                              style={{ backgroundColor: product.color }}
-                            ></span>
-                          )}
-                        </div>
-                      ))}
-                      {!isLoadingProducts && apiProducts.foundation.length === 0 && (
-                        <div style={{ color: colors.grey }}>No foundation products.</div>
+                        )
                       )}
+                      {!isLoadingProducts &&
+                        apiProducts.foundation.length === 0 && (
+                          <div style={{ color: colors.grey }}>
+                            No foundation products.
+                          </div>
+                        )}
                     </div>
                   </>
                 )}

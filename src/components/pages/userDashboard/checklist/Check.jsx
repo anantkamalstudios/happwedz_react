@@ -1,80 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaCheck, FaPlus, FaDownload, FaPrint, FaTrash } from "react-icons/fa";
 import { FiCheck, FiTrash } from "react-icons/fi";
+import axios from "axios";
+import { useSelector } from "react-redux";
+
+const API_BASE = "https://happywedz.com/api/checklist";
+
 
 const Check = () => {
-  const initialTasks = [
-    {
-      id: 1,
-      text: "Check if your wedding date is on an auspicious day",
-      category: "Planning",
-      period: "10-12 months",
-      status: false,
-    },
-    {
-      id: 2,
-      text: "Do you want a destination wedding?",
-      category: "Planning",
-      period: "10-12 months",
-      status: false,
-    },
-    {
-      id: 3,
-      text: "Short list date options for all pre-wedding functions",
-      category: "Planning",
-      period: "10-12 months",
-      status: false,
-    },
-    {
-      id: 4,
-      text: "Delegate responsibilities",
-      category: "Other",
-      period: "10-12 months",
-      status: false,
-    },
-    {
-      id: 5,
-      text: "Decide whether or not you'd like to use a wedding planner",
-      category: "Planning",
-      period: "10-12 months",
-      status: true,
-    },
-    {
-      id: 6,
-      text: "Download the WeddingWire App",
-      category: "Planning",
-      period: "10-12 months",
-      status: true,
-    },
-    {
-      id: 7,
-      text: "Create initial guest list using our guest list tool",
-      category: "Planning",
-      period: "10-12 months",
-      status: true,
-    },
-    {
-      id: 8,
-      text: "Confirm venue budget",
-      category: "Events",
-      period: "10-12 months",
-      status: true,
-    },
-    {
-      id: 9,
-      text: "Confirm wedding style",
-      category: "Planning",
-      period: "10-12 months",
-      status: true,
-    },
-  ];
-
-  const [tasks, setTasks] = useState(initialTasks);
+  const userId = useSelector((state) => state.auth.user?.id);
+  const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedPeriod, setSelectedPeriod] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
+  const [loading, setLoading] = useState(false);
+
+  // Fetch checklist items for the user
+  useEffect(() => {
+    if (!userId) return;
+    const fetchTasks = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get(`${API_BASE}/${userId}`);
+        setTasks(res.data || []);
+      } catch (err) {
+        setTasks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTasks();
+  }, [userId]);
 
   const categories = [
     "All",
@@ -118,34 +76,46 @@ const Check = () => {
     );
   });
 
-  // Toggle task status
-  const toggleTask = (id) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, status: !task.status } : task
-      )
-    );
+  // Toggle task status (PATCH)
+  const toggleTask = async (id) => {
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
+    try {
+      await axios.patch(`${API_BASE}/${id}`, { status: !task.status, userId });
+      setTasks(tasks.map((t) => t.id === id ? { ...t, status: !t.status } : t));
+    } catch (err) {
+      // Optionally show error
+    }
   };
 
-  // Add new task
-  const addTask = () => {
-    if (newTask.trim() === "") return;
-
-    const newTaskObj = {
-      id: tasks.length + 1,
+  // Add new task (POST)
+  const addTask = async () => {
+    if (newTask.trim() === "" || !userId) return;
+    const payload = {
+      userId,
       text: newTask,
       category: selectedCategory !== "All" ? selectedCategory : "Planning",
-      period: selectedPeriod !== "All" ? selectedPeriod : "10-12 months",
+      startDate: new Date().toISOString().slice(0, 10),
+      dueDate: new Date().toISOString().slice(0, 10),
       status: false,
     };
-
-    setTasks([...tasks, newTaskObj]);
-    setNewTask("");
+    try {
+      const res = await axios.post(API_BASE, payload);
+      setTasks([...tasks, res.data]);
+      setNewTask("");
+    } catch (err) {
+      // Optionally show error
+    }
   };
 
-  // Delete task
-  const deleteTask = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+  // Delete task (DELETE)
+  const deleteTask = async (id) => {
+    try {
+      await axios.delete(`${API_BASE}/${id}`);
+      setTasks(tasks.filter((task) => task.id !== id));
+    } catch (err) {
+      // Optionally show error
+    }
   };
 
   // Count tasks by status
@@ -185,9 +155,8 @@ const Check = () => {
             <div className="wc-card-body card-body">
               <ul className="wc-list-group list-group">
                 <li
-                  className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${
-                    selectedStatus === "All" ? "wc-active" : ""
-                  }`}
+                  className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${selectedStatus === "All" ? "wc-active" : ""
+                    }`}
                   onClick={() => setSelectedStatus("All")}
                 >
                   All
@@ -196,9 +165,8 @@ const Check = () => {
                   </span>
                 </li>
                 <li
-                  className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${
-                    selectedStatus === "Pending" ? "wc-active" : ""
-                  }`}
+                  className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${selectedStatus === "Pending" ? "wc-active" : ""
+                    }`}
                   onClick={() => setSelectedStatus("Pending")}
                 >
                   Pending
@@ -207,9 +175,8 @@ const Check = () => {
                   </span>
                 </li>
                 <li
-                  className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${
-                    selectedStatus === "Completed" ? "wc-active" : ""
-                  }`}
+                  className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${selectedStatus === "Completed" ? "wc-active" : ""
+                    }`}
                   onClick={() => setSelectedStatus("Completed")}
                 >
                   Completed
@@ -232,9 +199,8 @@ const Check = () => {
                   .map((period) => (
                     <li
                       key={period}
-                      className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${
-                        selectedPeriod === period ? "wc-active" : ""
-                      }`}
+                      className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${selectedPeriod === period ? "wc-active" : ""
+                        }`}
                       onClick={() => setSelectedPeriod(period)}
                     >
                       {period}
@@ -258,9 +224,8 @@ const Check = () => {
                   .map((category) => (
                     <li
                       key={category}
-                      className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${
-                        selectedCategory === category ? "wc-active" : ""
-                      }`}
+                      className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${selectedCategory === category ? "wc-active" : ""
+                        }`}
                       onClick={() => setSelectedCategory(category)}
                     >
                       {category}
@@ -376,9 +341,8 @@ const Check = () => {
                       >
                         <div className="d-flex align-items-center">
                           <div
-                            className={`wc-task-checkbox me-3 ${
-                              task.status ? "wc-completed" : ""
-                            }`}
+                            className={`wc-task-checkbox me-3 ${task.status ? "wc-completed" : ""
+                              }`}
                             onClick={() => toggleTask(task.id)}
                           >
                             {task.status && (
@@ -387,11 +351,10 @@ const Check = () => {
                           </div>
                           <div className="flex-grow-1">
                             <div
-                              className={`wc-task-text ${
-                                task.status
-                                  ? "text-muted text-decoration-line-through"
-                                  : ""
-                              }`}
+                              className={`wc-task-text ${task.status
+                                ? "text-muted text-decoration-line-through"
+                                : ""
+                                }`}
                             >
                               {task.text}
                             </div>

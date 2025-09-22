@@ -120,7 +120,7 @@ const MatrimonialRegistration = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateStep(step)) {
-      console.log("Form submitted:", formData);
+      // console.log("Form submitted:", formData);
       // Submit to backend
       alert("Registration successful!");
     }

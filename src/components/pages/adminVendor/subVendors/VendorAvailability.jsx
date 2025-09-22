@@ -1,4 +1,5 @@
 import React from "react";
+import VendorAvailabilityCalendar from "./VendorAvailabilityCalendar";
 
 const VendorAvailability = ({ formData, setFormData }) => {
   const handleNestedInputChange = (subSection, field, value) => {
@@ -82,6 +83,10 @@ const VendorAvailability = ({ formData, setFormData }) => {
             </select>
           </div>
         </div>
+        <div className="row">
+          <VendorAvailabilityCalendar />
+        </div>
+
         <button className="btn btn-primary mt-2">
           Save Availability Details
         </button>
