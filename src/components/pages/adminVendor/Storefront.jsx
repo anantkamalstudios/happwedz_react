@@ -21,7 +21,12 @@ import {
   FaGift,
 } from "react-icons/fa";
 import { Nav } from "react-bootstrap";
-import { CiCircleInfo, CiLocationOn } from "react-icons/ci";
+import {
+  CiBullhorn,
+  CiCircleInfo,
+  CiCircleQuestion,
+  CiLocationOn,
+} from "react-icons/ci";
 import BusinessDetails from "./subVendors/BusinessDetails";
 import VendorForm from "./subVendors/VendorForm";
 import LocationForm from "./subVendors/LocationForm";
@@ -43,6 +48,17 @@ import VendorPolicies from "./subVendors/VendorPolicies";
 import VendorAvailability from "./subVendors/VendorAvailability";
 import VendorMarketing from "./subVendors/VendorMarketing";
 import SuccessModal from "../../ui/SuccessModal";
+import { PiPhoneCall } from "react-icons/pi";
+import { IoIosInformationCircleOutline } from "react-icons/io";
+import { HiOutlineDocument } from "react-icons/hi2";
+import { MdCurrencyRupee, MdOutlineEventAvailable } from "react-icons/md";
+
+import {
+  IoCameraOutline,
+  IoCheckmarkCircleOutline,
+  IoVideocamOutline,
+} from "react-icons/io5";
+import { GoGift } from "react-icons/go";
 
 const Storefront = () => {
   const [active, setActive] = useState("business");
@@ -58,41 +74,62 @@ const Storefront = () => {
   };
 
   const menuItems = [
-    { id: "business", label: "Business details", icon: <FaRegBuilding /> },
-    { id: "faq", label: "FAQ", icon: <FaQuestion /> },
-    { id: "promotions", label: "Promotions", icon: <FaBullhorn /> },
-    // Vendor Form Sections
-    { id: "vendor-basic", label: "Basic Information", icon: <CiCircleInfo /> },
-    { id: "vendor-contact", label: "Contact Details", icon: <FaPhone /> },
+    {
+      id: "business",
+      label: "Business details",
+      icon: <FaRegBuilding size={20} />,
+    },
+    { id: "faq", label: "FAQ", icon: <CiCircleQuestion size={20} /> },
+    { id: "promotions", label: "Promotions", icon: <CiBullhorn size={20} /> },
+    {
+      id: "vendor-basic",
+      label: "Basic Information",
+      icon: <IoIosInformationCircleOutline size={20} />,
+    },
+    {
+      id: "vendor-contact",
+      label: "Contact Details",
+      icon: <PiPhoneCall size={20} />,
+    },
     {
       id: "vendor-location",
       label: "Location & Service Areas",
-      icon: <FaMapMarkerAlt />,
+      icon: <CiLocationOn size={20} />,
     },
-    // { id: "vendor-media", label: "Media & Gallery", icon: <FaImage /> },
-
-    { id: "photos", label: "Photos", icon: <FaCamera /> },
-    { id: "videos", label: "Videos", icon: <FaVideo /> },
-
+    { id: "photos", label: "Photos", icon: <IoCameraOutline size={20} /> },
+    { id: "videos", label: "Videos", icon: <IoVideocamOutline size={20} /> },
     {
       id: "vendor-pricing",
       label: "Pricing & Packages",
-      icon: <FaRupeeSign />,
+      icon: <MdCurrencyRupee size={20} />,
     },
     {
       id: "vendor-facilities",
       label: "Facilities & Features",
-      icon: <FaCheckCircle />,
+      icon: <IoCheckmarkCircleOutline size={20} />,
     },
-    { id: "vendor-policies", label: "Policies & Terms", icon: <FaFilePdf /> },
+    {
+      id: "vendor-policies",
+      label: "Policies & Terms",
+      icon: <HiOutlineDocument size={20} />,
+    },
     {
       id: "vendor-availability",
       label: "Availability & Slots",
-      icon: <FaClock />,
+      icon: <MdOutlineEventAvailable size={20} />,
     },
-    { id: "vendor-marketing", label: "Marketing & CTA", icon: <FaGift /> },
-    // Original sections
-    { id: "location", label: "Location and map", icon: <CiLocationOn /> },
+    {
+      id: "vendor-marketing",
+      label: "Marketing & CTA",
+      icon: <GoGift size={20} />,
+    },
+    {
+      id: "location",
+      label: "Location and map",
+      icon: <CiLocationOn size={20} />,
+    },
+
+    // { id: "vendor-media", label: "Media & Gallery", icon: <FaImage /> },
     // { id: "events", label: "Events", icon: <FaCalendarAlt /> },
     // { id: "vendors", label: "Preferred vendors", icon: <FaHandshake /> },
     // { id: "team", label: "Meet the team", icon: <FaUsers /> },
@@ -168,28 +205,17 @@ const Storefront = () => {
   };
 
   return (
-    <div className="container py-3">
+    <div className="container py-3 store-front-navbar">
       <div className="row">
-        {/* Sidebar */}
         <div className="col-md-3 border-end">
-          <Nav className="flex-column nav-pills">
+          <Nav className="flex-column custom-sidebar">
             {menuItems.map((item) => (
               <Nav.Link
                 key={item.id}
                 onClick={() => setActive(item.id)}
-                active={active === item.id}
-                className={`d-flex align-items-center gap-2 ${
-                  active === item.id ? "text-white" : "text-secondary"
+                className={`d-flex align-items-center gap-2 sidebar-nav-item ${
+                  active === item.id ? "active" : ""
                 }`}
-                style={
-                  active === item.id
-                    ? {
-                        background:
-                          "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)",
-                        fontSize: "14px",
-                      }
-                    : {}
-                }
               >
                 {item.icon}
                 <span>{item.label}</span>
@@ -198,11 +224,9 @@ const Storefront = () => {
           </Nav>
         </div>
 
-        {/* Main Content */}
         <div className="col-md-9">{renderContent()}</div>
       </div>
 
-      {/* Success Modal */}
       <SuccessModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}

@@ -4,12 +4,14 @@ import { Form, Button } from "react-bootstrap";
 import { useUser } from "../../hooks";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../../redux/authSlice";
+import { useToast } from "../layouts/toasts/Toast";
 
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+  const { addToast } = useToast();
 
   const dispatch = useDispatch();
   const { login, loading } = useUser();
@@ -33,10 +35,10 @@ const CustomerLogin = () => {
       } else if (response.user) {
         dispatch(setCredentials({ user: response.user, token: null }));
       }
-      alert("Login successful!");
+      addToast("Login successful!", "success");
       navigate("/user-dashboard", { replace: true });
     } else {
-      alert(response.message || "Login failed");
+      addToast(response.message || "Login Failed", "danger");
     }
   };
 

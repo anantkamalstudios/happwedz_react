@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FaGift, FaStore, FaEnvelope, FaStar, FaCog } from "react-icons/fa";
 import { LiaHomeSolid } from "react-icons/lia";
 import { FaRegStar } from "react-icons/fa";
+import { PiOfficeChairLight } from "react-icons/pi";
 import { GoMail } from "react-icons/go";
 import { IoSettingsOutline } from "react-icons/io5";
 import { IoStorefrontOutline } from "react-icons/io5";
@@ -12,36 +13,69 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("home");
 
+  // const tabs = [
+  //   {
+  //     id: "home",
+  //     slug: "vendor-home",
+  //     label: "Home",
+  //     icon: <PiOfficeChairLight size={40} />,
+  //   },
+  //   {
+  //     id: "storefront",
+  //     slug: "vendor-store-front",
+  //     label: "Storefront",
+  //     icon: <IoStorefrontOutline size={40} />,
+  //   },
+  //   {
+  //     id: "enquiries",
+  //     slug: "vendor-enquiries",
+  //     label: "Enquiries",
+  //     icon: <GoMail size={40} />,
+  //   },
+  //   {
+  //     id: "reviews",
+  //     slug: "vendor-reviews",
+  //     label: "Reviews",
+  //     icon: <FaRegStar size={20} />,
+  //   },
+  //   {
+  //     id: "settings",
+  //     slug: "vendor-setting",
+  //     label: "Settings",
+  //     icon: <IoSettingsOutline size={40} />,
+  //   },
+  // ];
+
   const tabs = [
     {
       id: "home",
       slug: "vendor-home",
       label: "Home",
-      icon: <LiaHomeSolid size={30} />,
+      icon: "/images/vendorsDashboard/homeico.png",
     },
     {
       id: "storefront",
       slug: "vendor-store-front",
       label: "Storefront",
-      icon: <IoStorefrontOutline size={30} />,
+      icon: "/images/vendorsDashboard/storefrontico.png",
     },
     {
       id: "enquiries",
       slug: "vendor-enquiries",
       label: "Enquiries",
-      icon: <GoMail size={30} />,
+      icon: "/images/vendorsDashboard/enquireico.png",
     },
-    // {
-    //   id: "reviews",
-    //   slug: "vendor-reviews",
-    //   label: "Reviews",
-    //   icon: <FaRegStar size={20} />,
-    // },
+    {
+      id: "reviews",
+      slug: "vendor-reviews",
+      label: "Reviews",
+      icon: "/images/vendorsDashboard/reviewico.png",
+    },
     {
       id: "settings",
       slug: "vendor-setting",
       label: "Settings",
-      icon: <IoSettingsOutline size={30} />,
+      icon: "/images/vendorsDashboard/settingsico.png",
     },
   ];
 
@@ -60,7 +94,6 @@ const Navbar = () => {
     <div className="adminNav">
       <div className="wrapper tabs-container py-2 px-3 px-lg-5 mt-3 vendor-dashboard-navbar">
         <div className="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
-          {/* Left side: Tabs */}
           <div className="d-flex gap-3 gap-lg-4 flex-wrap justify-content-center justify-content-lg-start ">
             {tabs.map((tab) => (
               <button
@@ -77,8 +110,16 @@ const Navbar = () => {
                 }}
                 onClick={() => handleTabClick(tab)}
               >
-                {tab.icon}
-                <span className="mt-1">{tab.label}</span>
+                <img
+                  src={tab.icon}
+                  alt={tab.label}
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    objectFit: "cover",
+                  }}
+                />
+                <span className="mt-3">{tab.label}</span>
               </button>
             ))}
           </div>

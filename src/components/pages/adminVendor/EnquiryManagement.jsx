@@ -23,51 +23,28 @@ const EnquiryManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const folders = [
-    { id: "inbox", name: "Inbox", count: 0, icon: Inbox, color: "primary" },
-    { id: "unread", name: "Unread", count: 0, icon: Mail, color: "warning" },
-    { id: "read", name: "Read", count: 0, icon: MailOpen, color: "success" },
-    {
-      id: "archived",
-      name: "Archived",
-      count: 0,
-      icon: Archive,
-      color: "secondary",
-    },
-    { id: "pending", name: "Pending", count: 0, icon: Clock, color: "info" },
-    {
-      id: "replied",
-      name: "Replied",
-      count: 0,
-      icon: MessageCircleReply,
-      color: "success",
-    },
-    {
-      id: "booked",
-      name: "Booked",
-      count: 0,
-      icon: Calendar,
-      color: "primary",
-    },
-    {
-      id: "discarded",
-      name: "Discarded",
-      count: 0,
-      icon: Trash2,
-      color: "danger",
-    },
+    { id: "inbox", name: "Inbox", count: 0 },
+    { id: "unread", name: "Unread", count: 0 },
+    { id: "read", name: "Read", count: 0 },
+    { id: "archived", name: "Archived", count: 0 },
+  ];
+
+  const statuses = [
+    { id: "pending", name: "Pending", count: 0, color: "#f39c12" },
+    { id: "replied", name: "Replied", count: 0, color: "#3498db" },
+    { id: "booked", name: "Booked", count: 0, color: "#27ae60" },
+    { id: "discarded", name: "Discarded", count: 0, color: "#e74c3c" },
   ];
 
   const tools = [
-    { id: "settings", name: "Settings", icon: Settings, color: "dark" },
-    { id: "templates", name: "Templates", icon: FileText, color: "info" },
+    { id: "settings", name: "Settings", icon: <Settings size={18} /> },
+    { id: "templates", name: "Templates", icon: <FileText size={18} /> },
     {
-      id: "premium",
-      name: "PREMIUM",
-      icon: Crown,
-      color: "warning",
+      id: "export",
+      name: "Export leads",
+      icon: <Download size={18} />,
       premium: true,
     },
-    { id: "export", name: "Export leads", icon: Download, color: "success" },
   ];
 
   const stats = {
@@ -85,81 +62,82 @@ const EnquiryManagement = () => {
             <div className="main-card">
               <div className="row g-0">
                 {/* Sidebar */}
-                <div className="col-md-2">
-                  <div className="sidebar">
-                    <div className="sidebar-header">
-                      <div className="d-flex align-items-center">
-                        <Inbox className="me-2" size={20} />
-                        Enquiry Management
+                <div className="col-md-2 col-12 mb-4">
+                  <div className="p-3 rounded bg-white">
+                    {/* Folders */}
+                    <div className="folder-section mb-4">
+                      <div className="section-title fw-bold text-uppercase small mb-2">
+                        Folders
                       </div>
-                    </div>
-
-                    {/* Folders Section */}
-                    <div className="folder-section">
-                      <div className="section-title">Folders</div>
                       {folders.map((folder) => (
                         <div
                           key={folder.id}
-                          className={`folder-item ${
-                            activeFolder === folder.id ? "active" : ""
+                          className={`d-flex justify-content-between align-items-center py-2 px-2 rounded folder-item ${
+                            activeFolder === folder.id
+                              ? "bg-light fw-semibold"
+                              : ""
                           }`}
+                          role="button"
                           onClick={() => setActiveFolder(folder.id)}
                         >
-                          <folder.icon className="folder-icon" />
-                          <span className="folder-name">{folder.name}</span>
-                          <span className="folder-count">{folder.count}</span>
+                          <span>{folder.name}</span>
+                          <span className="text-muted small">
+                            {folder.count}
+                          </span>
                         </div>
                       ))}
                     </div>
 
-                    {/* Tools Section */}
-                    {/* <div className="tools-section">
-                      <div className="section-title">Tools</div>
+                    <div className="status-section mb-4">
+                      {statuses.map((status) => (
+                        <div
+                          key={status.id}
+                          className="d-flex justify-content-between align-items-center py-2 px-2 rounded"
+                          role="button"
+                        >
+                          <div className="d-flex align-items-center gap-2">
+                            <span
+                              style={{
+                                width: "10px",
+                                height: "10px",
+                                borderRadius: "50%",
+                                backgroundColor: status.color,
+                                display: "inline-block",
+                              }}
+                            ></span>
+                            {status.name}
+                          </div>
+                          <span className="text-muted small">
+                            {status.count}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Tools */}
+                    <div className="tools-section">
+                      <div className="section-title fw-bold text-uppercase small mb-2">
+                        Tools
+                      </div>
                       {tools.map((tool) => (
                         <div
                           key={tool.id}
-                          className={`tool-item ${
-                            tool.premium ? "premium pulse" : ""
+                          className={`d-flex align-items-center gap-2 py-2 px-2 rounded ${
+                            tool.premium ? "text-warning fw-semibold" : ""
                           }`}
+                          role="button"
                         >
-                          <tool.icon className="folder-icon" />
-                          <span className="folder-name">{tool.name}</span>
-                          {tool.premium && (
-                            <Star size={16} className="ms-auto" />
-                          )}
+                          {tool.icon}
+                          {tool.name}
                         </div>
                       ))}
-                    </div> */}
+                    </div>
                   </div>
                 </div>
 
                 {/* Main Content */}
                 <div className="col-md-10">
-                  <div className="main-content">
-                    {/* Header with Search */}
-                    <div className="content-header">
-                      <div className="row align-items-center">
-                        <div className="col-md-12">
-                          <div className="search-bar">
-                            <input
-                              type="text"
-                              className="form-control search-input"
-                              value={searchTerm}
-                              onChange={(e) => setSearchTerm(e.target.value)}
-                              style={{ padding: "10px 10px" }}
-                            />
-                            <Search className="search-icon" size={18} />
-                          </div>
-                        </div>
-                        {/* <div className="col-md-4 text-end">
-                          <button className="filter-button">
-                            <Filter size={16} className="me-2" />
-                            Filters
-                          </button>
-                        </div> */}
-                      </div>
-                    </div>
-
+                  <div className="container">
                     {/* Stats Section */}
                     <div className="stats-section">
                       <div className="stat-card">

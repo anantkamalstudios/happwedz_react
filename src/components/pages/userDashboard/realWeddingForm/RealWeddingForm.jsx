@@ -1256,32 +1256,50 @@ const VendorsStep = ({ formData, handleArrayChange, handleRemoveItem }) => (
 
 const GalleryStep = ({ formData, handleInputChange }) => (
   <div className="form-card">
-    <h2 className="form-section-title">
-      <FiImage /> Gallery
+    <h2 className="form-section-title d-flex align-items-center mb-4">
+      <FiImage className="me-2" /> Gallery
     </h2>
-    <div className="form-group">
-      <label>Cover Photo</label>
+
+    {/* Cover Photo */}
+    <div className="mb-3">
+      <label htmlFor="coverPhoto" className="form-label fw-bold">
+        Cover Photo
+      </label>
       <input
+        className="form-control"
         type="file"
+        id="coverPhoto"
         name="coverPhoto"
         accept="image/*"
         onChange={handleInputChange}
       />
     </div>
-    <div className="form-group">
-      <label>Highlight Photos</label>
+
+    {/* Highlight Photos */}
+    <div className="mb-3">
+      <label htmlFor="highlightPhotos" className="form-label fw-bold">
+        Highlight Photos
+      </label>
       <input
+        className="form-control"
         type="file"
+        id="highlightPhotos"
         name="highlightPhotos"
         accept="image/*"
         multiple
         onChange={handleInputChange}
       />
     </div>
-    <div className="form-group">
-      <label>All Wedding Photos</label>
+
+    {/* All Wedding Photos */}
+    <div className="mb-3">
+      <label htmlFor="allPhotos" className="form-label fw-bold">
+        All Wedding Photos
+      </label>
       <input
+        className="form-control"
         type="file"
+        id="allPhotos"
         name="allPhotos"
         accept="image/*"
         multiple
