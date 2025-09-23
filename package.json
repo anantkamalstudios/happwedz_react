@@ -21,6 +21,7 @@
     "dayjs": "^1.11.18",
     "fabric": "^5.5.2",
     "face-api.js": "^0.22.2",
+    "firebase": "^12.3.0",
     "framer-motion": "^12.23.12",
     "jquery": "^3.7.1",
     "leaflet": "^1.9.4",

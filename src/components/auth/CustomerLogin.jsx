@@ -4,17 +4,42 @@ import { Form, Button } from "react-bootstrap";
 import { useUser } from "../../hooks";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../../redux/authSlice";
-import { useToast } from "../layouts/toasts/Toast";
+import { auth, provider, signInWithPopup } from "../../firebase";
+import { FaGoogle } from "react-icons/fa";
 
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
-  const { addToast } = useToast();
 
   const dispatch = useDispatch();
   const { login, loading } = useUser();
+
+  const handleGoogleLogin = async () => {
+    try {
+      // Sign in with Firebase Google
+      const result = await signInWithPopup(auth, provider);
+
+      const user = {
+        name: result.user.displayName,
+        email: result.user.email,
+        photoURL: result.user.photoURL,
+        uid: result.user.uid,
+      };
+
+      const token = await result.user.getIdToken();
+
+      dispatch(setCredentials({ user, token }));
+
+      console.log("Google user saved in Redux:", user);
+      alert("Login successful!");
+      navigate("/user-dashboard", { replace: true });
+    } catch (error) {
+      console.error("Google login error:", error.message);
+      alert("Google login failed: " + error.message);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,10 +60,10 @@ const CustomerLogin = () => {
       } else if (response.user) {
         dispatch(setCredentials({ user: response.user, token: null }));
       }
-      addToast("Login successful!", "success");
+      alert("Login successful!");
       navigate("/user-dashboard", { replace: true });
     } else {
-      addToast(response.message || "Login Failed", "danger");
+      alert(response.message || "Login failed");
     }
   };
 
@@ -127,29 +152,44 @@ const CustomerLogin = () => {
             >
               {loading ? "Signing In..." : "Sign In"}
             </Button>
-
-            <div className="mt-5 text-center">
-              <p className="text-muted">
-                Don't have an account?{" "}
-                <Link
-                  to="/customer-register"
-                  className="text-decoration-none wedding-link fw-semibold"
-                >
-                  Sign up
-                </Link>
-              </p>
-
-              <p className="text-muted">
-                I am a{" "}
-                <Link
-                  to="/vendor-login"
-                  className="text-decoration-none fw-semibold wedding-link"
-                >
-                  vendor
-                </Link>
-              </p>
-            </div>
           </Form>
+
+
+          <button
+            className="btn btn-light btn-lg w-100 d-flex align-items-center justify-content-center shadow-sm border rounded-pill px-4 py-2 mt-5"
+            onClick={handleGoogleLogin}
+          >
+            <img
+              src="https://img.icons8.com/color/48/000000/google-logo.png"
+              alt="Google Logo"
+              className="me-2"
+              width="24"
+              height="24"
+            />
+            <span className="flex-grow-1 text-center">Sign in with Google</span>
+          </button>
+
+          <div className="mt-5 text-center">
+            <p className="text-muted">
+              Don't have an account?{" "}
+              <Link
+                to="/customer-register"
+                className="text-decoration-none wedding-link fw-semibold"
+              >
+                Sign up
+              </Link>
+            </p>
+
+            <p className="text-muted">
+              I am a{" "}
+              <Link
+                to="/vendor-login"
+                className="text-decoration-none fw-semibold wedding-link"
+              >
+                vendor
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
