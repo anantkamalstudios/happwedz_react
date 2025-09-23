@@ -1,17 +1,16 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Form, Button } from "react-bootstrap";
-import { useUser } from "../../hooks";
-import { useDispatch } from "react-redux";
-import { setCredentials } from "../../redux/authSlice";
+import { useUser } from "../../hooks"; // Make sure this points to your useUser hook
 
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+
   const navigate = useNavigate();
 
-  const dispatch = useDispatch();
+  // useUser hook handles login + Redux storage
   const { login, loading } = useUser();
 
   const handleSubmit = async (e) => {
@@ -20,23 +19,17 @@ const CustomerLogin = () => {
     const payload = {
       email,
       password,
-      captchaToken: "test-captcha-token",
+      captchaToken: "test-captcha-token", // backend requires it
     };
 
     const response = await login(payload, rememberMe);
 
     if (response.success) {
-      if (response.user && response.token) {
-        dispatch(
-          setCredentials({ user: response.user, token: response.token })
-        );
-      } else if (response.user) {
-        dispatch(setCredentials({ user: response.user, token: null }));
-      }
       alert("Login successful!");
-      navigate("/user-dashboard", { replace: true });
+      navigate("/user-dashboard", { replace: true }); // replaces history
+
     } else {
-      alert(response.message || "Login failed");
+      console.error("Login failed:", response.message);
     }
   };
 
@@ -75,7 +68,11 @@ const CustomerLogin = () => {
             </p>
           </div>
 
+          {/* Error message */}
+          {error && <Alert variant="danger">{error}</Alert>}
+
           <Form onSubmit={handleSubmit} className="mt-4">
+            {/* Email */}
             <Form.Group controlId="formEmail" className="mb-4">
               <Form.Label className="text-secondary">Email Address</Form.Label>
               <Form.Control
@@ -88,6 +85,7 @@ const CustomerLogin = () => {
               />
             </Form.Group>
 
+            {/* Password */}
             <Form.Group controlId="formPassword" className="mb-4">
               <Form.Label className="text-secondary">Password</Form.Label>
               <Form.Control
@@ -100,6 +98,7 @@ const CustomerLogin = () => {
               />
             </Form.Group>
 
+            {/* Remember me + Forgot password */}
             <div className="d-flex justify-content-between align-items-center mb-4">
               <Form.Check
                 type="checkbox"
@@ -117,15 +116,24 @@ const CustomerLogin = () => {
               </Link>
             </div>
 
+            {/* Submit button */}
             <Button
               variant="primary"
               type="submit"
               className="w-100 p-3 login-btn"
               disabled={loading}
             >
-              {loading ? "Signing In..." : "Sign In"}
+              {loading ? (
+                <>
+                  <Spinner animation="border" size="sm" className="me-2" />
+                  Signing In...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </Button>
 
+            {/* Links */}
             <div className="mt-5 text-center">
               <p className="text-muted">
                 Don't have an account?{" "}

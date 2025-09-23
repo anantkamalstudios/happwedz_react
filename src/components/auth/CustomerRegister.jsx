@@ -12,8 +12,10 @@ const CustomerRegister = () => {
     password: "",
     phone: "",
     weddingVenue: "",
+    weddingVenue: "",
     country: "",
     city: "",
+    weddingDate: "",
     weddingDate: "",
     profile_image: "",
     coverImage: "",
@@ -72,6 +74,8 @@ const CustomerRegister = () => {
     if (!formData.country) newErrors.country = "Country is required";
     if (!formData.weddingVenue.trim())
       newErrors.weddingVenue = "Wedding venue is required";
+    if (!formData.weddingVenue.trim())
+      newErrors.weddingVenue = "Wedding venue is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -96,6 +100,7 @@ const CustomerRegister = () => {
 
       const payload = {
         ...formData,
+        role: "user",
         role: "user",
       };
 
@@ -176,9 +181,8 @@ const CustomerRegister = () => {
                   <input
                     type="text"
                     name="name"
-                    className={`form-control ${
-                      errors.name ? "is-invalid" : ""
-                    }`}
+                    className={`form-control ${errors.name ? "is-invalid" : ""
+                      }`}
                     placeholder="Full Name"
                     value={formData.name}
                     onChange={handleChange}
@@ -196,9 +200,8 @@ const CustomerRegister = () => {
                   <input
                     type="email"
                     name="email"
-                    className={`form-control ${
-                      errors.email ? "is-invalid" : ""
-                    }`}
+                    className={`form-control ${errors.email ? "is-invalid" : ""
+                      }`}
                     placeholder="Email"
                     value={formData.email}
                     onChange={handleChange}
@@ -216,14 +219,16 @@ const CustomerRegister = () => {
                   <input
                     type="password"
                     name="password"
-                    className={`form-control ${
-                      errors.password ? "is-invalid" : ""
-                    }`}
+                    className={`form-control ${errors.password ? "is-invalid" : ""
+                      }`}
                     placeholder="Password"
                     value={formData.password}
                     onChange={handleChange}
                   />
                   <label>Password</label>
+                  {errors.password && (
+                    <div className="invalid-feedback">{errors.password}</div>
+                  )}
                   {errors.password && (
                     <div className="invalid-feedback">{errors.password}</div>
                   )}
@@ -236,9 +241,8 @@ const CustomerRegister = () => {
                   <input
                     type="tel"
                     name="phone"
-                    className={`form-control ${
-                      errors.phone ? "is-invalid" : ""
-                    }`}
+                    className={`form-control ${errors.phone ? "is-invalid" : ""
+                      }`}
                     placeholder="Phone"
                     value={formData.phone}
                     onChange={handleChange}
@@ -256,9 +260,8 @@ const CustomerRegister = () => {
                   <input
                     type="text"
                     name="weddingVenue"
-                    className={`form-control ${
-                      errors.weddingVenue ? "is-invalid" : ""
-                    }`}
+                    className={`form-control ${errors.weddingVenue ? "is-invalid" : ""
+                      }`}
                     placeholder="Wedding Venue"
                     value={formData.weddingVenue}
                     onChange={handleChange}
@@ -277,9 +280,8 @@ const CustomerRegister = () => {
                 <div className="form-floating">
                   <select
                     name="country"
-                    className={`form-select ${
-                      errors.country ? "is-invalid" : ""
-                    }`}
+                    className={`form-select ${errors.country ? "is-invalid" : ""
+                      }`}
                     value={formData.country}
                     onChange={handleChange}
                   >
@@ -291,6 +293,9 @@ const CustomerRegister = () => {
                     ))}
                   </select>
                   <label>Country</label>
+                  {errors.country && (
+                    <div className="invalid-feedback">{errors.country}</div>
+                  )}
                   {errors.country && (
                     <div className="invalid-feedback">{errors.country}</div>
                   )}
@@ -326,13 +331,15 @@ const CustomerRegister = () => {
                   <input
                     type="date"
                     name="weddingDate"
-                    className={`form-control ${
-                      errors.weddingDate ? "is-invalid" : ""
-                    }`}
+                    className={`form-control ${errors.weddingDate ? "is-invalid" : ""
+                      }`}
                     value={formData.weddingDate}
                     onChange={handleChange}
                   />
                   <label>Wedding Date</label>
+                  {errors.weddingDate && (
+                    <div className="invalid-feedback">{errors.weddingDate}</div>
+                  )}
                   {errors.weddingDate && (
                     <div className="invalid-feedback">{errors.weddingDate}</div>
                   )}
