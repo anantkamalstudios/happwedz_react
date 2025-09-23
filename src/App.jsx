@@ -65,6 +65,11 @@ const ProfileImageSelector = lazy(() =>
   import("./components/pages/ProfileImageSelector")
 );
 const FinalLookPage = lazy(() => import("./components/pages/FinalLookPage"));
+const TryLanding = lazy(() => import("./components/pages/TryLanding"));
+const UploadSelfiePage = lazy(() =>
+  import("./components/pages/UploadSelfiePage")
+);
+const FiltersPage = lazy(() => import("./components/pages/FiltersPage"));
 
 const VendorPremium = lazy(() =>
   import("./components/pages/adminVendor/VendorPremium")
@@ -102,7 +107,12 @@ function App() {
             <Route path="/vendor-register" element={<VendorRegister />} />
             <Route path="/user-forgot-password" element={<ForgotPassword />} />
             <Route path="/terms" element={<TermsCondition />} />
-            <Route path="/try" element={<ProfileImageSelector />} />
+            {/* New Try flow */}
+            <Route path="/try" element={<TryLanding />} />
+            <Route path="/try/upload" element={<UploadSelfiePage />} />
+            <Route path="/try/filters" element={<FiltersPage />} />
+            {/* Legacy (optionally keep for direct access) */}
+            {/* <Route path="/try-old" element={<ProfileImageSelector />} /> */}
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog-details" element={<BlogDetails />} />
             <Route path="/finallook" element={<FinalLookPage />} />
