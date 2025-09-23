@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useDispatch } from "react-redux";
-import { setCredentials } from "../../redux/authSlice";
+
 import { useSelector } from "react-redux";
+import { setCredentials } from "../../redux/authSlice";
 
 const CustomerRegister = () => {
   const [formData, setFormData] = useState({

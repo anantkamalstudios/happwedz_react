@@ -7,7 +7,7 @@ const BusinessDetails = () => {
   const [confirmPassword, setConfirmPassword] = React.useState("");
 
   return (
-    <div className="my-5">
+    <div className="">
       <div className="p-3 border rounded mb-4 bg-white">
         <h6 className="mb-3 fw-bold">Login Information</h6>
         <div className="mb-3">

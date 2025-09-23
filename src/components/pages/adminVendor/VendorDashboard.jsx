@@ -28,7 +28,6 @@ const VendorDashboard = () => {
     );
   };
 
-  // Main navigation items
   const mainNavItems = [
     { id: "home", path: "/", icon: <RiHome5Line size={24} />, label: "Home" },
     {
@@ -51,7 +50,6 @@ const VendorDashboard = () => {
     },
   ];
 
-  // Storefront sub-navigation items
   const storefrontNavItems = [
     {
       id: "checklist",

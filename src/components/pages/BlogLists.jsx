@@ -87,7 +87,7 @@ const BlogLists = ({ onPostClick }) => {
       description:
         "Never miss a detail with our comprehensive wedding planning checklist. From venue booking to final preparations, we've got every step covered.",
       image:
-        "https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+        "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
       author: "Rajesh Kumar",
       authorImage:
         "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
@@ -125,7 +125,7 @@ const BlogLists = ({ onPostClick }) => {
       description:
         "Discover the hottest bridal fashion trends for 2024. From traditional lehengas to modern gowns, find your perfect bridal look.",
       image:
-        "https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+        "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
       author: "Kavya Reddy",
       authorImage:
         "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
@@ -173,30 +173,6 @@ const BlogLists = ({ onPostClick }) => {
       count: blogs.filter((b) => b.category === "Fashion").length,
     },
   ];
-
-  const handleLike = (blogId) => {
-    setLikedPosts((prev) => {
-      const newLiked = new Set(prev);
-      if (newLiked.has(blogId)) {
-        newLiked.delete(blogId);
-      } else {
-        newLiked.add(blogId);
-      }
-      return newLiked;
-    });
-  };
-
-  const handleBookmark = (blogId) => {
-    setBookmarkedPosts((prev) => {
-      const newBookmarked = new Set(prev);
-      if (newBookmarked.has(blogId)) {
-        newBookmarked.delete(blogId);
-      } else {
-        newBookmarked.add(blogId);
-      }
-      return newBookmarked;
-    });
-  };
 
   const filteredBlogs = blogs.filter((blog) => {
     const matchesSearch =
@@ -342,8 +318,7 @@ const BlogLists = ({ onPostClick }) => {
           </div>
 
           {/* Main Content */}
-          <div className="col-lg-9 blog-main-content">
-            {/* Featured Articles */}
+          <div className="container col-lg-9 blog-main-content">
             {featuredBlogs.length > 0 && (
               <section className="featured-section">
                 <h3 className="fw-bold text-dark mb-2">Featured Articles</h3>
@@ -378,78 +353,66 @@ const BlogLists = ({ onPostClick }) => {
               </section>
             )}
 
-            {/* All Articles */}
-            <section className="articles-section">
-              <div className="section-header">
-                <h3 className="fw-bold text-dark mb-2">All Articles</h3>
-                <div className="results-count">
+            <section className="wedding-articles-section">
+              <div className="wedding-articles-header">
+                <h3 className="wedding-section-title">All Articles</h3>
+                <div className="wedding-results-count">
                   {sortedBlogs.length} articles found
                 </div>
               </div>
 
-              <div className="row">
-                {sortedBlogs.map((blog) => (
-                  <div key={blog.id} className="col-lg-4 col-md-6 mb-4">
-                    <div onClick={() => onPostClick(blog)}>
-                      <article className="blog-card">
-                        <div className="blog-image-container">
-                          <img
-                            src={blog.image}
-                            alt={blog.title}
-                            className="blog-image"
-                          />
-                          <div className="blog-actions">
-                            <button
-                              className={`action-btn ${
-                                likedPosts.has(blog.id) ? "liked" : ""
-                              }`}
-                              onClick={() => handleLike(blog.id)}
-                            >
-                              <FaHeart />
-                              <span>{blog.likes}</span>
-                            </button>
-                            <button
-                              className={`action-btn ${
-                                bookmarkedPosts.has(blog.id) ? "bookmarked" : ""
-                              }`}
-                              onClick={() => handleBookmark(blog.id)}
-                            >
-                              <FaBookmark />
-                            </button>
-                          </div>
-                          {blog.trending && (
-                            <div className="trending-badge">Trending</div>
-                          )}
-                        </div>
-
-                        <div className="blog-content">
-                          <div className="blog-meta">
-                            <span className="blog-category">
-                              {blog.category}
-                            </span>
-                            <span className="blog-date">{blog.date}</span>
+              <div className="wedding-blog-wrapper">
+                <section className="wedding-articles">
+                  <div className="row">
+                    {sortedBlogs.map((blog) => (
+                      <div key={blog.id} className="col-md-6 mb-5">
+                        <article
+                          className="wedding-article-card"
+                          onClick={() => onPostClick(blog)}
+                        >
+                          <div className="wedding-card-image-wrapper">
+                            <img
+                              src={blog.image}
+                              alt={blog.title}
+                              className="wedding-card-image"
+                            />
+                            {blog.trending && (
+                              <div className="wedding-card-badge">Trending</div>
+                            )}
                           </div>
 
-                          <h5 className="blog-title">{blog.title}</h5>
-                          <p className="blog-description">{blog.description}</p>
-
-                          <div className="blog-tags">
-                            {blog.tags.slice(0, 2).map((tag, index) => (
-                              <span key={index} className="blog-tag">
-                                <FaTag className="tag-icon" />
-                                {tag}
+                          <div className="wedding-card-content">
+                            <div className="wedding-card-meta">
+                              <span className="wedding-card-category">
+                                {blog.category}
                               </span>
-                            ))}
+                              <span className="wedding-card-date">
+                                {blog.date}
+                              </span>
+                            </div>
+
+                            <h5 className="wedding-card-title">{blog.title}</h5>
+                            <p className="wedding-card-description">
+                              {blog.description}
+                            </p>
+
+                            <div className="wedding-card-tags">
+                              {blog.tags.slice(0, 2).map((tag, index) => (
+                                <span key={index} className="wedding-card-tag">
+                                  <FaTag className="wedding-tag-icon" />
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      </article>
-                    </div>
+                        </article>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </section>
               </div>
             </section>
 
-            {/* Load More */}
             <div className="text-center mt-5">
               <button className="load-more-btn">Load More Articles</button>
             </div>

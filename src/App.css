@@ -3397,7 +3397,35 @@ body {
   font-size: 0.8rem;
 }
 
-/* Storefront Sub-Navigation */
+/* Storefront sidemenu Sub-Navigation */
+.custom-sidebar .nav-link {
+  color: #6c757d;
+  font-weight: normal;
+  background-color: transparent;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.custom-sidebar .nav-link:hover {
+  color: #343a40;
+}
+
+.custom-sidebar .nav-link.active {
+  font-weight: 600;
+  color: #212529;
+  background-color: #ffffff;
+  transform: scale(1.03);
+  box-shadow: none;
+}
+
+.custom-sidebar .nav-link.active svg,
+.custom-sidebar .nav-link.active span {
+  transform: scale(1.05);
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Sidemenu end */
+
 .storefront-subnav {
   position: sticky;
   top: 120px;
@@ -4515,15 +4543,6 @@ input:checked + .slider:before {
   padding: 20px;
 }
 
-.main-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  overflow: hidden;
-}
-
 .sidebar {
   background: linear-gradient(180deg, #ffeef8 0%, #ffffff 100%);
   border-right: 1px solid rgba(0, 0, 0, 0.05);
@@ -4628,6 +4647,13 @@ input:checked + .slider:before {
   color: white;
 }
 
+.status-section {
+  padding: 0 15px 25px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  margin-top: 20px;
+  padding-top: 25px;
+}
+
 .tools-section {
   padding: 0 15px 25px;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
@@ -4719,7 +4745,7 @@ input:checked + .slider:before {
   overflow: hidden;
 }
 
-.stat-card::before {
+/* .stat-card::before {
   content: "";
   position: absolute;
   top: 0;
@@ -4727,7 +4753,7 @@ input:checked + .slider:before {
   right: 0;
   height: 4px;
   background: linear-gradient(135deg, #ff6b9d, #e91e63);
-}
+} */
 
 .stat-card:hover {
   transform: translateY(-5px);
@@ -4852,7 +4878,7 @@ input:checked + .slider:before {
 }
 /* User guest  */
 /* Wedding Dashboard Styles */
-.wedding-dashboard { 
+.wedding-dashboard {
   min-height: 100vh;
 }
 /* Header Styles */
@@ -5566,7 +5592,7 @@ input:checked + .slider:before {
 
 /* User guest  */
 /* Wedding Dashboard Styles */
-.wedding-dashboard { 
+.wedding-dashboard {
   min-height: 100vh;
 }
 
@@ -13553,7 +13579,6 @@ input:checked + .slider:before {
 
 /* ===== BLOG PAGE STYLES ===== */
 .blog-page {
-  background-color: #f8f9fa;
   min-height: 100vh;
 }
 
@@ -13649,38 +13674,27 @@ input:checked + .slider:before {
   padding: 60px 0;
 }
 
-/* Sidebar */
+/* Sidebar */ /* === Sidebar Layout === */
 .blog-sidebar {
-  padding-right: 30px;
-}
-
-.sidebar-content {
-  background: white;
-  border-radius: 15px;
-  padding: 30px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-  position: sticky;
-  top: 100px;
+  padding: 24px;
+  background-color: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  font-family: "Segoe UI", sans-serif;
 }
 
 .sidebar-section {
-  margin-bottom: 40px;
-}
-
-.sidebar-section:last-child {
-  margin-bottom: 0;
+  margin-bottom: 30px;
 }
 
 .sidebar-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #ff6b9d;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 16px;
 }
 
-/* Categories */
+/* === Category Buttons === */
 .category-list {
   display: flex;
   flex-direction: column;
@@ -13691,42 +13705,28 @@ input:checked + .slider:before {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  border: none;
-  background: #f8f9fa;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  background-color: #fff;
+  color: #111;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 14px;
+  transition: all 0.25s ease;
   cursor: pointer;
-  text-align: left;
 }
 
 .category-item:hover {
-  background: #e9ecef;
-  transform: translateX(5px);
+  border-color: #e91e63;
+  color: #e91e63;
 }
 
 .category-item.active {
-  background: linear-gradient(135deg, #ff6b9d, #c44569);
-  color: white;
-}
-
-.category-name {
-  font-weight: 500;
-}
-
-.category-count {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.85rem;
+  border: 2px solid #e91e63;
+  color: #e91e63;
   font-weight: 600;
 }
 
-.category-item.active .category-count {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* Sort Options */
+/* === Sort Options === */
 .sort-options {
   display: flex;
   flex-direction: column;
@@ -13736,56 +13736,50 @@ input:checked + .slider:before {
 .sort-option {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  border: none;
-  background: #f8f9fa;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  gap: 8px;
+  background-color: #fff;
+  color: #111;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 14px;
+  transition: all 0.25s ease;
   cursor: pointer;
-  text-align: left;
 }
 
 .sort-option:hover {
-  background: #e9ecef;
-  transform: translateX(5px);
+  border-color: #e91e63;
+  color: #e91e63;
 }
 
 .sort-option.active {
-  background: linear-gradient(135deg, #ff6b9d, #c44569);
-  color: white;
+  border: 2px solid #e91e63;
+  color: #e91e63;
+  font-weight: 600;
 }
 
 .sort-icon {
-  margin-right: 12px;
-  font-size: 0.9rem;
+  color: inherit;
 }
 
-/* Trending List */
+/* === Trending Articles === */
 .trending-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
 }
 
 .trending-item {
   display: flex;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.trending-item:hover {
-  background: #f8f9fa;
-  transform: translateX(5px);
+  gap: 10px;
+  align-items: center;
 }
 
 .trending-image {
   width: 60px;
   height: 60px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .trending-content {
@@ -13793,20 +13787,17 @@ input:checked + .slider:before {
 }
 
 .trending-title {
-  font-size: 0.9rem;
+  font-size: 14px;
   font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 5px;
+  margin: 0;
+  color: #333;
   line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .trending-meta {
-  font-size: 0.8rem;
-  color: #6c757d;
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
 }
 
 /* Main Content */
@@ -14655,13 +14646,6 @@ input:checked + .slider:before {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-}
-
-.user-dashboard-wedding-submission-form .form-footer {
-  position: sticky;
-  bottom: 0;
-  padding: 1.5rem 0;
-  margin-top: 2rem;
 }
 
 .user-dashboard-wedding-submission-form .footer-buttons {
@@ -15774,4 +15758,324 @@ input:checked + .slider:before {
 .vendor-available-calendar .calender-stat-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* BlogList.jsx */
+/* ==== Wedding Blog Wrapper ==== */
+.wedding-blog-wrapper {
+  padding: 40px 0;
+  font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+}
+
+/* ==== Section Styling ==== */
+.wedding-articles {
+  width: 100%;
+}
+
+.wedding-section-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #222;
+  margin-bottom: 20px;
+}
+
+/* ==== Blog Card ==== */
+.wedding-article-card {
+  display: block;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding-bottom: 30px;
+}
+
+.wedding-article-card:hover .wedding-card-image {
+  transform: scale(1.02);
+}
+
+/* ==== Image Wrapper ==== */
+.wedding-card-image-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.wedding-card-image {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  border-radius: 6px;
+}
+
+/* ==== Trending Badge ==== */
+.wedding-card-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background-color: #e91e63;
+  color: #fff;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ==== Card Content ==== */
+.wedding-card-content {
+  padding-top: 16px;
+}
+
+.wedding-card-meta {
+  font-size: 13px;
+  color: #999;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 500;
+}
+
+.wedding-card-category {
+  color: #e91e63;
+}
+
+.wedding-card-date {
+  color: #888;
+}
+
+/* ==== Title & Description ==== */
+.wedding-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.wedding-card-description {
+  font-size: 15px;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+/* ==== Tags ==== */
+.wedding-card-tags {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wedding-card-tag {
+  font-size: 12px;
+  color: #555;
+  background: #f5f5f5;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.wedding-tag-icon {
+  margin-right: 4px;
+  font-size: 12px;
+  color: #aaa;
+}
+
+/* ==== Load More Button ==== */
+.wedding-load-more-btn {
+  background-color: #e91e63;
+  color: #fff;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 25px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.wedding-load-more-btn:hover {
+  background-color: #d2185b;
+}
+
+/* ==== Responsive: Stack Cards on Small Screens ==== */
+@media (max-width: 767px) {
+  .wedding-card-image {
+    height: 200px;
+  }
+
+  .wedding-card-title {
+    font-size: 16px;
+  }
+
+  .wedding-card-description {
+    font-size: 14px;
+  }
+}
+
+/* try */
+/* Container centers all content like a card */
+.filters-container {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-height: 100vh;
+}
+
+/* Preview area with uploaded image */
+.preview-area {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.preview-img {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: 12px;
+  object-fit: contain;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.upload-placeholder {
+  text-align: center;
+  padding: 40px 20px;
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+}
+
+/* Filters bar */
+.filters-bar {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.filter-section {
+  margin-bottom: 12px;
+}
+
+.filter-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f9f9f9;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.filter-icon:hover {
+  background: #eee;
+}
+
+/* Expanded options panel */
+.filter-options {
+  margin-top: 8px;
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.options-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.option-card {
+  min-width: 90px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.option-card:hover {
+  border-color: #888;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.option-card.selected {
+  border-color: #007bff;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+}
+
+.option-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-bottom: 6px;
+}
+
+.option-card span {
+  font-size: 12px;
+  color: #333;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.color-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+}
+
+/* Footer buttons */
+.footer-buttons {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  border: none;
+  transition: background 0.3s;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: #fff;
+}
+
+.btn-primary:disabled {
+  background: #6c757d;
+}
+
+.btn-outline-secondary {
+  background: #fff;
+  border: 1px solid #ccc;
+  color: #333;
+}
+
+.btn-outline-secondary:hover {
+  background: #f5f5f5;
 }

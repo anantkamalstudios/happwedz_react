@@ -1,17 +1,45 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Form, Button } from "react-bootstrap";
-import { useUser } from "../../hooks"; // Make sure this points to your useUser hook
+import { useUser } from "../../hooks";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "../../redux/authSlice";
+import { auth, provider, signInWithPopup } from "../../firebase";
+import { FaGoogle } from "react-icons/fa";
 
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-
   const navigate = useNavigate();
 
-  // useUser hook handles login + Redux storage
+  const dispatch = useDispatch();
   const { login, loading } = useUser();
+
+  const handleGoogleLogin = async () => {
+    try {
+      // Sign in with Firebase Google
+      const result = await signInWithPopup(auth, provider);
+
+      const user = {
+        name: result.user.displayName,
+        email: result.user.email,
+        photoURL: result.user.photoURL,
+        uid: result.user.uid,
+      };
+
+      const token = await result.user.getIdToken();
+
+      dispatch(setCredentials({ user, token }));
+
+      console.log("Google user saved in Redux:", user);
+      alert("Login successful!");
+      navigate("/user-dashboard", { replace: true });
+    } catch (error) {
+      console.error("Google login error:", error.message);
+      alert("Google login failed: " + error.message);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,17 +47,23 @@ const CustomerLogin = () => {
     const payload = {
       email,
       password,
-      captchaToken: "test-captcha-token", // backend requires it
+      captchaToken: "test-captcha-token",
     };
 
     const response = await login(payload, rememberMe);
 
     if (response.success) {
+      if (response.user && response.token) {
+        dispatch(
+          setCredentials({ user: response.user, token: response.token })
+        );
+      } else if (response.user) {
+        dispatch(setCredentials({ user: response.user, token: null }));
+      }
       alert("Login successful!");
-      navigate("/user-dashboard", { replace: true }); // replaces history
-
+      navigate("/user-dashboard", { replace: true });
     } else {
-      console.error("Login failed:", response.message);
+      alert(response.message || "Login failed");
     }
   };
 
@@ -68,11 +102,7 @@ const CustomerLogin = () => {
             </p>
           </div>
 
-          {/* Error message */}
-          {error && <Alert variant="danger">{error}</Alert>}
-
           <Form onSubmit={handleSubmit} className="mt-4">
-            {/* Email */}
             <Form.Group controlId="formEmail" className="mb-4">
               <Form.Label className="text-secondary">Email Address</Form.Label>
               <Form.Control
@@ -85,7 +115,6 @@ const CustomerLogin = () => {
               />
             </Form.Group>
 
-            {/* Password */}
             <Form.Group controlId="formPassword" className="mb-4">
               <Form.Label className="text-secondary">Password</Form.Label>
               <Form.Control
@@ -98,7 +127,6 @@ const CustomerLogin = () => {
               />
             </Form.Group>
 
-            {/* Remember me + Forgot password */}
             <div className="d-flex justify-content-between align-items-center mb-4">
               <Form.Check
                 type="checkbox"
@@ -116,46 +144,52 @@ const CustomerLogin = () => {
               </Link>
             </div>
 
-            {/* Submit button */}
             <Button
               variant="primary"
               type="submit"
               className="w-100 p-3 login-btn"
               disabled={loading}
             >
-              {loading ? (
-                <>
-                  <Spinner animation="border" size="sm" className="me-2" />
-                  Signing In...
-                </>
-              ) : (
-                "Sign In"
-              )}
+              {loading ? "Signing In..." : "Sign In"}
             </Button>
-
-            {/* Links */}
-            <div className="mt-5 text-center">
-              <p className="text-muted">
-                Don't have an account?{" "}
-                <Link
-                  to="/customer-register"
-                  className="text-decoration-none wedding-link fw-semibold"
-                >
-                  Sign up
-                </Link>
-              </p>
-
-              <p className="text-muted">
-                I am a{" "}
-                <Link
-                  to="/vendor-login"
-                  className="text-decoration-none fw-semibold wedding-link"
-                >
-                  vendor
-                </Link>
-              </p>
-            </div>
           </Form>
+
+
+          <button
+            className="btn btn-light btn-lg w-100 d-flex align-items-center justify-content-center shadow-sm border rounded-pill px-4 py-2 mt-5"
+            onClick={handleGoogleLogin}
+          >
+            <img
+              src="https://img.icons8.com/color/48/000000/google-logo.png"
+              alt="Google Logo"
+              className="me-2"
+              width="24"
+              height="24"
+            />
+            <span className="flex-grow-1 text-center">Sign in with Google</span>
+          </button>
+
+          <div className="mt-5 text-center">
+            <p className="text-muted">
+              Don't have an account?{" "}
+              <Link
+                to="/customer-register"
+                className="text-decoration-none wedding-link fw-semibold"
+              >
+                Sign up
+              </Link>
+            </p>
+
+            <p className="text-muted">
+              I am a{" "}
+              <Link
+                to="/vendor-login"
+                className="text-decoration-none fw-semibold wedding-link"
+              >
+                vendor
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
