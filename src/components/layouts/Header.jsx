@@ -12,7 +12,8 @@ const Header = () => {
   };
 
   const auth = useSelector((state) => state.auth);
-
+  const vendorAuth = useSelector((state) => state.vendorAuth);
+  console.log("vendor auth ", vendorAuth)
   const toSlug = (text) =>
     text
       ?.toLowerCase()
@@ -32,7 +33,7 @@ const Header = () => {
         const bsCollapse =
           window.bootstrap.Collapse.getOrCreateInstance(collapse);
         bsCollapse.hide();
-      } catch {}
+      } catch { }
     }
   }, [location]);
 
@@ -911,7 +912,7 @@ const Header = () => {
                       </li> */}
 
                       {/* Login Dropdown */}
-                      {auth.user ? (
+                      {auth.user || vendorAuth.vendor ? (
                         <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <button
@@ -964,17 +965,18 @@ const Header = () => {
                           </div>
                         </li>
                       )}
-
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          <Link
-                            to="/vendor-dashboard"
-                            className="nav-link text-white"
-                          >
-                            Dashboard
-                          </Link>
-                        </div>
-                      </li>
+                      {vendorAuth.vendor &&
+                        (<li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                          <div className="dropdown-wrapper">
+                            <Link
+                              to="/vendor-dashboard"
+                              className="nav-link text-white"
+                            >
+                              Dashboard
+                            </Link>
+                          </div>
+                        </li>
+                        )}
                       {/* {["Genie"].map((item) => (
                         <li className="nav-item" key={item}>
                           <a className="nav-link text-white" href="#">
