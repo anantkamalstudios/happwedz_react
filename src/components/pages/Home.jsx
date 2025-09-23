@@ -14,6 +14,7 @@ import AppDownloadSection from "../home/AppDownloadSection";
 import MansoryImageSection from "../home/MansoryImageSection";
 import CtaPanel from "../home/CtaPanel";
 import logo from "../../../public/happywed_white.png";
+import MainTestimonial from "../home/MainTestimonial";
 const Home = () => {
   return (
     <>
@@ -48,6 +49,7 @@ const Home = () => {
         btnName="Try Virtual Look"
       />
       <PlanningToolsCTA />
+      <MainTestimonial />
       <BlogInspirationTeasers />
       {/* <NewsletterSection /> */}
       <AppDownloadSection />
