@@ -1,110 +1,245 @@
-import React, { useEffect } from "react";
-import Swiper from "swiper/bundle";
-import "swiper/css/bundle";
-import realWeddings from "../../data/venue";
+import React, { useState, useEffect } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const RealWeddings = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Wedding images for the horizontal carousel
+  const images = [
+    {
+      id: 1,
+      url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=400&fit=crop",
+      alt: "Wedding rings with pink roses",
+    },
+    {
+      id: 2,
+      url: "https://images.pexels.com/photos/1444442/pexels-photo-1444442.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      alt: "Bridal party in pink dresses",
+    },
+    {
+      id: 3,
+      url: "https://images.pexels.com/photos/1023233/pexels-photo-1023233.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      alt: "Elegant wedding table setting",
+    },
+    {
+      id: 4,
+      url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=400&fit=crop",
+      alt: "Wedding ceremony",
+    },
+    {
+      id: 5,
+      url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=400&fit=crop",
+      alt: "Wedding bouquet",
+    },
+  ];
+
   useEffect(() => {
-    new Swiper(".popularSearchSwiper", {
-      loop: true,
-      speed: 8000,
-      spaceBetween: 30,
-      slidesPerView: "auto",
-      freeMode: true,
-      freeModeMomentum: false,
-      breakpoints: {
-        0: {
-          slidesPerView: 1.1,
-        },
-        576: {
-          slidesPerView: 1.5,
-        },
-        768: {
-          slidesPerView: 2,
-        },
-        992: {
-          slidesPerView: 3,
-        },
-      },
-    });
-  }, []);
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % (images.length - 2));
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % (images.length - 2));
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide(
+      (prev) => (prev - 1 + (images.length - 2)) % (images.length - 2)
+    );
+  };
 
   return (
     <div className="container py-5">
-      <div className="d-flex justify-content-around align-items-center">
-        <div className="col-md-10">
-          <h3 className="fw-bold mb-4 text-dark">Real Wedding Photos</h3>
-        </div>
-        <div className="col-md-2 ">
-          <a href="" className="text-decoration-none">
-            <h6 className="fw-bold mb-4 text-dark">
-              Show More
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="primary-text lucide lucide-chevron-right-icon lucide-chevron-right"
+      <div className="row align-items-center">
+        {/* Main Card - Left Side */}
+        <div className="col-lg-4 p-0 m-0">
+          <div
+            className="card border-0 shadow-lg h-100 position-relative"
+            style={{ minHeight: "600px", zIndex: 10 }}
+          >
+            <div className="card-body p-5 d-flex flex-column justify-content-center">
+              {/* Flower Icon */}
+              <div className="mb-4">
+                <img
+                  src="/images/home/Flower.png"
+                  alt="flower"
+                  srcset=""
+                  className="w-20 h-20"
+                />
+              </div>
+
+              {/* Main Title */}
+              <h1
+                className="display-5 fw-bold mb-3"
+                style={{ color: "#2c2c2c", lineHeight: "1.2" }}
               >
-                <path d="m9 18 6-6-6-6" />
-              </svg>
-            </h6>
-          </a>
+                Real Wedding
+                <br />
+                Photos
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-muted fs-6 mb-4">Real Wedding Stories</p>
+
+              {/* See More Button */}
+              <button
+                className="btn btn-link p-0 fw-bold text-decoration-none d-flex align-items-center align-self-start"
+                style={{ color: "#e91e63", fontSize: "1.1rem" }}
+              >
+                SEE MORE
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="ms-2"
+                >
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Carousel Container - Right Side */}
+        <div className="col-lg-8 position-relative overflow-hidden mt-5">
+          <div
+            className="carousel-wrapper position-relative overflow-hidden"
+            style={{ height: "500px", left: "-10%" }} // Added 10% overlap
+          >
+            {/* Carousel Track */}
+            <div
+              className="carousel-track d-flex position-absolute"
+              style={{
+                transform: `translateX(-${currentSlide * 5}%)`,
+                transition: "transform 0.6s ease-in-out",
+                width: `${(images.length / 3) * 100}%`,
+                height: "100%",
+              }}
+            >
+              {images.map((image, index) => (
+                <div
+                  key={image.id}
+                  className="carousel-item-wrapper position-relative"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    transform: `translateZ(${index * -10}px) scale(${
+                      1 - index * 0.02
+                    })`,
+                    zIndex: images.length - index,
+                    transition: "all 0.6s ease-in-out",
+                  }}
+                >
+                  <div
+                    className="square-card overflow-hidden"
+                    style={{
+                      opacity: index < 4 ? 1 : 0.7,
+                    }}
+                  >
+                    <img
+                      src={image.url}
+                      alt={image.alt}
+                      className="w-100 h-100 object-fit-cover"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="swiper popularSearchSwiper">
-        <div className="swiper-wrapper">
-          {realWeddings.map((popularSearch, index) => (
-            <div
-              className="swiper-slide swiper-slider-popular-search overflow-hidden"
-              key={index}
-            >
-              <div className="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <img
-                  src={popularSearch.image}
-                  className="card-img-top rounded-4 popular-search-swiper-img hover-animate-img"
-                  alt={popularSearch.name}
-                />
-                {/* <div className="row">
-                  <div className="d-flex">
-                    <div className="card-body">
-                      <h6 className="card-title fw-bold mb-1">
-                        {popularSearch.name}
-                      </h6>
-                      <p className="card-text text-muted small">
-                        {popularSearch.location}
-                      </p>
-                    </div>
-                    <div className="card-body text-end">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="orange"
-                        stroke="orange"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="lucide lucide-star-icon lucide-star"
-                      >
-                        <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />
-                      </svg>{" "}
-                      <span className="small">5.0</span>
-                    </div>
-                  </div>
-                </div> */}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <style jsx>{`
+        .square-card {
+          width: 450px;
+          height: 450px;
+          margin: 0 auto;
+          border-radius: 0px;
+          overflow: hidden;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .square-card img {
+          object-fit: cover;
+          width: 100%;
+          height: 100%;
+        }
+
+        .carousel-wrapper {
+          perspective: 1000px;
+          overflow: visible !important;
+        }
+
+        .carousel-wrapper {
+          transform: translateX(-10%);
+        }
+
+        .btn:hover {
+          transform: scale(1.05);
+          transition: transform 0.2s ease;
+        }
+
+        .btn-link:hover {
+          color: #c2185b !important;
+        }
+
+        .card {
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+          transform: translateY(-10px) !important;
+          box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .carousel-item-wrapper {
+          transition: all 0.6s ease-in-out;
+        }
+
+        .carousel-item-wrapper:hover {
+          transform: scale(1.05) !important;
+          z-index: 999 !important;
+        }
+
+        @media (max-width: 991px) {
+          .col-lg-4 {
+            margin-bottom: 2rem;
+          }
+
+          .carousel-wrapper {
+            height: 400px !important;
+          }
+
+          .carousel-item-wrapper {
+            width: 200px !important;
+            margin-left: -20px !important;
+          }
+
+          .display-5 {
+            font-size: 2rem;
+          }
+        }
+
+        @media (max-width: 576px) {
+          .carousel-item-wrapper {
+            width: 180px !important;
+            margin-left: -15px !important;
+          }
+
+          .carousel-track {
+            transform: translateX(-${currentSlide * 120}px) !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };
