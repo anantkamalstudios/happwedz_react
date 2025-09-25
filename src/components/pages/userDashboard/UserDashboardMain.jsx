@@ -54,7 +54,7 @@ import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 import UserDashboardNavbar from "../../layouts/UserDashboardNavbar";
-import MyWedding from "./myWedding/MyWedding";
+import MyWedding from "./mywedding/MyWedding";
 import Vendors from "./vendors/Vendors";
 import Budget from "./budget/Budget";
 import Check from "./checklist/Check";

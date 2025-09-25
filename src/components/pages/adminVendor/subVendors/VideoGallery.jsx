@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState, useRef, useCallback } from "react";
 import { FiX } from "react-icons/fi";
 
-const VideoGallery = () => {
-  const [videos, setVideos] = useState([]);
+const VideoGallery = ({ videos = [], onVideosChange }) => {
+  const [localVideos, setLocalVideos] = useState(videos);
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -39,7 +39,7 @@ const VideoGallery = () => {
           (file) =>
             file.type.startsWith("image/") || file.type.startsWith("video/")
         )
-        .slice(0, 8 - videos.length)
+        .slice(0, 8 - localVideos.length)
         .map((file) => ({
           id: Math.random().toString(36).substr(2, 9),
           file,
@@ -48,27 +48,30 @@ const VideoGallery = () => {
           type: file.type.startsWith("video/") ? "video" : "image",
         }));
 
-      setVideos((prev) => [...prev, ...newFiles]);
+      setLocalVideos((prev) => [...prev, ...newFiles]);
     },
-    [videos]
+    [localVideos]
   );
 
   const handleTitleChange = (id, value) => {
-    setVideos((prev) =>
+    setLocalVideos((prev) =>
       prev.map((img) => (img.id === id ? { ...img, title: value } : img))
     );
   };
 
   const handleRemoveVideo = (id) => {
-    setVideos((prev) => prev.filter((img) => img.id !== id));
+    setLocalVideos((prev) => prev.filter((img) => img.id !== id));
   };
 
-  // Clean up object URLs
-  React.useEffect(() => {
-    return () => {
-      videos.forEach((image) => URL.revokeObjectURL(image.preview));
-    };
+  // Sync down from parent when prop changes
+  useEffect(() => {
+    setLocalVideos(videos || []);
   }, [videos]);
+
+  // Notify parent on change
+  useEffect(() => {
+    onVideosChange && onVideosChange(localVideos);
+  }, [localVideos, onVideosChange]);
 
   return (
     <div className="container my-5">
@@ -82,9 +85,8 @@ const VideoGallery = () => {
 
           {/* Drag & Drop Area */}
           <div
-            className={`border-2 border-dashed rounded-4 p-5 text-center ${
-              isDragging ? "border-primary bg-blue-10" : "border-gray-300"
-            }`}
+            className={`border-2 border-dashed rounded-4 p-5 text-center ${isDragging ? "border-primary bg-blue-10" : "border-gray-300"
+              }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleVideoDrop}
@@ -136,7 +138,7 @@ const VideoGallery = () => {
               style={{
                 background: "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)",
               }}
-              disabled={videos.length >= 4}
+              disabled={localVideos.length >= 4}
             >
               Browse Files
             </button>
@@ -144,7 +146,7 @@ const VideoGallery = () => {
               MP4, WebM up to 50MB (Max 4 videos)
             </p>
 
-            {videos.length >= 4 && (
+            {localVideos.length >= 4 && (
               <div className="mt-3 text-danger">
                 Maximum of 4 videos reached
               </div>
@@ -161,11 +163,11 @@ const VideoGallery = () => {
           />
 
           {/* Preview Section */}
-          {videos.length > 0 && (
+          {localVideos.length > 0 && (
             <div className="mt-5">
               <h4 className="mb-4">Preview Videos</h4>
               <div className="row g-4">
-                {videos.map((video) => (
+                {localVideos.map((video) => (
                   <div key={video.id} className="col-md-3 col-6">
                     <div className="card border-0 shadow-sm h-100">
                       <div className="position-relative">

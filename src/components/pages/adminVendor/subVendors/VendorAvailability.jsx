@@ -1,7 +1,7 @@
 import React from "react";
 import VendorAvailabilityCalendar from "./VendorAvailabilityCalendar";
 
-const VendorAvailability = ({ formData, setFormData }) => {
+const VendorAvailability = ({ formData, setFormData, onSave }) => {
   const handleNestedInputChange = (subSection, field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -87,9 +87,7 @@ const VendorAvailability = ({ formData, setFormData }) => {
           <VendorAvailabilityCalendar />
         </div>
 
-        <button className="btn btn-primary mt-2">
-          Save Availability Details
-        </button>
+        <button className="btn btn-primary mt-2" onClick={onSave}>Save Availability Details</button>
       </div>
     </div>
   );

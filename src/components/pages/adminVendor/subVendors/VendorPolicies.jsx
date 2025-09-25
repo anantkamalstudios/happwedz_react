@@ -1,6 +1,6 @@
 import React from "react";
 
-const VendorPolicies = ({ formData, setFormData }) => {
+const VendorPolicies = ({ formData, setFormData, onSave }) => {
   const paymentTerms = formData.paymentTerms || {
     advancePercent: "",
     modes: [],
@@ -82,7 +82,7 @@ const VendorPolicies = ({ formData, setFormData }) => {
             />
           </div>
         </div>
-        <button className="btn btn-primary mt-2">Save Policies & Terms</button>
+        <button className="btn btn-primary mt-2" onClick={onSave}>Save Policies & Terms</button>
       </div>
     </div>
   );

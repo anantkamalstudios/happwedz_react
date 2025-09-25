@@ -9,6 +9,7 @@ import NotFound from "./components/pages/NotFound";
 import BlogDetails from "./components/pages/BlogDetails";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "./redux/authSlice";
+import { setVendorCredentials } from "./redux/vendorAuthSlice";
 import PrivateRoute from "./components/routes/PrivateRoute";
 import ToastProvider from "./components/layouts/toasts/Toast";
 
@@ -89,6 +90,11 @@ function App() {
     const token = localStorage.getItem("token");
     if (user && token) {
       dispatch(setCredentials({ user: JSON.parse(user), token }));
+    }
+    const vendor = localStorage.getItem("vendor");
+    const vendorToken = localStorage.getItem("vendorToken");
+    if (vendor && vendorToken) {
+      dispatch(setVendorCredentials({ vendor: JSON.parse(vendor), token: vendorToken }));
     }
   }, [dispatch]);
 

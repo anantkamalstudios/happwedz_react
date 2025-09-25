@@ -1,8 +1,20 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+// Hydrate from localStorage so auth persists across refreshes
+let persistedVendor = null;
+let persistedToken = null;
+try {
+  const vendorStr = typeof localStorage !== "undefined" ? localStorage.getItem("vendor") : null;
+  persistedVendor = vendorStr ? JSON.parse(vendorStr) : null;
+  persistedToken = typeof localStorage !== "undefined" ? localStorage.getItem("vendorToken") : null;
+} catch {
+  persistedVendor = null;
+  persistedToken = null;
+}
+
 const initialState = {
-  vendor: null,
-  token: null,
+  vendor: persistedVendor,
+  token: persistedToken,
 };
 
 const vendorAuthSlice = createSlice({

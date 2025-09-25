@@ -4,11 +4,13 @@ import LocationModalWithCategories from "./LocationModalWithCategories";
 import { RiMenuFill } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/authSlice";
+import { vendorLogout } from "../../redux/vendorAuthSlice";
 
 const Header = () => {
   const dispatch = useDispatch();
   const handleLogout = () => {
     dispatch(logout());
+    dispatch(vendorLogout());
   };
 
   const auth = useSelector((state) => state.auth);
@@ -912,7 +914,7 @@ const Header = () => {
                       </li> */}
 
                       {/* Login Dropdown */}
-                      {auth.user || vendorAuth.vendor ? (
+                      {auth?.user || (vendorAuth?.vendor && vendorAuth?.token) ? (
                         <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <button
@@ -965,7 +967,7 @@ const Header = () => {
                           </div>
                         </li>
                       )}
-                      {vendorAuth.vendor &&
+                      {vendorAuth?.vendor && vendorAuth?.token &&
                         (<li className="nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <Link
