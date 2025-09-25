@@ -17,13 +17,11 @@ const FinalLookPage = () => {
   const [isLoadingImage, setIsLoadingImage] = React.useState(false);
 
   React.useEffect(() => {
-    // Prefer URL passed from apply API; otherwise construct from id
     if (processedImageUrlFromState) {
       setFetchedImageUrl(processedImageUrlFromState);
       return;
     }
     if (processedImageId) {
-      // Construct direct image URL; dev proxy will forward /api
       const base = import.meta.env.VITE_API_BASE_URL || "/api";
       const url = `${base}/images/${processedImageId}`;
       setFetchedImageUrl(url);
@@ -33,7 +31,7 @@ const FinalLookPage = () => {
   const profileImage =
     fetchedImageUrl ||
     selectedImage ||
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='300' viewBox='0 0 200 300'%3E%3Crect width='200' height='300' fill='%23fce4ec'/%3E%3Ccircle cx='100' cy='100' r='30' fill='%23ed1173'/%3E%3Cpath d='M70 130 Q100 160 130 130' stroke='%23ed1173' strokeWidth='3' fill='none'/%3E%3C/svg%3E";
+    "https://i.pinimg.com/1200x/44/78/12/44781204ca8522a5c337224c9fdee36d.jpg";
 
   const colors = {
     primaryPink: "#ed1173",
@@ -59,13 +57,6 @@ const FinalLookPage = () => {
           </p>
         </div>
 
-        <div className="message-container">
-          <div className="message-title">Looking Gorgeous! ✨</div>
-          <div className="message-text">
-            Your style choices perfectly complement your features
-          </div>
-        </div>
-
         <div className="final-look-content">
           <div className="final-image-container">
             <div className="final-image">
@@ -75,7 +66,7 @@ const FinalLookPage = () => {
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src =
-                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='300' viewBox='0 0 200 300'%3E%3Crect width='200' height='300' fill='%23fce4ec'/%3E%3Ccircle cx='100' cy='100' r='30' fill='%23ed1173'/%3E%3Cpath d='M70 130 Q100 160 130 130' stroke='%23ed1173' strokeWidth='3' fill='none'/%3E%3C/svg%3E";
+                    " width='200' height='300' viewBox='0 0 200 300'%3E%3Crect width='200' height='300' fill='%23fce4ec'/%3E%3Ccircle cx='100' cy='100' r='30' fill='%23ed1173'/%3E%3Cpath d='M70 130 Q100 160 130 130' stroke='%23ed1173' strokeWidth='3' fill='none'/%3E%3C/svg%3E";
                 }}
               />
             </div>
@@ -206,13 +197,12 @@ const FinalLookPage = () => {
 
         .final-image {
           width: 100%;
-          max-width: 450px;
-          height: 380px;
+          /* max-width: 450px; */
+          /* height: 380px; */
           border-radius: 15px;
           overflow: hidden;
           box-shadow: 0 12px 30px rgba(221, 122, 167, 0.2);
-          border: 4px solid ${colors.lightPink};
-          margin-bottom: 15px;
+          border: 1px solid #fff;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -231,7 +221,6 @@ const FinalLookPage = () => {
           border-radius: 15px;
           padding: 18px;
           border: 2px solid ${colors.mediumPink};
-          max-height: 380px;
           overflow-y: auto;
         }
 

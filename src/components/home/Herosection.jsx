@@ -66,42 +66,33 @@ const Herosection = () => {
 
         <Row className="justify-content-center mt-4">
           <Col xs={12} md={10}>
-            <Form className="search-form d-flex flex-column flex-sm-row gap-3">
-              <Form.Group className="flex-fill m-0">
-                <Form.Select
-                  aria-label="Select Category"
-                  className="form-control-lg"
-                  style={{ fontSize: "14px", padding: "0.5rem 0.75rem" }}
-                >
-                  {categories.map((c) => (
-                    <option key={c.value} value={c.value}>
-                      {c.label}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-
-              <Form.Group className="flex-fill m-0">
-                <Form.Select
-                  aria-label="Select Location"
-                  className="form-control-lg"
-                  style={{ fontSize: "14px", padding: "0.5rem 0.75rem" }}
-                >
-                  {locations.map((l) => (
-                    <option key={l.value} value={l.value}>
-                      {l.label}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-
-              <Button
-                variant="none"
-                className="btn-find px-4 fw-semibold"
-                type="submit"
-              >
-                FIND VENDOR
-              </Button>
+            <Form className="search-form">
+              <Row className="g-3">
+                <Col xs={12} md={10}>
+                  <Form.Group className="m-0">
+                    <Form.Select
+                      aria-label="Select Category"
+                      className="form-control-lg"
+                      style={{ fontSize: "14px", padding: "0.5rem 0.75rem" }}
+                    >
+                      {categories.map((c) => (
+                        <option key={c.value} value={c.value}>
+                          {c.label}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+                <Col xs={12} md={2} className="d-grid">
+                  <Button
+                    variant="none"
+                    className="btn-find fw-semibold"
+                    type="submit"
+                  >
+                    FIND VENDOR
+                  </Button>
+                </Col>
+              </Row>
             </Form>
           </Col>
         </Row>

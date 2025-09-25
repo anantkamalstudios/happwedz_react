@@ -5,7 +5,6 @@ import MatrimonialLayout from "./components/layouts/MatrimonialLayout";
 import ShimmerLoader from "./components/ui/ShimmerLoader";
 import "./App.css";
 
-// Layout components (can be eagerly loaded)
 import NotFound from "./components/pages/NotFound";
 import BlogDetails from "./components/pages/BlogDetails";
 import { useDispatch } from "react-redux";
@@ -13,7 +12,6 @@ import { setCredentials } from "./redux/authSlice";
 import PrivateRoute from "./components/routes/PrivateRoute";
 import ToastProvider from "./components/layouts/toasts/Toast";
 
-// Lazy loaded pages
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
 const CustomerRegister = lazy(() =>
@@ -66,6 +64,12 @@ const ProfileImageSelector = lazy(() =>
 );
 const FinalLookPage = lazy(() => import("./components/pages/FinalLookPage"));
 const TryLanding = lazy(() => import("./components/pages/TryLanding"));
+const BrideMakeupChoose = lazy(() =>
+  import("./components/pages/BrideMakeupChoose")
+);
+const TryMakeupLanding = lazy(() =>
+  import("./components/pages/TryMakeupLanding")
+);
 const UploadSelfiePage = lazy(() =>
   import("./components/pages/UploadSelfiePage")
 );
@@ -109,8 +113,10 @@ function App() {
             <Route path="/terms" element={<TermsCondition />} />
             {/* New Try flow */}
             <Route path="/try" element={<TryLanding />} />
+            <Route path="/try/bride" element={<BrideMakeupChoose />} />
             <Route path="/try/upload" element={<UploadSelfiePage />} />
             <Route path="/try/filters" element={<FiltersPage />} />
+            <Route path="/try/makeup" element={<TryMakeupLanding />} />
             {/* Legacy (optionally keep for direct access) */}
             {/* <Route path="/try-old" element={<ProfileImageSelector />} /> */}
             <Route path="/blog" element={<Blog />} />

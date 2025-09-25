@@ -23,12 +23,6 @@ const MansoryImageSection = () => {
       category: "Photography",
     },
     {
-      id: 3,
-      url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=500",
-      title: "Wedding Decor",
-      category: "Decoration",
-    },
-    {
       id: 4,
       url: "https://images.unsplash.com/photo-1546032996-6dfacbacbf3f?w=500",
       title: "Bridal Makeup",
@@ -68,6 +62,14 @@ const MansoryImageSection = () => {
     500: 1,
   };
 
+  const fillLastRow = (images, columns) => {
+    const remainder = images.length % columns;
+    if (remainder === 0) return images;
+    const dummyCount = columns - remainder;
+    const dummies = Array(dummyCount).fill({ dummy: true });
+    return [...images, ...dummies];
+  };
+
   return (
     <section className="masonry-section py-5">
       <Container>
@@ -100,22 +102,26 @@ const MansoryImageSection = () => {
             className="masonry-grid"
             columnClassName="masonry-grid_column"
           >
-            {images.map((image, index) => (
-              <div className="masonry-item" key={`${image.id}-${index}`}>
-                <div className="image-card">
-                  <img
-                    src={image.url}
-                    alt={image.title}
-                    loading="lazy"
-                    className="masonry-image"
-                  />
-                  <div className="image-overlay">
-                    <h5 className="image-title">{image.title}</h5>
-                    <span className="image-category">{image.category}</span>
+            {fillLastRow(images, 4).map((image, index) =>
+              image.dummy ? (
+                <div key={`dummy-${index}`} style={{ visibility: "hidden" }} />
+              ) : (
+                <div className="masonry-item" key={`${image.id}-${index}`}>
+                  <div className="image-card">
+                    <img
+                      src={image.url}
+                      alt={image.title}
+                      loading="lazy"
+                      className="masonry-image"
+                    />
+                    <div className="image-overlay">
+                      <h5 className="image-title">{image.title}</h5>
+                      <span className="image-category">{image.category}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            )}
           </Masonry>
         </InfiniteScroll>
       </Container>

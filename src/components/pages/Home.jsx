@@ -14,7 +14,10 @@ import AppDownloadSection from "../home/AppDownloadSection";
 import MansoryImageSection from "../home/MansoryImageSection";
 import CtaPanel from "../home/CtaPanel";
 import logo from "../../../public/happywed_white.png";
+import image from "../../../public/images/home/try.png";
+import einviteImage from "../../../public/images/home/einvite.png";
 import MainTestimonial from "../home/MainTestimonial";
+import MetroCities from "../home/MetroCities";
 const Home = () => {
   return (
     <>
@@ -23,36 +26,48 @@ const Home = () => {
       <WeddingCategories />
       <MansoryImageSection />
       <CtaPanel
-        img={logo}
-        title="Create Stunning Digital Wedding Invitations That Wow"
-        link="/e-invites"
-        subtitle="Design Beautiful E-Invites with Our Easy-to-Use Editor"
-        btnName="Create Your E-Invite"
+        logo={logo}
+        img={image}
+        heading="Design Studio"
+        subHeading="Try Virtual Makeup & Grooming Looks for Your Big Day"
+        link="/try"
+        title="Create Your Look !"
+        subtitle="Experience How You'll Look on Your Wedding Day with AI-Powered Virtual Makeover"
+        btnName="Try Virtual Look"
       />
       <VenueSlider />
       <HowItWorksSection />
       <FeaturedVendorsSection />
       <CtaPanel
-        img={logo}
-        title="Find Your Perfect Match with Our Trusted Matrimonial Services"
-        link="/matrimonial"
-        subtitle="Bringing Hearts Together for a Lifetime of Happiness"
-        btnName="Start Your Journey"
+        logo={logo}
+        img={einviteImage}
+        heading="Digital Wedding Invitations"
+        subHeading="Personalize & Send Invites Instantly"
+        title="Create Stunning Digital Wedding Invitations That Wow"
+        subtitle="Design beautiful e-invites using our easy-to-use editor. Customize templates, add your personal touch, and send invites digitally to your guests in minutes."
+        link="/e-invites"
+        btnName="Create Your E-Invite"
       />
+
       <TestimonialsSection />
       <RealWeddings />
-      <CtaPanel
-        img={logo}
-        title="Try Virtual Makeup & Grooming Looks for Your Big Day"
-        link="/try"
-        subtitle="Experience How You'll Look on Your Wedding Day with AI-Powered Virtual Makeover"
-        btnName="Try Virtual Look"
-      />
+      {/* <CtaPanel
+        logo={logo}
+        img={image}
+        heading="Matrimonial Services"
+        subHeading="Connecting Hearts Across Communities"
+        title="Find Your Perfect Match with Our Trusted Matrimonial Services"
+        subtitle="Bringing Hearts Together for a Lifetime of Happiness. Explore verified profiles, personalized matches, and start your journey towards a meaningful relationship."
+        link="/matrimonial"
+        btnName="Start Your Journey"
+      /> */}
       <PlanningToolsCTA />
       <MainTestimonial />
       <BlogInspirationTeasers />
       {/* <NewsletterSection /> */}
       <AppDownloadSection />
+
+      <MetroCities />
     </>
   );
 };

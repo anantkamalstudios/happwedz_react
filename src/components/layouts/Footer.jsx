@@ -4,12 +4,11 @@ import React from "react";
 const Footer = () => {
   return (
     <footer
-      className="footer position-relative pt-0 mt-5"
+      className="footer position-relative pt-0"
       style={{
         background:
           "linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f1f3f4 100%)",
         color: "#222",
-        marginTop: "3rem",
         position: "relative",
         overflow: "hidden",
       }}
@@ -113,7 +112,7 @@ const Footer = () => {
             <h6 className="footer-title">Company</h6>
             <ul className="footer-list">
               <li>
-                <a href="#about">About WedMeGood</a>
+                <a href="#about">About HappyWedz</a>
               </li>
               <li>
                 <a href="#careers">Careers</a>

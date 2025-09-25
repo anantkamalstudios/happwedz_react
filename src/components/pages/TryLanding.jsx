@@ -1,44 +1,174 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { FaBolt, FaPalette, FaMobileAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const TryLanding = () => {
+  const [showModal, setShowModal] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const navigate = useNavigate();
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
 
-  const bgUrl =
-    "url('https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1600&auto=format&fit=crop')";
+  const handleModalClose = () => {
+    setShowModal(false);
+  };
+
+  const handleCategorySelect = (category) => {
+    setShowModal(false);
+    console.log(`Navigating to: /try/upload/${category}`);
+  };
 
   return (
-    <div className="container-fluid p-0" style={{ minHeight: "80vh" }}>
-      <div
-        className="d-flex align-items-center justify-content-center text-center"
-        style={{
-          minHeight: "80vh",
-          backgroundImage: bgUrl,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          position: "relative",
-        }}
-      >
+    <>
+      <div className="try-first-page-container">
+        {/* Hero Section */}
         <div
-          className="position-absolute top-0 start-0 w-100 h-100"
-          style={{ background: "rgba(0,0,0,0.45)" }}
-        />
+          className={`try-first-page-hero ${
+            isLoaded ? "try-first-page-loaded" : ""
+          }`}
+        >
+          <div className="try-first-page-hero-overlay"></div>
+          <div className="try-first-page-hero-particles">
+            <div className="try-first-page-particle"></div>
+            <div className="try-first-page-particle"></div>
+            <div className="try-first-page-particle"></div>
+            <div className="try-first-page-particle"></div>
+            <div className="try-first-page-particle"></div>
+          </div>
 
-        <div className="position-relative text-white px-3">
-          <h1 className="display-5 fw-semibold mb-3">Create Your Look</h1>
-          <p className="lead mb-4" style={{ maxWidth: 720 }}>
-            Elevate your style and experiment with virtual makeup in seconds.
-            Try foundations, lipsticks, eyeshadows and more — all on your photo.
-          </p>
-          <button
-            className="btn btn-lg btn-primary px-4"
-            onClick={() => navigate("/try/upload")}
-          >
-            Get Started
-          </button>
+          <div className="try-first-page-hero-content">
+            <div className="try-first-page-content-wrapper">
+              <h1 className="try-first-page-title">
+                Transform Your Look with
+                <span className="try-first-page-gradient-text"> AI Magic</span>
+              </h1>
+              <p className="try-first-page-subtitle">
+                Experience the future of beauty with our advanced virtual makeup
+                technology. Try thousands of looks instantly and discover your
+                perfect style.
+              </p>
+              <div className="try-first-page-features">
+                <div className="try-first-page-feature">
+                  <FaBolt className="try-first-page-icon" />
+                  <span>Instant Results</span>
+                </div>
+                <div className="try-first-page-feature">
+                  <FaPalette className="try-first-page-icon" />
+                  <span>Professional Quality</span>
+                </div>
+                <div className="try-first-page-feature">
+                  <FaMobileAlt className="try-first-page-icon" />
+                  <span>Mobile Friendly</span>
+                </div>
+              </div>
+              <button
+                className="try-first-page-cta-button"
+                onClick={() => setShowModal(true)}
+              >
+                <span>Start Your Transformation</span>
+                <i className="try-first-page-button-icon">→</i>
+              </button>
+            </div>
+          </div>
         </div>
+
+        {/* Enhanced Modal */}
+        {showModal && (
+          <div
+            className="try-first-page-modal-backdrop"
+            onClick={handleModalClose}
+          >
+            <div
+              className="try-first-page-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="try-first-page-modal-header">
+                <h2>Choose Your Style</h2>
+                <p>Select a category to start your virtual makeover</p>
+
+                <button
+                  className="try-first-page-modal-close"
+                  onClick={handleModalClose}
+                >
+                  <span>×</span>
+                </button>
+              </div>
+
+              <div className="try-first-page-modal-content">
+                <div className="row g-4 text-center">
+                  {/* Bride */}
+                  <div className="col-md-4">
+                    <div
+                      role="button"
+                      onClick={() => navigate("/try/bride")}
+                      className="d-flex flex-column align-items-center"
+                    >
+                      <img
+                        src="/images/try/bride.jpg"
+                        alt="Bride"
+                        className="rounded-5"
+                        style={{
+                          width: "100%",
+                          height: "280px",
+                          objectFit: "cover",
+                        }}
+                      />
+
+                      <h4 className="mt-3 fw-semibold">Bride</h4>
+                    </div>
+                  </div>
+
+                  {/* Groom */}
+                  <div className="col-md-4">
+                    <div
+                      role="button"
+                      onClick={() => handleCategorySelect("groom")}
+                      className="d-flex flex-column align-items-center"
+                    >
+                      <img
+                        src="/images/try/groome.jpg"
+                        alt="Bride"
+                        className="rounded-5"
+                        style={{
+                          width: "100%",
+                          height: "280px",
+                          objectFit: "cover",
+                        }}
+                      />
+
+                      <h4 className="mt-3 fw-semibold">Groom</h4>
+                    </div>
+                  </div>
+
+                  {/* Other */}
+                  <div className="col-md-4">
+                    <div
+                      role="button"
+                      onClick={() => handleCategorySelect("other")}
+                      className="d-flex flex-column align-items-center"
+                    >
+                      <img
+                        src="/images/try/other.jpg"
+                        alt="Bride"
+                        className="rounded-5"
+                        style={{
+                          width: "100%",
+                          height: "280px",
+                          objectFit: "cover",
+                        }}
+                      />
+
+                      <h4 className="mt-3 fw-semibold">Other</h4>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 };
 

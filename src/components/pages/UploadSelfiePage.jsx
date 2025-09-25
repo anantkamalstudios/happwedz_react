@@ -53,7 +53,6 @@ const UploadSelfiePage = () => {
       try {
         const res = await beautyApi.uploadImage(file, "ORIGINAL");
         const imageId = res?.data?.id || res?.id || res?.image_id;
-        // Store only ID to avoid storage quota issues
         sessionStorage.setItem("try_uploaded_image_id", imageId);
         setShowGuide(false);
         navigate("/try/filters");
@@ -148,46 +147,36 @@ const UploadSelfiePage = () => {
           <p className="text-muted">We will guide you for best results</p>
         </div>
 
-        <div className="col-12 col-md-6">
-          <div className="border rounded p-4 h-100 d-flex flex-column align-items-center justify-content-center text-center">
-            <div className="mb-3">
-              <img
-                src="/images/npProfile.png"
-                alt="placeholder"
-                style={{ width: 96, height: 96 }}
-              />
-            </div>
-            <h5 className="mb-2">Upload Photo</h5>
-            <p className="text-muted mb-3">Pick a clear, front-facing image</p>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="d-none"
-              onChange={handleFile}
+        <div className="container py-5 d-flex flex-column align-items-center justify-content-center text-center">
+          <div className="mb-4">
+            <img
+              src="/images/try/upload-default.png"
+              alt="placeholder"
+              className="rounded-5"
+              style={{ objectFit: "cover" }}
             />
-            <button className="btn btn-primary" onClick={handlePick}>
-              Choose File
-            </button>
           </div>
-        </div>
 
-        <div className="col-12 col-md-6">
-          <div className="border rounded p-4 h-100 text-center">
-            <h5 className="mb-2">Take Selfie</h5>
-            <p className="text-muted mb-3">Use your device camera</p>
+          <div className="d-flex gap-3 flex-column flex-sm-row justify-content-center">
+            <button className="btn btn-primary px-4" onClick={handlePick}>
+              Upload Image
+            </button>
             {!isCameraReady ? (
-              <button className="btn btn-outline-primary" onClick={startCamera}>
-                Open Camera
+              <button
+                className="btn btn-outline-primary px-4"
+                onClick={startCamera}
+              >
+                Selfie Mode
               </button>
             ) : (
-              <div className="d-flex flex-column align-items-center">
+              <div className="d-flex flex-column align-items-center w-100">
                 <video
                   ref={videoRef}
                   autoPlay
                   playsInline
                   muted
-                  style={{ width: "100%", borderRadius: 8 }}
+                  className="rounded-3"
+                  style={{ width: "100%", maxWidth: 320 }}
                 />
                 <div className="mt-3 d-flex gap-2">
                   <button className="btn btn-secondary" onClick={stopCamera}>
@@ -201,12 +190,23 @@ const UploadSelfiePage = () => {
                     {countdown ? countdown : "Capture"}
                   </button>
                 </div>
+                {cameraError && (
+                  <div className="alert alert-danger mt-3 w-100">
+                    {cameraError}
+                  </div>
+                )}
               </div>
             )}
-            {cameraError && (
-              <div className="alert alert-danger mt-3">{cameraError}</div>
-            )}
           </div>
+
+          {/* Hidden file input */}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="d-none"
+            onChange={handleFile}
+          />
         </div>
       </div>
 
@@ -222,7 +222,12 @@ const UploadSelfiePage = () => {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Guidelines</h5>
+                <div className="d-flex flex-column">
+                  <h5 className="modal-title text-danger">Capture Your Face</h5>
+                  <p className="modal-title">
+                    For accurate results, please follow these guidelines:
+                  </p>
+                </div>
                 <button
                   type="button"
                   className="btn-close"
@@ -230,28 +235,81 @@ const UploadSelfiePage = () => {
                 ></button>
               </div>
               <div className="modal-body">
-                <ul className="list-unstyled mb-3">
-                  <li className="mb-2">I. Look straight at the camera</li>
-                  <li className="mb-2">II. Put hair back</li>
-                  <li className="mb-2">III. Remove glasses</li>
-                  <li>IV. Plain background</li>
+                <ul className="list-unstyled mb-4">
+                  <li className="d-flex align-items-center mb-3 py-2">
+                    <img
+                      src="/images/try/staightFace.png"
+                      alt="Look straight"
+                      style={{
+                        width: 70,
+                        height: 70,
+                        objectFit: "contain",
+                        border: "1px solid #ddd",
+                        borderRadius: "10px",
+                        padding: 4,
+                        marginRight: 12,
+                      }}
+                    />
+                    <span>Look straight at the camera</span>
+                  </li>
+                  <li className="d-flex align-items-center mb-3 py-2">
+                    <img
+                      src="/images/try/putHairBack.png"
+                      alt="Hair back"
+                      style={{
+                        width: 70,
+                        height: 70,
+                        objectFit: "contain",
+                        border: "1px solid #ddd",
+                        borderRadius: "10px",
+                        padding: 4,
+                        marginRight: 12,
+                      }}
+                    />
+                    <span>Put hair back</span>
+                  </li>
+                  <li className="d-flex align-items-center mb-3 py-2">
+                    <img
+                      src="/images/try/removeGlasses.png"
+                      alt="Remove glasses"
+                      style={{
+                        width: 70,
+                        height: 70,
+                        objectFit: "contain",
+                        border: "1px solid #ddd",
+                        borderRadius: "10px",
+                        padding: 4,
+                        marginRight: 12,
+                      }}
+                    />
+                    <span>Remove glasses</span>
+                  </li>
+                  <li className="d-flex align-items-center py-2">
+                    <img
+                      src="/images/try/planeBg.png"
+                      alt="Plain background"
+                      style={{
+                        width: 70,
+                        height: 70,
+                        objectFit: "contain",
+                        border: "1px solid #ddd",
+                        borderRadius: "10px",
+                        padding: 4,
+                        marginRight: 12,
+                      }}
+                    />
+                    <span>Plain background</span>
+                  </li>
                 </ul>
+
                 <div className="d-grid">
                   <button
-                    className="btn btn-primary"
+                    className="btn btn-primary w-auto"
                     onClick={triggerModalUpload}
                   >
                     Upload Photo
                   </button>
                 </div>
-              </div>
-              <div className="modal-footer">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setShowGuide(false)}
-                >
-                  Cancel
-                </button>
               </div>
             </div>
           </div>

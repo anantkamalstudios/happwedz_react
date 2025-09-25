@@ -53,10 +53,11 @@ class BeautyApiService {
     return response.json().catch(() => ({}));
   }
 
-  // GET products by category (e.g., category=Makeup)
-  async getFilteredProducts(category) {
+  // GET products by category (e.g., category=MAKEUP) and optional detailed_category
+  async getFilteredProducts(category, detailedCategory) {
     const qs = new URLSearchParams();
     if (category) qs.set("category", category);
+    if (detailedCategory) qs.set("detailed_category", detailedCategory);
     return this.makeJsonRequest(`/products/filter_products?${qs.toString()}`, {
       method: "GET",
     });

@@ -36,9 +36,9 @@ const PlanningToolsCTA = () => {
                 data-aos="fade-up"
                 data-aos-delay={idx * 100}
               >
-                <div className="tool-card h-100 text-center p-5 rounded-4 bg-white position-relative overflow-hidden">
+                <div className="tool-card h-100 text-center p-5 rounded-4 bg-white position-relative shadow-lg overflow-hidden">
                   <div className="decorative-border"></div>
-                  <div className="icon-wrapper d-inline-flex align-items-center justify-content-center rounded-circle mb-4 bg-light">
+                  <div className="tool-card-icon-wrapper d-inline-flex align-items-center justify-content-center rounded-circle mb-4">
                     <img
                       loading="lazy"
                       src={tool.icon}

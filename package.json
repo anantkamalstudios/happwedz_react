@@ -29,6 +29,7 @@
     "react": "^19.1.0",
     "react-bootstrap": "^2.10.10",
     "react-chartjs-2": "^5.3.0",
+    "react-compare-image": "^3.5.9",
     "react-datepicker": "^8.7.0",
     "react-dom": "^19.1.0",
     "react-google-autocomplete": "^2.7.5",
