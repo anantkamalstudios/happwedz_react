@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 
 import { useSelector } from "react-redux";
 import { setCredentials } from "../../redux/authSlice";
+import { useToast } from "../layouts/toasts/Toast";
 
 const CustomerRegister = () => {
   const [formData, setFormData] = useState({
@@ -29,6 +30,7 @@ const CustomerRegister = () => {
   const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
   const navigate = useNavigate();
+  const { appToast } = useToast();
   const auth = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -69,8 +71,17 @@ const CustomerRegister = () => {
     if (formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
     if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
+    else if (!/^\d{10}$/.test(formData.phone))
+      newErrors.phone = "Phone number must be exactly 10 digits";
     if (!formData.weddingDate)
       newErrors.weddingDate = "Wedding date is required";
+    else {
+      const dateVal = new Date(formData.weddingDate);
+      const year = dateVal.getFullYear();
+      if (!/^\d{4}$/.test(String(year))) {
+        newErrors.weddingDate = "Year must be 4 digits";
+      }
+    }
     if (!formData.city) newErrors.city = "City is required";
     if (!formData.country) newErrors.country = "Country is required";
     if (!formData.weddingVenue.trim())
@@ -117,7 +128,10 @@ const CustomerRegister = () => {
         if (data.success && data.user && data.token) {
           dispatch(setCredentials({ user: data.user, token: data.token }));
 
-          alert(data.message || "Registration successful! Please login.");
+          appToast(
+            data.message || "Registration successful! Please login.",
+            "success"
+          );
           setFormData({
             name: "",
             email: "",
@@ -133,10 +147,10 @@ const CustomerRegister = () => {
           });
           navigate("/user-dashboard");
         } else {
-          alert(data.message || "Registration failed");
+          appToast(data.message || "Registration failed", "error");
         }
       } catch (error) {
-        alert("Error: " + error.message);
+        appToast(error.message, "error");
       }
 
       setIsSubmitting(false);
@@ -182,8 +196,9 @@ const CustomerRegister = () => {
                   <input
                     type="text"
                     name="name"
-                    className={`form-control ${errors.name ? "is-invalid" : ""
-                      }`}
+                    className={`form-control ${
+                      errors.name ? "is-invalid" : ""
+                    }`}
                     placeholder="Full Name"
                     value={formData.name}
                     onChange={handleChange}
@@ -201,8 +216,9 @@ const CustomerRegister = () => {
                   <input
                     type="email"
                     name="email"
-                    className={`form-control ${errors.email ? "is-invalid" : ""
-                      }`}
+                    className={`form-control ${
+                      errors.email ? "is-invalid" : ""
+                    }`}
                     placeholder="Email"
                     value={formData.email}
                     onChange={handleChange}
@@ -220,8 +236,9 @@ const CustomerRegister = () => {
                   <input
                     type="password"
                     name="password"
-                    className={`form-control ${errors.password ? "is-invalid" : ""
-                      }`}
+                    className={`form-control ${
+                      errors.password ? "is-invalid" : ""
+                    }`}
                     placeholder="Password"
                     value={formData.password}
                     onChange={handleChange}
@@ -242,11 +259,15 @@ const CustomerRegister = () => {
                   <input
                     type="tel"
                     name="phone"
-                    className={`form-control ${errors.phone ? "is-invalid" : ""
-                      }`}
+                    className={`form-control ${
+                      errors.phone ? "is-invalid" : ""
+                    }`}
                     placeholder="Phone"
                     value={formData.phone}
                     onChange={handleChange}
+                    inputMode="numeric"
+                    maxLength={10}
+                    pattern="\\d{10}"
                   />
                   <label>Phone</label>
                   {errors.phone && (
@@ -261,8 +282,9 @@ const CustomerRegister = () => {
                   <input
                     type="text"
                     name="weddingVenue"
-                    className={`form-control ${errors.weddingVenue ? "is-invalid" : ""
-                      }`}
+                    className={`form-control ${
+                      errors.weddingVenue ? "is-invalid" : ""
+                    }`}
                     placeholder="Wedding Venue"
                     value={formData.weddingVenue}
                     onChange={handleChange}
@@ -281,8 +303,9 @@ const CustomerRegister = () => {
                 <div className="form-floating">
                   <select
                     name="country"
-                    className={`form-select ${errors.country ? "is-invalid" : ""
-                      }`}
+                    className={`form-select ${
+                      errors.country ? "is-invalid" : ""
+                    }`}
                     value={formData.country}
                     onChange={handleChange}
                   >
@@ -332,8 +355,9 @@ const CustomerRegister = () => {
                   <input
                     type="date"
                     name="weddingDate"
-                    className={`form-control ${errors.weddingDate ? "is-invalid" : ""
-                      }`}
+                    className={`form-control ${
+                      errors.weddingDate ? "is-invalid" : ""
+                    }`}
                     value={formData.weddingDate}
                     onChange={handleChange}
                   />

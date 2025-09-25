@@ -83,7 +83,11 @@ const LocationModalWithAPI = () => {
 
   return (
     <>
-      <Button variant="outline-light" onClick={() => setShow(true)}>
+      <Button
+        variant="outline-light"
+        className="border-danger rounded-0 text-dark"
+        onClick={() => setShow(true)}
+      >
         Select Location
       </Button>
 

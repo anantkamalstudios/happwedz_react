@@ -6,19 +6,20 @@ import { useDispatch } from "react-redux";
 import { setCredentials } from "../../redux/authSlice";
 import { auth, provider, signInWithPopup } from "../../firebase";
 import { FaGoogle } from "react-icons/fa";
+import { useToast } from "../layouts/toasts/Toast";
 
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+  const { addToast } = useToast();
 
   const dispatch = useDispatch();
   const { login, loading } = useUser();
 
   const handleGoogleLogin = async () => {
     try {
-      // Sign in with Firebase Google
       const result = await signInWithPopup(auth, provider);
 
       const user = {
@@ -33,11 +34,10 @@ const CustomerLogin = () => {
       dispatch(setCredentials({ user, token }));
 
       console.log("Google user saved in Redux:", user);
-      alert("Login successful!");
+      addToast("Login successful!", "success");
       navigate("/user-dashboard", { replace: true });
     } catch (error) {
-      console.error("Google login error:", error.message);
-      alert("Google login failed: " + error.message);
+      addToast("Google login failed: " + error.message, "danger");
     }
   };
 
@@ -60,10 +60,10 @@ const CustomerLogin = () => {
       } else if (response.user) {
         dispatch(setCredentials({ user: response.user, token: null }));
       }
-      alert("Login successful!");
+      addToast("Login successful!", "success");
       navigate("/user-dashboard", { replace: true });
     } else {
-      alert(response.message || "Login failed");
+      addToast(response.message || "Login failed", "danger");
     }
   };
 
@@ -95,7 +95,7 @@ const CustomerLogin = () => {
         <div className="col-lg-6 bg-white p-4 p-md-5 d-flex flex-column justify-content-center">
           <div className="text-center mb-4">
             <h2 className="fw-light mb-2" style={{ color: "#8a5a76" }}>
-              Welcome to <span className="gold-text">HappyWedz</span>
+              Welcome to <span className="primary-text fw-bold">HappyWedz</span>
             </h2>
             <p className="text-muted">
               Sign in to access your wedding planning dashboard
@@ -153,7 +153,6 @@ const CustomerLogin = () => {
               {loading ? "Signing In..." : "Sign In"}
             </Button>
           </Form>
-
 
           <button
             className="btn btn-light btn-lg w-100 d-flex align-items-center justify-content-center shadow-sm border rounded-pill px-4 py-2 mt-5"

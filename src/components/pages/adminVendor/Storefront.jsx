@@ -311,6 +311,7 @@ const Storefront = () => {
       label: "Policies & Terms",
       icon: <HiOutlineDocument size={20} />,
     },
+    { id: "promotions", label: "Promotions", icon: <CiBullhorn size={20} /> },
     {
       id: "vendor-availability",
       label: "Availability & Slots",
