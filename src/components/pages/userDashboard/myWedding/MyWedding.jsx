@@ -415,13 +415,7 @@
 
 // export default MyWedding;
 import React, { useState, useEffect } from "react";
-import {
-  CheckCircle,
-  Clock,
-  Users,
-  DollarSign,
-  Plus,
-} from "lucide-react";
+import { CheckCircle, Clock, Users, DollarSign, Plus } from "lucide-react";
 import { MdDinnerDining } from "react-icons/md";
 import { BsTruck } from "react-icons/bs";
 import { TbCards } from "react-icons/tb";
@@ -442,11 +436,41 @@ const MyWedding = () => {
   const [showAll, setShowAll] = useState(false);
 
   const upcomingTasks = [
-    { id: 0, task: "Book wedding venue", deadline: "2 weeks left", priority: "high", completed: true },
-    { id: 1, task: "Send wedding invitations", deadline: "1 week left", priority: "high", completed: false },
-    { id: 2, task: "Final dress fitting", deadline: "3 days left", priority: "medium", completed: true },
-    { id: 3, task: "Confirm catering menu", deadline: "5 days left", priority: "medium", completed: false },
-    { id: 4, task: "Wedding rehearsal", deadline: "1 day left", priority: "low", completed: false },
+    {
+      id: 0,
+      task: "Book wedding venue",
+      deadline: "2 weeks left",
+      priority: "high",
+      completed: true,
+    },
+    {
+      id: 1,
+      task: "Send wedding invitations",
+      deadline: "1 week left",
+      priority: "high",
+      completed: false,
+    },
+    {
+      id: 2,
+      task: "Final dress fitting",
+      deadline: "3 days left",
+      priority: "medium",
+      completed: true,
+    },
+    {
+      id: 3,
+      task: "Confirm catering menu",
+      deadline: "5 days left",
+      priority: "medium",
+      completed: false,
+    },
+    {
+      id: 4,
+      task: "Wedding rehearsal",
+      deadline: "1 day left",
+      priority: "low",
+      completed: false,
+    },
   ];
 
   const guestStats = {
@@ -470,7 +494,10 @@ const MyWedding = () => {
   ];
 
   const toSlug = (text) =>
-    text?.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "") || "";
+    text
+      ?.toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9\-]/g, "") || "";
 
   // Fetch categories from API
   useEffect(() => {
@@ -508,11 +535,24 @@ const MyWedding = () => {
   const progressPercentage = (completedTasksCount / upcomingTasks.length) * 100;
 
   const toggleShowAll = () => setShowAll(!showAll);
-  const displayedCategories = showAll ? vendorCategories : vendorCategories.slice(0, 6);
+  const displayedCategories = showAll
+    ? vendorCategories
+    : vendorCategories.slice(0, 6);
 
   return (
     <div className="wedding-dashboard">
       <div className="container py-4">
+        {/* Header Section */}
+        {/* <div className="row mb-4">
+          <div className="col-12">
+            <div className="dashboard-header">
+              <h1 className="dashboard-title">Your Wedding Planning Journey</h1>
+              <p className="dashboard-subtitle">
+                Find the venue for your ceremonies and Book all your vendors
+              </p>
+            </div>
+          </div>
+        </div> */}
 
         {/* Vendor Categories */}
         <div className="row mb-5">
@@ -523,7 +563,9 @@ const MyWedding = () => {
                 <div
                   key={index}
                   className="col-lg-4 col-md-6 mb-3"
-                  onClick={() => { window.location.href = `/vendors/${toSlug(category.title)}`; }}
+                  onClick={() => {
+                    window.location.href = `/vendors/${toSlug(category.title)}`;
+                  }}
                   style={{ cursor: "pointer" }}
                 >
                   <div className="vendor-card">
@@ -531,7 +573,9 @@ const MyWedding = () => {
                     <div className="vendor-content">
                       <h5 className="vendor-title">{category.title}</h5>
                       <p className="vendor-subtitle">{category.subtitle}</p>
-                      <span className="vendor-count">{category.count} available</span>
+                      <span className="vendor-count">
+                        {category.count} available
+                      </span>
                     </div>
                     <div className="vendor-action">
                       <Link
@@ -548,7 +592,10 @@ const MyWedding = () => {
             </div>
             {vendorCategories.length > 6 && (
               <div className="show-more-container text-center mt-3">
-                <button className="show-more-btn btn btn-primary" onClick={toggleShowAll}>
+                <button
+                  className="show-more-btn btn btn-primary"
+                  onClick={toggleShowAll}
+                >
                   {showAll ? "Show Less" : "Show More"}
                 </button>
               </div>
@@ -561,34 +608,53 @@ const MyWedding = () => {
           <div className="col-lg-6 mb-4">
             <div className="dashboard-card">
               <div className="card-header d-flex justify-content-between align-items-center">
-                <h4 className="card-title"><Clock size={20} className="me-2" />Upcoming Tasks</h4>
-                <span className="task-progress">{completedTasksCount}/{upcomingTasks.length} completed</span>
+                <h4 className="card-title">
+                  <Clock size={20} className="me-2" />
+                  Upcoming Tasks
+                </h4>
+                <span className="task-progress">
+                  {completedTasksCount}/{upcomingTasks.length} completed
+                </span>
               </div>
               <div className="progress-bar-container mb-4">
                 <div className="progress-bar">
-                  <div className="progress-fill" style={{ width: `${progressPercentage}%` }}></div>
+                  <div
+                    className="progress-fill"
+                    style={{ width: `${progressPercentage}%` }}
+                  ></div>
                 </div>
-                <span className="progress-text">{Math.round(progressPercentage)}% complete</span>
+                <span className="progress-text">
+                  {Math.round(progressPercentage)}% complete
+                </span>
               </div>
               <div className="tasks-list">
                 {upcomingTasks.map((task) => (
                   <div
                     key={task.id}
-                    className={`task-item ${completedTasks.has(task.id) ? "completed" : ""}`}
+                    className={`task-item ${
+                      completedTasks.has(task.id) ? "completed" : ""
+                    }`}
                   >
-                    <div className="task-checkbox" onClick={() => toggleTask(task.id)}>
+                    <div
+                      className="task-checkbox"
+                      onClick={() => toggleTask(task.id)}
+                    >
                       {completedTasks.has(task.id) && <CheckCircle size={16} />}
                     </div>
                     <div className="task-content">
                       <div className="task-name">{task.task}</div>
                       <div className="task-meta">
                         <span className="task-deadline">{task.deadline}</span>
-                        <span className={`task-priority ${task.priority}`}>{task.priority}</span>
+                        <span className={`task-priority ${task.priority}`}>
+                          {task.priority}
+                        </span>
                       </div>
                     </div>
                   </div>
                 ))}
-                <button className="add-task-btn"><Plus size={16} /> Add new task</button>
+                <button className="add-task-btn">
+                  <Plus size={16} /> Add new task
+                </button>
               </div>
             </div>
           </div>
@@ -598,54 +664,107 @@ const MyWedding = () => {
             {/* Guest List */}
             <div className="dashboard-card mb-4">
               <div className="card-header d-flex justify-content-between align-items-center">
-                <h4 className="card-title"><Users size={20} className="me-2" />Guest List</h4>
+                <h4 className="card-title">
+                  <Users size={20} className="me-2" />
+                  Guest List
+                </h4>
                 <button className="btn-small">Manage</button>
               </div>
               <div className="guest-stats row">
-                <div className="col-6 col-sm-3"><div className="guest-stat"><div className="stat-number">{guestStats.totalInvited}</div><div className="stat-label">Invited</div></div></div>
-                <div className="col-6 col-sm-3"><div className="guest-stat"><div className="stat-number">{guestStats.responded}</div><div className="stat-label">Responded</div></div></div>
-                <div className="col-6 col-sm-3"><div className="guest-stat"><div className="stat-number text-success">{guestStats.attending}</div><div className="stat-label">Attending</div></div></div>
-                <div className="col-6 col-sm-3"><div className="guest-stat"><div className="stat-number text-muted">{guestStats.notAttending}</div><div className="stat-label">Declined</div></div></div>
+                <div className="col-6 col-sm-3">
+                  <div className="guest-stat">
+                    <div className="stat-number">{guestStats.totalInvited}</div>
+                    <div className="stat-label">Invited</div>
+                  </div>
+                </div>
+                <div className="col-6 col-sm-3">
+                  <div className="guest-stat">
+                    <div className="stat-number">{guestStats.responded}</div>
+                    <div className="stat-label">Responded</div>
+                  </div>
+                </div>
+                <div className="col-6 col-sm-3">
+                  <div className="guest-stat">
+                    <div className="stat-number text-success">
+                      {guestStats.attending}
+                    </div>
+                    <div className="stat-label">Attending</div>
+                  </div>
+                </div>
+                <div className="col-6 col-sm-3">
+                  <div className="guest-stat">
+                    <div className="stat-number text-muted">
+                      {guestStats.notAttending}
+                    </div>
+                    <div className="stat-label">Declined</div>
+                  </div>
+                </div>
               </div>
               <div className="guest-actions mt-2">
                 <button className="btn-action">Send Invitations</button>
-                <button className="btn-action-outline">View Seating Chart</button>
+                <button className="btn-action-outline">
+                  View Seating Chart
+                </button>
               </div>
             </div>
 
             {/* Budget */}
             <div className="dashboard-card">
               <div className="card-header d-flex justify-content-between align-items-center">
-                <h4 className="card-title"><DollarSign size={20} className="me-2" />Wedding Budget</h4>
+                <h4 className="card-title">
+                  <DollarSign size={20} className="me-2" />
+                  Wedding Budget
+                </h4>
                 <button className="btn-small">Edit</button>
               </div>
               <div className="budget-overview">
                 <div className="budget-total">
-                  <div className="budget-amount">₹{(budget.total / 1000).toFixed(0)}k</div>
+                  <div className="budget-amount">
+                    ₹{(budget.total / 1000).toFixed(0)}k
+                  </div>
                   <div className="budget-label">Total Budget</div>
                 </div>
                 <div className="budget-breakdown">
                   <div className="budget-item">
-                    <span className="budget-spent">₹{(budget.spent / 1000).toFixed(0)}k spent</span>
-                    <span className="budget-remaining">₹{(budget.remaining / 1000).toFixed(0)}k remaining</span>
+                    <span className="budget-spent">
+                      ₹{(budget.spent / 1000).toFixed(0)}k spent
+                    </span>
+                    <span className="budget-remaining">
+                      ₹{(budget.remaining / 1000).toFixed(0)}k remaining
+                    </span>
                   </div>
                 </div>
                 <div className="budget-progress">
                   <div className="budget-bar">
-                    <div className="budget-fill" style={{ width: `${(budget.spent / budget.total) * 100}%` }}></div>
+                    <div
+                      className="budget-fill"
+                      style={{
+                        width: `${(budget.spent / budget.total) * 100}%`,
+                      }}
+                    ></div>
                   </div>
-                  <span className="budget-percentage">{Math.round((budget.spent / budget.total) * 100)}% used</span>
+                  <span className="budget-percentage">
+                    {Math.round((budget.spent / budget.total) * 100)}% used
+                  </span>
                 </div>
               </div>
               <div className="budget-categories mt-2">
-                <div className="category-item"><span>Venue & Catering</span><span>₹180k</span></div>
-                <div className="category-item"><span>Photography</span><span>₹50k</span></div>
-                <div className="category-item"><span>Decoration & Flowers</span><span>₹45k</span></div>
+                <div className="category-item">
+                  <span>Venue & Catering</span>
+                  <span>₹180k</span>
+                </div>
+                <div className="category-item">
+                  <span>Photography</span>
+                  <span>₹50k</span>
+                </div>
+                <div className="category-item">
+                  <span>Decoration & Flowers</span>
+                  <span>₹45k</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
