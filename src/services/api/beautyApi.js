@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.DEV ? "/api" : "http://69.62.85.170:5001/api");
 
 class BeautyApiService {
   constructor() {
@@ -37,7 +39,6 @@ class BeautyApiService {
       method: "POST",
       body: formData,
       ...(options || {}),
-      // Let the browser set Content-Type with boundary
       headers: {
         Accept: "application/json",
         ...((options && options.headers) || {}),
@@ -53,7 +54,6 @@ class BeautyApiService {
     return response.json().catch(() => ({}));
   }
 
-  // GET products by category (e.g., category=MAKEUP) and optional detailed_category
   async getFilteredProducts(category, detailedCategory) {
     const qs = new URLSearchParams();
     if (category) qs.set("category", category);
@@ -63,17 +63,14 @@ class BeautyApiService {
     });
   }
 
-  // POST an image file to the server, expecting an image id in response
   async uploadImage(file, imageType = "ORIGINAL") {
     const form = new FormData();
-    // Common server keys: "image" or "file". We send both for compatibility.
     form.append("image", file);
     form.append("file", file);
     form.append("image_type", imageType);
     return this.makeFormRequest(`/images`, form);
   }
 
-  // POST apply makeup with payload containing image_id, product_ids, and intensities
   async applyMakeup(payload) {
     return this.makeJsonRequest(`/images/apply-makeup`, {
       method: "POST",
@@ -81,7 +78,6 @@ class BeautyApiService {
     });
   }
 
-  // GET processed image by id
   async getImageById(imageId) {
     return this.makeJsonRequest(`/images/${imageId}`, { method: "GET" });
   }

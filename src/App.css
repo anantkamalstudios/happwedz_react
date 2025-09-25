@@ -80,12 +80,16 @@ body {
   background-color: var(--primary-color);
 }
 
+.primary-light-bg {
+  background-color: var(--light-pink);
+}
+
 .primary-b {
   background: var(--primary-color);
 }
 
 .primary-text {
-  color: var(--primary-color);
+  color: var(--primary-color) !important;
 }
 
 .btn-theme {
@@ -13419,7 +13423,7 @@ input:checked + .slider:before {
 /* Home Mansory image */
 .masonry-section {
   background: #fafafa;
-  min-height: 100vh;
+  min-height: 50vh;
 }
 
 .masonry-section .masonry-grid {
@@ -13467,12 +13471,15 @@ input:checked + .slider:before {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   isolation: isolate;
+  height: auto;
 }
 
 .masonry-image {
   width: 100%;
+  height: auto;
   display: block;
   border-radius: 12px;
+  object-fit: cover;
 }
 
 .image-card:hover {
@@ -13486,6 +13493,7 @@ input:checked + .slider:before {
 }
 
 .image-overlay {
+  display: none;
   position: absolute;
   bottom: 0;
   left: 0;
@@ -13528,6 +13536,31 @@ input:checked + .slider:before {
   width: 2rem;
   height: 2rem;
   color: #e83581 !important;
+}
+
+.image-meta {
+  padding: 10px 5px 0;
+}
+
+.image-meta .image-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.image-meta .image-category {
+  font-size: 0.85rem;
+  color: #777;
+  display: inline-block;
+  margin-top: 4px;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.masonry-item[style*="display: none"] {
+  display: none !important;
 }
 
 /* Responsive adjustments */

@@ -141,11 +141,6 @@ const FeaturedVendorsSection = () => {
                       >
                         {vendor.badge}
                       </div>
-                      <div className="vendor-overlay">
-                        <button className="btn btn-light btn-sm rounded-pill">
-                          View Details
-                        </button>
-                      </div>
                     </div>
 
                     <div className="vendor-content p-3">

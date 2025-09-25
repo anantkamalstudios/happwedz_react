@@ -4,6 +4,7 @@ import LocationModalWithCategories from "./LocationModalWithCategories";
 import { RiMenuFill } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/authSlice";
+import { FaArrowRightLong } from "react-icons/fa6";
 
 const Header = () => {
   const dispatch = useDispatch();
@@ -13,7 +14,7 @@ const Header = () => {
 
   const auth = useSelector((state) => state.auth);
   const vendorAuth = useSelector((state) => state.vendorAuth);
-  console.log("vendor auth ", vendorAuth)
+  console.log("vendor auth ", vendorAuth);
   const toSlug = (text) =>
     text
       ?.toLowerCase()
@@ -33,7 +34,7 @@ const Header = () => {
         const bsCollapse =
           window.bootstrap.Collapse.getOrCreateInstance(collapse);
         bsCollapse.hide();
-      } catch { }
+      } catch {}
     }
   }, [location]);
 
@@ -43,7 +44,8 @@ const Header = () => {
         {/* Mobile view: logo left + toggle right */}
         <div className="d-flex d-lg-none justify-content-between align-items-center w-100 px-3 py-2">
           <Link className="navbar-brand m-0" to="/">
-            <img src="/images/logo.webp" alt="HappyWedz" height="30" />
+            <img src="/happywed_white.png" alt="HappyWedz" height="30" />
+            {/* <img src="/images/logo.webp" alt="HappyWedz" height="30" /> */}
           </Link>
 
           <button
@@ -66,13 +68,13 @@ const Header = () => {
 
         <div className="collapse navbar-collapse" id="mainNav">
           <div className="row">
-            <div className="col-12 pink-gradient-bg">
+            <div className="col-12 bg-white p-2">
               <div className="container">
                 <div className="row align-items-center gy-2">
                   {/* Left: Tagline */}
-                  <div className="col-12 col-sm-4 col-lg-4 text-center text-sm-start">
+                  <div className="col-12 col-sm-4 col-lg-4 d-flex align-items-center justify-content-center justify-content-sm-start">
                     <a
-                      className="nav-link text-white fw-semibold top-header-heading"
+                      className="nav-link text-dark fw-semibold top-header-heading"
                       href="#"
                     >
                       India's Favourite Wedding Planning Platform
@@ -80,14 +82,54 @@ const Header = () => {
                   </div>
 
                   {/* Center: Location */}
-                  <div className="col-12 col-sm-6 col-lg-3 text-center">
+                  <div className="col-12 col-sm-6 col-lg-3">
                     <LocationModalWithCategories />
                   </div>
 
                   {/* Right: Icons */}
-                  <div className="col-12 col-lg-5 d-flex justify-content-center justify-content-lg-end gap-3">
+                  <div className="col-12 col-lg-5 d-flex align-items-center justify-content-center justify-content-lg-end gap-4">
+                    <img
+                      src="/images/header/playstore.png"
+                      alt="Play Store"
+                      title="Download on Play Store"
+                      className="img-fluid"
+                      style={{
+                        maxHeight: "28px",
+                        width: "auto",
+                        cursor: "pointer",
+                      }}
+                    />
+
+                    <img
+                      src="/images/header/appstore.png"
+                      alt="App Store"
+                      title="Download on App Store"
+                      className="img-fluid"
+                      style={{
+                        maxHeight: "28px",
+                        width: "auto",
+                        cursor: "pointer",
+                      }}
+                    />
+
+                    <Link
+                      to="/try"
+                      state={{ title: "Try" }}
+                      title="Try Design Studio"
+                    >
+                      <img
+                        src="/images/header/designstudio.png"
+                        alt="Design Studio"
+                        className="img-fluid"
+                        style={{
+                          maxHeight: "28px",
+                          width: "auto",
+                          cursor: "pointer",
+                        }}
+                      />
+                    </Link>
                     {/* PlayStore */}
-                    <a
+                    {/* <a
                       className="app-store-link d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
                       style={{ minWidth: 0 }}
                       href="#"
@@ -106,10 +148,10 @@ const Header = () => {
                       <span className="fw-semibold text-dark d-none d-lg-inline header-cta">
                         PlayStore
                       </span>
-                    </a>
+                    </a> */}
 
                     {/* AppStore */}
-                    <a
+                    {/* <a
                       className="app-store-link d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
                       href="#"
                       style={{ minWidth: 0 }}
@@ -176,15 +218,14 @@ const Header = () => {
                       <span className="fw-semibold text-dark d-none d-lg-inline header-cta">
                         AppStore
                       </span>
-                    </a>
+                    </a> */}
 
-                    {/* Design Studio */}
-                    <Link
+                    {/* <Link
                       className="app-store-link-pulse d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
                       style={{ minWidth: 0 }}
                       to="/try"
                       state={{ title: "Try" }}
-                    >
+                    >                      
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
@@ -225,7 +266,7 @@ const Header = () => {
                       <span className="fw-semibold text-dark d-none d-lg-inline header-cta">
                         Design Studio
                       </span>
-                    </Link>
+                    </Link>  */}
                   </div>
                 </div>
               </div>
@@ -236,7 +277,7 @@ const Header = () => {
               <div className="container">
                 <div className="row justify-content-center">
                   <div className="col-lg-12 d-flex flex-column flex-lg-row align-items-center justify-content-evenly">
-                    <div className="mb-3 text-center d-none d-lg-block">
+                    <div className="text-center d-none d-lg-block">
                       <Link className="navbar-brand-logo" to="/">
                         <img
                           src="/images/logo.webp"
@@ -254,93 +295,127 @@ const Header = () => {
                         >
                           Venues
                         </Link>
-                        <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
-                          <div className="container">
+                        <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 rounded-4">
+                          <div className="container-fluid">
                             <div className="row g-4">
-                              {/* Column 1: By Type */}
-                              <div className="col-md-8">
-                                <h6 className="fw-semibold text-uppercase mb-3 text-secondary">
-                                  By Type
-                                </h6>
-                                <div className="row">
-                                  {[
-                                    "Banquet Halls",
-                                    "Marriage Garden / Lawns",
-                                    "Wedding Resorts",
-                                    "Small Function / Party Halls",
-                                    "Destination Wedding Venues",
-                                    "Kalyana Mandapams",
-                                    "4 Star & Above Wedding Hotels",
-                                    "Venue Concierge Services",
-                                    "Show More",
-                                  ].map((item, i) => (
-                                    <div
-                                      className="col-6 col-sm-4 mb-2"
-                                      key={i}
-                                    >
-                                      <Link
-                                        to={`/venues/${item
-                                          .toLowerCase()
-                                          .replace(/\s+/g, "-")
-                                          .replace(/[^a-z0-9\-]/g, "")}`}
-                                        className="dropdown-link d-flex align-items-center"
-                                      >
-                                        <i className="bi bi-check-circle me-2 text-primary"></i>
-                                        <span className="small">{item}</span>
-                                      </Link>
-                                    </div>
-                                  ))}
-                                </div>
-
-                                <h6 className="fw-semibold mt-4 text-uppercase text-secondary">
-                                  Popular Locations
-                                </h6>
-                                <div className="d-flex flex-wrap mt-2">
-                                  {[
-                                    "Bandra",
-                                    "Thane",
-                                    "Kalyan",
-                                    "Ulhasnagar",
-                                    "Bhiwandi",
-                                    "Panvel",
-                                    "Andheri East",
-                                  ].map((item, i) => (
-                                    <div className="" key={i}>
-                                      <Link
-                                        to={`/venues/${item
-                                          .toLowerCase()
-                                          .replace(/\s+/g, "-")
-                                          .replace(/[^a-z0-9\-]/g, "")}`}
-                                        className="badge bg-light text-muted me-2 mb-2 px-3 py-2 small text-decoration-none rounded-pill"
-                                      >
-                                        {item}
-                                      </Link>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-
-                              {/* Column 2: Featured box */}
                               <div className="col-md-4 d-none d-md-block">
-                                <div className="bg-white rounded-4 shadow-sm p-4 h-100 d-flex flex-column justify-content-between">
+                                <div className="primary-light-bg rounded-4 shadow-sm p-4 h-100 d-flex flex-column justify-content-between">
                                   <div>
-                                    <h6 className="fw-bold mb-2">
-                                      Destination Weddings
+                                    <h6 className="fw-bold mb-3">
+                                      Popular Categories
                                     </h6>
-                                    <p className="text-muted small mb-3">
-                                      Easily plan your international wedding
-                                      with the best venues and planners.
-                                    </p>
+                                    <div className="d-flex flex-column flex-wrap gap-2">
+                                      <span className="primary-text px-3 py-2 small me-2">
+                                        Wedding Venues <FaArrowRightLong />
+                                      </span>
+                                      <span className="primary-text px-3 py-2 small me-2">
+                                        Popular Locations <FaArrowRightLong />
+                                      </span>
+
+                                      {!auth?.user && !vendorAuth?.vendor && (
+                                        <Link
+                                          to="vendor-login"
+                                          className="primary-text px-3 py-2 small me-2"
+                                        >
+                                          Are You Vendor
+                                        </Link>
+                                      )}
+                                    </div>
                                   </div>
-                                  <img
+                                  {/* <img
                                     src="https://cdn-icons-png.flaticon.com/512/3176/3176294.png"
-                                    alt="Destination"
-                                    className="img-fluid"
+                                    alt="Popular Categories"
+                                    className="img-fluid mt-3"
                                     style={{
                                       width: "60px",
                                       objectFit: "contain",
                                     }}
-                                  />
+                                  /> */}
+                                </div>
+                              </div>
+
+                              {/* Column 2: By Type and By Location */}
+                              <div className="col-md-8 p-4">
+                                <div className="row">
+                                  {/* By Type */}
+                                  <div className="col-sm-6">
+                                    <h6 className="fw-bold primary-text text-uppercase mb-3">
+                                      By Type
+                                    </h6>
+                                    <div className="row">
+                                      {[
+                                        "Banquet Halls",
+                                        "Marriage Garden / Lawns",
+                                        "Wedding Resorts",
+                                        "Small Function / Party Halls",
+                                        "Destination Wedding Venues",
+                                        "Kalyana Mandapams",
+                                        "4 Star & Above Wedding Hotels",
+                                        "Venue Concierge Services",
+                                        "View All Venues",
+                                      ].map((item, i) => {
+                                        const isShowMore =
+                                          item === "View All Venues";
+                                        const path = isShowMore
+                                          ? "/venues"
+                                          : `/venues/${item
+                                              .toLowerCase()
+                                              .replace(/\s+/g, "-")
+                                              .replace(/[^a-z0-9\-]/g, "")}`;
+
+                                        return (
+                                          <div className="col-12 mb-2" key={i}>
+                                            <Link
+                                              to={path}
+                                              className={`dropdown-link d-flex align-items-center ${
+                                                isShowMore
+                                                  ? "primary-text fw-bold text-decoration-underline"
+                                                  : ""
+                                              }`}
+                                            >
+                                              <i className="bi bi-check-circle me-2 text-primary"></i>
+                                              <span className="small">
+                                                {item}
+                                              </span>
+                                            </Link>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+
+                                  {/* By Location */}
+                                  <div className="col-sm-6">
+                                    <h6 className="fw-semibold text-uppercase primary-text mb-3">
+                                      By Location
+                                    </h6>
+                                    <div className="row">
+                                      {[
+                                        "Mumbai",
+                                        "Bangalore",
+                                        "Pune",
+                                        "Kolkata",
+                                        "Jaipur",
+                                        "Lucknow",
+                                        "Hyderabad",
+                                      ].map((item, i) => (
+                                        <div className="col-12 mb-2" key={i}>
+                                          <Link
+                                            to={`/venues/${item
+                                              .toLowerCase()
+                                              .replace(/\s+/g, "-")
+                                              .replace(/[^a-z0-9\-]/g, "")}`}
+                                            className="dropdown-link d-flex align-items-center"
+                                          >
+                                            <i className="bi bi-geo-alt-fill me-2 text-secondary"></i>
+                                            <span className="small">
+                                              {item}
+                                            </span>
+                                          </Link>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -965,8 +1040,8 @@ const Header = () => {
                           </div>
                         </li>
                       )}
-                      {vendorAuth.vendor &&
-                        (<li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      {vendorAuth.vendor && (
+                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <Link
                               to="/vendor-dashboard"
@@ -976,7 +1051,7 @@ const Header = () => {
                             </Link>
                           </div>
                         </li>
-                        )}
+                      )}
                       {/* {["Genie"].map((item) => (
                         <li className="nav-item" key={item}>
                           <a className="nav-link text-white" href="#">
