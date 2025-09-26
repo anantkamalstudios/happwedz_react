@@ -10,9 +10,10 @@ import BlogDetails from "./components/pages/BlogDetails";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "./redux/authSlice";
 import { setVendorCredentials } from "./redux/vendorAuthSlice";
-import PrivateRoute from "./components/routes/PrivateRoute";
 import ToastProvider from "./components/layouts/toasts/Toast";
 import LoaderProvider from "./components/context/LoaderContext";
+import VendorPrivateRoute from "./components/routes/VendorPrivateRoute";
+import UserPrivateRoute from "./components/routes/UserPrivateRoute";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
@@ -95,7 +96,9 @@ function App() {
     const vendor = localStorage.getItem("vendor");
     const vendorToken = localStorage.getItem("vendorToken");
     if (vendor && vendorToken) {
-      dispatch(setVendorCredentials({ vendor: JSON.parse(vendor), token: vendorToken }));
+      dispatch(
+        setVendorCredentials({ vendor: JSON.parse(vendor), token: vendorToken })
+      );
     }
   }, [dispatch]);
 
@@ -113,6 +116,8 @@ function App() {
               <Route path="/:section" element={<MainSection />} />
               <Route path="/:section/:slug" element={<SubSection />} />
               <Route path="/details/:section/:slug" element={<Detailed />} />
+
+              {/* Auth Pages */}
               <Route path="/customer-login" element={<CustomerLogin />} />
               <Route path="/customer-register" element={<CustomerRegister />} />
               <Route path="/vendor-login" element={<VendorLogin />} />
@@ -121,49 +126,52 @@ function App() {
                 path="/user-forgot-password"
                 element={<ForgotPassword />}
               />
-              <Route path="/terms" element={<TermsCondition />} />
-              {/* New Try flow */}
-              <Route path="/try" element={<TryLanding />} />
-              <Route path="/try/bride" element={<BrideMakeupChoose />} />
-              <Route path="/try/upload" element={<UploadSelfiePage />} />
-              <Route path="/try/filters" element={<FiltersPage />} />
-              <Route path="/try/makeup" element={<TryMakeupLanding />} />
-              {/* Legacy (optionally keep for direct access) */}
-              {/* <Route path="/try-old" element={<ProfileImageSelector />} /> */}
+
+              {/* Blog */}
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog-details" element={<BlogDetails />} />
-              <Route path="/finallook" element={<FinalLookPage />} />
+
+              {/* Static Pages */}
+              <Route path="/terms" element={<TermsCondition />} />
               <Route path="/cancellation" element={<CancellationPolicy />} />
-              <Route
-                path="/vendor-dashboard"
-                element={<Navigate to="/vendor-dashboard/vendor-home" />}
-              />
-              <Route path="/vendor-dashboard/:slug" element={<Main />} />
-              <Route
-                path="/vendor-dashboard/upgrade/vendor-plan"
-                element={<VendorPremium />}
-              />
 
-              {/* <Route path="/user-dashboard/:slug" element={<UserDashboardMain />} />
-          <Route path="/user-dashboard" element={<UserDashboardMain />} /> */}
-
+              {/* Try Flow */}
+              <Route path="/try" element={<TryLanding />} />
+              <Route path="/try/bride" element={<BrideMakeupChoose />} />
               <Route
-                path="/user-dashboard"
+                path="/try/upload"
                 element={
-                  <PrivateRoute>
-                    <UserDashboardMain />
-                  </PrivateRoute>
+                  <UserPrivateRoute>
+                    <UploadSelfiePage />
+                  </UserPrivateRoute>
                 }
               />
               <Route
-                path="/user-dashboard/:slug"
+                path="/try/filters"
                 element={
-                  <PrivateRoute>
-                    <UserDashboardMain />
-                  </PrivateRoute>
+                  <UserPrivateRoute>
+                    <FiltersPage />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/try/makeup"
+                element={
+                  <UserPrivateRoute>
+                    <TryMakeupLanding />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/finallook"
+                element={
+                  <UserPrivateRoute>
+                    <FinalLookPage />
+                  </UserPrivateRoute>
                 }
               />
 
+              {/* Editors / Video */}
               <Route path="/editor" element={<CardEditorPage />} />
               <Route path="/editor/:templateId" element={<CardEditorPage />} />
               <Route path="/video-templates" element={<VideoTemplates />} />
@@ -175,6 +183,51 @@ function App() {
               <Route path="/video-demo" element={<VideoEditorDemo />} />
             </Route>
 
+            {/*  Vendor Protected Routes  */}
+            <Route
+              path="/vendor-dashboard"
+              element={
+                <VendorPrivateRoute>
+                  <Navigate to="/vendor-dashboard/vendor-home" />
+                </VendorPrivateRoute>
+              }
+            />
+            <Route
+              path="/vendor-dashboard/:slug"
+              element={
+                <VendorPrivateRoute>
+                  <Main />
+                </VendorPrivateRoute>
+              }
+            />
+            <Route
+              path="/vendor-dashboard/upgrade/vendor-plan"
+              element={
+                <VendorPrivateRoute>
+                  <VendorPremium />
+                </VendorPrivateRoute>
+              }
+            />
+
+            {/*  User Protected Routes  */}
+            <Route
+              path="/user-dashboard"
+              element={
+                <UserPrivateRoute>
+                  <UserDashboardMain />
+                </UserPrivateRoute>
+              }
+            />
+            <Route
+              path="/user-dashboard/:slug"
+              element={
+                <UserPrivateRoute>
+                  <UserDashboardMain />
+                </UserPrivateRoute>
+              }
+            />
+
+            {/*  Matrimonial Routes  */}
             <Route element={<MatrimonialLayout />}>
               <Route path="/matrimonial" element={<MatrimonialMain />} />
               <Route
@@ -193,6 +246,7 @@ function App() {
               <Route path="/edit-profile" element={<EditProfile />} />
             </Route>
 
+            {/*  Fallback  */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </ToastProvider>

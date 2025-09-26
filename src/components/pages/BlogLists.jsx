@@ -1,144 +1,76 @@
-import React, { useState, useEffect } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "../../App.css";
-import {
-  FaSearch,
-  FaHeart,
-  FaBookmark,
-  FaClock,
-  FaEye,
-  FaCalendarAlt,
-  FaUser,
-  FaTag,
-  FaArrowRight,
-  FaFilter,
-  FaSortAmountDown,
-} from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import { FaTag, FaEye, FaHeart, FaCalendarAlt } from "react-icons/fa";
 
 const BlogLists = ({ onPostClick }) => {
+  // const [blogs, setBlogs] = useState([]);
+  // const [searchTerm, setSearchTerm] = useState("");
+  // const [selectedCategory, setSelectedCategory] = useState("");
+  // const [sortBy, setSortBy] = useState("latest");
+  // const [likedPosts, setLikedPosts] = useState(new Set());
+  // const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set());
+
+  // const [blogs, setBlogs] = useState([
+  //   {
+  //     id: 1,
+  //     title: "50+ Stunning Wedding Photography Ideas for Your Big Day",
+  //     description:
+  //       "Discover creative photography ideas that will make your wedding album absolutely magical. From candid moments to artistic shots, we've got you covered.",
+  //     image:
+  //       "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+  //     author: "Sarah Johnson",
+  //     authorImage:
+  //       "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
+  //     date: "December 15, 2024",
+  //     readTime: "8 min read",
+  //     views: 1250,
+  //     likes: 89,
+  //     category: "Photography",
+  //     tags: ["Photography", "Wedding Tips", "Creative Ideas"],
+  //     featured: true,
+  //     trending: true,
+  //   },
+  // ]);
+
+  // const filteredBlogs = blogs.filter((blog) => {
+  //   const matchesSearch =
+  //     blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     blog.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     blog.tags.some((tag) =>
+  //       tag.toLowerCase().includes(searchTerm.toLowerCase())
+  //     );
+  //   const matchesCategory =
+  //     !selectedCategory || blog.category === selectedCategory;
+  //   return matchesSearch && matchesCategory;
+  // });
+
+  // const sortedBlogs = [...filteredBlogs].sort((a, b) => {
+  //   switch (sortBy) {
+  //     case "latest":
+  //       return new Date(b.date) - new Date(a.date);
+  //     case "popular":
+  //       return b.views - a.views;
+  //     case "trending":
+  //       return b.likes - a.likes;
+  //     default:
+  //       return 0;
+  //   }
+  // });
+
+  const [blogs, setBlogs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [sortBy, setSortBy] = useState("latest");
-  const [likedPosts, setLikedPosts] = useState(new Set());
-  const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set());
 
-  const [blogs, setBlogs] = useState([
-    {
-      id: 1,
-      title: "50+ Stunning Wedding Photography Ideas for Your Big Day",
-      description:
-        "Discover creative photography ideas that will make your wedding album absolutely magical. From candid moments to artistic shots, we've got you covered.",
-      image:
-        "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-      author: "Sarah Johnson",
-      authorImage:
-        "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
-      date: "December 15, 2024",
-      readTime: "8 min read",
-      views: 1250,
-      likes: 89,
-      category: "Photography",
-      tags: ["Photography", "Wedding Tips", "Creative Ideas"],
-      featured: true,
-      trending: true,
-    },
-    {
-      id: 2,
-      title:
-        "Top 25 Luxury Wedding Venues in India That Will Take Your Breath Away",
-      description:
-        "Explore the most exquisite wedding venues across India, from royal palaces to beachfront resorts. Find your perfect venue for the wedding of your dreams.",
-      image:
-        "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-      author: "Priya Sharma",
-      authorImage:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
-      date: "December 12, 2024",
-      readTime: "12 min read",
-      views: 2100,
-      likes: 156,
-      category: "Venues",
-      tags: ["Venues", "Luxury", "Destination Weddings"],
-      featured: true,
-      trending: false,
-    },
-    {
-      id: 3,
-      title: "2024 Bridal Makeup Trends: From Natural Glow to Bold Statements",
-      description:
-        "Stay ahead of the curve with the latest bridal makeup trends. From dewy skin to bold lips, discover what's trending this wedding season.",
-      image:
-        "https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-      author: "Meera Patel",
-      authorImage:
-        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
-      date: "December 10, 2024",
-      readTime: "6 min read",
-      views: 980,
-      likes: 67,
-      category: "Beauty",
-      tags: ["Makeup", "Bridal Beauty", "Trends"],
-      featured: false,
-      trending: true,
-    },
-    {
-      id: 4,
-      title: "Complete Wedding Planning Checklist: 12 Months to Your Big Day",
-      description:
-        "Never miss a detail with our comprehensive wedding planning checklist. From venue booking to final preparations, we've got every step covered.",
-      image:
-        "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-      author: "Rajesh Kumar",
-      authorImage:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
-      date: "December 8, 2024",
-      readTime: "15 min read",
-      views: 3200,
-      likes: 234,
-      category: "Planning",
-      tags: ["Planning", "Checklist", "Timeline"],
-      featured: true,
-      trending: false,
-    },
-    {
-      id: 5,
-      title: "Wedding Decor Ideas: Transform Your Venue into a Fairytale",
-      description:
-        "Create magical moments with stunning wedding decor ideas. From floral arrangements to lighting, make your venue unforgettable.",
-      image:
-        "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-      author: "Anita Singh",
-      authorImage:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
-      date: "December 5, 2024",
-      readTime: "10 min read",
-      views: 1800,
-      likes: 145,
-      category: "Decor",
-      tags: ["Decor", "Florals", "Styling"],
-      featured: false,
-      trending: true,
-    },
-    {
-      id: 6,
-      title: "Bridal Fashion Trends 2024: What Every Bride Should Know",
-      description:
-        "Discover the hottest bridal fashion trends for 2024. From traditional lehengas to modern gowns, find your perfect bridal look.",
-      image:
-        "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-      author: "Kavya Reddy",
-      authorImage:
-        "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
-      date: "December 3, 2024",
-      readTime: "9 min read",
-      views: 1650,
-      likes: 112,
-      category: "Fashion",
-      tags: ["Fashion", "Bridal Wear", "Trends"],
-      featured: false,
-      trending: false,
-    },
-  ]);
+  useEffect(() => {
+    fetch("https://happywedz.com/api/blog-deatils/all")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setBlogs(data.data);
+        }
+      })
+      .catch((err) => console.error("Error fetching blogs:", err));
+  }, []);
 
   const categories = [
     { name: "All", value: "", count: blogs.length },
@@ -174,29 +106,17 @@ const BlogLists = ({ onPostClick }) => {
     },
   ];
 
-  const filteredBlogs = blogs.filter((blog) => {
-    const matchesSearch =
-      blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      blog.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      blog.tags.some((tag) =>
-        tag.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    const matchesCategory =
-      !selectedCategory || blog.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredBlogs = blogs.filter(
+    (blog) =>
+      blog.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (selectedCategory ? blog.category === selectedCategory : true)
+  );
 
   const sortedBlogs = [...filteredBlogs].sort((a, b) => {
-    switch (sortBy) {
-      case "latest":
-        return new Date(b.date) - new Date(a.date);
-      case "popular":
-        return b.views - a.views;
-      case "trending":
-        return b.likes - a.likes;
-      default:
-        return 0;
-    }
+    if (sortBy === "latest") return new Date(b.postDate) - new Date(a.postDate);
+    if (sortBy === "popular") return b.views - a.views;
+    if (sortBy === "trending") return b.likes - a.likes;
+    return 0;
   });
 
   const featuredBlogs = blogs.filter((blog) => blog.featured);
@@ -319,30 +239,35 @@ const BlogLists = ({ onPostClick }) => {
               <section className="featured-section">
                 <h3 className="fw-bold text-dark mb-2">Featured Articles</h3>
                 <div className="row">
-                  {featuredBlogs.slice(0, 2).map((blog) => (
-                    <div key={blog.id} className="col-md-6 mb-4">
-                      <div className="featured-card">
-                        <div className="featured-image-container">
-                          <img
-                            src={blog.image}
-                            alt={blog.title}
-                            className="featured-image"
-                          />
-                          <div className="featured-badge">Featured</div>
-                        </div>
-                        <div className="featured-content">
-                          <div className="featured-meta">
-                            <span className="featured-category">
-                              {blog.category}
-                            </span>
-                            <span className="featured-date">{blog.date}</span>
-                          </div>
-                          <h4 className="featured-title">{blog.title}</h4>
-                          <p className="featured-description">
-                            {blog.description}
+                  {sortedBlogs.map((blog) => (
+                    <div key={blog.id} className="col-md-6 mb-5">
+                      <article
+                        className="wedding-article-card"
+                        onClick={() => onPostClick(blog)}
+                      >
+                        <img
+                          src={blog.image}
+                          alt={blog.title}
+                          className="wedding-card-image"
+                        />
+                        <div className="wedding-card-content">
+                          <span className="wedding-card-category">
+                            {blog.category}
+                          </span>
+                          <h5 className="wedding-card-title">{blog.title}</h5>
+                          <p className="wedding-card-description">
+                            {blog.shortDescription}
                           </p>
+                          <div className="wedding-card-meta">
+                            <span>{blog.author}</span>
+                            <span>
+                              {new Date(blog.postDate).toLocaleDateString(
+                                "en-US"
+                              )}
+                            </span>
+                          </div>
                         </div>
-                      </div>
+                      </article>
                     </div>
                   ))}
                 </div>
@@ -366,9 +291,10 @@ const BlogLists = ({ onPostClick }) => {
                           className="wedding-article-card"
                           onClick={() => onPostClick(blog)}
                         >
+                          {/* Image */}
                           <div className="wedding-card-image-wrapper">
                             <img
-                              src={blog.image}
+                              src={blog.images?.[0] || "/fallback.jpg"}
                               alt={blog.title}
                               className="wedding-card-image"
                             />
@@ -377,23 +303,35 @@ const BlogLists = ({ onPostClick }) => {
                             )}
                           </div>
 
+                          {/* Content */}
                           <div className="wedding-card-content">
+                            {/* Meta */}
                             <div className="wedding-card-meta">
                               <span className="wedding-card-category">
                                 {blog.category}
                               </span>
                               <span className="wedding-card-date">
-                                {blog.date}
+                                {blog.createdDate
+                                  ? new Date(
+                                      blog.createdDate
+                                    ).toLocaleDateString("en-US", {
+                                      year: "numeric",
+                                      month: "short",
+                                      day: "numeric",
+                                    })
+                                  : ""}
                               </span>
                             </div>
 
+                            {/* Title & Short Description */}
                             <h5 className="wedding-card-title">{blog.title}</h5>
                             <p className="wedding-card-description">
-                              {blog.description}
+                              {blog.shortDescription}
                             </p>
 
+                            {/* Tags */}
                             <div className="wedding-card-tags">
-                              {blog.tags.slice(0, 2).map((tag, index) => (
+                              {blog.tags?.slice(0, 2).map((tag, index) => (
                                 <span key={index} className="wedding-card-tag">
                                   <FaTag className="wedding-tag-icon" />
                                   {tag}

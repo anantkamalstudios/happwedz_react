@@ -56,6 +56,8 @@ const LocationModalWithAPI = () => {
       const sorted = res.data
         .map((c) => c.name.common)
         .sort((a, b) => a.localeCompare(b));
+
+      console.log("country:", countries);
       setCountries(sorted);
     });
   }, []);

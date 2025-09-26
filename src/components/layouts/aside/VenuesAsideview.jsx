@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { Col, Form } from "react-bootstrap";
+import { Row, Col, Form, Dropdown } from "react-bootstrap";
 import { MdClear } from "react-icons/md";
 import { CiFilter } from "react-icons/ci";
-import { FaChevronDown, FaChevronRight } from "react-icons/fa";
+import { FaChevronDown } from "react-icons/fa";
+import ViewSwitcher from "../Main/ViewSwitcher";
 
 const FILTER_OPTIONS = {
   One_Day_Wedding_Package: [
-    "Under ₹25,000",
+    "Under ₹25,0000",
     "₹25,000 - ₹49,999",
     "₹50,000 - ₹74,999",
     "₹75,000 - ₹99,999",
@@ -52,20 +53,11 @@ const FILTER_OPTIONS = {
   ],
 };
 
-const Asideview = () => {
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
+const VenuesAsideview = ({ view, setView }) => {
   const [selectedFilters, setSelectedFilters] = useState({});
   const [toggleSwitches, setToggleSwitches] = useState({
     deals: false,
     awardWinners: false,
-  });
-
-  const [sectionState, setSectionState] = useState({
-    One_Day_Wedding_Package: true,
-    Three_Day_Wedding_Package: true,
-    Pre_Wedding_Package: true,
-    Services: true,
-    Occasion: true,
   });
 
   const handleCheckbox = (group, value) => {
@@ -83,13 +75,6 @@ const Asideview = () => {
     }));
   };
 
-  const toggleSection = (key) => {
-    setSectionState((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
-
   const clearFilters = () => {
     setSelectedFilters({});
     setToggleSwitches({ deals: false, awardWinners: false });
@@ -99,136 +84,156 @@ const Asideview = () => {
     Object.values(selectedFilters).some(Boolean) ||
     Object.values(toggleSwitches).some(Boolean);
 
-  const renderIcon = (isOpen) =>
-    isOpen ? <FaChevronDown size={12} /> : <FaChevronRight size={12} />;
+  const getSelectedCount = (group) => {
+    return Object.keys(selectedFilters).filter(
+      (key) => key.startsWith(group) && selectedFilters[key]
+    ).length;
+  };
 
-  const renderCheckboxList = (group, options) => (
-    <div className="venue-type-checkboxes">
-      {options.map((option) => {
-        const key = `${group}-${option}`;
-        return (
-          <Form.Check
-            key={key}
-            type="checkbox"
-            id={key}
-            label={option}
-            className="mb-2 filter-checkbox"
-            checked={!!selectedFilters[key]}
-            onChange={() => handleCheckbox(group, option)}
-          />
-        );
-      })}
-    </div>
-  );
+  const renderDropdownCheckboxList = (group, options, title) => {
+    const selectedCount = getSelectedCount(group);
+
+    return (
+      <Dropdown className="main-filter-dropdown filter-dropdown">
+        <Dropdown.Toggle
+          bsPrefix="custom-toggle"
+          variant="outline-secondary"
+          id={`dropdown-${group}`}
+          className="d-flex align-items-center justify-content-between main-filter-dropdown-toggle filter-dropdown-toggle rounded-0"
+          style={{ minWidth: "180px" }}
+        >
+          <span className="d-flex align-items-center gap-2 me-2">
+            <CiFilter size={16} />
+            {title}
+            {selectedCount > 0 && (
+              <span className="badge primary-bg rounded-circle">
+                {selectedCount}
+              </span>
+            )}
+          </span>
+          <FaChevronDown size={12} />
+        </Dropdown.Toggle>
+
+        <Dropdown.Menu
+          className="main-filter-dropdown-menu filter-dropdown-menu"
+          style={{
+            maxHeight: "300px",
+            overflowY: "auto",
+            minWidth: "250px",
+            padding: "5px 2rem",
+          }}
+        >
+          {options.map((option) => {
+            const key = `${group}-${option}`;
+            return (
+              <Dropdown.Item
+                key={key}
+                as="div"
+                className="p-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Form.Check
+                  type="checkbox"
+                  id={key}
+                  label={option}
+                  className="mb-0 px-3 py-2 main-filter-checkbox"
+                  checked={!!selectedFilters[key]}
+                  onChange={() => handleCheckbox(group, option)}
+                />
+              </Dropdown.Item>
+            );
+          })}
+        </Dropdown.Menu>
+      </Dropdown>
+    );
+  };
 
   return (
-    <>
-      <div className="d-lg-none mb-3 text-end">
-        <button
-          className="btn btn-sm bg-white border rounded-3 border-dark text-dark gap-2"
-          onClick={() => setShowMobileFilters(!showMobileFilters)}
-        >
-          <CiFilter size={18} />
-          {showMobileFilters ? "Hide Filters" : "Show Filters"}
-        </button>
+    <div className="horizontal-filters-container bg-white border-bottom py-3 mb-4">
+      <div className="container-fluid">
+        <Row className="align-items-center">
+          {/* Filter dropdowns */}
+          <Col xs={12} md={8} className="mb-3 mb-md-0">
+            <div className="d-flex flex-wrap gap-3 align-items-center justify-content-md-start justify-content-center">
+              {renderDropdownCheckboxList(
+                "Occasion",
+                FILTER_OPTIONS.Occasion,
+                "Occasion"
+              )}
+              {renderDropdownCheckboxList(
+                "Services",
+                FILTER_OPTIONS.Services,
+                "Services"
+              )}
+              {renderDropdownCheckboxList(
+                "Pre_Wedding_Package",
+                FILTER_OPTIONS.Pre_Wedding_Package,
+                "Pre Wedding Package"
+              )}
+              {renderDropdownCheckboxList(
+                "One_Day_Wedding_Package",
+                FILTER_OPTIONS.One_Day_Wedding_Package,
+                "1 Day Wedding Package"
+              )}
+              {renderDropdownCheckboxList(
+                "Three_Day_Wedding_Package",
+                FILTER_OPTIONS.Three_Day_Wedding_Package,
+                "3 Day Wedding Package"
+              )}
+            </div>
+          </Col>
+
+          {/* Clear & View Switcher */}
+          <Col xs={12} md={4} className="mt-3 mt-md-0">
+            <div className="d-flex flex-column flex-md-row justify-content-md-end justify-content-center align-items-center gap-2 w-100">
+              {isAnyFilterSelected && (
+                <button
+                  className="btn btn-outline-danger btn-sm d-flex flex-row align-items-center text-center gap-1 mb-2 mb-md-0"
+                  onClick={clearFilters}
+                >
+                  <MdClear size={20} />
+                  Clear All
+                </button>
+              )}
+              <div className="d-flex justify-content-md-end justify-content-center w-75">
+                <ViewSwitcher view={view} setView={setView} />
+              </div>
+            </div>
+          </Col>
+        </Row>
+
+        {/* Active filters */}
+        {isAnyFilterSelected && (
+          <Row className="mt-3">
+            <Col xs={12}>
+              <div className="d-flex flex-wrap gap-2 align-items-center">
+                <small className="text-muted me-2">Active filters:</small>
+                {Object.entries(selectedFilters)
+                  .filter(([key, selected]) => selected)
+                  .map(([key]) => {
+                    const [group, value] = key.split("-");
+                    return (
+                      <span
+                        key={key}
+                        className="badge bg-light text-dark border d-flex align-items-center gap-1"
+                      >
+                        {value}
+                        <button
+                          type="button"
+                          className="btn-close btn-close-sm"
+                          style={{ fontSize: "0.6rem" }}
+                          onClick={() => handleCheckbox(group, value)}
+                        ></button>
+                      </span>
+                    );
+                  })}
+              </div>
+            </Col>
+          </Row>
+        )}
       </div>
-      <Col
-        xs={12}
-        lg="auto"
-        className={`venue-filter-container ${
-          showMobileFilters ? "d-block" : "d-none"
-        } d-lg-block aside-rubik`}
-      >
-        <div className="filter-sidebar show shadow-lg rounded">
-          {isAnyFilterSelected && (
-            <div className="clear-filters-wrapper d-flex justify-content-between align-items-center mb-4 p-2 bg-light rounded">
-              <span className="text-muted small">Filters applied</span>
-              <button
-                className="btn btn-sm clear-btn-filter d-flex align-items-center gap-1"
-                onClick={clearFilters}
-              >
-                <MdClear />
-                Clear All
-              </button>
-            </div>
-          )}
-          <div className="filter-section">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <h6
-                className="section-header m-0"
-                onClick={() => toggleSection("One_Day_Wedding_Package")}
-              >
-                {renderIcon(sectionState.One_Day_Wedding_Package)} 1 Day Wedding
-                Package
-              </h6>
-            </div>
-            {sectionState.One_Day_Wedding_Package &&
-              renderCheckboxList(
-                "venue",
-                FILTER_OPTIONS.One_Day_Wedding_Package
-              )}
-          </div>
-
-          <div className="filter-section">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <h6
-                className="section-header m-0"
-                onClick={() => toggleSection("Three_Day_Wedding_Package")}
-              >
-                {renderIcon(sectionState.Three_Day_Wedding_Package)} 3 Day
-                Wedding Package
-              </h6>
-            </div>
-            {sectionState.Three_Day_Wedding_Package &&
-              renderCheckboxList(
-                "venue",
-                FILTER_OPTIONS.Three_Day_Wedding_Package
-              )}
-          </div>
-
-          <div className="filter-section">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <h6
-                className="section-header m-0"
-                onClick={() => toggleSection("Services")}
-              >
-                {renderIcon(sectionState.Services)} Services
-              </h6>
-            </div>
-            {sectionState.Services &&
-              renderCheckboxList("venue", FILTER_OPTIONS.Services)}
-          </div>
-
-          <div className="filter-section">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <h6
-                className="section-header m-0"
-                onClick={() => toggleSection("Pre_Wedding_Package")}
-              >
-                {renderIcon(sectionState.Pre_Wedding_Package)} Pre Wedding
-                Package
-              </h6>
-            </div>
-            {sectionState.Pre_Wedding_Package &&
-              renderCheckboxList("venue", FILTER_OPTIONS.Pre_Wedding_Package)}
-          </div>
-
-          <div className="filter-section">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <h6
-                className="section-header m-0"
-                onClick={() => toggleSection("Occasion")}
-              >
-                {renderIcon(sectionState.Occasion)} Occasion
-              </h6>
-            </div>
-            {sectionState.Occasion &&
-              renderCheckboxList("venue", FILTER_OPTIONS.Occasion)}
-          </div>
-        </div>
-      </Col>
-    </>
+    </div>
   );
 };
 
-export default Asideview;
+export default VenuesAsideview;

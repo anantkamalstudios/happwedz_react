@@ -13,6 +13,7 @@ import MainSearch from "../layouts/Main/MainSearch";
 import PricingModal from "../layouts/PricingModal";
 import Photos from "../layouts/photography/Photos";
 import { useVendors } from "../../hooks/useVendors";
+import DynamicAside from "../layouts/aside/DynamicAside";
 
 const toTitleCase = (str) =>
   str.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
@@ -323,7 +324,9 @@ const SubSection = () => {
             </div>
           ) : (
             <>
-              <ViewSwitcher view={view} setView={setView} />
+              <DynamicAside section={section} view={view} setView={setView} />
+
+              {/* <ViewSwitcher view={view} setView={setView} /> */}
 
               {view === "list" && (
                 <ListView
