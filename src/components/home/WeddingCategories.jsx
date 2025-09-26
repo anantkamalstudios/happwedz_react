@@ -310,6 +310,9 @@
 // };
 
 // export default CategoryAccordion;
+
+
+
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -328,7 +331,7 @@ const CategoryAccordion = ({ onSelect }) => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/vendor-types/with-subcategories`
+          `${API_BASE_URL}/api/vendor-types/with-subcategories/all`
         );
         const apiData = response.data.map((cat) => ({
           id: cat.id,
