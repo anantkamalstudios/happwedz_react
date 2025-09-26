@@ -1,11 +1,24 @@
-import React, { useEffect } from "react";
-import { FaArrowLeft, FaChevronLeft } from "react-icons/fa";
-import { PiArrowBendUpLeftBold } from "react-icons/pi";
+import React, { useEffect, useState } from "react";
+import { FaChevronLeft } from "react-icons/fa";
 
 const BlogDetails = ({ post, onBackClick }) => {
+  const [blog, setBlog] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+    if (post?.id) {
+      setLoading(true);
+      fetch(`https://happywedz.com/api/blog-deatils/${post.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setBlog(data.data);
+          }
+        })
+        .catch((err) => console.error("Error fetching blog details:", err))
+        .finally(() => setLoading(false));
+    }
+  }, [post]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -27,6 +40,14 @@ const BlogDetails = ({ post, onBackClick }) => {
         return "bg-primary";
     }
   };
+
+  if (loading) {
+    return <p className="text-center py-5">Loading blog...</p>;
+  }
+
+  if (!blog) {
+    return <p className="text-center py-5 text-danger">Blog not found.</p>;
+  }
 
   return (
     <div style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}>
@@ -54,46 +75,48 @@ const BlogDetails = ({ post, onBackClick }) => {
                       <FaChevronLeft />
                     </button>
                     <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
-                      {post.category}
+                      {blog.category}
                     </span>
                   </div>
                   <span
                     className={`badge ${getStatusBadgeClass(
-                      post.status
+                      blog.status
                     )} px-3 py-2`}
                   >
-                    {post.status}
+                    {blog.status}
                   </span>
                 </div>
                 <small className="text-muted">
-                  {formatDate(post.createdDate)}
+                  {formatDate(blog.createdDate)}
                 </small>
               </div>
 
               {/* Title */}
-              <h1 className="display-5 fw-bold mb-4 lh-base">{post.title}</h1>
+              <h1 className="display-5 fw-bold mb-4 lh-base">{blog.title}</h1>
 
               {/* Author and Read Time */}
               <div className="d-flex align-items-center mb-4 text-muted">
                 <div className="me-4">
                   <i className="bi bi-person-circle me-2"></i>
-                  By {post.author}
+                  By {blog.author}
                 </div>
                 <div>
                   <i className="bi bi-clock me-2"></i>
-                  {post.readTime}
+                  {blog.readTime}
                 </div>
               </div>
 
               {/* Featured Image */}
-              <div className="mb-5">
-                <img
-                  src={post.image}
-                  alt={post.title}
-                  className="img-fluid rounded-3 shadow-sm w-100"
-                  style={{ height: "400px", objectFit: "cover" }}
-                />
-              </div>
+              {blog.images?.length > 0 && (
+                <div className="mb-5">
+                  <img
+                    src={blog.images[0]}
+                    alt={blog.title}
+                    className="img-fluid rounded-3 shadow-sm w-100"
+                    style={{ height: "400px", objectFit: "cover" }}
+                  />
+                </div>
+              )}
 
               {/* Content */}
               <div className="content-area">
@@ -101,85 +124,37 @@ const BlogDetails = ({ post, onBackClick }) => {
                   className="lead mb-4 text-muted"
                   style={{ fontSize: "1.1rem", lineHeight: "1.7" }}
                 >
-                  {post.description}
+                  {blog.shortDescription}
                 </div>
 
                 <div
                   style={{ fontSize: "1rem", lineHeight: "1.8", color: "#333" }}
                 >
-                  <p className="mb-4">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
-                    do eiusmod tempor incididunt ut labore et dolore magna
-                    aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-                    ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                  </p>
-
-                  <h2 className="h3 fw-bold mt-5 mb-3">Key Insights</h2>
-                  <p className="mb-4">
-                    Duis aute irure dolor in reprehenderit in voluptate velit
-                    esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
-                    occaecat cupidatat non proident, sunt in culpa qui officia
-                    deserunt mollit anim id est laborum.
-                  </p>
-
-                  <blockquote className="blockquote text-center my-5 p-4 bg-light rounded-3">
-                    <p className="mb-0 fst-italic">
-                      "Innovation distinguishes between a leader and a
-                      follower."
+                  {blog.fullDescription?.map((para, i) => (
+                    <p key={i} className="mb-4">
+                      {para}
                     </p>
-                    <footer className="blockquote-footer mt-2">
-                      Steve Jobs
-                    </footer>
-                  </blockquote>
-
-                  <h2 className="h3 fw-bold mt-5 mb-3">
-                    Implementation Strategy
-                  </h2>
-                  <p className="mb-4">
-                    Sed ut perspiciatis unde omnis iste natus error sit
-                    voluptatem accusantium doloremque laudantium, totam rem
-                    aperiam, eaque ipsa quae ab illo inventore veritatis et
-                    quasi architecto beatae vitae dicta sunt explicabo.
-                  </p>
-
-                  <ul className="mb-4">
-                    <li className="mb-2">
-                      Comprehensive planning and research phase
-                    </li>
-                    <li className="mb-2">
-                      Iterative development with continuous feedback
-                    </li>
-                    <li className="mb-2">
-                      Performance optimization and testing
-                    </li>
-                    <li className="mb-2">
-                      Deployment and monitoring strategies
-                    </li>
-                  </ul>
-
-                  <p className="mb-4">
-                    Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut
-                    odit aut fugit, sed quia consequuntur magni dolores eos qui
-                    ratione voluptatem sequi nesciunt.
-                  </p>
+                  ))}
                 </div>
               </div>
 
               {/* Tags */}
-              <div className="mt-5 pt-4 border-top">
-                <h5 className="fw-bold mb-3">Tags</h5>
-                <div>
-                  {post.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="badge bg-light text-dark me-2 mb-2 px-3 py-2 rounded-pill border"
-                      style={{ fontSize: "0.9rem" }}
-                    >
-                      #{tag}
-                    </span>
-                  ))}
+              {blog.tags?.length > 0 && (
+                <div className="mt-5 pt-4 border-top">
+                  <h5 className="fw-bold mb-3">Tags</h5>
+                  <div>
+                    {blog.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="badge bg-light text-dark me-2 mb-2 px-3 py-2 rounded-pill border"
+                        style={{ fontSize: "0.9rem" }}
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

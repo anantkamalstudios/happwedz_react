@@ -16,9 +16,10 @@ const Header = () => {
 
   const auth = useSelector((state) => state.auth);
   const vendorAuth = useSelector((state) => state.vendorAuth);
-  console.log("vendor auth ", vendorAuth);
+  // console.log("vendor auth ", vendorAuth);
   const isUserLoggedIn = !!auth?.token;
   const isVendorLoggedIn = !!vendorAuth?.token;
+
   const toSlug = (text) =>
     text
       ?.toLowerCase()
@@ -38,7 +39,7 @@ const Header = () => {
         const bsCollapse =
           window.bootstrap.Collapse.getOrCreateInstance(collapse);
         bsCollapse.hide();
-      } catch { }
+      } catch {}
     }
   }, [location]);
 
@@ -65,11 +66,9 @@ const Header = () => {
           </button>
         </div>
 
-
-
         <div className="collapse navbar-collapse" id="mainNav">
-          <div className="row">
-            <div className="col-12 bg-white p-2">
+          <div className="row w-100">
+            <div className="col-12 col-md-12 bg-white p-2">
               <div className="container">
                 <div className="row align-items-center gy-2">
                   {/* Left: Tagline */}
@@ -361,18 +360,19 @@ const Header = () => {
                                         const path = isShowMore
                                           ? "/venues"
                                           : `/venues/${item
-                                            .toLowerCase()
-                                            .replace(/\s+/g, "-")
-                                            .replace(/[^a-z0-9\-]/g, "")}`;
+                                              .toLowerCase()
+                                              .replace(/\s+/g, "-")
+                                              .replace(/[^a-z0-9\-]/g, "")}`;
 
                                         return (
                                           <div className="col-12 mb-2" key={i}>
                                             <Link
                                               to={path}
-                                              className={`dropdown-link d-flex align-items-center ${isShowMore
-                                                ? "primary-text fw-bold text-decoration-underline"
-                                                : ""
-                                                }`}
+                                              className={`dropdown-link d-flex align-items-center ${
+                                                isShowMore
+                                                  ? "primary-text fw-bold text-decoration-underline"
+                                                  : ""
+                                              }`}
                                             >
                                               <i className="bi bi-check-circle me-2 text-primary"></i>
                                               <span className="small">
