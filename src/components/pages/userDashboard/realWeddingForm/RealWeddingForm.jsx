@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   FiUser,
   FiCalendar,
@@ -12,8 +13,12 @@ import {
   FiChevronLeft,
 } from "react-icons/fi";
 
-const RealWeddingForm = () => {
+const RealWeddingForm = ({ user, token }) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [vendorTypes, setVendorTypes] = useState([]);
   const [formData, setFormData] = useState({
     // Basic Info
     title: "",
@@ -92,6 +97,46 @@ const RealWeddingForm = () => {
     }));
   };
 
+  const handleReplaceItem = (field, index, newValue) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: prev[field].map((item, i) => (i === index ? newValue : item)),
+    }));
+  };
+
+  const handleFilesAdd = (field, files) => {
+    setFormData((prev) => {
+      if (field === "coverPhoto") {
+        return { ...prev, coverPhoto: files[0] || null };
+      }
+      const filesArray = Array.from(files).filter(Boolean);
+      return { ...prev, [field]: [...prev[field], ...filesArray] };
+    });
+  };
+
+  const handleRemoveFile = (field, index = null) => {
+    setFormData((prev) => {
+      if (field === "coverPhoto") {
+        return { ...prev, coverPhoto: null };
+      }
+      const next = prev[field].filter((_, i) => i !== index);
+      return { ...prev, [field]: next };
+    });
+  };
+
+  useEffect(() => {
+    const loadVendorTypes = async () => {
+      try {
+        const res = await axios.get("https://happywedz.com/api/vendor-types");
+        setVendorTypes(Array.isArray(res.data) ? res.data : []);
+      } catch (err) {
+        // do not block form if vendor types fail
+        console.error("Failed to load vendor types", err);
+      }
+    };
+    loadVendorTypes();
+  }, []);
+
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -104,10 +149,56 @@ const RealWeddingForm = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Form submission logic would go here
-    console.log("Form submitted:", formData);
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    const data = new FormData();
+
+    // Append all fields from formData to FormData object
+    Object.keys(formData).forEach((key) => {
+      const value = formData[key];
+      if (key === "highlightPhotos" || key === "allPhotos") {
+        // Append photos individually as files
+        (value || []).forEach((file) => {
+          if (file instanceof File) data.append(key, file);
+        });
+        return;
+      }
+      if (key === "coverPhoto") {
+        if (value instanceof File) data.append("coverPhoto", value);
+        return;
+      }
+      if (Array.isArray(value)) {
+        // Send non-file arrays as single JSON strings (backend-friendly)
+        data.append(key, JSON.stringify(value));
+        return;
+      }
+      if (value !== null && value !== undefined) {
+        data.append(key, value);
+      }
+    });
+
+    // Force status to pending on Submit for Approval
+    data.set("status", "pending");
+
+    try {
+      const response = await axios.post("https://happywedz.com/api/realwedding", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setSuccess("Your wedding story has been submitted successfully!");
+      console.log("Server response:", response.data);
+    } catch (err) {
+      setError(err.response?.data?.message || "An error occurred while submitting the form.");
+      console.error("Submission error:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Render the appropriate step component
@@ -118,6 +209,8 @@ const RealWeddingForm = () => {
           <BasicInfoStep
             formData={formData}
             handleInputChange={handleInputChange}
+            handleArrayChange={handleArrayChange}
+            handleRemoveItem={handleRemoveItem}
           />
         );
       case 1:
@@ -148,6 +241,7 @@ const RealWeddingForm = () => {
             formData={formData}
             handleArrayChange={handleArrayChange}
             handleRemoveItem={handleRemoveItem}
+            vendorTypes={vendorTypes}
           />
         );
       case 5:
@@ -155,6 +249,8 @@ const RealWeddingForm = () => {
           <GalleryStep
             formData={formData}
             handleInputChange={handleInputChange}
+            handleFilesAdd={handleFilesAdd}
+            handleRemoveFile={handleRemoveFile}
           />
         );
       case 6:
@@ -162,6 +258,8 @@ const RealWeddingForm = () => {
           <HighlightsStep
             formData={formData}
             handleInputChange={handleInputChange}
+            handleArrayChange={handleArrayChange}
+            handleRemoveItem={handleRemoveItem}
           />
         );
       case 7:
@@ -203,8 +301,29 @@ const RealWeddingForm = () => {
           ))}
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            // Prevent accidental submit when pressing Enter in inputs
+            const tag = e.target.tagName.toLowerCase();
+            const type = e.target.getAttribute("type");
+            const isSubmit = type === "submit";
+            if (!isSubmit && (tag === "input" || tag === "textarea" || tag === "select")) {
+              e.preventDefault();
+            }
+          }
+        }}>
           {/* Render current step */}
+          {error && (
+            <div className="alert alert-danger" role="alert">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="alert alert-success" role="alert">
+              {success}
+            </div>
+          )}
+
           {renderStep()}
 
           {/* Form Footer with Navigation */}
@@ -228,8 +347,10 @@ const RealWeddingForm = () => {
                     Next <FiChevronRight />
                   </button>
                 ) : (
-                  <button type="submit" className="btn-next">
-                    Submit for Approval
+                  <button type="submit" className="btn-next" disabled={isLoading}>
+                    {isLoading ? (
+                      <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    ) : "Submit for Approval"}
                   </button>
                 )}
               </div>
@@ -242,7 +363,7 @@ const RealWeddingForm = () => {
 };
 
 // Step Components
-const BasicInfoStep = ({ formData, handleInputChange }) => {
+const BasicInfoStep = ({ formData, handleInputChange, handleArrayChange, handleRemoveItem }) => {
   return (
     <div className="form-card">
       <h2 className="form-section-title">
@@ -335,6 +456,7 @@ const BasicInfoStep = ({ formData, handleInputChange }) => {
             </div>
           ))}
         </div>
+        <small className="text-muted">Press Enter to add venue</small>
       </div>
     </div>
   );
@@ -425,6 +547,148 @@ const WeddingStoryStep = ({ formData, handleInputChange }) => {
   );
 };
 
+// Small controlled creator for Events
+const EventCreator = ({ onAdd }) => {
+  const [local, setLocal] = useState({ name: "", date: "", venue: "", description: "" });
+  const canAdd = local.name && local.date && local.venue;
+  return (
+    <div className="mb-3 p-3 border rounded">
+      <div className="form-row">
+        <div className="form-group">
+          <label className="form-label">Event Name</label>
+          <input
+            type="text"
+            className="form-control"
+            value={local.name}
+            onChange={(e) => setLocal({ ...local, name: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && canAdd) {
+                e.preventDefault();
+                onAdd({ ...local });
+                setLocal({ name: "", date: "", venue: "", description: "" });
+              }
+            }}
+            placeholder="e.g., Mehendi"
+          />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Date</label>
+          <input
+            type="date"
+            className="form-control"
+            value={local.date}
+            onChange={(e) => setLocal({ ...local, date: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && canAdd) {
+                e.preventDefault();
+                onAdd({ ...local });
+                setLocal({ name: "", date: "", venue: "", description: "" });
+              }
+            }}
+          />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Venue</label>
+          <input
+            type="text"
+            className="form-control"
+            value={local.venue}
+            onChange={(e) => setLocal({ ...local, venue: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && canAdd) {
+                e.preventDefault();
+                onAdd({ ...local });
+                setLocal({ name: "", date: "", venue: "", description: "" });
+              }
+            }}
+            placeholder="e.g., City Palace"
+          />
+        </div>
+      </div>
+      <div className="form-group">
+        <label className="form-label">Description (optional)</label>
+        <textarea
+          className="form-control"
+          rows="2"
+          value={local.description}
+          onChange={(e) => setLocal({ ...local, description: e.target.value })}
+          placeholder="Brief details about this event"
+        ></textarea>
+      </div>
+      <button
+        type="button"
+        className="add-item-btn"
+        onClick={() => {
+          if (canAdd) {
+            onAdd({ ...local });
+            setLocal({ name: "", date: "", venue: "", description: "" });
+          }
+        }}
+        disabled={!canAdd}
+      >
+        <FiPlus /> Add Event
+      </button>
+    </div>
+  );
+};
+
+// Small controlled creator for Vendors
+const VendorCreator = ({ vendorTypes = [], onAdd }) => {
+  const [local, setLocal] = useState({ typeId: "", type: "", name: "" });
+  useEffect(() => {
+    if (local.typeId && vendorTypes?.length) {
+      const found = vendorTypes.find((v) => String(v.id) === String(local.typeId));
+      setLocal((prev) => ({ ...prev, type: found?.name || prev.type }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [local.typeId]);
+
+  const canAdd = local.type && local.name;
+
+  return (
+    <div className="mb-3 p-3 border rounded">
+      <div className="form-row">
+        <div className="form-group">
+          <label className="form-label">Vendor Type</label>
+          <select
+            className="form-control"
+            value={local.typeId}
+            onChange={(e) => setLocal({ ...local, typeId: e.target.value })}
+          >
+            <option value="">Select type</option>
+            {vendorTypes.map((t) => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Vendor Name</label>
+          <input
+            type="text"
+            className="form-control"
+            value={local.name}
+            onChange={(e) => setLocal({ ...local, name: e.target.value })}
+            placeholder="e.g., DreamWed Planners"
+          />
+        </div>
+      </div>
+      <button
+        type="button"
+        className="add-item-btn"
+        onClick={() => {
+          if (canAdd) {
+            onAdd({ name: local.name, type: local.type });
+            setLocal({ typeId: "", type: "", name: "" });
+          }
+        }}
+        disabled={!canAdd}
+      >
+        <FiPlus /> Add Vendor
+      </button>
+    </div>
+  );
+};
+
 const EventsStep = ({ formData, handleArrayChange, handleRemoveItem }) => {
   return (
     <div className="form-card">
@@ -435,38 +699,41 @@ const EventsStep = ({ formData, handleArrayChange, handleRemoveItem }) => {
       <div className="form-group">
         <label className="form-label">Add Wedding Events</label>
 
-        {formData.events.length > 0 &&
-          formData.events.map((event, index) => (
-            <div key={index} className="event-card mb-3 p-3 border rounded">
-              <div className="d-flex justify-content-between align-items-center mb-2">
-                <h5 className="mb-0">{event.name || `Event ${index + 1}`}</h5>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-danger"
-                  onClick={() => handleRemoveItem("events", index)}
-                >
-                  <FiX />
-                </button>
-              </div>
-              <p className="mb-1">
-                <strong>Date:</strong> {event.date}
-              </p>
-              <p className="mb-1">
-                <strong>Venue:</strong> {event.venue}
-              </p>
-              <p className="mb-0">{event.description}</p>
-            </div>
-          ))}
+        <EventCreator onAdd={(ev) => handleArrayChange("events", ev)} />
 
-        <button type="button" className="add-item-btn">
-          <FiPlus /> Add Event
-        </button>
+        {formData.events.length > 0 && (
+          <div className="mt-3">
+            {formData.events.map((event, index) => (
+              <div key={index} className="event-card mb-3 p-3 border rounded">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <h5 className="mb-0">{event.name || `Event ${index + 1}`}</h5>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-danger"
+                    onClick={() => handleRemoveItem("events", index)}
+                  >
+                    <FiX />
+                  </button>
+                </div>
+                <p className="mb-1">
+                  <strong>Date:</strong> {event.date}
+                </p>
+                <p className="mb-1">
+                  <strong>Venue:</strong> {event.venue}
+                </p>
+                {event.description && (
+                  <p className="mb-0">{event.description}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-const VendorsStep = ({ formData, handleArrayChange, handleRemoveItem }) => {
+const VendorsStep = ({ formData, handleArrayChange, handleRemoveItem, vendorTypes }) => {
   return (
     <div className="form-card">
       <h2 className="form-section-title">
@@ -476,33 +743,34 @@ const VendorsStep = ({ formData, handleArrayChange, handleRemoveItem }) => {
       <div className="form-group">
         <label className="form-label">Add Your Wedding Vendors</label>
 
-        {formData.vendors.length > 0 &&
-          formData.vendors.map((vendor, index) => (
-            <div key={index} className="vendor-card mb-3 p-3 border rounded">
-              <div className="d-flex justify-content-between align-items-center mb-2">
-                <h5 className="mb-0">
-                  {vendor.category}: {vendor.name}
-                </h5>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-danger"
-                  onClick={() => handleRemoveItem("vendors", index)}
-                >
-                  <FiX />
-                </button>
-              </div>
-            </div>
-          ))}
+        <VendorCreator vendorTypes={vendorTypes} onAdd={(v) => handleArrayChange("vendors", v)} />
 
-        <button type="button" className="add-item-btn">
-          <FiPlus /> Add Vendor
-        </button>
+        {formData.vendors.length > 0 && (
+          <div className="mt-3">
+            {formData.vendors.map((vendor, index) => (
+              <div key={index} className="vendor-card mb-3 p-3 border rounded">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <h5 className="mb-0">
+                    {vendor.category}: {vendor.name}
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-danger"
+                    onClick={() => handleRemoveItem("vendors", index)}
+                  >
+                    <FiX />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-const GalleryStep = ({ formData, handleInputChange }) => {
+const GalleryStep = ({ formData, handleInputChange, handleFilesAdd, handleRemoveFile }) => {
   return (
     <div className="form-card">
       <h2 className="form-section-title">
@@ -511,7 +779,16 @@ const GalleryStep = ({ formData, handleInputChange }) => {
 
       <div className="form-group">
         <label className="form-label">Cover Photo</label>
-        <div className="upload-area">
+        <div
+          className="upload-area"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files && e.dataTransfer.files.length) {
+              handleFilesAdd("coverPhoto", e.dataTransfer.files);
+            }
+          }}
+        >
           <div className="upload-icon">
             <FiUpload />
           </div>
@@ -523,24 +800,41 @@ const GalleryStep = ({ formData, handleInputChange }) => {
             type="file"
             accept="image/*"
             onChange={(e) => {
-              if (e.target.files[0]) {
-                handleInputChange({
-                  target: {
-                    name: "coverPhoto",
-                    value: e.target.files[0],
-                    type: "file",
-                  },
-                });
+              if (e.target.files && e.target.files.length) {
+                handleFilesAdd("coverPhoto", e.target.files);
               }
             }}
             style={{ display: "block", marginTop: "10px" }}
           />
         </div>
+        {formData.coverPhoto && (
+          <div className="mt-2">
+            <div className="d-flex align-items-center gap-2">
+              <img
+                src={URL.createObjectURL(formData.coverPhoto)}
+                alt="Cover"
+                style={{ width: 120, height: 80, objectFit: "cover", borderRadius: 6 }}
+              />
+              <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveFile("coverPhoto")}>
+                <FiX />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="form-group">
         <label className="form-label">Highlight Photos</label>
-        <div className="upload-area">
+        <div
+          className="upload-area"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files && e.dataTransfer.files.length) {
+              handleFilesAdd("highlightPhotos", e.dataTransfer.files);
+            }
+          }}
+        >
           <div className="upload-icon">
             <FiUpload />
           </div>
@@ -548,12 +842,53 @@ const GalleryStep = ({ formData, handleInputChange }) => {
             Drag & drop your highlight photos here or click to browse
           </p>
           <p className="upload-hint">Select 5-10 of your best photos</p>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={(e) => {
+              if (e.target.files && e.target.files.length) {
+                handleFilesAdd("highlightPhotos", e.target.files);
+              }
+            }}
+            style={{ display: "block", marginTop: "10px" }}
+          />
         </div>
+        {formData.highlightPhotos?.length > 0 && (
+          <div className="mt-2 d-flex flex-wrap gap-2">
+            {formData.highlightPhotos.map((file, idx) => (
+              <div key={idx} className="position-relative" style={{ width: 100 }}>
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt={`Highlight ${idx + 1}`}
+                  style={{ width: 100, height: 80, objectFit: "cover", borderRadius: 6 }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-danger"
+                  style={{ position: "absolute", top: -8, right: -8 }}
+                  onClick={() => handleRemoveFile("highlightPhotos", idx)}
+                >
+                  <FiX />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="form-group">
         <label className="form-label">All Wedding Photos</label>
-        <div className="upload-area">
+        <div
+          className="upload-area"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files && e.dataTransfer.files.length) {
+              handleFilesAdd("allPhotos", e.dataTransfer.files);
+            }
+          }}
+        >
           <div className="upload-icon">
             <FiUpload />
           </div>
@@ -561,13 +896,45 @@ const GalleryStep = ({ formData, handleInputChange }) => {
             Drag & drop all your wedding photos here or click to browse
           </p>
           <p className="upload-hint">You can upload up to 100 photos</p>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={(e) => {
+              if (e.target.files && e.target.files.length) {
+                handleFilesAdd("allPhotos", e.target.files);
+              }
+            }}
+            style={{ display: "block", marginTop: "10px" }}
+          />
         </div>
+        {formData.allPhotos?.length > 0 && (
+          <div className="mt-2 d-flex flex-wrap gap-2">
+            {formData.allPhotos.map((file, idx) => (
+              <div key={idx} className="position-relative" style={{ width: 100 }}>
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt={`All ${idx + 1}`}
+                  style={{ width: 100, height: 80, objectFit: "cover", borderRadius: 6 }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-danger"
+                  style={{ position: "absolute", top: -8, right: -8 }}
+                  onClick={() => handleRemoveFile("allPhotos", idx)}
+                >
+                  <FiX />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-const HighlightsStep = ({ formData, handleInputChange }) => {
+const HighlightsStep = ({ formData, handleInputChange, handleArrayChange, handleRemoveItem }) => {
   return (
     <div className="form-card">
       <h2 className="form-section-title">
@@ -604,6 +971,7 @@ const HighlightsStep = ({ formData, handleInputChange }) => {
             </div>
           ))}
         </div>
+        <small className="text-muted">Press Enter to add theme</small>
       </div>
 
       <div className="form-row">
@@ -714,316 +1082,3 @@ const CreditsPublishStep = ({ formData, handleInputChange }) => {
 };
 
 export default RealWeddingForm;
-// import React, { useState, useEffect } from "react";
-// import { useSelector } from "react-redux";
-// import axios from "axios";
-// import {
-//   FiUser,
-//   FiCalendar,
-//   FiMapPin,
-//   FiUpload,
-//   FiImage,
-//   FiEdit3,
-//   FiPlus,
-//   FiX,
-//   FiChevronRight,
-//   FiChevronLeft,
-// } from "react-icons/fi";
-
-// const API_BASE_URL = "https://happywedz.com/api/realweddings"; // Update if needed
-
-// const RealWeddingForm = () => {
-//   const { token } = useSelector((state) => state.auth); // get token from redux
-
-//   const [currentStep, setCurrentStep] = useState(0);
-//   const [submitting, setSubmitting] = useState(false);
-//   const [progress, setProgress] = useState(0);
-//   const [message, setMessage] = useState(null);
-//   const [error, setError] = useState(null);
-
-//   const [formData, setFormData] = useState({
-//     title: "",
-//     slug: "",
-//     weddingDate: "",
-//     city: "",
-//     venues: [],
-//     brideName: "",
-//     brideBio: "",
-//     groomName: "",
-//     groomBio: "",
-//     story: "",
-//     events: [],
-//     vendors: [],
-//     coverPhoto: null,
-//     highlightPhotos: [],
-//     allPhotos: [],
-//     themes: [],
-//     brideOutfit: "",
-//     groomOutfit: "",
-//     specialMoments: "",
-//     photographer: "",
-//     makeup: "",
-//     decor: "",
-//     additionalCredits: [],
-//     status: "draft",
-//     featured: false,
-//   });
-
-//   const steps = [
-//     "Basic Info",
-//     "Couple",
-//     "Wedding Story",
-//     "Events",
-//     "Vendors",
-//     "Gallery",
-//     "Highlights",
-//     "Credits & Publish",
-//   ];
-
-//   // Generate slug
-//   useEffect(() => {
-//     if (!formData.slug && formData.title) {
-//       const generated = formData.title
-//         .trim()
-//         .toLowerCase()
-//         .replace(/[^a-z0-9- ]/g, "")
-//         .replace(/\s+/g, "-");
-//       setFormData((p) => ({ ...p, slug: generated }));
-//     }
-//   }, [formData.title]);
-
-//   const handleInputChange = (e) => {
-//     const { name, value, type, checked } = e.target;
-//     if (type === "file") return;
-//     setFormData((prev) => ({
-//       ...prev,
-//       [name]: type === "checkbox" ? checked : value,
-//     }));
-//   };
-
-//   const handleArrayAdd = (field, value) => {
-//     if (!value) return;
-//     setFormData((prev) => ({ ...prev, [field]: [...prev[field], value] }));
-//   };
-
-//   const handleRemoveItem = (field, index) => {
-//     setFormData((prev) => ({ ...prev, [field]: prev[field].filter((_, i) => i !== index) }));
-//   };
-
-//   const handleAddEvent = (eventObj) => {
-//     setFormData((prev) => ({ ...prev, events: [...prev.events, eventObj] }));
-//   };
-//   const handleAddVendor = (vendorObj) => {
-//     setFormData((prev) => ({ ...prev, vendors: [...prev.vendors, vendorObj] }));
-//   };
-
-//   const handleFileChange = (field, files) => {
-//     if (!files) return;
-//     if (field === "coverPhoto") {
-//       setFormData((prev) => ({ ...prev, coverPhoto: files[0] }));
-//     } else if (field === "highlightPhotos") {
-//       setFormData((prev) => ({ ...prev, highlightPhotos: [...prev.highlightPhotos, ...Array.from(files)] }));
-//     } else if (field === "allPhotos") {
-//       setFormData((prev) => ({ ...prev, allPhotos: [...prev.allPhotos, ...Array.from(files)] }));
-//     }
-//   };
-
-//   const nextStep = () => setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
-//   const prevStep = () => setCurrentStep((s) => Math.max(s - 1, 0));
-
-//   const submitToApi = async (e) => {
-//     e && e.preventDefault();
-//     setSubmitting(true);
-//     setError(null);
-//     setMessage(null);
-//     setProgress(0);
-
-//     try {
-//       const fd = new FormData();
-
-//       const simpleFields = [
-//         "title",
-//         "slug",
-//         "weddingDate",
-//         "city",
-//         "brideName",
-//         "brideBio",
-//         "groomName",
-//         "groomBio",
-//         "story",
-//         "brideOutfit",
-//         "groomOutfit",
-//         "specialMoments",
-//         "photographer",
-//         "makeup",
-//         "decor",
-//         "status",
-//       ];
-//       simpleFields.forEach((k) => {
-//         if (formData[k] !== undefined && formData[k] !== null) fd.append(k, formData[k]);
-//       });
-
-//       fd.append("featured", formData.featured ? "1" : "0");
-
-//       // Arrays & objects
-//       fd.append("venues", JSON.stringify(formData.venues));
-//       fd.append("themes", JSON.stringify(formData.themes));
-//       fd.append("additionalCredits", JSON.stringify(formData.additionalCredits));
-//       fd.append("events", JSON.stringify(formData.events));
-//       fd.append("vendors", JSON.stringify(formData.vendors));
-
-//       if (formData.coverPhoto) fd.append("coverPhoto", formData.coverPhoto, formData.coverPhoto.name);
-//       formData.highlightPhotos.forEach((file, idx) => fd.append("highlightPhotos[]", file, file.name));
-//       formData.allPhotos.forEach((file, idx) => fd.append("allPhotos[]", file, file.name));
-
-//       const config = {
-//         headers: {
-//           "Content-Type": "multipart/form-data",
-//           Authorization: `Bearer ${token}`, // pass token
-//         },
-//         onUploadProgress: (progressEvent) => {
-//           if (!progressEvent.total) return;
-//           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-//           setProgress(percentCompleted);
-//         },
-//       };
-
-//       const resp = await axios.post(API_BASE_URL, fd, config);
-//       setMessage(resp?.data?.message || "Wedding story submitted successfully.");
-//       setFormData((prev) => ({ ...prev, status: "draft" }));
-//     } catch (err) {
-//       console.error(err);
-//       const errMsg =
-//         err?.response?.data?.message ||
-//         err?.response?.data?.error ||
-//         err?.message ||
-//         "An error occurred while submitting.";
-//       setError(errMsg);
-//     } finally {
-//       setSubmitting(false);
-//       setProgress(0);
-//     }
-//   };
-
-//   // ---------- Step Components ----------
-//   const BasicInfoStep = () => (
-//     <div className="form-card">
-//       <h2 className="form-section-title"><FiCalendar /> Basic Info</h2>
-//       <input type="text" name="title" placeholder="Wedding Title" value={formData.title} onChange={handleInputChange} />
-//       <input type="text" name="slug" placeholder="Slug" value={formData.slug} onChange={handleInputChange} />
-//       <input type="date" name="weddingDate" value={formData.weddingDate} onChange={handleInputChange} />
-//       <input type="text" placeholder="Add Venue" onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleArrayAdd("venues", e.target.value); e.target.value = ""; } }} />
-//       <div>{formData.venues.map((v, i) => <span key={i}>{v} <FiX onClick={() => handleRemoveItem("venues", i)} /></span>)}</div>
-//     </div>
-//   );
-
-//   const CoupleInfoStep = () => (
-//     <div className="form-card">
-//       <h2 className="form-section-title"><FiUser /> Couple</h2>
-//       <input type="text" name="brideName" placeholder="Bride Name" value={formData.brideName} onChange={handleInputChange} />
-//       <textarea name="brideBio" placeholder="Bride Bio" value={formData.brideBio} onChange={handleInputChange} />
-//       <input type="text" name="groomName" placeholder="Groom Name" value={formData.groomName} onChange={handleInputChange} />
-//       <textarea name="groomBio" placeholder="Groom Bio" value={formData.groomBio} onChange={handleInputChange} />
-//     </div>
-//   );
-
-//   const WeddingStoryStep = () => (
-//     <div className="form-card">
-//       <h2 className="form-section-title"><FiEdit3 /> Story</h2>
-//       <textarea name="story" value={formData.story} onChange={handleInputChange} placeholder="Wedding Story" />
-//     </div>
-//   );
-
-//   const EventsStep = () => {
-//     const [local, setLocal] = useState({ name: "", date: "", venue: "", description: "" });
-//     return (
-//       <div className="form-card">
-//         <h2 className="form-section-title"><FiCalendar /> Events</h2>
-//         {formData.events.map((ev, i) => <div key={i}>{ev.name} <FiX onClick={() => handleRemoveItem("events", i)} /></div>)}
-//         <input placeholder="Event Name" value={local.name} onChange={(e) => setLocal({ ...local, name: e.target.value })} />
-//         <input type="date" value={local.date} onChange={(e) => setLocal({ ...local, date: e.target.value })} />
-//         <input placeholder="Venue" value={local.venue} onChange={(e) => setLocal({ ...local, venue: e.target.value })} />
-//         <textarea placeholder="Description" value={local.description} onChange={(e) => setLocal({ ...local, description: e.target.value })} />
-//         <button type="button" onClick={() => { handleAddEvent(local); setLocal({ name: "", date: "", venue: "", description: "" }); }}><FiPlus /> Add Event</button>
-//       </div>
-//     );
-//   };
-
-//   const VendorsStep = () => {
-//     const [local, setLocal] = useState({ category: "", name: "", contact: "" });
-//     return (
-//       <div className="form-card">
-//         <h2 className="form-section-title"><FiUser /> Vendors</h2>
-//         {formData.vendors.map((v, i) => <div key={i}>{v.category}: {v.name} <FiX onClick={() => handleRemoveItem("vendors", i)} /></div>)}
-//         <input placeholder="Category" value={local.category} onChange={(e) => setLocal({ ...local, category: e.target.value })} />
-//         <input placeholder="Name" value={local.name} onChange={(e) => setLocal({ ...local, name: e.target.value })} />
-//         <input placeholder="Contact" value={local.contact} onChange={(e) => setLocal({ ...local, contact: e.target.value })} />
-//         <button type="button" onClick={() => { handleAddVendor(local); setLocal({ category: "", name: "", contact: "" }); }}><FiPlus /> Add Vendor</button>
-//       </div>
-//     );
-//   };
-
-//   const GalleryStep = () => (
-//     <div className="form-card">
-//       <h2 className="form-section-title"><FiImage /> Gallery</h2>
-//       <input type="file" onChange={(e) => handleFileChange("coverPhoto", e.target.files)} />
-//       <input type="file" multiple onChange={(e) => handleFileChange("highlightPhotos", e.target.files)} />
-//       <input type="file" multiple onChange={(e) => handleFileChange("allPhotos", e.target.files)} />
-//     </div>
-//   );
-
-//   const HighlightsStep = () => (
-//     <div className="form-card">
-//       <h2 className="form-section-title">Highlights</h2>
-//       <input placeholder="Bride Outfit" name="brideOutfit" value={formData.brideOutfit} onChange={handleInputChange} />
-//       <input placeholder="Groom Outfit" name="groomOutfit" value={formData.groomOutfit} onChange={handleInputChange} />
-//       <textarea placeholder="Special Moments" name="specialMoments" value={formData.specialMoments} onChange={handleInputChange} />
-//     </div>
-//   );
-
-//   const CreditsPublishStep = () => (
-//     <div className="form-card">
-//       <h2 className="form-section-title">Credits & Publish</h2>
-//       <input placeholder="Photographer" name="photographer" value={formData.photographer} onChange={handleInputChange} />
-//       <input placeholder="Makeup Artist" name="makeup" value={formData.makeup} onChange={handleInputChange} />
-//       <input placeholder="Decor & Floral" name="decor" value={formData.decor} onChange={handleInputChange} />
-//       <label>
-//         Featured <input type="checkbox" name="featured" checked={formData.featured} onChange={handleInputChange} />
-//       </label>
-//     </div>
-//   );
-
-//   const renderStep = () => {
-//     switch (currentStep) {
-//       case 0: return <BasicInfoStep />;
-//       case 1: return <CoupleInfoStep />;
-//       case 2: return <WeddingStoryStep />;
-//       case 3: return <EventsStep />;
-//       case 4: return <VendorsStep />;
-//       case 5: return <GalleryStep />;
-//       case 6: return <HighlightsStep />;
-//       case 7: return <CreditsPublishStep />;
-//       default: return <BasicInfoStep />;
-//     }
-//   };
-
-//   return (
-//     <div style={{ maxWidth: 900, margin: "0 auto" }}>
-//       <h1>Share Your Wedding Story</h1>
-//       <form onSubmit={submitToApi}>
-//         {renderStep()}
-//         <div style={{ marginTop: 16 }}>
-//           {currentStep > 0 && <button type="button" onClick={prevStep}><FiChevronLeft /> Previous</button>}
-//           {currentStep < steps.length - 1
-//             ? <button type="button" onClick={nextStep}>Next <FiChevronRight /></button>
-//             : <button type="submit" disabled={submitting}>{submitting ? `Submitting (${progress}%)` : "Submit"}</button>
-//           }
-//         </div>
-//       </form>
-//       {message && <div style={{ color: "green" }}>{message}</div>}
-//       {error && <div style={{ color: "red" }}>{error}</div>}
-//     </div>
-//   );
-// };
-
-// export default RealWeddingForm;

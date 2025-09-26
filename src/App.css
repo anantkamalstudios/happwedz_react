@@ -16782,6 +16782,7 @@ input:checked + .slider:before {
 .custom-testimonial-box {
   background-color: #fff;
   border-radius: 10px;
+  margin-bottom: 3rem;
   max-width: 400px;
   position: relative;
 }
@@ -16806,6 +16807,22 @@ input:checked + .slider:before {
   margin-top: 20px;
   position: relative;
   left: 50%;
+}
+
+@media (max-width: 768px) {
+  .custom-floral-graphic {
+    width: 70%;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .custom-floral-graphic {
+    width: 90%;
+    height: 50px;
+  }
 }
 
 /* Image and card wrapper */

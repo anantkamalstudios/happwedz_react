@@ -8,7 +8,7 @@ import { GrPlan } from "react-icons/gr";
 import { Camera, Music, Utensils, Gift } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const MyWedding = () => {
+const Wedding = () => {
   const [completedTasks, setCompletedTasks] = useState(new Set([0, 2]));
   const [budget, setBudget] = useState({
     total: 500000,
@@ -354,4 +354,4 @@ const MyWedding = () => {
   );
 };
 
-export default MyWedding;
+export default Wedding;
