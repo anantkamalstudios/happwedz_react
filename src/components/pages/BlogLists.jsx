@@ -245,9 +245,8 @@ const BlogLists = ({ onPostClick }) => {
                   {categories.map((category, index) => (
                     <button
                       key={index}
-                      className={`category-item ${
-                        selectedCategory === category.value ? "active" : ""
-                      }`}
+                      className={`category-item ${selectedCategory === category.value ? "active" : ""
+                        }`}
                       onClick={() => setSelectedCategory(category.value)}
                     >
                       <span className="category-name">{category.name}</span>
@@ -262,27 +261,24 @@ const BlogLists = ({ onPostClick }) => {
                 <h4 className="sidebar-title">Sort By</h4>
                 <div className="sort-options">
                   <button
-                    className={`sort-option ${
-                      sortBy === "latest" ? "active" : ""
-                    }`}
+                    className={`sort-option ${sortBy === "latest" ? "active" : ""
+                      }`}
                     onClick={() => setSortBy("latest")}
                   >
                     <FaCalendarAlt className="sort-icon" />
                     Latest
                   </button>
                   <button
-                    className={`sort-option ${
-                      sortBy === "popular" ? "active" : ""
-                    }`}
+                    className={`sort-option ${sortBy === "popular" ? "active" : ""
+                      }`}
                     onClick={() => setSortBy("popular")}
                   >
                     <FaEye className="sort-icon" />
                     Most Popular
                   </button>
                   <button
-                    className={`sort-option ${
-                      sortBy === "trending" ? "active" : ""
-                    }`}
+                    className={`sort-option ${sortBy === "trending" ? "active" : ""
+                      }`}
                     onClick={() => setSortBy("trending")}
                   >
                     <FaHeart className="sort-icon" />

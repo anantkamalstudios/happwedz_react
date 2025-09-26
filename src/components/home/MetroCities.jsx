@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 const citiesData = {
   Maharashtra: [
@@ -93,20 +93,54 @@ const citiesData = {
 };
 
 const MetroCities = () => {
+  const [expandedStates, setExpandedStates] = useState({});
+
+  const toggleExpand = (state) => {
+    setExpandedStates((prev) => ({
+      ...prev,
+      [state]: !prev[state],
+    }));
+  };
+
   return (
-    <div className="container" style={{ marginTop: "5rem" }}>
+    <div className="container my-5">
       <h3 className="mb-4 text-center">Wedding Vendors By Location</h3>
-      <div className="row">
-        {Object.entries(citiesData).map(([state, venues]) => (
-          <div className="col-6 col-md-3 mb-4" key={state}>
-            <h5 className="fw-bold">{state}</h5>
-            <ul className="list-unstyled">
-              {venues.map((venue, index) => (
-                <li key={index}>{venue}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
+      <div className="row row-cols-1 row-cols-md-4 g-4 mt-5">
+        {Object.entries(citiesData).map(([state, venues]) => {
+          const isExpanded = expandedStates[state];
+          const visibleVenues = isExpanded ? venues : venues.slice(0, 5);
+
+          return (
+            <div className="col" key={state}>
+              <div className=" h-100">
+                <div className="">
+                  <h5 className="fw-bold">{state}</h5>
+                  <ul className="list-unstyled mb-0 mt-3">
+                    {visibleVenues.map((venue, index) => (
+                      <li
+                        key={index}
+                        style={{ fontSize: "15px" }}
+                        className="lh-lg"
+                      >
+                        {venue}
+                      </li>
+                    ))}
+                    {venues.length > 5 && (
+                      <li>
+                        <button
+                          className="btn btn-link primary-text p-0 mt-1"
+                          onClick={() => toggleExpand(state)}
+                        >
+                          {isExpanded ? "View less" : "View all"}
+                        </button>
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

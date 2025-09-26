@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const VendorLocation = ({ formData, setFormData }) => {
+const VendorLocation = ({ formData, setFormData, onSave }) => {
   const location = formData.location || {
     addressLine1: "",
     addressLine2: "",
@@ -212,7 +212,7 @@ const VendorLocation = ({ formData, setFormData }) => {
             />
           </div>
         </div>
-        <button className="btn btn-primary mt-2">Save Location Details</button>
+        <button className="btn btn-primary mt-2" onClick={onSave}>Save Location Details</button>
       </div>
     </div>
   );
