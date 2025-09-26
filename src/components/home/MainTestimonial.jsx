@@ -4,7 +4,6 @@ const MainTestimonial = () => {
   return (
     <div className="container my-5 custom-testimonial-section">
       <div className="row">
-        {/* Left Side */}
         <div className="col-md-6 d-flex align-items-center justify-content-center">
           <div className="custom-testimonial-box text-center shadow p-4">
             <h2 className="custom-heading">What Our Couples Say</h2>

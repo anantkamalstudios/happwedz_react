@@ -54,7 +54,7 @@ import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 import UserDashboardNavbar from "../../layouts/UserDashboardNavbar";
-import MyWedding from "./mywedding/MyWedding";
+import Wedding from "./wedding/Wedding";
 import Vendors from "./vendors/Vendors";
 import Budget from "./budget/Budget";
 import Check from "./checklist/Check";
@@ -76,7 +76,7 @@ const UserDashboardMain = () => {
   const renderContent = () => {
     switch (slug) {
       case "my-wedding":
-        return <MyWedding user={user} token={token} />;
+        return <Wedding user={user} token={token} />;
       case "checklist":
         return <Check user={user} token={token} />;
       case "vendor":
@@ -94,7 +94,7 @@ const UserDashboardMain = () => {
       case "real-wedding":
         return <RealWeddingForm user={user} token={token} />;
       default:
-        return <MyWedding user={user} token={token} />;
+        return <Wedding user={user} token={token} />;
     }
   };
 
