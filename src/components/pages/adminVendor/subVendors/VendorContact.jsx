@@ -1,6 +1,6 @@
 import React from "react";
 
-const VendorContact = ({ formData, setFormData }) => {
+const VendorContact = ({ formData, setFormData, onSave }) => {
   const contact = formData.contact || {
     contactName: "",
     phone: "",
@@ -101,7 +101,7 @@ const VendorContact = ({ formData, setFormData }) => {
             />
           </div>
         </div>
-        <button className="btn btn-primary mt-2">Save Contact Details</button>
+        <button className="btn btn-primary mt-2" onClick={onSave}>Save Contact Details</button>
       </div>
     </div>
   );

@@ -1,8 +1,8 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { FiUpload, FiX } from "react-icons/fi";
 
-const PhotoGallery = () => {
-  const [images, setImages] = useState([]);
+const PhotoGallery = ({ images = [], onImagesChange }) => {
+  const [localImages, setLocalImages] = useState(images);
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -36,7 +36,7 @@ const PhotoGallery = () => {
     (files) => {
       const newImages = files
         .filter((file) => file.type.startsWith("image/"))
-        .slice(0, 8 - images.length)
+        .slice(0, 8 - localImages.length)
         .map((file) => ({
           id: Math.random().toString(36).substr(2, 9),
           file,
@@ -44,27 +44,30 @@ const PhotoGallery = () => {
           title: "",
         }));
 
-      setImages((prev) => [...prev, ...newImages]);
+      setLocalImages((prev) => [...prev, ...newImages]);
     },
-    [images]
+    [localImages]
   );
 
   const handleTitleChange = (id, value) => {
-    setImages((prev) =>
+    setLocalImages((prev) =>
       prev.map((img) => (img.id === id ? { ...img, title: value } : img))
     );
   };
 
   const handleRemoveImage = (id) => {
-    setImages((prev) => prev.filter((img) => img.id !== id));
+    setLocalImages((prev) => prev.filter((img) => img.id !== id));
   };
 
-  // Clean up object URLs
-  React.useEffect(() => {
-    return () => {
-      images.forEach((image) => URL.revokeObjectURL(image.preview));
-    };
+  // Sync down from parent when prop changes
+  useEffect(() => {
+    setLocalImages(images || []);
   }, [images]);
+
+  // Notify parent on change
+  useEffect(() => {
+    onImagesChange && onImagesChange(localImages);
+  }, [localImages, onImagesChange]);
 
   return (
     <div className="container my-5">
@@ -79,9 +82,8 @@ const PhotoGallery = () => {
 
           {/* Drag & Drop Area */}
           <div
-            className={`border-2 border-dashed rounded-4 p-5 text-center ${
-              isDragging ? "border-primary bg-blue-10" : "border-gray-300"
-            }`}
+            className={`border-2 border-dashed rounded-4 p-5 text-center ${isDragging ? "border-primary bg-blue-10" : "border-gray-300"
+              }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -133,7 +135,7 @@ const PhotoGallery = () => {
                 background: "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)",
               }}
               onClick={handleButtonClick}
-              disabled={images.length >= 8}
+              disabled={localImages.length >= 8}
             >
               Browse Files
             </button>
@@ -141,7 +143,7 @@ const PhotoGallery = () => {
               JPG, PNG up to 8MB (Max 8 images)
             </p>
 
-            {images.length >= 8 && (
+            {localImages.length >= 8 && (
               <div className="mt-3 text-danger">
                 Maximum of 8 images reached
               </div>
@@ -158,11 +160,11 @@ const PhotoGallery = () => {
           />
 
           {/* Preview Section */}
-          {images.length > 0 && (
+          {localImages.length > 0 && (
             <div className="mt-5">
               <h4 className="mb-4">Preview Images</h4>
               <div className="row g-4">
-                {images.map((image) => (
+                {localImages.map((image) => (
                   <div key={image.id} className="col-md-3 col-6">
                     <div className="card border-0 shadow-sm h-100">
                       <div className="position-relative">

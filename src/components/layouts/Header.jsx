@@ -1,20 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { Link, Links } from "react-router-dom";
+import { Link } from "react-router-dom";
 import LocationModalWithCategories from "./LocationModalWithCategories";
 import { RiMenuFill } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/authSlice";
+import { vendorLogout } from "../../redux/vendorAuthSlice";
 import { FaArrowRightLong } from "react-icons/fa6";
 
 const Header = () => {
   const dispatch = useDispatch();
   const handleLogout = () => {
     dispatch(logout());
+    dispatch(vendorLogout());
   };
 
   const auth = useSelector((state) => state.auth);
   const vendorAuth = useSelector((state) => state.vendorAuth);
   console.log("vendor auth ", vendorAuth);
+  const isUserLoggedIn = !!auth?.token;
+  const isVendorLoggedIn = !!vendorAuth?.token;
   const toSlug = (text) =>
     text
       ?.toLowerCase()
@@ -34,7 +38,7 @@ const Header = () => {
         const bsCollapse =
           window.bootstrap.Collapse.getOrCreateInstance(collapse);
         bsCollapse.hide();
-      } catch {}
+      } catch { }
     }
   }, [location]);
 
@@ -61,10 +65,7 @@ const Header = () => {
           </button>
         </div>
 
-        <div
-          className="collapse navbar-collapse justify-content-between"
-          id="mainNav"
-        ></div>
+
 
         <div className="collapse navbar-collapse" id="mainNav">
           <div className="row">
@@ -360,19 +361,18 @@ const Header = () => {
                                         const path = isShowMore
                                           ? "/venues"
                                           : `/venues/${item
-                                              .toLowerCase()
-                                              .replace(/\s+/g, "-")
-                                              .replace(/[^a-z0-9\-]/g, "")}`;
+                                            .toLowerCase()
+                                            .replace(/\s+/g, "-")
+                                            .replace(/[^a-z0-9\-]/g, "")}`;
 
                                         return (
                                           <div className="col-12 mb-2" key={i}>
                                             <Link
                                               to={path}
-                                              className={`dropdown-link d-flex align-items-center ${
-                                                isShowMore
-                                                  ? "primary-text fw-bold text-decoration-underline"
-                                                  : ""
-                                              }`}
+                                              className={`dropdown-link d-flex align-items-center ${isShowMore
+                                                ? "primary-text fw-bold text-decoration-underline"
+                                                : ""
+                                                }`}
                                             >
                                               <i className="bi bi-check-circle me-2 text-primary"></i>
                                               <span className="small">
@@ -988,7 +988,7 @@ const Header = () => {
                       </li> */}
 
                       {/* Login Dropdown */}
-                      {auth.user || vendorAuth.vendor ? (
+                      {isUserLoggedIn || isVendorLoggedIn ? (
                         <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <button
@@ -1029,7 +1029,7 @@ const Header = () => {
                       </li> */}
 
                       {/* Login Dropdown */}
-                      {auth.user && (
+                      {isUserLoggedIn && (
                         <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <Link
@@ -1041,7 +1041,7 @@ const Header = () => {
                           </div>
                         </li>
                       )}
-                      {vendorAuth.vendor && (
+                      {isVendorLoggedIn && (
                         <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <Link
@@ -1053,13 +1053,6 @@ const Header = () => {
                           </div>
                         </li>
                       )}
-                      {/* {["Genie"].map((item) => (
-                        <li className="nav-item" key={item}>
-                          <a className="nav-link text-white" href="#">
-                            {item}
-                          </a>
-                        </li>
-                      ))} */}
                     </ul>
                   </div>
                 </div>
