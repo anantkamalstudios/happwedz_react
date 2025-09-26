@@ -81,12 +81,12 @@ const Header = () => {
                     </a>
                   </div>
 
-                  {/* Center: Location */}
-                  <div className="col-12 col-sm-6 col-lg-3">
+                  {/* Middle: Location Selector */}
+                  <div className="col-12 col-sm-6 col-lg-3 d-flex justify-content-center justify-content-sm-start">
                     <LocationModalWithCategories />
                   </div>
 
-                  {/* Right: Icons */}
+                  {/* Right: Store Icons */}
                   <div className="col-12 col-lg-5 d-flex align-items-center justify-content-center justify-content-lg-end gap-4">
                     <img
                       src="/images/header/playstore.png"
@@ -128,6 +128,7 @@ const Header = () => {
                         }}
                       />
                     </Link>
+
                     {/* PlayStore */}
                     {/* <a
                       className="app-store-link d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
