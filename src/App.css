@@ -56,6 +56,77 @@ body {
   margin: 0;
 }
 
+.fs-10 {
+  font-size: 10px;
+}
+.fs-12 {
+  font-size: 12px;
+}
+.fs-14 {
+  font-size: 14px;
+}
+.fs-16 {
+  font-size: 16px;
+}
+.fs-18 {
+  font-size: 18px;
+}
+.fs-20 {
+  font-size: 20px;
+}
+.fs-22 {
+  font-size: 22px;
+}
+.fs-24 {
+  font-size: 24px;
+}
+.fs-26 {
+  font-size: 26px;
+}
+.fs-28 {
+  font-size: 28px;
+}
+.fs-30 {
+  font-size: 30px;
+}
+.fs-32 {
+  font-size: 32px;
+}
+.fs-36 {
+  font-size: 36px;
+}
+.fs-40 {
+  font-size: 40px;
+}
+.fs-48 {
+  font-size: 48px;
+}
+.fs-56 {
+  font-size: 56px;
+}
+.fs-64 {
+  font-size: 64px;
+}
+
+/* Responsive Helpers */
+@media (max-width: 768px) {
+  .fs-24 {
+    font-size: 20px;
+  }
+  .fs-28 {
+    font-size: 22px;
+  }
+  .fs-32 {
+    font-size: 26px;
+  }
+  .fs-36 {
+    font-size: 28px;
+  }
+  .fs-40 {
+    font-size: 32px;
+  }
+}
+
 .wrapper {
   max-width: 1200px;
   min-width: 950px;
@@ -103,7 +174,7 @@ body {
 }
 
 .nav-item .nav-link {
-  font-size: 13px;
+  font-size: 16px;
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
@@ -147,7 +218,23 @@ body {
   visibility: visible;
   opacity: 1;
   top: 90%;
+  max-height: 60vh;
+  overflow-y: auto;
 }
+
+/* .mega-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #fff;
+  z-index: 999;
+  width: 100%;
+  padding: 1rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+} */
 
 .mega-dropdown {
   display: none;
@@ -161,6 +248,19 @@ body {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.2s ease;
+}
+
+/* Make columns stretch evenly */
+.mega-dropdown .row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.mega-dropdown .col-6,
+.mega-dropdown .col-md-3 {
+  display: flex;
+  flex-direction: column;
 }
 
 /* Prevent gap hover-loss by ensuring the wrapper spans full width and menu overlaps */

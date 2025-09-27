@@ -35,7 +35,7 @@ const Home = () => {
         subtitle="Experience How You'll Look on Your Wedding Day with AI-Powered Virtual Makeover"
         btnName="Try Virtual Look"
       />
-      <VenueSlider />
+      {/* <VenueSlider /> */}
       <HowItWorksSection />
       <FeaturedVendorsSection />
       <CtaPanel
@@ -49,7 +49,7 @@ const Home = () => {
         btnName="Create Your E-Invite"
       />
 
-      <TestimonialsSection />
+      {/* <TestimonialsSection /> */}
       <RealWeddings />
       {/* <CtaPanel
         logo={logo}

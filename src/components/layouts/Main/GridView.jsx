@@ -77,7 +77,7 @@ const GridView = ({ subVenuesData, section, handleShow }) => {
                   </div>
                   <Card.Body className="d-flex flex-column">
                     <Link
-                      to={`/details/info/${v.slug}`}
+                      to={`/details/info/${v.id}`}
                       className="text-decoration-none"
                     >
                       <Card.Title as="h5" className="venue-name">

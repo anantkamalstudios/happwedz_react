@@ -19,12 +19,13 @@ const SubSection = () => {
   const { section, slug } = useParams();
   const title = slug ? toTitleCase(slug) : "";
   const [show, setShow] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
   const [view, setView] = useState("list");
   const [isLoading, setIsLoading] = useState(true);
   const [showDebug, setShowDebug] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedId, setSelectedId] = useState(null);
+
   // Local vendors state (direct API fetch)
   const [vendors, setVendors] = useState([]);
   const [vendorsLoading, setVendorsLoading] = useState(false);
@@ -33,6 +34,7 @@ const SubSection = () => {
 
   // const handleClose = () => setShow(false);
   // const handleShow = () => setShow(true);
+
   const handleClose = () => {
     setShow(false);
     setSelectedId(null);
@@ -41,40 +43,40 @@ const SubSection = () => {
     setSelectedId(id);
     setShow(true);
   };
+
   const [venueApiData, setVenueApiData] = useState(null);
   const [venueApiLoading, setVenueApiLoading] = useState(false);
   const [venueApiError, setVenueApiError] = useState(null);
 
   useEffect(() => {
-    if (section === "venues" && section === "vendors" && slug) {
-      setVenueApiLoading(true);
-      setVenueApiError(null);
-      setVenueApiData(null);
-      const subCategory = slug
-        .replace(/-/g, " ")
-        .replace(/\b\w/g, (l) => l.toUpperCase());
-      fetch(
-        `https://happywedz.com/api/vendor-services?subCategory=${encodeURIComponent(
-          subCategory
-        )}`
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          console.log("venueApiData Res: ", res);
-          console.log("venueApiData Data: ", data);
-          setVenueApiData(Array.isArray(data) ? data : []);
-          console.log("venueApiData: ", venueApiData);
-          setVenueApiLoading(false);
-        })
-        .catch((err) => {
-          setVenueApiError("Failed to load data from API.", err);
-          setVenueApiLoading(false);
-        });
-    } else {
-      setVenueApiData(null);
-      setVenueApiLoading(false);
-      setVenueApiError(null);
-    }
+    if (section !== "venues" || !slug) return;
+
+    setVenueApiLoading(true);
+    setVenueApiError(null);
+    setVenueApiData(null);
+
+    const subCategory = slug
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (l) => l.toUpperCase());
+
+    fetch(
+      `https://happywedz.com/api/vendor-services?subCategory=${encodeURIComponent(
+        subCategory
+      )}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        const items = Array.isArray(data) ? data : [];
+        const transformed = transformVendorsData(items);
+        setVenueApiData(transformed);
+        console.log("Venues->", transformed);
+      })
+      .catch((err) => {
+        setVenueApiError("Failed to load venues from API.");
+      })
+      .finally(() => {
+        setVenueApiLoading(false);
+      });
   }, [section, slug]);
 
   useEffect(() => {
@@ -233,9 +235,11 @@ const SubSection = () => {
     return subVenuesData;
   }, [section, slug, venueApiData]);
 
-  let dataToSend = filteredVenuesData;
+  let dataToSend = [];
   if (section === "vendors") {
     dataToSend = vendorsError ? subVendorsData : vendors;
+  } else if (section === "venues") {
+    dataToSend = venueApiError ? subVenuesData : venueApiData || [];
   } else if (section === "twosoul") {
     dataToSend = twoSoul;
   }
@@ -481,6 +485,11 @@ const SubSection = () => {
 
               <PricingModal show={show} handleClose={handleClose} vendorId={selectedId} />
               {/* <PricingModal subVenuesData={dataToSend} show={show} handleClose={handleClose} /> */}
+              <PricingModal
+                show={show}
+                handleClose={handleClose}
+                selectedId={selectedId}
+              />
             </>
           )}
         </>

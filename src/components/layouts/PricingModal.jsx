@@ -112,6 +112,11 @@ const PricingModal = ({ show, handleClose, vendorId }) => {
                 Location
               </h4>
               <h4 className="mb-1">Request Pricing Information</h4>
+              {vendorId && (
+                <div className="mb-1 text-primary" style={{ fontSize: "13px" }}>
+                  <strong>Vendor ID:</strong> {vendorId}
+                </div>
+              )}
               <p className="mb-0 text-muted" style={{ fontSize: "12px" }}>
                 Lorem ipsum dolor sit amet consectetur adipisicing elit. Rem
                 fugit earum, neque magni illo nesciunt dolorum, beatae ullam est
