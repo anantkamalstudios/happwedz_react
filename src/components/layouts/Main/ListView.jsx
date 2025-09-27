@@ -26,10 +26,6 @@ const ListView = ({ subVenuesData, section, handleShow }) => {
   return (
     <Container>
       <Row>
-        {/* <Col xs={12} md={3} className="mb-4 d-block d-lg-none">
-          <DynamicAside section={section} />
-        </Col> */}
-
         <Col xs={12} md={12}>
           {filteredVenues.map((venue) => (
             <Card

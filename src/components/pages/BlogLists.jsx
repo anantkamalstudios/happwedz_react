@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { FaTag, FaEye, FaHeart, FaCalendarAlt } from "react-icons/fa";
+import { FaTag, FaEye, FaHeart, FaCalendarAlt, FaSearch } from "react-icons/fa";
+import { IMAGE_BASE_URL } from "../../config/constants";
 
 const BlogLists = ({ onPostClick }) => {
   // const [blogs, setBlogs] = useState([]);
@@ -119,6 +120,16 @@ const BlogLists = ({ onPostClick }) => {
     return 0;
   });
 
+  const getImageUrl = (path) => {
+    if (!path) {
+      return "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop"; // A fallback image
+    }
+    if (path.startsWith("https://happywedz.com:4000/")) {
+      return path.replace("https://happywedz.com:4000/", "https://happywedzbackend.happywedz.com/");
+    }
+    return `https://happywedzbackend.happywedz.com/${path}`;
+  };
+
   const featuredBlogs = blogs.filter((blog) => blog.featured);
   const trendingBlogs = blogs.filter((blog) => blog.trending);
 
@@ -145,8 +156,8 @@ const BlogLists = ({ onPostClick }) => {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
+                  <FaSearch className="position-absolute top-50 end-0 translate-middle-y me-3 text-muted" />
                 </div>
-                <button className="blog-search-btn">Search</button>
               </div>
             </div>
           </div>
@@ -214,7 +225,7 @@ const BlogLists = ({ onPostClick }) => {
                   {trendingBlogs.slice(0, 3).map((blog) => (
                     <div key={blog.id} className="trending-item">
                       <img
-                        src={blog.image}
+                        src={getImageUrl(blog.images?.[0])}
                         alt={blog.title}
                         className="trending-image"
                       />
@@ -246,7 +257,7 @@ const BlogLists = ({ onPostClick }) => {
                         onClick={() => onPostClick(blog)}
                       >
                         <img
-                          src={blog.image}
+                          src={getImageUrl(blog.image)}
                           alt={blog.title}
                           className="wedding-card-image"
                         />
@@ -294,7 +305,7 @@ const BlogLists = ({ onPostClick }) => {
                           {/* Image */}
                           <div className="wedding-card-image-wrapper">
                             <img
-                              src={blog.images?.[0] || "/fallback.jpg"}
+                              src={getImageUrl(blog.image)}
                               alt={blog.title}
                               className="wedding-card-image"
                             />
@@ -313,12 +324,12 @@ const BlogLists = ({ onPostClick }) => {
                               <span className="wedding-card-date">
                                 {blog.createdDate
                                   ? new Date(
-                                      blog.createdDate
-                                    ).toLocaleDateString("en-US", {
-                                      year: "numeric",
-                                      month: "short",
-                                      day: "numeric",
-                                    })
+                                    blog.createdDate
+                                  ).toLocaleDateString("en-US", {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                  })
                                   : ""}
                               </span>
                             </div>

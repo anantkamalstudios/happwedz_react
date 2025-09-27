@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Heart,
   Play,
@@ -9,6 +9,7 @@ import {
   Video,
   Sparkles,
 } from "lucide-react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const WeddingCardDesigns = () => {
@@ -16,212 +17,41 @@ const WeddingCardDesigns = () => {
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const navigate = useNavigate();
+  const [allCards, setAllCards] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const weddingCards = [
-    {
-      id: 1,
-      name: "Royal Elegance",
-      theme: "traditional",
-      culture: "indian",
-      image:
-        "https://image.wedmegood.com/e-invite-images/5921489f-e0f7-411a-8b19-a85f2c11d2e9-1.JPEG",
-      rating: 4.8,
-    },
-    {
-      id: 2,
-      name: "Blush Romance",
-      theme: "modern",
-      culture: "western",
-      image:
-        "https://image.wedmegood.com/e-invite-images/5921489f-e0f7-411a-8b19-a85f2c11d2e9-1.JPEG",
-      rating: 4.9,
-    },
-    {
-      id: 3,
-      name: "Pink Petals",
-      theme: "floral",
-      culture: "indian",
-      image:
-        "https://image.wedmegood.com/e-invite-images/5921489f-e0f7-411a-8b19-a85f2c11d2e9-1.JPEG",
-      rating: 4.7,
-    },
-    {
-      id: 4,
-      name: "Crimson Dreams",
-      theme: "traditional",
-      culture: "indian",
-      image:
-        "https://image.wedmegood.com/e-invite-images/5921489f-e0f7-411a-8b19-a85f2c11d2e9-1.JPEG",
-      rating: 4.6,
-    },
-    {
-      id: 5,
-      name: "Rose Garden",
-      theme: "floral",
-      culture: "western",
-      image:
-        "https://image.wedmegood.com/e-invite-images/5921489f-e0f7-411a-8b19-a85f2c11d2e9-1.JPEG",
-      rating: 4.8,
-    },
-    {
-      id: 6,
-      name: "Vintage Pink",
-      theme: "vintage",
-      culture: "western",
-      image:
-        "https://image.wedmegood.com/e-invite-images/96d644fc-5760-4732-b7e7-7283f9ffc903-1.JPEG",
-      rating: 4.5,
-    },
-    {
-      id: 7,
-      name: "Maharani Palace",
-      theme: "traditional",
-      culture: "indian",
-      image:
-        "https://image.wedmegood.com/e-invite-images/96d644fc-5760-4732-b7e7-7283f9ffc903-1.JPEG",
-      rating: 4.9,
-    },
-    {
-      id: 8,
-      name: "Cherry Blossom",
-      theme: "floral",
-      culture: "asian",
-      image:
-        "https://image.wedmegood.com/e-invite-images/96d644fc-5760-4732-b7e7-7283f9ffc903-1.JPEG",
-      rating: 4.7,
-    },
-  ];
+  useEffect(() => {
+    const fetchEInvites = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await axios.get("https://happywedz.com/api/einvites");
+        if (response.data && Array.isArray(response.data)) {
+          setAllCards(response.data);
+        } else {
+          setAllCards([]);
+        }
+      } catch (err) {
+        setError("Failed to load e-invites. Please try again later.");
+        console.error("Error fetching e-invites:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Video Card Templates Data
-  const videoCards = [
-    {
-      id: 1,
-      name: "Floral Extravaganza",
-      theme: "floral",
-      duration: "2:30",
-      image:
-        "https://image.wedmegood.com/e-invite-images/5b8ae9dc-c18b-4712-a2b7-b112f081acac-Love_Meadows.JPEG",
-      videoUrl:
-        "https://videoinvites.wedmegood.com/1756195582718Floral+Extravaganza.mp4",
-      rating: 4.9,
-      downloads: 3200,
-      price: "Free",
-      features: ["Text Overlay", "Music Sync", "Transitions", "Floral Effects"],
-      colors: ["#FF6B9D", "#FFE4E1", "#FFFFFF", "#F8BBD9"],
-    },
-    {
-      id: 2,
-      name: "Romantic Slideshow",
-      theme: "romantic",
-      duration: "2:30",
-      image:
-        "https://image.wedmegood.com/e-invite-images/5b8ae9dc-c18b-4712-a2b7-b112f081acac-Love_Meadows.JPEG",
-      rating: 4.8,
-    },
-    {
-      id: 3,
-      name: "Love Story Animation",
-      theme: "animated",
-      duration: "1:45",
-      image:
-        "https://image.wedmegood.com/e-invite-images/5b8ae9dc-c18b-4712-a2b7-b112f081acac-Love_Meadows.JPEG",
-      rating: 4.9,
-    },
-    {
-      id: 4,
-      name: "Pink Elegance Video",
-      theme: "elegant",
-      duration: "2:00",
-      image:
-        "https://image.wedmegood.com/e-invite-images/5b8ae9dc-c18b-4712-a2b7-b112f081acac-Love_Meadows.JPEG",
-      rating: 4.7,
-    },
-    {
-      id: 5,
-      name: "Bollywood Romance",
-      theme: "bollywood",
-      duration: "3:00",
-      image:
-        "https://image.wedmegood.com/e-invite-images/5b8ae9dc-c18b-4712-a2b7-b112f081acac-Love_Meadows.JPEG",
-      rating: 4.6,
-    },
-    {
-      id: 6,
-      name: "Minimalist Motion",
-      theme: "minimalist",
-      duration: "1:30",
-      image:
-        "https://image.wedmegood.com/e-invite-images/5b8ae9dc-c18b-4712-a2b7-b112f081acac-Love_Meadows.JPEG",
-      rating: 4.8,
-    },
-    {
-      id: 7,
-      name: "Floral Fantasy",
-      theme: "floral",
-      duration: "2:15",
-      image:
-        "https://image.wedmegood.com/e-invite-images/5b8ae9dc-c18b-4712-a2b7-b112f081acac-Love_Meadows.JPEG",
-      rating: 4.5,
-    },
-  ];
+    fetchEInvites();
+  }, []);
 
-  // Save the Date Templates Data
-  const saveTheDateCards = [
-    {
-      id: 1,
-      name: "Pink Announcement",
-      theme: "modern",
-      style: "card",
-      image:
-        "https://image.wedmegood.com/e-invite-images/1f0581db-53fd-4b8d-bc42-58e7dcfbd4d9-Artboard_2.JPEG",
-      rating: 4.8,
-    },
-    {
-      id: 2,
-      name: "Floral Notice",
-      theme: "floral",
-      style: "postcard",
-      image:
-        "https://image.wedmegood.com/e-invite-images/1f0581db-53fd-4b8d-bc42-58e7dcfbd4d9-Artboard_2.JPEG",
-      rating: 4.9,
-    },
-    {
-      id: 3,
-      name: "Elegant Calendar",
-      theme: "elegant",
-      style: "calendar",
-      image:
-        "https://image.wedmegood.com/e-invite-images/1f0581db-53fd-4b8d-bc42-58e7dcfbd4d9-Artboard_2.JPEG",
-      rating: 4.7,
-    },
-    {
-      id: 4,
-      name: "Rose Reminder",
-      theme: "romantic",
-      style: "card",
-      image:
-        "https://image.wedmegood.com/e-invite-images/1f0581db-53fd-4b8d-bc42-58e7dcfbd4d9-Artboard_2.JPEG",
-      rating: 4.6,
-    },
-    {
-      id: 5,
-      name: "Vintage Save",
-      theme: "vintage",
-      style: "postcard",
-      image:
-        "https://image.wedmegood.com/e-invite-images/1f0581db-53fd-4b8d-bc42-58e7dcfbd4d9-Artboard_2.JPEG",
-      rating: 4.8,
-    },
-    {
-      id: 6,
-      name: "Dreamy Date",
-      theme: "dreamy",
-      style: "card",
-      image:
-        "https://image.wedmegood.com/e-invite-images/1f0581db-53fd-4b8d-bc42-58e7dcfbd4d9-Artboard_2.JPEG",
-      rating: 4.5,
-    },
-  ];
+  const weddingCards = allCards.filter(
+    (card) => card.card_type === "Wedding E-Invitations"
+  );
+  const videoCards = allCards.filter(
+    (card) => card.card_type === "Video Invitations"
+  );
+  const saveTheDateCards = allCards.filter(
+    (card) => card.card_type === "Save The Date"
+  );
 
   const getCurrentData = () => {
     switch (activeTab) {
@@ -249,7 +79,7 @@ const WeddingCardDesigns = () => {
 
   const handleEditTemplate = (template) => {
     if (activeTab === "video") {
-      // For video cards, navigate to video editor
+      // For video cards, navigate to the video editor
       const videoTemplate = {
         ...template,
         videoUrl:
@@ -262,7 +92,7 @@ const WeddingCardDesigns = () => {
       };
       navigate("/video-editor", { state: { template: videoTemplate } });
     } else {
-      // For other cards, navigate to regular editor
+      // For other cards, navigate to the regular editor
       const editorUrl = `/editor?template=${encodeURIComponent(
         JSON.stringify(template)
       )}`;
@@ -270,61 +100,10 @@ const WeddingCardDesigns = () => {
     }
   };
 
-  // const CardComponent = ({ item, type }) => (
-  //   <div className="card h-100 shadow-sm">
-  //     <div className="position-relative">
-  //       <img
-  //         src={item.image}
-  //         alt={item.name}
-  //         className="card-img-top"
-  //         style={{ height: "250px", objectFit: "cover" }}
-  //       />
-
-  //       {/* Overlay */}
-  //       <div className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center opacity-0 hover-opacity-100 bg-dark bg-opacity-50 transition-all">
-  //         <div className="text-center">
-  //           {type === "video" && (
-  //             <div className="mb-3">
-  //               <Play className="text-white" size={48} />
-  //             </div>
-  //           )}
-  //           <button className="btn btn-light btn-sm me-2 mb-2">
-  //             Quick Preview
-  //           </button>
-  //           <button
-  //             className="btn btn-primary btn-sm mb-2"
-  //             onClick={() => handleEditTemplate(item)}
-  //           >
-  //             Customize Now
-  //           </button>
-  //         </div>
-  //       </div>
-
-  //       {/* Heart Icon */}
-  //       <div className="position-absolute top-0 end-0 p-2">
-  //         <Heart className="text-pink-500 cursor-pointer" size={20} />
-  //       </div>
-  //     </div>
-
-  //     <div className="card-body">
-  //       <h5 className="card-title">{item.name}</h5>
-  //       <div className="d-flex align-items-center justify-content-between">
-  //         <div className="d-flex align-items-center">
-  //           <Star className="text-warning me-1" size={16} />
-  //           <span className="small text-muted">{item.rating}</span>
-  //         </div>
-  //         {type === "video" && (
-  //           <span className="badge bg-secondary">{item.duration}</span>
-  //         )}
-  //       </div>
-  //     </div>
-  //   </div>
-  // );
-
   const CardComponent = ({ item, type }) => (
     <div className="wc-card-container group">
       <div className="wc-card-image-wrapper">
-        <img src={item.image} alt={item.name} className="wc-card-image" />
+        <img src={item.thumbnail_url} alt={item.name} className="wc-card-image" />
         <div className="wc-card-overlay">
           <div className="wc-card-overlay-content">
             {type === "video" && (
@@ -332,7 +111,6 @@ const WeddingCardDesigns = () => {
                 <Play className="w-8 h-8 text-white fill-current" />
               </div>
             )}
-            {/* <button className="wc-preview-btn">Quick Preview</button> */}
             <button
               className="wc-customize-btn"
               onClick={() => handleEditTemplate(item)}
@@ -350,7 +128,7 @@ const WeddingCardDesigns = () => {
         <div className="wc-card-meta">
           <div className="wc-rating">
             <Star className="w-4 h-4 text-yellow-400 fill-current" />
-            <span className="text-sm text-gray-600">{item.rating}</span>
+            <span className="text-sm text-gray-600">{item.rating || 4.5}</span>
           </div>
           {type === "video" && (
             <span className="wc-duration">{item.duration}</span>
@@ -359,6 +137,18 @@ const WeddingCardDesigns = () => {
       </div>
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) return <div className="alert alert-danger">{error}</div>;
 
   return (
     <div className="min-vh-100" style={{ backgroundColor: "#f8f9fa" }}>
@@ -369,9 +159,8 @@ const WeddingCardDesigns = () => {
             {/* Wedding Cards */}
             <li className="nav-item px-2">
               <button
-                className={`nav-link fw-semibold rounded-pill ${
-                  activeTab === "wedding" ? "active" : ""
-                }`}
+                className={`nav-link fw-semibold rounded-pill ${activeTab === "wedding" ? "active" : ""
+                  }`}
                 onClick={() => setActiveTab("wedding")}
                 style={{
                   background:
@@ -402,9 +191,8 @@ const WeddingCardDesigns = () => {
             {/* Video Cards */}
             <li className="nav-item px-2">
               <button
-                className={`nav-link fw-semibold rounded-pill ${
-                  activeTab === "video" ? "active" : ""
-                }`}
+                className={`nav-link fw-semibold rounded-pill ${activeTab === "video" ? "active" : ""
+                  }`}
                 onClick={() => setActiveTab("video")}
                 style={{
                   background:
@@ -433,9 +221,8 @@ const WeddingCardDesigns = () => {
             {/* Save the Date */}
             <li className="nav-item px-2">
               <button
-                className={`nav-link fw-semibold rounded-pill ${
-                  activeTab === "savedate" ? "active" : ""
-                }`}
+                className={`nav-link fw-semibold rounded-pill ${activeTab === "savedate" ? "active" : ""
+                  }`}
                 onClick={() => setActiveTab("savedate")}
                 style={{
                   background:

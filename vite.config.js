@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://69.62.85.170:5001",
+        target: "https://www.happywedz.com/ai",
         changeOrigin: true,
         secure: false,
       },

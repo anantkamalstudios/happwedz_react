@@ -39,7 +39,9 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
       .post("https://countriesnow.space/api/v0.1/countries/cities", {
         country: "India",
       })
+
       .then((res) => {
+        // console.log("Fetched cities:", res.data);
         if (res.data && res.data.data) {
           setCities(res.data.data);
         } else {

@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
-import DatePicker from "react-datepicker";
 import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 import { FaPaperPlane } from "react-icons/fa";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import EventDatePicker from "./DayPicker";
 
-const PricingModal = ({ show, handleClose }) => {
+const PricingModal = ({ show, handleClose, vendorId }) => {
+  const { user, token } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -13,50 +17,86 @@ const PricingModal = ({ show, handleClose }) => {
     eventDate: "",
     message: "",
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const today = new Date().toISOString().split("T")[0];
-    setFormData((prev) => ({ ...prev, eventDate: today }));
-  }, []);
+    // Pre-fill form if user is logged in
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        phone: user.phone || "",
+      }));
+    } else {
+      // If user logs out while modal is open, clear the form
+      setFormData({ firstName: "", lastName: "", email: "", phone: "", eventDate: new Date(), message: "" });
+    }
+  }, [user, show]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const { firstName, lastName, email, phone, eventDate } = formData;
 
-    if (!firstName || !lastName || !email || !phone || !eventDate) {
-      alert("Please fill in all required fields.");
+    // 1. Check if user is logged in
+    if (!token || !user) {
+      handleClose(); // Close the modal before redirecting
+      navigate("/login");
       return;
     }
 
-    alert("Thank you! Your pricing request has been submitted successfully.");
-    setFormData({
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      eventDate: "",
-      message: "",
-    });
-    handleClose();
+    // 2. Validate form data
+    const { firstName, lastName, email, phone, eventDate } = formData;
+    if (!firstName || !lastName || !email || !phone || !eventDate) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+
+    setSubmitting(true);
+    setError(null);
+
+    // 3. Construct payload and make API call
+    const payload = {
+      ...formData,
+      vendorId,
+      userId: user.id,
+    };
+
+    try {
+      const response = await fetch("https://happywedz.com/api/request-pricing", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Something went wrong.");
+      }
+
+      alert(result.message || "Request sent successfully!");
+      handleClose();
+    } catch (err) {
+      setError(err.message);
+      console.error("Failed to send pricing request:", err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <>
       <div className="pricing-model">
-        {/* <Button
-          variant="primary"
-          size="lg"
-          onClick={handleShow}
-          className="mb-3"
-        >
-          Request Pricing
-        </Button> */}
-
         <Modal show={show} onHide={handleClose} size="lg" centered>
           <Modal.Header closeButton>
             <div className="d-flex flex-column">
@@ -75,6 +115,11 @@ const PricingModal = ({ show, handleClose }) => {
 
           <Modal.Body>
             <Form onSubmit={handleSubmit} className="custom-form">
+              {error && (
+                <div className="alert alert-danger" role="alert">
+                  {error}
+                </div>
+              )}
               {/* First/Last Name */}
               <Row>
                 <Col md={6}>
@@ -148,8 +193,13 @@ const PricingModal = ({ show, handleClose }) => {
               </Form.Group>
 
               {/* Submit Button */}
-              <Button type="submit" variant="primary" className="w-100">
-                <FaPaperPlane className="me-2" /> Send Request
+              <Button
+                type="submit"
+                variant="primary"
+                className="w-100"
+                disabled={submitting}
+              >
+                {submitting ? "Sending..." : <><FaPaperPlane className="me-2" /> Send Request</>}
               </Button>
             </Form>
           </Modal.Body>

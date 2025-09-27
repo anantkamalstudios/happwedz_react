@@ -28,6 +28,16 @@ const BlogDetails = ({ post, onBackClick }) => {
     });
   };
 
+  const getImageUrl = (path) => {
+    if (!path) {
+      return "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop"; // A fallback image
+    }
+    if (path.startsWith("https://happywedz.com:4000/")) {
+      return path.replace("https://happywedz.com:4000/", "https://happywedzbackend.happywedz.com/");
+    }
+    return `https://happywedzbackend.happywedz.com/${path}`;
+  };
+
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case "Published":
@@ -110,7 +120,7 @@ const BlogDetails = ({ post, onBackClick }) => {
               {blog.images?.length > 0 && (
                 <div className="mb-5">
                   <img
-                    src={blog.images[0]}
+                    src={getImageUrl(blog.images?.[0])}
                     alt={blog.title}
                     className="img-fluid rounded-3 shadow-sm w-100"
                     style={{ height: "400px", objectFit: "cover" }}
@@ -128,13 +138,9 @@ const BlogDetails = ({ post, onBackClick }) => {
                 </div>
 
                 <div
+                  dangerouslySetInnerHTML={{ __html: blog.fullDescription }}
                   style={{ fontSize: "1rem", lineHeight: "1.8", color: "#333" }}
                 >
-                  {blog.fullDescription?.map((para, i) => (
-                    <p key={i} className="mb-4">
-                      {para}
-                    </p>
-                  ))}
                 </div>
               </div>
 

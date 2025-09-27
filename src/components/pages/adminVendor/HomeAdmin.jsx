@@ -1,5 +1,6 @@
 // src/pages/adminpanel/HomeAdmin.js
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Container,
   Row,
@@ -303,10 +304,10 @@ const HomeAdmin = () => {
                 {dateFilter === "this_week"
                   ? "This Week"
                   : dateFilter === "this_month"
-                  ? "This Month"
-                  : dateFilter === "last_month"
-                  ? "Last Month"
-                  : "Custom Range"}
+                    ? "This Month"
+                    : dateFilter === "last_month"
+                      ? "Last Month"
+                      : "Custom Range"}
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 <Dropdown.Item onClick={() => setDateFilter("this_week")}>
@@ -338,9 +339,9 @@ const HomeAdmin = () => {
 
       {/* Stats Cards */}
       <Row className="mb-4">
-        {Object.entries(statsData).map(([key, data]) => (
-          <Col xl={3} md={6} key={key} className="mb-4">
-            <Card className="stat-card">
+        {Object.entries(statsData).map(([key, data]) => {
+          const cardContent = (
+            <Card className="stat-card h-100">
               <Card.Body>
                 <div className="d-flex justify-content-between align-items-start">
                   <div>
@@ -350,30 +351,34 @@ const HomeAdmin = () => {
                     <h3 className="mb-0">{data.value}</h3>
                   </div>
                   <div
-                    className={`icon-circle bg-${
-                      data.trend === "up" ? "success" : "danger"
-                    }-light`}
+                    className={`icon-circle bg-${data.trend === "up" ? "success" : "danger"
+                      }-light`}
                   >
                     {data.icon}
                   </div>
                 </div>
-                <p className="mt-3 mb-0">
-                  {/* <span
-                    className={`text-${
-                      data.trend === "up" ? "success" : "danger"
-                    } me-2`}
-                  >
-                    <span>{data.trend === "up" ? "+" : "-"}</span>
-                    {data.change}
-                  </span> */}
-                </p>
-                <p className="text-muted mb-0 mt-1">
+                <p className="text-muted mb-0 mt-3">
                   <small>Daily avg: {data.daily_avg}</small>
                 </p>
               </Card.Body>
             </Card>
-          </Col>
-        ))}
+          );
+
+          return (
+            <Col xl={3} md={6} key={key} className="mb-4">
+              {key === "leads" ? (
+                <Link
+                  to="/vendor-dashboard/total-leads"
+                  style={{ textDecoration: "none" }}
+                >
+                  {cardContent}
+                </Link>
+              ) : (
+                cardContent
+              )}
+            </Col>
+          );
+        })}
       </Row>
 
       {/* Charts */}

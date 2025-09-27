@@ -14,6 +14,7 @@ import ToastProvider from "./components/layouts/toasts/Toast";
 import LoaderProvider from "./components/context/LoaderContext";
 import VendorPrivateRoute from "./components/routes/VendorPrivateRoute";
 import UserPrivateRoute from "./components/routes/UserPrivateRoute";
+import VendorLeadsPage from "./components/pages/adminVendor/VendorLeadsPage";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
@@ -170,6 +171,10 @@ function App() {
                   </UserPrivateRoute>
                 }
               />
+              <Route
+                path="/vendor-dashboard/total-leads"
+                element={<VendorLeadsPage />}
+              />
 
               {/* Editors / Video */}
               <Route path="/editor" element={<CardEditorPage />} />
@@ -181,51 +186,51 @@ function App() {
                 element={<VideoEditorPage />}
               />
               <Route path="/video-demo" element={<VideoEditorDemo />} />
+
+              {/*  User Protected Routes  */}
+              <Route
+                path="/user-dashboard"
+                element={
+                  <UserPrivateRoute>
+                    <UserDashboardMain />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/user-dashboard/:slug"
+                element={
+                  <UserPrivateRoute>
+                    <UserDashboardMain />
+                  </UserPrivateRoute>
+                }
+              />
+
+              {/*  Vendor Protected Routes  */}
+              <Route
+                path="/vendor-dashboard"
+                element={
+                  <VendorPrivateRoute>
+                    <Navigate to="/vendor-dashboard/vendor-home" />
+                  </VendorPrivateRoute>
+                }
+              />
+              <Route
+                path="/vendor-dashboard/:slug"
+                element={
+                  <VendorPrivateRoute>
+                    <Main />
+                  </VendorPrivateRoute>
+                }
+              />
+              <Route
+                path="/vendor-dashboard/upgrade/vendor-plan"
+                element={
+                  <VendorPrivateRoute>
+                    <VendorPremium />
+                  </VendorPrivateRoute>
+                }
+              />
             </Route>
-
-            {/*  Vendor Protected Routes  */}
-            <Route
-              path="/vendor-dashboard"
-              element={
-                <VendorPrivateRoute>
-                  <Navigate to="/vendor-dashboard/vendor-home" />
-                </VendorPrivateRoute>
-              }
-            />
-            <Route
-              path="/vendor-dashboard/:slug"
-              element={
-                <VendorPrivateRoute>
-                  <Main />
-                </VendorPrivateRoute>
-              }
-            />
-            <Route
-              path="/vendor-dashboard/upgrade/vendor-plan"
-              element={
-                <VendorPrivateRoute>
-                  <VendorPremium />
-                </VendorPrivateRoute>
-              }
-            />
-
-            {/*  User Protected Routes  */}
-            <Route
-              path="/user-dashboard"
-              element={
-                <UserPrivateRoute>
-                  <UserDashboardMain />
-                </UserPrivateRoute>
-              }
-            />
-            <Route
-              path="/user-dashboard/:slug"
-              element={
-                <UserPrivateRoute>
-                  <UserDashboardMain />
-                </UserPrivateRoute>
-              }
-            />
 
             {/*  Matrimonial Routes  */}
             <Route element={<MatrimonialLayout />}>

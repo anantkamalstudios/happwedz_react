@@ -16,6 +16,17 @@ const Wedding = () => {
     remaining: 225000,
   });
 
+  // User state will be populated from an API call
+  const [user, setUser] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  // State for the countdown timer
+  const [countdown, setCountdown] = useState({
+    days: 0,
+    hours: 0,
+    hasPassed: false,
+  });
+
   const [vendorCategories, setVendorCategories] = useState([]);
   const [showAll, setShowAll] = useState(false);
 
@@ -94,7 +105,7 @@ const Wedding = () => {
           icon: iconMapping[index] || <Camera size={24} />,
           title: cat.name,
           subtitle: "Explore this category",
-          count: 0, // default count, can map API count if exists
+          count: 0,
         }));
 
         setVendorCategories(mappedCategories);
@@ -105,6 +116,92 @@ const Wedding = () => {
 
     fetchCategories();
   }, []);
+
+  // Fetch user data on component mount
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // NOTE: This is an example. You should have a secure way to get user data.
+        // This assumes you store a token after login/registration.
+        const token = localStorage.getItem("userToken");
+        if (!token) {
+          // Handle case where user is not logged in, e.g., redirect to login
+          console.error("No user token found.");
+          setLoadingUser(false);
+          return;
+        }
+
+        // Replace with your actual user profile API endpoint
+        const response = await fetch("https://happywedz.com/api/user/profile", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          setUser(data.user); // Assuming the API returns { success: true, user: {...} }
+        }
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  // Countdown Timer Logic
+  useEffect(() => {
+    if (!user?.weddingDate) return;
+
+    const weddingDate = new Date(user.weddingDate);
+    const calculateCountdown = () => {
+      const now = new Date();
+      const difference = weddingDate.getTime() - now.getTime();
+
+      if (difference > 0) {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor(
+          (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        );
+        setCountdown({ days, hours, hasPassed: false });
+      } else {
+        // If the wedding date has passed
+        setCountdown({ days: 0, hours: 0, hasPassed: true });
+      }
+    };
+
+    // Calculate immediately on mount
+    calculateCountdown();
+
+    // Update the countdown every minute
+    const interval = setInterval(calculateCountdown, 60000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, [user?.weddingDate]);
+
+  const formatDateWithOrdinal = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.toLocaleDateString("en-US", { month: "long" });
+    const year = date.getFullYear();
+
+    const getOrdinal = (d) => {
+      if (d > 3 && d < 21) return "th";
+      switch (d % 10) {
+        case 1: return "st";
+        case 2: return "nd";
+        case 3: return "rd";
+        default: return "th";
+      }
+    };
+
+    return `${day}${getOrdinal(day)} of ${month} ${year}`;
+  };
 
   const toggleTask = (taskId) => {
     const newCompleted = new Set(completedTasks);
@@ -123,25 +220,81 @@ const Wedding = () => {
     ? vendorCategories
     : vendorCategories.slice(0, 6);
 
+  if (loadingUser) {
+    return (
+      <div className="text-center py-5">Loading your dashboard...</div>
+    );
+  }
+
   return (
     <div className="wedding-dashboard">
       <div className="container py-4">
-        {/* Header Section */}
-        {/* <div className="row mb-4">
-          <div className="col-12">
-            <div className="dashboard-header">
-              <h1 className="dashboard-title">Your Wedding Planning Journey</h1>
-              <p className="dashboard-subtitle">
-                Find the venue for your ceremonies and Book all your vendors
-              </p>
+        <div className="card rounded-4 p-2 shadow-sm border-0 mb-4 overflow-hidden">
+          <div className="row g-0">
+            {/* Left Side Image */}
+            <div className="col-md-4 position-relative">
+              <img
+                src="/images/userDashboard/home-wedding-image.avif"
+                alt="Wedding"
+                className="img-fluid h-100 w-100 rounded-5 object-fit-cover"
+              />
+
+              <div
+                className="position-absolute bottom-0 end-0 p-2 m-2 rounded-4"
+                style={{
+                  background: "rgba(255, 192, 203, 0.85)",
+                }}
+              >
+                <div className="d-flex text-center text-dark fw-bold">
+                  <div className="px-3">
+                    <h5 className="fw-bold">{countdown.days}</h5>
+                    <small>Days</small>
+                  </div>
+                  <div className="px-3 border-start border-dark-subtle">
+                    <h5 className="fw-bold">{countdown.hours}</h5>
+                    <small>Hrs</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side Content */}
+            <div className="col-md-8 p-4 d-flex flex-column justify-content-center">
+              <h4 className="fw-bold mb-2 text-dark">
+                {user?.groomName || "Groom"} & {user?.brideName || "Bride"}
+              </h4>
+
+              <p className="text-muted mb-4">{formatDateWithOrdinal(user?.weddingDate)}</p>
+
+              <div className="card rounded-0 border-0 shadow-sm">
+                <div className="row text-center g-0">
+                  <div className="col py-3 border-end">
+                    <h6 className="mb-1 fw-semibold text-dark">
+                      Service Hired
+                    </h6>
+                    <small className="text-muted">0 of 25</small>
+                  </div>
+                  <div className="col py-3 border-end">
+                    <h6 className="mb-1 fw-semibold text-dark">
+                      Task Complete
+                    </h6>
+                    <small className="text-muted">0 of 20</small>
+                  </div>
+                  <div className="col py-3">
+                    <h6 className="mb-1 fw-semibold text-dark">
+                      Guest Attending
+                    </h6>
+                    <small className="text-muted">0 of 100</small>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div> */}
+        </div>
 
-        {/* Vendor Categories */}
-        <div className="row mb-5">
+        <div className="row my-5">
           <div className="col-12">
-            <h3 className="section-title">Find & Book Your Wedding Vendors</h3>
+            <h5 className="">Find & Book Your Wedding Vendors</h5>
             <div className="row">
               {displayedCategories.map((category, index) => (
                 <div
@@ -215,9 +368,8 @@ const Wedding = () => {
                 {upcomingTasks.map((task) => (
                   <div
                     key={task.id}
-                    className={`task-item ${
-                      completedTasks.has(task.id) ? "completed" : ""
-                    }`}
+                    className={`task-item ${completedTasks.has(task.id) ? "completed" : ""
+                      }`}
                   >
                     <div
                       className="task-checkbox"

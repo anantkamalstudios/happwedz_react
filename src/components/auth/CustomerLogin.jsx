@@ -33,7 +33,7 @@ const CustomerLogin = () => {
 
       dispatch(setCredentials({ user, token }));
 
-      console.log("Google user saved in Redux:", user);
+      // console.log("Google user saved in Redux:", user);
       addToast("Login successful!", "success");
       navigate("/user-dashboard", { replace: true });
     } catch (error) {
