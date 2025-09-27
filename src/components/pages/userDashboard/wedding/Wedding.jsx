@@ -94,7 +94,7 @@ const Wedding = () => {
           icon: iconMapping[index] || <Camera size={24} />,
           title: cat.name,
           subtitle: "Explore this category",
-          count: 0, // default count, can map API count if exists
+          count: 0,
         }));
 
         setVendorCategories(mappedCategories);
@@ -126,22 +126,70 @@ const Wedding = () => {
   return (
     <div className="wedding-dashboard">
       <div className="container py-4">
-        {/* Header Section */}
-        {/* <div className="row mb-4">
-          <div className="col-12">
-            <div className="dashboard-header">
-              <h1 className="dashboard-title">Your Wedding Planning Journey</h1>
-              <p className="dashboard-subtitle">
-                Find the venue for your ceremonies and Book all your vendors
-              </p>
+        <div className="card rounded-4 p-2 shadow-sm border-0 mb-4 overflow-hidden">
+          <div className="row g-0">
+            {/* Left Side Image */}
+            <div className="col-md-4 position-relative">
+              <img
+                src="/images/userDashboard/home-wedding-image.avif"
+                alt="Wedding"
+                className="img-fluid h-100 w-100 rounded-5 object-fit-cover"
+              />
+
+              <div
+                className="position-absolute bottom-0 end-0 p-2 m-2 rounded-4"
+                style={{
+                  background: "rgba(255, 192, 203, 0.85)",
+                }}
+              >
+                <div className="d-flex text-center text-dark fw-bold">
+                  <div className="px-3">
+                    <h5 className="fw-bold">50</h5>
+                    <small>Days</small>
+                  </div>
+                  <div className="px-3 border-start border-dark-subtle">
+                    <h5 className="fw-bold">10</h5>
+                    <small>Hrs</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side Content */}
+            <div className="col-md-8 p-4 d-flex flex-column justify-content-center">
+              <h4 className="fw-bold mb-2 text-dark">Mayur & Priya</h4>
+
+              <p className="text-muted mb-4">23rd of December 2025</p>
+
+              <div className="card rounded-0 border-0 shadow-sm">
+                <div className="row text-center g-0">
+                  <div className="col py-3 border-end">
+                    <h6 className="mb-1 fw-semibold text-dark">
+                      Service Hired
+                    </h6>
+                    <small className="text-muted">0 of 25</small>
+                  </div>
+                  <div className="col py-3 border-end">
+                    <h6 className="mb-1 fw-semibold text-dark">
+                      Task Complete
+                    </h6>
+                    <small className="text-muted">0 of 20</small>
+                  </div>
+                  <div className="col py-3">
+                    <h6 className="mb-1 fw-semibold text-dark">
+                      Guest Attending
+                    </h6>
+                    <small className="text-muted">0 of 100</small>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div> */}
+        </div>
 
-        {/* Vendor Categories */}
-        <div className="row mb-5">
+        <div className="row my-5">
           <div className="col-12">
-            <h3 className="section-title">Find & Book Your Wedding Vendors</h3>
+            <h5 className="">Find & Book Your Wedding Vendors</h5>
             <div className="row">
               {displayedCategories.map((category, index) => (
                 <div

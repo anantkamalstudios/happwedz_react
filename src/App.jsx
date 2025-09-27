@@ -181,51 +181,51 @@ function App() {
                 element={<VideoEditorPage />}
               />
               <Route path="/video-demo" element={<VideoEditorDemo />} />
+
+              {/*  User Protected Routes  */}
+              <Route
+                path="/user-dashboard"
+                element={
+                  <UserPrivateRoute>
+                    <UserDashboardMain />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/user-dashboard/:slug"
+                element={
+                  <UserPrivateRoute>
+                    <UserDashboardMain />
+                  </UserPrivateRoute>
+                }
+              />
+
+              {/*  Vendor Protected Routes  */}
+              <Route
+                path="/vendor-dashboard"
+                element={
+                  <VendorPrivateRoute>
+                    <Navigate to="/vendor-dashboard/vendor-home" />
+                  </VendorPrivateRoute>
+                }
+              />
+              <Route
+                path="/vendor-dashboard/:slug"
+                element={
+                  <VendorPrivateRoute>
+                    <Main />
+                  </VendorPrivateRoute>
+                }
+              />
+              <Route
+                path="/vendor-dashboard/upgrade/vendor-plan"
+                element={
+                  <VendorPrivateRoute>
+                    <VendorPremium />
+                  </VendorPrivateRoute>
+                }
+              />
             </Route>
-
-            {/*  Vendor Protected Routes  */}
-            <Route
-              path="/vendor-dashboard"
-              element={
-                <VendorPrivateRoute>
-                  <Navigate to="/vendor-dashboard/vendor-home" />
-                </VendorPrivateRoute>
-              }
-            />
-            <Route
-              path="/vendor-dashboard/:slug"
-              element={
-                <VendorPrivateRoute>
-                  <Main />
-                </VendorPrivateRoute>
-              }
-            />
-            <Route
-              path="/vendor-dashboard/upgrade/vendor-plan"
-              element={
-                <VendorPrivateRoute>
-                  <VendorPremium />
-                </VendorPrivateRoute>
-              }
-            />
-
-            {/*  User Protected Routes  */}
-            <Route
-              path="/user-dashboard"
-              element={
-                <UserPrivateRoute>
-                  <UserDashboardMain />
-                </UserPrivateRoute>
-              }
-            />
-            <Route
-              path="/user-dashboard/:slug"
-              element={
-                <UserPrivateRoute>
-                  <UserDashboardMain />
-                </UserPrivateRoute>
-              }
-            />
 
             {/*  Matrimonial Routes  */}
             <Route element={<MatrimonialLayout />}>

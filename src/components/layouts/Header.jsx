@@ -86,7 +86,6 @@ const Header = () => {
     fetchVendorCategories();
   }, []);
 
-  // ...existing code...
   return (
     <nav className="navbar navbar-expand-lg navbar-light shadow-sm primary-bg p-0">
       <div className="container-fluid">
@@ -381,14 +380,18 @@ const Header = () => {
 
                               {/* Column 2: By Type and By Location */}
                               <div className="col-md-8 p-4">
+                                <h6 className="fw-bold primary-text text-uppercase mb-3">
+                                  By Type
+                                </h6>
                                 <div className="row">
-                                  {/* By Type */}
-                                  <div className="col-sm-6">
-                                    <h6 className="fw-bold primary-text text-uppercase mb-3">
-                                      By Type
-                                    </h6>
-                                    <div className="row">
-                                      {[
+                                  {(venueSubcategories.length > 0
+                                    ? [
+                                        ...venueSubcategories.map(
+                                          (s) => s.name
+                                        ),
+                                        "View All Venues",
+                                      ]
+                                    : [
                                         "Banquet Halls",
                                         "Marriage Garden / Lawns",
                                         "Wedding Resorts",
@@ -398,69 +401,32 @@ const Header = () => {
                                         "4 Star & Above Wedding Hotels",
                                         "Venue Concierge Services",
                                         "View All Venues",
-                                      ].map((item, i) => {
-                                        const isShowMore =
-                                          item === "View All Venues";
-                                        const path = isShowMore
-                                          ? "/venues"
-                                          : `/venues/${item
-                                              .toLowerCase()
-                                              .replace(/\s+/g, "-")
-                                              .replace(/[^a-z0-9\-]/g, "")}`;
-
-                                        return (
-                                          <div className="col-12 mb-2" key={i}>
-                                            <Link
-                                              to={path}
-                                              className={`dropdown-link d-flex align-items-center ${
-                                                isShowMore
-                                                  ? "primary-text fw-bold text-decoration-underline"
-                                                  : ""
-                                              }`}
-                                            >
-                                              <i className="bi bi-check-circle me-2 text-primary"></i>
-                                              <span className="small">
-                                                {item}
-                                              </span>
-                                            </Link>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-
-                                  {/* By Location */}
-                                  <div className="col-sm-6">
-                                    <h6 className="fw-semibold text-uppercase primary-text mb-3">
-                                      By Location
-                                    </h6>
-                                    <div className="row">
-                                      {[
-                                        "Mumbai",
-                                        "Bangalore",
-                                        "Pune",
-                                        "Kolkata",
-                                        "Jaipur",
-                                        "Lucknow",
-                                        "Hyderabad",
-                                      ].map((item, i) => (
-                                        <div className="col-12 mb-2" key={i}>
-                                          <Link
-                                            to={`/venues/${item
-                                              .toLowerCase()
-                                              .replace(/\s+/g, "-")
-                                              .replace(/[^a-z0-9\-]/g, "")}`}
-                                            className="dropdown-link d-flex align-items-center"
-                                          >
-                                            <i className="bi bi-geo-alt-fill me-2 text-secondary"></i>
-                                            <span className="small">
-                                              {item}
-                                            </span>
-                                          </Link>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
+                                      ]
+                                  ).map((item, i) => {
+                                    const isShowMore =
+                                      item === "View All Venues";
+                                    const path = isShowMore
+                                      ? "/venues"
+                                      : `/venues/${item
+                                          .toLowerCase()
+                                          .replace(/\s+/g, "-")
+                                          .replace(/[^a-z0-9\-]/g, "")}`;
+                                    return (
+                                      <div className="col-12 mb-2" key={i}>
+                                        <Link
+                                          to={path}
+                                          className={`dropdown-link d-flex align-items-center ${
+                                            isShowMore
+                                              ? "primary-text fw-bold text-decoration-underline"
+                                              : ""
+                                          }`}
+                                        >
+                                          <i className="bi bi-check-circle me-2 text-primary"></i>
+                                          <span className="small">{item}</span>
+                                        </Link>
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             </div>
@@ -502,8 +468,8 @@ const Header = () => {
                                               >
                                                 <Link
                                                   to={`/vendors/${toSlug(
-                                                    cat.name
-                                                  )}/${toSlug(sub.name)}`}
+                                                    sub.name
+                                                  )}`}
                                                   className="dropdown-link small d-block"
                                                 >
                                                   {sub.name}
