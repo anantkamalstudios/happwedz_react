@@ -5,10 +5,11 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import EventDatePicker from "./DayPicker";
 
+// const PricingModal = ({ show, handleClose, subVenuesData }) => {
 const PricingModal = ({ show, handleClose, vendorId }) => {
   const { user, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
-
+  console.log(vendorId);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -47,7 +48,7 @@ const PricingModal = ({ show, handleClose, vendorId }) => {
     // 1. Check if user is logged in
     if (!token || !user) {
       handleClose(); // Close the modal before redirecting
-      navigate("/login");
+      navigate("/customer-login");
       return;
     }
 
@@ -58,13 +59,20 @@ const PricingModal = ({ show, handleClose, vendorId }) => {
       return;
     }
 
+    // 3. Validate vendorId
+    if (!vendorId) {
+      console.error("PricingModal Error: vendorId prop is missing.");
+      setError("Could not identify the vendor. Please try again.");
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
 
-    // 3. Construct payload and make API call
+    // 4. Construct payload and make API call
     const payload = {
       ...formData,
-      vendorId,
+      vendorId: vendorId,
       userId: user.id,
     };
 

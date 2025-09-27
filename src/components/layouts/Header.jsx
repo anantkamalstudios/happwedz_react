@@ -19,7 +19,6 @@ const Header = () => {
   // console.log("vendor auth ", vendorAuth);
   const isUserLoggedIn = !!auth?.token;
   const isVendorLoggedIn = !!vendorAuth?.token;
-
   const toSlug = (text) =>
     text
       ?.toLowerCase()
@@ -39,7 +38,9 @@ const Header = () => {
         const bsCollapse =
           window.bootstrap.Collapse.getOrCreateInstance(collapse);
         bsCollapse.hide();
-      } catch {}
+      } catch {
+        //  console.log("Error in collapsing navbar")
+      }
     }
   }, [location]);
 
@@ -110,8 +111,8 @@ const Header = () => {
         </div>
 
         <div className="collapse navbar-collapse" id="mainNav">
-          <div className="row w-100">
-            <div className="col-12 col-md-12 bg-white p-2">
+          <div className="row">
+            <div className="col-12 bg-white p-2">
               <div className="container">
                 <div className="row align-items-center gy-2">
                   {/* Left: Tagline */}

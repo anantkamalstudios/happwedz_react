@@ -33,7 +33,6 @@ const ListView = ({ subVenuesData, section, handleShow }) => {
               className="venue-card mb-4 rounded-4 shadow-lg"
             >
               <Row className="g-0">
-                {/* Image */}
                 <Col xs={12} md={4} className="position-relative">
                   <div className="position-relative h-100">
                     <Card.Img
@@ -52,19 +51,18 @@ const ListView = ({ subVenuesData, section, handleShow }) => {
                       )}
                     </button>
                     <div className="price-tag position-absolute bottom-0 start-0 text-white px-2 py-1">
-                      <FaIndianRupeeSign size={12} /> {venue.price}
+                      FROM : <FaIndianRupeeSign size={12} /> {venue.price}
                     </div>
                   </div>
                 </Col>
 
-                {/* Details */}
                 <Col
                   xs={12}
                   md={8}
                   className="p-3 d-flex flex-column justify-content-between"
                 >
                   <Link
-                    to={`/details/info/${venue.slug}`}
+                    to={`/details/info/${venue.id}`}
                     className="text-decoration-none"
                   >
                     <div>
@@ -72,12 +70,15 @@ const ListView = ({ subVenuesData, section, handleShow }) => {
                         {venue.name}
                       </Card.Title>
                       <div className="text-muted small mb-2">
+                        {venue.description || ""}
+                      </div>
+                      {/* <div className="text-muted small mb-2">
                         {(venue.description || "")
                           .split(" ")
                           .slice(0, 20)
                           .join(" ")}
                         ...
-                      </div>
+                      </div> */}
                       <div className="text-muted small mb-2">
                         {venue.location}
                       </div>
@@ -94,21 +95,25 @@ const ListView = ({ subVenuesData, section, handleShow }) => {
                           <LuUsers className="text-dark me-1" />
                           <span className="text-muted">{venue.capacity}</span>
                         </div>
-                        {venue.call && (
+                        {venue.within_24hr_available && (
                           <div className="d-flex align-items-center">
                             <BsLightningCharge
                               color="orange"
                               className="me-1"
                             />
-                            {venue.call}
+                            {venue.within_24hr_available} Responds within 24
+                            hours
                           </div>
                         )}
                       </div>
                     </div>
                   </Link>
-
+                  {console.log(venue.id)}
                   <div className="mt-2">
-                    <button className="w-100 details-btn" onClick={handleShow}>
+                    {/* <button className="w-100 details-btn" onClick={handleShow}>
+                      Request Pricing
+                    </button> */}
+                    <button className="w-100 details-btn" onClick={() => handleShow(venue.id)}>
                       Request Pricing
                     </button>
                   </div>

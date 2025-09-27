@@ -3,8 +3,10 @@ import { Container, Row, Col, Button } from "react-bootstrap";
 import { FaLocationDot } from "react-icons/fa6";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
+import { useParams } from "react-router-dom";
 import "swiper/css";
 import "swiper/css/autoplay";
+import vendorServicesApi from "../../services/api/vendorServicesApi";
 
 import {
   FaStar,
@@ -27,36 +29,60 @@ import { GrFormNextLink } from "react-icons/gr";
 import ReviewSection from "../pages/ReviewSection";
 
 const Detailed = () => {
-  const [mainImage, setMainImage] = useState(
-    "https://cdn0.weddingwire.in/vendor/4255/original/960/jpg/photographer-avshkaar-photography-weddingphotography-2_15_314255-165946397244869.webp"
-  );
-
+  const { id } = useParams();
+  const [venueData, setVenueData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [mainImage, setMainImage] = useState("");
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [images, setImages] = useState([]);
 
-  const images = [
-    "https://happywedz.com/wp-content/uploads/2024/04/Picture9.jpg",
-    "https://happywedz.com/wp-content/uploads/2024/04/Picture19.jpg",
-    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop",
-  ];
+  // Dynamic amenities based on API data
+  const getAmenities = (data) => {
+    if (!data?.attributes) return [];
 
-  const amenities = [
-    { icon: <FaUsers />, name: "Capacity: 500 Guests" },
-    { icon: <FaUtensils />, name: "In-house Catering" },
-    { icon: <FaBed />, name: "Accommodation" },
-    { icon: <FaWifi />, name: "WiFi" },
-    { icon: <FaCar />, name: "Valet Parking" },
-    { icon: <FaSwimmingPool />, name: "Swimming Pool" },
-    { icon: <FaParking />, name: "Ample Parking" },
-    { icon: <FaGlassCheers />, name: "Bar Services" },
-  ];
+    const amenities = [];
+
+    // Capacity
+    if (data.attributes.capacity_min || data.attributes.capacity_max) {
+      const capacity =
+        data.attributes.capacity_min && data.attributes.capacity_max
+          ? `${data.attributes.capacity_min}-${data.attributes.capacity_max} Guests`
+          : data.attributes.capacity_min
+          ? `${data.attributes.capacity_min}+ Guests`
+          : `Up to ${data.attributes.capacity_max} Guests`;
+      amenities.push({ icon: <FaUsers />, name: `Capacity: ${capacity}` });
+    }
+
+    // Car parking
+    if (data.attributes.car_parking === "yes") {
+      amenities.push({ icon: <FaParking />, name: "Car Parking" });
+    }
+
+    // Indoor/Outdoor
+    if (data.attributes.indoor_outdoor) {
+      amenities.push({
+        icon:
+          data.attributes.indoor_outdoor === "indoor" ? (
+            <FaBed />
+          ) : (
+            <FaSwimmingPool />
+          ),
+        name:
+          data.attributes.indoor_outdoor === "indoor"
+            ? "Indoor Venue"
+            : "Outdoor Venue",
+      });
+    }
+
+    // Alcohol policy
+    if (data.attributes.alcohol_policy === "allowed") {
+      amenities.push({ icon: <FaGlassCheers />, name: "Alcohol Allowed" });
+    }
+
+    return amenities;
+  };
 
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
@@ -94,6 +120,49 @@ const Detailed = () => {
     setImages([]);
   };
 
+  // Fetch venue data
+  useEffect(() => {
+    const fetchVenueData = async () => {
+      if (!id) return;
+
+      try {
+        setLoading(true);
+        const data = await vendorServicesApi.getVendorServiceById(id);
+        setVenueData(data);
+
+        // Set images from API data
+        const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
+        if (data.media?.gallery && data.media.gallery.length > 0) {
+          const imageUrls = data.media.gallery
+            .filter(
+              (item) => typeof item === "string" && item.startsWith("/uploads/")
+            )
+            .map((item) => `${IMAGE_BASE_URL}${item}`);
+
+          if (imageUrls.length > 0) {
+            setImages(imageUrls);
+            setMainImage(imageUrls[0]);
+          } else {
+            // Fallback to default image if no valid images found
+            setMainImage("/images/default-venue.jpg");
+          }
+        } else {
+          // Fallback to default image if no gallery
+          setMainImage("/images/default-venue.jpg");
+        }
+
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching venue data:", err);
+        setError("Failed to load venue details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVenueData();
+  }, [id]);
+
   useEffect(() => {
     window.scrollTo({
       top: 0,
@@ -102,15 +171,65 @@ const Detailed = () => {
     });
   }, []);
 
-  // Define activeVendor with sample data
+  // Loading state
+  if (loading) {
+    return (
+      <div className="venue-detail-page">
+        <Container className="py-5">
+          <div className="text-center">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="mt-3">Loading venue details...</p>
+          </div>
+        </Container>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="venue-detail-page">
+        <Container className="py-5">
+          <div className="text-center">
+            <div className="alert alert-danger" role="alert">
+              {error}
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
+
+  // No data state
+  if (!venueData) {
+    return (
+      <div className="venue-detail-page">
+        <Container className="py-5">
+          <div className="text-center">
+            <div className="alert alert-warning" role="alert">
+              Venue not found
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
+
+  // Create activeVendor from API data
   const activeVendor = {
-    id: 1,
-    name: "Grape County Eco Resort & Spa",
-    location: "Nashik, Maharashtra",
-    rating: 4.8,
-    reviews: 120,
-    image:
-      "https://cdn0.weddingwire.in/vendor/4255/original/960/jpg/photographer-avshkaar-photography-weddingphotography-2_15_314255-165946397244869.webp",
+    id: venueData.id,
+    name:
+      venueData.attributes?.name ||
+      venueData.vendor?.businessName ||
+      "Unknown Venue",
+    location: venueData.attributes?.location
+      ? `${venueData.attributes.location.city}, ${venueData.attributes.location.state}`
+      : "Location not specified",
+    rating: 4.5, // Default rating since not in API
+    reviews: 0, // Default reviews since not in API
+    image: mainImage || "/images/default-venue.jpg",
   };
 
   return (
@@ -119,11 +238,17 @@ const Detailed = () => {
         <Row>
           <Col lg={8}>
             <div className="main-image-container mb-4">
-              <img
-                src={mainImage}
-                alt="Main Venue"
-                className="main-image rounded-lg"
-              />
+              {mainImage ? (
+                <img
+                  src={mainImage}
+                  alt={venueData.attributes?.name || "Main Venue"}
+                  className="main-image rounded-lg"
+                />
+              ) : (
+                <div className="main-image rounded-lg d-flex align-items-center justify-content-center bg-light">
+                  <p className="text-muted">No image available</p>
+                </div>
+              )}
               <button
                 className="favorite-btn"
                 onClick={() => setIsFavorite(!isFavorite)}
@@ -136,63 +261,65 @@ const Detailed = () => {
               </button>
             </div>
 
-            <div className="thumbnail-gallery mb-5">
-              <Swiper
-                modules={[Autoplay]}
-                spaceBetween={10}
-                slidesPerView={4}
-                autoplay={{
-                  delay: 3000,
-                  disableOnInteraction: false,
-                }}
-                loop={true}
-                grabCursor={true}
-                freeMode={true}
-              >
-                {images.map((img, idx) => (
-                  <SwiperSlide key={idx}>
-                    <div
-                      className={`thumbnail-item ${
-                        mainImage === img ? "active" : ""
-                      } ${
-                        hoveredIndex !== null && hoveredIndex !== idx
-                          ? "blurred"
-                          : ""
-                      }`}
-                      onClick={() => setMainImage(img)}
-                      onMouseEnter={() => setHoveredIndex(idx)}
-                      onMouseLeave={() => setHoveredIndex(null)}
-                    >
-                      <img
-                        src={img}
-                        alt={`Thumbnail ${idx + 1}`}
-                        className="img-fluid rounded"
-                        style={{ cursor: "pointer" }}
-                      />
-                    </div>
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-            </div>
+            {images.length > 0 && (
+              <div className="thumbnail-gallery mb-5">
+                <Swiper
+                  modules={[Autoplay]}
+                  spaceBetween={10}
+                  slidesPerView={4}
+                  autoplay={{
+                    delay: 3000,
+                    disableOnInteraction: false,
+                  }}
+                  loop={images.length > 4}
+                  grabCursor={true}
+                  freeMode={true}
+                >
+                  {images.map((img, idx) => (
+                    <SwiperSlide key={idx}>
+                      <div
+                        className={`thumbnail-item ${
+                          mainImage === img ? "active" : ""
+                        } ${
+                          hoveredIndex !== null && hoveredIndex !== idx
+                            ? "blurred"
+                            : ""
+                        }`}
+                        onClick={() => setMainImage(img)}
+                        onMouseEnter={() => setHoveredIndex(idx)}
+                        onMouseLeave={() => setHoveredIndex(null)}
+                      >
+                        <img
+                          src={img}
+                          alt={`Thumbnail ${idx + 1}`}
+                          className="img-fluid rounded"
+                          style={{ cursor: "pointer" }}
+                        />
+                      </div>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+              </div>
+            )}
 
             <div className="venue-description mb-5">
               <h3 className="details-section-title fw-bold fw-bold">
                 About This Venue
               </h3>
-              <p className="description-text">
-                Nestled in the heart of Nashik's wine country, Grape County Eco
-                Resort & Spa offers a luxurious setting for your dream wedding.
-                Surrounded by lush vineyards and scenic beauty, this
-                eco-friendly resort combines natural elegance with modern
-                amenities to create unforgettable moments.
-              </p>
-              <p className="description-text">
-                Our venue features beautifully landscaped gardens, elegant
-                banquet halls, and intimate spaces for ceremonies and
-                receptions. With a dedicated team of wedding specialists, we
-                ensure every detail is perfectly executed to create the wedding
-                of your dreams.
-              </p>
+              {venueData.attributes?.description ? (
+                <p className="description-text">
+                  {venueData.attributes.description}
+                </p>
+              ) : (
+                <p className="description-text text-muted">
+                  No description available for this venue.
+                </p>
+              )}
+              {venueData.attributes?.subtitle && (
+                <p className="description-text">
+                  {venueData.attributes.subtitle}
+                </p>
+              )}
             </div>
 
             {/* Amenities */}
@@ -201,14 +328,22 @@ const Detailed = () => {
                 Amenities & Services
               </h3>
               <Row>
-                {amenities.map((item, index) => (
-                  <Col md={6} key={index}>
-                    <div className="amenity-item">
-                      <div className="amenity-icon">{item.icon}</div>
-                      <span>{item.name}</span>
-                    </div>
+                {getAmenities(venueData).length > 0 ? (
+                  getAmenities(venueData).map((item, index) => (
+                    <Col md={6} key={index}>
+                      <div className="amenity-item">
+                        <div className="amenity-icon">{item.icon}</div>
+                        <span>{item.name}</span>
+                      </div>
+                    </Col>
+                  ))
+                ) : (
+                  <Col>
+                    <p className="text-muted">
+                      No amenities information available.
+                    </p>
                   </Col>
-                ))}
+                )}
               </Row>
             </div>
 
@@ -264,43 +399,89 @@ const Detailed = () => {
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <div className="rating-badge">
                     <FaStar className="text-warning" />
-                    <span className="rating-value">4.8</span>
-                    <span className="reviews">(120 reviews)</span>
+                    <span className="rating-value">4.5</span>
+                    <span className="reviews">(0 reviews)</span>
                   </div>
                   <div className="location">
                     <FaLocationDot className="me-1" color="black" />
-                    <span>Nashik, Maharashtra</span>
+                    <span>
+                      {venueData.attributes?.location
+                        ? `${venueData.attributes.location.city}, ${venueData.attributes.location.state}`
+                        : "Location not specified"}
+                    </span>
                   </div>
                 </div>
 
                 <div className="tags mb-4">
-                  <span className="tag resort">Resort</span>
-                  <span className="tag destination">Destination Wedding</span>
-                  <span className="tag eco">Eco-Friendly</span>
+                  {venueData.subcategory?.name && (
+                    <span className="tag resort">
+                      {venueData.subcategory.name}
+                    </span>
+                  )}
+                  {venueData.attributes?.is_featured && (
+                    <span className="tag destination">Featured</span>
+                  )}
+                  {venueData.attributes?.indoor_outdoor && (
+                    <span className="tag eco">
+                      {venueData.attributes.indoor_outdoor}
+                    </span>
+                  )}
                 </div>
 
                 <div className="pricing mb-4">
                   <h4 className="price-title">Starting Price</h4>
-                  <div className="price-value">₹1,50,000 onwards</div>
+                  <div className="price-value">
+                    {venueData.attributes?.starting_price
+                      ? `₹${venueData.attributes.starting_price.toLocaleString()} onwards`
+                      : venueData.attributes?.price_range?.min
+                      ? `₹${parseInt(
+                          venueData.attributes.price_range.min
+                        ).toLocaleString()} onwards`
+                      : "Contact for pricing"}
+                  </div>
                   <p className="price-note">
-                    Price varies based on season and services
+                    {venueData.attributes?.price_unit
+                      ? `Price per ${venueData.attributes.price_unit}`
+                      : "Price varies based on season and services"}
                   </p>
                 </div>
 
                 <div className="contact-info mb-4">
                   <h4 className="contact-title">Contact Venue</h4>
-                  <div className="contact-item">
-                    <FaPhoneAlt className="me-2" />
-                    <span>+91 98765 43210</span>
-                  </div>
-                  <div className="contact-item">
-                    <FaEnvelope className="me-2" />
-                    <span>info@grapecounty.com</span>
-                  </div>
-                  <div className="contact-item">
-                    <FaCalendarAlt className="me-2" />
-                    <span>Available for tours daily</span>
-                  </div>
+                  {venueData.attributes?.contact?.phone && (
+                    <div className="contact-item">
+                      <FaPhoneAlt className="me-2" />
+                      <span>{venueData.attributes.contact.phone}</span>
+                    </div>
+                  )}
+                  {venueData.attributes?.email && (
+                    <div className="contact-item">
+                      <FaEnvelope className="me-2" />
+                      <span>{venueData.attributes.email}</span>
+                    </div>
+                  )}
+                  {venueData.attributes?.contact?.website && (
+                    <div className="contact-item">
+                      <FaCalendarAlt className="me-2" />
+                      <a
+                        href={venueData.attributes.contact.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Visit Website
+                      </a>
+                    </div>
+                  )}
+                  {venueData.attributes?.timing_open &&
+                    venueData.attributes?.timing_close && (
+                      <div className="contact-item">
+                        <FaCalendarAlt className="me-2" />
+                        <span>
+                          Open: {venueData.attributes.timing_open} -{" "}
+                          {venueData.attributes.timing_close}
+                        </span>
+                      </div>
+                    )}
                 </div>
 
                 <div className="action-buttons">
@@ -336,7 +517,11 @@ const Detailed = () => {
                 </div>
 
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d119975.8600521573!2d73.71764683167392!3d19.998203172021707!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bddd290b09914b3%3A0xcb07845d9d28215c!2sNashik%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1757499953908!5m2!1sen!2sin"
+                  src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d119975.8600521573!2d73.71764683167392!3d19.998203172021707!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bddd290b09914b3%3A0xcb07845d9d28215c!2s${encodeURIComponent(
+                    venueData.attributes?.location
+                      ? `${venueData.attributes.location.city}, ${venueData.attributes.location.state}`
+                      : "Nashik, Maharashtra"
+                  )}!5e0!3m2!1sen!2sin!4v1757499953908!5m2!1sen!2sin`}
                   width="100%"
                   height="350"
                   style={{
@@ -362,21 +547,28 @@ const Detailed = () => {
             Similar Venues You Might Like
           </h3>
           <Row>
-            {[1, 2, 3].map((item) => (
-              <Col md={4} key={item}>
+            {images.slice(0, 3).map((img, index) => (
+              <Col md={4} key={index}>
                 <div className="similar-venue-card">
                   <div
                     className="venue-image"
-                    style={{ backgroundImage: `url(${images[item]})` }}
+                    style={{ backgroundImage: `url(${img})` }}
                   ></div>
                   <div className="venue-info">
-                    <h5>Lavender Vineyard Resort</h5>
+                    <h5>{venueData.attributes?.name || "Similar Venue"}</h5>
                     <p className="location">
-                      <FaMapMarkerAlt /> Pune, Maharashtra
+                      <FaMapMarkerAlt />{" "}
+                      {venueData.attributes?.location
+                        ? `${venueData.attributes.location.city}, ${venueData.attributes.location.state}`
+                        : "Location not specified"}
                     </p>
                     <div className="d-flex justify-content-between">
-                      <span className="rating">⭐ 4.7 (98 reviews)</span>
-                      <span className="price">₹1.8 Lakh onwards</span>
+                      <span className="rating">⭐ 4.5 (0 reviews)</span>
+                      <span className="price">
+                        {venueData.attributes?.starting_price
+                          ? `₹${venueData.attributes.starting_price.toLocaleString()} onwards`
+                          : "Contact for pricing"}
+                      </span>
                     </div>
                   </div>
                 </div>

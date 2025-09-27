@@ -116,7 +116,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/:section" element={<MainSection />} />
               <Route path="/:section/:slug" element={<SubSection />} />
-              <Route path="/details/:section/:slug" element={<Detailed />} />
+              <Route path="/details/:section/:id" element={<Detailed />} />
 
               {/* Auth Pages */}
               <Route path="/customer-login" element={<CustomerLogin />} />

@@ -74,8 +74,23 @@ const Storefront = () => {
   const [videoDrafts, setVideoDrafts] = useState([]);
   const { token, vendor } = useSelector((state) => state.vendorAuth || {});
 
-  const handleSave = () => {
+  // Save handler: update if id exists, else create
+  const handleSave = async () => {
+    // Always update localStorage
     localStorage.setItem("vendorFormData", JSON.stringify(formData));
+    // If formData has an id, call update API
+    if (formData.id) {
+      try {
+        const fd = buildFormData();
+        await vendorServicesApi.createOrUpdateService(fd, token, formData.id);
+      } catch (e) {
+        alert(
+          `Failed to update. ${
+            typeof e === "string" ? e : e?.message || "Unknown error"
+          }`
+        );
+      }
+    }
     setShowModal(true);
   };
   console.log("Form Data:", formData);
@@ -83,33 +98,62 @@ const Storefront = () => {
   // Hydrate lightweight draft metadata (titles only) on mount if present
   useEffect(() => {
     try {
-      const photoMeta = JSON.parse(localStorage.getItem("photoDraftsMeta") || "null");
-      const videoMeta = JSON.parse(localStorage.getItem("videoDraftsMeta") || "null");
+      const photoMeta = JSON.parse(
+        localStorage.getItem("photoDraftsMeta") || "null"
+      );
+      const videoMeta = JSON.parse(
+        localStorage.getItem("videoDraftsMeta") || "null"
+      );
       if (Array.isArray(photoMeta) && photoDrafts.length === 0) {
-        setPhotoDrafts(photoMeta.map((m) => ({ id: m.id, title: m.title, preview: m.preview || "", file: m.file || null })));
+        setPhotoDrafts(
+          photoMeta.map((m) => ({
+            id: m.id,
+            title: m.title,
+            preview: m.preview || "",
+            file: m.file || null,
+          }))
+        );
       }
       if (Array.isArray(videoMeta) && videoDrafts.length === 0) {
-        setVideoDrafts(videoMeta.map((m) => ({ id: m.id, title: m.title, type: m.type || "video", preview: m.preview || "", file: m.file || null })));
+        setVideoDrafts(
+          videoMeta.map((m) => ({
+            id: m.id,
+            title: m.title,
+            type: m.type || "video",
+            preview: m.preview || "",
+            file: m.file || null,
+          }))
+        );
       }
-    } catch { }
+    } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Persist lightweight drafts (no File blobs) whenever they change
   useEffect(() => {
-    const meta = photoDrafts.map(({ id, title, preview }) => ({ id, title, preview }));
+    const meta = photoDrafts.map(({ id, title, preview }) => ({
+      id,
+      title,
+      preview,
+    }));
     localStorage.setItem("photoDraftsMeta", JSON.stringify(meta));
   }, [photoDrafts]);
 
   useEffect(() => {
-    const meta = videoDrafts.map(({ id, title, type = "video", preview }) => ({ id, title, type, preview }));
+    const meta = videoDrafts.map(({ id, title, type = "video", preview }) => ({
+      id,
+      title,
+      type,
+      preview,
+    }));
     localStorage.setItem("videoDraftsMeta", JSON.stringify(meta));
   }, [videoDrafts]);
 
   const buildAttributes = () => {
     const attrs = {
       tnc: formData.tnc,
-      name: formData.attributes?.name || formData.attributes?.businessName || "",
+      name:
+        formData.attributes?.name || formData.attributes?.businessName || "",
       slug: formData.attributes?.slug || "",
       tags: formData.tags || [],
       deals: formData.deals || [],
@@ -142,52 +186,78 @@ const Storefront = () => {
       is_featured: !!formData.isFeatured,
       price_range: formData.priceRange || { min: "", max: "" },
       primary_cta: formData.primaryCTA || "enquire",
-      sort_weight: formData.sortWeight ? Number(formData.sortWeight) : undefined,
+      sort_weight: formData.sortWeight
+        ? Number(formData.sortWeight)
+        : undefined,
       timing_open: formData.timing?.open || "",
-      capacity_max: formData.capacity?.max ? Number(formData.capacity?.max) : undefined,
-      capacity_min: formData.capacity?.min ? Number(formData.capacity?.min) : undefined,
+      capacity_max: formData.capacity?.max
+        ? Number(formData.capacity?.max)
+        : undefined,
+      capacity_min: formData.capacity?.min
+        ? Number(formData.capacity?.min)
+        : undefined,
       timing_close: formData.timing?.close || "",
       payment_terms: formData.paymentTerms
         ? {
-          advance: formData.paymentTerms.advancePercent
-            ? `${formData.paymentTerms.advancePercent}%`
-            : undefined,
-          balance: undefined,
-        }
+            advance: formData.paymentTerms.advancePercent
+              ? `${formData.paymentTerms.advancePercent}%`
+              : undefined,
+            balance: undefined,
+          }
         : undefined,
       refund_policy: formData.refundPolicy || "",
-      reviews_count: formData.reviewsCount ? Number(formData.reviewsCount) : undefined,
+      reviews_count: formData.reviewsCount
+        ? Number(formData.reviewsCount)
+        : undefined,
       alcohol_policy: formData.alcoholPolicy || "",
       blackout_dates: formData.blackoutDates || [],
       indoor_outdoor: formData.indoorOutdoor || "",
-      starting_price: formData.startingPrice ? Number(formData.startingPrice) : undefined,
+      starting_price: formData.startingPrice
+        ? Number(formData.startingPrice)
+        : undefined,
       available_slots: Array.isArray(formData.availableSlots)
         ? formData.availableSlots.map((s) => ({
-          date: s.date,
-          slots: s.slots || (s.timeFrom && s.timeTo ? [`${s.timeFrom}-${s.timeTo}`] : []),
-        }))
+            date: s.date,
+            slots:
+              s.slots ||
+              (s.timeFrom && s.timeTo ? [`${s.timeFrom}-${s.timeTo}`] : []),
+          }))
         : [],
       catering_policy: formData.cateringPolicy || "",
       hall_types_note: formData.hallTypesNote || "",
       timing_last_entry: formData.timing?.lastEntry || "",
       cancellation_policy: formData.cancellationPolicy || "",
-      is_feature_available: (formData.isFeatureAvailable || "No").toString().toLowerCase() === "yes",
-      within_24hr_available: (formData.within24HrAvailable || "No").toString().toLowerCase() === "yes",
+      is_feature_available:
+        (formData.isFeatureAvailable || "No").toString().toLowerCase() ===
+        "yes",
+      within_24hr_available:
+        (formData.within24HrAvailable || "No").toString().toLowerCase() ===
+        "yes",
     };
 
     // Remove undefined keys
-    Object.keys(attrs).forEach((k) => attrs[k] === undefined && delete attrs[k]);
+    Object.keys(attrs).forEach(
+      (k) => attrs[k] === undefined && delete attrs[k]
+    );
     return attrs;
   };
 
   const buildMedia = () => {
     // Build media metadata from current drafts if available, fallback to formData
     const gallery = Array.isArray(photoDrafts)
-      ? photoDrafts.map((p) => ({ id: p.id, title: p.title || "", type: "image" }))
+      ? photoDrafts.map((p) => ({
+          id: p.id,
+          title: p.title || "",
+          type: "image",
+        }))
       : formData.media?.gallery || formData.gallery || [];
 
     const videos = Array.isArray(videoDrafts)
-      ? videoDrafts.map((v) => ({ id: v.id, title: v.title || "", type: v.type || "video" }))
+      ? videoDrafts.map((v) => ({
+          id: v.id,
+          title: v.title || "",
+          type: v.type || "video",
+        }))
       : [];
 
     const media = {
@@ -237,7 +307,20 @@ const Storefront = () => {
   const handleSubmit = async () => {
     try {
       const fd = buildFormData();
-      const created = await vendorServicesApi.createOrUpdateService(fd, token);
+      let created;
+      if (formData.id) {
+        created = await vendorServicesApi.createOrUpdateService(
+          fd,
+          token,
+          formData.id
+        );
+      } else {
+        created = await vendorServicesApi.createOrUpdateService(fd, token);
+        // If POST succeeded and response has id, update formData with new id for future PUTs
+        if (created?.id) {
+          setFormData((prev) => ({ ...prev, id: created.id }));
+        }
+      }
       // On success, persist and show modal
       localStorage.setItem("vendorFormData", JSON.stringify(formData));
       // If API returns media URLs, hydrate previews and clear File blobs
@@ -265,7 +348,9 @@ const Storefront = () => {
       setShowModal(true);
     } catch (e) {
       alert(
-        `Failed to submit. ${typeof e === "string" ? e : e?.message || "Unknown error"}`
+        `Failed to submit. ${
+          typeof e === "string" ? e : e?.message || "Unknown error"
+        }`
       );
     }
   };
@@ -344,36 +429,84 @@ const Storefront = () => {
   const renderContent = () => {
     switch (active) {
       case "business":
-        return <BusinessDetails formData={formData} setFormData={setFormData} />;
+        return (
+          <BusinessDetails formData={formData} setFormData={setFormData} />
+        );
 
       case "vendor-basic":
         return (
-          <VendorBasicInfo formData={formData} setFormData={setFormData} onSave={handleSave} />
+          <VendorBasicInfo
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+          />
         );
       case "vendor-contact":
-        return <VendorContact formData={formData} setFormData={setFormData} onSave={handleSave} />;
+        return (
+          <VendorContact
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+          />
+        );
       case "vendor-location":
-        return <VendorLocation formData={formData} setFormData={setFormData} onSave={handleSave} />;
+        return (
+          <VendorLocation
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+          />
+        );
       case "photos":
-        return <PhotoGallery images={photoDrafts} onImagesChange={setPhotoDrafts} />;
+        return (
+          <PhotoGallery images={photoDrafts} onImagesChange={setPhotoDrafts} />
+        );
       case "videos":
-        return <VideoGallery videos={videoDrafts} onVideosChange={setVideoDrafts} />;
+        return (
+          <VideoGallery videos={videoDrafts} onVideosChange={setVideoDrafts} />
+        );
       case "promotions":
         return <PromoForm />;
       case "vendor-pricing":
-        return <VendorPricing formData={formData} setFormData={setFormData} onSave={handleSave} />;
+        return (
+          <VendorPricing
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+          />
+        );
       case "vendor-facilities":
         return (
-          <VendorFacilities formData={formData} setFormData={setFormData} onSave={handleSave} />
+          <VendorFacilities
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+          />
         );
       case "vendor-policies":
-        return <VendorPolicies formData={formData} setFormData={setFormData} onSave={handleSave} />;
+        return (
+          <VendorPolicies
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+          />
+        );
       case "vendor-availability":
         return (
-          <VendorAvailability formData={formData} setFormData={setFormData} onSave={handleSave} />
+          <VendorAvailability
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+          />
         );
       case "vendor-menus":
-        return <VendorMenus formData={formData} setFormData={setFormData} onSave={handleSave} />;
+        return (
+          <VendorMenus
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+          />
+        );
 
       case "vendor-marketing":
         return (
@@ -421,8 +554,9 @@ const Storefront = () => {
               <Nav.Link
                 key={item.id}
                 onClick={() => setActive(item.id)}
-                className={`d-flex align-items-center gap-2 sidebar-nav-item ${active === item.id ? "active" : ""
-                  }`}
+                className={`d-flex align-items-center gap-2 sidebar-nav-item ${
+                  active === item.id ? "active" : ""
+                }`}
               >
                 {item.icon}
                 <span>{item.label}</span>

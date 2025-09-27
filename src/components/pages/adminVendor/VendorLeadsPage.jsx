@@ -1,59 +1,58 @@
 
 import React, { useState, useEffect } from "react";
-
-const sampleRows = [
-    {
-        id: 1,
-        name: "Riya",
-        email: "riya@gmail.com",
-        phone: "1233455233",
-        date: "25/05/2025",
-        message: "Welcome to happy..",
-    },
-    {
-        id: 2,
-        name: "Cell text",
-        email: "Cell text",
-        phone: "Cell text",
-        date: "Cell text",
-        message: "Cell text",
-    },
-    {
-        id: 3,
-        name: "Cell text",
-        email: "Cell text",
-        phone: "Cell text",
-        date: "Cell text",
-        message: "Cell text",
-    },
-    {
-        id: 4,
-        name: "Cell text",
-        email: "Cell text",
-        phone: "Cell text",
-        date: "Cell text",
-        message: "Cell text",
-    },
-    {
-        id: 5,
-        name: "Cell text",
-        email: "Cell text",
-        phone: "Cell text",
-        date: "Cell text",
-        message: "Cell text",
-    },
-];
+import { useSelector } from "react-redux";
 
 export default function VendorLeadsPage() {
-    const [rows] = useState(sampleRows);
+    const [rows, setRows] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [activeRow, setActiveRow] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         price: "",
         service: "",
         date: "",
         message: "",
     });
+    const { token: vendorToken } = useSelector((state) => state.vendorAuth);
+
+    useEffect(() => {
+        if (!vendorToken) {
+            setError("Authentication token not found. Please log in.");
+            setLoading(false);
+            setRows([]);
+            return;
+        }
+
+        const fetchLeads = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                const response = await fetch("/api-main/request-pricing/all", {
+                    headers: { Authorization: `Bearer ${vendorToken}` },
+                });
+
+                if (!response.ok) throw new Error("Failed to fetch leads.");
+
+                const data = await response.json();
+                // Check for a 'leads' property in the response object first.
+                if (data && Array.isArray(data.leads)) {
+                    setRows(data.leads);
+                } else if (data && Array.isArray(data.data)) { // Fallback for { data: [...] }
+                    setRows(data.data);
+                } else if (Array.isArray(data)) { // Fallback for a direct array [...]
+                    setRows(data);
+                }
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchLeads();
+    }, [vendorToken]);
 
     // prevent background scroll when modal open
     useEffect(() => {
@@ -79,14 +78,48 @@ export default function VendorLeadsPage() {
         setFormData((p) => ({ ...p, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // replace this alert with API call when ready
-        alert(
-            `Quotation sent to ${activeRow?.name} (${activeRow?.email})\n\nDetails:\n` +
-            `Price: ${formData.price}\nService: ${formData.service}\nValid Till: ${formData.date}\nMessage: ${formData.message}`
-        );
-        closeModal();
+        if (!activeRow) return;
+
+        setSubmitting(true);
+        setError(null);
+
+        try {
+            if (!vendorToken) throw new Error("Authentication token not found.");
+
+            const payload = {
+                price: formData.price,
+                services: formData.service,
+                validTill: formData.date,
+                message: formData.message,
+            };
+
+            const response = await fetch(
+                `/api-main/request-pricing/requests/${activeRow.id}/quotation`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${vendorToken}`,
+                    },
+                    body: JSON.stringify(payload),
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "Failed to send quotation.");
+            }
+
+            alert(result.message || "Quotation sent successfully!");
+            closeModal();
+        } catch (err) {
+            alert(`Error: ${err.message}`);
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
@@ -104,12 +137,28 @@ export default function VendorLeadsPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {rows.map((row) => (
+                        {loading && (
+                            <tr>
+                                <td colSpan="6" className="text-center py-4">
+                                    <div className="spinner-border text-primary" role="status">
+                                        <span className="visually-hidden">Loading...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        )}
+                        {error && (
+                            <tr>
+                                <td colSpan="6" className="text-center text-danger py-4">
+                                    Error: {error}
+                                </td>
+                            </tr>
+                        )}
+                        {!loading && !error && rows.map((row) => (
                             <tr key={row.id}>
-                                <td>{row.name}</td>
+                                <td>{`${row.firstName || ''} ${row.lastName || ''}`}</td>
                                 <td>{row.email}</td>
                                 <td>{row.phone}</td>
-                                <td>{row.date}</td>
+                                <td>{new Date(row.eventDate).toLocaleDateString()}</td>
                                 <td className="text-wrap" style={{ maxWidth: 240 }}>
                                     {row.message}
                                 </td>
@@ -123,6 +172,13 @@ export default function VendorLeadsPage() {
                                 </td>
                             </tr>
                         ))}
+                        {!loading && !error && rows.length === 0 && (
+                            <tr>
+                                <td colSpan="6" className="text-center text-muted py-4">
+                                    You have no new leads.
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>
@@ -213,8 +269,12 @@ export default function VendorLeadsPage() {
                                 </div>
 
                                 <div className="modal-footer border-0 p-3">
-                                    <button type="submit" className="btn btn-pink w-100">
-                                        Send
+                                    <button
+                                        type="submit"
+                                        className="btn btn-pink w-100"
+                                        disabled={submitting}
+                                    >
+                                        {submitting ? "Sending..." : "Send"}
                                     </button>
                                 </div>
                             </form>

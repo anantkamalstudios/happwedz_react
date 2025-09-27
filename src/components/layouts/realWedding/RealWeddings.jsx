@@ -61,6 +61,7 @@ const RealWeddings = ({ onPostClick }) => {
     if (!path) {
       return "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop"; // A fallback image
     }
+    console.log(path)
     return `https://happywedzbackend.happywedz.com${path}`;
   };
 
