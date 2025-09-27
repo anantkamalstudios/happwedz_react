@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import { Row, Col, Card, Container } from "react-bootstrap";
-import { FaSearch, FaStar, FaHeart, FaRegHeart } from "react-icons/fa";
+import { Row, Col, Card, Container, Button, Badge } from "react-bootstrap";
+import { FaStar, FaHeart, FaRegHeart } from "react-icons/fa";
 import { BsLightningCharge } from "react-icons/bs";
 import { LuUsers } from "react-icons/lu";
-import { FaIndianRupeeSign } from "react-icons/fa6";
-import DynamicAside from "../aside/DynamicAside";
 import { Link } from "react-router-dom";
+import { FaIndianRupeeSign } from "react-icons/fa6";
+import { IoLocationOutline } from "react-icons/io5";
 
-const ListView = ({ subVenuesData, section, handleShow }) => {
+const ListView = ({ subVenuesData, handleShow }) => {
+  console.log("subVenuesData", subVenuesData);
   const [favorites, setFavorites] = useState({});
   const [filter, setFilter] = useState("all");
 
@@ -18,6 +19,20 @@ const ListView = ({ subVenuesData, section, handleShow }) => {
     }));
   };
 
+  // Track which image is hovered for each venue
+  const [hoveredImages, setHoveredImages] = useState({});
+
+  const handleThumbEnter = (venueId, thumbUrl) => {
+    setHoveredImages((prev) => ({ ...prev, [venueId]: thumbUrl }));
+  };
+  const handleThumbLeave = (venueId) => {
+    setHoveredImages((prev) => {
+      const copy = { ...prev };
+      delete copy[venueId];
+      return copy;
+    });
+  };
+
   const filteredVenues =
     filter === "all"
       ? subVenuesData
@@ -26,102 +41,117 @@ const ListView = ({ subVenuesData, section, handleShow }) => {
   return (
     <Container>
       <Row>
-        <Col xs={12} md={12}>
-          {filteredVenues.map((venue) => (
-            <Card
-              key={venue.id}
-              className="venue-card mb-4 rounded-4 shadow-lg"
-            >
-              <Row className="g-0">
-                <Col xs={12} md={4} className="position-relative">
-                  <div className="position-relative h-100">
+        {filteredVenues.map((venue) => (
+          <Col xs={12} key={venue.id}>
+            <Card className="p-3 mb-4 border-0 shadow-sm rounded-5 overflow-hidden">
+              <Link
+                to={`/details/info/${venue.id}`}
+                className="text-decoration-none"
+              >
+                <Row className="g-0">
+                  <Col md={4} className="position-relative">
                     <Card.Img
-                      src={venue.image}
+                      src={hoveredImages[venue.id] || venue.image}
                       alt={venue.name}
-                      className="img-fluid rounded-start w-100 h-100 object-fit-cover"
+                      className="img-fluid rounded-5 object-fit-cover"
+                      style={{ height: "200px", width: "100%" }}
                     />
+
                     <button
-                      className="btn-glass position-absolute top-0 end-0 m-2 rounded-circle"
+                      className="btn btn-light rounded-circle position-absolute top-0 end-0 m-2"
                       onClick={() => toggleFavorite(venue.id)}
                     >
                       {favorites[venue.id] ? (
                         <FaHeart className="text-danger" />
                       ) : (
-                        <FaRegHeart className="text-white" />
+                        <FaRegHeart className="text-dark" />
                       )}
                     </button>
-                    <div className="price-tag position-absolute bottom-0 start-0 text-white px-2 py-1">
-                      FROM : <FaIndianRupeeSign size={12} /> {venue.price}
-                    </div>
-                  </div>
-                </Col>
 
-                <Col
-                  xs={12}
-                  md={8}
-                  className="p-3 d-flex flex-column justify-content-between"
-                >
-                  <Link
-                    to={`/details/info/${venue.id}`}
-                    className="text-decoration-none"
-                  >
-                    <div>
-                      <Card.Title as="h5" className="mb-2">
-                        {venue.name}
-                      </Card.Title>
-                      <div className="text-muted small mb-2">
-                        {venue.description || ""}
+                    {venue.gallery?.length > 0 && (
+                      <div className="d-flex mt-2 px-2">
+                        {venue.gallery.slice(0, 3).map((thumb, i) => (
+                          <img
+                            key={i}
+                            src={thumb}
+                            alt="thumb"
+                            className="rounded-2 me-2 object-fit-cover"
+                            style={{
+                              height: "50px",
+                              width: "70px",
+                              cursor: "pointer",
+                            }}
+                            onMouseEnter={() =>
+                              handleThumbEnter(venue.id, thumb)
+                            }
+                            onMouseLeave={() => handleThumbLeave(venue.id)}
+                          />
+                        ))}
                       </div>
-                      {/* <div className="text-muted small mb-2">
-                        {(venue.description || "")
-                          .split(" ")
-                          .slice(0, 20)
-                          .join(" ")}
-                        ...
-                      </div> */}
-                      <div className="text-muted small mb-2">
-                        {venue.location}
-                      </div>
+                    )}
+                  </Col>
 
-                      <div className="d-flex flex-wrap gap-2 align-items-center mb-2">
-                        <div className="d-flex align-items-center">
-                          <FaStar className="text-warning me-1" />
-                          <span>{venue.rating}</span>
-                          <span className="text-muted ms-1">
-                            ({venue.reviews})
-                          </span>
-                        </div>
-                        <div className="d-flex align-items-center">
-                          <LuUsers className="text-dark me-1" />
-                          <span className="text-muted">{venue.capacity}</span>
-                        </div>
-                        {venue.within_24hr_available && (
-                          <div className="d-flex align-items-center">
-                            <BsLightningCharge
-                              color="orange"
-                              className="me-1"
-                            />
-                            {venue.within_24hr_available} Responds within 24
-                            hours
-                          </div>
-                        )}
-                      </div>
+                  <Col md={8} className="p-3 d-flex flex-column">
+                    <div className="d-flex justify-content-between align-items-start">
+                      <h4 className="fw-bold mb-1">{venue.name}</h4>
+                      {/* <Badge bg="danger">Handpicked</Badge> */}
                     </div>
-                  </Link>
-                  {console.log(venue.id)}
-                  <div className="mt-2">
-                    {/* <button className="w-100 details-btn" onClick={handleShow}>
-                      Request Pricing
-                    </button> */}
-                    <button className="w-100 details-btn" onClick={() => handleShow(venue.id)}>
-                      Request Pricing
-                    </button>
-                  </div>
-                </Col>
-              </Row>
+
+                    <p className="text-muted small mb-1">
+                      {" "}
+                      <IoLocationOutline className="me-2" />
+                      {venue.location}
+                    </p>
+
+                    <p className="fw-semibold text-dark mb-2">
+                      <FaIndianRupeeSign size={14} /> {venue.price}{" "}
+                      <small>per day</small>
+                    </p>
+
+                    <div className="d-flex align-items-center mb-2">
+                      <FaStar className="text-warning me-1" />
+                      <span>{venue.rating || "5.0"}</span>
+                      <span className="text-muted ms-1">
+                        ({venue.reviews} reviews)
+                      </span>
+                    </div>
+
+                    <p className="text-muted small mb-2">
+                      {(venue.description || "")
+                        .split(" ")
+                        .slice(0, 20)
+                        .join(" ")}
+                      ...
+                    </p>
+
+                    {/* Info Tags */}
+                    <div className="d-flex flex-wrap gap-2 mb-3">
+                      <Badge bg="light" text="dark">
+                        Avg Booking 120000
+                      </Badge>
+                      <Badge bg="light" text="dark">
+                        Small Function 30000
+                      </Badge>
+                      <Badge bg="light" text="dark">
+                        On Time Service
+                      </Badge>
+                    </div>
+
+                    <div className="mt-auto text-end">
+                      <Button
+                        variant="danger"
+                        className="btn-primary"
+                        onClick={() => handleShow(venue.id)}
+                      >
+                        Send Message
+                      </Button>
+                    </div>
+                  </Col>
+                </Row>
+              </Link>
             </Card>
-          ))}
-        </Col>
+          </Col>
+        ))}
       </Row>
     </Container>
   );

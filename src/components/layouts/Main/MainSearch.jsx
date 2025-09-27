@@ -108,9 +108,10 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
                     />
                   </div>
 
+                  {/*
                   <div className="vr d-none d-md-block" />
 
-                  <div
+                   <div
                     className="d-flex align-items-center flex-grow-1 px-2 position-relative"
                     style={{ border: "1px solid pink", borderRadius: "5px" }}
                   >
@@ -162,12 +163,12 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
                           ))}
                         </div>
                       )}
-                  </div>
+                  </div> */}
 
                   <Button
                     type="submit"
                     variant="primary"
-                    className="ms-md-2 rounded-pill px-4 d-flex align-items-center justify-content-center"
+                    className="ms-md-2 rounded-3 px-4 d-flex align-items-center justify-content-center"
                     style={{ whiteSpace: "nowrap" }}
                   >
                     <CiSearch size={20} className="me-2" />

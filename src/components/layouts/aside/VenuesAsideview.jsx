@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Row, Col, Form, Dropdown } from "react-bootstrap";
+import { Row, Col, Form, Dropdown, Container } from "react-bootstrap";
 import { MdClear } from "react-icons/md";
 import { CiFilter } from "react-icons/ci";
 import { FaChevronDown } from "react-icons/fa";
@@ -149,90 +149,92 @@ const VenuesAsideview = ({ view, setView }) => {
   };
 
   return (
-    <div className="horizontal-filters-container bg-white border-bottom py-3 mb-4">
-      <div className="container-fluid">
-        <Row className="align-items-center">
-          {/* Filter dropdowns */}
-          <Col xs={12} md={8} className="mb-3 mb-md-0">
-            <div className="d-flex flex-wrap gap-3 align-items-center justify-content-md-start justify-content-center">
-              {renderDropdownCheckboxList(
-                "Occasion",
-                FILTER_OPTIONS.Occasion,
-                "Occasion"
-              )}
-              {renderDropdownCheckboxList(
-                "Services",
-                FILTER_OPTIONS.Services,
-                "Services"
-              )}
-              {renderDropdownCheckboxList(
-                "Pre_Wedding_Package",
-                FILTER_OPTIONS.Pre_Wedding_Package,
-                "Pre Wedding Package"
-              )}
-              {renderDropdownCheckboxList(
-                "One_Day_Wedding_Package",
-                FILTER_OPTIONS.One_Day_Wedding_Package,
-                "1 Day Wedding Package"
-              )}
-              {renderDropdownCheckboxList(
-                "Three_Day_Wedding_Package",
-                FILTER_OPTIONS.Three_Day_Wedding_Package,
-                "3 Day Wedding Package"
-              )}
-            </div>
-          </Col>
-
-          {/* Clear & View Switcher */}
-          <Col xs={12} md={4} className="mt-3 mt-md-0">
-            <div className="d-flex flex-column flex-md-row justify-content-md-end justify-content-center align-items-center gap-2 w-100">
-              {isAnyFilterSelected && (
-                <button
-                  className="btn btn-outline-danger btn-sm d-flex flex-row align-items-center text-center gap-1 mb-2 mb-md-0"
-                  onClick={clearFilters}
-                >
-                  <MdClear size={20} />
-                  Clear All
-                </button>
-              )}
-              <div className="d-flex justify-content-md-end justify-content-center w-75">
-                <ViewSwitcher view={view} setView={setView} />
+    <Container fluid className="px-0">
+      <div className="horizontal-filters-container bg-white border-bottom py-3 mb-4">
+        <div className="container-fluid">
+          <Row className="align-items-center">
+            {/* Filter dropdowns */}
+            <Col xs={12} md={8} className="mb-3 mb-md-0">
+              <div className="d-flex flex-wrap gap-3 align-items-center justify-content-md-start justify-content-center">
+                {/* {renderDropdownCheckboxList(
+                  "Occasion",
+                  FILTER_OPTIONS.Occasion,
+                  "Occasion"
+                )}
+                {renderDropdownCheckboxList(
+                  "Services",
+                  FILTER_OPTIONS.Services,
+                  "Services"
+                )} */}
+                {renderDropdownCheckboxList(
+                  "Pre_Wedding_Package",
+                  FILTER_OPTIONS.Pre_Wedding_Package,
+                  "Pre Wedding Package"
+                )}
+                {renderDropdownCheckboxList(
+                  "One_Day_Wedding_Package",
+                  FILTER_OPTIONS.One_Day_Wedding_Package,
+                  "1 Day Wedding Package"
+                )}
+                {renderDropdownCheckboxList(
+                  "Three_Day_Wedding_Package",
+                  FILTER_OPTIONS.Three_Day_Wedding_Package,
+                  "3 Day Wedding Package"
+                )}
               </div>
-            </div>
-          </Col>
-        </Row>
+            </Col>
 
-        {/* Active filters */}
-        {isAnyFilterSelected && (
-          <Row className="mt-3">
-            <Col xs={12}>
-              <div className="d-flex flex-wrap gap-2 align-items-center">
-                <small className="text-muted me-2">Active filters:</small>
-                {Object.entries(selectedFilters)
-                  .filter(([key, selected]) => selected)
-                  .map(([key]) => {
-                    const [group, value] = key.split("-");
-                    return (
-                      <span
-                        key={key}
-                        className="badge bg-light text-dark border d-flex align-items-center gap-1"
-                      >
-                        {value}
-                        <button
-                          type="button"
-                          className="btn-close btn-close-sm"
-                          style={{ fontSize: "0.6rem" }}
-                          onClick={() => handleCheckbox(group, value)}
-                        ></button>
-                      </span>
-                    );
-                  })}
+            {/* Clear & View Switcher */}
+            <Col xs={12} md={4} className="mt-3 mt-md-0">
+              <div className="d-flex flex-column flex-md-row justify-content-md-end justify-content-center align-items-center gap-2 w-100">
+                {isAnyFilterSelected && (
+                  <button
+                    className="btn btn-outline-danger btn-sm d-flex flex-row align-items-center text-center gap-1 mb-2 mb-md-0"
+                    onClick={clearFilters}
+                  >
+                    <MdClear size={20} />
+                    Clear All
+                  </button>
+                )}
+                <div className="d-flex justify-content-md-end justify-content-center w-75">
+                  <ViewSwitcher view={view} setView={setView} />
+                </div>
               </div>
             </Col>
           </Row>
-        )}
+
+          {/* Active filters */}
+          {isAnyFilterSelected && (
+            <Row className="mt-3">
+              <Col xs={12}>
+                <div className="d-flex flex-wrap gap-2 align-items-center">
+                  <small className="text-muted me-2">Active filters:</small>
+                  {Object.entries(selectedFilters)
+                    .filter(([key, selected]) => selected)
+                    .map(([key]) => {
+                      const [group, value] = key.split("-");
+                      return (
+                        <span
+                          key={key}
+                          className="badge bg-light text-dark border d-flex align-items-center gap-1"
+                        >
+                          {value}
+                          <button
+                            type="button"
+                            className="btn-close btn-close-sm"
+                            style={{ fontSize: "0.6rem" }}
+                            onClick={() => handleCheckbox(group, value)}
+                          ></button>
+                        </span>
+                      );
+                    })}
+                </div>
+              </Col>
+            </Row>
+          )}
+        </div>
       </div>
-    </div>
+    </Container>
   );
 };
 

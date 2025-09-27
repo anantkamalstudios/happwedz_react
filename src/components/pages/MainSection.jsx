@@ -20,6 +20,7 @@ import WeddingCardDesigns from "../layouts/eInvite/WeddingCardDesigns";
 import MainSearch from "../layouts/Main/MainSearch";
 import RealWedding from "./RealWedding";
 import Genie from "./Genie";
+import AllCategories from "../layouts/AllCategories";
 
 const MainSection = () => {
   const { section } = useParams();
@@ -30,11 +31,8 @@ const MainSection = () => {
     return (
       <>
         <MainSearch />
+        <AllCategories />
         <MainByRegion />
-        <FindMain />
-        <MainHeroSection loc={"Panjab"} />
-        <MainHeroSection loc={"Karela "} />
-        <MainHeroSection loc={"Goa"} />
         <FactorsList />
         <FaqsSection />
       </>
@@ -45,11 +43,9 @@ const MainSection = () => {
     return (
       <>
         <MainSearch title="Wedding Vendor" />
+        <AllCategories />
         <MainByRegion />
         <FindMain />
-        <MainHeroSection loc={"Panjab"} />
-        <MainHeroSection loc={"Karela "} />
-        <MainHeroSection loc={"Goa"} />
         <FactorsList />
         <FaqsSection />
       </>
