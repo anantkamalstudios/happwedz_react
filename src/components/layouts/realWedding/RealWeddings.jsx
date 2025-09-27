@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { CiSearch } from "react-icons/ci";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import logo from "../../../../public/happywed_white.png";
 import einviteImage from "../../../../public/images/home/einvite.png";
 import image from "../../../../public/images/home/try.png";
@@ -11,185 +11,58 @@ import {
   FaShare,
   FaSearch,
   FaBars,
-  FaUser,
-  FaBell,
   FaMapMarkerAlt,
 } from "react-icons/fa";
 import CtaPanel from "../../home/CtaPanel";
 
 const RealWeddings = ({ onPostClick }) => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [weddings, setWeddings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(3);
 
-  const weddings = [
-    {
-      title: "Diya and Anmol",
-      slug: "diya-anmol-udaipur-2023",
-      weddingDate: "2023-11-25",
-      city: "Udaipur",
-      venues: ["City Palace", "Leela Palace"],
+  useEffect(() => {
+    const fetchWeddings = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          "https://happywedz.com/api/realwedding"
+        );
+        // The API returns an array directly.
+        if (response.data && Array.isArray(response.data)) {
+          setWeddings(response.data);
+        } else {
+          setWeddings([]);
+        }
+        setError(null);
+      } catch (err) {
+        setError("Failed to fetch wedding stories. Please try again later.");
+        console.error("Error fetching weddings:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      brideName: "Diya Sharma",
-      brideBio: "An architect with a love for heritage and culture.",
-      groomName: "Anmol Mehta",
-      groomBio: "An entrepreneur passionate about travel and luxury events.",
-
-      story:
-        "A royal-themed wedding set against the backdrop of Udaipur’s palaces, blending traditions with modern elegance.",
-
-      events: [
-        { name: "Mehendi", date: "2023-11-23", venue: "Leela Palace" },
-        {
-          name: "Sangeet",
-          date: "2023-11-24",
-          venue: "City Palace Courtyard",
-        },
-        {
-          name: "Wedding",
-          date: "2023-11-25",
-          venue: "Jagmandir Island Palace",
-        },
-      ],
-
-      vendors: [
-        { type: "Planner", name: "DreamWed Planners" },
-        { type: "Caterer", name: "Leela Palace Catering" },
-      ],
-
-      coverPhoto:
-        "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop",
-      highlightPhotos: [
-        "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&h=600&fit=crop",
-      ],
-      allPhotos: [
-        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=800&h=600&fit=crop",
-      ],
-
-      themes: ["Royal", "Traditional"],
-      brideOutfit: "Red Sabyasachi Lehenga",
-      groomOutfit: "Ivory Sherwani by Manish Malhotra",
-      specialMoments: "Boat ride to the wedding venue at sunset.",
-
-      photographer: "LensArt Studio",
-      makeup: "Glow by Neha",
-      decor: "Royal Décor Udaipur",
-      additionalCredits: ["Fireworks by PyroShow India"],
-
-      status: "published",
-      featured: true,
-    },
-    {
-      title: "Lisha and Aman",
-      slug: "lisha-aman-goa-2024",
-      weddingDate: "2024-02-10",
-      city: "Goa",
-      venues: ["W Goa Resort", "Beachside Mandap"],
-
-      brideName: "Lisha Verma",
-      brideBio: "Fashion designer with a love for beach vibes.",
-      groomName: "Aman Kapoor",
-      groomBio: "Tech startup founder who enjoys surfing and music.",
-
-      story:
-        "A bohemian beach wedding with pastel décor, tropical vibes, and a lively celebration under the stars.",
-
-      events: [
-        { name: "Haldi", date: "2024-02-08", venue: "W Goa Poolside" },
-        { name: "Sangeet", date: "2024-02-09", venue: "Beach Shack" },
-        { name: "Wedding", date: "2024-02-10", venue: "Beachside Mandap" },
-      ],
-
-      vendors: [
-        { type: "Planner", name: "Beach Bliss Planners" },
-        { type: "DJ", name: "DJ Arjun" },
-      ],
-
-      coverPhoto:
-        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=600&fit=crop",
-      highlightPhotos: [
-        "https://images.unsplash.com/photo-1499955085172-a104c9463ece?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1529634899531-2e66e46008b3?w=800&h=600&fit=crop",
-      ],
-      allPhotos: [
-        "https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=800&h=600&fit=crop",
-      ],
-
-      themes: ["Bohemian", "Beach"],
-      brideOutfit: "Pastel Lehenga by Anita Dongre",
-      groomOutfit: "Linen Kurta with Floral Jacket",
-      specialMoments: "Vows exchanged during sunset by the sea.",
-
-      photographer: "Goa Wedding Shoots",
-      makeup: "BeachGlow Artists",
-      decor: "Tropical Décor Goa",
-      additionalCredits: ["Live Band: Ocean Beats"],
-
-      status: "published",
-      featured: false,
-    },
-    {
-      title: "Meera and Kunal",
-      slug: "meera-kunal-jaipur-2024",
-      weddingDate: "2024-03-15",
-      city: "Jaipur",
-      venues: ["Rambagh Palace", "Samode Haveli"],
-
-      brideName: "Meera Joshi",
-      brideBio: "Doctor who loves history and culture.",
-      groomName: "Kunal Agarwal",
-      groomBio: "Investment banker with a flair for royal architecture.",
-
-      story:
-        "A grand Jaipur wedding showcasing vibrant colors, traditional Rajasthani music, and regal settings.",
-
-      events: [
-        { name: "Engagement", date: "2024-03-13", venue: "Samode Haveli" },
-        { name: "Sangeet", date: "2024-03-14", venue: "Rambagh Palace Lawn" },
-        {
-          name: "Wedding",
-          date: "2024-03-15",
-          venue: "Rambagh Palace Courtyard",
-        },
-      ],
-
-      vendors: [
-        { type: "Planner", name: "Royal Rajasthan Planners" },
-        { type: "Decorator", name: "Heritage Décor Jaipur" },
-      ],
-
-      coverPhoto:
-        "https://images.unsplash.com/photo-1524492449090-1a065f2d7d86?w=800&h=600&fit=crop",
-      highlightPhotos: [
-        "https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1529042410759-befb1204b468?w=800&h=600&fit=crop",
-      ],
-      allPhotos: [
-        "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=800&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1504198266285-165a9a6e2b2e?w=800&h=600&fit=crop",
-      ],
-
-      themes: ["Traditional", "Cultural"],
-      brideOutfit: "Pink Lehenga by Tarun Tahiliani",
-      groomOutfit: "Gold Embroidered Sherwani",
-      specialMoments: "Grand Baraat procession through the palace gates.",
-
-      photographer: "Royal Frames Jaipur",
-      makeup: "Glam by Ritu",
-      decor: "Jaipur Heritage Décor",
-      additionalCredits: ["Folk Dance Troupe"],
-
-      status: "published",
-      featured: true,
-    },
-  ];
+    fetchWeddings();
+  }, []);
 
   const filteredWeddings = weddings.filter(
     (wedding) =>
       wedding.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       wedding.city.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleLoadMore = () => {
+    setVisibleCount((prevCount) => prevCount + 3);
+  };
+
+  const getImageUrl = (path) => {
+    if (!path) {
+      return "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop"; // A fallback image
+    }
+    return `https://happywedzbackend.happywedz.com${path}`;
+  };
 
   const WeddingCard = ({ wedding }) => (
     <div
@@ -199,7 +72,7 @@ const RealWeddings = ({ onPostClick }) => {
       <div className="wedding-card h-100">
         <div className="position-relative overflow-hidden rounded-3 mb-3 main-image-container">
           <img
-            src={wedding.coverPhoto}
+            src={getImageUrl(wedding.coverPhoto)}
             alt={wedding.title}
             className="main-image"
             style={{ objectFit: "cover", width: "100%" }}
@@ -227,11 +100,11 @@ const RealWeddings = ({ onPostClick }) => {
         </div>
 
         <div className="row g-2 mb-3">
-          {wedding.highlightPhotos.map((img, index) => (
+          {wedding.highlightPhotos?.slice(0, 2).map((img, index) => (
             <div key={index} className="col-6">
               <div className="position-relative overflow-hidden rounded-2 small-image-container">
                 <img
-                  src={img}
+                  src={getImageUrl(img)}
                   alt={`${wedding.title} ${index + 2}`}
                   className="img-fluid small-image"
                   style={{
@@ -280,7 +153,7 @@ const RealWeddings = ({ onPostClick }) => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <CiSearch className="position-absolute top-50 end-0 translate-middle-y me-3 text-muted" />
+                <FaSearch className="position-absolute top-50 end-0 translate-middle-y me-3 text-muted" />
               </div>
             </div>
             <div className="col-md-6 text-md-end">
@@ -307,12 +180,24 @@ const RealWeddings = ({ onPostClick }) => {
       <section className="gallery-section py-5">
         <div className="container">
           <div className="row">
-            {filteredWeddings.map((wedding) => (
-              <WeddingCard key={wedding.id} wedding={wedding} />
-            ))}
+            {loading ? (
+              <div className="text-center py-5">
+                <p className="text-muted fs-4">Loading weddings...</p>
+              </div>
+            ) : (
+              filteredWeddings.slice(0, visibleCount).map((wedding) => (
+                <WeddingCard key={wedding.id} wedding={wedding} />
+              ))
+            )}
           </div>
 
-          {filteredWeddings.length === 0 && (
+          {!loading && error && (
+            <div className="text-center py-5 text-danger">
+              <p className="fs-4">{error}</p>
+            </div>
+          )}
+
+          {!loading && !error && filteredWeddings.length === 0 && (
             <div className="text-center py-5">
               <p className="text-muted fs-4">
                 No weddings found matching your search.
@@ -321,11 +206,16 @@ const RealWeddings = ({ onPostClick }) => {
           )}
 
           {/* Load More Button */}
-          <div className="text-center mt-5">
-            <button className="btn btn btn-primary btn-lg px-5 load-more-btn">
-              Load More Weddings
-            </button>
-          </div>
+          {!loading && filteredWeddings.length > visibleCount && (
+            <div className="text-center mt-5">
+              <button
+                className="btn btn btn-primary btn-lg px-5 load-more-btn"
+                onClick={handleLoadMore}
+              >
+                Load More Weddings
+              </button>
+            </div>
+          )}
         </div>
       </section>
 

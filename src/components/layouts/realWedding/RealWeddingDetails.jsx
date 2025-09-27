@@ -35,6 +35,14 @@ const RealWeddingDetails = ({ post, onBackClick }) => {
     });
   };
 
+  const getImageUrl = (path) => {
+    if (!path) {
+      // Return a placeholder if no path is provided
+      return "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop";
+    }
+    return `https://happywedzbackend.happywedz.com${path}`;
+  };
+
   const openLightbox = (index) => {
     setCurrentImage(index);
     setLightboxOpen(true);
@@ -69,7 +77,7 @@ const RealWeddingDetails = ({ post, onBackClick }) => {
           <div
             className="wedding-cover-image"
             style={{
-              backgroundImage: `url(${post.coverPhoto})`,
+              backgroundImage: `url(${getImageUrl(post.coverPhoto)})`,
               height: "70vh",
               backgroundSize: "cover",
               backgroundPosition: "center",
@@ -125,7 +133,7 @@ const RealWeddingDetails = ({ post, onBackClick }) => {
                   <div className="wedding-couple-card text-center p-4 rounded-4 shadow-sm">
                     <div className="wedding-portrait-wrapper mb-4 mx-auto">
                       <img
-                        src={post.bridePortrait || post.coverPhoto}
+                        src={getImageUrl(post.bridePortrait || post.coverPhoto)}
                         alt={post.brideName}
                         className="img-fluid rounded-circle wedding-portrait"
                       />
@@ -142,7 +150,7 @@ const RealWeddingDetails = ({ post, onBackClick }) => {
                   <div className="wedding-couple-card text-center p-4 rounded-4 shadow-sm">
                     <div className="wedding-portrait-wrapper mb-4 mx-auto">
                       <img
-                        src={post.groomPortrait || post.coverPhoto}
+                        src={getImageUrl(post.groomPortrait || post.coverPhoto)}
                         alt={post.groomName}
                         className="img-fluid rounded-circle wedding-portrait"
                       />
@@ -371,7 +379,7 @@ const RealWeddingDetails = ({ post, onBackClick }) => {
                       onClick={() => openLightbox(index)}
                     >
                       <img
-                        src={photo}
+                        src={getImageUrl(photo)}
                         alt={`Highlight ${index + 1}`}
                         className="img-fluid w-100 wedding-gallery-image"
                         style={{ height: "300px", objectFit: "cover" }}
@@ -393,7 +401,7 @@ const RealWeddingDetails = ({ post, onBackClick }) => {
                       }
                     >
                       <img
-                        src={photo}
+                        src={getImageUrl(photo)}
                         alt={`Gallery ${index + 1}`}
                         className="img-fluid w-100 wedding-gallery-image"
                         style={{ height: "200px", objectFit: "cover" }}
@@ -485,10 +493,10 @@ const RealWeddingDetails = ({ post, onBackClick }) => {
               <div className="modal-body position-relative">
                 <img
                   src={
-                    [
+                    getImageUrl([
                       ...(post.highlightPhotos || []),
                       ...(post.allPhotos || []),
-                    ][currentImage]
+                    ][currentImage])
                   }
                   alt="Gallery"
                   className="img-fluid rounded-3"
