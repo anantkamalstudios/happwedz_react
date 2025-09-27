@@ -16,7 +16,7 @@ const Header = () => {
 
   const auth = useSelector((state) => state.auth);
   const vendorAuth = useSelector((state) => state.vendorAuth);
-  console.log("vendor auth ", vendorAuth);
+  // console.log("vendor auth ", vendorAuth);
   const isUserLoggedIn = !!auth?.token;
   const isVendorLoggedIn = !!vendorAuth?.token;
   const toSlug = (text) =>
@@ -38,10 +38,56 @@ const Header = () => {
         const bsCollapse =
           window.bootstrap.Collapse.getOrCreateInstance(collapse);
         bsCollapse.hide();
-      } catch { }
+      } catch {
+        //  console.log("Error in collapsing navbar")
+      }
     }
   }, [location]);
 
+  const [venueSubcategories, setVenueSubcategories] = useState([]);
+  useEffect(() => {
+    const fetchSubcategories = async () => {
+      try {
+        const response = await fetch(
+          "https://happywedz.com/api/vendor-types/with-subcategories/all"
+        );
+        const data = await response.json();
+        const venues = data.find(
+          (vendor) => vendor.name && vendor.name.toLowerCase() === "venues"
+        );
+        if (venues && Array.isArray(venues.subcategories)) {
+          setVenueSubcategories(venues.subcategories);
+          // console.log("Fetched venue subcategories:", venues.subcategories);
+        } else {
+          setVenueSubcategories([]);
+          // console.log("Fetched venue subcategories: none");
+        }
+      } catch (error) {
+        console.error("Error fetching subcategories:", error);
+      }
+    };
+    fetchSubcategories();
+  }, []);
+
+  // State for all vendor categories (with subcategories)
+  const [vendorCategories, setVendorCategories] = useState([]);
+  useEffect(() => {
+    const fetchVendorCategories = async () => {
+      try {
+        const response = await fetch(
+          "https://happywedz.com/api/vendor-types/with-subcategories/all"
+        );
+        const data = await response.json();
+        setVendorCategories(Array.isArray(data) ? data : []);
+      } catch (error) {
+        setVendorCategories([]);
+        console.error("Error fetching vendor categories:", error);
+      }
+    };
+    fetchVendorCategories();
+  }, []);
+
+  // ...existing code...
   return (
     <nav className="navbar navbar-expand-lg navbar-light shadow-sm primary-bg p-0">
       <div className="container-fluid">
@@ -64,8 +110,6 @@ const Header = () => {
             <RiMenuFill color="white" size={35} />
           </button>
         </div>
-
-
 
         <div className="collapse navbar-collapse" id="mainNav">
           <div className="row">
@@ -338,85 +382,52 @@ const Header = () => {
 
                               {/* Column 2: By Type and By Location */}
                               <div className="col-md-8 p-4">
+                                <h6 className="fw-bold primary-text text-uppercase mb-3">
+                                  By Type
+                                </h6>
                                 <div className="row">
-                                  {/* By Type */}
-                                  <div className="col-sm-6">
-                                    <h6 className="fw-bold primary-text text-uppercase mb-3">
-                                      By Type
-                                    </h6>
-                                    <div className="row">
-                                      {[
-                                        "Banquet Halls",
-                                        "Marriage Garden / Lawns",
-                                        "Wedding Resorts",
-                                        "Small Function / Party Halls",
-                                        "Destination Wedding Venues",
-                                        "Kalyana Mandapams",
-                                        "4 Star & Above Wedding Hotels",
-                                        "Venue Concierge Services",
-                                        "View All Venues",
-                                      ].map((item, i) => {
-                                        const isShowMore =
-                                          item === "View All Venues";
-                                        const path = isShowMore
-                                          ? "/venues"
-                                          : `/venues/${item
-                                            .toLowerCase()
-                                            .replace(/\s+/g, "-")
-                                            .replace(/[^a-z0-9\-]/g, "")}`;
-
-                                        return (
-                                          <div className="col-12 mb-2" key={i}>
-                                            <Link
-                                              to={path}
-                                              className={`dropdown-link d-flex align-items-center ${isShowMore
-                                                ? "primary-text fw-bold text-decoration-underline"
-                                                : ""
-                                                }`}
-                                            >
-                                              <i className="bi bi-check-circle me-2 text-primary"></i>
-                                              <span className="small">
-                                                {item}
-                                              </span>
-                                            </Link>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-
-                                  {/* By Location */}
-                                  <div className="col-sm-6">
-                                    <h6 className="fw-semibold text-uppercase primary-text mb-3">
-                                      By Location
-                                    </h6>
-                                    <div className="row">
-                                      {[
-                                        "Mumbai",
-                                        "Bangalore",
-                                        "Pune",
-                                        "Kolkata",
-                                        "Jaipur",
-                                        "Lucknow",
-                                        "Hyderabad",
-                                      ].map((item, i) => (
-                                        <div className="col-12 mb-2" key={i}>
-                                          <Link
-                                            to={`/venues/${item
-                                              .toLowerCase()
-                                              .replace(/\s+/g, "-")
-                                              .replace(/[^a-z0-9\-]/g, "")}`}
-                                            className="dropdown-link d-flex align-items-center"
-                                          >
-                                            <i className="bi bi-geo-alt-fill me-2 text-secondary"></i>
-                                            <span className="small">
-                                              {item}
-                                            </span>
-                                          </Link>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
+                                  {(venueSubcategories.length > 0
+                                    ? [
+                                      ...venueSubcategories.map(
+                                        (s) => s.name
+                                      ),
+                                      "View All Venues",
+                                    ]
+                                    : [
+                                      "Banquet Halls",
+                                      "Marriage Garden / Lawns",
+                                      "Wedding Resorts",
+                                      "Small Function / Party Halls",
+                                      "Destination Wedding Venues",
+                                      "Kalyana Mandapams",
+                                      "4 Star & Above Wedding Hotels",
+                                      "Venue Concierge Services",
+                                      "View All Venues",
+                                    ]
+                                  ).map((item, i) => {
+                                    const isShowMore =
+                                      item === "View All Venues";
+                                    const path = isShowMore
+                                      ? "/venues"
+                                      : `/venues/${item
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "-")
+                                        .replace(/[^a-z0-9\-]/g, "")}`;
+                                    return (
+                                      <div className="col-12 mb-2" key={i}>
+                                        <Link
+                                          to={path}
+                                          className={`dropdown-link d-flex align-items-center ${isShowMore
+                                            ? "primary-text fw-bold text-decoration-underline"
+                                            : ""
+                                            }`}
+                                        >
+                                          <i className="bi bi-check-circle me-2 text-primary"></i>
+                                          <span className="small">{item}</span>
+                                        </Link>
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             </div>
@@ -433,65 +444,43 @@ const Header = () => {
                           >
                             Vendors
                           </Link>
-
                           <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
-                              <div className="row g-4">
-                                <div className="col-md-8">
-                                  <h6 className="fw-semibold text-uppercase mb-3 text-secondary">
-                                    Start hiring your vendors
-                                  </h6>
-                                  <div className="row">
-                                    {[
-                                      "Wedding Photographers",
-                                      "Wedding Videography",
-                                      "Wedding Music",
-                                      "Caterers",
-                                      "Wedding Transportation",
-                                      "Wedding Invitations",
-                                      "Wedding Gifts",
-                                      "Florists",
-                                      "Wedding Planners",
-                                    ].map((item, i) => (
-                                      <div
-                                        className="col-6 col-sm-4 mb-2"
-                                        key={i}
-                                      >
-                                        <Link
-                                          to={`/vendors/${toSlug(item)}`}
-                                          state={{ title: item }}
-                                          className="dropdown-link d-flex align-items-center"
-                                        >
-                                          <span className="small">{item}</span>
-                                        </Link>
+                              <div className="row">
+                                {vendorCategories.length > 0 &&
+                                  vendorCategories.map((cat, i) => (
+                                    <div
+                                      className="col-6 col-md-3 mb-3"
+                                      key={cat.id || i}
+                                    >
+                                      {/* Category Name */}
+                                      <div className="fw-bold primary-text text-uppercase mb-2">
+                                        {cat.name}
                                       </div>
-                                    ))}
-                                  </div>
-                                </div>
 
-                                {/* Column 2: Featured box */}
-                                <div className="col-md-4 d-none d-md-block">
-                                  <div className="bg-white rounded-4 shadow-sm p-4 h-100 d-flex flex-column justify-content-between">
-                                    <div>
-                                      <h6 className="fw-bold mb-2">
-                                        Destination Weddings
-                                      </h6>
-                                      <p className="text-muted small mb-3">
-                                        Easily plan your international wedding
-                                        with the best venues and planners.
-                                      </p>
+                                      {/* Subcategories */}
+                                      {Array.isArray(cat.subcategories) &&
+                                        cat.subcategories.length > 0 && (
+                                          <ul className="list-unstyled">
+                                            {cat.subcategories.map((sub, j) => (
+                                              <li
+                                                key={sub.id || j}
+                                                className="mb-1"
+                                              >
+                                                <Link
+                                                  to={`/vendors/${toSlug(
+                                                    cat.name
+                                                  )}/${toSlug(sub.name)}`}
+                                                  className="dropdown-link small d-block"
+                                                >
+                                                  {sub.name}
+                                                </Link>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        )}
                                     </div>
-                                    <img
-                                      src="https://cdn-icons-png.flaticon.com/512/3176/3176294.png"
-                                      alt="Destination"
-                                      className="img-fluid"
-                                      style={{
-                                        width: "60px",
-                                        objectFit: "contain",
-                                      }}
-                                    />
-                                  </div>
-                                </div>
+                                  ))}
                               </div>
                             </div>
                           </div>

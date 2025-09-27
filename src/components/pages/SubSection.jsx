@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import VenuesSearch from "../layouts/venus/VenuesSearch";
 import VendorsSearch from "../layouts/vendors/VendorsSearch";
@@ -12,7 +12,7 @@ import ViewSwitcher from "../layouts/Main/ViewSwitcher";
 import MainSearch from "../layouts/Main/MainSearch";
 import PricingModal from "../layouts/PricingModal";
 import Photos from "../layouts/photography/Photos";
-import { useVendors } from "../../hooks/useVendors";
+import { transformVendorsData } from "../../utils/vendorDataTransform";
 
 const toTitleCase = (str) =>
   str.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
@@ -27,22 +27,89 @@ const SubSection = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-  const {
-    vendors,
-    loading: vendorsLoading,
-    error: vendorsError,
-    refreshVendors,
-  } = useVendors({
-    search: searchQuery,
-    categoryId: selectedCategory,
-    limit: 20,
-    autoFetch: section === "vendors",
-  });
+  // Local vendors state (direct API fetch)
+  const [vendors, setVendors] = useState([]);
+  const [vendorsLoading, setVendorsLoading] = useState(false);
+  const [vendorsError, setVendorsError] = useState(null);
+  const [vendorsRefreshTick, setVendorsRefreshTick] = useState(0);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
+  // State for API-fetched subcategory data
+  const [venueApiData, setVenueApiData] = useState(null);
+  const [venueApiLoading, setVenueApiLoading] = useState(false);
+  const [venueApiError, setVenueApiError] = useState(null);
+
+  useEffect(() => {
+    if (section === "venues" && slug) {
+      setVenueApiLoading(true);
+      setVenueApiError(null);
+      setVenueApiData(null);
+      const subCategory = slug
+        .replace(/-/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase());
+      fetch(
+        `https://happywedz.com/api/vendor-services?subCategory=${encodeURIComponent(
+          subCategory
+        )}`
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          // console.log("Fetched venue API data:", data);
+          setVenueApiData(Array.isArray(data) ? data : []);
+          setVenueApiLoading(false);
+        })
+        .catch((err) => {
+          setVenueApiError("Failed to load data from API.");
+          setVenueApiLoading(false);
+        });
+    } else {
+      setVenueApiData(null);
+      setVenueApiLoading(false);
+      setVenueApiError(null);
+    }
+  }, [section, slug]);
+
+  // Fetch vendors directly when section is vendors
+  useEffect(() => {
+    if (section !== "vendors") return;
+    const controller = new AbortController();
+    const fetchVendors = async () => {
+      setVendorsLoading(true);
+      setVendorsError(null);
+      try {
+        const params = new URLSearchParams();
+        if (searchQuery) params.append("search", searchQuery);
+        if (selectedCategory) params.append("category_id", String(selectedCategory));
+        params.append("limit", "20");
+        params.append("sort_by", "createdAt");
+        params.append("sort_order", "desc");
+        const url = `https://happywedz.com/api/vendor/list?${params.toString()}`;
+        const res = await fetch(url, { signal: controller.signal });
+        const json = await res.json();
+        let items = [];
+        if (Array.isArray(json)) items = json;
+        else if (Array.isArray(json?.data)) items = json.data;
+        else throw new Error(json?.message || "Unexpected response");
+        const transformed = transformVendorsData(items);
+        setVendors(transformed);
+      } catch (err) {
+        if (err.name === "AbortError") return;
+        setVendors([]);
+        setVendorsError(err.message || "Failed to load vendors");
+      } finally {
+        setVendorsLoading(false);
+      }
+    };
+    fetchVendors();
+    return () => controller.abort();
+  }, [section, searchQuery, selectedCategory, vendorsRefreshTick]);
+
   const filteredVenuesData = useMemo(() => {
+    if (section === "venues" && slug && venueApiData) {
+      return venueApiData;
+    }
     if (section === "venues" && slug) {
       const searchTerm = slug
         .replace(/-/g, " ")
@@ -78,11 +145,10 @@ const SubSection = () => {
       }
     }
     return subVenuesData;
-  }, [section, slug]);
+  }, [section, slug, venueApiData]);
 
   let dataToSend = filteredVenuesData;
   if (section === "vendors") {
-    dataToSend = vendors;
     dataToSend = vendorsError ? subVendorsData : vendors;
   } else if (section === "twosoul") {
     dataToSend = twoSoul;
@@ -99,27 +165,47 @@ const SubSection = () => {
     isVenueType:
       section === "venues" && slug
         ? (() => {
-            const searchTerm = slug
-              .replace(/-/g, " ")
-              .replace(/\b\w/g, (l) => l.toUpperCase());
-            const venueTypes = [
-              "Banquet Halls",
-              "Marriage Garden / Lawns",
-              "Wedding Resorts",
-              "Small Function / Party Halls",
-              "Destination Wedding Venues",
-              "Kalyana Mandapams",
-              "4 Star & Above Wedding Hotels",
-              "Venue Concierge Services",
-            ];
-            return venueTypes.some(
-              (type) =>
-                type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                searchTerm.toLowerCase().includes(type.toLowerCase())
-            );
-          })()
+          const searchTerm = slug
+            .replace(/-/g, " ")
+            .replace(/\b\w/g, (l) => l.toUpperCase());
+          const venueTypes = [
+            "Banquet Halls",
+            "Marriage Garden / Lawns",
+            "Wedding Resorts",
+            "Small Function / Party Halls",
+            "Destination Wedding Venues",
+            "Kalyana Mandapams",
+            "4 Star & Above Wedding Hotels",
+            "Venue Concierge Services",
+          ];
+          return venueTypes.some(
+            (type) =>
+              type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              searchTerm.toLowerCase().includes(type.toLowerCase())
+          );
+        })()
         : false,
   };
+
+  // Debug: Log transformed vendors to verify fields used by List/Grid
+  useEffect(() => {
+    if (section === "vendors" && Array.isArray(vendors) && vendors.length > 0) {
+      // Log only the first item to keep console readable
+      // Expected keys: name, image, description, location, rating, reviews, capacity, call, price, slug
+      // eslint-disable-next-line no-console
+      console.log("Transformed vendor sample:", {
+        name: vendors[0].name,
+        image: vendors[0].image,
+        price: vendors[0].price,
+        location: vendors[0].location,
+        slug: vendors[0].slug,
+        rating: vendors[0].rating,
+        reviews: vendors[0].reviews,
+        capacity: vendors[0].capacity,
+        call: vendors[0].call,
+      });
+    }
+  }, [section, vendors]);
 
   React.useEffect(() => {
     setIsLoading(true);
@@ -139,7 +225,7 @@ const SubSection = () => {
 
   const handleRefresh = () => {
     if (section === "vendors") {
-      refreshVendors();
+      setVendorsRefreshTick((x) => x + 1);
     }
   };
 
@@ -178,6 +264,19 @@ const SubSection = () => {
   return (
     <div className="container-fluid">
       {section === "venues" && <MainSearch title={title} />}
+      {section === "venues" && venueApiLoading && (
+        <div className="my-5 text-center">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <div className="text-muted mt-2">Loading {title}...</div>
+        </div>
+      )}
+      {section === "venues" && venueApiError && (
+        <div className="alert alert-warning my-4 text-center">
+          {venueApiError} Showing local data instead.
+        </div>
+      )}
       {section === "vendors" && (
         <MainSearch
           title={title}
@@ -238,15 +337,15 @@ const SubSection = () => {
                       {section === "venues"
                         ? `No ${title} Available`
                         : section === "vendors"
-                        ? `No ${title} Available`
-                        : `No ${title} Available`}
+                          ? `No ${title} Available`
+                          : `No ${title} Available`}
                     </h4>
                     <p className="text-muted mb-4">
                       {section === "venues"
                         ? `We couldn't find any ${title.toLowerCase()} in our database at the moment. Please try searching for a different venue type or location.`
                         : section === "vendors"
-                        ? `We couldn't find any ${title.toLowerCase()} in our database at the moment. Please try searching for a different vendor category or location.`
-                        : `We couldn't find any ${title.toLowerCase()} in our database at the moment. Please try a different search.`}
+                          ? `We couldn't find any ${title.toLowerCase()} in our database at the moment. Please try searching for a different vendor category or location.`
+                          : `We couldn't find any ${title.toLowerCase()} in our database at the moment. Please try a different search.`}
                     </p>
 
                     {/* Suggestions section */}

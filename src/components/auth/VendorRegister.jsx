@@ -439,8 +439,7 @@ const VendorRegister = () => {
     if (Object.keys(formErrors).length === 0) {
       setIsSubmitting(true);
       try {
-        // Submit logic here
-        console.log("Form submitted", formData);
+        // Submit logic here 
         const payload = {
           businessName: formData.brandName,
           email: formData.email,
@@ -450,7 +449,7 @@ const VendorRegister = () => {
           vendor_type_id: formData.vendorType, // Send vendor type ID
         };
 
-        console.log("Payload being sent:", payload);
+        // console.log("Payload being sent:", payload);
         const data = await vendorsAuthApi.register(payload);
 
         // Some backends return token on register, others don't.
@@ -471,7 +470,7 @@ const VendorRegister = () => {
           navigate("/vendor-login", { replace: true });
         }
       } catch (err) {
-        console.log("Error response:", err.response);
+        // console.log("Error response:", err.response);
         console.error("Submit error", err);
         setIsSubmitting(false);
       }

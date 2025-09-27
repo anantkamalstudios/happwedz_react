@@ -41,6 +41,20 @@ const RotatingWordHeadline = () => {
 };
 
 const Herosection = () => {
+  const [categoriesApi, setCategoriesApi] = useState([]);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("https://happywedz.com/api/vendor-types");
+        const data = await response.json();
+        setCategoriesApi(Array.isArray(data) ? data : []);
+      } catch (error) {
+        setCategoriesApi([]);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   return (
     <section
       className="hero-search position-relative text-white"
@@ -75,11 +89,15 @@ const Herosection = () => {
                       className="form-control-lg"
                       style={{ fontSize: "14px", padding: "0.5rem 0.75rem" }}
                     >
-                      {categories.map((c) => (
-                        <option key={c.value} value={c.value}>
-                          {c.label}
-                        </option>
-                      ))}
+                      {categoriesApi.length > 0 ? (
+                        categoriesApi.map((c) => (
+                          <option key={c.id} value={c.name}>
+                            {c.name}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="">Loading...</option>
+                      )}
                     </Form.Select>
                   </Form.Group>
                 </Col>
