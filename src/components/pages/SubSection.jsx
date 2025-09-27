@@ -13,6 +13,8 @@ import MainSearch from "../layouts/Main/MainSearch";
 import PricingModal from "../layouts/PricingModal";
 import Photos from "../layouts/photography/Photos";
 import { transformVendorsData } from "../../utils/vendorDataTransform";
+import { useVendors } from "../../hooks/useVendors";
+import DynamicAside from "../layouts/aside/DynamicAside";
 
 const toTitleCase = (str) =>
   str.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
@@ -81,7 +83,8 @@ const SubSection = () => {
       try {
         const params = new URLSearchParams();
         if (searchQuery) params.append("search", searchQuery);
-        if (selectedCategory) params.append("category_id", String(selectedCategory));
+        if (selectedCategory)
+          params.append("category_id", String(selectedCategory));
         params.append("limit", "20");
         params.append("sort_by", "createdAt");
         params.append("sort_order", "desc");
@@ -165,25 +168,25 @@ const SubSection = () => {
     isVenueType:
       section === "venues" && slug
         ? (() => {
-          const searchTerm = slug
-            .replace(/-/g, " ")
-            .replace(/\b\w/g, (l) => l.toUpperCase());
-          const venueTypes = [
-            "Banquet Halls",
-            "Marriage Garden / Lawns",
-            "Wedding Resorts",
-            "Small Function / Party Halls",
-            "Destination Wedding Venues",
-            "Kalyana Mandapams",
-            "4 Star & Above Wedding Hotels",
-            "Venue Concierge Services",
-          ];
-          return venueTypes.some(
-            (type) =>
-              type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              searchTerm.toLowerCase().includes(type.toLowerCase())
-          );
-        })()
+            const searchTerm = slug
+              .replace(/-/g, " ")
+              .replace(/\b\w/g, (l) => l.toUpperCase());
+            const venueTypes = [
+              "Banquet Halls",
+              "Marriage Garden / Lawns",
+              "Wedding Resorts",
+              "Small Function / Party Halls",
+              "Destination Wedding Venues",
+              "Kalyana Mandapams",
+              "4 Star & Above Wedding Hotels",
+              "Venue Concierge Services",
+            ];
+            return venueTypes.some(
+              (type) =>
+                type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                searchTerm.toLowerCase().includes(type.toLowerCase())
+            );
+          })()
         : false,
   };
 
@@ -337,15 +340,15 @@ const SubSection = () => {
                       {section === "venues"
                         ? `No ${title} Available`
                         : section === "vendors"
-                          ? `No ${title} Available`
-                          : `No ${title} Available`}
+                        ? `No ${title} Available`
+                        : `No ${title} Available`}
                     </h4>
                     <p className="text-muted mb-4">
                       {section === "venues"
                         ? `We couldn't find any ${title.toLowerCase()} in our database at the moment. Please try searching for a different venue type or location.`
                         : section === "vendors"
-                          ? `We couldn't find any ${title.toLowerCase()} in our database at the moment. Please try searching for a different vendor category or location.`
-                          : `We couldn't find any ${title.toLowerCase()} in our database at the moment. Please try a different search.`}
+                        ? `We couldn't find any ${title.toLowerCase()} in our database at the moment. Please try searching for a different vendor category or location.`
+                        : `We couldn't find any ${title.toLowerCase()} in our database at the moment. Please try a different search.`}
                     </p>
 
                     {/* Suggestions section */}
@@ -422,7 +425,9 @@ const SubSection = () => {
             </div>
           ) : (
             <>
-              <ViewSwitcher view={view} setView={setView} />
+              <DynamicAside section={section} view={view} setView={setView} />
+
+              {/* <ViewSwitcher view={view} setView={setView} /> */}
 
               {view === "list" && (
                 <ListView

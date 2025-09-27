@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Row, Col, Card } from "react-bootstrap";
+import { Row, Col, Card, Container } from "react-bootstrap";
 import { FaSearch, FaStar, FaHeart, FaRegHeart } from "react-icons/fa";
 import { BsLightningCharge } from "react-icons/bs";
 import { LuUsers } from "react-icons/lu";
@@ -24,13 +24,13 @@ const ListView = ({ subVenuesData, section, handleShow }) => {
       : subVenuesData.filter((venue) => venue.type === filter);
 
   return (
-    <>
+    <Container>
       <Row>
-        <Col xs={12} md={3} className="mb-4">
+        {/* <Col xs={12} md={3} className="mb-4 d-block d-lg-none">
           <DynamicAside section={section} />
-        </Col>
+        </Col> */}
 
-        <Col xs={12} md={9}>
+        <Col xs={12} md={12}>
           {filteredVenues.map((venue) => (
             <Card
               key={venue.id}
@@ -122,7 +122,7 @@ const ListView = ({ subVenuesData, section, handleShow }) => {
           ))}
         </Col>
       </Row>
-    </>
+    </Container>
   );
 };
 

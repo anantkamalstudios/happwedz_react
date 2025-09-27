@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { CiSearch } from "react-icons/ci";
 import logo from "../../../../public/happywed_white.png";
+import einviteImage from "../../../../public/images/home/einvite.png";
+import image from "../../../../public/images/home/try.png";
 
 import {
   FaHeart,
@@ -291,11 +293,14 @@ const RealWeddings = ({ onPostClick }) => {
       </section>
 
       <CtaPanel
-        img={logo}
-        title="Find Your Perfect Match with Our Trusted Matrimonial Services"
-        link="/matrimonial"
-        subtitle="Bringing Hearts Together for a Lifetime of Happiness"
-        btnName="Start Your Journey"
+        logo={logo}
+        img={image}
+        heading="Design Studio"
+        subHeading="Try Virtual Makeup & Grooming Looks for Your Big Day"
+        link="/try"
+        title="Create Your Look !"
+        subtitle="Experience How You'll Look on Your Wedding Day with AI-Powered Virtual Makeover"
+        btnName="Try Virtual Look"
       />
 
       {/* Wedding Gallery */}
@@ -325,10 +330,13 @@ const RealWeddings = ({ onPostClick }) => {
       </section>
 
       <CtaPanel
-        img={logo}
+        logo={logo}
+        img={einviteImage}
+        heading="Digital Wedding Invitations"
+        subHeading="Personalize & Send Invites Instantly"
         title="Create Stunning Digital Wedding Invitations That Wow"
+        subtitle="Design beautiful e-invites using our easy-to-use editor. Customize templates, add your personal touch, and send invites digitally to your guests in minutes."
         link="/e-invites"
-        subtitle="Design Beautiful E-Invites with Our Easy-to-Use Editor"
         btnName="Create Your E-Invite"
       />
     </div>

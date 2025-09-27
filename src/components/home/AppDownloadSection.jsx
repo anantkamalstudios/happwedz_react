@@ -9,7 +9,7 @@ const AppDownloadSection = () => {
         backgroundImage: "url('/images/home/cta1.jpg')",
         backgroundSize: "contain",
         backgroundRepeat: "no-repeat",
-        backgroundPosition: "left bottom",
+        backgroundPosition: "bottom",
         overflow: "hidden",
       }}
     >
