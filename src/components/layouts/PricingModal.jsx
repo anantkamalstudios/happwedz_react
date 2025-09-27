@@ -4,7 +4,7 @@ import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 import { FaPaperPlane } from "react-icons/fa";
 import EventDatePicker from "./DayPicker";
 
-const PricingModal = ({ show, handleClose }) => {
+const PricingModal = ({ show, handleClose, selectedId }) => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -64,6 +64,11 @@ const PricingModal = ({ show, handleClose }) => {
                 Location
               </h4>
               <h4 className="mb-1">Request Pricing Information</h4>
+              {selectedId && (
+                <div className="mb-1 text-primary" style={{ fontSize: "13px" }}>
+                  <strong>Selected ID:</strong> {selectedId}
+                </div>
+              )}
               <p className="mb-0 text-muted" style={{ fontSize: "12px" }}>
                 Lorem ipsum dolor sit amet consectetur adipisicing elit. Rem
                 fugit earum, neque magni illo nesciunt dolorum, beatae ullam est

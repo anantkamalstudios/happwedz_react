@@ -247,7 +247,7 @@ const VendorAsideview = ({ view, setView }) => {
           className="d-flex align-items-center justify-content-between main-filter-dropdown-toggle filter-dropdown-toggle rounded-0"
           style={{ minWidth: "180px" }}
         >
-          <span className="d-flex align-items-center gap-2 me-2">
+          <span className="d-flex align-items-center gap-2 me-2  fs-14">
             <CiFilter size={16} />
             {title}
             {selectedCount > 0 && (

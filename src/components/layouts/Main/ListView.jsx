@@ -110,7 +110,10 @@ const ListView = ({ subVenuesData, section, handleShow }) => {
                   </Link>
 
                   <div className="mt-2">
-                    <button className="w-100 details-btn" onClick={handleShow}>
+                    <button
+                      className="w-100 details-btn"
+                      onClick={() => handleShow(venue.id)}
+                    >
                       Request Pricing
                     </button>
                   </div>
