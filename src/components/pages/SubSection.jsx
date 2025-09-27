@@ -1,20 +1,16 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import VenuesSearch from "../layouts/venus/VenuesSearch";
-import VendorsSearch from "../layouts/vendors/VendorsSearch";
 import ListView from "../layouts/Main/ListView";
 import GridView from "../layouts/Main/GridView";
 import MapView from "../layouts/Main/MapView";
 import { subVenuesData } from "../../data/subVenuesData";
 import { subVendorsData } from "../../data/subVendorsData";
 import { twoSoul } from "../../data/twoSoul";
-import ViewSwitcher from "../layouts/Main/ViewSwitcher";
 import MainSearch from "../layouts/Main/MainSearch";
 import PricingModal from "../layouts/PricingModal";
 import Photos from "../layouts/photography/Photos";
-import { transformVendorsData } from "../../utils/vendorDataTransform";
-import { useVendors } from "../../hooks/useVendors";
 import DynamicAside from "../layouts/aside/DynamicAside";
+import { IMAGE_BASE_URL } from "../../config/constants";
 
 const toTitleCase = (str) =>
   str.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
@@ -38,13 +34,12 @@ const SubSection = () => {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  // State for API-fetched subcategory data
   const [venueApiData, setVenueApiData] = useState(null);
   const [venueApiLoading, setVenueApiLoading] = useState(false);
   const [venueApiError, setVenueApiError] = useState(null);
 
   useEffect(() => {
-    if (section === "venues" && slug) {
+    if (section === "venues" && section === "vendors" && slug) {
       setVenueApiLoading(true);
       setVenueApiError(null);
       setVenueApiData(null);
@@ -58,12 +53,14 @@ const SubSection = () => {
       )
         .then((res) => res.json())
         .then((data) => {
-          // console.log("Fetched venue API data:", data);
+          console.log("venueApiData Res: ", res);
+          console.log("venueApiData Data: ", data);
           setVenueApiData(Array.isArray(data) ? data : []);
+          console.log("venueApiData: ", venueApiData);
           setVenueApiLoading(false);
         })
         .catch((err) => {
-          setVenueApiError("Failed to load data from API.");
+          setVenueApiError("Failed to load data from API.", err);
           setVenueApiLoading(false);
         });
     } else {
@@ -73,41 +70,122 @@ const SubSection = () => {
     }
   }, [section, slug]);
 
-  // Fetch vendors directly when section is vendors
   useEffect(() => {
     if (section !== "vendors") return;
-    const controller = new AbortController();
-    const fetchVendors = async () => {
+    if (slug) {
       setVendorsLoading(true);
       setVendorsError(null);
-      try {
-        const params = new URLSearchParams();
-        if (searchQuery) params.append("search", searchQuery);
-        if (selectedCategory)
-          params.append("category_id", String(selectedCategory));
-        params.append("limit", "20");
-        params.append("sort_by", "createdAt");
-        params.append("sort_order", "desc");
-        const url = `https://happywedz.com/api/vendor/list?${params.toString()}`;
-        const res = await fetch(url, { signal: controller.signal });
-        const json = await res.json();
-        let items = [];
-        if (Array.isArray(json)) items = json;
-        else if (Array.isArray(json?.data)) items = json.data;
-        else throw new Error(json?.message || "Unexpected response");
-        const transformed = transformVendorsData(items);
-        setVendors(transformed);
-      } catch (err) {
-        if (err.name === "AbortError") return;
-        setVendors([]);
-        setVendorsError(err.message || "Failed to load vendors");
-      } finally {
-        setVendorsLoading(false);
-      }
-    };
-    fetchVendors();
-    return () => controller.abort();
-  }, [section, searchQuery, selectedCategory, vendorsRefreshTick]);
+      setVendors([]);
+      const subCategory = slug
+        .replace(/-/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase());
+
+      fetch(
+        `https://happywedz.com/api/vendor-services?subCategory=${encodeURIComponent(
+          subCategory
+        )}`
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          const items = Array.isArray(data) ? data : [];
+          const transformed = transformVendorsData(items);
+          setVendors(transformed);
+          console.log("Vendors->", vendors);
+        })
+        .catch(() => {
+          setVendorsError("Failed to load data from API.");
+        })
+        .finally(() => {
+          setVendorsLoading(false);
+        });
+    }
+  }, [section, slug]);
+
+  useEffect(() => {
+    if (section === "vendors" && Array.isArray(vendors) && vendors.length > 0) {
+      console.log("Transformed vendor sample:", {
+        id: vendors[0].id,
+        name: vendors[0].name,
+        image: vendors[0].image,
+        price: vendors[0].price,
+        location: vendors[0].location,
+        slug: vendors[0].slug,
+        rating: vendors[0].rating,
+        reviews: vendors[0].reviews,
+        capacity: vendors[0].capacity,
+        call: vendors[0].call,
+        within_24hr_available: vendors[0].within_24hr_available,
+      });
+    }
+  }, [section, vendors]);
+
+  const transformVendorsData = (items) => {
+    return items.map((item) => {
+      const id = item.id;
+      const media = item.media || {};
+      const vendor = item.vendor || {};
+      const attributes = item.attributes || {};
+      const location = item.location || {};
+      const within_24hr_available = item.within_24hr_available || {};
+
+      const rawGallery = media.gallery || item.gallery || [];
+      const galleryPaths = rawGallery.filter((img) => typeof img === "string");
+
+      const firstImage = media.coverImage
+        ? IMAGE_BASE_URL + media.coverImage
+        : galleryPaths.length > 0
+        ? IMAGE_BASE_URL + galleryPaths[0]
+        : null;
+
+      return {
+        id: item.id,
+        name: item.name || vendor.businessName || "Unknown Vendor",
+        subtitle: item.subtitle || "",
+        description: item.description || attributes.description || "",
+        slug: item.slug,
+
+        // Main image
+        image: firstImage,
+
+        // Full gallery
+        gallery: galleryPaths.map((img) => IMAGE_BASE_URL + img),
+
+        videos: media.videos || [],
+
+        price: attributes.price_range?.min || 0,
+
+        // price: attributes.price_range?.min
+        //   ? `${attributes.price_range.min} - ${attributes.price_range.max} ${
+        //       attributes.currency || "INR"
+        //     }`
+        //   : null,
+
+        location: `${location.city || vendor.city || ""}${
+          location.state ? ", " + location.state : ""
+        }`,
+
+        rating: attributes.rating || 0,
+        slug: attributes.slug || "",
+        reviews: attributes.reviews || 0,
+        within_24hr_available: attributes.within_24hr_available || null,
+
+        capacity:
+          attributes.capacity_min || attributes.capacity_max
+            ? `${attributes.capacity_min || 0} - ${
+                attributes.capacity_max || 0
+              }`
+            : null,
+
+        call: vendor.phone || item.cta_phone || null,
+        whatsapp: vendor.whatsapp || null,
+        website: vendor.website || null,
+
+        alcohol_policy: attributes.alcohol_policy || null,
+        car_parking: attributes.car_parking || null,
+        rooms: item.rooms || null,
+      };
+    });
+  };
 
   const filteredVenuesData = useMemo(() => {
     if (section === "venues" && slug && venueApiData) {
@@ -156,59 +234,6 @@ const SubSection = () => {
   } else if (section === "twosoul") {
     dataToSend = twoSoul;
   }
-
-  const debugInfo = {
-    section,
-    slug,
-    searchTerm: slug
-      ? slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
-      : "",
-    totalVenues: subVenuesData.length,
-    filteredCount: dataToSend.length,
-    isVenueType:
-      section === "venues" && slug
-        ? (() => {
-            const searchTerm = slug
-              .replace(/-/g, " ")
-              .replace(/\b\w/g, (l) => l.toUpperCase());
-            const venueTypes = [
-              "Banquet Halls",
-              "Marriage Garden / Lawns",
-              "Wedding Resorts",
-              "Small Function / Party Halls",
-              "Destination Wedding Venues",
-              "Kalyana Mandapams",
-              "4 Star & Above Wedding Hotels",
-              "Venue Concierge Services",
-            ];
-            return venueTypes.some(
-              (type) =>
-                type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                searchTerm.toLowerCase().includes(type.toLowerCase())
-            );
-          })()
-        : false,
-  };
-
-  // Debug: Log transformed vendors to verify fields used by List/Grid
-  useEffect(() => {
-    if (section === "vendors" && Array.isArray(vendors) && vendors.length > 0) {
-      // Log only the first item to keep console readable
-      // Expected keys: name, image, description, location, rating, reviews, capacity, call, price, slug
-      // eslint-disable-next-line no-console
-      console.log("Transformed vendor sample:", {
-        name: vendors[0].name,
-        image: vendors[0].image,
-        price: vendors[0].price,
-        location: vendors[0].location,
-        slug: vendors[0].slug,
-        rating: vendors[0].rating,
-        reviews: vendors[0].reviews,
-        capacity: vendors[0].capacity,
-        call: vendors[0].call,
-      });
-    }
-  }, [section, vendors]);
 
   React.useEffect(() => {
     setIsLoading(true);

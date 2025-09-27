@@ -87,7 +87,6 @@ const Header = () => {
     fetchVendorCategories();
   }, []);
 
-  // ...existing code...
   return (
     <nav className="navbar navbar-expand-lg navbar-light shadow-sm primary-bg p-0">
       <div className="container-fluid">
@@ -470,8 +469,8 @@ const Header = () => {
                                               >
                                                 <Link
                                                   to={`/vendors/${toSlug(
-                                                    cat.name
-                                                  )}/${toSlug(sub.name)}`}
+                                                    sub.name
+                                                  )}`}
                                                   className="dropdown-link small d-block"
                                                 >
                                                   {sub.name}
