@@ -16666,14 +16666,14 @@ input:checked + .slider:before {
   transition: background 0.3s;
 }
 
-.btn-primary {
+/* .btn-primary {
   background: #007bff;
   color: #fff;
 }
 
 .btn-primary:disabled {
   background: #6c757d;
-}
+} */
 
 .btn-outline-secondary {
   background: #fff;

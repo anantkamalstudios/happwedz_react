@@ -90,6 +90,7 @@ const SubSection = () => {
           const items = Array.isArray(data) ? data : [];
           const transformed = transformVendorsData(items);
           setVendors(transformed);
+          console.log("Vendors->", vendors);
         })
         .catch(() => {
           setVendorsError("Failed to load data from API.");
@@ -103,6 +104,7 @@ const SubSection = () => {
   useEffect(() => {
     if (section === "vendors" && Array.isArray(vendors) && vendors.length > 0) {
       console.log("Transformed vendor sample:", {
+        id: vendors[0].id,
         name: vendors[0].name,
         image: vendors[0].image,
         price: vendors[0].price,
@@ -112,93 +114,75 @@ const SubSection = () => {
         reviews: vendors[0].reviews,
         capacity: vendors[0].capacity,
         call: vendors[0].call,
+        within_24hr_available: vendors[0].within_24hr_available,
       });
     }
   }, [section, vendors]);
 
   const transformVendorsData = (items) => {
     return items.map((item) => {
+      const id = item.id;
       const media = item.media || {};
-      const location = item.location || {};
       const vendor = item.vendor || {};
       const attributes = item.attributes || {};
-      const priceRange = item.price_range || {};
+      const location = item.location || {};
+      const within_24hr_available = item.within_24hr_available || {};
+
+      const rawGallery = media.gallery || item.gallery || [];
+      const galleryPaths = rawGallery.filter((img) => typeof img === "string");
+
+      const firstImage = media.coverImage
+        ? IMAGE_BASE_URL + media.coverImage
+        : galleryPaths.length > 0
+        ? IMAGE_BASE_URL + galleryPaths[0]
+        : null;
 
       return {
         id: item.id,
         name: item.name || vendor.businessName || "Unknown Vendor",
-        subtitle: item.subtitle || attributes.subtitle || "",
+        subtitle: item.subtitle || "",
         description: item.description || attributes.description || "",
         slug: item.slug,
 
-        image: item.coverImage
-          ? IMAGE_BASE_URL + item.coverImage
-          : media.coverImage
-          ? IMAGE_BASE_URL + media.coverImage
-          : null,
+        // Main image
+        image: firstImage,
 
-        gallery: (item.gallery || media.gallery || [])
-          .map((img) =>
-            typeof img === "string"
-              ? IMAGE_BASE_URL + img
-              : img?.id
-              ? IMAGE_BASE_URL + img.id
-              : null
-          )
-          .filter(Boolean),
+        // Full gallery
+        gallery: galleryPaths.map((img) => IMAGE_BASE_URL + img),
 
         videos: media.videos || [],
 
-        price:
-          priceRange.min && priceRange.max
-            ? `${priceRange.min} - ${priceRange.max} ${item.currency || "INR"}`
-            : item.starting_price
-            ? `${item.starting_price} ${item.currency || "INR"}`
-            : null,
+        price: attributes.price_range?.min || 0,
 
-        price_unit: item.price_unit || null,
+        // price: attributes.price_range?.min
+        //   ? `${attributes.price_range.min} - ${attributes.price_range.max} ${
+        //       attributes.currency || "INR"
+        //     }`
+        //   : null,
 
         location: `${location.city || vendor.city || ""}${
           location.state ? ", " + location.state : ""
         }`,
-        address: location.address || "",
 
         rating: attributes.rating || 0,
+        slug: attributes.slug || "",
         reviews: attributes.reviews || 0,
+        within_24hr_available: attributes.within_24hr_available || null,
+
         capacity:
-          item.capacity_min || item.capacity_max
-            ? `${item.capacity_min || 0} - ${item.capacity_max || 0}`
-            : attributes.capacity_min || attributes.capacity_max
+          attributes.capacity_min || attributes.capacity_max
             ? `${attributes.capacity_min || 0} - ${
                 attributes.capacity_max || 0
               }`
             : null,
 
-        call: item.cta_phone || vendor.phone || null,
-        whatsapp: vendor.whatsapp || item.contact?.whatsapp || null,
-        website: vendor.website || item.contact?.website || null,
-        email: vendor.email || item.email || null,
+        call: vendor.phone || item.cta_phone || null,
+        whatsapp: vendor.whatsapp || null,
+        website: vendor.website || null,
 
-        alcohol_policy:
-          item.alcohol_policy || attributes.alcohol_policy || null,
-        catering_policy:
-          item.catering_policy || attributes.catering_policy || null,
-        deco_policy: item.deco_policy || attributes.deco_policy || null,
-        dj_policy: item.dj_policy || attributes.dj_policy || null,
-        refund_policy: item.refund_policy || null,
-        cancellation_policy: item.cancellation_policy || null,
-
-        car_parking: item.car_parking || attributes.car_parking || null,
+        alcohol_policy: attributes.alcohol_policy || null,
+        car_parking: attributes.car_parking || null,
         rooms: item.rooms || null,
-        indoor_outdoor: item.indoor_outdoor || null,
-
-        timing_open: item.timing_open || null,
-        timing_close: item.timing_close || null,
-        timing_last_entry: item.timing_last_entry || null,
-
-        is_featured: item.is_featured || false,
-        is_feature_available: item.is_feature_available || false,
-        within_24hr_available: item.within_24hr_available || false,
       };
     });
   };

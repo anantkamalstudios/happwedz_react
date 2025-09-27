@@ -110,8 +110,8 @@ const Header = () => {
         </div>
 
         <div className="collapse navbar-collapse" id="mainNav">
-          <div className="row w-100">
-            <div className="col-12 col-md-12 bg-white p-2">
+          <div className="row">
+            <div className="col-12 bg-white p-2">
               <div className="container">
                 <div className="row align-items-center gy-2">
                   {/* Left: Tagline */}

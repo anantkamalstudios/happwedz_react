@@ -32,6 +32,7 @@ const FiltersPage = () => {
           : Array.isArray(response?.data)
           ? response.data
           : [];
+        console.log("items", items);
         setCategories(items);
       } catch (e) {
         console.error("Failed to load products", e);

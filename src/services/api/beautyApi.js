@@ -1,6 +1,6 @@
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.DEV ? "/api" : "http://69.62.85.170:5001/api");
+  (import.meta.env.DEV ? "/api" : "https://www.happywedz.com/ai/api");
 
 class BeautyApiService {
   constructor() {
