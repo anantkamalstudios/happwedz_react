@@ -149,6 +149,20 @@ body {
   top: 90%;
 }
 
+/* .mega-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #fff;
+  z-index: 999;
+  width: 100%;
+  padding: 1rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+} */
+
 .mega-dropdown {
   display: none;
   position: absolute;
@@ -161,6 +175,19 @@ body {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.2s ease;
+}
+
+/* Make columns stretch evenly */
+.mega-dropdown .row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.mega-dropdown .col-6,
+.mega-dropdown .col-md-3 {
+  display: flex;
+  flex-direction: column;
 }
 
 /* Prevent gap hover-loss by ensuring the wrapper spans full width and menu overlaps */
@@ -1279,7 +1306,7 @@ body {
 
 /* End */
 .view-switcher-wrapper {
-  padding: 1rem; 
+  padding: 1rem;
 }
 
 .view-switcher {
