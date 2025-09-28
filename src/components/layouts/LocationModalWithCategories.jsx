@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { setLocation, clearLocation } from "../../redux/locationSlice";
+import { useNavigate } from "react-router-dom";
+import { IoCloseCircleOutline } from "react-icons/io5";
 
 const LocationModalWithAPI = () => {
   const [show, setShow] = useState(false);
+  const dispatch = useDispatch();
+  const selectedLocation = useSelector((state) => state.location.selectedLocation);
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
@@ -57,7 +64,6 @@ const LocationModalWithAPI = () => {
         .map((c) => c.name.common)
         .sort((a, b) => a.localeCompare(b));
 
-      // console.log("country:", countries);
       setCountries(sorted);
     });
   }, []);
@@ -83,15 +89,59 @@ const LocationModalWithAPI = () => {
     city.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleCityClick = (city) => {
+    dispatch(setLocation(city));
+    setShow(false);
+    // Navigate to /vendors/all with city as query param or slug
+    navigate(`/vendors/all?city=${encodeURIComponent(city)}`);
+  };
+
+  const handleClearLocation = (e) => {
+    e.stopPropagation(); // Prevent opening modal
+    dispatch(clearLocation());
+  };
+
   return (
     <>
-      <Button
-        variant="outline-light"
-        className="border-danger rounded-0 text-dark"
-        onClick={() => setShow(true)}
-      >
-        Select Location
-      </Button>
+      <div style={{ position: "relative", display: "inline-block" }}>
+        <Button
+          variant="outline-light"
+          className="border-danger rounded-0 text-dark pe-5"
+          onClick={() => setShow(true)}
+          style={{ minWidth: 160 }}
+        >
+          {selectedLocation ? (
+            <span>{selectedLocation}</span>
+          ) : (
+            <span>Select Location</span>
+          )}
+        </Button>
+        {selectedLocation && (
+          <button
+            type="button"
+            aria-label="Clear location"
+            onClick={handleClearLocation}
+            style={{
+              position: "absolute",
+              background: "none",
+              top: 5,
+              right: 6,
+              border: "none",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              zIndex: 2,
+              padding: 1,
+            }}
+          >
+            <span style={{ fontSize: 16, color: "#d00", fontWeight: "bold" }}>
+              <IoCloseCircleOutline size={20} color="red" />
+            </span>
+          </button>
+        )}
+      </div>
 
       <Modal show={show} onHide={() => setShow(false)} size="xl" centered>
         <Modal.Body>
@@ -140,6 +190,7 @@ const LocationModalWithAPI = () => {
                     <a
                       href="#"
                       className="text-dark d-block py-2 text-decoration-none small border rounded"
+                      onClick={() => handleCityClick(city)}
                     >
                       {city}
                     </a>

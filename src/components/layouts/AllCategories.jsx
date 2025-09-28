@@ -5,7 +5,7 @@ import axios from "axios";
 const API_BASE_URL = "https://happywedz.com";
 import { IMAGE_BASE_URL } from "../../config/constants";
 
-const CategoryAccordion = ({ onSelect }) => {
+const AllCategories = ({ onSelect }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,8 +53,6 @@ const CategoryAccordion = ({ onSelect }) => {
     );
   }
 
-  const displayedCategories = categories.slice(0, 6);
-
   return (
     <div className="container py-5 wcg-grid">
       <div className="d-flex align-items-center justify-content-between mb-3">
@@ -65,7 +63,7 @@ const CategoryAccordion = ({ onSelect }) => {
       </div>
 
       <div className="row g-3 g-md-4">
-        {displayedCategories.map((cat, i) => {
+        {categories.map((cat, i) => {
           const isExpanded = expandedIndex === i;
           const previewItems = cat.items.slice(0, 3);
           const remaining = Math.max(cat.items.length - previewItems.length, 0);
@@ -115,7 +113,7 @@ const CategoryAccordion = ({ onSelect }) => {
 
                 <div className="pt-4">
                   <div className="wcg-pills d-flex flex-wrap gap-2 mb-3">
-                    {previewItems.slice(0, 1).map((it, idx) => (
+                    {previewItems.slice(0, 2).map((it, idx) => (
                       <span key={idx} className="badge rounded-pill px-3 py-2">
                         {it}
                       </span>
@@ -168,4 +166,4 @@ const CategoryAccordion = ({ onSelect }) => {
   );
 };
 
-export default CategoryAccordion;
+export default AllCategories;

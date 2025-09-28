@@ -78,41 +78,30 @@ const ListView = ({ subVenuesData, handleShow }) => {
                     to={`/details/info/${venue.id}`}
                     className="text-decoration-none"
                   >
-                    <div>
-                      <h4 className="fw-bold mb-1 primary-text">
-                        {venue.name}
-                      </h4>
-                      <p className="text-muted small mb-1">
-                        <IoLocationOutline className="me-2" />
-                        {venue.location}
-                      </p>
-
-                      <div className="d-flex flex-wrap gap-2 align-items-center mb-2">
-                        <div className="d-flex align-items-center">
-                          <FaStar className="text-warning me-1" />
-                          <span>{venue.rating}</span>
-                          <span className="text-muted ms-1">
-                            ({venue.reviews})
-                          </span>
-                        </div>
-                        <div className="d-flex align-items-center">
-                          <LuUsers className="text-dark me-1" />
-                          <span className="text-muted">{venue.capacity}</span>
-                        </div>
-                        {venue.within_24hr_available && (
-                          <div className="d-flex align-items-center">
-                            <BsLightningCharge
-                              color="orange"
-                              className="me-1"
-                            />
-                            {venue.within_24hr_available} Responds within 24
-                            hours
-                          </div>
-                        )}
+                    <h4 className="fw-bold mb-1 primary-text">{venue.name}</h4>
+                    <p className="text-muted small mb-1">
+                      <IoLocationOutline className="me-2" />
+                      {venue.location}
+                    </p>
+                    <div className="d-flex flex-wrap gap-2 align-items-center mb-2">
+                      <div className="d-flex align-items-center">
+                        <FaStar className="text-warning me-1" />
+                        <span>{venue.rating}</span>
+                        <span className="text-muted ms-1">({venue.reviews})</span>
                       </div>
+                      <div className="d-flex align-items-center">
+                        <LuUsers className="text-dark me-1" />
+                        <span className="text-muted">{venue.capacity}</span>
+                      </div>
+                      {venue.within_24hr_available && (
+                        <div className="d-flex align-items-center">
+                          <BsLightningCharge color="orange" className="me-1" />
+                          {venue.within_24hr_available} Responds within 24 hours
+                        </div>
+                      )}
                     </div>
                   </Link>
-                  <div className="mt-2">
+                  <div className="mt-auto">
                     <button
                       className="w-100 details-btn"
                       onClick={() => handleShow(venue.id)}

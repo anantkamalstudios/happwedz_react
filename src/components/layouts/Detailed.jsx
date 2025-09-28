@@ -487,13 +487,12 @@ const Detailed = () => {
                 <div className="action-buttons">
                   <div className="margin-b-50 d-flex h-center cursor-pointer">
                     <div style={{ width: "500px" }}>
-                      <a
-                        className="btn btn-bordered tangerine btn-tangerine w-100"
+                      <button
+                        className="btn-primary w-100"
                         href="/wedding-invitations/wedding-card-designs"
                       >
-                        View all
-                        <GrFormNextLink className="pl-5" size={22} />
-                      </a>
+                        Requesting Pricing
+                      </button>
                     </div>
                   </div>
                   {/* <Button

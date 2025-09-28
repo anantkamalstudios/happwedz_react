@@ -104,7 +104,7 @@ const Herosection = () => {
                 <Col xs={12} md={2} className="d-grid">
                   <Button
                     variant="none"
-                    className="btn-find fw-semibold"
+                    className="btn-primary fw-semibold"
                     type="submit"
                   >
                     FIND VENDOR
