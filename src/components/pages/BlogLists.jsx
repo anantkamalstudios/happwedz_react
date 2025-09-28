@@ -125,7 +125,10 @@ const BlogLists = ({ onPostClick }) => {
       return "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop"; // A fallback image
     }
     if (path.startsWith("https://happywedz.com:4000/")) {
-      return path.replace("https://happywedz.com:4000/", "https://happywedzbackend.happywedz.com/");
+      return path.replace(
+        "https://happywedz.com:4000/",
+        "https://happywedzbackend.happywedz.com/"
+      );
     }
     return `https://happywedzbackend.happywedz.com/${path}`;
   };
@@ -156,7 +159,6 @@ const BlogLists = ({ onPostClick }) => {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
-                  <FaSearch className="position-absolute top-50 end-0 translate-middle-y me-3 text-muted" />
                 </div>
               </div>
             </div>
@@ -176,8 +178,9 @@ const BlogLists = ({ onPostClick }) => {
                   {categories.map((category, index) => (
                     <button
                       key={index}
-                      className={`category-item ${selectedCategory === category.value ? "active" : ""
-                        }`}
+                      className={`category-item ${
+                        selectedCategory === category.value ? "active" : ""
+                      }`}
                       onClick={() => setSelectedCategory(category.value)}
                     >
                       <span className="category-name">{category.name}</span>
@@ -192,24 +195,27 @@ const BlogLists = ({ onPostClick }) => {
                 <h4 className="sidebar-title">Sort By</h4>
                 <div className="sort-options">
                   <button
-                    className={`sort-option ${sortBy === "latest" ? "active" : ""
-                      }`}
+                    className={`sort-option ${
+                      sortBy === "latest" ? "active" : ""
+                    }`}
                     onClick={() => setSortBy("latest")}
                   >
                     <FaCalendarAlt className="sort-icon" />
                     Latest
                   </button>
                   <button
-                    className={`sort-option ${sortBy === "popular" ? "active" : ""
-                      }`}
+                    className={`sort-option ${
+                      sortBy === "popular" ? "active" : ""
+                    }`}
                     onClick={() => setSortBy("popular")}
                   >
                     <FaEye className="sort-icon" />
                     Most Popular
                   </button>
                   <button
-                    className={`sort-option ${sortBy === "trending" ? "active" : ""
-                      }`}
+                    className={`sort-option ${
+                      sortBy === "trending" ? "active" : ""
+                    }`}
                     onClick={() => setSortBy("trending")}
                   >
                     <FaHeart className="sort-icon" />
@@ -324,12 +330,12 @@ const BlogLists = ({ onPostClick }) => {
                               <span className="wedding-card-date">
                                 {blog.createdDate
                                   ? new Date(
-                                    blog.createdDate
-                                  ).toLocaleDateString("en-US", {
-                                    year: "numeric",
-                                    month: "short",
-                                    day: "numeric",
-                                  })
+                                      blog.createdDate
+                                    ).toLocaleDateString("en-US", {
+                                      year: "numeric",
+                                      month: "short",
+                                      day: "numeric",
+                                    })
                                   : ""}
                               </span>
                             </div>

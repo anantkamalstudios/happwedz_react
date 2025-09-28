@@ -1,124 +1,176 @@
-import React, { useState, useEffect } from "react";
-import Masonry from "react-masonry-css";
-import InfiniteScroll from "react-infinite-scroll-component";
-import { Container } from "react-bootstrap";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
-const MansoryImageSection = () => {
-  const [images, setImages] = useState([]);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-
-  const sampleImages = [
+const MasonryImageSection = () => {
+  const [images] = useState([
     {
       id: 1,
-      url: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=500",
-      title: "Elegant Wedding Venue",
-      category: "Venues",
+      url: "https://img.freepik.com/premium-photo/bride-groom-standing-front-chandelier_1113980-2347.jpg?w=1060",
+      title: "Wedding Cake",
+      category: "Catering",
+      height: 280,
     },
     {
       id: 2,
-      url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=500",
+      url: "https://img.freepik.com/premium-photo/photo-traditional-indian-wedding-ceremony_1325814-2854.jpg",
+      title: "Elegant Wedding Venue",
+      category: "Venues",
+      height: 360,
+    },
+    {
+      id: 3,
+      url: "https://img.freepik.com/premium-photo/bride-groom-pink-gold-wedding-dress_1120246-25950.jpg?w=1060",
       title: "Wedding Photography",
       category: "Photography",
+      height: 220,
     },
-    // {
-    //   id: 4,
-    //   url: "https://images.unsplash.com/photo-1546032996-6dfacbacbf3f?w=500",
-    //   title: "Bridal Makeup",
-    //   category: "Makeup",
-    // },
+    {
+      id: 4,
+      url: "https://img.freepik.com/free-photo/beautiful-woman-long-red-dress-walks-around-city-with-her-husband_1157-13373.jpg?w=1060",
+      title: "Bridal Makeup",
+      category: "Makeup",
+      height: 340,
+    },
     {
       id: 5,
-      url: "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=500",
-      title: "Wedding Cake",
-      category: "Catering",
+      url: "https://img.freepik.com/premium-photo/indian-bride-traditional-red-sari-with-golden-jewelry_143921-233.jpg",
+      title: "Wedding Rings",
+      category: "Jewelry",
+      height: 300,
     },
     {
       id: 6,
-      url: "https://images.unsplash.com/photo-1550005809-91ad75fb315f?w=500",
-      title: "Wedding Rings",
-      category: "Jewelry",
+      url: "https://img.freepik.com/premium-photo/photo-traditional-indian-wedding-ceremony_1325814-2854.jpg",
+      title: "Elegant Wedding Venue",
+      category: "Venues",
+      height: 360,
     },
-  ];
-
-  useEffect(() => {
-    loadMoreImages();
-  }, []);
-
-  const loadMoreImages = () => {
-    setTimeout(() => {
-      const newImages = [...sampleImages].sort(() => Math.random() - 0.5);
-      setImages((prevImages) => [...prevImages, ...newImages]);
-      setPage((prevPage) => prevPage + 1);
-      if (page > 3) setHasMore(false);
-    }, 1500);
-  };
-
-  const breakpointColumns = {
-    default: 4,
-    1100: 3,
-    700: 2,
-    500: 1,
-  };
+  ]);
 
   return (
-    <section className="masonry-section py-5">
-      <Container>
-        <div className="text-center mb-5">
-          <h2 className="fw-bold text-dark mb-3">Wedding Gallery</h2>
+    <div style={{ backgroundColor: "#f8f9fa", padding: "40px 20px" }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: "40px" }}>
+          <h2
+            style={{
+              fontWeight: "bold",
+              color: "#333",
+              marginBottom: "12px",
+              fontSize: "2.5rem",
+            }}
+          >
+            Wedding Gallery
+          </h2>
           <p
-            className="h6 text-muted mb-3"
-            data-aos="fade-up"
-            data-aos-delay="50"
+            style={{
+              color: "#666",
+              fontSize: "1.1rem",
+              margin: "0",
+            }}
           >
             Get inspired by our collection of beautiful wedding moments
           </p>
         </div>
 
-        <InfiniteScroll
-          dataLength={images.length}
-          next={loadMoreImages}
-          hasMore={hasMore}
-          loader={<div className="text-center my-4"></div>}
-          endMessage={
-            <Link to="/photography" className="text-decoration-none">
-              <p className="text-center text-danger my-4">
-                Lets Show More Images
-              </p>
-            </Link>
-          }
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: "16px",
+            marginBottom: "40px",
+          }}
         >
-          <Masonry
-            breakpointCols={breakpointColumns}
-            className="masonry-grid"
-            columnClassName="masonry-grid_column"
-          >
-            {images.map((image, index) => (
-              <div className="masonry-item" key={`${image.id}-${index}`}>
-                <div className="image-card">
-                  <img
-                    src={image.url}
-                    alt={image.title}
-                    loading="lazy"
-                    className="masonry-image"
-                  />
-                  <div className="image-overlay">
-                    <h5 className="image-title">{image.title}</h5>
-                    <span className="image-category">{image.category}</span>
-                  </div>
-                </div>
-                <div className="image-meta">
-                  <h5 className="image-title mb-1">{image.title}</h5>
-                  <span className="image-category">{image.category}</span>
-                </div>
+          {images.map((image) => (
+            <div
+              key={image.id}
+              style={{
+                position: "relative",
+                borderRadius: "12px",
+                overflow: "hidden",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                backgroundColor: "white",
+                height: `${image.height}px`,
+              }}
+              className="masonry-item"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow =
+                  "0 20px 40px rgba(0, 0, 0, 0.15)";
+                e.currentTarget.style.transform = "translateY(-4px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow =
+                  "0 4px 12px rgba(0, 0, 0, 0.1)";
+                e.currentTarget.style.transform = "translateY(0px)";
+              }}
+            >
+              <img
+                src={image.url}
+                alt={image.title}
+                loading="lazy"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                }}
+                onError={(e) => {
+                  e.target.src =
+                    "https://via.placeholder.com/400x300/f8f9fa/6c757d?text=Image+Not+Available";
+                }}
+              />
+
+              <div
+                className="image-overlay"
+                style={{
+                  position: "absolute",
+                  bottom: "0",
+                  left: "0",
+                  right: "0",
+                  background:
+                    "linear-gradient(transparent, rgba(0, 0, 0, 0.8))",
+                  padding: "40px 16px 16px",
+                  color: "white",
+                  opacity: "0",
+                  transition: "opacity 0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = "1";
+                }}
+              >
+                <h6
+                  style={{
+                    fontSize: "1.1rem",
+                    fontWeight: "600",
+                    margin: "0 0 4px 0",
+                    lineHeight: "1.3",
+                  }}
+                >
+                  {image.title}
+                </h6>
               </div>
-            ))}
-          </Masonry>
-        </InfiniteScroll>
-      </Container>
-    </section>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ textAlign: "center" }}>
+          <Link to="/photography" className="btn btn-primary btn-lg">
+            View Full Gallery
+          </Link>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .masonry-item:hover .image-overlay {
+          opacity: 1 !important;
+        }
+
+        .masonry-item {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+      `}</style>
+    </div>
   );
 };
 
-export default MansoryImageSection;
+export default MasonryImageSection;
