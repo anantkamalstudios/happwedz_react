@@ -59,6 +59,7 @@ import {
   IoCheckmarkCircleOutline,
   IoVideocamOutline,
 } from "react-icons/io5";
+import Faq from "./subVendors/Faq.jsx";
 import { GoGift } from "react-icons/go";
 import VendorMenus from "./subVendors/VendorMenus";
 import vendorServicesApi from "../../../services/api/vendorServicesApi";
@@ -431,6 +432,14 @@ const Storefront = () => {
       case "business":
         return (
           <BusinessDetails formData={formData} setFormData={setFormData} />
+        );
+      case "faq":
+        return (
+          <Faq
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+          />
         );
 
       case "vendor-basic":
