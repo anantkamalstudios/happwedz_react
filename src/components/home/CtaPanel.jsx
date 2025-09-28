@@ -32,7 +32,9 @@ const CtaPanel = ({
               </h3>
             )}
             {subHeading && (
-              <p className="mb-2 home-cta-section-sub-heading">{subHeading}</p>
+              <p className="mb-2 home-cta-section-sub-heading fs-28">
+                {subHeading}
+              </p>
             )}
             <hr />
             {title && <h5 className="fw-bold mb-2">{title}</h5>}

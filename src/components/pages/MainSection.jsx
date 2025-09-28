@@ -56,8 +56,6 @@ const MainSection = () => {
     return (
       <>
         <MainSearch title="Photography" />
-        {/* <MainByRegion /> */}
-
         <TopSlider onCategorySelect={setSelectedCategory} />
         <SortSection
           category={selectedCategory}

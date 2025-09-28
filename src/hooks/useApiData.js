@@ -6,14 +6,12 @@ const useApiData = (section, slug, city = null) => {
   const [error, setError] = useState(null);
 
   const fetchData = useCallback(async () => {
-    // Don't fetch if no section or slug
     if (!section || !slug) {
       setData([]);
       setLoading(false);
       return;
     }
 
-    // Skip API call for photography section
     if (section === "photography") {
       setData([]);
       setLoading(false);
@@ -24,19 +22,16 @@ const useApiData = (section, slug, city = null) => {
     setError(null);
 
     try {
-      // Convert slug to proper category name (banquet-halls -> Banquet Halls)
       const subCategory = slug
         .replace(/-/g, " ")
         .replace(/\b\w/g, (l) => l.toUpperCase());
 
-      // Build query parameters
-      const params = new URLSearchParams({
-        subCategory: subCategory,
-      });
-
-      // Add city filter if provided
+      const params = new URLSearchParams();
       if (city && city !== "all") {
         params.append("city", city);
+      }
+      if (subCategory) {
+        params.append("subCategory", subCategory);
       }
 
       console.log(
@@ -65,7 +60,7 @@ const useApiData = (section, slug, city = null) => {
     } catch (err) {
       console.error(`❌ Error loading ${section} data:`, err);
       setError(`Failed to load ${section} data from API: ${err.message}`);
-      setData([]); // Clear data on error
+      setData([]);
     } finally {
       setLoading(false);
     }
@@ -109,10 +104,8 @@ const transformApiData = (items) => {
       description: item.description || attributes.description || "",
       slug: item.slug || attributes.slug || "",
 
-      // Main image
       image: firstImage,
 
-      // Full gallery
       gallery: galleryPaths.map((img) => IMAGE_BASE_URL + img),
 
       videos: media.videos || [],

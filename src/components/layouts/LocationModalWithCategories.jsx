@@ -3,6 +3,7 @@ import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setLocation, clearLocation } from "../../redux/locationSlice";
+import { useNavigate } from "react-router-dom";
 import { IoCloseCircleOutline } from "react-icons/io5";
 
 const LocationModalWithAPI = () => {
@@ -11,6 +12,7 @@ const LocationModalWithAPI = () => {
   const selectedLocation = useSelector(
     (state) => state.location.selectedLocation
   );
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
@@ -92,6 +94,8 @@ const LocationModalWithAPI = () => {
   const handleCityClick = (city) => {
     dispatch(setLocation(city));
     setShow(false);
+    // Navigate to /vendors/all with city as query param or slug
+    navigate(`/vendors/all?city=${encodeURIComponent(city)}`);
   };
 
   const handleClearLocation = (e) => {

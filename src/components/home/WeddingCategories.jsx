@@ -115,7 +115,7 @@ const CategoryAccordion = ({ onSelect }) => {
 
                 <div className="pt-4">
                   <div className="wcg-pills d-flex flex-wrap gap-2 mb-3">
-                    {previewItems.slice(0, 2).map((it, idx) => (
+                    {previewItems.slice(0, 1).map((it, idx) => (
                       <span key={idx} className="badge rounded-pill px-3 py-2">
                         {it}
                       </span>

@@ -4,13 +4,17 @@ const MainTestimonial = () => {
   return (
     <div className="container my-5 custom-testimonial-section">
       <div className="row">
-        <div className="col-md-6 d-flex align-items-center justify-content-center">
-          <div className="custom-testimonial-box text-center shadow p-4">
-            <h2 className="custom-heading">What Our Couples Say</h2>
-            <p className="custom-subtext">
-              Real stories from real couples who made their dream wedding come
-              true
-            </p>
+        <div className="col-md-6 d-flex align-items-center justify-content-center overflow-hidden">
+          <div className="custom-testimonial-box text-start shadow p-4 overflow-hidden">
+            <div className="p-3">
+              <h2 className="custom-heading fs-48 fw-bold">
+                What Our Couples Say
+              </h2>
+              <p className="custom-subtext fs-18">
+                Real stories from real couples who made their dream wedding come
+                true
+              </p>
+            </div>
             <div className="custom-floral-graphic"></div>
           </div>
         </div>

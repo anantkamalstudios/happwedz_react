@@ -20,7 +20,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
       <Row>
         {subVenuesData.map((v) => (
           <Col key={v.id} xs={12} sm={6} md={4} className="mb-4">
-            <Card className="rounded-4 border-0 h-100 p-2">
+            <Card className="rounded-4 border-0 shadow-lg h-100 p-2">
               <div className="position-relative">
                 <Card.Img
                   variant="top"

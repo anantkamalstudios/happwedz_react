@@ -43,7 +43,7 @@ const ListView = ({ subVenuesData, handleShow }) => {
       <Row>
         {filteredVenues.map((venue) => (
           <Col xs={12} key={venue.id}>
-            <Card className="p-3 mb-4 border-0 shadow-sm rounded-5 overflow-hidden">
+            <Card className="p-3 mb-4 border-0 shadow-lg rounded-5 overflow-hidden">
               <Link
                 to={`/details/info/${venue.id}`}
                 className="text-decoration-none"
@@ -93,7 +93,9 @@ const ListView = ({ subVenuesData, handleShow }) => {
 
                   <Col md={8} className="p-3 d-flex flex-column">
                     <div className="d-flex justify-content-between align-items-start">
-                      <h4 className="fw-bold mb-1">{venue.name}</h4>
+                      <h4 className="fw-bold mb-1 primary-text">
+                        {venue.name}
+                      </h4>
                       {/* <Badge bg="danger">Handpicked</Badge> */}
                     </div>
 

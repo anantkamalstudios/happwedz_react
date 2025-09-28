@@ -4,7 +4,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 const RealWeddings = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Wedding images for the horizontal carousel
   const images = [
     {
       id: 1,
@@ -54,11 +53,10 @@ const RealWeddings = () => {
   return (
     <div className="container py-5">
       <div className="row align-items-center">
-        {/* Main Card - Left Side */}
-        <div className="col-lg-4 p-0 m-0">
+        <div className="col-lg-4 p-0 m-0 real-wedding-custom-wide-card">
           <div
             className="card border-0 shadow-lg h-100 position-relative"
-            style={{ minHeight: "600px", zIndex: 10 }}
+            style={{ minHeight: "600px", zIndex: 10, width: "40vw" }}
           >
             <div className="card-body p-5 d-flex flex-column justify-content-center">
               {/* Flower Icon */}
@@ -110,13 +108,13 @@ const RealWeddings = () => {
         <div className="col-lg-8 position-relative overflow-hidden mt-5">
           <div
             className="carousel-wrapper position-relative overflow-hidden"
-            style={{ height: "500px", left: "-10%" }} // Added 10% overlap
+            style={{ height: "500px", left: "0" }} // Added 10% overlap
           >
             {/* Carousel Track */}
             <div
               className="carousel-track d-flex position-absolute"
               style={{
-                transform: `translateX(-${currentSlide * 5}%)`,
+                transform: `translateX(-${currentSlide * 20}%)`,
                 transition: "transform 0.6s ease-in-out",
                 width: `${(images.length / 3) * 100}%`,
                 height: "100%",
@@ -129,7 +127,7 @@ const RealWeddings = () => {
                   style={{
                     width: "100%",
                     height: "100%",
-                    transform: `translateZ(${index * -10}px) scale(${
+                    transform: `translateZ(${index * 0}px) scale(${
                       1 - index * 0.02
                     })`,
                     zIndex: images.length - index,
