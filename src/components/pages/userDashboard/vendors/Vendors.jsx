@@ -142,6 +142,12 @@ const Vendors = () => {
     navigate(categoryPath);
   };
 
+  const toSlug = (text) =>
+    text
+      ?.toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9\-]/g, "") || "";
+
   return (
     <div className="vendors-container">
       <div className="vendors-header">
@@ -172,7 +178,7 @@ const Vendors = () => {
             ) : (
               <button
                 className="find-btn"
-                onClick={() => handleFindClick(category.path)}
+                onClick={() => handleFindClick(`/vendors/${toSlug(category.name)}`)}
               >
                 <FaSearch /> Find
               </button>

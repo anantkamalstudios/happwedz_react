@@ -1,36 +1,48 @@
-import React, { useState } from "react";
+import React from "react";
 import { Row, Col, Card, Container } from "react-bootstrap";
-import { FaSearch, FaStar, FaHeart, FaRegHeart } from "react-icons/fa";
+import { FaStar, FaHeart, FaRegHeart } from "react-icons/fa";
 import { BsLightningCharge } from "react-icons/bs";
 import { LuUsers } from "react-icons/lu";
 import { FaIndianRupeeSign } from "react-icons/fa6";
-import DynamicAside from "../aside/DynamicAside";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addToWishlist,
+  removeFromWishlist,
+} from "../../../redux/wishlistSlice";
+import { IoLocationOutline } from "react-icons/io5";
 
-const ListView = ({ subVenuesData, section, handleShow }) => {
-  const [favorites, setFavorites] = useState({});
-  const [filter, setFilter] = useState("all");
+const ListView = ({ subVenuesData, handleShow }) => {
+  const dispatch = useDispatch();
+  const { items: wishlist } = useSelector((state) => state.wishlist);
+  const { user } = useSelector((state) => state.auth);
 
-  const toggleFavorite = (id) => {
-    setFavorites((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+  // Check if a vendor is already in the wishlist
+  const isFavorite = (vendorId) =>
+    wishlist.some((w) => w.vendorId === vendorId || w.vendor?._id === vendorId);
+
+  const handleWishlistToggle = (vendor) => {
+    if (!user?.id) {
+      console.error("User not logged in. Cannot modify wishlist.");
+      // Optionally, you can navigate to the login page here.
+      return;
+    }
+
+    if (isFavorite(vendor.id)) {
+      dispatch(removeFromWishlist(vendor.id));
+    } else {
+      dispatch(addToWishlist({ userId: user.id, vendor }));
+    }
   };
-
-  const filteredVenues =
-    filter === "all"
-      ? subVenuesData
-      : subVenuesData.filter((venue) => venue.type === filter);
 
   return (
     <Container>
       <Row>
-        <Col xs={12} md={12}>
-          {filteredVenues.map((venue) => (
+        <Col xs={12}>
+          {subVenuesData.map((venue) => (
             <Card
               key={venue.id}
-              className="venue-card mb-4 rounded-4 shadow-lg"
+              className="p-3 mb-4 border-0 shadow-lg rounded-5 overflow-hidden"
             >
               <Row className="g-0">
                 <Col xs={12} md={4} className="position-relative">
@@ -38,16 +50,17 @@ const ListView = ({ subVenuesData, section, handleShow }) => {
                     <Card.Img
                       src={venue.image}
                       alt={venue.name}
-                      className="img-fluid rounded-start w-100 h-100 object-fit-cover"
+                      className="img-fluid rounded-5 object-fit-cover"
+                      style={{ height: "200px", width: "100%" }}
                     />
                     <button
-                      className="btn-glass position-absolute top-0 end-0 m-2 rounded-circle"
-                      onClick={() => toggleFavorite(venue.id)}
+                      className="btn btn-light rounded-circle position-absolute top-0 end-0 m-2"
+                      onClick={() => handleWishlistToggle(venue)}
                     >
-                      {favorites[venue.id] ? (
+                      {isFavorite(venue.id) ? (
                         <FaHeart className="text-danger" />
                       ) : (
-                        <FaRegHeart className="text-white" />
+                        <FaRegHeart className="text-dark" />
                       )}
                     </button>
                     <div className="price-tag position-absolute bottom-0 start-0 text-white px-2 py-1">
@@ -59,29 +72,20 @@ const ListView = ({ subVenuesData, section, handleShow }) => {
                 <Col
                   xs={12}
                   md={8}
-                  className="p-3 d-flex flex-column justify-content-between"
+                  className="p-3 d-flex flex-column"
                 >
                   <Link
                     to={`/details/info/${venue.id}`}
                     className="text-decoration-none"
                   >
                     <div>
-                      <Card.Title as="h5" className="mb-2">
+                      <h4 className="fw-bold mb-1 primary-text">
                         {venue.name}
-                      </Card.Title>
-                      <div className="text-muted small mb-2">
-                        {venue.description || ""}
-                      </div>
-                      {/* <div className="text-muted small mb-2">
-                        {(venue.description || "")
-                          .split(" ")
-                          .slice(0, 20)
-                          .join(" ")}
-                        ...
-                      </div> */}
-                      <div className="text-muted small mb-2">
+                      </h4>
+                      <p className="text-muted small mb-1">
+                        <IoLocationOutline className="me-2" />
                         {venue.location}
-                      </div>
+                      </p>
 
                       <div className="d-flex flex-wrap gap-2 align-items-center mb-2">
                         <div className="d-flex align-items-center">
@@ -108,12 +112,11 @@ const ListView = ({ subVenuesData, section, handleShow }) => {
                       </div>
                     </div>
                   </Link>
-                  {console.log(venue.id)}
                   <div className="mt-2">
-                    {/* <button className="w-100 details-btn" onClick={handleShow}>
-                      Request Pricing
-                    </button> */}
-                    <button className="w-100 details-btn" onClick={() => handleShow(venue.id)}>
+                    <button
+                      className="w-100 details-btn"
+                      onClick={() => handleShow(venue.id)}
+                    >
                       Request Pricing
                     </button>
                   </div>

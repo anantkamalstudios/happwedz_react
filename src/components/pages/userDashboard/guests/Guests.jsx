@@ -912,10 +912,11 @@ const Guests = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const guestsPerPage = 5; // change per page
+  const [formError, setFormError] = useState("");
 
   const statusOptions = ["Attending", "Pending", "Declined"];
   const typeOptions = ["Adults", "Children"];
-  const menuOptions = ["Regular", "Vegetarian", "Vegan", "Kids"];
+  const menuOptions = ["Regular", "Vegetarian", "Vegan"];
 
   // Fetch guests
   const fetchGuests = async () => {
@@ -949,7 +950,18 @@ const Guests = () => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const addGuestAPI = async () => {
-    if (!newGuest.trim()) return;
+    setFormError("");
+    if (!newGuest.trim()) {
+      setFormError("Guest name is required.");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (newEmail && !emailRegex.test(newEmail)) {
+      setFormError("Please enter a valid email address.");
+      return;
+    }
+
     try {
       const res = await axios.post(
         "https://happywedz.com/api/guest-list",
@@ -1085,20 +1097,46 @@ const Guests = () => {
 
       {/* Add Guest Form */}
       {showAddGuestForm && (
-        <div className="wgl-add-form">
-          <h3 className="wgl-form-title">Add New Guest</h3>
-          <input className="wgl-form-input" placeholder="Guest Name" value={newGuest} onChange={(e) => setNewGuest(e.target.value)} />
-          <input className="wgl-form-input" placeholder="Guest Email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
-          <input className="wgl-form-input" placeholder="Group" value={newGroup} onChange={(e) => setNewGroup(e.target.value)} />
-          <select className="wgl-form-select" value={newType} onChange={(e) => setNewType(e.target.value)}>
-            {typeOptions.map((t) => <option key={t}>{t}</option>)}
-          </select>
-          <select className="wgl-form-select" value={newMenu} onChange={(e) => setNewMenu(e.target.value)}>
-            {menuOptions.map((m) => <option key={m}>{m}</option>)}
-          </select>
-          <div className="wgl-form-actions">
-            <button className="wgl-button wgl-button-cancel" onClick={() => setShowAddGuestForm(false)}>Cancel</button>
-            <button className="wgl-button wgl-button-save" onClick={addGuestAPI}>Save Guest</button>
+        <div className="wgl-add-form card shadow-sm mb-4">
+          <div className="card-body p-4">
+            <h3 className="wgl-form-title card-title mb-4">Add New Guest</h3>
+            {formError && (
+              <div className="alert alert-danger small p-2">{formError}</div>
+            )}
+            <div className="row g-3">
+              <div className="col-md-6">
+                <label className="form-label">Guest Name</label>
+                <input className="form-control" placeholder="e.g., John Doe" value={newGuest} onChange={(e) => setNewGuest(e.target.value)} />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label">Guest Email</label>
+                <input type="email" className="form-control" placeholder="e.g., john.doe@example.com" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label">Group</label>
+                <input className="form-control" placeholder="e.g., Bride's Family" value={newGroup} onChange={(e) => setNewGroup(e.target.value)} />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label">Type</label>
+                <select className="form-select" value={newType} onChange={(e) => setNewType(e.target.value)}>
+                  {typeOptions.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div className="col-md-4">
+                <label className="form-label">Menu Preference</label>
+                <select className="form-select" value={newMenu} onChange={(e) => setNewMenu(e.target.value)}>
+                  {menuOptions.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="wgl-form-actions mt-4 d-flex justify-content-end gap-2">
+              <button className="btn btn-light" onClick={() => setShowAddGuestForm(false)}>
+                Cancel
+              </button>
+              <button className="btn btn-primary" onClick={addGuestAPI}>
+                Save Guest
+              </button>
+            </div>
           </div>
         </div>
       )}

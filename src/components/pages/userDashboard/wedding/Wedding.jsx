@@ -7,6 +7,7 @@ import { PiFlowerLotusThin } from "react-icons/pi";
 import { GrPlan } from "react-icons/gr";
 import { Camera, Music, Utensils, Gift } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const Wedding = () => {
   const [completedTasks, setCompletedTasks] = useState(new Set([0, 2]));
@@ -29,6 +30,9 @@ const Wedding = () => {
 
   const [vendorCategories, setVendorCategories] = useState([]);
   const [showAll, setShowAll] = useState(false);
+
+  // Get the token at the top level of the component
+  const token = useSelector((state) => state.auth.token);
 
   const upcomingTasks = [
     {
@@ -123,7 +127,6 @@ const Wedding = () => {
       try {
         // NOTE: This is an example. You should have a secure way to get user data.
         // This assumes you store a token after login/registration.
-        const token = localStorage.getItem("userToken");
         if (!token) {
           // Handle case where user is not logged in, e.g., redirect to login
           console.error("No user token found.");
@@ -150,22 +153,29 @@ const Wedding = () => {
     };
 
     fetchUserData();
-  }, []);
+  }, [token]); // Re-run the effect if the token changes
 
   // Countdown Timer Logic
   useEffect(() => {
     if (!user?.weddingDate) return;
 
     const weddingDate = new Date(user.weddingDate);
+
+    // Time constants for better readability
+    const MILLISECONDS_IN_SECOND = 1000;
+    const SECONDS_IN_MINUTE = 60;
+    const MINUTES_IN_HOUR = 60;
+    const HOURS_IN_DAY = 24;
+    const MILLISECONDS_IN_HOUR = MILLISECONDS_IN_SECOND * SECONDS_IN_MINUTE * MINUTES_IN_HOUR;
+    const MILLISECONDS_IN_DAY = MILLISECONDS_IN_HOUR * HOURS_IN_DAY;
+
     const calculateCountdown = () => {
       const now = new Date();
       const difference = weddingDate.getTime() - now.getTime();
 
       if (difference > 0) {
-        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-        const hours = Math.floor(
-          (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-        );
+        const days = Math.floor(difference / MILLISECONDS_IN_DAY);
+        const hours = Math.floor((difference % MILLISECONDS_IN_DAY) / MILLISECONDS_IN_HOUR);
         setCountdown({ days, hours, hasPassed: false });
       } else {
         // If the wedding date has passed
@@ -173,13 +183,13 @@ const Wedding = () => {
       }
     };
 
-    // Calculate immediately on mount
+    // Calculate immediately on component mount or when the wedding date changes
     calculateCountdown();
 
-    // Update the countdown every minute
-    const interval = setInterval(calculateCountdown, 60000);
+    // Update the countdown every minute. Updating every second is unnecessary if not displaying seconds.
+    const interval = setInterval(calculateCountdown, 60000); // 60000ms = 1 minute
 
-    // Cleanup interval on component unmount
+    // Cleanup the interval when the component unmounts or the wedding date changes
     return () => clearInterval(interval);
   }, [user?.weddingDate]);
 
