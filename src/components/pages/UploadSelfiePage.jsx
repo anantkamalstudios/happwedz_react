@@ -147,13 +147,12 @@ const UploadSelfiePage = () => {
           <p className="text-muted">We will guide you for best results</p>
         </div>
 
-        <div className="container py-5 d-flex flex-column align-items-center justify-content-center text-center">
+        <div className="py-5 d-flex flex-column align-items-center justify-content-center text-center">
           <div className="mb-4">
             <img
               src="/images/try/upload-default.png"
               alt="placeholder"
               className="rounded-5"
-              style={{ objectFit: "cover" }}
             />
           </div>
 
@@ -161,7 +160,7 @@ const UploadSelfiePage = () => {
             <button className="btn btn-primary px-4" onClick={handlePick}>
               Upload Image
             </button>
-            {!isCameraReady ? (
+            {/* {!isCameraReady ? (
               <button
                 className="btn btn-outline-primary px-4"
                 onClick={startCamera}
@@ -196,7 +195,7 @@ const UploadSelfiePage = () => {
                   </div>
                 )}
               </div>
-            )}
+            )} */}
           </div>
 
           {/* Hidden file input */}

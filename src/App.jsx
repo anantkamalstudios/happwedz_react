@@ -138,7 +138,14 @@ function App() {
 
               {/* Try Flow */}
               <Route path="/try" element={<TryLanding />} />
-              <Route path="/try/bride" element={<BrideMakeupChoose />} />
+              <Route
+                path="/try/bride"
+                element={
+                  <UserPrivateRoute>
+                    <BrideMakeupChoose />
+                  </UserPrivateRoute>
+                }
+              />
               <Route
                 path="/try/upload"
                 element={
