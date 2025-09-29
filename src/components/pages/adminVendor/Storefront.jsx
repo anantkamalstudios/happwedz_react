@@ -357,17 +357,17 @@ const Storefront = () => {
   };
 
   const menuItems = [
-    {
-      id: "business",
-      label: "Business details",
-      icon: <FaRegBuilding size={20} />,
-    },
-    { id: "faq", label: "FAQ", icon: <CiCircleQuestion size={20} /> },
+    // {
+    //   id: "business",
+    //   label: "Business details",
+    //   icon: <FaRegBuilding size={20} />,
+    // },
     {
       id: "vendor-basic",
       label: "Basic Information",
       icon: <IoIosInformationCircleOutline size={20} />,
     },
+    { id: "faq", label: "FAQ", icon: <CiCircleQuestion size={20} /> },
 
     {
       id: "vendor-contact",
