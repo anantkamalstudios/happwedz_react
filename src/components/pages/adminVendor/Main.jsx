@@ -20,6 +20,8 @@ const Main = () => {
         return <Storefront />;
       case "vendor-setting":
         return <Settings />;
+      case "vendor-reviews":
+        return <ReviewsPage />;
       case "vendor-enquiries":
         return <EnquiryManagement />;
       default:

@@ -129,6 +129,7 @@ const Detailed = () => {
         setLoading(true);
         const data = await vendorServicesApi.getVendorServiceById(id);
         setVenueData(data);
+        console.log(data);
 
         // Set images from API data
         const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
@@ -307,16 +308,16 @@ const Detailed = () => {
                 About This Venue
               </h3>
               {venueData.attributes?.description ? (
-                <p className="description-text">
+                <p className="description-text text-black text-justify">
                   {venueData.attributes.description}
                 </p>
               ) : (
-                <p className="description-text text-muted">
+                <p className="text-black text-justify">
                   No description available for this venue.
                 </p>
               )}
               {venueData.attributes?.subtitle && (
-                <p className="description-text">
+                <p className="description-text text-black text-justify">
                   {venueData.attributes.subtitle}
                 </p>
               )}
@@ -393,22 +394,29 @@ const Detailed = () => {
             </div>
           </Col>
 
-          <Col lg={4}>
+          <Col lg={4} className="ps-5">
             <div className="venue-details-card">
               <div className="venue-info">
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <div className="rating-badge">
-                    <FaStar className="text-warning" />
-                    <span className="rating-value">4.5</span>
-                    <span className="reviews">(0 reviews)</span>
+                <div className="mb-3">
+                  <div className="d-flex">
+                    <span className="fw-bold me-2 fs-30">
+                      {venueData.attributes?.name || "Vendor Name"}
+                    </span>
                   </div>
-                  <div className="location">
-                    <FaLocationDot className="me-1" color="black" />
+                  <div className="d-flex align-items-center my-2">
+                    <FaLocationDot className="me-1" size={15} color="black" />
                     <span>
                       {venueData.attributes?.location
                         ? `${venueData.attributes.location.city}, ${venueData.attributes.location.state}`
                         : "Location not specified"}
                     </span>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div className="rating-badge">
+                      <FaStar className="text-warning" />
+                      <span className="rating-value">4.5</span>
+                      <span className="reviews">(0 reviews)</span>
+                    </div>
                   </div>
                 </div>
 
@@ -446,7 +454,7 @@ const Detailed = () => {
                   </p>
                 </div>
 
-                <div className="contact-info mb-4">
+                {/* <div className="contact-info mb-4">
                   <h4 className="contact-title">Contact Venue</h4>
                   {venueData.attributes?.contact?.phone && (
                     <div className="contact-item">
@@ -482,7 +490,7 @@ const Detailed = () => {
                         </span>
                       </div>
                     )}
-                </div>
+                </div> */}
 
                 <div className="action-buttons">
                   <div className="margin-b-50 d-flex h-center cursor-pointer">

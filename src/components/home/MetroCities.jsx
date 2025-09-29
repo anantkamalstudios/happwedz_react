@@ -38,7 +38,7 @@ const MetroCities = () => {
                     {venues.length > 5 && (
                       <li>
                         <button
-                          className="btn btn-link primary-text p-0 mt-1"
+                          className="btn btn-link primary-text p-0 mt-1 fs-16 text-decoration-none"
                           onClick={() => toggleExpand(state)}
                         >
                           {isExpanded ? "View less" : "View all"}

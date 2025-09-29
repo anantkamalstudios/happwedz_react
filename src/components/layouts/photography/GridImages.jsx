@@ -62,7 +62,7 @@ const GridImages = ({ category, searchQuery }) => {
   });
 
   return (
-    <div className="container-fluid py-5">
+    <div className="py-5 container">
       <div className="masonry">
         {filteredImages.map((img, index) => (
           <div key={index} className="masonry-item">

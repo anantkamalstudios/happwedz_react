@@ -70,7 +70,7 @@ const TopSlider = ({ onCategorySelect }) => {
   ];
 
   return (
-    <div className="container-fluid px-3 py-2 my-5">
+    <div className="container px-3 py-2 my-5">
       <Swiper
         slidesPerView="auto"
         spaceBetween={10}
