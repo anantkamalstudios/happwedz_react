@@ -68,6 +68,7 @@ const WeddingCardDesigns = () => {
 
   const getFilteredData = () => {
     const data = getCurrentData();
+    console.log(data);
     if (selectedFilter === "all") return data;
     return data.filter(
       (item) =>
@@ -103,7 +104,11 @@ const WeddingCardDesigns = () => {
   const CardComponent = ({ item, type }) => (
     <div className="wc-card-container group">
       <div className="wc-card-image-wrapper">
-        <img src={item.thumbnail_url} alt={item.name} className="wc-card-image" />
+        <img
+          src={item.thumbnail_url}
+          alt={item.name}
+          className="wc-card-image"
+        />
         <div className="wc-card-overlay">
           <div className="wc-card-overlay-content">
             {type === "video" && (
@@ -159,8 +164,9 @@ const WeddingCardDesigns = () => {
             {/* Wedding Cards */}
             <li className="nav-item px-2">
               <button
-                className={`nav-link fw-semibold rounded-pill ${activeTab === "wedding" ? "active" : ""
-                  }`}
+                className={`nav-link fw-semibold rounded-pill ${
+                  activeTab === "wedding" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("wedding")}
                 style={{
                   background:
@@ -191,8 +197,9 @@ const WeddingCardDesigns = () => {
             {/* Video Cards */}
             <li className="nav-item px-2">
               <button
-                className={`nav-link fw-semibold rounded-pill ${activeTab === "video" ? "active" : ""
-                  }`}
+                className={`nav-link fw-semibold rounded-pill ${
+                  activeTab === "video" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("video")}
                 style={{
                   background:
@@ -221,8 +228,9 @@ const WeddingCardDesigns = () => {
             {/* Save the Date */}
             <li className="nav-item px-2">
               <button
-                className={`nav-link fw-semibold rounded-pill ${activeTab === "savedate" ? "active" : ""
-                  }`}
+                className={`nav-link fw-semibold rounded-pill ${
+                  activeTab === "savedate" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("savedate")}
                 style={{
                   background:

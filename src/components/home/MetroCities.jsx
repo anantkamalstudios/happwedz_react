@@ -1,15 +1,17 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import citiesData from "../../data/citiesData";
 
 const MetroCities = () => {
   const [expandedStates, setExpandedStates] = useState({});
-  const [selectedState, setSelectedState] = useState("Maharashtra");
+  const navigate = useNavigate();
 
-  const toggleExpand = (state) => {
-    setExpandedStates((prev) => ({
-      ...prev,
-      [state]: !prev[state],
-    }));
+  const handleCityClick = (cityLabel) => {
+    const city = cityLabel
+      .replace(/^Wedding Venues\s*/i, "")
+      .trim()
+      .toLowerCase();
+    navigate(`/venues/wedding-venues?city=${encodeURIComponent(city)}`);
   };
 
   return (
@@ -22,15 +24,16 @@ const MetroCities = () => {
 
           return (
             <div className="col" key={state}>
-              <div className=" h-100">
-                <div className="">
+              <div className="h-100">
+                <div>
                   <h5 className="fw-bold">{state}</h5>
                   <ul className="list-unstyled mb-0 mt-3">
                     {visibleVenues.map((venue, index) => (
                       <li
                         key={index}
-                        style={{ fontSize: "15px" }}
+                        style={{ fontSize: "15px", cursor: "pointer" }}
                         className="lh-lg"
+                        onClick={() => handleCityClick(venue)}
                       >
                         {venue}
                       </li>
@@ -38,8 +41,13 @@ const MetroCities = () => {
                     {venues.length > 5 && (
                       <li>
                         <button
-                          className="btn btn-link primary-text p-0 mt-1"
-                          onClick={() => toggleExpand(state)}
+                          className="btn btn-link primary-text p-0 mt-1 fs-16 text-decoration-none"
+                          onClick={() =>
+                            setExpandedStates((prev) => ({
+                              ...prev,
+                              [state]: !prev[state],
+                            }))
+                          }
                         >
                           {isExpanded ? "View less" : "View all"}
                         </button>

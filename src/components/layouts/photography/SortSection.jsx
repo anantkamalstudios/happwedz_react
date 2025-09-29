@@ -7,7 +7,7 @@ import { FiHash } from "react-icons/fi";
 
 const SortSection = ({ category, onCategoryChange, onSearchChange }) => {
   return (
-    <Container fluid>
+    <Container>
       <Row className="align-items-center justify-content-between mb-3">
         <Col
           xs={12}
