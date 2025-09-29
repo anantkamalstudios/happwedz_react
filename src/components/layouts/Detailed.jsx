@@ -27,10 +27,13 @@ import {
 } from "react-icons/fa";
 import { GrFormNextLink } from "react-icons/gr";
 import ReviewSection from "../pages/ReviewSection";
+import { FaqQuestions } from "../pages/adminVendor/subVendors/FaqData";
+import axios from "axios";
 
 const Detailed = () => {
   const { id } = useParams();
   const [venueData, setVenueData] = useState(null);
+  const [vendorId, setVendorId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mainImage, setMainImage] = useState("");
@@ -162,6 +165,52 @@ const Detailed = () => {
 
     fetchVenueData();
   }, [id]);
+
+  const [faqList, setFaqList] = useState([]);
+
+  useEffect(() => {
+    const fetchFaqData = async () => {
+      // Guard clause: wait until venueData and its nested properties are available
+      if (!venueData?.vendor?.id || !venueData?.vendor?.vendorType?.id) {
+        return;
+      }
+
+      const dynamicVendorId = venueData.vendor.id;
+      const dynamicVendorTypeId = venueData.vendor.vendorType.id;
+
+      try {
+        // 1. Fetch the answers for the specific vendor
+        const response = await axios.get(
+          `https://happywedz.com/api/faq-answers/${dynamicVendorId}`
+        );
+        const answers = response.data || [];
+
+        // 2. Create a quick-lookup map for the answers
+        const answerMap = new Map(
+          answers.map((a) => [a.faq_question_id, a.answer])
+        );
+
+        // 3. Find the correct question set based on vendor type
+        const vendorTypeKey = Object.keys(FaqQuestions).find(
+          (key) => FaqQuestions[key].vendor_type_id === dynamicVendorTypeId
+        );
+
+        if (vendorTypeKey) {
+          const questions = FaqQuestions[vendorTypeKey].questions;
+          // 4. Merge questions with answers
+          const mergedFaqs = questions.map((q) => ({
+            ...q,
+            ans: answerMap.get(q.id) || "", // Use the answer or an empty string
+          }));
+          setFaqList(mergedFaqs);
+        }
+      } catch (error) {
+        console.error("Error fetching FAQ answers:", error);
+      }
+    };
+
+    fetchFaqData();
+  }, [venueData]); // This effect now depends on venueData
 
   useEffect(() => {
     window.scrollTo({
@@ -318,6 +367,26 @@ const Detailed = () => {
               {venueData.attributes?.subtitle && (
                 <p className="description-text">
                   {venueData.attributes.subtitle}
+                </p>
+              )}
+            </div>
+
+            {/**  FaqQuestionAnswer Detailed */}
+
+            <div className="my-4">
+              <h1 className="my-4">Frequently Asked Questions</h1>
+              {faqList.length > 0 ? (
+                faqList.map((ques, index) => (
+                  <div className="w-100 rounded border-bottom" key={index}>
+                    <div className="p-2">
+                      <p className="fw-semibold mb-1">{ques.text}</p>
+                      <p className="text-muted">{ques.ans || "Not answered"}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted">
+                  No FAQ information available for this vendor.
                 </p>
               )}
             </div>

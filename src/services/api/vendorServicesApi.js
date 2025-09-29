@@ -40,6 +40,7 @@ const vendorServicesApi = {
   getVendorServiceById: async (id) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/vendor-services/${id}`);
+
       return response.data;
     } catch (error) {
       console.error(

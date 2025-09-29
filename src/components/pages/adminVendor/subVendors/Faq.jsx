@@ -6,8 +6,7 @@ function Faq({ formData, setFormData, onSave }) {
   // For dynamic min/max for range questions
   const [rangeLimits, setRangeLimits] = useState({});
   const { vendor } = useSelector((state) => state.vendorAuth);
-  // Debug: log the vendor_type_id
-  // Fetch and prefill answers from backend
+
   useEffect(() => {
     if (vendor?.vendor_type_id) {
       console.log("Vendor Type ID:", vendor.vendor_type_id);
