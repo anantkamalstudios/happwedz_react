@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
+const API_BASE_URL = "https://happywedz.com";
+
 export default function VendorLeadsPage() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,9 +31,12 @@ export default function VendorLeadsPage() {
         setLoading(true);
         setError(null);
 
-        const response = await fetch("/api-main/request-pricing/all", {
-          headers: { Authorization: `Bearer ${vendorToken}` },
-        });
+        const response = await fetch(
+          `${API_BASE_URL}/api/request-pricing/all`,
+          {
+            headers: { Authorization: `Bearer ${vendorToken}` },
+          }
+        );
 
         if (!response.ok) throw new Error("Failed to fetch leads.");
 
@@ -97,7 +102,7 @@ export default function VendorLeadsPage() {
       };
 
       const response = await fetch(
-        `/api-main/request-pricing/requests/${activeRow.id}/quotation`,
+        `${API_BASE_URL}/api-main/request-pricing/requests/${activeRow.id}/quotation`,
         {
           method: "POST",
           headers: {

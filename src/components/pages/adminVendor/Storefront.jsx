@@ -475,7 +475,13 @@ const Storefront = () => {
           <VideoGallery videos={videoDrafts} onVideosChange={setVideoDrafts} />
         );
       case "promotions":
-        return <PromoForm />;
+        return (
+          <PromoForm
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+          />
+        );
       case "vendor-pricing":
         return (
           <VendorPricing

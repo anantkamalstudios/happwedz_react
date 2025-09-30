@@ -282,6 +282,21 @@ const Detailed = () => {
     image: mainImage || "/images/default-venue.jpg",
   };
 
+  function parseDbValue(value) {
+    if (
+      typeof value === "string" &&
+      value.startsWith("{") &&
+      value.endsWith("}")
+    ) {
+      return value
+        .replace(/[{}]/g, "")
+        .split(",")
+        .map((item) => item.replace(/"/g, "").trim());
+    } else {
+      return [value];
+    }
+  }
+
   return (
     <div className="venue-detail-page">
       <Container className="py-5">
@@ -377,14 +392,36 @@ const Detailed = () => {
             <div className="my-4">
               <h1 className="my-4">Frequently Asked Questions</h1>
               {faqList.length > 0 ? (
-                faqList.map((ques, index) => (
-                  <div className="w-100 rounded border-bottom" key={index}>
-                    <div className="p-2">
-                      <p className="fw-semibold mb-1">{ques.text}</p>
-                      <p className="text-muted">{ques.ans || "Not answered"}</p>
+                faqList.map((ques, index) => {
+                  const answers = parseDbValue(ques.ans);
+
+                  return (
+                    <div className="w-100 rounded border-bottom" key={index}>
+                      <div className="p-2">
+                        <p className="fw-semibold mb-1">{ques.text}</p>
+
+                        {answers.length === 1 ? (
+                          <p className="text-muted">{answers[0]}</p>
+                        ) : (
+                          <div className="row">
+                            {answers.map((a, idx) => (
+                              <div
+                                className="col-md-4  d-flex align-items-start mb-2"
+                                key={idx}
+                              >
+                                <i
+                                  className="fa-solid fa-check me-2"
+                                  style={{ color: "#0e6214", marginTop: "4px" }}
+                                ></i>
+                                <span className="text-muted">{a}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <p className="text-muted">
                   No FAQ information available for this vendor.
