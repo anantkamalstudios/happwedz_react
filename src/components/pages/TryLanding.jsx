@@ -28,7 +28,6 @@ const TryLanding = () => {
             isLoaded ? "try-first-page-loaded" : ""
           }`}
         >
-          <div className="try-first-page-hero-overlay"></div>
           <div className="try-first-page-hero-particles">
             <div className="try-first-page-particle"></div>
             <div className="try-first-page-particle"></div>
@@ -43,11 +42,6 @@ const TryLanding = () => {
                 Transform Your Look with
                 <span className="try-first-page-gradient-text"> AI Magic</span>
               </h1>
-              <p className="try-first-page-subtitle">
-                Experience the future of beauty with our advanced virtual makeup
-                technology. Try thousands of looks instantly and discover your
-                perfect style.
-              </p>
               <div className="try-first-page-features">
                 <div className="try-first-page-feature">
                   <FaBolt className="try-first-page-icon" />

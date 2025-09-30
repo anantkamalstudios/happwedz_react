@@ -46,7 +46,7 @@ const FiltersPage = () => {
   const uploadedId = sessionStorage.getItem("try_uploaded_image_id") || null;
   const uploadedPreview = React.useMemo(() => {
     if (!uploadedId) return null;
-    const base = import.meta.env.VITE_API_BASE_URL || "/api";
+    const base = import.meta.env.VITE_API_BASE_URL || "/ai/api";
     return `${base}/images/${uploadedId}`;
   }, [uploadedId]);
 

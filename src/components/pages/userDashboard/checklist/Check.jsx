@@ -7,7 +7,6 @@
 
 // const API_BASE = "https://happywedz.com/api/checklist";
 
-
 // const Check = () => {
 //   const userId = useSelector((state) => state.auth.user?.id);
 //   const [tasks, setTasks] = useState([]);
@@ -398,6 +397,7 @@
 // };
 
 // export default Check;
+
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaCheck, FaPlus, FaDownload, FaPrint } from "react-icons/fa";
@@ -422,7 +422,8 @@ const Check = () => {
     setLoading(true);
     try {
       const params = {};
-      if (selectedStatus !== "All") params.status = selectedStatus.toLowerCase();
+      if (selectedStatus !== "All")
+        params.status = selectedStatus.toLowerCase();
       if (selectedCategory !== "All") params.category = selectedCategory;
       if (selectedPeriod !== "All") params.timePeriod = selectedPeriod;
 
@@ -544,8 +545,9 @@ const Check = () => {
                 {["All", "Pending", "Completed"].map((status) => (
                   <li
                     key={status}
-                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${selectedStatus === status ? "wc-active" : ""
-                      }`}
+                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${
+                      selectedStatus === status ? "wc-active" : ""
+                    }`}
                     onClick={() => setSelectedStatus(status)}
                   >
                     {status}
@@ -553,8 +555,8 @@ const Check = () => {
                       {status === "All"
                         ? tasks.length
                         : status === "Pending"
-                          ? pendingCount
-                          : completedCount}
+                        ? pendingCount
+                        : completedCount}
                     </span>
                   </li>
                 ))}
@@ -572,8 +574,9 @@ const Check = () => {
                 {periods.map((period) => (
                   <li
                     key={period}
-                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${selectedPeriod === period ? "wc-active" : ""
-                      }`}
+                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${
+                      selectedPeriod === period ? "wc-active" : ""
+                    }`}
                     onClick={() => setSelectedPeriod(period)}
                   >
                     {period}
@@ -598,8 +601,9 @@ const Check = () => {
                 {categories.map((cat) => (
                   <li
                     key={cat}
-                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${selectedCategory === cat ? "wc-active" : ""
-                      }`}
+                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${
+                      selectedCategory === cat ? "wc-active" : ""
+                    }`}
                     onClick={() => setSelectedCategory(cat)}
                   >
                     {cat}
@@ -637,7 +641,8 @@ const Check = () => {
                   <span className="wc-completed text-success">
                     {completedCount}
                   </span>{" "}
-                  out of <span className="wc-total text-primary">{tasks.length}</span>{" "}
+                  out of{" "}
+                  <span className="wc-total text-primary">{tasks.length}</span>{" "}
                   tasks
                 </h5>
               </div>
@@ -666,11 +671,13 @@ const Check = () => {
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
                       >
-                        {categories.filter((c) => c !== "All").map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
+                        {categories
+                          .filter((c) => c !== "All")
+                          .map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
                       </select>
                     </div>
                     <div className="col-md-3 mb-3">
@@ -680,11 +687,13 @@ const Check = () => {
                         value={selectedPeriod}
                         onChange={(e) => setSelectedPeriod(e.target.value)}
                       >
-                        {periods.filter((p) => p !== "All").map((p) => (
-                          <option key={p} value={p}>
-                            {p}
-                          </option>
-                        ))}
+                        {periods
+                          .filter((p) => p !== "All")
+                          .map((p) => (
+                            <option key={p} value={p}>
+                              {p}
+                            </option>
+                          ))}
                       </select>
                     </div>
                   </div>
@@ -701,17 +710,25 @@ const Check = () => {
                 ) : tasks.length > 0 ? (
                   <ul className="list-group">
                     {tasks.map((task) => (
-                      <li key={task.id} className="list-group-item d-flex align-items-center">
+                      <li
+                        key={task.id}
+                        className="list-group-item d-flex align-items-center"
+                      >
                         <div
-                          className={`wc-task-checkbox me-3 ${task.status === "completed" ? "wc-completed" : ""
-                            }`}
+                          className={`wc-task-checkbox me-3 ${
+                            task.status === "completed" ? "wc-completed" : ""
+                          }`}
                           onClick={() => toggleTask(task.id, task.status)}
                         >
                           {task.status === "completed" && <FiCheck />}
                         </div>
                         <div className="flex-grow-1">
                           <div
-                            className={task.status === "completed" ? "text-muted text-decoration-line-through" : ""}
+                            className={
+                              task.status === "completed"
+                                ? "text-muted text-decoration-line-through"
+                                : ""
+                            }
                           >
                             {task.text}
                           </div>
@@ -720,7 +737,10 @@ const Check = () => {
                             <span>{task.timePeriod}</span>
                           </div>
                         </div>
-                        <button className="btn btn-outline-danger" onClick={() => deleteTask(task.id)}>
+                        <button
+                          className="btn btn-outline-danger"
+                          onClick={() => deleteTask(task.id)}
+                        >
                           <FiTrash />
                         </button>
                       </li>

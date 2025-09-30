@@ -259,7 +259,9 @@ const BlogsCarousel = () => {
   }, []);
 
   if (loading) {
-    return <div className="text-center py-5">Loading inspiration teasers...</div>;
+    return (
+      <div className="text-center py-5">Loading inspiration teasers...</div>
+    );
   }
 
   return (
@@ -271,8 +273,10 @@ const BlogsCarousel = () => {
             alt="inspiredTeaser"
             className="w-20 h-20"
           />
-          <h2 className="blogs-carousel-heading">Inspiration Teasers</h2>
-          <p className="blogs-carousel-subheading">
+          <h2 className="blogs-carousel-heading fw-bold mb-4 display-5 primary-text">
+            Inspiration Teasers
+          </h2>
+          <p className="fs-26 mb-3" data-aos="fade-up" data-aos-delay="50">
             Discover the latest trends, tips, and real wedding stories
           </p>
         </div>
@@ -318,12 +322,24 @@ const BlogsCarousel = () => {
                   </p>
 
                   {/* Footer */}
-                  <div className="blogs-footer">
-                    <div className="blogs-profile">
-                      <img src={blog.authorImg} alt={blog.author} />
-                      <div className="blogs-profile-info">
-                        <span className="blogs-author">{blog.author}</span>
-                        <small className="blogs-date">{blog.date}</small>
+                  <div className="mt-auto">
+                    <div className="d-flex align-items-center">
+                      <img
+                        src={
+                          blog.authorImg && blog.authorImg.trim() !== ""
+                            ? blog.authorImg
+                            : "./images/no-image.png"
+                        }
+                        alt={blog.author}
+                        className="rounded-circle me-3"
+                        width="40"
+                        height="40"
+                      />
+                      <div className="d-flex flex-column">
+                        <span className="fw-semibold text-dark">
+                          {blog.author}
+                        </span>
+                        <small className="text-muted">{blog.date}</small>
                       </div>
                     </div>
                   </div>

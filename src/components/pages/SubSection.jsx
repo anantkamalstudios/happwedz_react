@@ -533,7 +533,7 @@ const SubSection = () => {
   const [show, setShow] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
 
-  const [view, setView] = useState("list");
+  const [view, setView] = useState("images");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
 
@@ -654,7 +654,6 @@ const SubSection = () => {
         onCityChange={handleCityChange}
       />
 
-      {/* Loading indicator when refetching */}
       {loading && dataToSend.length > 0 && (
         <div className="alert alert-info my-4 text-center">
           <div className="spinner-border spinner-border-sm me-2" role="status">
@@ -671,16 +670,16 @@ const SubSection = () => {
         <>
           <DynamicAside section={section} view={view} setView={setView} />
 
-          {view === "list" && (
-            <ListView
+          {view === "images" && (
+            <GridView
               subVenuesData={dataToSend}
               section={section}
               handleShow={handleShow}
             />
           )}
 
-          {view === "images" && (
-            <GridView
+          {view === "list" && (
+            <ListView
               subVenuesData={dataToSend}
               section={section}
               handleShow={handleShow}

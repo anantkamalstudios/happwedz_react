@@ -1,7 +1,10 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as faceapi from "face-api.js";
 import { beautyApi } from "../../services/api";
+import Swal from "sweetalert2";
+import { IoClose } from "react-icons/io5";
+import { FaHome } from "react-icons/fa";
 
 const UploadSelfiePage = () => {
   const navigate = useNavigate();
@@ -14,7 +17,7 @@ const UploadSelfiePage = () => {
   const [cameraError, setCameraError] = useState(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const loadModels = async () => {
       const MODEL_URL = "/models";
       await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
@@ -22,6 +25,14 @@ const UploadSelfiePage = () => {
     };
     loadModels();
   }, []);
+
+  useEffect(() => {
+    if (showGuide) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [showGuide]);
 
   const handlePick = () => setShowGuide(true);
 
@@ -147,55 +158,45 @@ const UploadSelfiePage = () => {
           <p className="text-muted">We will guide you for best results</p>
         </div>
 
-        <div className="py-5 d-flex flex-column align-items-center justify-content-center text-center">
-          <div className="mb-4">
-            <img
-              src="/images/try/upload-default.png"
-              alt="placeholder"
-              className="rounded-5"
-            />
-          </div>
-
-          <div className="d-flex gap-3 flex-column flex-sm-row justify-content-center">
-            <button className="btn btn-primary px-4" onClick={handlePick}>
-              Upload Image
-            </button>
-            {/* {!isCameraReady ? (
-              <button
-                className="btn btn-outline-primary px-4"
-                onClick={startCamera}
+        <div className="py-4 d-flex flex-column align-items-center justify-content-center">
+          <div
+            className="card shadow-sm border-0 p-4 text-center"
+            style={{ maxWidth: 500, width: "100%" }}
+          >
+            <div className="mb-3">
+              <div
+                style={{
+                  position: "absolute",
+                  top: 16,
+                  left: 16,
+                  zIndex: 30,
+                  cursor: "pointer",
+                  background: "#fff",
+                  borderRadius: "50%",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                  padding: 8,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                title="Home"
+                onClick={() => navigate("/try")}
               >
-                Selfie Mode
-              </button>
-            ) : (
-              <div className="d-flex flex-column align-items-center w-100">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="rounded-3"
-                  style={{ width: "100%", maxWidth: 320 }}
-                />
-                <div className="mt-3 d-flex gap-2">
-                  <button className="btn btn-secondary" onClick={stopCamera}>
-                    Close
-                  </button>
-                  <button
-                    className="btn btn-primary"
-                    onClick={startCountdown}
-                    disabled={!!countdown}
-                  >
-                    {countdown ? countdown : "Capture"}
-                  </button>
-                </div>
-                {cameraError && (
-                  <div className="alert alert-danger mt-3 w-100">
-                    {cameraError}
-                  </div>
-                )}
+                <FaHome size={30} />
               </div>
-            )} */}
+              <img
+                src="/images/try/upload-default.png"
+                alt="placeholder"
+                className="img-fluid rounded-4"
+                style={{ objectFit: "contain" }}
+              />
+            </div>
+
+            <div className="d-flex gap-3 flex-column flex-sm-row justify-content-center">
+              <button className="btn btn-primary px-4" onClick={handlePick}>
+                Upload Image
+              </button>
+            </div>
           </div>
 
           {/* Hidden file input */}
@@ -212,108 +213,124 @@ const UploadSelfiePage = () => {
       <canvas ref={canvasRef} className="d-none" />
 
       {showGuide && (
-        <div
-          className="modal fade show d-block"
-          tabIndex="-1"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <div className="d-flex flex-column">
-                  <h5 className="modal-title text-danger">Capture Your Face</h5>
-                  <p className="modal-title">
-                    For accurate results, please follow these guidelines:
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowGuide(false)}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <ul className="list-unstyled mb-4">
-                  <li className="d-flex align-items-center mb-3 py-2">
-                    <img
-                      src="/images/try/staightFace.png"
-                      alt="Look straight"
-                      style={{
-                        width: 70,
-                        height: 70,
-                        objectFit: "contain",
-                        border: "1px solid #ddd",
-                        borderRadius: "10px",
-                        padding: 4,
-                        marginRight: 12,
-                      }}
-                    />
-                    <span>Look straight at the camera</span>
-                  </li>
-                  <li className="d-flex align-items-center mb-3 py-2">
-                    <img
-                      src="/images/try/putHairBack.png"
-                      alt="Hair back"
-                      style={{
-                        width: 70,
-                        height: 70,
-                        objectFit: "contain",
-                        border: "1px solid #ddd",
-                        borderRadius: "10px",
-                        padding: 4,
-                        marginRight: 12,
-                      }}
-                    />
-                    <span>Put hair back</span>
-                  </li>
-                  <li className="d-flex align-items-center mb-3 py-2">
-                    <img
-                      src="/images/try/removeGlasses.png"
-                      alt="Remove glasses"
-                      style={{
-                        width: 70,
-                        height: 70,
-                        objectFit: "contain",
-                        border: "1px solid #ddd",
-                        borderRadius: "10px",
-                        padding: 4,
-                        marginRight: 12,
-                      }}
-                    />
-                    <span>Remove glasses</span>
-                  </li>
-                  <li className="d-flex align-items-center py-2">
-                    <img
-                      src="/images/try/planeBg.png"
-                      alt="Plain background"
-                      style={{
-                        width: 70,
-                        height: 70,
-                        objectFit: "contain",
-                        border: "1px solid #ddd",
-                        borderRadius: "10px",
-                        padding: 4,
-                        marginRight: 12,
-                      }}
-                    />
-                    <span>Plain background</span>
-                  </li>
-                </ul>
+        <>
+          {/* Backdrop */}
+          <div
+            className="modal-backdrop show"
+            style={{
+              backdropFilter: "blur(10px)",
+              backgroundColor: "rgba(255,255,255,1)",
+            }}
+          />
 
-                <div className="d-grid">
+          <div
+            className="modal fade show d-block"
+            tabIndex="-1"
+            role="dialog"
+            aria-modal="true"
+            style={{ overflow: "hidden" }}
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <div className="d-flex flex-column">
+                    <h5 className="modal-title text-danger">
+                      Capture Your Face
+                    </h5>
+                    <p className="modal-title">
+                      For accurate results, please follow these guidelines:
+                    </p>
+                  </div>
                   <button
-                    className="btn btn-primary w-auto"
-                    onClick={triggerModalUpload}
-                  >
-                    Upload Photo
-                  </button>
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setShowGuide(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <ul className="list-unstyled mb-4">
+                    <li className="d-flex align-items-center mb-3 py-2">
+                      <img
+                        src="/images/try/staightFace.png"
+                        alt="Look straight"
+                        style={{
+                          width: 70,
+                          height: 70,
+                          objectFit: "contain",
+                          border: "1px solid #ddd",
+                          borderRadius: "10px",
+                          padding: 4,
+                          marginRight: 12,
+                        }}
+                      />
+                      <span>Look straight at the camera</span>
+                    </li>
+                    <hr />
+                    <li className="d-flex align-items-center mb-3 py-2">
+                      <img
+                        src="/images/try/putHairBack.png"
+                        alt="Hair back"
+                        style={{
+                          width: 70,
+                          height: 70,
+                          objectFit: "contain",
+                          border: "1px solid #ddd",
+                          borderRadius: "10px",
+                          padding: 4,
+                          marginRight: 12,
+                        }}
+                      />
+                      <span>Put hair back</span>
+                    </li>
+                    <hr />
+                    <li className="d-flex align-items-center mb-3 py-2">
+                      <img
+                        src="/images/try/removeGlasses.png"
+                        alt="Remove glasses"
+                        style={{
+                          width: 70,
+                          height: 70,
+                          objectFit: "contain",
+                          border: "1px solid #ddd",
+                          borderRadius: "10px",
+                          padding: 4,
+                          marginRight: 12,
+                        }}
+                      />
+                      <span>Remove glasses</span>
+                    </li>
+                    <hr />
+                    <li className="d-flex align-items-center py-2">
+                      <img
+                        src="/images/try/planeBg.png"
+                        alt="Plain background"
+                        style={{
+                          width: 70,
+                          height: 70,
+                          objectFit: "contain",
+                          border: "1px solid #ddd",
+                          borderRadius: "10px",
+                          padding: 4,
+                          marginRight: 12,
+                        }}
+                      />
+                      <span>Plain background</span>
+                    </li>
+                  </ul>
+
+                  <div className="d-grid">
+                    <button
+                      className="btn btn-primary w-auto"
+                      onClick={triggerModalUpload}
+                    >
+                      Upload Photo
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          {/* <div className="modal-backdrop show" /> */}
-        </div>
+        </>
       )}
     </div>
   );

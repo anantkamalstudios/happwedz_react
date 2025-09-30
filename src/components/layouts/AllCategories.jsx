@@ -57,9 +57,6 @@ const AllCategories = ({ onSelect }) => {
     <div className="container py-5 wcg-grid">
       <div className="d-flex align-items-center justify-content-between mb-3">
         <h3 className="fw-bold mb-0 text-dark">Explore by Category</h3>
-        <div className="text-muted small">
-          Curated for every style and budget
-        </div>
       </div>
 
       <div className="row g-3 g-md-4">
@@ -78,7 +75,7 @@ const AllCategories = ({ onSelect }) => {
                 aria-label={`Open ${cat.title} category`}
               >
                 <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
-                  <div className="ratio ratio-4x3">
+                  <div className="ratio ratio-4x3 position-relative">
                     <img
                       src={cat.imageSrc}
                       alt={cat.title}
@@ -93,51 +90,51 @@ const AllCategories = ({ onSelect }) => {
                       }}
                     />
                   </div>
-
-                  <div className="wcg-overlay" />
-
-                  <div className="position-absolute bottom-0 start-0 end-0 p-3 p-md-4 text-white">
-                    <div className="d-flex align-items-center justify-content-between">
-                      <div>
-                        <h5 className="mb-1 wcg-heading">{cat.title}</h5>
-                        {cat.subtitle && (
-                          <div className="small opacity-75">{cat.subtitle}</div>
-                        )}
-                      </div>
-                      <span className="badge wcg-count rounded-pill">
-                        {cat.items.length}
-                      </span>
-                    </div>
-                  </div>
                 </div>
 
-                <div className="pt-4">
-                  <div className="wcg-pills d-flex flex-wrap gap-2 mb-3">
-                    {previewItems.slice(0, 2).map((it, idx) => (
-                      <span key={idx} className="badge rounded-pill px-3 py-2">
+                <div className="pt-2">
+                  <div className="d-flex align-items-center justify-content-between my-2">
+                    <div>
+                      <h5 className="my-2">{cat.title}</h5>
+                    </div>
+                    {/* <span className="badge wcg-count rounded-pill">
+                          {cat.items.length}
+                        </span> */}
+                  </div>
+                  <div className="wcg-  pills d-flex flex-wrap gap-2 mb-3">
+                    {previewItems.slice(0, 1).map((it, idx) => (
+                      <span
+                        key={idx}
+                        className="badge rounded-0 px-3 py-2 primary-light-bg text-dark"
+                      >
                         {it}
                       </span>
                     ))}
 
                     {remaining > 0 && (
-                      <span className="badge bg-white text-muted border rounded-pill px-3 py-2">
+                      <span className="text-decoration-underline primary-text px-3 py-2 fs-12 text-end">
                         +{remaining} more
                       </span>
                     )}
                   </div>
 
-                  <div className="wcg-actions d-flex justify-content-between align-items-center mb-2">
-                    <Link
-                      to={`/${cat.slug}`}
-                      type="button"
-                      className="btn btn-primary rounded-2 px-3"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (onSelect) onSelect(cat);
-                      }}
-                    >
-                      Explore {cat.title}
-                    </Link>
+                  <div className="wcg-actions d-flex flex-column h-100">
+                    <div className="mt-auto d-flex justify-content-end">
+                      <button
+                        type="button"
+                        className="btn btn-primary rounded-2 px-3"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onSelect) onSelect(cat);
+                          if (cat.title) {
+                            const encoded = encodeURIComponent(cat.title);
+                            navigate(`/vendors/all?vendorType=${encoded}`);
+                          }
+                        }}
+                      >
+                        Explore {cat.title}
+                      </button>
+                    </div>
                   </div>
 
                   {isExpanded && (
@@ -146,7 +143,15 @@ const AllCategories = ({ onSelect }) => {
                         {cat.items.map((it, idx) => (
                           <div key={idx} className="col-6">
                             <Link
-                              to={`/${cat.slug}`}
+                              to={
+                                cat.title.toLowerCase() === "venues"
+                                  ? `/venues/${it
+                                      .toLowerCase()
+                                      .replace(/\s+/g, "-")}`
+                                  : `/vendor/${it
+                                      .toLowerCase()
+                                      .replace(/\s+/g, "-")}`
+                              }
                               className="wedding-link small"
                             >
                               {it}
