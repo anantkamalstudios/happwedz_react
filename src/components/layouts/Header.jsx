@@ -446,19 +446,21 @@ const Header = () => {
                           </Link>
                           <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
-                              <div className="row">
+                              <div
+                                style={{
+                                  columnCount: 4,
+                                  columnGap: "1rem",
+                                }}
+                              >
                                 {vendorCategories.length > 0 &&
                                   vendorCategories.map((cat, i) => (
                                     <div
-                                      className="col-6 col-md-3 mb-3"
+                                      className="mb-4 d-inline-block w-100"
                                       key={cat.id || i}
                                     >
-                                      {/* Category Name */}
                                       <div className="fw-bold primary-text text-uppercase mb-2">
                                         {cat.name}
                                       </div>
-
-                                      {/* Subcategories */}
                                       {Array.isArray(cat.subcategories) &&
                                         cat.subcategories.length > 0 && (
                                           <ul className="list-unstyled">

@@ -15,6 +15,7 @@ import LoaderProvider from "./components/context/LoaderContext";
 import VendorPrivateRoute from "./components/routes/VendorPrivateRoute";
 import UserPrivateRoute from "./components/routes/UserPrivateRoute";
 import VendorLeadsPage from "./components/pages/adminVendor/VendorLeadsPage";
+import RecommandedPage from "./components/home/RecommandedPage";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
@@ -83,6 +84,8 @@ const VendorPremium = lazy(() =>
   import("./components/pages/adminVendor/VendorPremium")
 );
 
+const RecommandPage = lazy(() => import("./components/home/RecommandedPage"));
+
 function App() {
   const location = useLocation();
 
@@ -117,6 +120,9 @@ function App() {
               <Route path="/:section" element={<MainSection />} />
               <Route path="/:section/:slug" element={<SubSection />} />
               <Route path="/details/:section/:id" element={<Detailed />} />
+
+              {/* Recommandation */}
+              <Route path="/ai-recommandation" element={<RecommandPage />} />
 
               {/* Auth Pages */}
               <Route path="/customer-login" element={<CustomerLogin />} />
@@ -260,6 +266,7 @@ function App() {
 
             {/*  Fallback  */}
             <Route path="*" element={<NotFound />} />
+            {/* just for recommanded items route for demo */}
           </Routes>
         </ToastProvider>
       </LoaderProvider>

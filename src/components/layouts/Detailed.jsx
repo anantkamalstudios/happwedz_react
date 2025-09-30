@@ -282,6 +282,21 @@ const Detailed = () => {
     image: mainImage || "/images/default-venue.jpg",
   };
 
+  function parseDbValue(value) {
+    if (
+      typeof value === "string" &&
+      value.startsWith("{") &&
+      value.endsWith("}")
+    ) {
+      return value
+        .replace(/[{}]/g, "")
+        .split(",")
+        .map((item) => item.replace(/"/g, "").trim());
+    } else {
+      return [value];
+    }
+  }
+
   return (
     <div className="venue-detail-page">
       <Container className="py-5">
@@ -374,14 +389,41 @@ const Detailed = () => {
 
             {/**  FaqQuestionAnswer Detailed */}
 
-            <div className="my-4">
+            <div className="my-4 border p-3 rounded">
               <h1 className="my-4">Frequently Asked Questions</h1>
               {faqList.length > 0 ? (
                 faqList.map((ques, index) => (
-                  <div className="w-100 rounded border-bottom" key={index}>
+                  <div
+                    className="w-100 rounded d-flex flex-column gap-2 mb-3 border"
+                    style={{ backgroundColor: "#FCFCFC" }}
+                    key={index}
+                  >
                     <div className="p-2">
-                      <p className="fw-semibold mb-1">{ques.text}</p>
-                      <p className="text-muted">{ques.ans || "Not answered"}</p>
+                      <div className="fw-semibold mb-2">{ques.text}</div>
+                      <div className="text-muted">
+                        {parseDbValue(ques.ans).length === 1 ? (
+                          <p>{parseDbValue(ques.ans)[0]}</p>
+                        ) : (
+                          <div className="row">
+                            {parseDbValue(ques.ans).map((a, idx) => (
+                              <div
+                                className="col-md-4 col-sm-6 d-flex"
+                                key={idx}
+                              >
+                                <i
+                                  className="fa-solid fa-check"
+                                  style={{
+                                    color: "#dd1d70",
+                                    marginTop: "4px",
+                                    marginBottom: "8px",
+                                  }}
+                                ></i>
+                                <span>{a}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))
