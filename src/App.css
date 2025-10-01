@@ -17441,6 +17441,22 @@ input:checked + .slider:before {
   font-weight: 500;
 }
 
+ /* Three column grid for labels */
+
+.grid-col-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  align-items: center; /* Align items to the top */
+}
+
+.grid-col-3 label {
+  justify-content: flex-start !important;
+  align-items: center;
+  display: flex;
+  margin-bottom: 0.5rem;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .masonry-grid {

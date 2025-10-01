@@ -170,12 +170,12 @@ const VendorLogin = () => {
               {loading ? "Signing in..." : "Sign In"}
             </Button>
 
-            <div className="position-relative text-center my-4">
+            {/* <div className="position-relative text-center my-4">
               <div className="divider-line"></div>
               <span className="divider-text px-3">or continue with</span>
-            </div>
+            </div> */}
 
-            <div className="d-grid gap-2">
+            {/* <div className="d-grid gap-2">
               <Button
                 variant="outline-secondary"
                 className="d-flex align-items-center justify-content-center p-2"
@@ -192,7 +192,7 @@ const VendorLogin = () => {
                 </svg>
                 Continue with Google
               </Button>
-            </div>
+            </div> */}
 
             <div className="mt-5 text-center">
               <p className="text-muted">
