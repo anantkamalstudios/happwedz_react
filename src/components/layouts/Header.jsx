@@ -17,11 +17,15 @@ const Header = () => {
     dispatch(vendorLogout());
   };
 
-  const auth = useSelector((state) => state.auth);
-  const vendorAuth = useSelector((state) => state.vendorAuth);
-  // console.log("vendor auth ", vendorAuth);
-  const isUserLoggedIn = !!auth?.token;
-  const isVendorLoggedIn = !!vendorAuth?.token;
+  const { user, token: userToken } = useSelector((state) => state.auth);
+  const { vendor, token: vendorToken } = useSelector(
+    (state) => state.vendorAuth
+  );
+
+  const isUserLoggedIn = !!userToken && !!user;
+  const isVendorLoggedIn = !!vendorToken && !!vendor;
+  const isLoggedIn = isUserLoggedIn || isVendorLoggedIn;
+
   const toSlug = (text) =>
     text
       ?.toLowerCase()
@@ -79,7 +83,6 @@ const Header = () => {
           "https://happywedz.com/api/vendor-types/with-subcategories/all"
         );
         const data = await response.json();
-        console.log(data);
         setVendorCategories(Array.isArray(data) ? data : []);
       } catch (error) {
         setVendorCategories([]);
@@ -171,11 +174,11 @@ const Header = () => {
                       title="Try Design Studio"
                     >
                       <img
-                        src="/images/header/tryimg.jpg"
+                        src="/images/header/tryimg.png"
                         alt="Design Studio"
                         className="img-fluid"
                         style={{
-                          maxHeight: "28px",
+                          maxHeight: "50px",
                           width: "auto",
                           cursor: "pointer",
                         }}
@@ -345,7 +348,7 @@ const Header = () => {
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <Link
                           to={targetURL}
-                          className="nav-link dropdown-toggle text-white"
+                          className="nav-link dropdown-toggle text-white fs-20"
                         >
                           Venues
                         </Link>
@@ -360,23 +363,31 @@ const Header = () => {
                                       Popular Categories
                                     </h6>
                                     <div className="d-flex flex-column flex-wrap gap-2">
-                                      <span className="primary-text px-3 py-2 small me-2">
+                                      <Link
+                                        to="/wedding-venues"
+                                        className="primary-text px-3 py-2 small me-2 d-flex align-items-center justify-content-between"
+                                      >
                                         Wedding Venues <FaArrowRightLong />
-                                      </span>
-                                      <span className="primary-text px-3 py-2 small me-2">
-                                        Popular Locations <FaArrowRightLong />
-                                      </span>
+                                      </Link>
 
-                                      {!auth?.user && !vendorAuth?.vendor && (
+                                      <Link
+                                        to="/popular-locations"
+                                        className="primary-text px-3 py-2 small me-2 d-flex align-items-center justify-content-between"
+                                      >
+                                        Popular Locations <FaArrowRightLong />
+                                      </Link>
+
+                                      {!isLoggedIn && (
                                         <Link
-                                          to="vendor-login"
-                                          className="primary-text px-3 py-2 small me-2"
+                                          to="/vendor-login"
+                                          className="primary-text px-3 py-2 small me-2 d-flex align-items-center justify-content-between"
                                         >
-                                          Are You Vendor
+                                          Are You Vendor <FaArrowRightLong />
                                         </Link>
                                       )}
                                     </div>
                                   </div>
+
                                   {/* <img
                                     src="https://cdn-icons-png.flaticon.com/512/3176/3176294.png"
                                     alt="Popular Categories"
@@ -450,7 +461,7 @@ const Header = () => {
                         <div className="dropdown-wrapper">
                           <Link
                             to="/vendors"
-                            className="nav-link dropdown-toggle text-white"
+                            className="nav-link dropdown-toggle text-white fs-20"
                           >
                             Vendors
                           </Link>
@@ -506,7 +517,7 @@ const Header = () => {
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            className="nav-link dropdown-toggle text-white"
+                            className="nav-link dropdown-toggle text-white fs-20"
                             to="/photography"
                             id="photoDropdown"
                             role="button"
@@ -776,7 +787,7 @@ const Header = () => {
                         <div className="dropdown-wrapper">
                           <Link
                             // className="nav-link dropdown-toggle text-white"
-                            className="nav-link text-white"
+                            className="nav-link text-white fs-20"
                             to="/e-invites"
                             state={{ title: "E-Invites" }}
                             id="photoDropdown"
@@ -838,15 +849,8 @@ const Header = () => {
                       </li>
 
                       {/* photo Dropdown */}
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          {/* <Link
-                            className="nav-link dropdown-toggle text-white"
-                            to="/twosoul"
-                            state={{ title: "Two Soul" }}
-                            id="photoDropdown"
-                            role="button"
-                          > */}
+                      {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper"> 
                           <Link
                             className="nav-link dropdown-toggle text-white"
                             to="#"
@@ -901,7 +905,7 @@ const Header = () => {
                             </div>
                           </div>
                         </div>
-                      </li>
+                      </li> */}
 
                       {/* Matrimonial Dropdown */}
                       {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">
@@ -922,7 +926,7 @@ const Header = () => {
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            className="nav-link text-white"
+                            className="nav-link text-white fs-20"
                             to="/genie"
                             state={{ title: "Genie" }}
                             id="photoDropdown"
@@ -937,7 +941,7 @@ const Header = () => {
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            className="nav-link text-white"
+                            className="nav-link text-white fs-20"
                             to="/blog"
                             state={{ title: "Blog" }}
                             id="blog"
@@ -951,7 +955,7 @@ const Header = () => {
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            className="nav-link text-white"
+                            className="nav-link text-white fs-20"
                             to="/real-wedding"
                             state={{ title: "Real Wedding" }}
                             id="real-wedding"
@@ -991,32 +995,6 @@ const Header = () => {
                         </div>
                       </li> */}
 
-                      {/* Login Dropdown */}
-                      {isUserLoggedIn || isVendorLoggedIn ? (
-                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                          <div className="dropdown-wrapper">
-                            <button
-                              onClick={handleLogout}
-                              className="nav-link text-white btn btn-link"
-                              style={{ textDecoration: "none" }}
-                            >
-                              Logout
-                            </button>
-                          </div>
-                        </li>
-                      ) : (
-                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                          <div className="dropdown-wrapper">
-                            <Link
-                              to="/customer-login"
-                              className="nav-link text-white"
-                            >
-                              Login
-                            </Link>
-                          </div>
-                        </li>
-                      )}
-
                       {/* Vendor Dashboard */}
                       {/* <li className="nav-Vendor Dashboard mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
@@ -1033,27 +1011,51 @@ const Header = () => {
                       </li> */}
 
                       {/* Login Dropdown */}
-                      {isUserLoggedIn && (
+                      {isUserLoggedIn ? (
                         <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <Link
                               to="/user-dashboard"
-                              className="nav-link text-white"
+                              className="nav-link text-white fs-20"
                             >
                               User Dashboard
                             </Link>
                           </div>
                         </li>
-                      )}
-                      {isVendorLoggedIn && (
+                      ) : isVendorLoggedIn ? (
                         <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <Link
                               to="/vendor-dashboard"
-                              className="nav-link text-white"
+                              className="nav-link text-white fs-20"
                             >
-                              Dashboard
+                              Vendor Dashboard
                             </Link>
+                          </div>
+                        </li>
+                      ) : (
+                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                          <div className="dropdown-wrapper">
+                            <Link
+                              to="/customer-login"
+                              className="nav-link text-white fs-20"
+                            >
+                              Login
+                            </Link>
+                          </div>
+                        </li>
+                      )}
+
+                      {isLoggedIn && (
+                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                          <div className="dropdown-wrapper">
+                            <button
+                              onClick={handleLogout}
+                              className="nav-link text-white btn btn-link fs-20"
+                              style={{ textDecoration: "none" }}
+                            >
+                              Logout
+                            </button>
                           </div>
                         </li>
                       )}

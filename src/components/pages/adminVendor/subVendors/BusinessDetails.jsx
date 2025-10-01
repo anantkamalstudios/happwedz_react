@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
-import vendorsAuthApi, { vendorsApi } from "../../../../services/api/vendorAuthApi";
+import vendorsAuthApi, {
+  vendorsApi,
+} from "../../../../services/api/vendorAuthApi";
 
 const BusinessDetails = ({ formData, setFormData }) => {
-  const { vendor, token } = useSelector((state) => state.vendorAuth || {});
-
   const [showPasswordFields, setShowPasswordFields] = React.useState(false);
   const [currentPassword, setCurrentPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
@@ -15,6 +15,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
   const [profileImageFile, setProfileImageFile] = React.useState(null);
   const [validationErrors, setValidationErrors] = React.useState({});
 
+  const { vendor, token } = useSelector((state) => state.vendorAuth || {});
   // Pre-fill data from Redux when the component loads
   useEffect(() => {
     if (vendor) {
@@ -23,9 +24,12 @@ const BusinessDetails = ({ formData, setFormData }) => {
         attributes: {
           ...prev.attributes,
           email: prev.attributes?.email || vendor.email || "",
-          businessName: prev.attributes?.businessName || vendor.businessName || "",
+          businessName:
+            prev.attributes?.businessName || vendor.businessName || "",
           phone: prev.attributes?.phone || vendor.phone || "",
           username: prev.attributes?.username || vendor.email || "",
+          vendor_type_id:
+            prev.attributes?.vendor_type_id || vendor.vendor_type_id || "",
         },
       }));
     }
@@ -57,7 +61,9 @@ const BusinessDetails = ({ formData, setFormData }) => {
       facebook_link: a.facebook_link || null,
       instagram_link: a.instagram_link || null,
       vendor_type_id: a.vendor_type_id ? Number(a.vendor_type_id) : null,
-      years_in_business: a.years_in_business ? Number(a.years_in_business) : null,
+      years_in_business: a.years_in_business
+        ? Number(a.years_in_business)
+        : null,
       firstName: a.firstName || null,
       lastName: a.lastName || null,
     };
@@ -106,7 +112,8 @@ const BusinessDetails = ({ formData, setFormData }) => {
       setSuccess("Business details saved.");
     } catch (e) {
       // Prefer server message if available
-      const serverMsg = e?.response?.data?.message || e?.response?.data || e?.message;
+      const serverMsg =
+        e?.response?.data?.message || e?.response?.data || e?.message;
       setError(typeof serverMsg === "string" ? serverMsg : "Failed to save");
     } finally {
       setSubmitting(false);
@@ -211,7 +218,12 @@ const BusinessDetails = ({ formData, setFormData }) => {
         <h6 className="mb-3 fw-bold">Contact Details</h6>
         <div className="mb-3">
           <label className="form-label">Profile Image</label>
-          <input type="file" accept="image/*" className="form-control" onChange={handleProfileImage} />
+          <input
+            type="file"
+            accept="image/*"
+            className="form-control"
+            onChange={handleProfileImage}
+          />
         </div>
         <div className="mb-3">
           <label className="form-label">Business Name *</label>
@@ -224,7 +236,9 @@ const BusinessDetails = ({ formData, setFormData }) => {
             onChange={handleAttributeChange}
           />
           {validationErrors.businessName && (
-            <div className="text-danger small">{validationErrors.businessName}</div>
+            <div className="text-danger small">
+              {validationErrors.businessName}
+            </div>
           )}
         </div>
         <div className="mb-3">
@@ -343,20 +357,27 @@ const BusinessDetails = ({ formData, setFormData }) => {
             onChange={handleAttributeChange}
           />
         </div>
-        {/* <div className="mb-3">
-          <label className="form-label">Vendor Type ID</label>
+        <div className="mb-3">
           <input
             name="vendor_type_id"
-            type="number"
+            type="hidden"
             className="form-control"
-            placeholder="e.g. 2"
-            value={formData.attributes?.vendor_type_id || ""}
-            onChange={handleAttributeChange}
+            value={vendor?.vendor_type_id || ""}
+            readOnly
           />
+          <input
+            type="hidden"
+            name="vendor_type_id"
+            value={vendor?.vendor_type_id || ""}
+          />
+
           {validationErrors.vendor_type_id && (
-            <div className="text-danger small">{validationErrors.vendor_type_id}</div>
+            <div className="text-danger small">
+              {validationErrors.vendor_type_id}
+            </div>
           )}
-        </div> */}
+        </div>
+
         <div className="mb-3">
           <label className="form-label">Years in Business</label>
           <input

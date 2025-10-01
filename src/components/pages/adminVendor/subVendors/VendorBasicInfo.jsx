@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Modal, Toast } from "react-bootstrap";
 import axios from "axios";
+import SummernoteEditor from "../../../ui/SummernoteEditor";
 
 const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
   const vendorAuth = useSelector((state) => state.vendorAuth);
@@ -64,16 +65,14 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
     const { name, value } = e.target;
     setFormData((prev) => {
       let updatedAttributes = { ...prev.attributes, [name]: value };
-      // Auto-generate slug from name and append user id
+      // Auto-generate slug from name (kebab-case, no user id)
       if (name === "name") {
-        const userId =
-          vendorAuth?.id || vendorAuth?.vendor?.id || vendor?.id || "";
         const slugBase = value
           .toLowerCase()
+          .trim()
           .replace(/\s+/g, "-")
           .replace(/[^a-z0-9-]/g, "");
-        updatedAttributes.slug =
-          slugBase && userId ? `${slugBase}-${userId}` : slugBase;
+        updatedAttributes.slug = slugBase;
       }
       return { ...prev, attributes: updatedAttributes };
     });
@@ -92,7 +91,9 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
         <div className="row">
           {/* Vendor Name */}
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Vendor Name </label>
+            <label className="form-label fw-semibold">
+              Vendor Buisness Name
+            </label>
             <input
               type="text"
               name="name"
@@ -145,13 +146,13 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
           {/* Description */}
           <div className="col-12 mb-3">
             <label className="form-label fw-semibold">Description</label>
-            <textarea
-              name="description"
-              className="form-control"
-              rows="4"
+            <SummernoteEditor
               value={formData.attributes?.description || ""}
-              onChange={handleAttributeChange}
-              placeholder="Detailed description of your business"
+              onChange={(val) =>
+                handleAttributeChange({
+                  target: { name: "description", value: val },
+                })
+              }
             />
           </div>
 

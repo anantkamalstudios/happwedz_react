@@ -309,9 +309,6 @@ const PricingModal = ({ show, handleClose, vendorId }) => {
       userId: user.id,
     };
 
-    console.log("Sending request with payload:", payload);
-    console.log("Token being sent:", token);
-
     try {
       const response = await fetch(
         "https://happywedz.com/api/request-pricing",

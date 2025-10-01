@@ -132,7 +132,6 @@ const Detailed = () => {
         setLoading(true);
         const data = await vendorServicesApi.getVendorServiceById(id);
         setVenueData(data);
-        console.log(data);
 
         // Set images from API data
         const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
@@ -372,14 +371,19 @@ const Detailed = () => {
                 About This Venue
               </h3>
               {venueData.attributes?.description ? (
-                <p className="description-text text-black text-justify">
-                  {venueData.attributes.description}
-                </p>
+                <div
+                  className="description-text text-black"
+                  style={{ textAlign: "justify" }}
+                  dangerouslySetInnerHTML={{
+                    __html: venueData.attributes.description,
+                  }}
+                />
               ) : (
                 <p className="text-black text-justify">
                   No description available for this venue.
                 </p>
               )}
+
               {venueData.attributes?.subtitle && (
                 <p className="description-text text-black text-justify">
                   {venueData.attributes.subtitle}

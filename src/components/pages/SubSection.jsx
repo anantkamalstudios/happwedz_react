@@ -560,16 +560,13 @@ const SubSection = () => {
 
   const handleSearch = (query) => {
     setSearchQuery(query);
-    console.log("Search query:", query);
   };
 
   const handleCategoryChange = (categoryId) => {
     setSelectedCategory(categoryId);
-    console.log("Category changed:", categoryId);
   };
 
   const handleCityChange = (city) => {
-    console.log("City changed to:", city);
     setSelectedCity(city);
   };
 
@@ -592,12 +589,6 @@ const SubSection = () => {
   };
 
   const dataToSend = useMemo(() => {
-    console.log("Determining data source:", {
-      section,
-      apiData: apiData?.length,
-      error,
-    });
-
     if (section === "photography") {
       return [];
     }
@@ -609,18 +600,16 @@ const SubSection = () => {
     return apiData;
   }, [section, apiData, error]);
 
-  useEffect(() => {
-    console.log("SubSection state:", {
-      section,
-      slug,
-      title,
-      selectedCity,
-      apiDataLength: apiData?.length || 0,
-      loading,
-      error,
-      dataToSendLength: dataToSend.length,
-    });
-  }, [section, slug, title, selectedCity, apiData, loading, error, dataToSend]);
+  useEffect(() => {}, [
+    section,
+    slug,
+    title,
+    selectedCity,
+    apiData,
+    loading,
+    error,
+    dataToSend,
+  ]);
 
   if (section === "photography") {
     return (
@@ -644,6 +633,8 @@ const SubSection = () => {
   if (loading && dataToSend.length === 0) {
     return <LoadingState title={title} />;
   }
+
+  console.log("dataToSend", dataToSend);
 
   return (
     <div className="container-fluid">

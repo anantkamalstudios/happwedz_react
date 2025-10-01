@@ -1,371 +1,415 @@
-import React, { useEffect, useState } from "react";
-import { FaTag, FaEye, FaHeart, FaCalendarAlt, FaSearch } from "react-icons/fa";
-import { IMAGE_BASE_URL } from "../../config/constants";
+import React, { useState, useEffect } from "react";
+import {
+  Search,
+  Calendar,
+  User,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 const BlogLists = ({ onPostClick }) => {
-  // const [blogs, setBlogs] = useState([]);
-  // const [searchTerm, setSearchTerm] = useState("");
-  // const [selectedCategory, setSelectedCategory] = useState("");
-  // const [sortBy, setSortBy] = useState("latest");
-  // const [likedPosts, setLikedPosts] = useState(new Set());
-  // const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set());
-
-  // const [blogs, setBlogs] = useState([
-  //   {
-  //     id: 1,
-  //     title: "50+ Stunning Wedding Photography Ideas for Your Big Day",
-  //     description:
-  //       "Discover creative photography ideas that will make your wedding album absolutely magical. From candid moments to artistic shots, we've got you covered.",
-  //     image:
-  //       "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-  //     author: "Sarah Johnson",
-  //     authorImage:
-  //       "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
-  //     date: "December 15, 2024",
-  //     readTime: "8 min read",
-  //     views: 1250,
-  //     likes: 89,
-  //     category: "Photography",
-  //     tags: ["Photography", "Wedding Tips", "Creative Ideas"],
-  //     featured: true,
-  //     trending: true,
-  //   },
-  // ]);
-
-  // const filteredBlogs = blogs.filter((blog) => {
-  //   const matchesSearch =
-  //     blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     blog.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     blog.tags.some((tag) =>
-  //       tag.toLowerCase().includes(searchTerm.toLowerCase())
-  //     );
-  //   const matchesCategory =
-  //     !selectedCategory || blog.category === selectedCategory;
-  //   return matchesSearch && matchesCategory;
-  // });
-
-  // const sortedBlogs = [...filteredBlogs].sort((a, b) => {
-  //   switch (sortBy) {
-  //     case "latest":
-  //       return new Date(b.date) - new Date(a.date);
-  //     case "popular":
-  //       return b.views - a.views;
-  //     case "trending":
-  //       return b.likes - a.likes;
-  //     default:
-  //       return 0;
-  //   }
-  // });
-
   const [blogs, setBlogs] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedBlog, setSelectedBlog] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [sortBy, setSortBy] = useState("latest");
+  const [selectedVendor, setSelectedVendor] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
+  const blogsPerPage = 6;
 
   useEffect(() => {
-    fetch("https://happywedz.com/api/blog-deatils/all")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setBlogs(data.data);
+    const fetchBlogs = async () => {
+      try {
+        const response = await fetch(
+          "https://happywedz.com/api/blog-deatils/all"
+        );
+        const data = await response.json();
+        console.log("data -> ", data);
+
+        let apiBlogs = [];
+        if (data.success && Array.isArray(data.data)) {
+          apiBlogs = data.data.map((b) => ({
+            ...b,
+            title: b.title || "Untitled",
+            category: b.category || "",
+            shortDescription: b.shortDescription || "",
+            image: b.image || "",
+            tags: b.tags || [],
+            postDate: b.postDate || "",
+            createdDate: b.createdDate || "",
+            featured: b.featured || false,
+            trending: b.trending || false,
+            views: b.views || 0,
+            likes: b.likes || 0,
+            author: b.author || "",
+            readTime: b.readTime || "5 min read",
+          }));
         }
-      })
-      .catch((err) => console.error("Error fetching blogs:", err));
+        setBlogs(apiBlogs);
+      } catch (err) {
+        console.error("Error fetching blogs:", err);
+      }
+    };
+
+    fetchBlogs();
   }, []);
 
-  const categories = [
-    { name: "All", value: "", count: blogs.length },
-    {
-      name: "Photography",
-      value: "Photography",
-      count: blogs.filter((b) => b.category === "Photography").length,
-    },
-    {
-      name: "Venues",
-      value: "Venues",
-      count: blogs.filter((b) => b.category === "Venues").length,
-    },
-    {
-      name: "Beauty",
-      value: "Beauty",
-      count: blogs.filter((b) => b.category === "Beauty").length,
-    },
-    {
-      name: "Planning",
-      value: "Planning",
-      count: blogs.filter((b) => b.category === "Planning").length,
-    },
-    {
-      name: "Decor",
-      value: "Decor",
-      count: blogs.filter((b) => b.category === "Decor").length,
-    },
-    {
-      name: "Fashion",
-      value: "Fashion",
-      count: blogs.filter((b) => b.category === "Fashion").length,
-    },
-  ];
-
-  const filteredBlogs = blogs.filter(
-    (blog) =>
-      blog.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (selectedCategory ? blog.category === selectedCategory : true)
+  const filteredBlogs = blogs.filter((blog) =>
+    blog.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const sortedBlogs = [...filteredBlogs].sort((a, b) => {
-    if (sortBy === "latest") return new Date(b.postDate) - new Date(a.postDate);
-    if (sortBy === "popular") return b.views - a.views;
-    if (sortBy === "trending") return b.likes - a.likes;
-    return 0;
-  });
+  const indexOfLastBlog = currentPage * blogsPerPage;
+  const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
+  const currentBlogs = filteredBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
+  const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
 
-  const getImageUrl = (path) => {
-    if (!path) {
-      return "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop"; // A fallback image
-    }
-    if (path.startsWith("https://happywedz.com:4000/")) {
-      return path.replace(
-        "https://happywedz.com:4000/",
-        "https://happywedzbackend.happywedz.com/"
-      );
-    }
-    return `https://happywedzbackend.happywedz.com/${path}`;
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
   };
 
-  const featuredBlogs = blogs.filter((blog) => blog.featured);
-  const trendingBlogs = blogs.filter((blog) => blog.trending);
+  const getImageUrl = (imageData) => {
+    const baseUrl = "https://happywedzbackend.happywedz.com/";
+    const replacePrefix = (url) =>
+      typeof url === "string"
+        ? url.replace(/^https:\/\/happywedz\.com:4000\/?/, baseUrl)
+        : url;
+
+    if (!imageData) return "https://via.placeholder.com/800x400";
+
+    if (typeof imageData === "string") {
+      if (imageData.startsWith("http")) {
+        return replacePrefix(imageData);
+      }
+      return baseUrl + imageData;
+    }
+
+    if (Array.isArray(imageData) && imageData.length > 0) {
+      if (imageData[0].startsWith("http")) {
+        return replacePrefix(imageData[0]);
+      }
+      return baseUrl + imageData[0];
+    }
+
+    return "https://via.placeholder.com/800x400";
+  };
+
+  const createSlug = (title) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+  };
 
   return (
-    <div className="blog-page">
-      {/* Hero Section */}
-      <section className="blog-hero-section">
-        <div className="container">
-          <div className="row justify-content-center">
-            <div className="col-lg-8 text-center">
-              <h1 className="blog-hero-title">Wedding Inspiration & Tips</h1>
-              <p className="blog-hero-subtitle">
-                Discover the latest trends, expert advice, and creative ideas
-                for your perfect wedding day
-              </p>
-
-              {/* Search Bar */}
-              <div className="blog-search-container">
-                <div className="search-input-group">
-                  <input
-                    type="text"
-                    className="search-input"
-                    placeholder="Search articles, tips, and inspiration..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className="container-fluid blog-main-container">
+    <div
+      style={{
+        fontFamily: "system-ui, -apple-system, sans-serif",
+        backgroundColor: "#f8f9fa",
+        minHeight: "100vh",
+        paddingTop: "2rem",
+        paddingBottom: "3rem",
+      }}
+    >
+      <div className="container">
         <div className="row">
-          {/* Sidebar */}
-          <div className="col-lg-3 blog-sidebar">
-            <div className="sidebar-content">
-              {/* Categories */}
-              <div className="sidebar-section">
-                <h4 className="sidebar-title">Categories</h4>
-                <div className="category-list">
-                  {categories.map((category, index) => (
-                    <button
-                      key={index}
-                      className={`category-item ${
-                        selectedCategory === category.value ? "active" : ""
-                      }`}
-                      onClick={() => setSelectedCategory(category.value)}
-                    >
-                      <span className="category-name">{category.name}</span>
-                      <span className="category-count">{category.count}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Sort Options */}
-              <div className="sidebar-section">
-                <h4 className="sidebar-title">Sort By</h4>
-                <div className="sort-options">
-                  <button
-                    className={`sort-option ${
-                      sortBy === "latest" ? "active" : ""
-                    }`}
-                    onClick={() => setSortBy("latest")}
-                  >
-                    <FaCalendarAlt className="sort-icon" />
-                    Latest
-                  </button>
-                  <button
-                    className={`sort-option ${
-                      sortBy === "popular" ? "active" : ""
-                    }`}
-                    onClick={() => setSortBy("popular")}
-                  >
-                    <FaEye className="sort-icon" />
-                    Most Popular
-                  </button>
-                  <button
-                    className={`sort-option ${
-                      sortBy === "trending" ? "active" : ""
-                    }`}
-                    onClick={() => setSortBy("trending")}
-                  >
-                    <FaHeart className="sort-icon" />
-                    Trending
-                  </button>
-                </div>
-              </div>
-
-              {/* Trending Articles */}
-              <div className="sidebar-section">
-                <h4 className="sidebar-title">Trending Now</h4>
-                <div className="trending-list">
-                  {trendingBlogs.slice(0, 3).map((blog) => (
-                    <div key={blog.id} className="trending-item">
-                      <img
-                        src={getImageUrl(blog.images?.[0])}
-                        alt={blog.title}
-                        className="trending-image"
-                      />
-                      <div className="trending-content">
-                        <h6 className="trending-title">{blog.title}</h6>
-                        <div className="trending-meta">
-                          <span className="trending-views">
-                            {blog.views} views
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+          <div className="col-md-8">
+            {/* Search Bar */}
+            <div className="mb-4">
+              <div
+                className="input-group"
+                style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
+              >
+                <span className="input-group-text bg-white border-end-0">
+                  <Search size={20} color="#999" />
+                </span>
+                <input
+                  type="text"
+                  className="form-control border-start-0 ps-0"
+                  placeholder="Search Wedding Articles"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{ fontSize: "15px", padding: "12px" }}
+                />
               </div>
             </div>
-          </div>
 
-          {/* Main Content */}
-          <div className="container col-lg-9 blog-main-content">
-            {featuredBlogs.length > 0 && (
-              <section className="featured-section">
-                <h3 className="fw-bold text-dark mb-2">Featured Articles</h3>
-                <div className="row">
-                  {sortedBlogs.map((blog) => (
-                    <div key={blog.id} className="col-md-6 mb-5">
-                      <article
-                        className="wedding-article-card"
-                        onClick={() => onPostClick(blog)}
-                      >
+            {/* Blog Cards */}
+            <div className="row g-4">
+              {currentBlogs.map((blog) => (
+                <div key={blog.id} className="col-md-6">
+                  <div
+                    className="card h-100 border-0"
+                    style={{
+                      cursor: "pointer",
+                      transition: "transform 0.3s, box-shadow 0.3s",
+                      boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "translateY(-5px)";
+                      e.currentTarget.style.boxShadow =
+                        "0 4px 20px rgba(0,0,0,0.15)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.boxShadow =
+                        "0 2px 12px rgba(0,0,0,0.08)";
+                    }}
+                    onClick={() => onPostClick(blog.id)}
+                  >
+                    {/* Image Section */}
+                    <div
+                      style={{
+                        height: "240px",
+                        overflow: "hidden",
+                        position: "relative",
+                      }}
+                    >
+                      {Array.isArray(blog.image) && blog.image.length > 1 ? (
+                        <div className="row g-0" style={{ height: "100%" }}>
+                          <div className="col-6">
+                            <img
+                              src={getImageUrl(blog.image[0])}
+                              alt={blog.title}
+                              style={{
+                                width: "100%",
+                                height: "240px",
+                                objectFit: "cover",
+                              }}
+                            />
+                          </div>
+                          <div className="col-6">
+                            <img
+                              src={getImageUrl(blog.image[1])}
+                              alt={blog.title}
+                              style={{
+                                width: "100%",
+                                height: "240px",
+                                objectFit: "cover",
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ) : (
                         <img
                           src={getImageUrl(blog.image)}
+                          className="card-img-top"
                           alt={blog.title}
-                          className="wedding-card-image"
+                          style={{
+                            width: "100%",
+                            height: "240px",
+                            objectFit: "cover",
+                          }}
                         />
-                        <div className="wedding-card-content">
-                          <span className="wedding-card-category">
-                            {blog.category}
-                          </span>
-                          <h5 className="wedding-card-title">{blog.title}</h5>
-                          <p className="wedding-card-description">
-                            {blog.shortDescription}
-                          </p>
-                          <div className="wedding-card-meta">
-                            <span>{blog.author}</span>
-                            <span>
-                              {new Date(blog.postDate).toLocaleDateString(
-                                "en-US"
-                              )}
-                            </span>
-                          </div>
-                        </div>
-                      </article>
+                      )}
                     </div>
-                  ))}
-                </div>
-              </section>
-            )}
 
-            <section className="wedding-articles-section">
-              <div className="wedding-articles-header">
-                <h3 className="wedding-section-title">All Articles</h3>
-                <div className="wedding-results-count">
-                  {sortedBlogs.length} articles found
-                </div>
-              </div>
+                    <div className="card-body d-flex flex-column">
+                      {/* Title */}
+                      <h5
+                        className="card-title mb-3"
+                        style={{
+                          fontFamily: '"Playfair Display", serif',
+                          fontSize: "1.25rem",
+                          fontWeight: "600",
+                          lineHeight: "1.4",
+                          color: "#2c3e50",
+                        }}
+                      >
+                        {blog.title}
+                      </h5>
 
-              <div className="wedding-blog-wrapper">
-                <section className="wedding-articles">
-                  <div className="row">
-                    {sortedBlogs.map((blog) => (
-                      <div key={blog.id} className="col-md-6 mb-5">
-                        <article
-                          className="wedding-article-card"
-                          onClick={() => onPostClick(blog)}
-                        >
-                          {/* Image */}
-                          <div className="wedding-card-image-wrapper">
-                            <img
-                              src={getImageUrl(blog.image)}
-                              alt={blog.title}
-                              className="wedding-card-image"
-                            />
-                            {blog.trending && (
-                              <div className="wedding-card-badge">Trending</div>
-                            )}
-                          </div>
-
-                          {/* Content */}
-                          <div className="wedding-card-content">
-                            {/* Meta */}
-                            <div className="wedding-card-meta">
-                              <span className="wedding-card-category">
-                                {blog.category}
-                              </span>
-                              <span className="wedding-card-date">
-                                {blog.createdDate
-                                  ? new Date(
-                                      blog.createdDate
-                                    ).toLocaleDateString("en-US", {
-                                      year: "numeric",
-                                      month: "short",
-                                      day: "numeric",
-                                    })
-                                  : ""}
-                              </span>
-                            </div>
-
-                            {/* Title & Short Description */}
-                            <h5 className="wedding-card-title">{blog.title}</h5>
-                            <p className="wedding-card-description">
-                              {blog.shortDescription}
-                            </p>
-
-                            {/* Tags */}
-                            <div className="wedding-card-tags">
-                              {blog.tags?.slice(0, 2).map((tag, index) => (
-                                <span key={index} className="wedding-card-tag">
-                                  <FaTag className="wedding-tag-icon" />
-                                  {tag}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </article>
+                      {/* Meta Info - Centered */}
+                      <div
+                        className="text-center mb-3"
+                        style={{ fontSize: "0.85rem", color: "#666" }}
+                      >
+                        <span className="me-2">
+                          <User
+                            size={14}
+                            className="me-1"
+                            style={{ marginTop: "-2px" }}
+                          />
+                          BY {blog.author || "Admin"}
+                        </span>
+                        <span className="me-2">|</span>
+                        <span className="me-2">
+                          <Calendar
+                            size={14}
+                            className="me-1"
+                            style={{ marginTop: "-2px" }}
+                          />
+                          {formatDate(blog.postDate)}
+                        </span>
+                        <span className="me-2">|</span>
+                        <span>
+                          <Clock
+                            size={14}
+                            className="me-1"
+                            style={{ marginTop: "-2px" }}
+                          />
+                          {blog.readTime}
+                        </span>
                       </div>
-                    ))}
-                  </div>
-                </section>
-              </div>
-            </section>
 
-            <div className="text-center mt-5">
-              <button className="load-more-btn">Load More Articles</button>
+                      {/* Description */}
+                      <p
+                        className="card-text text-muted flex-grow-1"
+                        style={{
+                          fontSize: "0.9rem",
+                          lineHeight: "1.6",
+                        }}
+                      >
+                        {blog.shortDescription?.substring(0, 120)}...
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <nav className="mt-5">
+                <ul className="pagination justify-content-center">
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(prev - 1, 1))
+                      }
+                      style={{ border: "none", color: "#d946a6" }}
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                  </li>
+                  {[...Array(totalPages)].map((_, idx) => (
+                    <li
+                      key={idx}
+                      className={`page-item ${
+                        currentPage === idx + 1 ? "active" : ""
+                      }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => setCurrentPage(idx + 1)}
+                        style={{
+                          border: "none",
+                          backgroundColor:
+                            currentPage === idx + 1 ? "#d946a6" : "transparent",
+                          color: currentPage === idx + 1 ? "white" : "#d946a6",
+                        }}
+                      >
+                        {idx + 1}
+                      </button>
+                    </li>
+                  ))}
+                  <li
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      }
+                      style={{ border: "none", color: "#d946a6" }}
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <div className="col-md-4">
+            <div
+              className="card border-0 p-4"
+              style={{
+                position: "sticky",
+                top: "20px",
+                boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+              }}
+            >
+              <h4
+                className="text-center mb-4"
+                style={{
+                  fontFamily: '"Playfair Display", serif',
+                  fontSize: "1.5rem",
+                  color: "#2c3e50",
+                }}
+              >
+                I am looking for
+              </h4>
+
+              <div className="mb-3">
+                <select
+                  className="form-select"
+                  value={selectedVendor}
+                  onChange={(e) => setSelectedVendor(e.target.value)}
+                  style={{ padding: "12px", fontSize: "15px" }}
+                >
+                  <option value="">Wedding Vendors</option>
+                  <option value="photographer">Photographer</option>
+                  <option value="venue">Venue</option>
+                  <option value="caterer">Caterer</option>
+                  <option value="decorator">Decorator</option>
+                  <option value="makeup">Makeup Artist</option>
+                </select>
+              </div>
+
+              <div className="mb-3">
+                <select
+                  className="form-select"
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                  style={{ padding: "12px", fontSize: "15px" }}
+                >
+                  <option value="">In City</option>
+                  <option value="mumbai">Mumbai</option>
+                  <option value="delhi">Delhi</option>
+                  <option value="bangalore">Bangalore</option>
+                  <option value="pune">Pune</option>
+                  <option value="hyderabad">Hyderabad</option>
+                </select>
+              </div>
+
+              <button
+                className="btn w-100"
+                style={{
+                  backgroundColor: "#d946a6",
+                  color: "white",
+                  padding: "12px",
+                  fontSize: "16px",
+                  fontWeight: "500",
+                  border: "none",
+                  borderRadius: "8px",
+                }}
+              >
+                Search
+              </button>
+
+              {/* Featured Image */}
+              <div className="mt-4">
+                <img
+                  src="https://images.unsplash.com/photo-1519741497674-611481863552?w=600"
+                  alt="Wedding Venues"
+                  className="img-fluid rounded"
+                  style={{ width: "100%" }}
+                />
+              </div>
             </div>
           </div>
         </div>

@@ -94,7 +94,6 @@ const Storefront = () => {
     }
     setShowModal(true);
   };
-  console.log("Form Data:", formData);
 
   // Hydrate lightweight draft metadata (titles only) on mount if present
   useEffect(() => {

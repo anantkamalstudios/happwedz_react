@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Form, Button } from "react-bootstrap";
 import { useDispatch } from "react-redux";
-import { setVendorCredentials } from "../../redux/vendorAuthSlice";
+import { loginVendor, setVendorCredentials } from "../../redux/vendorAuthSlice";
 import vendorsAuthApi from "../../services/api/vendorAuthApi";
 
 const VendorLogin = () => {
@@ -32,7 +32,7 @@ const VendorLogin = () => {
         throw new Error("Invalid response from server");
       }
 
-      dispatch(setVendorCredentials({ token, vendor }));
+      dispatch(loginVendor({ token, vendor }));
 
       navigate("/vendor-dashboard/vendor-home", { replace: true });
     } catch (err) {
