@@ -145,7 +145,7 @@ const CategoryAccordion = ({ onSelect }) => {
                     <div className="wcg-subcats mt-3">
                       <div className="row g-2">
                         {cat.items.map((it, idx) => (
-                          <div key={idx} className="col-6">
+                          <div key={idx} className="col-6 flex-wrap">
                             <Link
                               to={
                                 cat.title.toLowerCase() === "venues"
@@ -156,7 +156,7 @@ const CategoryAccordion = ({ onSelect }) => {
                                       .toLowerCase()
                                       .replace(/\s+/g, "-")}`
                               }
-                              className="wedding-link small"
+                              className="badge rounded-0 primary-light-bg text-dark fs-14"
                             >
                               {it}
                             </Link>

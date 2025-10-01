@@ -5,7 +5,6 @@ import { useUser } from "../../hooks";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../../redux/authSlice";
 import { auth, provider, signInWithPopup } from "../../firebase";
-import { FaGoogle } from "react-icons/fa";
 import { useToast } from "../layouts/toasts/Toast";
 
 const CustomerLogin = () => {

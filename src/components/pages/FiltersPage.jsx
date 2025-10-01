@@ -175,9 +175,7 @@ const FiltersPage = () => {
         res?.processed_image_id || res?.data?.processed_image_id;
 
       if (processedUrl) {
-        // Convert the full URL to use our proxy in development
         if (import.meta.env.DEV && processedUrl.includes("www.happywedz.com")) {
-          // Extract just the image ID from the full URL
           const imageId = processedUrl.split("/").pop();
           const base = import.meta.env.VITE_API_BASE_URL || "/api";
           setPreviewUrl(`${base}/images/${imageId}`);
