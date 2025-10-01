@@ -110,10 +110,10 @@ const Header = () => {
           </button>
         </div>
 
-        <div className="collapse navbar-collapse" id="mainNav">
+        <div className="w-100" id="mainNav">
           <div className="row">
             <div className="col-12 bg-white p-2">
-              <div className="container-fluid">
+              <div className="container-fluid w-100">
                 <div className="row align-items-center gy-2">
                   {/* Left: Tagline */}
                   <div className="col-12 col-sm-4 col-lg-4 d-flex align-items-center justify-content-center justify-content-sm-start">
@@ -451,6 +451,7 @@ const Header = () => {
                                   columnCount: 4,
                                   columnGap: "1rem",
                                 }}
+                                className="grid-layout"
                               >
                                 {vendorCategories.length > 0 &&
                                   vendorCategories.map((cat, i) => (
@@ -503,10 +504,13 @@ const Header = () => {
 
                           <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
-                              <div className="row g-4">
+                              <div
+                                style={{ columnCount: 4, columnGap: "1rem" }}
+                                className="grid-layout"
+                              >
                                 {[
                                   {
-                                    title: "Outfit",
+                                    title: "Bridal Wear",
                                     items: [
                                       "Bridal Lehenga",
                                       "Wedding Sarees",
@@ -566,8 +570,8 @@ const Header = () => {
                                   {
                                     title: "Groom Wear",
                                     items: [
-                                      "Sherwani for Groom",
-                                      "Wedding Suits for Groom",
+                                      "Sherwani",
+                                      "Wedding Suits",
                                       "More",
                                     ],
                                   },
@@ -582,24 +586,50 @@ const Header = () => {
                                     ],
                                   },
                                 ].map((section, i) => (
-                                  <div className="col-6 col-md-3" key={i}>
-                                    <h6 className="fw-semibold text-secondary mb-3">
+                                  // <div className="col-6 col-md-3" key={i}>
+                                  //   <h6 className="fw-semibold text-secondary mb-3">
+                                  //     {section.title}
+                                  //   </h6>
+                                  //   <ul className="list-unstyled">
+                                  //     {section.items.map((item, idx) => (
+                                  //       <li key={idx}>
+                                  //         <Link
+                                  //           to={`/photography/${toSlug(item)}`}
+                                  //           state={{ title: item }}
+                                  //           className="dropdown-link small d-block mb-2"
+                                  //         >
+                                  //           <i className="bi bi-chevron-right me-2 text-muted"></i>
+                                  //           {item}
+                                  //         </Link>
+                                  //       </li>
+                                  //     ))}
+                                  //   </ul>
+                                  // </div>
+                                  <div
+                                    className="mb-4 d-inline-block w-100"
+                                    key={i}
+                                  >
+                                    <div className="fw-bold primary-text text-uppercase mb-2">
                                       {section.title}
-                                    </h6>
-                                    <ul className="list-unstyled">
-                                      {section.items.map((item, idx) => (
-                                        <li key={idx}>
-                                          <Link
-                                            to={`/photography/${toSlug(item)}`}
-                                            state={{ title: item }}
-                                            className="dropdown-link small d-block mb-2"
-                                          >
-                                            <i className="bi bi-chevron-right me-2 text-muted"></i>
-                                            {item}
-                                          </Link>
-                                        </li>
-                                      ))}
-                                    </ul>
+                                    </div>
+                                    {Array.isArray(section.items) &&
+                                      section.items.length > 0 && (
+                                        <ul className="list-unstyled">
+                                          {section.items.map((item, j) => (
+                                            <li key={j} className="mb-1">
+                                              <Link
+                                                to={`/photography/${toSlug(
+                                                  item
+                                                )}`}
+                                                state={{ title: item }}
+                                                className="dropdown-link small d-block"
+                                              >
+                                                {item}
+                                              </Link>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      )}
                                   </div>
                                 ))}
                               </div>
