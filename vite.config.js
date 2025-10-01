@@ -5,12 +5,20 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
+      // "/api": {
+      //   target: "https://www.happywedz.com/ai",
+      //   changeOrigin: true,
+      //   // rewrite: (path) => path.replace(/^\/api/, ""),
+      //   secure: false,
+      // },
+
       "/api": {
         target: "https://www.happywedz.com/ai",
         changeOrigin: true,
-        // rewrite: (path) => path.replace(/^\/api/, ""),
         secure: false,
+        // keep /api in path
       },
+
       // "/api": {
       //   target: "https://www.happywedz.com/ai",
       //   changeOrigin: true,

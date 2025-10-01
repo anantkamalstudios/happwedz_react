@@ -16,7 +16,6 @@ const TryLanding = () => {
 
   const handleCategorySelect = (category) => {
     setShowModal(false);
-    console.log(`Navigating to: /try/upload/${category}`);
   };
 
   return (

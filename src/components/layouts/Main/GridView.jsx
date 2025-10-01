@@ -35,7 +35,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                       objectFit: "cover",
                       height: "100%",
                       width: "100%",
-                      borderRadius: "12px",
+                      borderRadius: "15px",
                     }}
                   />
                   <button
@@ -68,10 +68,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                   >
                     {/* Title and Rating Row */}
                     <div className="d-flex justify-content-between align-items-start mb-2">
-                      <Card.Title
-                        className="mb-0 fw-bold text-dark"
-                        style={{ fontSize: "18px" }}
-                      >
+                      <Card.Title className="mb-0 fw-bold text-dark fs-20">
                         {venue.name || "Venue Name"}
                       </Card.Title>
                       <div className="d-flex align-items-center gap-1 flex-shrink-0 ms-2">
@@ -90,6 +87,14 @@ const GridView = ({ subVenuesData, handleShow }) => {
                           {venue.reviews !== "1" && "s"})
                         </span>
                       </div>
+                    </div>
+
+                    {/* subtitle */}
+                    <div
+                      className="text-muted mb-3"
+                      style={{ fontSize: "13px" }}
+                    >
+                      {venue.subtitle || "NA"}
                     </div>
 
                     {/* Location */}

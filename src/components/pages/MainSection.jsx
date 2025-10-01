@@ -74,8 +74,6 @@ const MainSection = () => {
       <>
         <MainSearch title="Real Wedding" />
         <RealWedding />
-        <FactorsList />
-        <FaqsSection />
       </>
     );
   }
@@ -92,7 +90,6 @@ const MainSection = () => {
         <MainHeroSection loc={"Karela "} />
         <MainHeroSection loc={"Goa"} />
         */}
-        <FactorsList />
         <FaqsSection />
       </>
     );

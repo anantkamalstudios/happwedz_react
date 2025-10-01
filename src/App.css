@@ -487,7 +487,7 @@ body {
 }
 
 .col-lg-6.d-none.d-lg-block {
-  background: url("https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1080&q=80")
+  background: url("/images/auth/login.jpg")
     no-repeat center center;
   background-size: cover;
   min-height: 700px;
@@ -550,11 +550,6 @@ body {
   border: 1px solid #e9d4e2;
   background-color: #fdf9fc;
   /* border-radius: 0 8px 8px 0 !important; */
-}
-
-.form-control:focus {
-  box-shadow: 0 0 0 0.25rem rgba(216, 161, 189, 0.25);
-  border-color: #d8a1bd;
 }
 
 .login-btn {
@@ -4280,8 +4275,8 @@ label {
 
 .form-control:focus {
   border-color: #ed1173;
-  box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.15);
-  outline: none;
+  box-shadow: none !important;
+  outline: none !important;
   background-color: white;
 }
 
@@ -12630,11 +12625,6 @@ input:checked + .slider:before {
   padding: 20px;
 }
 
-.form-control:focus {
-  border-color: #ed1173;
-  box-shadow: 0 0 0 0.2rem rgba(237, 17, 115, 0.25);
-}
-
 .btn-outline-primary {
   color: #ed1173;
   border-color: #ed1173;
@@ -17441,7 +17431,7 @@ input:checked + .slider:before {
   font-weight: 500;
 }
 
- /* Three column grid for labels */
+/* Three column grid for labels */
 
 .grid-col-3 {
   display: grid;
@@ -17929,7 +17919,6 @@ input:checked + .slider:before {
   background-color: #fff;
 }
 
-/* Optional: Equal height slides fix */
 .swiper-slide {
   display: flex;
   height: auto;

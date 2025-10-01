@@ -20,16 +20,19 @@ const CategoryAccordion = ({ onSelect }) => {
         const response = await axios.get(
           `${API_BASE_URL}/api/vendor-types/with-subcategories/all`
         );
-        const apiData = response.data.map((cat) => ({
-          id: cat.id,
-          title: cat.name,
-          subtitle: cat.description,
-          imageSrc: cat.hero_image
-            ? `${IMAGE_BASE_URL}${cat.hero_image}`
-            : "logo-no-bg.png",
-          slug: cat.name.toLowerCase().replace(/\s+/g, "-"),
-          items: cat.subcategories.map((sub) => sub.name),
-        }));
+        const apiData = response.data.map((cat) => {
+          const imageSrc = cat.hero_image
+            ? "https://happywedzbackend.happywedz.com" + cat.hero_image
+            : "logo-no-bg.png";
+          return {
+            id: cat.id,
+            title: cat.name,
+            subtitle: cat.description,
+            imageSrc,
+            slug: cat.name.toLowerCase().replace(/\s+/g, "-"),
+            items: cat.subcategories.map((sub) => sub.name),
+          };
+        });
         setCategories(apiData);
       } catch (err) {
         setError("Failed to load categories. Please try again later.");
@@ -99,15 +102,17 @@ const CategoryAccordion = ({ onSelect }) => {
                   <div className="d-flex align-items-center justify-content-between my-2">
                     <div>
                       <h5 className="my-2">{cat.title}</h5>
-                      {cat.subtitle && (
-                        <div className="small opacity-75">{cat.subtitle}</div>
-                      )}
+                      {/* {cat.subtitle && (
+                        <div className="badge rounded-0 primary-light-bg text-dark fs-14 opacity-75">
+                          {cat.subtitle}
+                        </div>
+                      )} */}
                     </div>
                     {/* <span className="badge wcg-count rounded-pill">
                     {cat.items.length}
                   </span> */}
                   </div>
-                  <div className="wcg-  pills d-flex flex-wrap gap-2 mb-3">
+                  <div className=" pills d-flex flex-wrap gap-2 mb-3">
                     {previewItems.slice(0, 1).map((it, idx) => (
                       <span
                         key={idx}
@@ -145,7 +150,7 @@ const CategoryAccordion = ({ onSelect }) => {
                     <div className="wcg-subcats mt-3">
                       <div className="row g-2">
                         {cat.items.map((it, idx) => (
-                          <div key={idx} className="col-6">
+                          <div key={idx} className="col-6 flex-wrap">
                             <Link
                               to={
                                 cat.title.toLowerCase() === "venues"
@@ -156,7 +161,7 @@ const CategoryAccordion = ({ onSelect }) => {
                                       .toLowerCase()
                                       .replace(/\s+/g, "-")}`
                               }
-                              className="wedding-link small"
+                              className="badge rounded-0 primary-light-bg text-dark fs-14"
                             >
                               {it}
                             </Link>

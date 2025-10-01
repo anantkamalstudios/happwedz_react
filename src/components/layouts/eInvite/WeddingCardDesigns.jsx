@@ -68,7 +68,6 @@ const WeddingCardDesigns = () => {
 
   const getFilteredData = () => {
     const data = getCurrentData();
-    console.log(data);
     if (selectedFilter === "all") return data;
     return data.filter(
       (item) =>
