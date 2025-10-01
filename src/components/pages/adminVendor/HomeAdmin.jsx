@@ -1,6 +1,7 @@
 // src/pages/adminpanel/HomeAdmin.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import {
   Container,
   Row,
@@ -58,6 +59,8 @@ ChartJS.register(
   Legend
 );
 
+const API_BASE_URL = "https://happywedz.com";
+
 const HomeAdmin = () => {
   const [dateFilter, setDateFilter] = useState("this_month");
   const [showFilter, setShowFilter] = useState(false);
@@ -66,12 +69,98 @@ const HomeAdmin = () => {
     key: "date",
     direction: "desc",
   });
+  const [leadCount, setLeadCount] = useState(0);
+  const [loadingLeads, setLoadingLeads] = useState(true);
+  const [stats, setStats] = useState({
+    impressions: 0,
+    profileViews: 0,
+    chartData: { labels: [], leads: [], impressions: [] },
+  });
+  const [loadingStats, setLoadingStats] = useState(true);
+  const { token: vendorToken } = useSelector((state) => state.vendorAuth || {});
+
+  useEffect(() => {
+    if (!vendorToken) {
+      setLoadingLeads(false);
+      return;
+    }
+
+    const fetchLeadsCount = async () => {
+      try {
+        setLoadingLeads(true);
+        const response = await fetch(
+          `${API_BASE_URL}/api/request-pricing/all`,
+          {
+            headers: { Authorization: `Bearer ${vendorToken}` },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch leads.");
+        }
+
+        const data = await response.json();
+        const leadsArray =
+          data?.requests ||
+          data?.leads ||
+          data?.data ||
+          (Array.isArray(data) ? data : []);
+        setLeadCount(leadsArray.length);
+      } catch (err) {
+        console.error("Error fetching leads count:", err);
+        setLeadCount(0); // Set to 0 on error
+      } finally {
+        setLoadingLeads(false);
+      }
+    };
+    fetchLeadsCount();
+  }, [vendorToken]);
+
+  useEffect(() => {
+    if (!vendorToken) {
+      setLoadingStats(false);
+      return;
+    }
+
+    const fetchStats = async () => {
+      try {
+        setLoadingStats(true);
+        // Assuming an endpoint like this exists to get vendor stats
+        const response = await fetch(
+          `${API_BASE_URL}/api/vendor-services/stats`,
+          {
+            headers: { Authorization: `Bearer ${vendorToken}` },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch stats.");
+        }
+
+        const data = await response.json();
+        setStats({
+          impressions: data.impressions || 0,
+          profileViews: data.profileViews || 0,
+          chartData: data.chartData || {
+            labels: [],
+            leads: [],
+            impressions: [],
+          },
+        });
+      } catch (err) {
+        console.error("Error fetching stats:", err);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+    fetchStats();
+  }, [vendorToken]);
 
   // Stats data
   const statsData = {
     leads: {
       title: "Total Leads",
-      value: 142,
+      value: loadingLeads ? "..." : leadCount,
       change: "+12%",
       trend: "up",
       daily_avg: 4.7,
@@ -79,7 +168,7 @@ const HomeAdmin = () => {
     },
     impressions: {
       title: "Impressions",
-      value: "24.8K",
+      value: loadingStats ? "..." : stats.impressions.toLocaleString(),
       change: "+8.5%",
       trend: "up",
       daily_avg: "827",
@@ -87,7 +176,7 @@ const HomeAdmin = () => {
     },
     profile_views: {
       title: "Profile Views",
-      value: "1.2K",
+      value: loadingStats ? "..." : stats.profileViews.toLocaleString(),
       change: "+5.2%",
       trend: "up",
       daily_avg: "40",
@@ -187,27 +276,20 @@ const HomeAdmin = () => {
 
   // Chart data
   const leadsChartData = {
-    labels: [
-      "1 Oct",
-      "5 Oct",
-      "10 Oct",
-      "15 Oct",
-      "20 Oct",
-      "25 Oct",
-      "30 Oct",
-    ],
+    labels: stats.chartData.labels,
     datasets: [
       {
         label: "Leads",
-        data: [8, 12, 6, 14, 10, 16, 12],
+        data: stats.chartData.leads,
         borderColor: "#8e44ad",
         backgroundColor: "rgba(142, 68, 173, 0.2)",
         tension: 0.3,
         fill: true,
+        yAxisID: "y",
       },
       {
         label: "Impressions",
-        data: [1200, 1800, 1500, 2200, 1900, 2500, 2100],
+        data: stats.chartData.impressions,
         borderColor: "#e67e22",
         backgroundColor: "rgba(230, 126, 34, 0.2)",
         tension: 0.3,
@@ -304,10 +386,10 @@ const HomeAdmin = () => {
                 {dateFilter === "this_week"
                   ? "This Week"
                   : dateFilter === "this_month"
-                    ? "This Month"
-                    : dateFilter === "last_month"
-                      ? "Last Month"
-                      : "Custom Range"}
+                  ? "This Month"
+                  : dateFilter === "last_month"
+                  ? "Last Month"
+                  : "Custom Range"}
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 <Dropdown.Item onClick={() => setDateFilter("this_week")}>
@@ -351,8 +433,9 @@ const HomeAdmin = () => {
                     <h3 className="mb-0">{data.value}</h3>
                   </div>
                   <div
-                    className={`icon-circle bg-${data.trend === "up" ? "success" : "danger"
-                      }-light`}
+                    className={`icon-circle bg-${
+                      data.trend === "up" ? "success" : "danger"
+                    }-light`}
                   >
                     {data.icon}
                   </div>

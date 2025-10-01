@@ -357,11 +357,11 @@ const Storefront = () => {
   };
 
   const menuItems = [
-    // {
-    //   id: "business",
-    //   label: "Business details",
-    //   icon: <FaRegBuilding size={20} />,
-    // },
+    {
+      id: "business",
+      label: "Business details",
+      icon: <FaRegBuilding size={20} />,
+    },
     {
       id: "vendor-basic",
       label: "Basic Information",
@@ -397,7 +397,6 @@ const Storefront = () => {
       label: "Policies & Terms",
       icon: <HiOutlineDocument size={20} />,
     },
-    // { id: "promotions", label: "Promotions", icon: <CiBullhorn size={20} /> },
     {
       id: "vendor-availability",
       label: "Availability & Slots",
@@ -532,11 +531,11 @@ const Storefront = () => {
             onSubmit={handleSubmit}
           />
         );
+
       // case "vendor-media":
       //   return <VendorMedia formData={formData} setFormData={setFormData} />;
       // Original sections
-      // case "location":
-      //   return <LocationForm />;
+
       // case "promotions":
       //   return <PromoForm />;
       // case "photos":
