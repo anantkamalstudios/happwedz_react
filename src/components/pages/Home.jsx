@@ -24,7 +24,6 @@ const Home = () => {
       <Herosection />
       {/* <StatisticsSection /> */}
       <WeddingCategories />
-      <MansoryImageSection />
       <CtaPanel
         logo={logo}
         img={image}
@@ -35,9 +34,9 @@ const Home = () => {
         subtitle="Experience How You'll Look on Your Wedding Day with AI-Powered Virtual Makeover"
         btnName="Try Virtual Look"
       />
-      {/* <VenueSlider /> */}
-      <HowItWorksSection />
-      <FeaturedVendorsSection />
+      <PlanningToolsCTA />
+      <MansoryImageSection />
+      <VenueSlider />
       <CtaPanel
         logo={logo}
         img={einviteImage}
@@ -48,9 +47,11 @@ const Home = () => {
         link="/e-invites"
         btnName="Create Your E-Invite"
       />
+      <RealWeddings />
+      <HowItWorksSection />
+      {/* <FeaturedVendorsSection /> */}
 
       {/* <TestimonialsSection /> */}
-      <RealWeddings />
       {/* <CtaPanel
         logo={logo}
         img={image}
@@ -61,7 +62,6 @@ const Home = () => {
         link="/matrimonial"
         btnName="Start Your Journey"
       /> */}
-      <PlanningToolsCTA />
       <MainTestimonial />
       <BlogInspirationTeasers />
       {/* <NewsletterSection /> */}

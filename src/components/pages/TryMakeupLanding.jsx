@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { IoClose } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 
 const PolicyModal = ({ open, onClose, onAgree }) => {
@@ -27,10 +28,10 @@ const PolicyModal = ({ open, onClose, onAgree }) => {
         zIndex: 1050,
       }}
     >
-      <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-dialog modal-dialog-centered border-0">
         <div
           className="modal-content border-0 p-4"
-          style={{ borderRadius: "16px", maxWidth: "480px", margin: "0 auto" }}
+          style={{ maxWidth: "480px", margin: "0 auto" }}
         >
           {/* Close button */}
           <div className="d-flex flex-row justify-content-between">
@@ -51,27 +52,25 @@ const PolicyModal = ({ open, onClose, onAgree }) => {
                   fontWeight: "bold",
                 }}
               >
-                ×
+                <IoClose />
               </button>
             </div>
           </div>
           {/* Intro Text */}
-          <p className="mt-3 text-center small text-muted text-justify">
+          <p className="mt-3 text-center small text-justify fs-16 text-dark">
             To access this service, you must be at least 18 years old.
           </p>
-          <p className="text-muted small text-justify">
-            At <strong>HappyWedz</strong>, we allow you to apply AI-powered
-            bridal makeup filters like
-            <strong>blush, lipstick, glam looks</strong> and more. Your uploaded
-            image may be processed using our secure AI system to generate
-            realistic try-on results.
+          <p className="fs-16 text-justify text-justify">
+            By continuing, you agree that{" "}
+            <strong className="text-danger">HappyWedz</strong> may temporarily
+            store your uploaded image only for the purpose of applying AI
+            filters and generating your virtual try-on experience. Your photos
+            are <strong>never shared, sold, or used</strong> for any purpose
+            other than providing this feature. Images are stored securely and
+            automatically deleted within a short period after processing, in
+            line with our data retention policy.
           </p>
-          <p className="text-muted small mb-4 text-justify">
-            If you choose to upload a photo or use the camera, your image will
-            be used solely for generating previews. We do
-            <strong>not sell or misuse</strong> your data, and your images are
-            deleted according to our retention policy.
-          </p>
+
           <h6 className="fw-bold text-center mb-3">Privacy Notice</h6>
           {/* Checkbox 1 */}
           <div className="mb-3 d-flex align-items-start gap-2">
@@ -84,7 +83,7 @@ const PolicyModal = ({ open, onClose, onAgree }) => {
                 id="agreeOne"
               />
             </div>
-            <label htmlFor="agreeOne" className="small text-muted">
+            <label htmlFor="agreeOne" className="fs-16 text-justify">
               I consent to the use of my image to apply virtual makeup filters
               (blush, lipstick, etc.) and agree to the use of AI processing as
               described.
@@ -101,7 +100,7 @@ const PolicyModal = ({ open, onClose, onAgree }) => {
                 id="agreeTwo"
               />
             </div>
-            <label htmlFor="agreeTwo" className="small text-muted">
+            <label htmlFor="agreeTwo" className="fs-16 text-justify">
               I am at least 18 years old and agree to the terms and privacy
               practices of HappyWedz.
             </label>

@@ -57,7 +57,7 @@ const LocationModalWithAPI = () => {
   };
 
   const handleClearLocation = (e) => {
-    e.stopPropagation(); // Prevent opening modal
+    e.stopPropagation();
     dispatch(clearLocation());
   };
 

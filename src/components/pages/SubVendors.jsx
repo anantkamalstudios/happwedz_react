@@ -9,7 +9,7 @@ import { useVendors } from "../../hooks/useVendors";
 
 const SubVendors = () => {
   const { slug } = useParams();
-  const [view, setView] = useState("list");
+  const [view, setView] = useState("images");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
 
