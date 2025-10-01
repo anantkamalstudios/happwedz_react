@@ -9,6 +9,9 @@ import { FaArrowRightLong } from "react-icons/fa6";
 
 const Header = () => {
   const dispatch = useDispatch();
+  const reduxLocation = useSelector((state) => state.location.selectedLocation);
+  const [selectedCity, setSelectedCity] = useState(reduxLocation);
+
   const handleLogout = () => {
     dispatch(logout());
     dispatch(vendorLogout());
@@ -25,7 +28,6 @@ const Header = () => {
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9\-]/g, "") || "";
 
-  // Collapse navbar on route change
   const location = window.location.pathname;
   useEffect(() => {
     const collapse = document.getElementById("mainNav");
@@ -69,7 +71,6 @@ const Header = () => {
     fetchSubcategories();
   }, []);
 
-  // State for all vendor categories (with subcategories)
   const [vendorCategories, setVendorCategories] = useState([]);
   useEffect(() => {
     const fetchVendorCategories = async () => {
@@ -78,6 +79,7 @@ const Header = () => {
           "https://happywedz.com/api/vendor-types/with-subcategories/all"
         );
         const data = await response.json();
+        console.log(data);
         setVendorCategories(Array.isArray(data) ? data : []);
       } catch (error) {
         setVendorCategories([]);
@@ -86,6 +88,13 @@ const Header = () => {
     };
     fetchVendorCategories();
   }, []);
+
+  const vendorType = encodeURIComponent("Venues");
+  const cityParam = selectedCity
+    ? `&city=${encodeURIComponent(selectedCity)}`
+    : "";
+
+  const targetURL = `/vendors/all?vendorType=${vendorType}${cityParam}`;
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light shadow-sm primary-bg p-0">
@@ -162,7 +171,7 @@ const Header = () => {
                       title="Try Design Studio"
                     >
                       <img
-                        src="/images/header/designstudio.png"
+                        src="/images/header/tryimg.jpg"
                         alt="Design Studio"
                         className="img-fluid"
                         style={{
@@ -335,11 +344,13 @@ const Header = () => {
                     <ul className="navbar-nav d-flex flex-wrap justify-content-center gap-3">
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <Link
+                          // to={targetURL}
                           to="/venues"
                           className="nav-link dropdown-toggle text-white"
                         >
                           Venues
                         </Link>
+
                         <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 rounded-4">
                           <div className="container-fluid">
                             <div className="row g-4">
@@ -895,7 +906,7 @@ const Header = () => {
                                   },
                                 ].map((section, i) => (
                                   <div className="col-6 col-md-3" key={i}>
-                                    <h6 className="fw-semibold text-secondary mb-3">
+                                    <h6 className="fw-bold primary-text text-uppercase mb-2">
                                       {section.title}
                                     </h6>
                                     <ul className="list-unstyled">

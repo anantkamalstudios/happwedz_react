@@ -43,8 +43,8 @@ const MainSection = () => {
     return (
       <>
         <MainSearch title="Wedding Vendor" />
-        <AllCategories />
         <MainByRegion />
+        <AllCategories />
         <FindMain />
         <FactorsList />
         <FaqsSection />

@@ -392,41 +392,36 @@ const Detailed = () => {
             <div className="my-4 border p-3 rounded">
               <h1 className="my-4">Frequently Asked Questions</h1>
               {faqList.length > 0 ? (
-                faqList.map((ques, index) => (
-                  <div
-                    className="w-100 rounded d-flex flex-column gap-2 mb-3 border"
-                    style={{ backgroundColor: "#FCFCFC" }}
-                    key={index}
-                  >
-                    <div className="p-2">
-                      <div className="fw-semibold mb-2">{ques.text}</div>
-                      <div className="text-muted">
-                        {parseDbValue(ques.ans).length === 1 ? (
-                          <p>{parseDbValue(ques.ans)[0]}</p>
+                faqList.map((ques, index) => {
+                  const answers = parseDbValue(ques.ans);
+
+                  return (
+                    <div className="w-100 rounded border-bottom" key={index}>
+                      <div className="p-2">
+                        <p className="fw-semibold mb-1">{ques.text}</p>
+
+                        {answers.length === 1 ? (
+                          <p className="text-muted">{answers[0]}</p>
                         ) : (
                           <div className="row">
-                            {parseDbValue(ques.ans).map((a, idx) => (
+                            {answers.map((a, idx) => (
                               <div
-                                className="col-md-4 col-sm-6 d-flex"
+                                className="col-md-4  d-flex align-items-start mb-2"
                                 key={idx}
                               >
                                 <i
-                                  className="fa-solid fa-check"
-                                  style={{
-                                    color: "#dd1d70",
-                                    marginTop: "4px",
-                                    marginBottom: "8px",
-                                  }}
+                                  className="fa-solid fa-check me-2"
+                                  style={{ color: "#0e6214", marginTop: "4px" }}
                                 ></i>
-                                <span>{a}</span>
+                                <span className="text-muted">{a}</span>
                               </div>
                             ))}
                           </div>
                         )}
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <p className="text-muted">
                   No FAQ information available for this vendor.

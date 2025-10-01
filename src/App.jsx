@@ -67,7 +67,6 @@ const VideoEditorDemo = lazy(() =>
 const ProfileImageSelector = lazy(() =>
   import("./components/pages/ProfileImageSelector")
 );
-const FinalLookPage = lazy(() => import("./components/pages/FinalLookPage"));
 const TryLanding = lazy(() => import("./components/pages/TryLanding"));
 const BrideMakeupChoose = lazy(() =>
   import("./components/pages/BrideMakeupChoose")
@@ -79,6 +78,8 @@ const UploadSelfiePage = lazy(() =>
   import("./components/pages/UploadSelfiePage")
 );
 const FiltersPage = lazy(() => import("./components/pages/FiltersPage"));
+
+const FinalLookPage = lazy(() => import("./components/pages/FinalLookPage"));
 
 const VendorPremium = lazy(() =>
   import("./components/pages/adminVendor/VendorPremium")

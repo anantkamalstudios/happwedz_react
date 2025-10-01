@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import herosection from "../../assets/Hero_2.jpg";
 import { categories, locations, popularSearches } from "../../data/herosection";
 
@@ -42,12 +43,17 @@ const RotatingWordHeadline = () => {
 
 const Herosection = () => {
   const [categoriesApi, setCategoriesApi] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await fetch("https://happywedz.com/api/vendor-types");
         const data = await response.json();
         setCategoriesApi(Array.isArray(data) ? data : []);
+        if (Array.isArray(data) && data.length > 0) {
+          setSelectedCategory(data[0].name);
+        }
       } catch (error) {
         setCategoriesApi([]);
       }
@@ -80,7 +86,16 @@ const Herosection = () => {
 
         <Row className="justify-content-center mt-4">
           <Col xs={12} md={10}>
-            <Form className="search-form">
+            <Form
+              className="search-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (selectedCategory) {
+                  const encodedCategory = encodeURIComponent(selectedCategory);
+                  navigate(`/vendors/all?vendorType=${encodedCategory}`);
+                }
+              }}
+            >
               <Row className="g-3">
                 <Col xs={12} md={10}>
                   <Form.Group className="m-0">
@@ -88,6 +103,8 @@ const Herosection = () => {
                       aria-label="Select Category"
                       className="form-control-lg"
                       style={{ fontSize: "14px", padding: "0.5rem 0.75rem" }}
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
                     >
                       {categoriesApi.length > 0 ? (
                         categoriesApi.map((c) => (

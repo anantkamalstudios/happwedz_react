@@ -1,13 +1,19 @@
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
+import vendorsAuthApi, { vendorsApi } from "../../../../services/api/vendorAuthApi";
 
 const BusinessDetails = ({ formData, setFormData }) => {
-  const { vendor } = useSelector((state) => state.vendorAuth);
+  const { vendor, token } = useSelector((state) => state.vendorAuth || {});
 
   const [showPasswordFields, setShowPasswordFields] = React.useState(false);
   const [currentPassword, setCurrentPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
+  const [submitting, setSubmitting] = React.useState(false);
+  const [error, setError] = React.useState("");
+  const [success, setSuccess] = React.useState("");
+  const [profileImageFile, setProfileImageFile] = React.useState(null);
+  const [validationErrors, setValidationErrors] = React.useState({});
 
   // Pre-fill data from Redux when the component loads
   useEffect(() => {
@@ -33,9 +39,83 @@ const BusinessDetails = ({ formData, setFormData }) => {
     }));
   };
 
+  const handleProfileImage = (e) => {
+    const file = e.target.files?.[0] || null;
+    setProfileImageFile(file);
+  };
+
+  const buildRegisterPayload = () => {
+    const a = formData.attributes || {};
+    const payload = {
+      businessName: a.businessName || "",
+      email: a.email || "",
+      phone: a.phone || "",
+      city: a.city || "",
+      state: a.state || null,
+      zip: a.zip || null,
+      website: a.website || null,
+      facebook_link: a.facebook_link || null,
+      instagram_link: a.instagram_link || null,
+      vendor_type_id: a.vendor_type_id ? Number(a.vendor_type_id) : null,
+      years_in_business: a.years_in_business ? Number(a.years_in_business) : null,
+      firstName: a.firstName || null,
+      lastName: a.lastName || null,
+    };
+    if (newPassword && newPassword === confirmPassword) {
+      payload.password = newPassword;
+    }
+    return payload;
+  };
+
+  const handleSubmitRegister = async () => {
+    setSubmitting(true);
+    setError("");
+    setSuccess("");
+    setValidationErrors({});
+    try {
+      const payload = buildRegisterPayload();
+
+      // Validate required fields
+      const requiredFields = ["businessName", "email", "phone", "city"];
+      const errors = {};
+      requiredFields.forEach((f) => {
+        const value = payload[f];
+        if (value === undefined || value === null || `${value}`.trim() === "") {
+          errors[f] = "Required";
+        }
+      });
+
+      // On register, password is required if creating new vendor (no vendor.id)
+      const isNew = !vendor?.id;
+      if (isNew && !payload.password) {
+        errors.password = "Required";
+      }
+
+      if (Object.keys(errors).length) {
+        setValidationErrors(errors);
+        throw new Error("Required fields missing");
+      }
+
+      if (vendor?.id) {
+        // Update existing vendor
+        await vendorsApi.updateVendor(vendor.id, payload);
+      } else {
+        // Register new vendor
+        await vendorsAuthApi.register(payload);
+      }
+      setSuccess("Business details saved.");
+    } catch (e) {
+      // Prefer server message if available
+      const serverMsg = e?.response?.data?.message || e?.response?.data || e?.message;
+      setError(typeof serverMsg === "string" ? serverMsg : "Failed to save");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="">
-      <div className="p-3 border rounded mb-4 bg-white">
+      {/* <div className="p-3 border rounded mb-4 bg-white">
         <h6 className="mb-3 fw-bold">Login Information</h6>
         <div className="mb-3">
           <label className="form-label">Username</label>
@@ -105,15 +185,16 @@ const BusinessDetails = ({ formData, setFormData }) => {
               <button
                 type="button"
                 className="btn btn-primary"
-              // onClick={handlePasswordSubmit} // implement as needed
+                onClick={handleSubmitRegister}
+                disabled={submitting}
               >
-                Submit
+                {submitting ? "Saving..." : "Submit"}
               </button>
             </div>
           )}
         </div>
       </div>
-      {/* About Section */}
+     
       <div className="p-3 border rounded mb-4 bg-white">
         <h6 className="mb-3 fw-bold">About</h6>
         <textarea
@@ -124,20 +205,27 @@ const BusinessDetails = ({ formData, setFormData }) => {
           value={formData.attributes?.about || ""}
           onChange={handleAttributeChange}
         ></textarea>
-      </div>
+      </div> */}
       {/* Contact Details */}
       <div className="p-3 border rounded bg-white">
         <h6 className="mb-3 fw-bold">Contact Details</h6>
         <div className="mb-3">
+          <label className="form-label">Profile Image</label>
+          <input type="file" accept="image/*" className="form-control" onChange={handleProfileImage} />
+        </div>
+        <div className="mb-3">
           <label className="form-label">Business Name *</label>
           <input
-            name="name"
+            name="businessName"
             type="text"
             className="form-control"
             placeholder="Enter business name"
             value={formData.attributes?.businessName || ""}
             onChange={handleAttributeChange}
           />
+          {validationErrors.businessName && (
+            <div className="text-danger small">{validationErrors.businessName}</div>
+          )}
         </div>
         <div className="mb-3">
           <label className="form-label">Email *</label>
@@ -149,6 +237,9 @@ const BusinessDetails = ({ formData, setFormData }) => {
             value={formData.attributes?.email || ""}
             onChange={handleAttributeChange}
           />
+          {validationErrors.email && (
+            <div className="text-danger small">{validationErrors.email}</div>
+          )}
         </div>
         <div className="mb-3">
           <label className="form-label">Phone Number *</label>
@@ -160,6 +251,9 @@ const BusinessDetails = ({ formData, setFormData }) => {
             value={formData.attributes?.phone || ""}
             onChange={handleAttributeChange}
           />
+          {validationErrors.phone && (
+            <div className="text-danger small">{validationErrors.phone}</div>
+          )}
         </div>
         <div className="mb-3">
           <label className="form-label">Mobile Number</label>
@@ -172,12 +266,48 @@ const BusinessDetails = ({ formData, setFormData }) => {
             onChange={handleAttributeChange}
           />
         </div>
-        <div className="mb-3">
+        {/* <div className="mb-3">
           <label className="form-label">Fax</label>
           <input
             type="text"
             className="form-control"
             placeholder="Enter fax number"
+          />
+        </div> */}
+        <div className="mb-3">
+          <label className="form-label">City</label>
+          <input
+            name="city"
+            type="text"
+            className="form-control"
+            placeholder="Enter city"
+            value={formData.attributes?.city || ""}
+            onChange={handleAttributeChange}
+          />
+          {validationErrors.city && (
+            <div className="text-danger small">{validationErrors.city}</div>
+          )}
+        </div>
+        <div className="mb-3">
+          <label className="form-label">State</label>
+          <input
+            name="state"
+            type="text"
+            className="form-control"
+            placeholder="Enter state"
+            value={formData.attributes?.state || ""}
+            onChange={handleAttributeChange}
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Zip</label>
+          <input
+            name="zip"
+            type="text"
+            className="form-control"
+            placeholder="Enter zip"
+            value={formData.attributes?.zip || ""}
+            onChange={handleAttributeChange}
           />
         </div>
         <div>
@@ -191,8 +321,85 @@ const BusinessDetails = ({ formData, setFormData }) => {
             onChange={handleAttributeChange}
           />
         </div>
+        <div className="mb-3 mt-3">
+          <label className="form-label">Facebook Link</label>
+          <input
+            name="facebook_link"
+            type="url"
+            className="form-control"
+            placeholder="Facebook profile/page URL"
+            value={formData.attributes?.facebook_link || ""}
+            onChange={handleAttributeChange}
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Instagram Link</label>
+          <input
+            name="instagram_link"
+            type="url"
+            className="form-control"
+            placeholder="Instagram profile URL"
+            value={formData.attributes?.instagram_link || ""}
+            onChange={handleAttributeChange}
+          />
+        </div>
+        {/* <div className="mb-3">
+          <label className="form-label">Vendor Type ID</label>
+          <input
+            name="vendor_type_id"
+            type="number"
+            className="form-control"
+            placeholder="e.g. 2"
+            value={formData.attributes?.vendor_type_id || ""}
+            onChange={handleAttributeChange}
+          />
+          {validationErrors.vendor_type_id && (
+            <div className="text-danger small">{validationErrors.vendor_type_id}</div>
+          )}
+        </div> */}
+        <div className="mb-3">
+          <label className="form-label">Years in Business</label>
+          <input
+            name="years_in_business"
+            type="number"
+            className="form-control"
+            placeholder="e.g. 5"
+            value={formData.attributes?.years_in_business || ""}
+            onChange={handleAttributeChange}
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label">First Name</label>
+          <input
+            name="firstName"
+            type="text"
+            className="form-control"
+            placeholder="First name"
+            value={formData.attributes?.firstName || ""}
+            onChange={handleAttributeChange}
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Last Name</label>
+          <input
+            name="lastName"
+            type="text"
+            className="form-control"
+            placeholder="Last name"
+            value={formData.attributes?.lastName || ""}
+            onChange={handleAttributeChange}
+          />
+        </div>
       </div>
-      <button className="btn btn-primary mt-2 folder-item">Submit</button>
+      {error && <div className="alert alert-danger mt-2">{error}</div>}
+      {success && <div className="alert alert-success mt-2">{success}</div>}
+      <button
+        className="btn btn-primary mt-2 folder-item"
+        onClick={handleSubmitRegister}
+        disabled={submitting}
+      >
+        {submitting ? "Saving..." : "Save Business Details"}
+      </button>
     </div>
   );
 };

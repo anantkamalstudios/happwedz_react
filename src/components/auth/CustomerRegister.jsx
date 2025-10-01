@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 
 import { useSelector } from "react-redux";
 import { setCredentials } from "../../redux/authSlice";
-import { useToast } from "../layouts/toasts/Toast";
+// import { useToast } from "../layouts/toasts/Toast";
 
 const CustomerRegister = () => {
   const [formData, setFormData] = useState({
@@ -28,7 +28,7 @@ const CustomerRegister = () => {
   const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
   const navigate = useNavigate();
-  const { appToast } = useToast();
+  // const { appToast } = useToast();
   const auth = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -142,10 +142,10 @@ const CustomerRegister = () => {
           });
           navigate("/user-dashboard");
         } else {
-          appToast(data.message || "Registration failed", "error");
+          // appToast(data.message || "Registration failed", "error");
         }
       } catch (error) {
-        appToast(error.message, "error");
+        // appToast(error.message, "error");
       }
 
       setIsSubmitting(false);
