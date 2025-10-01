@@ -30,3 +30,6 @@ const authSlice = createSlice({
 
 export const { setCredentials, logout } = authSlice.actions;
 export default authSlice.reducer;
+
+// Selector to get the token from the state
+export const selectToken = (state) => state.auth.token;
