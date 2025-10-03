@@ -492,12 +492,12 @@ const RealWeddingDetails = ({ post, onBackClick }) => {
               </div>
               <div className="modal-body position-relative">
                 <img
-                  src={
-                    getImageUrl([
+                  src={getImageUrl(
+                    [
                       ...(post.highlightPhotos || []),
                       ...(post.allPhotos || []),
-                    ][currentImage])
-                  }
+                    ][currentImage]
+                  )}
                   alt="Gallery"
                   className="img-fluid rounded-3"
                 />

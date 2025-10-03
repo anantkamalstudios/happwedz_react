@@ -11,6 +11,7 @@ import {
   removeFromWishlist,
 } from "../../../redux/wishlistSlice";
 import { IoLocationOutline } from "react-icons/io5";
+import { TbView360Number } from "react-icons/tb";
 
 const ListView = ({ subVenuesData, handleShow }) => {
   const dispatch = useDispatch();
@@ -66,6 +67,16 @@ const ListView = ({ subVenuesData, handleShow }) => {
                     className="img-fluid rounded-5 object-fit-cover"
                     style={{ height: "200px", width: "100%" }}
                   />
+
+                  <button
+                    className="btn btn-light rounded-circle position-absolute top-0 start-0 m-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log("360 view clicked for:", venue.id);
+                    }}
+                  >
+                    <TbView360Number className="text-dark" />
+                  </button>
 
                   <button
                     className="btn btn-light rounded-circle position-absolute top-0 end-0 m-2"
