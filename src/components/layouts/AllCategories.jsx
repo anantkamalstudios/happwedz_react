@@ -127,7 +127,7 @@ const AllCategories = () => {
         </div> */}
         <div className="d-flex justify-content-end align-items-center gap-4">
           <div className="view-switcher-wrapper rounded-2">
-            <div className="view-switcher d-flex gap-2">
+            <div className="view-switcher d-flex">
               <button
                 onClick={() => setView("grid")}
                 className={view === "grid" ? "switch-btn active" : "switch-btn"}
