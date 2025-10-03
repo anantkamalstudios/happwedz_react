@@ -48,7 +48,9 @@ const Herosection = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("https://happywedz.com/api/vendor-types");
+        const response = await fetch(
+          "https://happywedz.com/api/vendor-types/with-subcategories/all"
+        );
         const data = await response.json();
         setCategoriesApi(Array.isArray(data) ? data : []);
         if (Array.isArray(data) && data.length > 0) {

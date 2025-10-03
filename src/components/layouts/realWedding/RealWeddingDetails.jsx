@@ -757,7 +757,8 @@ const WeddingDetailPage = ({ wedding, onClose }) => {
   return (
     <div className="wedding-detail-page">
       <style>{`
-        .wedding-detail-page { 
+        .wedding-detail-page {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
           background: #fff;
           min-height: 100vh;
         }

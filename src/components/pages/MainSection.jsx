@@ -34,7 +34,7 @@ const MainSection = () => {
       <>
         <MainSearch />
         <MainByRegion />
-        <AllCategories />
+        {/* <AllCategories /> */}
         {/* <FactorsList /> */}
         <FaqsSection />
       </>
