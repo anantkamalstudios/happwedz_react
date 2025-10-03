@@ -154,7 +154,7 @@ const RealWeddings = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .square-card {
           width: 450px;
           height: 450px;

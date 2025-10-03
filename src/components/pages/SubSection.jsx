@@ -507,7 +507,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import ListView from "../layouts/Main/ListView";
 import GridView from "../layouts/Main/GridView";
 import MapView from "../layouts/Main/MapView";
@@ -528,6 +528,10 @@ const toTitleCase = (str) =>
 
 const SubSection = () => {
   const { section, slug } = useParams();
+  const location = useLocation();
+  // Parse vendorType from query string
+  const searchParams = new URLSearchParams(location.search);
+  const vendorType = searchParams.get("vendorType");
   const title = slug ? toTitleCase(slug) : "";
 
   const [show, setShow] = useState(false);
@@ -545,7 +549,7 @@ const SubSection = () => {
     loading,
     error,
     refetch,
-  } = useApiData(section, slug, selectedCity);
+  } = useApiData(section, slug, selectedCity, vendorType);
 
   // Modal handlers
   const handleClose = () => {
@@ -633,8 +637,6 @@ const SubSection = () => {
   if (loading && dataToSend.length === 0) {
     return <LoadingState title={title} />;
   }
-
-  console.log("dataToSend", dataToSend);
 
   return (
     <div className="container-fluid">

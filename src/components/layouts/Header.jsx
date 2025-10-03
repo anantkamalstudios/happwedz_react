@@ -11,10 +11,16 @@ const Header = () => {
   const dispatch = useDispatch();
   const reduxLocation = useSelector((state) => state.location.selectedLocation);
   const [selectedCity, setSelectedCity] = useState(reduxLocation);
+  const formatName = (name) => name.replace(/\band\b/gi, "&");
 
   const handleLogout = () => {
     dispatch(logout());
     dispatch(vendorLogout());
+
+    // Clear any cached storefront data on logout
+    localStorage.removeItem("vendorFormData");
+    localStorage.removeItem("photoDraftsMeta");
+    localStorage.removeItem("videoDraftsMeta");
   };
 
   const { user, token: userToken } = useSelector((state) => state.auth);
@@ -347,9 +353,9 @@ const Header = () => {
                     <ul className="navbar-nav d-flex flex-wrap justify-content-center gap-3">
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <Link
-                          // to={targetURL}
-                          to="/venues"
-                          className="nav-link dropdown-toggle text-white"
+                          to={targetURL}
+                          // to="/venues"
+                          className="nav-link dropdown-toggle text-white  fs-20"
                         >
                           Venues
                         </Link>
@@ -388,20 +394,9 @@ const Header = () => {
                                       )}
                                     </div>
                                   </div>
-
-                                  {/* <img
-                                    src="https://cdn-icons-png.flaticon.com/512/3176/3176294.png"
-                                    alt="Popular Categories"
-                                    className="img-fluid mt-3"
-                                    style={{
-                                      width: "60px",
-                                      objectFit: "contain",
-                                    }}
-                                  /> */}
                                 </div>
                               </div>
 
-                              {/* Column 2: By Type and By Location */}
                               <div className="col-md-8 p-4">
                                 <h6 className="fw-bold primary-text text-uppercase mb-3">
                                   By Type
@@ -409,40 +404,39 @@ const Header = () => {
                                 <div className="row">
                                   {(venueSubcategories.length > 0
                                     ? [
-                                        ...venueSubcategories.map(
-                                          (s) => s.name
-                                        ),
-                                        "View All Venues",
-                                      ]
+                                      ...venueSubcategories.map(
+                                        (s) => s.name
+                                      ),
+                                      "View All Venues",
+                                    ]
                                     : [
-                                        "Banquet Halls",
-                                        "Marriage Garden / Lawns",
-                                        "Wedding Resorts",
-                                        "Small Function / Party Halls",
-                                        "Destination Wedding Venues",
-                                        "Kalyana Mandapams",
-                                        "4 Star & Above Wedding Hotels",
-                                        "Venue Concierge Services",
-                                        "View All Venues",
-                                      ]
+                                      "Banquet Halls",
+                                      "Marriage Garden / Lawns",
+                                      "Wedding Resorts",
+                                      "Small Function / Party Halls",
+                                      "Destination Wedding Venues",
+                                      "Kalyana Mandapams",
+                                      "4 Star & Above Wedding Hotels",
+                                      "Venue Concierge Services",
+                                      "View All Venues",
+                                    ]
                                   ).map((item, i) => {
                                     const isShowMore =
                                       item === "View All Venues";
                                     const path = isShowMore
                                       ? "/venues"
                                       : `/venues/${item
-                                          .toLowerCase()
-                                          .replace(/\s+/g, "-")
-                                          .replace(/[^a-z0-9\-]/g, "")}`;
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "-")
+                                        .replace(/[^a-z0-9\-]/g, "")}`;
                                     return (
                                       <div className="col-12 mb-2" key={i}>
                                         <Link
                                           to={path}
-                                          className={`dropdown-link d-flex align-items-center ${
-                                            isShowMore
+                                          className={`dropdown-link d-flex align-items-center ${isShowMore
                                               ? "primary-text fw-bold text-decoration-underline"
                                               : ""
-                                          }`}
+                                            }`}
                                         >
                                           <i className="bi bi-check-circle me-2 text-primary"></i>
                                           <span className="small">{item}</span>
@@ -498,7 +492,7 @@ const Header = () => {
                                                   )}`}
                                                   className="dropdown-link small d-block"
                                                 >
-                                                  {sub.name}
+                                                  {formatName(sub.name)}
                                                 </Link>
                                               </li>
                                             ))}
@@ -954,7 +948,7 @@ const Header = () => {
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            className="nav-link text-white fs-20"
+                            className="nav-link text-white fs-18"
                             to="/genie"
                             state={{ title: "Genie" }}
                             id="photoDropdown"

@@ -16,6 +16,7 @@ const initialGuestFormState = {
   name: "",
   email: "",
   group: "Other",
+  
   type: "Adult",
   companions: 0,
   seat_number: "",
@@ -224,26 +225,41 @@ const Guests = () => {
             className="wgl-search-input"
             placeholder="Search guests..."
             value={searchTerm}
-            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
           />
         </div>
         <div className="wgl-button-group">
           <button
             className="wgl-button wgl-button-primary"
-            onClick={() => { setShowAddGuestForm(!showAddGuestForm); setShowAddGroupForm(false); setShowMessageOptions(false); }}
+            onClick={() => {
+              setShowAddGuestForm(!showAddGuestForm);
+              setShowAddGroupForm(false);
+              setShowMessageOptions(false);
+            }}
           >
             <FaUserPlus className="wgl-button-icon" /> Add Guest
           </button>
           <button
             className="wgl-button wgl-button-secondary"
-            onClick={() => { setShowAddGroupForm(!showAddGroupForm); setShowAddGuestForm(false); setShowMessageOptions(false); }}
+            onClick={() => {
+              setShowAddGroupForm(!showAddGroupForm);
+              setShowAddGuestForm(false);
+              setShowMessageOptions(false);
+            }}
           >
             <FaUsers className="wgl-button-icon" /> Create Group
           </button>
           <div className="wgl-message-dropdown">
             <button
               className="wgl-button wgl-button-secondary"
-              onClick={() => { setShowMessageOptions(!showMessageOptions); setShowAddGuestForm(false); setShowAddGroupForm(false); }}
+              onClick={() => {
+                setShowMessageOptions(!showMessageOptions);
+                setShowAddGuestForm(false);
+                setShowAddGroupForm(false);
+              }}
             >
               <FaEnvelope className="wgl-button-icon" /> Send Message
               <FaChevronDown className="wgl-dropdown-icon" />
@@ -252,12 +268,18 @@ const Guests = () => {
               <div className="wgl-dropdown-menu">
                 <button onClick={() => sendMessage("Email")}>Email</button>
                 <button onClick={() => sendMessage("SMS")}>SMS</button>
-                <button onClick={() => sendMessage("WhatsApp")}>WhatsApp</button>
+                <button onClick={() => sendMessage("WhatsApp")}>
+                  WhatsApp
+                </button>
               </div>
             )}
           </div>
-          <button className="wgl-button wgl-button-secondary"><FaDownload className="wgl-button-icon" /> Download</button>
-          <button className="wgl-button wgl-button-secondary"><FaPrint className="wgl-button-icon" /> Print</button>
+          <button className="wgl-button wgl-button-secondary">
+            <FaDownload className="wgl-button-icon" /> Download
+          </button>
+          <button className="wgl-button wgl-button-secondary">
+            <FaPrint className="wgl-button-icon" /> Print
+          </button>
         </div>
       </div>
 
@@ -304,7 +326,10 @@ const Guests = () => {
               </div>
             </div>
             <div className="wgl-form-actions mt-4 d-flex justify-content-end gap-2">
-              <button className="btn btn-light" onClick={() => setShowAddGuestForm(false)}>
+              <button
+                className="btn btn-light"
+                onClick={() => setShowAddGuestForm(false)}
+              >
                 Cancel
               </button>
               <button className="btn btn-primary" onClick={addGuestAPI}>
@@ -331,7 +356,14 @@ const Guests = () => {
       <div className="wgl-filter-container">
         <div className="wgl-filter-group">
           <label className="wgl-filter-label">Group:</label>
-          <select className="wgl-filter-select" value={selectedGroup} onChange={(e) => { setSelectedGroup(e.target.value); setCurrentPage(1); }}>
+          <select
+            className="wgl-filter-select"
+            value={selectedGroup}
+            onChange={(e) => {
+              setSelectedGroup(e.target.value);
+              setCurrentPage(1);
+            }}
+          >
             <option value="All">All Groups</option>
             <option value="Couple">Couple</option>
             <option value="Family">Family</option>
@@ -341,9 +373,18 @@ const Guests = () => {
         </div>
         <div className="wgl-filter-group">
           <label className="wgl-filter-label">Status:</label>
-          <select className="wgl-filter-select" value={selectedStatus} onChange={(e) => { setSelectedStatus(e.target.value); setCurrentPage(1); }}>
+          <select
+            className="wgl-filter-select"
+            value={selectedStatus}
+            onChange={(e) => {
+              setSelectedStatus(e.target.value);
+              setCurrentPage(1);
+            }}
+          >
             <option value="All">All Statuses</option>
-            {statusOptions.map((s) => <option key={s}>{s}</option>)}
+            {statusOptions.map((s) => (
+              <option key={s}>{s}</option>
+            ))}
           </select>
         </div>
       </div>
@@ -373,8 +414,13 @@ const Guests = () => {
                     <select
                       className={`wgl-status-select wgl-status-${g.status.toLowerCase()}`}
                       value={g.status}
-                      onChange={(e) => updateGuestField(g.id, "status", e.target.value)}
+                      onChange={(e) =>
+                        updateGuestField(g.id, "status", e.target.value)
+                      }
                     >
+                      {statusOptions.map((s) => (
+                        <option key={s}>{s}</option>
+                      ))}
                       {statusOptions.map((s) => (
                         <option key={s}>{s}</option>
                       ))}
@@ -409,6 +455,12 @@ const Guests = () => {
                     >
                       Remove
                     </button>
+                    <button
+                      className="wgl-action-button wgl-action-delete"
+                      onClick={() => deleteGuestAPI(g.id)}
+                    >
+                      Remove
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -429,6 +481,12 @@ const Guests = () => {
             >
               Previous
             </button>
+            <button
+              disabled={currentPage === 1}
+              onClick={() => paginate(currentPage - 1)}
+            >
+              Previous
+            </button>
             {[...Array(totalPages)].map((_, i) => (
               <button
                 key={i + 1}
@@ -438,6 +496,12 @@ const Guests = () => {
                 {i + 1}
               </button>
             ))}
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => paginate(currentPage + 1)}
+            >
+              Next
+            </button>
             <button
               disabled={currentPage === totalPages}
               onClick={() => paginate(currentPage + 1)}
