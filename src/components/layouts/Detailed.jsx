@@ -27,10 +27,13 @@ import {
 } from "react-icons/fa";
 import { GrFormNextLink } from "react-icons/gr";
 import ReviewSection from "../pages/ReviewSection";
+import { FaqQuestions } from "../pages/adminVendor/subVendors/FaqData";
+import axios from "axios";
 
 const Detailed = () => {
   const { id } = useParams();
   const [venueData, setVenueData] = useState(null);
+  const [vendorId, setVendorId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mainImage, setMainImage] = useState("");
@@ -163,6 +166,52 @@ const Detailed = () => {
     fetchVenueData();
   }, [id]);
 
+  const [faqList, setFaqList] = useState([]);
+
+  useEffect(() => {
+    const fetchFaqData = async () => {
+      // Guard clause: wait until venueData and its nested properties are available
+      if (!venueData?.vendor?.id || !venueData?.vendor?.vendorType?.id) {
+        return;
+      }
+
+      const dynamicVendorId = venueData.vendor.id;
+      const dynamicVendorTypeId = venueData.vendor.vendorType.id;
+
+      try {
+        // 1. Fetch the answers for the specific vendor
+        const response = await axios.get(
+          `https://happywedz.com/api/faq-answers/${dynamicVendorId}`
+        );
+        const answers = response.data || [];
+
+        // 2. Create a quick-lookup map for the answers
+        const answerMap = new Map(
+          answers.map((a) => [a.faq_question_id, a.answer])
+        );
+
+        // 3. Find the correct question set based on vendor type
+        const vendorTypeKey = Object.keys(FaqQuestions).find(
+          (key) => FaqQuestions[key].vendor_type_id === dynamicVendorTypeId
+        );
+
+        if (vendorTypeKey) {
+          const questions = FaqQuestions[vendorTypeKey].questions;
+          // 4. Merge questions with answers
+          const mergedFaqs = questions.map((q) => ({
+            ...q,
+            ans: answerMap.get(q.id) || "", // Use the answer or an empty string
+          }));
+          setFaqList(mergedFaqs);
+        }
+      } catch (error) {
+        console.error("Error fetching FAQ answers:", error);
+      }
+    };
+
+    fetchFaqData();
+  }, [venueData]); // This effect now depends on venueData
+
   useEffect(() => {
     window.scrollTo({
       top: 0,
@@ -231,6 +280,21 @@ const Detailed = () => {
     reviews: 0, // Default reviews since not in API
     image: mainImage || "/images/default-venue.jpg",
   };
+
+  function parseDbValue(value) {
+    if (
+      typeof value === "string" &&
+      value.startsWith("{") &&
+      value.endsWith("}")
+    ) {
+      return value
+        .replace(/[{}]/g, "")
+        .split(",")
+        .map((item) => item.replace(/"/g, "").trim());
+    } else {
+      return [value];
+    }
+  }
 
   return (
     <div className="venue-detail-page">
@@ -307,17 +371,64 @@ const Detailed = () => {
                 About This Venue
               </h3>
               {venueData.attributes?.description ? (
-                <p className="description-text">
-                  {venueData.attributes.description}
-                </p>
+                <div
+                  className="description-text text-black"
+                  style={{ textAlign: "justify" }}
+                  dangerouslySetInnerHTML={{
+                    __html: venueData.attributes.description,
+                  }}
+                />
               ) : (
-                <p className="description-text text-muted">
+                <p className="text-black text-justify">
                   No description available for this venue.
                 </p>
               )}
+
               {venueData.attributes?.subtitle && (
-                <p className="description-text">
+                <p className="description-text text-black text-justify">
                   {venueData.attributes.subtitle}
+                </p>
+              )}
+            </div>
+
+            {/**  FaqQuestionAnswer Detailed */}
+
+            <div className="my-4 border p-3 rounded">
+              <h1 className="my-4">Frequently Asked Questions</h1>
+              {faqList.length > 0 ? (
+                faqList.map((ques, index) => {
+                  const answers = parseDbValue(ques.ans);
+
+                  return (
+                    <div className="w-100 rounded border-bottom" key={index}>
+                      <div className="p-2">
+                        <p className="fw-semibold mb-1">{ques.text}</p>
+
+                        {answers.length === 1 ? (
+                          <p className="text-muted">{answers[0]}</p>
+                        ) : (
+                          <div className="row">
+                            {answers.map((a, idx) => (
+                              <div
+                                className="col-md-4  d-flex align-items-start mb-2"
+                                key={idx}
+                              >
+                                <i
+                                  className="fa-solid fa-check me-2"
+                                  style={{ color: "#0e6214", marginTop: "4px" }}
+                                ></i>
+                                <span className="text-muted">{a}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-muted">
+                  No FAQ information available for this vendor.
                 </p>
               )}
             </div>
@@ -393,22 +504,29 @@ const Detailed = () => {
             </div>
           </Col>
 
-          <Col lg={4}>
+          <Col lg={4} className="ps-5">
             <div className="venue-details-card">
               <div className="venue-info">
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <div className="rating-badge">
-                    <FaStar className="text-warning" />
-                    <span className="rating-value">4.5</span>
-                    <span className="reviews">(0 reviews)</span>
+                <div className="mb-3">
+                  <div className="d-flex">
+                    <span className="fw-bold me-2 fs-30">
+                      {venueData.attributes?.name || "Vendor Name"}
+                    </span>
                   </div>
-                  <div className="location">
-                    <FaLocationDot className="me-1" color="black" />
+                  <div className="d-flex align-items-center my-2">
+                    <FaLocationDot className="me-1" size={15} color="black" />
                     <span>
                       {venueData.attributes?.location
                         ? `${venueData.attributes.location.city}, ${venueData.attributes.location.state}`
                         : "Location not specified"}
                     </span>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div className="rating-badge">
+                      <FaStar className="text-warning" />
+                      <span className="rating-value">4.5</span>
+                      <span className="reviews">(0 reviews)</span>
+                    </div>
                   </div>
                 </div>
 
@@ -446,7 +564,7 @@ const Detailed = () => {
                   </p>
                 </div>
 
-                <div className="contact-info mb-4">
+                {/* <div className="contact-info mb-4">
                   <h4 className="contact-title">Contact Venue</h4>
                   {venueData.attributes?.contact?.phone && (
                     <div className="contact-item">
@@ -482,7 +600,7 @@ const Detailed = () => {
                         </span>
                       </div>
                     )}
-                </div>
+                </div> */}
 
                 <div className="action-buttons">
                   <div className="margin-b-50 d-flex h-center cursor-pointer">

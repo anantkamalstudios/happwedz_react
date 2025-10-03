@@ -3,10 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { Form, Button } from "react-bootstrap";
 import { useUser } from "../../hooks";
 import { useDispatch } from "react-redux";
-import { setCredentials } from "../../redux/authSlice";
+import { setCredentials, loginUser } from "../../redux/authSlice";
 import { auth, provider, signInWithPopup } from "../../firebase";
-import { FaGoogle } from "react-icons/fa";
 import { useToast } from "../layouts/toasts/Toast";
+import { useLoader } from "../context/LoaderContext";
 
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
@@ -14,14 +14,15 @@ const CustomerLogin = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
   const { addToast } = useToast();
+  const { showLoader, hideLoader } = useLoader();
 
   const dispatch = useDispatch();
   const { login, loading } = useUser();
 
   const handleGoogleLogin = async () => {
     try {
+      showLoader();
       const result = await signInWithPopup(auth, provider);
-
       const user = {
         name: result.user.displayName,
         email: result.user.email,
@@ -31,13 +32,14 @@ const CustomerLogin = () => {
 
       const token = await result.user.getIdToken();
 
-      dispatch(setCredentials({ user, token }));
+      dispatch(loginUser({ user, token }));
 
-      // console.log("Google user saved in Redux:", user);
       addToast("Login successful!", "success");
       navigate("/user-dashboard", { replace: true });
     } catch (error) {
       addToast("Google login failed: " + error.message, "danger");
+    } finally {
+      hideLoader();
     }
   };
 
@@ -54,11 +56,9 @@ const CustomerLogin = () => {
 
     if (response.success) {
       if (response.user && response.token) {
-        dispatch(
-          setCredentials({ user: response.user, token: response.token })
-        );
+        dispatch(loginUser({ user: response.user, token: response.token }));
       } else if (response.user) {
-        dispatch(setCredentials({ user: response.user, token: null }));
+        dispatch(loginUser({ user: response.user, token: null }));
       }
       addToast("Login successful!", "success");
       navigate("/user-dashboard", { replace: true });
@@ -68,11 +68,8 @@ const CustomerLogin = () => {
   };
 
   return (
-    <div className="wedding-login-container min-vh-100 d-flex align-items-center justify-content-center my-5">
-      <div
-        className="row w-100 shadow-lg rounded-4 overflow-hidden"
-        style={{ maxWidth: "1100px" }}
-      >
+    <div className="container wedding-login-container min-vh-100 d-flex align-items-center justify-content-center my-5">
+      <div className="row w-100 shadow-lg rounded-4 overflow-hidden">
         {/* Left Image Section */}
         <div className="col-lg-6 d-none d-lg-block p-0 position-relative">
           <div className="wedding-image-overlay position-absolute w-100 h-100"></div>

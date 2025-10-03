@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import {
@@ -12,62 +12,75 @@ import {
   FaChevronDown,
 } from "react-icons/fa";
 
+const initialGuestFormState = {
+  name: "",
+  email: "",
+  group: "Other",
+  type: "Adult",
+  companions: 0,
+  seat_number: "",
+  menu: "Veg",
+};
+
 const Guests = () => {
   const token = useSelector((state) => state.auth.token);
   const userId = useSelector((state) => state.auth.user?.id);
-
+  console.log("User ID:", userId);
   const [guests, setGuests] = useState([]);
-  const [newGuest, setNewGuest] = useState("");
-  const [newEmail, setNewEmail] = useState("");
-  const [newGroup, setNewGroup] = useState("Other");
-  const [newType, setNewType] = useState("Adult");
-  const [newCompanions, setNewCompanions] = useState(0);
-  const [newSeatNumber, setNewSeatNumber] = useState("");
-  const [newMenu, setNewMenu] = useState("Veg");
+  const [newGuestForm, setNewGuestForm] = useState(initialGuestFormState);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [showAddGuestForm, setShowAddGuestForm] = useState(false);
   const [showAddGroupForm, setShowAddGroupForm] = useState(false);
   const [showMessageOptions, setShowMessageOptions] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const guestsPerPage = 5; // change per page
   const [formError, setFormError] = useState("");
   const [refresh, setRefresh] = useState(false);
 
   const statusOptions = ["Attending", "Not Attending", "Pending"];
   const typeOptions = ["Adult", "Child"];
-  const menuOptions = ["Veg", "Non-Veg", "All"];
+  const menuOptions = ["Veg", "NonVeg", "All"];
+
+  // Create an Axios instance to automatically include the authorization header
+  const axiosInstance = React.useMemo(() => {
+    if (!token) return null;
+    return axios.create({
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  }, [token]);
 
   // Fetch guests
-  const fetchGuests = async () => {
-    if (!token || !userId) return;
+  const fetchGuests = useCallback(async () => {
+    if (!axiosInstance || !userId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     try {
-      const res = await axios.get(`https://happywedz.com/api/guestlist/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("Fetch Guests Response:", res);
-      // The API returns an array of guests under the `data` property.
-      if (res.data && res.data.success && Array.isArray(res.data.data)) {
-        setGuests(res.data.data);
-      } else if (res.data && res.data.success && res.data.guest) {
-        // Handle single guest response by wrapping it in an array
-        setGuests([res.data.guest]);
+      const res = await axiosInstance.get(`https://happywedz.com/api/guestlist/user/${userId}`);
+
+      console.log("Guests Data:", res.data);
+      console.log("Guests Array:", res.data?.guests);
+
+      if (res.data?.success && Array.isArray(res.data?.guests)) {
+        setGuests(res.data.guests);
       } else {
         setGuests([]);
       }
     } catch (err) {
       console.error("Fetch Guests Error:", err);
       setGuests([]);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [axiosInstance, userId]);
 
-  console.log(guests)
 
   useEffect(() => {
     fetchGuests();
-  }, [refresh, token, userId]);
+  }, [refresh, fetchGuests]);
 
   const filteredGuests = guests.filter(
     (g) =>
@@ -77,64 +90,73 @@ const Guests = () => {
       g.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Pagination calculations
+  // Pagination calculations 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [guestsPerPage] = useState(5);
+
+  // Calculate currentGuests
   const indexOfLastGuest = currentPage * guestsPerPage;
   const indexOfFirstGuest = indexOfLastGuest - guestsPerPage;
-  const currentGuests = filteredGuests.slice(indexOfFirstGuest, indexOfLastGuest);
-  const totalPages = Math.ceil(filteredGuests.length / guestsPerPage);
+  const currentGuests = guests.slice(indexOfFirstGuest, indexOfLastGuest);
 
+  // Total pages
+  const totalPages = Math.ceil(guests.length / guestsPerPage);
+
+  // Pagination function
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setNewGuestForm(prev => ({ ...prev, [name]: value }));
+  };
 
   const addGuestAPI = async () => {
     setFormError("");
-    if (!newGuest.trim()) {
+    if (!newGuestForm.name.trim()) {
       setFormError("Guest name is required.");
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (newEmail && !emailRegex.test(newEmail)) {
+    if (newGuestForm.email && !emailRegex.test(newGuestForm.email)) {
       setFormError("Please enter a valid email address.");
       return;
     }
 
+    if (!userId) {
+      setFormError("User not identified. Please log in again.");
+      return;
+    }
+
     try {
-      const res = await axios.post(
+      const res = await axiosInstance.post(
         "https://happywedz.com/api/guestlist",
         {
-          user_id: userId,
-          name: newGuest,
-          email: newEmail,
-          group: newGroup,
+          ...newGuestForm,
+          userId: parseInt(userId, 10), // Corrected from user_id to userId
           status: "Pending",
-          type: newType,
-          companions: parseInt(newCompanions, 10) || 0,
-          seat_number: newSeatNumber,
-          menu: newMenu,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
+          companions: parseInt(newGuestForm.companions, 10) || 0,
+        }
       );
-      setNewGuest("");
-      setNewEmail("");
-      setNewGroup("Other");
-      setNewType("Adult");
-      setNewCompanions(0);
-      setNewSeatNumber("");
-      setNewMenu("Veg");
-      setRefresh(prev => !prev); // Trigger re-fetch
+      console.log("Add Guest Response:", res);
+      if (res.data?.success && res.data.guest) {
+        setGuests(prev => [res.data.guest, ...prev]);
+      }
+      setNewGuestForm(initialGuestFormState); // Reset form state
+      // setRefresh(prev => !prev); // No longer needed, we are updating state directly
       setShowAddGuestForm(false);
     } catch (err) {
-      console.error("Add Guest Error:", err);
+      const errorMessage = err.response?.data?.message || "An error occurred while adding the guest.";
+      setFormError(errorMessage);
+      console.error("Add Guest Error:", err.response || err);
     }
   };
 
   const updateGuestField = async (id, field, value) => {
+    if (!axiosInstance) return;
     try {
-      const res = await axios.put(
-        `https://happywedz.com/api/guestlist/${id}`,
-        { [field]: value },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axiosInstance.put(`https://happywedz.com/api/guestlist/${id}`, { [field]: value });
       setRefresh(prev => !prev); // Trigger re-fetch
     } catch (err) {
       console.error("Update Guest Error:", err);
@@ -142,11 +164,10 @@ const Guests = () => {
   };
 
   const deleteGuestAPI = async (id) => {
+    if (!axiosInstance) return;
     if (!window.confirm("Are you sure?")) return;
     try {
-      await axios.delete(`https://happywedz.com/api/guestlist/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axiosInstance.delete(`https://happywedz.com/api/guestlist/${id}`);
       setRefresh(prev => !prev); // Trigger re-fetch
     } catch (err) {
       console.error("Delete Guest Error:", err);
@@ -163,6 +184,10 @@ const Guests = () => {
     alert(`Sending ${type} message`);
     setShowMessageOptions(false);
   };
+
+  if (loading) {
+    return <div className="wgl-container"><p>Loading guests...</p></div>;
+  }
 
   return (
     <div className="wgl-container">
@@ -247,35 +272,35 @@ const Guests = () => {
             <div className="row g-3">
               <div className="col-md-4">
                 <label className="form-label">Guest Name</label>
-                <input className="form-control" placeholder="e.g., John Doe" value={newGuest} onChange={(e) => setNewGuest(e.target.value)} />
+                <input name="name" className="form-control" placeholder="e.g., John Doe" value={newGuestForm.name} onChange={handleFormChange} />
               </div>
               <div className="col-md-4">
                 <label className="form-label">Guest Email</label>
-                <input type="email" className="form-control" placeholder="e.g., john.doe@example.com" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
+                <input name="email" type="email" className="form-control" placeholder="e.g., john.doe@example.com" value={newGuestForm.email} onChange={handleFormChange} />
               </div>
               <div className="col-md-4">
                 <label className="form-label">Companions</label>
-                <input type="number" className="form-control" placeholder="e.g., 2" value={newCompanions} onChange={(e) => setNewCompanions(e.target.value)} />
+                <input name="companions" type="number" className="form-control" placeholder="e.g., 2" value={newGuestForm.companions} onChange={handleFormChange} />
               </div>
               <div className="col-md-4">
                 <label className="form-label">Group</label>
-                <input className="form-control" placeholder="e.g., Bride's Family" value={newGroup} onChange={(e) => setNewGroup(e.target.value)} />
+                <input name="group" className="form-control" placeholder="e.g., Bride's Family" value={newGuestForm.group} onChange={handleFormChange} />
               </div>
               <div className="col-md-4">
                 <label className="form-label">Type</label>
-                <select className="form-select" value={newType} onChange={(e) => setNewType(e.target.value)}>
+                <select name="type" className="form-select" value={newGuestForm.type} onChange={handleFormChange}>
                   {typeOptions.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
               <div className="col-md-4">
                 <label className="form-label">Menu Preference</label>
-                <select className="form-select" value={newMenu} onChange={(e) => setNewMenu(e.target.value)}>
+                <select name="menu" className="form-select" value={newGuestForm.menu} onChange={handleFormChange}>
                   {menuOptions.map((m) => <option key={m} value={m}>{m}</option>)}
                 </select>
               </div>
               <div className="col-md-4">
                 <label className="form-label">Seat Number</label>
-                <input className="form-control" placeholder="e.g., A12" value={newSeatNumber} onChange={(e) => setNewSeatNumber(e.target.value)} />
+                <input name="seat_number" className="form-control" placeholder="e.g., A12" value={newGuestForm.seat_number} onChange={handleFormChange} />
               </div>
             </div>
             <div className="wgl-form-actions mt-4 d-flex justify-content-end gap-2">
@@ -294,10 +319,10 @@ const Guests = () => {
       {showAddGroupForm && (
         <div className="wgl-add-form">
           <h3 className="wgl-form-title">Create New Group</h3>
-          <input className="wgl-form-input" placeholder="Group Name" value={newGroup} onChange={(e) => setNewGroup(e.target.value)} />
+          <input name="group" className="wgl-form-input" placeholder="Group Name" value={newGuestForm.group} onChange={handleFormChange} />
           <div className="wgl-form-actions">
             <button className="wgl-button wgl-button-cancel" onClick={() => setShowAddGroupForm(false)}>Cancel</button>
-            <button className="wgl-button wgl-button-save" onClick={() => { alert(`Group "${newGroup}" created`); setShowAddGroupForm(false); }}>Create Group</button>
+            <button className="wgl-button wgl-button-save" onClick={() => { alert(`Group "${newGuestForm.group}" created`); setShowAddGroupForm(false); }}>Create Group</button>
           </div>
         </div>
       )}
@@ -325,7 +350,7 @@ const Guests = () => {
 
       {/* Guest Table */}
       <div className="wgl-guest-list">
-        {currentGuests.length > 0 ? (
+        {guests.length > 0 ? (
           <table className="wgl-guest-table">
             <thead>
               <tr>
@@ -340,7 +365,7 @@ const Guests = () => {
               </tr>
             </thead>
             <tbody>
-              {currentGuests.map((g) => (
+              {guests.map((g) => (
                 <tr key={g.id} className="wgl-guest-row">
                   <td className="wgl-guest-name">{g.name}</td>
                   <td className="wgl-guest-group">{g.group}</td>
@@ -350,23 +375,40 @@ const Guests = () => {
                       value={g.status}
                       onChange={(e) => updateGuestField(g.id, "status", e.target.value)}
                     >
-                      {statusOptions.map((s) => <option key={s}>{s}</option>)}
+                      {statusOptions.map((s) => (
+                        <option key={s}>{s}</option>
+                      ))}
                     </select>
                   </td>
                   <td className="wgl-guest-companions">{g.companions}</td>
                   <td className="wgl-guest-seat">{g.seat_number}</td>
                   <td className="wgl-guest-type">
-                    <select value={g.type} onChange={(e) => updateGuestField(g.id, "type", e.target.value)}>
-                      {typeOptions.map((t) => <option key={t}>{t}</option>)}
+                    <select
+                      value={g.type}
+                      onChange={(e) => updateGuestField(g.id, "type", e.target.value)}
+                    >
+                      {typeOptions.map((t) => (
+                        <option key={t}>{t}</option>
+                      ))}
                     </select>
                   </td>
                   <td className="wgl-guest-menu">
-                    <select value={g.menu} onChange={(e) => updateGuestField(g.id, "menu", e.target.value)}>
-                      {menuOptions.map((m) => <option key={m}>{m}</option>)}
+                    <select
+                      value={g.menu}
+                      onChange={(e) => updateGuestField(g.id, "menu", e.target.value)}
+                    >
+                      {menuOptions.map((m) => (
+                        <option key={m}>{m}</option>
+                      ))}
                     </select>
                   </td>
                   <td className="wgl-guest-actions">
-                    <button className="wgl-action-button wgl-action-delete" onClick={() => deleteGuestAPI(g.id)}>Remove</button>
+                    <button
+                      className="wgl-action-button wgl-action-delete"
+                      onClick={() => deleteGuestAPI(g.id)}
+                    >
+                      Remove
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -381,7 +423,12 @@ const Guests = () => {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="wgl-pagination">
-            <button disabled={currentPage === 1} onClick={() => paginate(currentPage - 1)}>Previous</button>
+            <button
+              disabled={currentPage === 1}
+              onClick={() => paginate(currentPage - 1)}
+            >
+              Previous
+            </button>
             {[...Array(totalPages)].map((_, i) => (
               <button
                 key={i + 1}
@@ -391,10 +438,16 @@ const Guests = () => {
                 {i + 1}
               </button>
             ))}
-            <button disabled={currentPage === totalPages} onClick={() => paginate(currentPage + 1)}>Next</button>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => paginate(currentPage + 1)}
+            >
+              Next
+            </button>
           </div>
         )}
       </div>
+
     </div>
   );
 };

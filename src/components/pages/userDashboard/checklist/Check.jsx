@@ -7,7 +7,6 @@
 
 // const API_BASE = "https://happywedz.com/api/checklist";
 
-
 // const Check = () => {
 //   const userId = useSelector((state) => state.auth.user?.id);
 //   const [tasks, setTasks] = useState([]);
@@ -398,20 +397,21 @@
 // };
 
 // export default Check;
+
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaCheck, FaPlus, FaDownload, FaPrint } from "react-icons/fa";
 import { FiCheck, FiTrash } from "react-icons/fi";
 import axios from "axios";
 import { useSelector } from "react-redux";
-import { selectToken } from "../../../../redux/authSlice";
 
 const API_BASE = "https://happywedz.com/api/checklist_new"; // For tasks
 const CATEGORY_API = "https://happywedz.com/api/vendor-types/with-subcategories/all"; // For categories
 
 const Check = () => {
   const userId = useSelector((state) => state.auth.user?.id);
-  const token = useSelector(selectToken);
+  const token = useSelector((state) => state.auth.token);
+  const selectToken = useSelector((state) => state.auth.token);
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -645,7 +645,8 @@ const Check = () => {
                   <span className="wc-completed text-success">
                     {completedCount}
                   </span>{" "}
-                  out of <span className="wc-total text-primary">{tasks.length}</span>{" "}
+                  out of{" "}
+                  <span className="wc-total text-primary">{tasks.length}</span>{" "}
                   tasks
                 </h5>
               </div>
@@ -674,11 +675,13 @@ const Check = () => {
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
                       >
-                        {categories.filter((c) => c !== "All").map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
+                        {categories
+                          .filter((c) => c !== "All")
+                          .map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
                       </select>
                     </div>
                     <div className="col-md-3 mb-3">
@@ -688,11 +691,13 @@ const Check = () => {
                         value={selectedPeriod}
                         onChange={(e) => setSelectedPeriod(e.target.value)}
                       >
-                        {periods.filter((p) => p !== "All").map((p) => (
-                          <option key={p} value={p}>
-                            {p}
-                          </option>
-                        ))}
+                        {periods
+                          .filter((p) => p !== "All")
+                          .map((p) => (
+                            <option key={p} value={p}>
+                              {p}
+                            </option>
+                          ))}
                       </select>
                     </div>
                   </div>
@@ -709,7 +714,10 @@ const Check = () => {
                 ) : tasks.length > 0 ? (
                   <ul className="list-group">
                     {tasks.map((task) => (
-                      <li key={task.id} className="list-group-item d-flex align-items-center">
+                      <li
+                        key={task.id}
+                        className="list-group-item d-flex align-items-center"
+                      >
                         <div
                           className={`wc-task-checkbox me-3 ${task.status === "completed" ? "wc-completed" : ""
                             }`}
@@ -719,7 +727,11 @@ const Check = () => {
                         </div>
                         <div className="flex-grow-1">
                           <div
-                            className={task.status === "completed" ? "text-muted text-decoration-line-through" : ""}
+                            className={
+                              task.status === "completed"
+                                ? "text-muted text-decoration-line-through"
+                                : ""
+                            }
                           >
                             {task.title}
                           </div>
@@ -728,7 +740,10 @@ const Check = () => {
                             <span>{task.period}</span>
                           </div>
                         </div>
-                        <button className="btn btn-outline-danger" onClick={() => deleteTask(task.id)}>
+                        <button
+                          className="btn btn-outline-danger"
+                          onClick={() => deleteTask(task.id)}
+                        >
                           <FiTrash />
                         </button>
                       </li>

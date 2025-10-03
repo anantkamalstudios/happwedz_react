@@ -47,128 +47,129 @@ const MasonryImageSection = () => {
     },
   ]);
 
+  const weddingImages = [
+    {
+      id: 1,
+      src: "https://img.freepik.com/premium-photo/bride-groom-standing-front-chandelier_1113980-2347.jpg?w=1060",
+      title: "Elegant Wedding Venue",
+      size: "large",
+    },
+    {
+      id: 2,
+      src: "https://img.freepik.com/premium-photo/photo-traditional-indian-wedding-ceremony_1325814-2854.jpg",
+      title: "Wedding",
+      size: "medium",
+    },
+    {
+      id: 3,
+      src: "https://img.freepik.com/premium-photo/bride-groom-pink-gold-wedding-dress_1120246-25950.jpg?w=1060",
+      title: "Wedding",
+      size: "large",
+    },
+    {
+      id: 4,
+      src: "https://img.freepik.com/free-photo/beautiful-woman-long-red-dress-walks-around-city-with-her-husband_1157-13373.jpg?w=1060",
+      title: "Wedding",
+      size: "medium",
+    },
+    {
+      id: 5,
+      src: "https://img.freepik.com/premium-photo/indian-bride-fotographiya_1108565-38.jpg?w=1060",
+      title: "Wedding",
+      size: "large",
+    },
+    {
+      id: 6,
+      src: "https://img.freepik.com/premium-photo/photo-traditional-indian-wedding-ceremony_1325814-2854.jpg",
+      title: "Wedding",
+      size: "medium",
+    },
+  ];
   return (
-    <div style={{ backgroundColor: "#f8f9fa", padding: "40px 20px" }}>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: "40px" }}>
-          <h2
-            style={{
-              fontWeight: "bold",
-              color: "#333",
-              marginBottom: "12px",
-              fontSize: "2.5rem",
-            }}
-          >
+    <div style={{ padding: "40px 20px" }}>
+      <div className="container">
+        <div className="text-center mb-1">
+          <img
+            src="/images/home/weddinggalleryflower.png"
+            alt="inspiredTeaser"
+            className="w-20 h-20"
+          />
+          <h2 className="blogs-carousel-heading fw-bold mb-4 display-5 primary-text">
             Wedding Gallery
           </h2>
-          <p
-            style={{
-              color: "#666",
-              fontSize: "1.1rem",
-              margin: "0",
-            }}
-          >
+          <p className="fs-26 mb-3" data-aos="fade-up" data-aos-delay="50">
             Get inspired by our collection of beautiful wedding moments
           </p>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "16px",
-            marginBottom: "40px",
-          }}
-        >
-          {images.map((image) => (
-            <div
-              key={image.id}
-              style={{
-                position: "relative",
-                borderRadius: "12px",
-                overflow: "hidden",
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-                backgroundColor: "white",
-                height: `${image.height}px`,
-              }}
-              className="masonry-item"
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow =
-                  "0 20px 40px rgba(0, 0, 0, 0.15)";
-                e.currentTarget.style.transform = "translateY(-4px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow =
-                  "0 4px 12px rgba(0, 0, 0, 0.1)";
-                e.currentTarget.style.transform = "translateY(0px)";
-              }}
+        <div className="gallery-container">
+          <Link to="/photography" className="see-more-link">
+            SEE MORE
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <img
-                src={image.url}
-                alt={image.title}
-                loading="lazy"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  display: "block",
-                }}
-                onError={(e) => {
-                  e.target.src =
-                    "https://via.placeholder.com/400x300/f8f9fa/6c757d?text=Image+Not+Available";
-                }}
-              />
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </Link>
 
-              <div
-                className="image-overlay"
-                style={{
-                  position: "absolute",
-                  bottom: "0",
-                  left: "0",
-                  right: "0",
-                  background:
-                    "linear-gradient(transparent, rgba(0, 0, 0, 0.8))",
-                  padding: "40px 16px 16px",
-                  color: "white",
-                  opacity: "0",
-                  transition: "opacity 0.3s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.opacity = "1";
-                }}
-              >
-                <h6
-                  style={{
-                    fontSize: "1.1rem",
-                    fontWeight: "600",
-                    margin: "0 0 4px 0",
-                    lineHeight: "1.3",
-                  }}
-                >
-                  {image.title}
-                </h6>
+          <div className="row">
+            <div className="col-12 col-md-6 col-lg-4">
+              <div className={`gallery-item ${weddingImages[0].size}`}>
+                <img src={weddingImages[0].src} alt={weddingImages[0].title} />
+                <div className="gallery-overlay">
+                  <p className="gallery-title">{weddingImages[0].title}</p>
+                </div>
+              </div>
+
+              <div className={`gallery-item ${weddingImages[3].size}`}>
+                <img src={weddingImages[3].src} alt={weddingImages[3].title} />
+                <div className="gallery-overlay">
+                  <p className="gallery-title">{weddingImages[3].title}</p>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
 
-        <div style={{ textAlign: "center" }}>
-          <Link to="/photography" className="btn btn-primary btn-lg">
-            View Full Gallery
-          </Link>
+            <div className="col-12 col-md-6 col-lg-4">
+              <div className={`gallery-item ${weddingImages[1].size}`}>
+                <img src={weddingImages[1].src} alt={weddingImages[1].title} />
+                <div className="gallery-overlay">
+                  <p className="gallery-title">{weddingImages[1].title}</p>
+                </div>
+              </div>
+
+              <div className={`gallery-item ${weddingImages[4].size}`}>
+                <img src={weddingImages[4].src} alt={weddingImages[4].title} />
+                <div className="gallery-overlay">
+                  <p className="gallery-title">{weddingImages[4].title}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-12 col-md-6 col-lg-4">
+              <div className={`gallery-item ${weddingImages[2].size}`}>
+                <img src={weddingImages[2].src} alt={weddingImages[2].title} />
+                <div className="gallery-overlay">
+                  <p className="gallery-title">{weddingImages[2].title}</p>
+                </div>
+              </div>
+
+              <div className={`gallery-item ${weddingImages[5].size}`}>
+                <img src={weddingImages[5].src} alt={weddingImages[5].title} />
+                <div className="gallery-overlay">
+                  <p className="gallery-title">{weddingImages[5].title}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .masonry-item:hover .image-overlay {
-          opacity: 1 !important;
-        }
-
-        .masonry-item {
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-      `}</style>
     </div>
   );
 };

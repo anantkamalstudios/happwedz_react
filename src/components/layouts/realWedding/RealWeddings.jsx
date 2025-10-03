@@ -29,7 +29,6 @@ const RealWeddings = ({ onPostClick }) => {
         const response = await axios.get(
           "https://happywedz.com/api/realwedding"
         );
-        // The API returns an array directly.
         if (response.data && Array.isArray(response.data)) {
           setWeddings(response.data);
         } else {
@@ -59,9 +58,8 @@ const RealWeddings = ({ onPostClick }) => {
 
   const getImageUrl = (path) => {
     if (!path) {
-      return "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop"; // A fallback image
-    }
-    console.log(path)
+      return "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop";
+    } 
     return `https://happywedzbackend.happywedz.com${path}`;
   };
 
@@ -166,17 +164,6 @@ const RealWeddings = ({ onPostClick }) => {
         </div>
       </section>
 
-      <CtaPanel
-        logo={logo}
-        img={image}
-        heading="Design Studio"
-        subHeading="Try Virtual Makeup & Grooming Looks for Your Big Day"
-        link="/try"
-        title="Create Your Look !"
-        subtitle="Experience How You'll Look on Your Wedding Day with AI-Powered Virtual Makeover"
-        btnName="Try Virtual Look"
-      />
-
       {/* Wedding Gallery */}
       <section className="gallery-section py-5">
         <div className="container">
@@ -186,9 +173,11 @@ const RealWeddings = ({ onPostClick }) => {
                 <p className="text-muted fs-4">Loading weddings...</p>
               </div>
             ) : (
-              filteredWeddings.slice(0, visibleCount).map((wedding) => (
-                <WeddingCard key={wedding.id} wedding={wedding} />
-              ))
+              filteredWeddings
+                .slice(0, visibleCount)
+                .map((wedding) => (
+                  <WeddingCard key={wedding.id} wedding={wedding} />
+                ))
             )}
           </div>
 
@@ -219,17 +208,6 @@ const RealWeddings = ({ onPostClick }) => {
           )}
         </div>
       </section>
-
-      <CtaPanel
-        logo={logo}
-        img={einviteImage}
-        heading="Digital Wedding Invitations"
-        subHeading="Personalize & Send Invites Instantly"
-        title="Create Stunning Digital Wedding Invitations That Wow"
-        subtitle="Design beautiful e-invites using our easy-to-use editor. Customize templates, add your personal touch, and send invites digitally to your guests in minutes."
-        link="/e-invites"
-        btnName="Create Your E-Invite"
-      />
     </div>
   );
 };

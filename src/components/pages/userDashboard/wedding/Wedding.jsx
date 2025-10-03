@@ -597,10 +597,7 @@ const Wedding = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // NOTE: This is an example. You should have a secure way to get user data.
-        // This assumes you store a token after login/registration.
         if (!token) {
-          // Handle case where user is not logged in, e.g., redirect to login
           console.error("No user token found.");
           setLoadingUser(false);
           return;
@@ -629,9 +626,8 @@ const Wedding = () => {
         });
 
         const data = await response.json();
-        if (data.success) {
-          setUser(data.user); // Assuming the API returns { success: true, user: {...} }
-        }
+        console.log("user ->", data.user);
+        setUser(data.user);
       } catch (error) {
         console.error("Failed to fetch user data:", error);
       } finally {
@@ -699,39 +695,41 @@ const Wedding = () => {
 
   // Countdown Timer Logic
   useEffect(() => {
+    // my setup just uncomment below line
     if (!user?.weddingDate) return;
 
     const weddingDate = new Date(user.weddingDate);
+    // const weddingDate = new Date(2025, 9, 2);
+    // My static code
 
-    // Time constants for better readability
     const MILLISECONDS_IN_SECOND = 1000;
     const SECONDS_IN_MINUTE = 60;
     const MINUTES_IN_HOUR = 60;
     const HOURS_IN_DAY = 24;
-    const MILLISECONDS_IN_HOUR = MILLISECONDS_IN_SECOND * SECONDS_IN_MINUTE * MINUTES_IN_HOUR;
+    const MILLISECONDS_IN_HOUR =
+      MILLISECONDS_IN_SECOND * SECONDS_IN_MINUTE * MINUTES_IN_HOUR;
     const MILLISECONDS_IN_DAY = MILLISECONDS_IN_HOUR * HOURS_IN_DAY;
 
     const calculateCountdown = () => {
-      const now = new Date();
-      const difference = weddingDate.getTime() - now.getTime();
+      const now = new Date(Date.now());
+      // const difference = weddingDate.getTime() - now.getTime();
+      const difference = weddingDate - now;
 
       if (difference > 0) {
         const days = Math.floor(difference / MILLISECONDS_IN_DAY);
-        const hours = Math.floor((difference % MILLISECONDS_IN_DAY) / MILLISECONDS_IN_HOUR);
+        const hours = Math.floor(
+          (difference % MILLISECONDS_IN_DAY) / MILLISECONDS_IN_HOUR
+        );
         setCountdown({ days, hours, hasPassed: false });
       } else {
-        // If the wedding date has passed
         setCountdown({ days: 0, hours: 0, hasPassed: true });
       }
     };
-
-    // Calculate immediately on component mount or when the wedding date changes
     calculateCountdown();
 
     // Update the countdown every minute. Updating every second is unnecessary if not displaying seconds.
     const interval = setInterval(calculateCountdown, 60000); // 60000ms = 1 minute
 
-    // Cleanup the interval when the component unmounts or the wedding date changes
     return () => clearInterval(interval);
   }, [user?.weddingDate]);
 
@@ -745,10 +743,14 @@ const Wedding = () => {
     const getOrdinal = (d) => {
       if (d > 3 && d < 21) return "th";
       switch (d % 10) {
-        case 1: return "st";
-        case 2: return "nd";
-        case 3: return "rd";
-        default: return "th";
+        case 1:
+          return "st";
+        case 2:
+          return "nd";
+        case 3:
+          return "rd";
+        default:
+          return "th";
       }
     };
 
@@ -761,9 +763,7 @@ const Wedding = () => {
     : vendorCategories.slice(0, 6);
 
   if (loadingUser) {
-    return (
-      <div className="text-center py-5">Loading your dashboard...</div>
-    );
+    return <div className="text-center py-5">Loading your dashboard...</div>;
   }
 
   return (
@@ -810,7 +810,9 @@ const Wedding = () => {
                   .join(" ") || "User"}!
               </h4>
 
-              <p className="text-muted mb-4">{formatDateWithOrdinal(user?.weddingDate)}</p>
+              <p className="text-muted mb-4">
+                {formatDateWithOrdinal(user?.weddingDate)}
+              </p>
 
               <div className="card rounded-0 border-0 shadow-sm">
                 <div className="row text-center g-0">

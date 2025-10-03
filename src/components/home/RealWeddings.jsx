@@ -53,18 +53,20 @@ const RealWeddings = () => {
   return (
     <div className="container py-5">
       <div className="row align-items-center">
-        <div className="col-lg-4 p-0 m-0 real-wedding-custom-wide-card">
+        <div className="col-lg-5 p-0 m-0 real-wedding-custom-wide-card">
           <div
             className="card border-0 shadow-lg h-100 position-relative"
-            style={{ minHeight: "600px", zIndex: 10, width: "40vw" }}
+            style={{
+              minHeight: "600px",
+              zIndex: 10,
+              width: "100%",
+            }}
           >
             <div className="card-body p-5 d-flex flex-column justify-content-center">
-              {/* Flower Icon */}
               <div className="mb-4">
                 <img
                   src="/images/home/Flower.png"
                   alt="flower"
-                  srcset=""
                   className="w-20 h-20"
                 />
               </div>
@@ -104,11 +106,10 @@ const RealWeddings = () => {
           </div>
         </div>
 
-        {/* Carousel Container - Right Side */}
-        <div className="col-lg-8 position-relative overflow-hidden mt-5">
+        <div className="col-lg-7 position-relative overflow-hidden mt-5 d-none d-lg-block">
           <div
             className="carousel-wrapper position-relative overflow-hidden"
-            style={{ height: "500px", left: "0" }} // Added 10% overlap
+            style={{ height: "500px", left: "0" }}
           >
             {/* Carousel Track */}
             <div

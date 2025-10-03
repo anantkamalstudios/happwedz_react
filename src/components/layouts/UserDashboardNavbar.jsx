@@ -197,7 +197,7 @@ const UserDashboardNavbar = () => {
     { id: "guest-list", slug: "guest-list", label: "Guest list", icon: <FaUsers /> },
     { id: "budget", slug: "budget", label: "Budget", icon: <FaPiggyBank /> },
     { id: "wishlist", slug: "wishlist", label: "Wishlist", icon: <FaHeart /> },
-    { id: "booking", slug: "booking", label: "Booking", icon: <FaShoppingCart /> },
+    // { id: "booking", slug: "booking", label: "Booking", icon: <FaShoppingCart /> },
     { id: "message", slug: "message", label: "Message", icon: <FaEnvelopeOpenText /> },
     { id: "real-wedding", slug: "real-wedding", label: "Real wedding", icon: <FaUserFriends /> },
   ];

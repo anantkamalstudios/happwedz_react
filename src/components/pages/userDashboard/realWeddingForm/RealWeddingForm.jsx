@@ -191,8 +191,7 @@ const RealWeddingForm = ({ user, token }) => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setSuccess("Your wedding story has been submitted successfully!");
-      console.log("Server response:", response.data);
+      setSuccess("Your wedding story has been submitted successfully!"); 
     } catch (err) {
       setError(err.response?.data?.message || "An error occurred while submitting the form.");
       console.error("Submission error:", err);

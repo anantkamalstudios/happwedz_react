@@ -168,7 +168,7 @@ export const FaqQuestions = {
     ],
   },
   weddingInvitation: {
-    vendor_type_id: 2,
+    vendor_type_id: 8,
     vendor_type: "Wedding Invitation",
     questions: [
       {
@@ -1456,8 +1456,8 @@ export const FaqQuestions = {
     ],
   },
   weddingPlanner: {
-    vendor_type_id: 22,
-    vendor_type: "Wedding Planner",
+    vendor_type_id: 12,
+    vendor_type: "Weddingplanner",
     questions: [
       {
         id: 901,
@@ -2315,7 +2315,7 @@ export const FaqQuestions = {
     ],
   },
   cake: {
-    vendor_type_id: 13,
+    vendor_type_id: 19,
     vendor_type: "Cake",
     questions: [
       {
@@ -2727,9 +2727,9 @@ export const FaqQuestions = {
       },
     ],
   },
-  pandit: {
+  pandits: {
     vendor_type_id: 13,
-    vendor_type: "Pandit",
+    vendor_type: "Pandits",
     questions: [
       {
         id: 1601,
@@ -3201,9 +3201,9 @@ export const FaqQuestions = {
       },
     ],
   },
-  partyPlaces: {
+  partyplaces: {
     vendor_type_id: 19,
-    vendor_type: "Party Places",
+    vendor_type: "Partyplaces",
     questions: [
       {
         id: 1901,
@@ -3434,9 +3434,9 @@ export const FaqQuestions = {
       },
     ],
   },
-  weddingChoreographer: {
+  weddingchoreographer: {
     vendor_type_id: 20,
-    vendor_type: "Wedding Choreographer",
+    vendor_type: "Weddingchoreographer",
     questions: [
       {
         id: 2001,
@@ -3605,7 +3605,7 @@ export const FaqQuestions = {
     ],
   },
   gifts: {
-    vendor_type_id: 21,
+    vendor_type_id: 8,
     vendor_type: "Gifts",
     questions: [
       {

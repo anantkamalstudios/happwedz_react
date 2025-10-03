@@ -4,16 +4,16 @@ import BlogDetails from "./BlogDetails";
 
 const Blog = () => {
   const [currentView, setCurrentView] = useState("list");
-  const [selectedPost, setSelectedPost] = useState(null);
+  const [selectedBlogId, setSelectedBlogId] = useState(null);
 
-  const handlePostClick = (post) => {
-    setSelectedPost(post);
+  const handlePostClick = (blogId) => {
+    setSelectedBlogId(blogId);
     setCurrentView("detail");
   };
 
   const handleBackClick = () => {
     setCurrentView("list");
-    setSelectedPost(null);
+    setSelectedBlogId(null);
   };
 
   return (
@@ -21,7 +21,7 @@ const Blog = () => {
       {currentView === "list" ? (
         <BlogLists onPostClick={handlePostClick} />
       ) : (
-        <BlogDetails post={selectedPost} onBackClick={handleBackClick} />
+        <BlogDetails blogId={selectedBlogId} onBackClick={handleBackClick} />
       )}
     </div>
   );

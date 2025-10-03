@@ -79,9 +79,9 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
               >
                 {title || "Plan your perfect day"}
               </h1>
-              <p className="text-muted mb-4" style={{ maxWidth: 560 }}>
-                Discover curated options that fit your style, budget, and
-                location. Search and compare instantly.
+              <p className="text-muted mb-4" style={{}}>
+                From royal palaces to cozy gardens - find the perfect setting
+                for your big day
               </p>
 
               <Form onSubmit={handleSubmit} className="w-100 position-relative">
@@ -95,7 +95,7 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
                 >
                   <div
                     className="d-flex align-items-center flex-grow-1 px-2"
-                    style={{ border: "1px solid pink", borderRadius: "5px" }}
+                    style={{ border: "2px solid #C31162", borderRadius: "5px" }}
                   >
                     <FaSearch className="me-2 text-muted" />
                     <Form.Control
@@ -167,9 +167,12 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
 
                   <Button
                     type="submit"
-                    variant="primary"
-                    className="ms-md-2 rounded-3 px-4 d-flex align-items-center justify-content-center"
-                    style={{ whiteSpace: "nowrap" }}
+                    // className="ms-md-2 rounded-3 px-4 d-flex align-items-center justify-content-center"
+                    style={{
+                      whiteSpace: "nowrap",
+                      backgroundColor: "#C31162",
+                      color: "#fff",
+                    }}
                   >
                     <CiSearch size={20} className="me-2" />
                     Search
@@ -179,32 +182,65 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
 
               {/* Quick Chips */}
               <div className="d-flex gap-2 mt-3 flex-wrap">
-                {[
-                  "Banquet Halls",
-                  "Wedding Resorts",
-                  "Photographers",
-                  "Makeup",
-                ].map((chip) => (
-                  <span
-                    key={chip}
-                    className="badge bg-light text-muted border rounded-pill px-3 py-2"
-                    style={{ fontWeight: 500 }}
-                  >
-                    {chip}
-                  </span>
-                ))}
+                {["Banquet Halls", "Wedding Resorts", "Photographers"].map(
+                  (chip) => (
+                    <p style={{}}>
+                      <span
+                        key={chip}
+                        className="badge  rounded-pill px-4 py-2"
+                        style={{
+                          fontWeight: 300,
+                          fontSize: "10px",
+                          color: "#C31162",
+                          backgroundColor: "#fbcfe3ff",
+                        }}
+                      >
+                        {chip}
+                      </span>
+                    </p>
+                  )
+                )}
               </div>
             </div>
           </Col>
 
-          <Col xs={12} lg={6}>
+          {/* <Col xs={12} lg={6}>
             <div
-              className="position-relative mx-auto"
+              className="position-relative right-0"
               style={{ maxWidth: 560 }}
             >
               <div
-                className="bg-white shadow rounded-4 overflow-hidden"
+                className="bg-white shadow rounded-4 overflow-hidden w-100"
                 style={{ aspectRatio: "16 / 10" }}
+              >
+                <img
+                  src="/images/venues/hero_img_2.jpg"
+                  alt="Search showcase"
+                  className="w-100 h-100"
+                  style={{ objectFit: "cover" }}
+                  onError={(e) => {
+                    e.currentTarget.src = "logo-no-bg.png";
+                    e.currentTarget.style.objectFit = "contain";
+                  }}
+                />
+              </div>
+            </div>
+          </Col> */}
+          <Col xs={12} lg={6} className="position-static ">
+            <div
+              className="d-none d-lg-block position-absolute top-0 end-0 h-100"
+              style={{
+                width: "40%",
+                zIndex: 1,
+                paddingTop: "1rem",
+                paddingBottom: "1rem",
+              }}
+            >
+              <div
+                className="bg-white shadow rounded-start-4 overflow-hidden w-100 h-100"
+                style={{
+                  aspectRatio: "1 / 1",
+                }}
               >
                 <img
                   src="/images/venues/hero_img_2.jpg"

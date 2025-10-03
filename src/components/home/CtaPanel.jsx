@@ -27,22 +27,23 @@ const CtaPanel = ({
           {/* Text content - col-6 */}
           <div className="col-12 col-md-7 mb-3 mb-md-0">
             {heading && (
-              <h3 className="mb-1 fw-bold home-cta-section-heading">
+              <h3 className="mb-1 fw-bold home-cta-section-heading text-decoration-underline">
                 {heading}
               </h3>
             )}
             {subHeading && (
-              <p className="mb-2 home-cta-section-sub-heading fs-28">
+              <p className="my-4 home-cta-section-sub-heading fs-32">
                 {subHeading}
               </p>
             )}
-            <hr />
             {title && <h5 className="fw-bold mb-2">{title}</h5>}
             {subtitle && <p className="mb-3">{subtitle}</p>}
             {btnName && link && (
-              <Link to={link}>
-                <button className="btn cta-btn">{btnName}</button>
-              </Link>
+              <div className="d-flex justify-content-end">
+                <Link to={link}>
+                  <button className="btn btn-primary px-5">{btnName}</button>
+                </Link>
+              </div>
             )}
           </div>
 
@@ -51,8 +52,8 @@ const CtaPanel = ({
             <img
               src={img}
               alt="CTA"
-              className="img-fluid rounded"
-              style={{ maxHeight: "250px", objectFit: "cover" }}
+              className="img-fluid rounded w-100 object-fit-cover"
+              style={{ objectFit: "cover" }}
             />
           </div>
         </div>
