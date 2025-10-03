@@ -21,6 +21,7 @@ import MainSearch from "../layouts/Main/MainSearch";
 import RealWedding from "./RealWedding";
 import Genie from "./Genie";
 import AllCategories from "../layouts/AllCategories";
+import WeddingCategories from "../home/WeddingCategories";
 
 const MainSection = () => {
   const { section } = useParams();
