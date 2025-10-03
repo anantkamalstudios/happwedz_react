@@ -11,6 +11,7 @@ const Header = () => {
   const dispatch = useDispatch();
   const reduxLocation = useSelector((state) => state.location.selectedLocation);
   const [selectedCity, setSelectedCity] = useState(reduxLocation);
+  const formatName = (name) => name.replace(/\band\b/gi, "&");
 
   const handleLogout = () => {
     dispatch(logout());
@@ -347,9 +348,9 @@ const Header = () => {
                     <ul className="navbar-nav d-flex flex-wrap justify-content-center gap-3">
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <Link
-                          // to={targetURL}
-                          to="/venues"
-                          className="nav-link dropdown-toggle text-white"
+                          to={targetURL}
+                          // to="/venues"
+                          className="nav-link dropdown-toggle text-white  fs-20"
                         >
                           Venues
                         </Link>
@@ -388,20 +389,9 @@ const Header = () => {
                                       )}
                                     </div>
                                   </div>
-
-                                  {/* <img
-                                    src="https://cdn-icons-png.flaticon.com/512/3176/3176294.png"
-                                    alt="Popular Categories"
-                                    className="img-fluid mt-3"
-                                    style={{
-                                      width: "60px",
-                                      objectFit: "contain",
-                                    }}
-                                  /> */}
                                 </div>
                               </div>
 
-                              {/* Column 2: By Type and By Location */}
                               <div className="col-md-8 p-4">
                                 <h6 className="fw-bold primary-text text-uppercase mb-3">
                                   By Type
@@ -498,7 +488,7 @@ const Header = () => {
                                                   )}`}
                                                   className="dropdown-link small d-block"
                                                 >
-                                                  {sub.name}
+                                                  {formatName(sub.name)}
                                                 </Link>
                                               </li>
                                             ))}
