@@ -16,6 +16,11 @@ const Header = () => {
   const handleLogout = () => {
     dispatch(logout());
     dispatch(vendorLogout());
+
+    // Clear any cached storefront data on logout
+    localStorage.removeItem("vendorFormData");
+    localStorage.removeItem("photoDraftsMeta");
+    localStorage.removeItem("videoDraftsMeta");
   };
 
   const { user, token: userToken } = useSelector((state) => state.auth);

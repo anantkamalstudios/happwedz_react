@@ -45,8 +45,8 @@ const MainSection = () => {
     return (
       <>
         <MainSearch title="Wedding Vendor" />
-        <MainByRegion />
         <AllCategories />
+        <MainByRegion />
         <FindMain />
         <VenueInfoSection />
         {/* <FactorsList /> */}
@@ -75,7 +75,7 @@ const MainSection = () => {
   if (section === "real-wedding") {
     return (
       <>
-        <MainSearch title="Real Wedding" />
+        {/* <MainSearch title="Real Wedding" /> */}
         <RealWedding />
       </>
     );

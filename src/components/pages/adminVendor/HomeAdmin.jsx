@@ -89,7 +89,7 @@ const HomeAdmin = () => {
       try {
         setLoadingLeads(true);
         const response = await fetch(
-          `${API_BASE_URL}/api/request-pricing/all`,
+          `${API_BASE_URL}/api/request-pricing/vendor/dashboard`,
           {
             headers: { Authorization: `Bearer ${vendorToken}` },
           }
@@ -100,12 +100,11 @@ const HomeAdmin = () => {
         }
 
         const data = await response.json();
-        const leadsArray =
-          data?.requests ||
-          data?.leads ||
-          data?.data ||
-          (Array.isArray(data) ? data : []);
-        setLeadCount(leadsArray.length);
+        // Use the 'count' property from the API if available, otherwise calculate length.
+        const count =
+          data?.count ??
+          (data?.requests || data?.leads || data?.data || []).length;
+        setLeadCount(count);
       } catch (err) {
         console.error("Error fetching leads count:", err);
         setLeadCount(0); // Set to 0 on error
