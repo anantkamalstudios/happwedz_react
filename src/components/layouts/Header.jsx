@@ -348,9 +348,9 @@ const Header = () => {
                     <ul className="navbar-nav d-flex flex-wrap justify-content-center gap-3">
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <Link
-                          to={targetURL}
-                          // to="/venues"
-                          className="nav-link dropdown-toggle text-white  fs-20"
+                          // to={targetURL}
+                          to="/venues"
+                          className="nav-link dropdown-toggle text-white fs-18"
                         >
                           Venues
                         </Link>
@@ -452,7 +452,7 @@ const Header = () => {
                         <div className="dropdown-wrapper">
                           <Link
                             to="/vendors"
-                            className="nav-link dropdown-toggle text-white fs-20"
+                            className="nav-link dropdown-toggle text-white fs-18"
                           >
                             Vendors
                           </Link>
@@ -506,7 +506,7 @@ const Header = () => {
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            className="nav-link dropdown-toggle text-white fs-20"
+                            className="nav-link dropdown-toggle text-white fs-18"
                             to="/photography"
                             id="photoDropdown"
                             role="button"
@@ -805,7 +805,7 @@ const Header = () => {
                         <div className="dropdown-wrapper">
                           <Link
                             // className="nav-link dropdown-toggle text-white"
-                            className="nav-link text-white fs-20"
+                            className="nav-link text-white fs-18"
                             to="/e-invites"
                             state={{ title: "E-Invites" }}
                             id="photoDropdown"
@@ -944,7 +944,7 @@ const Header = () => {
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            className="nav-link text-white fs-20"
+                            className="nav-link text-white fs-18"
                             to="/genie"
                             state={{ title: "Genie" }}
                             id="photoDropdown"
@@ -959,7 +959,7 @@ const Header = () => {
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            className="nav-link text-white fs-20"
+                            className="nav-link text-white fs-18"
                             to="/blog"
                             state={{ title: "Blog" }}
                             id="blog"
@@ -973,7 +973,7 @@ const Header = () => {
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            className="nav-link text-white fs-20"
+                            className="nav-link text-white fs-18"
                             to="/real-wedding"
                             state={{ title: "Real Wedding" }}
                             id="real-wedding"
@@ -1034,7 +1034,7 @@ const Header = () => {
                           <div className="dropdown-wrapper">
                             <Link
                               to="/user-dashboard"
-                              className="nav-link text-white fs-20"
+                              className="nav-link text-white fs-18"
                             >
                               User Dashboard
                             </Link>
@@ -1045,7 +1045,7 @@ const Header = () => {
                           <div className="dropdown-wrapper">
                             <Link
                               to="/vendor-dashboard"
-                              className="nav-link text-white fs-20"
+                              className="nav-link text-white fs-18"
                             >
                               Vendor Dashboard
                             </Link>
@@ -1056,7 +1056,7 @@ const Header = () => {
                           <div className="dropdown-wrapper">
                             <Link
                               to="/customer-login"
-                              className="nav-link text-white fs-20"
+                              className="nav-link text-white fs-18"
                             >
                               Login
                             </Link>
@@ -1069,7 +1069,7 @@ const Header = () => {
                           <div className="dropdown-wrapper">
                             <button
                               onClick={handleLogout}
-                              className="nav-link text-white btn btn-link fs-20"
+                              className="nav-link text-white btn btn-link fs-18"
                               style={{ textDecoration: "none" }}
                             >
                               Logout

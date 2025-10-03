@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Row, Col, Card, Container } from "react-bootstrap";
 import { FaStar, FaHeart, FaRegHeart } from "react-icons/fa";
+import { TbView360Number } from "react-icons/tb";
 import { Link } from "react-router-dom";
 
 const GridView = ({ subVenuesData, handleShow }) => {
@@ -38,6 +39,29 @@ const GridView = ({ subVenuesData, handleShow }) => {
                       borderRadius: "15px",
                     }}
                   />
+
+                  {/* 360 View Icon (Left Side) */}
+                  <button
+                    className="btn btn-light position-absolute rounded-circle border-0 shadow-sm"
+                    style={{
+                      top: "12px",
+                      left: "12px",
+                      width: "36px",
+                      height: "36px",
+                      padding: "0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log("360 view clicked for venue:", venue.id);
+                    }}
+                  >
+                    <TbView360Number className="text-dark" size={18} />
+                  </button>
+
+                  {/* Favorite Icon (Right Side) */}
                   <button
                     className="btn btn-light position-absolute rounded-circle border-0 shadow-sm"
                     style={{
@@ -55,7 +79,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                     {favorites[venue.id] ? (
                       <FaHeart className="text-danger" size={18} />
                     ) : (
-                      <FaRegHeart className="text-secondary" size={18} />
+                      <FaRegHeart className="text-dark" size={18} />
                     )}
                   </button>
                 </div>
