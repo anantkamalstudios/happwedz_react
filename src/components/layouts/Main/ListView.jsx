@@ -19,7 +19,6 @@ const ListView = ({ subVenuesData, handleShow }) => {
     }));
   };
 
-  // Track which image is hovered for each venue
   const [hoveredImages, setHoveredImages] = useState({});
 
   const handleThumbEnter = (venueId, thumbUrl) => {
