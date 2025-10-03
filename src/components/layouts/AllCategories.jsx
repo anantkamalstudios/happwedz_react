@@ -5,12 +5,17 @@ import CardComponent from "../../components/home/components/CardComponent";
 import GridView from "./Main/GridView";
 const API_BASE_URL = "https://happywedz.com";
 import { IMAGE_BASE_URL } from "../../config/constants";
+import { CiCircleList, CiGrid41 } from "react-icons/ci";
+import { useSelector } from "react-redux";
 const AllCategories = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedIndex, setExpandedIndex] = useState(-1);
   const [view, setView] = useState("grid");
+  const selectedLocation = useSelector(
+    (state) => state.location.selectedLocation
+  );
   const toggleExpand = (i) => setExpandedIndex((prev) => (prev === i ? -1 : i));
   useEffect(() => {
     const fetchCategories = async () => {
@@ -65,7 +70,7 @@ const AllCategories = () => {
           marginTop: "10px",
         }}
       >
-        <div style={{ width: "full", padding: "1.5rem 2.5rem" }}>
+        {/* <div style={{ width: "full", padding: "1.5rem 2.5rem" }}>
           <div className="d-flex justify-content-end align-items-center gap-4">
             <button
               style={{
@@ -94,7 +99,6 @@ const AllCategories = () => {
                     backgroundColor: `${view === "list" ? "#C31162" : "#fff"}`,
                   }}
                 >
-                  {/* <List size={22} /> */}
                   <img
                     src={`../../../public/images/venues/list${
                       view === "list" ? "1" : ""
@@ -120,12 +124,41 @@ const AllCategories = () => {
               </div>
             </div>
           </div>
+        </div> */}
+        <div className="d-flex justify-content-end align-items-center gap-4">
+          <div className="view-switcher-wrapper rounded-2">
+            <div className="view-switcher d-flex">
+              <button
+                onClick={() => setView("grid")}
+                className={view === "grid" ? "switch-btn active" : "switch-btn"}
+                style={{
+                  backgroundColor: view === "grid" ? "#C31162" : "#fff",
+                  color: view === "grid" ? "#fff" : "#000",
+                }}
+              >
+                <CiGrid41 className="me-1" /> GRID
+              </button>
+
+              <button
+                onClick={() => setView("list")}
+                className={view === "list" ? "switch-btn active" : "switch-btn"}
+                style={{
+                  backgroundColor: view === "list" ? "#C31162" : "#fff",
+                  color: view === "list" ? "#fff" : "#000",
+                }}
+              >
+                <CiCircleList className="me-1" /> LIST
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       {/* Grid List layout End*/}
       <div className="container py-5 wcg-grid">
         <div className="d-flex align-items-center justify-content-between mb-3">
-          <h3 className="fw-bold mb-0 text-dark">{`Wedding Venues in ${categories[0].vendor.city}`}</h3>
+          <h3 className="fw-bold mb-0 text-dark">
+            {`Wedding Venues in ${selectedLocation ?? "India"}`}
+          </h3>
         </div>
         <div className="row g-3 g-md-4 gap-4">
           {/* {categories.map((cat, i) => {

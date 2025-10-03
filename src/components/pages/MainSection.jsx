@@ -22,6 +22,7 @@ import RealWedding from "./RealWedding";
 import Genie from "./Genie";
 import AllCategories from "../layouts/AllCategories";
 import WeddingCategories from "../home/WeddingCategories";
+import VenueInfoSection from "../layouts/Main/VenueInfoSection";
 
 const MainSection = () => {
   const { section } = useParams();
@@ -47,6 +48,7 @@ const MainSection = () => {
         <AllCategories />
         <MainByRegion />
         <FindMain />
+        <VenueInfoSection />
         {/* <FactorsList /> */}
         <FaqsSection />
       </>
