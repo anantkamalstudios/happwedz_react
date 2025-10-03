@@ -7,6 +7,7 @@ import { useParams } from "react-router-dom";
 import "swiper/css";
 import "swiper/css/autoplay";
 import vendorServicesApi from "../../services/api/vendorServicesApi";
+import PricingModal from "./PricingModal";
 
 import {
   FaStar,
@@ -33,13 +34,19 @@ import axios from "axios";
 const Detailed = () => {
   const { id } = useParams();
   const [venueData, setVenueData] = useState(null);
-  const [vendorId, setVendorId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mainImage, setMainImage] = useState("");
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [images, setImages] = useState([]);
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [selectedVendorId, setSelectedVendorId] = useState(null);
+
+  const handleShowPricingModal = (vendorId) => {
+    setSelectedVendorId(vendorId);
+    setShowPricingModal(true);
+  };
 
   // Dynamic amenities based on API data
   const getAmenities = (data) => {
@@ -607,7 +614,9 @@ const Detailed = () => {
                     <div style={{ width: "500px" }}>
                       <button
                         className="btn-primary w-100"
-                        href="/wedding-invitations/wedding-card-designs"
+                        onClick={() =>
+                          handleShowPricingModal(venueData.vendor_id)
+                        }
                       >
                         Requesting Pricing
                       </button>
@@ -698,6 +707,12 @@ const Detailed = () => {
       <div className="py-5">
         <ReviewSection vendor={activeVendor} />
       </div>
+
+      <PricingModal
+        show={showPricingModal}
+        handleClose={() => setShowPricingModal(false)}
+        vendorId={selectedVendorId}
+      />
     </div>
   );
 };

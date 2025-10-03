@@ -51,6 +51,26 @@ const vendorServicesApi = {
     }
   },
 
+  /**
+   * Get vendor service details by VENDOR ID
+   * @param {number|string} vendorId - The vendor's own ID
+   * @param {string} token - The vendor's auth token
+   */
+  getVendorServiceByVendorId: async (vendorId, token) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/vendor-services/vendor/${vendorId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data;
+    } catch (error) {
+      // It's common for a new vendor to not have a service page yet (404)
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error.response?.data || new Error("API request failed");
+    }
+  },
   createOrUpdateService: async (serviceData, token, id = null) => {
     try {
       let url = `${API_BASE_URL}/vendor-services`;

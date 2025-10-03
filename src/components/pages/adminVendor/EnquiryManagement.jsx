@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Alert } from "react-bootstrap";
 import {
   Inbox,
   Mail,
@@ -18,16 +19,70 @@ import {
   Star,
 } from "lucide-react";
 
+import { useSelector } from "react-redux";
+
+const API_BASE_URL = "https://happywedz.com";
+
 const EnquiryManagement = () => {
   const [activeFolder, setActiveFolder] = useState("inbox");
   const [searchTerm, setSearchTerm] = useState("");
+  const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { token: vendorToken } = useSelector((state) => state.vendorAuth);
+
+  useEffect(() => {
+    if (!vendorToken) {
+      setError("Authentication token not found. Please log in.");
+      setLoading(false);
+      return;
+    }
+
+    const fetchLeads = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch(
+          `${API_BASE_URL}/api/request-pricing/vendor/dashboard`,
+          {
+            headers: { Authorization: `Bearer ${vendorToken}` },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch leads.");
+        }
+
+        const data = await response.json();
+        if (data && Array.isArray(data.requests)) {
+          setLeads(data.requests);
+        } else {
+          setLeads([]);
+        }
+      } catch (err) {
+        setError(err.message);
+        setLeads([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeads();
+  }, [vendorToken]);
 
   const folders = [
-    { id: "inbox", name: "Inbox", count: 0 },
+    { id: "inbox", name: "Inbox", count: leads.length },
     { id: "unread", name: "Unread", count: 0 },
     { id: "read", name: "Read", count: 0 },
     { id: "archived", name: "Archived", count: 0 },
   ];
+
+  const stats = {
+    replied: leads.filter((l) => l.status === "replied").length,
+    booked: leads.filter((l) => l.status === "booked").length,
+    discarded: leads.filter((l) => l.status === "discarded").length,
+    avgResponseTime: "-- : --",
+  };
 
   const statuses = [
     { id: "pending", name: "Pending", count: 0, color: "#f39c12" },
@@ -46,13 +101,6 @@ const EnquiryManagement = () => {
       premium: true,
     },
   ];
-
-  const stats = {
-    replied: 0,
-    booked: 0,
-    discarded: 0,
-    avgResponseTime: "-- : --",
-  };
 
   return (
     <div className="enquiry-management-container">
@@ -172,15 +220,59 @@ const EnquiryManagement = () => {
                         </button>
                       </div>
 
-                      <div className="empty-state">
-                        <Mail className="empty-icon" />
-                        <div className="empty-title">No messages found</div>
-                        <div className="empty-message">
-                          No messages have been found in this folder.
-                          <br />
-                          New enquiries will appear here when they arrive.
+                      {loading ? (
+                        <div className="text-center py-5">
+                          <div
+                            className="spinner-border text-primary"
+                            role="status"
+                          >
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
                         </div>
-                      </div>
+                      ) : error ? (
+                        <Alert variant="danger">{error}</Alert>
+                      ) : leads.length === 0 ? (
+                        <div className="empty-state">
+                          <Mail className="empty-icon" />
+                          <div className="empty-title">No messages found</div>
+                          <div className="empty-message">
+                            No messages have been found in this folder.
+                            <br />
+                            New enquiries will appear here when they arrive.
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="leads-list">
+                          {leads.map((lead) => (
+                            <div key={lead.id} className="lead-item card mb-3">
+                              <div className="card-body">
+                                <div className="d-flex justify-content-between">
+                                  <h6 className="card-title">
+                                    {lead.firstName} {lead.lastName}
+                                  </h6>
+                                  <small className="text-muted">
+                                    {new Date(
+                                      lead.createdAt
+                                    ).toLocaleDateString()}
+                                  </small>
+                                </div>
+                                <p className="card-text small text-muted mb-1">
+                                  {lead.email} | {lead.phone}
+                                </p>
+                                <p className="card-text small">
+                                  {lead.message || "No message provided."}
+                                </p>
+                                <p className="card-text small fw-bold">
+                                  Event Date:{" "}
+                                  {new Date(
+                                    lead.eventDate
+                                  ).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
