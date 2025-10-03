@@ -59,6 +59,7 @@ import {
   IoCheckmarkCircleOutline,
   IoVideocamOutline,
 } from "react-icons/io5";
+import Faq from "./subVendors/Faq.jsx";
 import { GoGift } from "react-icons/go";
 import VendorMenus from "./subVendors/VendorMenus";
 import vendorServicesApi from "../../../services/api/vendorServicesApi";
@@ -73,6 +74,30 @@ const Storefront = () => {
   const [photoDrafts, setPhotoDrafts] = useState([]);
   const [videoDrafts, setVideoDrafts] = useState([]);
   const { token, vendor } = useSelector((state) => state.vendorAuth || {});
+
+  // Fetch existing service data when vendor is available
+  useEffect(() => {
+    const fetchServiceData = async () => {
+      if (vendor?.id && token) {
+        try {
+          const serviceData =
+            await vendorServicesApi.getVendorServiceByVendorId(
+              vendor.id,
+              token
+            );
+          // If data exists, merge it into formData.
+          // The local storage draft will be preserved for any fields not in the API response.
+          if (serviceData) {
+            setFormData((prev) => ({ ...prev, ...serviceData }));
+          }
+        } catch (error) {
+          console.error("Failed to fetch vendor service data:", error);
+        }
+      }
+    };
+
+    fetchServiceData();
+  }, [vendor, token]);
 
   // Save handler: update if id exists, else create
   const handleSave = async () => {
@@ -93,7 +118,6 @@ const Storefront = () => {
     }
     setShowModal(true);
   };
-  console.log("Form Data:", formData);
 
   // Hydrate lightweight draft metadata (titles only) on mount if present
   useEffect(() => {
@@ -361,12 +385,12 @@ const Storefront = () => {
       label: "Business details",
       icon: <FaRegBuilding size={20} />,
     },
-    { id: "faq", label: "FAQ", icon: <CiCircleQuestion size={20} /> },
     {
       id: "vendor-basic",
       label: "Basic Information",
       icon: <IoIosInformationCircleOutline size={20} />,
     },
+    { id: "faq", label: "FAQ", icon: <CiCircleQuestion size={20} /> },
 
     {
       id: "vendor-contact",
@@ -396,7 +420,6 @@ const Storefront = () => {
       label: "Policies & Terms",
       icon: <HiOutlineDocument size={20} />,
     },
-    // { id: "promotions", label: "Promotions", icon: <CiBullhorn size={20} /> },
     {
       id: "vendor-availability",
       label: "Availability & Slots",
@@ -432,6 +455,14 @@ const Storefront = () => {
         return (
           <BusinessDetails formData={formData} setFormData={setFormData} />
         );
+      case "faq":
+        return (
+          <Faq
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+          />
+        );
 
       case "vendor-basic":
         return (
@@ -466,7 +497,13 @@ const Storefront = () => {
           <VideoGallery videos={videoDrafts} onVideosChange={setVideoDrafts} />
         );
       case "promotions":
-        return <PromoForm />;
+        return (
+          <PromoForm
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+          />
+        );
       case "vendor-pricing":
         return (
           <VendorPricing
@@ -517,11 +554,11 @@ const Storefront = () => {
             onSubmit={handleSubmit}
           />
         );
+
       // case "vendor-media":
       //   return <VendorMedia formData={formData} setFormData={setFormData} />;
       // Original sections
-      // case "location":
-      //   return <LocationForm />;
+
       // case "promotions":
       //   return <PromoForm />;
       // case "photos":

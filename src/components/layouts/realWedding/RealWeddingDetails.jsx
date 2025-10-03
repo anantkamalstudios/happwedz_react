@@ -694,3 +694,397 @@ const RealWeddingDetails = ({ post, onBackClick }) => {
 };
 
 export default RealWeddingDetails;
+
+// import React, { useState } from "react";
+// import { FaMapMarkerAlt, FaCalendarAlt, FaTimes } from "react-icons/fa";
+
+// const WeddingDetailPage = ({ wedding, onClose }) => {
+//   const [selectedImage, setSelectedImage] = useState(null);
+
+//   // Sample data - replace with actual wedding data
+//   const weddingData = wedding || {
+//     title: "Richa and Shreyas",
+//     weddingDate: "July 15, 2022",
+//     city: "Udaipur",
+//     subtitle:
+//       "A Udaipur Wedding That's Serving Major Looks & Indoor Decor Goals!",
+//     readMore: "Read More",
+//     coverPhoto:
+//       "https://images.unsplash.com/photo-1519741497674-611481863552?w=1920&h=600&fit=crop",
+//     highlightPhotos: [
+//       "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=400&h=400&fit=crop",
+//       "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&h=400&fit=crop",
+//       "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=400&fit=crop",
+//       "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=400&h=400&fit=crop",
+//       "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&h=400&fit=crop",
+//       "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&h=400&fit=crop",
+//       "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=400&h=400&fit=crop",
+//       "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=400&h=400&fit=crop",
+//       "https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&h=400&fit=crop",
+//       "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=400&h=400&fit=crop",
+//       "https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=400&fit=crop",
+//       "https://images.unsplash.com/photo-1525258796609-24c7b5296a8c?w=400&h=400&fit=crop",
+//     ],
+//     vendors: [
+//       {
+//         name: "Akshit Jaiswal Photography",
+//         category: "Photographer",
+//         image:
+//           "https://images.unsplash.com/photo-1554080353-a576cf803bda?w=400&h=300&fit=crop",
+//       },
+//       {
+//         name: "Makeover by Shreya Shetty",
+//         category: "Makeup Artist",
+//         image:
+//           "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400&h=300&fit=crop",
+//       },
+//       {
+//         name: "Royal Banquet Hall",
+//         category: "Venue",
+//         image:
+//           "https://images.unsplash.com/photo-1519167758481-83f29da8c89c?w=400&h=300&fit=crop",
+//       },
+//     ],
+//   };
+
+//   const getImageUrl = (path) => {
+//     if (!path)
+//       return "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop";
+//     if (path.startsWith("http")) return path;
+//     return `https://happywedzbackend.happywedz.com${path}`;
+//   };
+
+//   return (
+//     <div className="wedding-detail-page">
+//       <style>{`
+//         .wedding-detail-page { 
+//           background: #fff;
+//           min-height: 100vh;
+//         }
+
+//         .hero-banner {
+//           position: relative;
+//           height: 500px;
+//           background: linear-gradient(135deg, rgba(233, 30, 99, 0.8), rgba(156, 39, 176, 0.7)), url('${getImageUrl(
+//             weddingData.coverPhoto
+//           )}');
+//           background-size: cover;
+//           background-position: center;
+//           display: flex;
+//           flex-direction: column;
+//           align-items: center;
+//           justify-content: center;
+//           color: white;
+//           text-align: center;
+//           padding: 20px;
+//         }
+
+//         .close-btn {
+//           position: absolute;
+//           top: 20px;
+//           right: 20px;
+//           background: rgba(255,255,255,0.2);
+//           border: none;
+//           color: white;
+//           width: 40px;
+//           height: 40px;
+//           border-radius: 50%;
+//           cursor: pointer;
+//           display: flex;
+//           align-items: center;
+//           justify-content: center;
+//           font-size: 20px;
+//           transition: background 0.3s;
+//         }
+
+//         .close-btn:hover {
+//           background: rgba(255,255,255,0.3);
+//         }
+
+//         .hero-banner h1 {
+//           font-size: 56px;
+//           font-weight: 700;
+//           margin-bottom: 20px;
+//           text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+//         }
+
+//         .wedding-meta {
+//           display: flex;
+//           align-items: center;
+//           gap: 30px;
+//           font-size: 16px;
+//           margin-bottom: 20px;
+//           flex-wrap: wrap;
+//           justify-content: center;
+//         }
+
+//         .wedding-meta span {
+//           display: flex;
+//           align-items: center;
+//           gap: 8px;
+//         }
+
+//         .wedding-subtitle {
+//           max-width: 600px;
+//           font-size: 18px;
+//           line-height: 1.6;
+//           margin-bottom: 10px;
+//         }
+
+//         .read-more {
+//           color: white;
+//           text-decoration: none;
+//           font-weight: 600;
+//           border-bottom: 2px solid white;
+//           display: inline-block;
+//           cursor: pointer;
+//         }
+
+//         .content-section {
+//           max-width: 1200px;
+//           margin: 0 auto;
+//           padding: 50px 20px;
+//         }
+
+//         .section-header {
+//           display: flex;
+//           align-items: center;
+//           margin-bottom: 30px;
+//         }
+
+//         .section-header h2 {
+//           font-size: 24px;
+//           font-weight: 700;
+//           color: #333;
+//           margin: 0;
+//         }
+
+//         .tag-badge {
+//           background: #ffe0ec;
+//           color: #e91e63;
+//           padding: 8px 20px;
+//           border-radius: 20px;
+//           font-size: 14px;
+//           font-weight: 600;
+//           margin-right: 15px;
+//         }
+
+//         .photo-grid {
+//           display: grid;
+//           grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+//           gap: 15px;
+//           margin-bottom: 60px;
+//         }
+
+//         .photo-item {
+//           position: relative;
+//           aspect-ratio: 1;
+//           overflow: hidden;
+//           border-radius: 8px;
+//           cursor: pointer;
+//           transition: transform 0.3s;
+//         }
+
+//         .photo-item:hover {
+//           transform: scale(1.05);
+//         }
+
+//         .photo-item img {
+//           width: 100%;
+//           height: 100%;
+//           object-fit: cover;
+//         }
+
+//         .vendors-section h2 {
+//           font-size: 24px;
+//           font-weight: 700;
+//           color: #333;
+//           margin-bottom: 30px;
+//         }
+
+//         .vendors-grid {
+//           display: grid;
+//           grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+//           gap: 30px;
+//         }
+
+//         .vendor-card {
+//           background: white;
+//           border-radius: 12px;
+//           overflow: hidden;
+//           box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+//           transition: transform 0.3s;
+//           cursor: pointer;
+//         }
+
+//         .vendor-card:hover {
+//           transform: translateY(-5px);
+//           box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+//         }
+
+//         .vendor-image {
+//           width: 100%;
+//           height: 200px;
+//           overflow: hidden;
+//         }
+
+//         .vendor-image img {
+//           width: 100%;
+//           height: 100%;
+//           object-fit: cover;
+//         }
+
+//         .vendor-info {
+//           padding: 20px;
+//           text-align: center;
+//         }
+
+//         .vendor-info h3 {
+//           font-size: 18px;
+//           font-weight: 600;
+//           color: #333;
+//           margin-bottom: 5px;
+//         }
+
+//         .vendor-info p {
+//           font-size: 14px;
+//           color: #999;
+//         }
+
+//         .lightbox {
+//           position: fixed;
+//           top: 0;
+//           left: 0;
+//           right: 0;
+//           bottom: 0;
+//           background: rgba(0,0,0,0.95);
+//           display: flex;
+//           align-items: center;
+//           justify-content: center;
+//           z-index: 1000;
+//           padding: 20px;
+//         }
+
+//         .lightbox img {
+//           max-width: 90%;
+//           max-height: 90vh;
+//           object-fit: contain;
+//           border-radius: 8px;
+//         }
+
+//         .lightbox-close {
+//           position: absolute;
+//           top: 20px;
+//           right: 20px;
+//           background: white;
+//           border: none;
+//           color: #333;
+//           width: 40px;
+//           height: 40px;
+//           border-radius: 50%;
+//           cursor: pointer;
+//           display: flex;
+//           align-items: center;
+//           justify-content: center;
+//           font-size: 20px;
+//         }
+
+//         @media (max-width: 768px) {
+//           .hero-banner h1 {
+//             font-size: 36px;
+//           }
+          
+//           .wedding-meta {
+//             font-size: 14px;
+//             gap: 15px;
+//           }
+
+//           .photo-grid {
+//             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+//             gap: 10px;
+//           }
+
+//           .vendors-grid {
+//             grid-template-columns: 1fr;
+//           }
+//         }
+//       `}</style>
+
+//       {/* Hero Banner */}
+//       <div className="hero-banner">
+//         {onClose && (
+//           <button className="close-btn" onClick={onClose}>
+//             <FaTimes />
+//           </button>
+//         )}
+//         <h1>{weddingData.title}</h1>
+//         <div className="wedding-meta">
+//           <span>
+//             <FaCalendarAlt /> {weddingData.weddingDate}
+//           </span>
+//           <span>-</span>
+//           <span>
+//             <FaMapMarkerAlt /> {weddingData.city}
+//           </span>
+//         </div>
+//         <p className="wedding-subtitle">{weddingData.subtitle}</p>
+//         <a className="read-more">{weddingData.readMore}</a>
+//       </div>
+
+//       {/* Photo Gallery Section */}
+//       <div className="content-section">
+//         <div className="section-header">
+//           <span className="tag-badge">Top Photos</span>
+//           <h2>Photo Gallery</h2>
+//         </div>
+//         <div className="photo-grid">
+//           {weddingData.highlightPhotos?.map((photo, index) => (
+//             <div
+//               key={index}
+//               className="photo-item"
+//               onClick={() => setSelectedImage(getImageUrl(photo))}
+//             >
+//               <img
+//                 src={getImageUrl(photo)}
+//                 alt={`Wedding photo ${index + 1}`}
+//               />
+//             </div>
+//           ))}
+//         </div>
+
+//         {/* Tagged Vendors Section */}
+//         <div className="vendors-section">
+//           <h2>Tagged Vendors</h2>
+//           <div className="vendors-grid">
+//             {weddingData.vendors?.map((vendor, index) => (
+//               <div key={index} className="vendor-card">
+//                 <div className="vendor-image">
+//                   <img src={vendor.image} alt={vendor.name} />
+//                 </div>
+//                 <div className="vendor-info">
+//                   <h3>{vendor.name}</h3>
+//                   <p>{vendor.category}</p>
+//                 </div>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Lightbox */}
+//       {selectedImage && (
+//         <div className="lightbox" onClick={() => setSelectedImage(null)}>
+//           <button
+//             className="lightbox-close"
+//             onClick={() => setSelectedImage(null)}
+//           >
+//             <FaTimes />
+//           </button>
+//           <img src={selectedImage} alt="Full size" />
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default WeddingDetailPage;

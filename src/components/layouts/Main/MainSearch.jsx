@@ -19,7 +19,7 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
       ? "Decor, catering, planners"
       : t.includes("venue")
       ? "Banquet halls, resorts, lawns"
-      : "Venues, vendors, services";
+      : "Find Best Venues";
     const placePh = "City or locality";
     return { keywordPh, placePh };
   }, [title]);
@@ -33,7 +33,6 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
     }
   };
 
-  // ✅ Fetch all Indian cities once on mount
   useEffect(() => {
     axios
       .post("https://countriesnow.space/api/v0.1/countries/cities", {
@@ -79,9 +78,9 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
               >
                 {title || "Plan your perfect day"}
               </h1>
-              <p className="text-muted mb-4" style={{ maxWidth: 560 }}>
-                Discover curated options that fit your style, budget, and
-                location. Search and compare instantly.
+              <p className="text-muted mb-4" style={{}}>
+                From royal palaces to cozy gardens - find the perfect setting
+                for your big day
               </p>
 
               <Form onSubmit={handleSubmit} className="w-100 position-relative">
@@ -95,7 +94,7 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
                 >
                   <div
                     className="d-flex align-items-center flex-grow-1 px-2"
-                    style={{ border: "1px solid pink", borderRadius: "5px" }}
+                    style={{ border: "2px solid #C31162", borderRadius: "5px" }}
                   >
                     <FaSearch className="me-2 text-muted" />
                     <Form.Control
@@ -108,68 +107,13 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
                     />
                   </div>
 
-                  {/*
-                  <div className="vr d-none d-md-block" />
-
-                   <div
-                    className="d-flex align-items-center flex-grow-1 px-2 position-relative"
-                    style={{ border: "1px solid pink", borderRadius: "5px" }}
-                  >
-                    <FaMapMarkerAlt className="me-2 text-muted" />
-                    <Form.Control
-                      value={place}
-                      onChange={(e) => {
-                        setPlace(e.target.value);
-                        setSearchTerm(e.target.value);
-                        setShowDropdown(true);
-                      }}
-                      type="text"
-                      placeholder={placeholders.placePh}
-                      className="border-0 shadow-none"
-                      style={{ background: "transparent" }}
-                      onFocus={() => setShowDropdown(true)}
-                      onBlur={() =>
-                        setTimeout(() => setShowDropdown(false), 200)
-                      }
-                    />
-
-                    {showDropdown &&
-                      searchTerm &&
-                      filteredCities.length > 0 && (
-                        <div
-                          className="dropdown-menu show mt-2"
-                          style={{
-                            position: "absolute",
-                            top: "100%",
-                            width: "100%",
-                            zIndex: 99999,
-                            maxHeight: "200px",
-                            overflowY: "auto",
-                            boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-                            background: "#fff",
-                          }}
-                        >
-                          {filteredCities.map((city) => (
-                            <div
-                              key={city}
-                              className="dropdown-item"
-                              onMouseDown={() => {
-                                setPlace(city);
-                                setShowDropdown(false);
-                              }}
-                            >
-                              {city}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                  </div> */}
-
                   <Button
                     type="submit"
-                    variant="primary"
-                    className="ms-md-2 rounded-3 px-4 d-flex align-items-center justify-content-center"
-                    style={{ whiteSpace: "nowrap" }}
+                    style={{
+                      whiteSpace: "nowrap",
+                      backgroundColor: "#C31162",
+                      color: "#fff",
+                    }}
                   >
                     <CiSearch size={20} className="me-2" />
                     Search
@@ -177,34 +121,66 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
                 </div>
               </Form>
 
-              {/* Quick Chips */}
               <div className="d-flex gap-2 mt-3 flex-wrap">
-                {[
-                  "Banquet Halls",
-                  "Wedding Resorts",
-                  "Photographers",
-                  "Makeup",
-                ].map((chip) => (
-                  <span
-                    key={chip}
-                    className="badge bg-light text-muted border rounded-pill px-3 py-2"
-                    style={{ fontWeight: 500 }}
-                  >
-                    {chip}
-                  </span>
-                ))}
+                {["Banquet Halls", "Wedding Resorts", "Photographers"].map(
+                  (chip) => (
+                    <p style={{}}>
+                      <span
+                        key={chip}
+                        className="badge  rounded-pill px-4 py-2"
+                        style={{
+                          fontWeight: 300,
+                          fontSize: "10px",
+                          color: "#C31162",
+                          backgroundColor: "#fbcfe3ff",
+                        }}
+                      >
+                        {chip}
+                      </span>
+                    </p>
+                  )
+                )}
               </div>
             </div>
           </Col>
 
-          <Col xs={12} lg={6}>
+          {/* <Col xs={12} lg={6}>
             <div
-              className="position-relative mx-auto"
+              className="position-relative right-0"
               style={{ maxWidth: 560 }}
             >
               <div
-                className="bg-white shadow rounded-4 overflow-hidden"
+                className="bg-white shadow rounded-4 overflow-hidden w-100"
                 style={{ aspectRatio: "16 / 10" }}
+              >
+                <img
+                  src="/images/venues/hero_img_2.jpg"
+                  alt="Search showcase"
+                  className="w-100 h-100"
+                  style={{ objectFit: "cover" }}
+                  onError={(e) => {
+                    e.currentTarget.src = "logo-no-bg.png";
+                    e.currentTarget.style.objectFit = "contain";
+                  }}
+                />
+              </div>
+            </div>
+          </Col> */}
+          <Col xs={12} lg={6} className="position-static ">
+            <div
+              className="d-none d-lg-block position-absolute top-0 end-0 h-100"
+              style={{
+                width: "40%",
+                zIndex: 1,
+                paddingTop: "1rem",
+                paddingBottom: "1rem",
+              }}
+            >
+              <div
+                className="bg-white shadow rounded-start-4 overflow-hidden w-100 h-100"
+                style={{
+                  aspectRatio: "1 / 1",
+                }}
               >
                 <img
                   src="/images/venues/hero_img_2.jpg"

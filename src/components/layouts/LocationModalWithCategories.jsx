@@ -18,47 +18,6 @@ const LocationModalWithAPI = () => {
   const [cities, setCities] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("India");
 
-  const cityCategories = {
-    "Top Cities": [
-      "All Cities",
-      "Delhi NCR",
-      "Mumbai",
-      "Bangalore",
-      "Hyderabad",
-      "Chennai",
-      "Pune",
-      "Lucknow",
-      "Jaipur",
-      "Kolkata",
-    ],
-    "Popular Cities": [
-      "Gurgaon",
-      "Goa",
-      "Udaipur",
-      "Chandigarh",
-      "Jim Corbett",
-      "Ahmedabad",
-      "Indore",
-      "Agra",
-      "Kanpur",
-      "Kochi",
-    ],
-    "Other Cities": [
-      "Nagpur",
-      "Dehradun",
-      "Thane",
-      "Surat",
-      "Vadodara",
-      "Raipur",
-      "Mysore",
-      "Hubli",
-      "Dhitara",
-      "Toranagallu",
-    ],
-    States: ["Kerala", "Rajasthan", "Himachal Pradesh", "Maharashtra"],
-    "International Cities": ["Dubai", "Thailand", "Bali", "Abu Dhabi"],
-  };
-
   // Fetch countries
   useEffect(() => {
     axios.get("https://restcountries.com/v3.1/all?fields=name").then((res) => {
@@ -94,12 +53,11 @@ const LocationModalWithAPI = () => {
   const handleCityClick = (city) => {
     dispatch(setLocation(city));
     setShow(false);
-    // Navigate to /vendors/all with city as query param or slug
     navigate(`/vendors/all?city=${encodeURIComponent(city)}`);
   };
 
   const handleClearLocation = (e) => {
-    e.stopPropagation(); // Prevent opening modal
+    e.stopPropagation();
     dispatch(clearLocation());
   };
 

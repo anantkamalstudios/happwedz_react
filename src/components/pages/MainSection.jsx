@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import VendorsSearch from "../layouts/vendors/VendorsSearch";
 import VenuesSearch from "../layouts/venus/VenuesSearch";
 import NotFound from "./NotFound";
@@ -21,20 +22,80 @@ import MainSearch from "../layouts/Main/MainSearch";
 import RealWedding from "./RealWedding";
 import Genie from "./Genie";
 import AllCategories from "../layouts/AllCategories";
+import WeddingCategories from "../home/WeddingCategories";
+import VenueInfoSection from "../layouts/Main/VenueInfoSection";
+import GridView from "../layouts/Main/GridView";
+import LoadingState from "../LoadingState";
+import EmptyState from "../EmptyState";
+import useApiData from "../../hooks/useApiData";
+import DynamicAside from "../layouts/aside/DynamicAside";
 
 const MainSection = () => {
   const { section } = useParams();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const reduxLocation = useSelector((state) => state.location.selectedLocation);
+  const [selectedCity, setSelectedCity] = useState(reduxLocation);
+  const [show, setShow] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  const [view, setView] = useState("images");
+
+  useEffect(() => {
+    setSelectedCity(reduxLocation);
+  }, [reduxLocation]);
+
+  const handleShow = (id) => {
+    setSelectedId(id);
+    setShow(true);
+  };
+
+  const handleClose = () => {
+    setShow(false);
+    setSelectedId(null);
+  };
 
   if (section === "venues") {
+    const { data, loading, error } = useApiData(
+      "venues",
+      null,
+      selectedCity,
+      "Venues"
+    );
     return (
       <>
         <MainSearch />
-        <AllCategories />
         <MainByRegion />
-        <FactorsList />
-        <FaqsSection />
+        <DynamicAside section={"venues"} view={view} setView={setView} />
+        {loading && data.length === 0 && <LoadingState title="Venues" />}
+        {!loading && data.length === 0 && (
+          <EmptyState section="venues" title="Venues" />
+        )}
+        {data.length > 0 && (
+          <div className="container-fluid">
+            {loading && (
+              <div className="alert alert-info my-4 text-center">
+                <div
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                >
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                Updating data...
+              </div>
+            )}
+            <GridView
+              subVenuesData={data}
+              section="venues"
+              handleShow={handleShow}
+            />
+            <PricingModal
+              show={show}
+              handleClose={handleClose}
+              vendorId={selectedId}
+            />
+          </div>
+        )}
+        <VenueInfoSection />
       </>
     );
   }
@@ -43,10 +104,9 @@ const MainSection = () => {
     return (
       <>
         <MainSearch title="Wedding Vendor" />
-        <AllCategories />
         <MainByRegion />
+        <AllCategories />
         <FindMain />
-        <FactorsList />
         <FaqsSection />
       </>
     );
@@ -72,10 +132,8 @@ const MainSection = () => {
   if (section === "real-wedding") {
     return (
       <>
-        <MainSearch title="Real Wedding" />
+        {/* <MainSearch title="Real Wedding" /> */}
         <RealWedding />
-        <FactorsList />
-        <FaqsSection />
       </>
     );
   }
@@ -92,7 +150,6 @@ const MainSection = () => {
         <MainHeroSection loc={"Karela "} />
         <MainHeroSection loc={"Goa"} />
         */}
-        <FactorsList />
         <FaqsSection />
       </>
     );

@@ -95,6 +95,8 @@ const citiesData = {
     "Wedding Venues Jabalpur",
     "Wedding Venues Gwalior",
     "Wedding Venues Ujjain",
+    "Wedding Venues Ratlam",
+    "Wedding Venues Satna",
   ],
   Kerala: [
     "Wedding Venues Kochi",

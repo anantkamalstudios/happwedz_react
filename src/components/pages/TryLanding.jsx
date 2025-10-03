@@ -16,7 +16,6 @@ const TryLanding = () => {
 
   const handleCategorySelect = (category) => {
     setShowModal(false);
-    console.log(`Navigating to: /try/upload/${category}`);
   };
 
   return (
@@ -28,7 +27,6 @@ const TryLanding = () => {
             isLoaded ? "try-first-page-loaded" : ""
           }`}
         >
-          <div className="try-first-page-hero-overlay"></div>
           <div className="try-first-page-hero-particles">
             <div className="try-first-page-particle"></div>
             <div className="try-first-page-particle"></div>
@@ -43,11 +41,6 @@ const TryLanding = () => {
                 Transform Your Look with
                 <span className="try-first-page-gradient-text"> AI Magic</span>
               </h1>
-              <p className="try-first-page-subtitle">
-                Experience the future of beauty with our advanced virtual makeup
-                technology. Try thousands of looks instantly and discover your
-                perfect style.
-              </p>
               <div className="try-first-page-features">
                 <div className="try-first-page-feature">
                   <FaBolt className="try-first-page-icon" />
@@ -126,17 +119,23 @@ const TryLanding = () => {
                       onClick={() => handleCategorySelect("groom")}
                       className="d-flex flex-column align-items-center"
                     >
-                      <img
-                        src="/images/try/groome.jpg"
-                        alt="Bride"
-                        className="rounded-5"
-                        style={{
-                          width: "100%",
-                          height: "280px",
-                          objectFit: "cover",
-                        }}
-                      />
-
+                      <div
+                        className="position-relative w-100 try-modal-container"
+                        style={{ height: "280px" }}
+                      >
+                        <img
+                          src="/images/try/groome.jpg"
+                          alt="Groom"
+                          className="rounded-5 w-100 h-100"
+                          style={{ objectFit: "cover" }}
+                        />
+                        {/* Unique Overlay */}
+                        <div className="try-modal-hover-overlay-custom d-flex justify-content-center align-items-center rounded-5">
+                          <span className="text-white fs-4 fw-bold">
+                            Coming Soon
+                          </span>
+                        </div>
+                      </div>
                       <h4 className="mt-3 fw-semibold">Groom</h4>
                     </div>
                   </div>
@@ -148,17 +147,23 @@ const TryLanding = () => {
                       onClick={() => handleCategorySelect("other")}
                       className="d-flex flex-column align-items-center"
                     >
-                      <img
-                        src="/images/try/other.jpg"
-                        alt="Bride"
-                        className="rounded-5"
-                        style={{
-                          width: "100%",
-                          height: "280px",
-                          objectFit: "cover",
-                        }}
-                      />
-
+                      <div
+                        className="position-relative w-100 try-modal-container"
+                        style={{ height: "280px" }}
+                      >
+                        <img
+                          src="/images/try/other.jpg"
+                          alt="Other"
+                          className="rounded-5 w-100 h-100"
+                          style={{ objectFit: "cover" }}
+                        />
+                        {/* Unique Overlay */}
+                        <div className="try-modal-hover-overlay-custom d-flex justify-content-center align-items-center rounded-5">
+                          <span className="text-white fs-4 fw-bold">
+                            Coming Soon
+                          </span>
+                        </div>
+                      </div>
                       <h4 className="mt-3 fw-semibold">Other</h4>
                     </div>
                   </div>

@@ -11,16 +11,23 @@ const Loader = () => {
         src={logo}
         alt="Loading..."
         style={{
-          width: "80px",
-          height: "80px",
-          animation: "spin 2s linear infinite",
+          width: "100px",
+          height: "100px",
+          animation: "flipScale 2s ease-in-out infinite",
         }}
       />
       <style>
         {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+          @keyframes flipScale {
+            0% { 
+              transform: scale(1) rotateY(0deg);
+            }
+            50% { 
+              transform: scale(1.5) rotateY(180deg);
+            }
+            100% { 
+              transform: scale(1) rotateY(360deg);
+            }
           }
         `}
       </style>

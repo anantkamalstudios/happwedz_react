@@ -7,7 +7,7 @@ const FindMain = () => {
       className="hero-section"
       style={{
         backgroundImage:
-          "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(https://cdn1.weddingwire.in/assets/img/listing-sector-banner/1.avif)",
+          "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.2)), url(https://cdn1.weddingwire.in/assets/img/listing-sector-banner/1.avif)",
         backgroundSize: "cover",
         backgroundPosition: "center",
         padding: "100px 0",
@@ -26,7 +26,7 @@ const FindMain = () => {
                 lineHeight: "1.2",
               }}
             >
-              Find your wedding venue
+              Find Your Wedding Vendors
             </h1>
             <p
               className="mb-5"

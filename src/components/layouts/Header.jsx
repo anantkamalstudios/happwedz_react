@@ -9,23 +9,35 @@ import { FaArrowRightLong } from "react-icons/fa6";
 
 const Header = () => {
   const dispatch = useDispatch();
+  const reduxLocation = useSelector((state) => state.location.selectedLocation);
+  const [selectedCity, setSelectedCity] = useState(reduxLocation);
+  const formatName = (name) => name.replace(/\band\b/gi, "&");
+
   const handleLogout = () => {
     dispatch(logout());
     dispatch(vendorLogout());
+
+    // Clear any cached storefront data on logout
+    localStorage.removeItem("vendorFormData");
+    localStorage.removeItem("photoDraftsMeta");
+    localStorage.removeItem("videoDraftsMeta");
   };
 
-  const auth = useSelector((state) => state.auth);
-  const vendorAuth = useSelector((state) => state.vendorAuth);
-  // console.log("vendor auth ", vendorAuth);
-  const isUserLoggedIn = !!auth?.token;
-  const isVendorLoggedIn = !!vendorAuth?.token;
+  const { user, token: userToken } = useSelector((state) => state.auth);
+  const { vendor, token: vendorToken } = useSelector(
+    (state) => state.vendorAuth
+  );
+
+  const isUserLoggedIn = !!userToken && !!user;
+  const isVendorLoggedIn = !!vendorToken && !!vendor;
+  const isLoggedIn = isUserLoggedIn || isVendorLoggedIn;
+
   const toSlug = (text) =>
     text
       ?.toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9\-]/g, "") || "";
 
-  // Collapse navbar on route change
   const location = window.location.pathname;
   useEffect(() => {
     const collapse = document.getElementById("mainNav");
@@ -69,7 +81,6 @@ const Header = () => {
     fetchSubcategories();
   }, []);
 
-  // State for all vendor categories (with subcategories)
   const [vendorCategories, setVendorCategories] = useState([]);
   useEffect(() => {
     const fetchVendorCategories = async () => {
@@ -86,6 +97,13 @@ const Header = () => {
     };
     fetchVendorCategories();
   }, []);
+
+  const vendorType = encodeURIComponent("Venues");
+  const cityParam = selectedCity
+    ? `&city=${encodeURIComponent(selectedCity)}`
+    : "";
+
+  const targetURL = `/vendors/all?vendorType=${vendorType}${cityParam}`;
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light shadow-sm primary-bg p-0">
@@ -110,10 +128,10 @@ const Header = () => {
           </button>
         </div>
 
-        <div className="collapse navbar-collapse" id="mainNav">
+        <div className="w-100" id="mainNav">
           <div className="row">
             <div className="col-12 bg-white p-2">
-              <div className="container-fluid">
+              <div className="container-fluid w-100">
                 <div className="row align-items-center gy-2">
                   {/* Left: Tagline */}
                   <div className="col-12 col-sm-4 col-lg-4 d-flex align-items-center justify-content-center justify-content-sm-start">
@@ -162,11 +180,11 @@ const Header = () => {
                       title="Try Design Studio"
                     >
                       <img
-                        src="/images/header/designstudio.png"
+                        src="/images/header/tryimg.png"
                         alt="Design Studio"
                         className="img-fluid"
                         style={{
-                          maxHeight: "28px",
+                          maxHeight: "50px",
                           width: "auto",
                           cursor: "pointer",
                         }}
@@ -335,11 +353,13 @@ const Header = () => {
                     <ul className="navbar-nav d-flex flex-wrap justify-content-center gap-3">
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <Link
+                          // to={targetURL}
                           to="/venues"
-                          className="nav-link dropdown-toggle text-white"
+                          className="nav-link dropdown-toggle text-white fs-18"
                         >
                           Venues
                         </Link>
+
                         <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 rounded-4">
                           <div className="container-fluid">
                             <div className="row g-4">
@@ -350,36 +370,33 @@ const Header = () => {
                                       Popular Categories
                                     </h6>
                                     <div className="d-flex flex-column flex-wrap gap-2">
-                                      <span className="primary-text px-3 py-2 small me-2">
+                                      <Link
+                                        to="/venues"
+                                        className="primary-text px-3 py-2 small me-2 d-flex align-items-center justify-content-between"
+                                      >
                                         Wedding Venues <FaArrowRightLong />
-                                      </span>
-                                      <span className="primary-text px-3 py-2 small me-2">
-                                        Popular Locations <FaArrowRightLong />
-                                      </span>
+                                      </Link>
 
-                                      {!auth?.user && !vendorAuth?.vendor && (
+                                      <Link
+                                        to="/venues"
+                                        className="primary-text px-3 py-2 small me-2 d-flex align-items-center justify-content-between"
+                                      >
+                                        Popular Locations <FaArrowRightLong />
+                                      </Link>
+
+                                      {!isLoggedIn && (
                                         <Link
-                                          to="vendor-login"
-                                          className="primary-text px-3 py-2 small me-2"
+                                          to="/vendor-login"
+                                          className="primary-text px-3 py-2 small me-2 d-flex align-items-center justify-content-between"
                                         >
-                                          Are You Vendor
+                                          Are You Vendor <FaArrowRightLong />
                                         </Link>
                                       )}
                                     </div>
                                   </div>
-                                  {/* <img
-                                    src="https://cdn-icons-png.flaticon.com/512/3176/3176294.png"
-                                    alt="Popular Categories"
-                                    className="img-fluid mt-3"
-                                    style={{
-                                      width: "60px",
-                                      objectFit: "contain",
-                                    }}
-                                  /> */}
                                 </div>
                               </div>
 
-                              {/* Column 2: By Type and By Location */}
                               <div className="col-md-8 p-4">
                                 <h6 className="fw-bold primary-text text-uppercase mb-3">
                                   By Type
@@ -440,25 +457,28 @@ const Header = () => {
                         <div className="dropdown-wrapper">
                           <Link
                             to="/vendors"
-                            className="nav-link dropdown-toggle text-white"
+                            className="nav-link dropdown-toggle text-white fs-18"
                           >
                             Vendors
                           </Link>
                           <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
-                              <div className="row">
+                              <div
+                                style={{
+                                  columnCount: 4,
+                                  columnGap: "1rem",
+                                }}
+                                className="grid-layout"
+                              >
                                 {vendorCategories.length > 0 &&
                                   vendorCategories.map((cat, i) => (
                                     <div
-                                      className="col-6 col-md-3 mb-3"
+                                      className="mb-4 d-inline-block w-100"
                                       key={cat.id || i}
                                     >
-                                      {/* Category Name */}
                                       <div className="fw-bold primary-text text-uppercase mb-2">
                                         {cat.name}
                                       </div>
-
-                                      {/* Subcategories */}
                                       {Array.isArray(cat.subcategories) &&
                                         cat.subcategories.length > 0 && (
                                           <ul className="list-unstyled">
@@ -473,7 +493,7 @@ const Header = () => {
                                                   )}`}
                                                   className="dropdown-link small d-block"
                                                 >
-                                                  {sub.name}
+                                                  {formatName(sub.name)}
                                                 </Link>
                                               </li>
                                             ))}
@@ -491,7 +511,7 @@ const Header = () => {
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            className="nav-link dropdown-toggle text-white"
+                            className="nav-link dropdown-toggle text-white fs-18"
                             to="/photography"
                             id="photoDropdown"
                             role="button"
@@ -501,10 +521,13 @@ const Header = () => {
 
                           <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
-                              <div className="row g-4">
+                              <div
+                                style={{ columnCount: 4, columnGap: "1rem" }}
+                                className="grid-layout"
+                              >
                                 {[
                                   {
-                                    title: "Outfit",
+                                    title: "Bridal Wear",
                                     items: [
                                       "Bridal Lehenga",
                                       "Wedding Sarees",
@@ -564,8 +587,8 @@ const Header = () => {
                                   {
                                     title: "Groom Wear",
                                     items: [
-                                      "Sherwani for Groom",
-                                      "Wedding Suits for Groom",
+                                      "Sherwani",
+                                      "Wedding Suits",
                                       "More",
                                     ],
                                   },
@@ -580,24 +603,50 @@ const Header = () => {
                                     ],
                                   },
                                 ].map((section, i) => (
-                                  <div className="col-6 col-md-3" key={i}>
-                                    <h6 className="fw-semibold text-secondary mb-3">
+                                  // <div className="col-6 col-md-3" key={i}>
+                                  //   <h6 className="fw-semibold text-secondary mb-3">
+                                  //     {section.title}
+                                  //   </h6>
+                                  //   <ul className="list-unstyled">
+                                  //     {section.items.map((item, idx) => (
+                                  //       <li key={idx}>
+                                  //         <Link
+                                  //           to={`/photography/${toSlug(item)}`}
+                                  //           state={{ title: item }}
+                                  //           className="dropdown-link small d-block mb-2"
+                                  //         >
+                                  //           <i className="bi bi-chevron-right me-2 text-muted"></i>
+                                  //           {item}
+                                  //         </Link>
+                                  //       </li>
+                                  //     ))}
+                                  //   </ul>
+                                  // </div>
+                                  <div
+                                    className="mb-4 d-inline-block w-100"
+                                    key={i}
+                                  >
+                                    <div className="fw-bold primary-text text-uppercase mb-2">
                                       {section.title}
-                                    </h6>
-                                    <ul className="list-unstyled">
-                                      {section.items.map((item, idx) => (
-                                        <li key={idx}>
-                                          <Link
-                                            to={`/photography/${toSlug(item)}`}
-                                            state={{ title: item }}
-                                            className="dropdown-link small d-block mb-2"
-                                          >
-                                            <i className="bi bi-chevron-right me-2 text-muted"></i>
-                                            {item}
-                                          </Link>
-                                        </li>
-                                      ))}
-                                    </ul>
+                                    </div>
+                                    {Array.isArray(section.items) &&
+                                      section.items.length > 0 && (
+                                        <ul className="list-unstyled">
+                                          {section.items.map((item, j) => (
+                                            <li key={j} className="mb-1">
+                                              <Link
+                                                to={`/photography/${toSlug(
+                                                  item
+                                                )}`}
+                                                state={{ title: item }}
+                                                className="dropdown-link small d-block"
+                                              >
+                                                {item}
+                                              </Link>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      )}
                                   </div>
                                 ))}
                               </div>
@@ -761,7 +810,7 @@ const Header = () => {
                         <div className="dropdown-wrapper">
                           <Link
                             // className="nav-link dropdown-toggle text-white"
-                            className="nav-link text-white"
+                            className="nav-link text-white fs-18"
                             to="/e-invites"
                             state={{ title: "E-Invites" }}
                             id="photoDropdown"
@@ -823,15 +872,8 @@ const Header = () => {
                       </li>
 
                       {/* photo Dropdown */}
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          {/* <Link
-                            className="nav-link dropdown-toggle text-white"
-                            to="/twosoul"
-                            state={{ title: "Two Soul" }}
-                            id="photoDropdown"
-                            role="button"
-                          > */}
+                      {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper"> 
                           <Link
                             className="nav-link dropdown-toggle text-white"
                             to="#"
@@ -863,7 +905,7 @@ const Header = () => {
                                   },
                                 ].map((section, i) => (
                                   <div className="col-6 col-md-3" key={i}>
-                                    <h6 className="fw-semibold text-secondary mb-3">
+                                    <h6 className="fw-bold primary-text text-uppercase mb-2">
                                       {section.title}
                                     </h6>
                                     <ul className="list-unstyled">
@@ -886,7 +928,7 @@ const Header = () => {
                             </div>
                           </div>
                         </div>
-                      </li>
+                      </li> */}
 
                       {/* Matrimonial Dropdown */}
                       {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">
@@ -907,7 +949,7 @@ const Header = () => {
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            className="nav-link text-white"
+                            className="nav-link text-white fs-18"
                             to="/genie"
                             state={{ title: "Genie" }}
                             id="photoDropdown"
@@ -922,7 +964,7 @@ const Header = () => {
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            className="nav-link text-white"
+                            className="nav-link text-white fs-18"
                             to="/blog"
                             state={{ title: "Blog" }}
                             id="blog"
@@ -936,7 +978,7 @@ const Header = () => {
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            className="nav-link text-white"
+                            className="nav-link text-white fs-18"
                             to="/real-wedding"
                             state={{ title: "Real Wedding" }}
                             id="real-wedding"
@@ -976,32 +1018,6 @@ const Header = () => {
                         </div>
                       </li> */}
 
-                      {/* Login Dropdown */}
-                      {isUserLoggedIn || isVendorLoggedIn ? (
-                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                          <div className="dropdown-wrapper">
-                            <button
-                              onClick={handleLogout}
-                              className="nav-link text-white btn btn-link"
-                              style={{ textDecoration: "none" }}
-                            >
-                              Logout
-                            </button>
-                          </div>
-                        </li>
-                      ) : (
-                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                          <div className="dropdown-wrapper">
-                            <Link
-                              to="/customer-login"
-                              className="nav-link text-white"
-                            >
-                              Login
-                            </Link>
-                          </div>
-                        </li>
-                      )}
-
                       {/* Vendor Dashboard */}
                       {/* <li className="nav-Vendor Dashboard mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
@@ -1018,27 +1034,51 @@ const Header = () => {
                       </li> */}
 
                       {/* Login Dropdown */}
-                      {isUserLoggedIn && (
+                      {isUserLoggedIn ? (
                         <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <Link
                               to="/user-dashboard"
-                              className="nav-link text-white"
+                              className="nav-link text-white fs-18"
                             >
                               User Dashboard
                             </Link>
                           </div>
                         </li>
-                      )}
-                      {isVendorLoggedIn && (
+                      ) : isVendorLoggedIn ? (
                         <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <Link
                               to="/vendor-dashboard"
-                              className="nav-link text-white"
+                              className="nav-link text-white fs-18"
                             >
-                              Dashboard
+                              Vendor Dashboard
                             </Link>
+                          </div>
+                        </li>
+                      ) : (
+                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                          <div className="dropdown-wrapper">
+                            <Link
+                              to="/customer-login"
+                              className="nav-link text-white fs-18"
+                            >
+                              Login
+                            </Link>
+                          </div>
+                        </li>
+                      )}
+
+                      {isLoggedIn && (
+                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                          <div className="dropdown-wrapper">
+                            <button
+                              onClick={handleLogout}
+                              className="nav-link text-white btn btn-link fs-18"
+                              style={{ textDecoration: "none" }}
+                            >
+                              Logout
+                            </button>
                           </div>
                         </li>
                       )}

@@ -1,28 +1,27 @@
 export const faqssection = [
   {
-    question:
-      "Why is Shaadi.com better compared to other matrimonial websites?",
+    question: "What types of vendors can register with HappyWedz?",
     answer:
-      "Shaadi.com stands out as India's leading matchmaking platform with over 80 Lakh success stories, a testament to its trust and effectiveness. Unlike traditional matrimonial sites, Shaadi.com offers verified profiles, personalized matchmaking services, and advanced search tools that help users find compatible partners with ease and confidence. Its focus on safety, authenticity, and meaningful connections makes it a preferred choice for millions.",
+      "We welcome a wide array of wedding-related vendors: venues, caterers, photographers, videographers, florists, decorators, makeup artists, bridal wear, entertainment, wedding planners, bridal services, and more. If your services are relevant to weddings and couples, feel free to reach out",
   },
   {
-    question: "How does Shaadi.com ensure profile verification?",
+    question: "Are there any fees or subscription charges for being a vendor?",
     answer:
-      "Shaadi.com employs multiple verification methods including phone verification, photo verification, and document verification. Our dedicated team manually reviews profiles to ensure authenticity. We also have advanced AI systems that detect and prevent fake profiles, ensuring a safe and trustworthy platform for all users.",
+      "Yes, we offer different vendor plans (basic, premium, featured) with varying benefits (visibility, leads, promotional placements). You can choose a plan that suits your budget.",
   },
   {
-    question: "What makes Shaadi.com's matchmaking services unique?",
+    question: "How do leads or inquiries from couples work?",
     answer:
-      "Our personalized matchmaking services are powered by advanced algorithms that consider compatibility factors like lifestyle, values, education, and family background. We also provide dedicated relationship managers for premium members who offer personalized assistance throughout the matchmaking journey.",
+      "When a couple browses and finds your profile, they can send an inquiry or request a quote. You will receive an email or notification with the inquiry details (service, date, location, etc.). You can respond directly to the couple via HappyWedz or your preferred channel.",
   },
   {
-    question: "How secure is my personal information on Shaadi.com?",
+    question: "Can I list for multiple cities/locations?",
     answer:
-      "Shaadi.com follows strict privacy protocols and uses industry-standard encryption to protect your personal data. You have complete control over who can view your profile and contact you. Our privacy settings allow you to share information selectively and maintain your anonymity until you're comfortable.",
+      "Yes, you can specify the cities or regions you operate in. If you service multiple areas, you may set up separate location listings under your profile.",
   },
   {
-    question: "What are the success rates of Shaadi.com?",
+    question: "How do reviews / ratings work?",
     answer:
-      "With over 80 Lakh success stories and counting, Shaadi.com has one of the highest success rates in the matrimonial industry. Our platform facilitates thousands of meaningful connections every month, with many leading to happy marriages across different communities and regions.",
+      "After an event, couples can leave ratings and reviews for the vendor. These help future couples assess your service quality. We monitor reviews to maintain platform integrity and reserve the right to remove inappropriate or false reviews.",
   },
 ];
