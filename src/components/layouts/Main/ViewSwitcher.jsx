@@ -5,7 +5,7 @@ import { FaList, FaTh } from "react-icons/fa";
 const ViewSwitcher = ({ view, setView }) => {
   return (
     <div className="view-switcher-wrapper rounded-2">
-      <div className="view-switcher d-flex gap-2">
+      <div className="view-switcher d-flex">
         <button
           onClick={() => setView("images")}
           className={view === "images" ? "switch-btn active" : "switch-btn"}
