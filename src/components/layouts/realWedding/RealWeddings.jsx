@@ -542,7 +542,7 @@ const RealWeddings = ({ onPostClick }) => {
                 setCurrentPage(1);
               }}
             />
-            <button className="search-btn">
+            <button className="search-btn" style={{ width: "12rem" }}>
               <FaSearch /> Find Weddings
             </button>
           </div>
