@@ -91,32 +91,33 @@ const Herosection = () => {
               onSubmit={(e) => {
                 e.preventDefault();
                 if (selectedCategory) {
-                  const encodedCategory = encodeURIComponent(selectedCategory);
+                  const encodedCategory = encodeURIComponent(
+                    selectedCategory.toLowerCase()
+                  );
+                  console.log("encodedCategory", encodedCategory);
                   navigate(`/vendors/all?vendorType=${encodedCategory}`);
                 }
               }}
             >
               <Row className="g-3">
                 <Col xs={12} md={10}>
-                  <Form.Group className="m-0">
-                    <Form.Select
-                      aria-label="Select Category"
-                      className="form-control-lg"
-                      style={{ fontSize: "14px", padding: "0.5rem 0.75rem" }}
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                    >
-                      {categoriesApi.length > 0 ? (
-                        categoriesApi.map((c) => (
-                          <option key={c.id} value={c.name}>
-                            {c.name}
-                          </option>
-                        ))
-                      ) : (
-                        <option value="">Loading...</option>
-                      )}
-                    </Form.Select>
-                  </Form.Group>
+                  <Form.Select
+                    aria-label="Select Category"
+                    className="form-control-lg"
+                    style={{ fontSize: "14px", padding: "0.5rem 0.75rem" }}
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                  >
+                    {categoriesApi.length > 0 ? (
+                      categoriesApi.map((c) => (
+                        <option key={c.id} value={c.name}>
+                          {c.name}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="">Loading...</option>
+                    )}
+                  </Form.Select>
                 </Col>
                 <Col xs={12} md={2} className="d-grid">
                   <Button

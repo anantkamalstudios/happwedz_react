@@ -5,7 +5,7 @@ import axios from "axios";
 const API_BASE_URL = "https://happywedz.com";
 import { IMAGE_BASE_URL } from "../../config/constants";
 
-const CategoryAccordion = ({ onSelect }) => {
+const WeddingCategories = ({ onSelect }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -180,4 +180,4 @@ const CategoryAccordion = ({ onSelect }) => {
   );
 };
 
-export default CategoryAccordion;
+export default WeddingCategories;

@@ -21,6 +21,7 @@ import MainSearch from "../layouts/Main/MainSearch";
 import RealWedding from "./RealWedding";
 import Genie from "./Genie";
 import AllCategories from "../layouts/AllCategories";
+import WeddingCategories from "../home/WeddingCategories";
 
 const MainSection = () => {
   const { section } = useParams();
@@ -31,9 +32,9 @@ const MainSection = () => {
     return (
       <>
         <MainSearch />
-        <AllCategories />
         <MainByRegion />
-        <FactorsList />
+        <AllCategories />
+        {/* <FactorsList /> */}
         <FaqsSection />
       </>
     );
@@ -43,10 +44,10 @@ const MainSection = () => {
     return (
       <>
         <MainSearch title="Wedding Vendor" />
-        <MainByRegion />
         <AllCategories />
+        <MainByRegion />
         <FindMain />
-        <FactorsList />
+        {/* <FactorsList /> */}
         <FaqsSection />
       </>
     );
@@ -72,7 +73,7 @@ const MainSection = () => {
   if (section === "real-wedding") {
     return (
       <>
-        <MainSearch title="Real Wedding" />
+        {/* <MainSearch title="Real Wedding" /> */}
         <RealWedding />
       </>
     );

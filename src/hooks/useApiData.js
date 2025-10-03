@@ -1,18 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 
-const useApiData = (section, slug, city = null) => {
+const useApiData = (section, slug, city = null, vendorType = null) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchData = useCallback(async () => {
-    if (!section || !slug) {
-      setData([]);
-      setLoading(false);
-      return;
-    }
-
-    if (section === "photography") {
+    if (!section || (!slug && !vendorType)) {
       setData([]);
       setLoading(false);
       return;
@@ -23,20 +17,23 @@ const useApiData = (section, slug, city = null) => {
 
     try {
       const subCategory = slug
-        .replace(/-/g, " ")
-        .replace(/\b\w/g, (l) => l.toUpperCase());
+        ? slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
+        : null;
 
       const params = new URLSearchParams();
       if (city && city !== "all") {
         params.append("city", city);
       }
-      if (subCategory) {
+      if (vendorType) {
+        console.log("vendorType in UAP", vendorType);
+        params.append("vendorType", vendorType);
+      } else if (subCategory) {
         params.append("subCategory", subCategory);
       }
 
-      const response = await fetch(
-        `https://happywedz.com/api/vendor-services?${params.toString()}`
-      );
+      const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
+      console.log("[useApiData] Fetching:", apiUrl);
+      const response = await fetch(apiUrl);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -54,7 +51,7 @@ const useApiData = (section, slug, city = null) => {
     } finally {
       setLoading(false);
     }
-  }, [section, slug, city]);
+  }, [section, slug, city, vendorType]);
 
   const refetch = useCallback(() => {
     fetchData();

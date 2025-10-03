@@ -487,8 +487,7 @@ body {
 }
 
 .col-lg-6.d-none.d-lg-block {
-  background: url("/images/auth/login.jpg")
-    no-repeat center center;
+  background: url("/images/auth/login.jpg") no-repeat center center;
   background-size: cover;
   min-height: 700px;
 }
@@ -1379,7 +1378,7 @@ body {
 .view-switcher {
   display: inline-flex;
   background: #e9e9e9;
-  border-radius: 999px;
+  border-radius: 15px;
   overflow: hidden;
 }
 
