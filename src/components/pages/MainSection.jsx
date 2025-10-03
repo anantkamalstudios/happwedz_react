@@ -31,9 +31,9 @@ const MainSection = () => {
     return (
       <>
         <MainSearch />
-        <AllCategories />
         <MainByRegion />
-        <FactorsList />
+        <AllCategories />
+        {/* <FactorsList /> */}
         <FaqsSection />
       </>
     );
@@ -43,10 +43,10 @@ const MainSection = () => {
     return (
       <>
         <MainSearch title="Wedding Vendor" />
-        <MainByRegion />
         <AllCategories />
+        <MainByRegion />
         <FindMain />
-        <FactorsList />
+        {/* <FactorsList /> */}
         <FaqsSection />
       </>
     );
@@ -72,7 +72,7 @@ const MainSection = () => {
   if (section === "real-wedding") {
     return (
       <>
-        <MainSearch title="Real Wedding" />
+        {/* <MainSearch title="Real Wedding" /> */}
         <RealWedding />
       </>
     );
