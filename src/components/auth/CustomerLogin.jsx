@@ -23,14 +23,16 @@ const CustomerLogin = () => {
     try {
       showLoader();
       const result = await signInWithPopup(auth, provider);
+
+      const token = await result.user.getIdToken();
+
       const user = {
+        id: result.user.uid,
         name: result.user.displayName,
         email: result.user.email,
         photoURL: result.user.photoURL,
-        uid: result.user.uid,
+        provider: "google",
       };
-
-      const token = await result.user.getIdToken();
 
       dispatch(loginUser({ user, token }));
 

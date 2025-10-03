@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 
 const CardComponent = ({ cat }) => {
-  // console.log("cat is ===", cat);
   const data = cat.attributes;
   const media = cat.media;
   console.log(data);
