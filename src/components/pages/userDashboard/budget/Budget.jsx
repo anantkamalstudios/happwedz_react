@@ -620,7 +620,6 @@ import {
 import { useSelector } from "react-redux";
 
 const Budget = () => {
-  // Budget data structure
   const [budget, setBudget] = useState({
     estimated: 2000000,
     categories: [],

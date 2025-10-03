@@ -140,7 +140,7 @@ const CustomerRegister = () => {
             coverImage: "",
             captchaToken: "test-captcha-token",
           });
-          navigate("/user-dashboard");
+          navigate("/");
         } else {
           // appToast(data.message || "Registration failed", "error");
         }
@@ -191,9 +191,8 @@ const CustomerRegister = () => {
                   <input
                     type="text"
                     name="name"
-                    className={`form-control ${
-                      errors.name ? "is-invalid" : ""
-                    }`}
+                    className={`form-control ${errors.name ? "is-invalid" : ""
+                      }`}
                     placeholder="Full Name"
                     value={formData.name}
                     onChange={handleChange}
@@ -211,9 +210,8 @@ const CustomerRegister = () => {
                   <input
                     type="email"
                     name="email"
-                    className={`form-control ${
-                      errors.email ? "is-invalid" : ""
-                    }`}
+                    className={`form-control ${errors.email ? "is-invalid" : ""
+                      }`}
                     placeholder="Email"
                     value={formData.email}
                     onChange={handleChange}
@@ -231,9 +229,8 @@ const CustomerRegister = () => {
                   <input
                     type="password"
                     name="password"
-                    className={`form-control ${
-                      errors.password ? "is-invalid" : ""
-                    }`}
+                    className={`form-control ${errors.password ? "is-invalid" : ""
+                      }`}
                     placeholder="Password"
                     value={formData.password}
                     onChange={handleChange}
@@ -251,9 +248,8 @@ const CustomerRegister = () => {
                   <input
                     type="tel"
                     name="phone"
-                    className={`form-control ${
-                      errors.phone ? "is-invalid" : ""
-                    }`}
+                    className={`form-control ${errors.phone ? "is-invalid" : ""
+                      }`}
                     placeholder="Phone"
                     value={formData.phone}
                     onChange={handleChange}
@@ -274,9 +270,8 @@ const CustomerRegister = () => {
                   <input
                     type="text"
                     name="weddingVenue"
-                    className={`form-control ${
-                      errors.weddingVenue ? "is-invalid" : ""
-                    }`}
+                    className={`form-control ${errors.weddingVenue ? "is-invalid" : ""
+                      }`}
                     placeholder="Wedding Venue"
                     value={formData.weddingVenue}
                     onChange={handleChange}
@@ -295,9 +290,8 @@ const CustomerRegister = () => {
                 <div className="form-floating">
                   <select
                     name="country"
-                    className={`form-select ${
-                      errors.country ? "is-invalid" : ""
-                    }`}
+                    className={`form-select ${errors.country ? "is-invalid" : ""
+                      }`}
                     value={formData.country}
                     onChange={handleChange}
                   >
@@ -344,9 +338,8 @@ const CustomerRegister = () => {
                   <input
                     type="date"
                     name="weddingDate"
-                    className={`form-control ${
-                      errors.weddingDate ? "is-invalid" : ""
-                    }`}
+                    className={`form-control ${errors.weddingDate ? "is-invalid" : ""
+                      }`}
                     value={formData.weddingDate}
                     onChange={handleChange}
                   />

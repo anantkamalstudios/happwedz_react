@@ -353,8 +353,8 @@ const Header = () => {
                     <ul className="navbar-nav d-flex flex-wrap justify-content-center gap-3">
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <Link
-                          // to={targetURL}
-                          to="/venues"
+                          to={targetURL}
+                          // to="/venues"
                           className="nav-link dropdown-toggle text-white fs-18"
                         >
                           Venues

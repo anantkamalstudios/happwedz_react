@@ -35,7 +35,7 @@ const CustomerLogin = () => {
       dispatch(loginUser({ user, token }));
 
       addToast("Login successful!", "success");
-      navigate("/user-dashboard", { replace: true });
+      navigate("/", { replace: true });
     } catch (error) {
       addToast("Google login failed: " + error.message, "danger");
     } finally {
@@ -61,7 +61,7 @@ const CustomerLogin = () => {
         dispatch(loginUser({ user: response.user, token: null }));
       }
       addToast("Login successful!", "success");
-      navigate("/user-dashboard", { replace: true });
+      navigate("/", { replace: true });
     } else {
       addToast(response.message || "Login failed", "danger");
     }
