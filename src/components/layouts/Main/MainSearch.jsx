@@ -19,7 +19,7 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
       ? "Decor, catering, planners"
       : t.includes("venue")
       ? "Banquet halls, resorts, lawns"
-      : "Venues, vendors, services";
+      : "Find Best Venues";
     const placePh = "City or locality";
     return { keywordPh, placePh };
   }, [title]);
@@ -33,7 +33,6 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
     }
   };
 
-  // ✅ Fetch all Indian cities once on mount
   useEffect(() => {
     axios
       .post("https://countriesnow.space/api/v0.1/countries/cities", {
@@ -108,66 +107,8 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
                     />
                   </div>
 
-                  {/*
-                  <div className="vr d-none d-md-block" />
-
-                   <div
-                    className="d-flex align-items-center flex-grow-1 px-2 position-relative"
-                    style={{ border: "1px solid pink", borderRadius: "5px" }}
-                  >
-                    <FaMapMarkerAlt className="me-2 text-muted" />
-                    <Form.Control
-                      value={place}
-                      onChange={(e) => {
-                        setPlace(e.target.value);
-                        setSearchTerm(e.target.value);
-                        setShowDropdown(true);
-                      }}
-                      type="text"
-                      placeholder={placeholders.placePh}
-                      className="border-0 shadow-none"
-                      style={{ background: "transparent" }}
-                      onFocus={() => setShowDropdown(true)}
-                      onBlur={() =>
-                        setTimeout(() => setShowDropdown(false), 200)
-                      }
-                    />
-
-                    {showDropdown &&
-                      searchTerm &&
-                      filteredCities.length > 0 && (
-                        <div
-                          className="dropdown-menu show mt-2"
-                          style={{
-                            position: "absolute",
-                            top: "100%",
-                            width: "100%",
-                            zIndex: 99999,
-                            maxHeight: "200px",
-                            overflowY: "auto",
-                            boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-                            background: "#fff",
-                          }}
-                        >
-                          {filteredCities.map((city) => (
-                            <div
-                              key={city}
-                              className="dropdown-item"
-                              onMouseDown={() => {
-                                setPlace(city);
-                                setShowDropdown(false);
-                              }}
-                            >
-                              {city}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                  </div> */}
-
                   <Button
                     type="submit"
-                    // className="ms-md-2 rounded-3 px-4 d-flex align-items-center justify-content-center"
                     style={{
                       whiteSpace: "nowrap",
                       backgroundColor: "#C31162",
@@ -180,7 +121,6 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
                 </div>
               </Form>
 
-              {/* Quick Chips */}
               <div className="d-flex gap-2 mt-3 flex-wrap">
                 {["Banquet Halls", "Wedding Resorts", "Photographers"].map(
                   (chip) => (

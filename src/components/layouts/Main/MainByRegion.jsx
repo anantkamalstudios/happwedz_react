@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import "swiper/css";
 import regions from "../../../data/regions";
 
-const MainByRegion = () => {
+const MainByRegion = ({ type }) => {
   const navigate = useNavigate();
 
   const handleRegionClick = (regionName) => {
@@ -16,7 +16,9 @@ const MainByRegion = () => {
   return (
     <div className="container">
       <div className="venue-region-section px-4 my-5">
-        <h3 className="fw-bold mb-0 text-dark mb-5">Venues by region</h3>
+        <h3 className="fw-bold mb-0 text-dark mb-5">
+          {type === "venues" ? "Venues" : "Vendors"} by region
+        </h3>
 
         <Swiper
           modules={[Navigation, Autoplay]}

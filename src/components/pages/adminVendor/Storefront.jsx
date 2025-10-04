@@ -75,7 +75,6 @@ const Storefront = () => {
   const [videoDrafts, setVideoDrafts] = useState([]);
   const { token, vendor } = useSelector((state) => state.vendorAuth || {});
 
-  // Fetch existing service data when vendor is available
   useEffect(() => {
     const fetchServiceData = async () => {
       if (vendor?.id && token) {
@@ -85,8 +84,6 @@ const Storefront = () => {
               vendor.id,
               token
             );
-          // If data exists, merge it into formData.
-          // The local storage draft will be preserved for any fields not in the API response.
           if (serviceData) {
             setFormData((prev) => ({ ...prev, ...serviceData }));
           }
@@ -99,11 +96,8 @@ const Storefront = () => {
     fetchServiceData();
   }, [vendor, token]);
 
-  // Save handler: update if id exists, else create
   const handleSave = async () => {
-    // Always update localStorage
     localStorage.setItem("vendorFormData", JSON.stringify(formData));
-    // If formData has an id, call update API
     if (formData.id) {
       try {
         const fd = buildFormData();

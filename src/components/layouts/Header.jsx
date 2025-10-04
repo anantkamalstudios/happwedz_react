@@ -371,14 +371,14 @@ const Header = () => {
                                     </h6>
                                     <div className="d-flex flex-column flex-wrap gap-2">
                                       <Link
-                                        to="/wedding-venues"
+                                        to="/venues"
                                         className="primary-text px-3 py-2 small me-2 d-flex align-items-center justify-content-between"
                                       >
                                         Wedding Venues <FaArrowRightLong />
                                       </Link>
 
                                       <Link
-                                        to="/popular-locations"
+                                        to="/venues"
                                         className="primary-text px-3 py-2 small me-2 d-flex align-items-center justify-content-between"
                                       >
                                         Popular Locations <FaArrowRightLong />

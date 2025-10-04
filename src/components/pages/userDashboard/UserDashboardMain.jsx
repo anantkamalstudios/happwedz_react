@@ -60,7 +60,7 @@ import Budget from "./budget/Budget";
 import Check from "./checklist/Check";
 import Guests from "./guests/Guests";
 import WishList from "./wishlist/WishList";
-import Booking from "./booking/Booking";
+// import Booking from "./booking/Booking";
 import Messages from "./messages/Messages";
 import RealWeddingForm from "./realWeddingForm/RealWeddingForm";
 
@@ -87,8 +87,8 @@ const UserDashboardMain = () => {
         return <Budget user={user} token={token} />;
       case "wishlist":
         return <WishList user={user} token={token} />;
-      case "booking":
-        return <Booking user={user} token={token} />;
+      // case "booking":
+      //   return <Booking user={user} token={token} />;
       case "message":
         return <Messages user={user} token={token} />;
       case "real-wedding":

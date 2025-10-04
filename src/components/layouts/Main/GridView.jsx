@@ -31,6 +31,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                       venue.image ||
                       "https://images.unsplash.com/photo-1519167758481-83f29da8c8d0?w=800&h=600&fit=crop"
                     }
+                    loading="lazy"
                     alt={venue.name || "Venue"}
                     style={{
                       objectFit: "cover",
@@ -118,7 +119,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                       className="text-muted mb-3"
                       style={{ fontSize: "13px" }}
                     >
-                      {venue.subtitle || "NA"}
+                      {venue.subtitle || venue.tagline}
                     </div>
 
                     {/* Location */}
@@ -130,7 +131,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                     </div>
 
                     {/* Veg/Non-Veg Pills */}
-                    <div className="d-flex gap-2 mb-3">
+                    {/* <div className="d-flex gap-2 mb-3">
                       <span
                         className="badge px-3 py-2"
                         style={{
@@ -155,7 +156,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                       >
                         Non Veg
                       </span>
-                    </div>
+                    </div> */}
 
                     {/* Price Row */}
                     <div className="d-flex justify-content-between align-items-center mb-3">
@@ -170,7 +171,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                           className="text-muted ms-1"
                           style={{ fontSize: "12px" }}
                         >
-                          per plate
+                          per event
                         </span>
                       </div>
                       <div>
@@ -184,7 +185,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                           className="text-muted ms-1"
                           style={{ fontSize: "12px" }}
                         >
-                          per plate
+                          per event
                         </span>
                       </div>
                     </div>

@@ -123,10 +123,6 @@ const CustomerRegister = () => {
         if (data.success && data.user && data.token) {
           dispatch(setCredentials({ user: data.user, token: data.token }));
 
-          // appToast(
-          //   data.message || "Registration successful! Please login.",
-          //   "success"
-          // );
           setFormData({
             name: "",
             email: "",
@@ -140,7 +136,7 @@ const CustomerRegister = () => {
             coverImage: "",
             captchaToken: "test-captcha-token",
           });
-          navigate("/user-dashboard");
+          navigate("/");
         } else {
           // appToast(data.message || "Registration failed", "error");
         }

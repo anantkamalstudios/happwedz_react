@@ -405,30 +405,45 @@ import { FiCheck, FiTrash } from "react-icons/fi";
 import axios from "axios";
 import { useSelector } from "react-redux";
 
-const API_BASE = "https://happywedz.com/api/checklist";
+const API_BASE = "https://happywedz.com/api/checklist_new"; // For tasks
+const CATEGORY_API = "https://happywedz.com/api/vendor-types/with-subcategories/all"; // For categories
 
 const Check = () => {
   const userId = useSelector((state) => state.auth.user?.id);
+  const token = useSelector((state) => state.auth.token);
+  const selectToken = useSelector((state) => state.auth.token);
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedPeriod, setSelectedPeriod] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [loading, setLoading] = useState(false);
+  const [refresh, setRefresh] = useState(false);
+
+  // Axios instance with auth header
+  const axiosInstance = axios.create({
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   // Fetch checklist items for the user
   const fetchTasks = async () => {
     if (!userId) return;
     setLoading(true);
     try {
-      const params = {};
-      if (selectedStatus !== "All")
-        params.status = selectedStatus.toLowerCase();
+      const params = { user_id: userId };
+      if (selectedStatus !== "All") params.status = selectedStatus.toLowerCase();
       if (selectedCategory !== "All") params.category = selectedCategory;
-      if (selectedPeriod !== "All") params.timePeriod = selectedPeriod;
+      if (selectedPeriod !== "All") params.period = selectedPeriod;
 
-      const res = await axios.get(`${API_BASE}/${userId}`, { params });
-      setTasks(res.data || []);
+      const response = await axiosInstance.get(`${API_BASE}/${userId}`, { params });
+      // Handle cases where the data is nested under a 'data' property or is a direct array
+      if (response.data && Array.isArray(response.data.data)) {
+        setTasks(response.data.data || []);
+      } else {
+        setTasks(response.data || []);
+      }
     } catch (err) {
       setTasks([]);
       console.error(err);
@@ -439,27 +454,23 @@ const Check = () => {
 
   useEffect(() => {
     fetchTasks();
-  }, [userId, selectedCategory, selectedPeriod, selectedStatus]);
+  }, [userId, selectedCategory, selectedPeriod, selectedStatus, refresh]);
 
-  const categories = [
-    "All",
-    "Essential",
-    "Events",
-    "Catering",
-    "Photography and video",
-    "Planning",
-    "Jewellery",
-    "Transportation",
-    "Wedding cards",
-    "Flowers and Decoration",
-    "Bridal Accessories",
-    "Groom's Accessories",
-    "Health and Beauty",
-    "Entertainment",
-    "Guests",
-    "Honeymoon",
-    "Other",
-  ];
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axiosInstance.get(CATEGORY_API);
+        const categoryNames = response.data.map(cat => cat.name);
+        setCategories(["All", ...categoryNames]);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   const periods = [
     "All",
     "10-12 months",
@@ -475,10 +486,10 @@ const Check = () => {
   // Toggle task status
   const toggleTask = async (id, currentStatus) => {
     try {
-      const res = await axios.put(`${API_BASE}/${id}`, {
-        status: currentStatus === "completed" ? "pending" : "completed",
+      const res = await axiosInstance.put(`${API_BASE}/${id}`, {
+        status: currentStatus === "completed" ? "pending" : "completed"
       });
-      setTasks(tasks.map((t) => (t.id === id ? res.data : t)));
+      setRefresh(prev => !prev); // Trigger re-fetch
     } catch (err) {
       console.error(err);
     }
@@ -488,16 +499,16 @@ const Check = () => {
   const addTask = async () => {
     if (!newTask.trim() || !userId) return;
     const payload = {
-      userId,
-      text: newTask,
+      user_id: userId,
+      title: newTask, // 'title' instead of 'text'
       category: selectedCategory !== "All" ? selectedCategory : "Planning",
-      timePeriod: selectedPeriod !== "All" ? selectedPeriod : "10-12 months",
+      period: selectedPeriod !== "All" ? selectedPeriod : "10-12 months", // 'period' instead of 'timePeriod'
       status: "pending",
     };
     try {
-      const res = await axios.post(API_BASE, payload);
-      setTasks([...tasks, res.data]);
+      const res = await axiosInstance.post(API_BASE, payload);
       setNewTask("");
+      setRefresh(prev => !prev); // Trigger re-fetch
     } catch (err) {
       console.error(err);
     }
@@ -506,8 +517,8 @@ const Check = () => {
   // Delete task
   const deleteTask = async (id) => {
     try {
-      await axios.delete(`${API_BASE}/${id}`);
-      setTasks(tasks.filter((t) => t.id !== id));
+      await axiosInstance.delete(`${API_BASE}/${id}`);
+      setRefresh(prev => !prev); // Trigger re-fetch
     } catch (err) {
       console.error(err);
     }
@@ -525,11 +536,11 @@ const Check = () => {
   });
   const countByPeriod = {};
   periods.forEach((p) => {
-    if (p !== "All") {
-      countByPeriod[p] = tasks.filter((t) => t.timePeriod === p).length;
-    }
+    if (p !== "All") countByPeriod[p] = tasks.filter((t) => t.period === p).length;
   });
 
+  // Style for scrollable category list
+  const categoryListStyle = { maxHeight: '250px', overflowY: 'auto' };
   return (
     <div className="wc-container container-fluid py-4">
       <div className="wc-row row">
@@ -545,9 +556,8 @@ const Check = () => {
                 {["All", "Pending", "Completed"].map((status) => (
                   <li
                     key={status}
-                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${
-                      selectedStatus === status ? "wc-active" : ""
-                    }`}
+                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${selectedStatus === status ? "wc-active" : ""
+                      }`}
                     onClick={() => setSelectedStatus(status)}
                   >
                     {status}
@@ -555,8 +565,8 @@ const Check = () => {
                       {status === "All"
                         ? tasks.length
                         : status === "Pending"
-                        ? pendingCount
-                        : completedCount}
+                          ? pendingCount
+                          : completedCount}
                     </span>
                   </li>
                 ))}
@@ -574,9 +584,8 @@ const Check = () => {
                 {periods.map((period) => (
                   <li
                     key={period}
-                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${
-                      selectedPeriod === period ? "wc-active" : ""
-                    }`}
+                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${selectedPeriod === period ? "wc-active" : ""
+                      }`}
                     onClick={() => setSelectedPeriod(period)}
                   >
                     {period}
@@ -596,22 +605,17 @@ const Check = () => {
             <div className="wc-card-header card-header text-white">
               <h5 className="mb-0">CATEGORY</h5>
             </div>
-            <div className="wc-card-body card-body">
-              <ul className="wc-list-group list-group">
+            <div className="wc-card-body card-body p-0">
+              <ul className="wc-list-group list-group" style={categoryListStyle}>
                 {categories.map((cat) => (
                   <li
                     key={cat}
-                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${
-                      selectedCategory === cat ? "wc-active" : ""
-                    }`}
+                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${selectedCategory === cat ? "wc-active" : ""
+                      }`}
                     onClick={() => setSelectedCategory(cat)}
                   >
                     {cat}
-                    {cat !== "All" && (
-                      <span className="wc-badge badge rounded-pill">
-                        {countByCategory[cat] || 0}
-                      </span>
-                    )}
+                    <span className="wc-badge badge rounded-pill">{cat === "All" ? tasks.length : countByCategory[cat] || 0}</span>
                   </li>
                 ))}
               </ul>
@@ -715,9 +719,8 @@ const Check = () => {
                         className="list-group-item d-flex align-items-center"
                       >
                         <div
-                          className={`wc-task-checkbox me-3 ${
-                            task.status === "completed" ? "wc-completed" : ""
-                          }`}
+                          className={`wc-task-checkbox me-3 ${task.status === "completed" ? "wc-completed" : ""
+                            }`}
                           onClick={() => toggleTask(task.id, task.status)}
                         >
                           {task.status === "completed" && <FiCheck />}
@@ -730,11 +733,11 @@ const Check = () => {
                                 : ""
                             }
                           >
-                            {task.text}
+                            {task.title}
                           </div>
                           <div className="text-muted small mt-1">
                             <span className="me-2">{task.category}</span>
-                            <span>{task.timePeriod}</span>
+                            <span>{task.period}</span>
                           </div>
                         </div>
                         <button
