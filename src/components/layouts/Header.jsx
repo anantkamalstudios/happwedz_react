@@ -353,8 +353,8 @@ const Header = () => {
                     <ul className="navbar-nav d-flex flex-wrap justify-content-center gap-3">
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <Link
-                          to={targetURL}
-                          // to="/venues"
+                          // to={targetURL}
+                          to="/venues"
                           className="nav-link dropdown-toggle text-white fs-18"
                         >
                           Venues
@@ -371,14 +371,14 @@ const Header = () => {
                                     </h6>
                                     <div className="d-flex flex-column flex-wrap gap-2">
                                       <Link
-                                        to="/wedding-venues"
+                                        to="/venues"
                                         className="primary-text px-3 py-2 small me-2 d-flex align-items-center justify-content-between"
                                       >
                                         Wedding Venues <FaArrowRightLong />
                                       </Link>
 
                                       <Link
-                                        to="/popular-locations"
+                                        to="/venues"
                                         className="primary-text px-3 py-2 small me-2 d-flex align-items-center justify-content-between"
                                       >
                                         Popular Locations <FaArrowRightLong />
@@ -404,39 +404,40 @@ const Header = () => {
                                 <div className="row">
                                   {(venueSubcategories.length > 0
                                     ? [
-                                      ...venueSubcategories.map(
-                                        (s) => s.name
-                                      ),
-                                      "View All Venues",
-                                    ]
+                                        ...venueSubcategories.map(
+                                          (s) => s.name
+                                        ),
+                                        "View All Venues",
+                                      ]
                                     : [
-                                      "Banquet Halls",
-                                      "Marriage Garden / Lawns",
-                                      "Wedding Resorts",
-                                      "Small Function / Party Halls",
-                                      "Destination Wedding Venues",
-                                      "Kalyana Mandapams",
-                                      "4 Star & Above Wedding Hotels",
-                                      "Venue Concierge Services",
-                                      "View All Venues",
-                                    ]
+                                        "Banquet Halls",
+                                        "Marriage Garden / Lawns",
+                                        "Wedding Resorts",
+                                        "Small Function / Party Halls",
+                                        "Destination Wedding Venues",
+                                        "Kalyana Mandapams",
+                                        "4 Star & Above Wedding Hotels",
+                                        "Venue Concierge Services",
+                                        "View All Venues",
+                                      ]
                                   ).map((item, i) => {
                                     const isShowMore =
                                       item === "View All Venues";
                                     const path = isShowMore
                                       ? "/venues"
                                       : `/venues/${item
-                                        .toLowerCase()
-                                        .replace(/\s+/g, "-")
-                                        .replace(/[^a-z0-9\-]/g, "")}`;
+                                          .toLowerCase()
+                                          .replace(/\s+/g, "-")
+                                          .replace(/[^a-z0-9\-]/g, "")}`;
                                     return (
                                       <div className="col-12 mb-2" key={i}>
                                         <Link
                                           to={path}
-                                          className={`dropdown-link d-flex align-items-center ${isShowMore
+                                          className={`dropdown-link d-flex align-items-center ${
+                                            isShowMore
                                               ? "primary-text fw-bold text-decoration-underline"
                                               : ""
-                                            }`}
+                                          }`}
                                         >
                                           <i className="bi bi-check-circle me-2 text-primary"></i>
                                           <span className="small">{item}</span>

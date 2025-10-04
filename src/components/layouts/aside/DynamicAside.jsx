@@ -1,13 +1,11 @@
 // DynamicAside.jsx
 import { useParams } from "react-router-dom";
 import TopFilter from "./TopFilter";
-import FILTER_CONFIG, { DEFAULT_FILTERS } from "../../../data/filtersConfig";
+import useFilters from "../../../hooks/useFilters";
 
-const DynamicAside = ({ view, setView }) => {
+const DynamicAside = ({ view, setView, section }) => {
   const { slug } = useParams();
-
-  const filters = FILTER_CONFIG[slug] || DEFAULT_FILTERS;
-
+  const { filters } = useFilters({ section, slug });
   return <TopFilter view={view} setView={setView} filters={filters} />;
 };
 

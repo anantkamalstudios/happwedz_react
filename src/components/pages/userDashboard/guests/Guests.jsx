@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -16,7 +15,7 @@ const initialGuestFormState = {
   name: "",
   email: "",
   group: "Other",
-  
+
   type: "Adult",
   companions: 0,
   seat_number: "",
@@ -47,8 +46,16 @@ const Guests = () => {
   // Create an Axios instance to automatically include the authorization header
   const axiosInstance = React.useMemo(() => {
     if (!token) return null;
+
+    // Check if this is a Firebase token (starts with eyJ) or backend token
+    const isFirebaseToken = token.startsWith("eyJ") && token.includes(".");
+
     return axios.create({
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        // Add additional headers for Firebase tokens if needed
+        ...(isFirebaseToken && { "X-Firebase-Token": "true" }),
+      },
     });
   }, [token]);
 
@@ -60,7 +67,12 @@ const Guests = () => {
     }
     setLoading(true);
     try {
-      const res = await axiosInstance.get(`https://happywedz.com/api/guestlist/user/${userId}`);
+      // Check if userId is a Firebase UID (string) or backend ID (number)
+      const userIdToSend = isNaN(userId) ? userId : parseInt(userId, 10);
+
+      const res = await axiosInstance.get(
+        `https://happywedz.com/api/guestlist/user/${userIdToSend}`
+      );
 
       console.log("Guests Data:", res.data);
       console.log("Guests Array:", res.data?.guests);
@@ -78,7 +90,6 @@ const Guests = () => {
     }
   }, [axiosInstance, userId]);
 
-
   useEffect(() => {
     fetchGuests();
   }, [refresh, fetchGuests]);
@@ -91,7 +102,7 @@ const Guests = () => {
       g.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Pagination calculations 
+  // Pagination calculations
   const [currentPage, setCurrentPage] = useState(1);
   const [guestsPerPage] = useState(5);
 
@@ -106,10 +117,9 @@ const Guests = () => {
   // Pagination function
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    setNewGuestForm(prev => ({ ...prev, [name]: value }));
+    setNewGuestForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const addGuestAPI = async () => {
@@ -131,25 +141,43 @@ const Guests = () => {
     }
 
     try {
+      // Check if userId is a Firebase UID (string) or backend ID (number)
+      const userIdToSend = isNaN(userId) ? userId : parseInt(userId, 10);
+
       const res = await axiosInstance.post(
         "https://happywedz.com/api/guestlist",
         {
           ...newGuestForm,
-          userId: parseInt(userId, 10), // Corrected from user_id to userId
+          userId: userIdToSend,
           status: "Pending",
           companions: parseInt(newGuestForm.companions, 10) || 0,
         }
       );
       console.log("Add Guest Response:", res);
       if (res.data?.success && res.data.guest) {
-        setGuests(prev => [res.data.guest, ...prev]);
+        setGuests((prev) => [res.data.guest, ...prev]);
       }
       setNewGuestForm(initialGuestFormState); // Reset form state
       // setRefresh(prev => !prev); // No longer needed, we are updating state directly
       setShowAddGuestForm(false);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || "An error occurred while adding the guest.";
-      setFormError(errorMessage);
+      const errorMessage =
+        err.response?.data?.message ||
+        "An error occurred while adding the guest.";
+
+      // Check if it's a token validation error
+      if (
+        errorMessage.includes("Token invalid") ||
+        errorMessage.includes("token")
+      ) {
+        setFormError("Authentication error. Please try logging in again.");
+        console.error(
+          "Token validation failed. User may need to re-authenticate."
+        );
+      } else {
+        setFormError(errorMessage);
+      }
+
       console.error("Add Guest Error:", err.response || err);
     }
   };
@@ -157,8 +185,10 @@ const Guests = () => {
   const updateGuestField = async (id, field, value) => {
     if (!axiosInstance) return;
     try {
-      await axiosInstance.put(`https://happywedz.com/api/guestlist/${id}`, { [field]: value });
-      setRefresh(prev => !prev); // Trigger re-fetch
+      await axiosInstance.put(`https://happywedz.com/api/guestlist/${id}`, {
+        [field]: value,
+      });
+      setRefresh((prev) => !prev); // Trigger re-fetch
     } catch (err) {
       console.error("Update Guest Error:", err);
     }
@@ -169,15 +199,19 @@ const Guests = () => {
     if (!window.confirm("Are you sure?")) return;
     try {
       await axiosInstance.delete(`https://happywedz.com/api/guestlist/${id}`);
-      setRefresh(prev => !prev); // Trigger re-fetch
+      setRefresh((prev) => !prev); // Trigger re-fetch
     } catch (err) {
       console.error("Delete Guest Error:", err);
     }
   };
 
-  const attendingCount = guests.filter((g) => g && g.status === "Attending").length;
+  const attendingCount = guests.filter(
+    (g) => g && g.status === "Attending"
+  ).length;
   const pendingCount = guests.filter((g) => g && g.status === "Pending").length;
-  const declinedCount = guests.filter((g) => g && g.status === "Not Attending").length;
+  const declinedCount = guests.filter(
+    (g) => g && g.status === "Not Attending"
+  ).length;
   const adultsCount = guests.filter((g) => g && g.type === "Adult").length;
   const childrenCount = guests.filter((g) => g && g.type === "Children").length;
 
@@ -187,7 +221,11 @@ const Guests = () => {
   };
 
   if (loading) {
-    return <div className="wgl-container"><p>Loading guests...</p></div>;
+    return (
+      <div className="wgl-container">
+        <p>Loading guests...</p>
+      </div>
+    );
   }
 
   return (
@@ -209,8 +247,12 @@ const Guests = () => {
             <h2 className="wgl-stat-number">{attendingCount}</h2>
             <p className="wgl-stat-label">Attending</p>
             <div className="wgl-status-sublabels">
-              <span className="wgl-status-sublabel">Pending: {pendingCount}</span>
-              <span className="wgl-status-sublabel">Not Attending: {declinedCount}</span>
+              <span className="wgl-status-sublabel">
+                Pending: {pendingCount}
+              </span>
+              <span className="wgl-status-sublabel">
+                Not Attending: {declinedCount}
+              </span>
             </div>
           </div>
         </div>
@@ -294,35 +336,85 @@ const Guests = () => {
             <div className="row g-3">
               <div className="col-md-4">
                 <label className="form-label">Guest Name</label>
-                <input name="name" className="form-control" placeholder="e.g., John Doe" value={newGuestForm.name} onChange={handleFormChange} />
+                <input
+                  name="name"
+                  className="form-control"
+                  placeholder="e.g., John Doe"
+                  value={newGuestForm.name}
+                  onChange={handleFormChange}
+                />
               </div>
               <div className="col-md-4">
                 <label className="form-label">Guest Email</label>
-                <input name="email" type="email" className="form-control" placeholder="e.g., john.doe@example.com" value={newGuestForm.email} onChange={handleFormChange} />
+                <input
+                  name="email"
+                  type="email"
+                  className="form-control"
+                  placeholder="e.g., john.doe@example.com"
+                  value={newGuestForm.email}
+                  onChange={handleFormChange}
+                />
               </div>
               <div className="col-md-4">
                 <label className="form-label">Companions</label>
-                <input name="companions" type="number" className="form-control" placeholder="e.g., 2" value={newGuestForm.companions} onChange={handleFormChange} />
+                <input
+                  name="companions"
+                  type="number"
+                  className="form-control"
+                  placeholder="e.g., 2"
+                  value={newGuestForm.companions}
+                  onChange={handleFormChange}
+                />
               </div>
               <div className="col-md-4">
                 <label className="form-label">Group</label>
-                <input name="group" className="form-control" placeholder="e.g., Bride's Family" value={newGuestForm.group} onChange={handleFormChange} />
+                <input
+                  name="group"
+                  className="form-control"
+                  placeholder="e.g., Bride's Family"
+                  value={newGuestForm.group}
+                  onChange={handleFormChange}
+                />
               </div>
               <div className="col-md-4">
                 <label className="form-label">Type</label>
-                <select name="type" className="form-select" value={newGuestForm.type} onChange={handleFormChange}>
-                  {typeOptions.map((t) => <option key={t} value={t}>{t}</option>)}
+                <select
+                  name="type"
+                  className="form-select"
+                  value={newGuestForm.type}
+                  onChange={handleFormChange}
+                >
+                  {typeOptions.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="col-md-4">
                 <label className="form-label">Menu Preference</label>
-                <select name="menu" className="form-select" value={newGuestForm.menu} onChange={handleFormChange}>
-                  {menuOptions.map((m) => <option key={m} value={m}>{m}</option>)}
+                <select
+                  name="menu"
+                  className="form-select"
+                  value={newGuestForm.menu}
+                  onChange={handleFormChange}
+                >
+                  {menuOptions.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="col-md-4">
                 <label className="form-label">Seat Number</label>
-                <input name="seat_number" className="form-control" placeholder="e.g., A12" value={newGuestForm.seat_number} onChange={handleFormChange} />
+                <input
+                  name="seat_number"
+                  className="form-control"
+                  placeholder="e.g., A12"
+                  value={newGuestForm.seat_number}
+                  onChange={handleFormChange}
+                />
               </div>
             </div>
             <div className="wgl-form-actions mt-4 d-flex justify-content-end gap-2">
@@ -344,10 +436,29 @@ const Guests = () => {
       {showAddGroupForm && (
         <div className="wgl-add-form">
           <h3 className="wgl-form-title">Create New Group</h3>
-          <input name="group" className="wgl-form-input" placeholder="Group Name" value={newGuestForm.group} onChange={handleFormChange} />
+          <input
+            name="group"
+            className="wgl-form-input"
+            placeholder="Group Name"
+            value={newGuestForm.group}
+            onChange={handleFormChange}
+          />
           <div className="wgl-form-actions">
-            <button className="wgl-button wgl-button-cancel" onClick={() => setShowAddGroupForm(false)}>Cancel</button>
-            <button className="wgl-button wgl-button-save" onClick={() => { alert(`Group "${newGuestForm.group}" created`); setShowAddGroupForm(false); }}>Create Group</button>
+            <button
+              className="wgl-button wgl-button-cancel"
+              onClick={() => setShowAddGroupForm(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className="wgl-button wgl-button-save"
+              onClick={() => {
+                alert(`Group "${newGuestForm.group}" created`);
+                setShowAddGroupForm(false);
+              }}
+            >
+              Create Group
+            </button>
           </div>
         </div>
       )}
@@ -431,7 +542,9 @@ const Guests = () => {
                   <td className="wgl-guest-type">
                     <select
                       value={g.type}
-                      onChange={(e) => updateGuestField(g.id, "type", e.target.value)}
+                      onChange={(e) =>
+                        updateGuestField(g.id, "type", e.target.value)
+                      }
                     >
                       {typeOptions.map((t) => (
                         <option key={t}>{t}</option>
@@ -441,7 +554,9 @@ const Guests = () => {
                   <td className="wgl-guest-menu">
                     <select
                       value={g.menu}
-                      onChange={(e) => updateGuestField(g.id, "menu", e.target.value)}
+                      onChange={(e) =>
+                        updateGuestField(g.id, "menu", e.target.value)
+                      }
                     >
                       {menuOptions.map((m) => (
                         <option key={m}>{m}</option>
@@ -449,12 +564,6 @@ const Guests = () => {
                     </select>
                   </td>
                   <td className="wgl-guest-actions">
-                    <button
-                      className="wgl-action-button wgl-action-delete"
-                      onClick={() => deleteGuestAPI(g.id)}
-                    >
-                      Remove
-                    </button>
                     <button
                       className="wgl-action-button wgl-action-delete"
                       onClick={() => deleteGuestAPI(g.id)}
@@ -511,7 +620,6 @@ const Guests = () => {
           </div>
         )}
       </div>
-
     </div>
   );
 };
