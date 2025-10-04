@@ -5,7 +5,8 @@ import { useUser } from "../../hooks";
 import { useDispatch } from "react-redux";
 import { setCredentials, loginUser } from "../../redux/authSlice";
 import { auth, provider, signInWithPopup } from "../../firebase";
-import { useToast } from "../layouts/toasts/Toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useLoader } from "../context/LoaderContext";
 
 const CustomerLogin = () => {
@@ -13,7 +14,6 @@ const CustomerLogin = () => {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
-  const { addToast } = useToast();
   const { showLoader, hideLoader } = useLoader();
 
   const dispatch = useDispatch();
@@ -61,7 +61,7 @@ const CustomerLogin = () => {
         dispatch(
           loginUser({ user: registerData.user, token: registerData.token })
         );
-        addToast("Account created and login successful!", "success");
+        toast.success("Account created and login successful!");
         navigate("/", { replace: true });
       } else if (
         registerData.message &&
@@ -87,7 +87,7 @@ const CustomerLogin = () => {
 
         if (loginData.success && loginData.user && loginData.token) {
           dispatch(loginUser({ user: loginData.user, token: loginData.token }));
-          addToast("Login successful!", "success");
+          toast.success("Login successful!");
           navigate("/", { replace: true });
         } else {
           // Fallback to Firebase-only authentication
@@ -103,9 +103,8 @@ const CustomerLogin = () => {
           };
 
           dispatch(loginUser({ user, token: firebaseToken }));
-          addToast(
-            "Login successful! (Note: Some features may be limited)",
-            "warning"
+          toast.warning(
+            "Login successful! (Note: Some features may be limited)"
           );
           navigate("/", { replace: true });
         }
@@ -122,14 +121,11 @@ const CustomerLogin = () => {
         };
 
         dispatch(loginUser({ user, token: firebaseToken }));
-        addToast(
-          "Login successful! (Note: Some features may be limited)",
-          "warning"
-        );
+        toast.warning("Login successful! (Note: Some features may be limited)");
         navigate("/", { replace: true });
       }
     } catch (error) {
-      addToast("Google login failed: " + error.message, "danger");
+      toast.error("Google login failed: " + error.message);
     } finally {
       hideLoader();
     }
@@ -137,6 +133,11 @@ const CustomerLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!email || !password) {
+      toast.error("Please fill in both email and password fields.");
+      return;
+    }
 
     const payload = {
       email,
@@ -152,15 +153,32 @@ const CustomerLogin = () => {
       } else if (response.user) {
         dispatch(loginUser({ user: response.user, token: null }));
       }
-      addToast("Login successful!", "success");
+      toast.success("Login successful!");
       navigate("/", { replace: true });
     } else {
-      addToast(response.message || "Login failed", "danger");
+      // Custom toast for invalid credentials or email already exists
+      const msg = response.message || "Login failed";
+      if (
+        msg.toLowerCase().includes("invalid") ||
+        msg.toLowerCase().includes("wrong")
+      ) {
+        toast.error(
+          "Invalid credentials. Please check your email and password."
+        );
+      } else if (
+        msg.toLowerCase().includes("already exists") ||
+        msg.toLowerCase().includes("email already")
+      ) {
+        toast.error("Email already exists. Please use a different email.");
+      } else {
+        toast.error(msg);
+      }
     }
   };
 
   return (
     <div className="container wedding-login-container min-vh-100 d-flex align-items-center justify-content-center my-5">
+      <ToastContainer position="top-center" autoClose={3000} />
       <div className="row w-100 shadow-lg rounded-4 overflow-hidden">
         {/* Left Image Section */}
         <div className="col-lg-6 d-none d-lg-block p-0 position-relative">
