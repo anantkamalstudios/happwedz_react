@@ -356,7 +356,6 @@ const RealWeddingForm = ({ user, token }) => {
             </div>
           ))}
         </div>
-
         <form
           onSubmit={handleSubmit}
           onKeyDown={(e) => {

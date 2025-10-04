@@ -547,27 +547,24 @@ function Faq({ formData, setFormData, onSave }) {
 
   return (
     <div className="container my-5">
-      {/* <div className="text-center text-md-start mb-4">
-        <img
-          src="/images/vendorsDashboard/FAQ_logo.png"
-          alt="FAQ"
-          className="img-fluid faq-image"
-        />
-      </div> */}
-
-      <div className="faq-intro-card mb-4">
-        <div className="intro-inner">
-          <div className="d-flex align-items-center gap-2 py-2 px-3">
-            <img
-              src="/images/vendorsDashboard/vector_logo.png"
-              alt="FAQ"
-              className="img-fluid faq-image"
-            />
-            <div>
-              <h5 className="intro-title">
+      <div className="faq-intro-card mb-4 primary-light-bg">
+        <div className="intro-inner p-0">
+          <div className="d-flex px-3 pt-3 pb-2">
+            <div className="col-1">
+              <img
+                src="/images/vendorsDashboard/chat.png"
+                alt="FAQ"
+                width={30}
+                height={30}
+                className="img-fluid faq-image d-block mb-2"
+                style={{ marginLeft: 0 }}
+              />
+            </div>
+            <div className="">
+              <h5 className="intro-title" style={{ color: "red" }}>
                 Please provide details about your services.
               </h5>
-              <p className="intro-sub">
+              <p className="intro-sub" style={{ color: "black" }}>
                 Add responses to frequently asked questions about your business
                 to give couples a better understanding of your offering before
                 deciding whether to contact you.
@@ -581,7 +578,7 @@ function Faq({ formData, setFormData, onSave }) {
         <div className="card shadow-sm mb-3 faq-card" key={q.id}>
           <div className="card-body">
             <div className="qa-top">
-              <div className="faq-number">{idx + 1}</div>
+              {/* <div className="faq-number">{idx + 1}</div> */}
               <p className="question-text">{q.text}</p>
             </div>
             <div>

@@ -1,47 +1,142 @@
 // ReviewSection.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
+import { useSelector } from "react-redux";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+const API_BASE_URL = "https://happywedz.com/api";
 
 const ReviewSection = ({ vendor }) => {
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [experience, setExperience] = useState("");
   const [spent, setSpent] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const { user, token } = useSelector((state) => state.auth);
   const [images, setImages] = useState([]);
   const [reviews, setReviews] = useState([]);
 
+  // Fetch existing reviews for the vendor
+  useEffect(() => {
+    if (!vendor?.id) return;
+
+    const fetchReviews = async () => {
+      try {
+        // Use the correct API endpoint: /reviews/{vendorId}
+        const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+        const url = `${baseUrl}/reviews/${vendor.id}`;
+        console.log("Fetching reviews from URL:", url);
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        if (!response.ok) {
+          // Don't throw an error if no reviews are found (404), just show an empty list.
+          if (response.status !== 404) {
+            throw new Error("Failed to fetch reviews.");
+          }
+          return;
+        }
+        const data = await response.json();
+        setReviews(data.reviews || data || []);
+      } catch (err) {
+        console.error(err.message);
+      }
+    };
+    fetchReviews();
+  }, [vendor?.id]);
+
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    const filePreviews = files.map((file) => URL.createObjectURL(file));
-    setImages((prev) => [...prev, ...filePreviews]);
+    const newImageObjects = files.map((file) => ({
+      file: file,
+      preview: URL.createObjectURL(file),
+    }));
+    setImages((prev) => [...prev, ...newImageObjects]);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!rating || !experience) {
-      alert("Please give a rating and write your experience.");
+      toast.error("Please give a rating and write your experience.");
       return;
     }
 
-    const newReview = {
-      id: Date.now(),
-      rating,
-      experience,
-      spent,
-      images,
-      user: "You",
-      date: new Date().toLocaleDateString(),
-    };
+    if (!user || !token) {
+      toast.error("You must be logged in to write a review.");
+      return;
+    }
 
-    setReviews((prev) => [newReview, ...prev]);
-    // Reset form
-    setRating(0);
-    setExperience("");
-    setSpent("");
-    setImages([]);
+    setSubmitting(true);
+
+    const formData = new FormData();
+    formData.append("vendor_id", vendor.id);
+    formData.append("user_id", user.id);
+    formData.append("rating", rating);
+    formData.append("comment", experience);
+
+    // Append each image file to the 'media' field
+    images.forEach((imageObj) => {
+      formData.append("media", imageObj.file);
+    });
+
+    try {
+      // Use the correct API endpoint: /reviews/{vendorId}
+      const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+      const url = `${baseUrl}/reviews/${vendor.id}`;
+      console.log("API_BASE_URL:", API_BASE_URL);
+      console.log("Submitting review to URL:", url);
+      console.log("FormData contents:", Object.fromEntries(formData.entries()));
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          // The browser will set the 'Content-Type' to 'multipart/form-data' automatically
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+      console.log("Response status:", response.status);
+      console.log("Response data:", result);
+
+      if (!response.ok) {
+        throw new Error(result.message || `Failed to submit review. Status: ${response.status}`);
+      }
+
+      toast.success("Review submitted successfully!");
+
+      // Add to local state for immediate feedback
+      const newReview = {
+        vendor_id: vendor.id,
+        user_id: user.id,
+        rating,
+        id: result.review?.id || Date.now(),
+        user: user.name,
+        date: new Date().toLocaleDateString(),
+        comment: experience,
+        images: [],
+      };
+      setReviews((prev) => [newReview, ...prev]);
+
+      // Reset form
+      setRating(0);
+      setExperience("");
+      setSpent("");
+      setImages([]);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <div className="container">
+      <ToastContainer position="top-center" autoClose={3000} />
       <div className="card border-0 rounded-4 shadow-sm mt-4">
         <div className="card-body">
           <h5 className="fw-bold mb-3">Write a Review</h5>
@@ -104,8 +199,8 @@ const ReviewSection = ({ vendor }) => {
             <div className="d-flex flex-wrap mt-2">
               {images.map((img, idx) => (
                 <img
-                  key={idx}
-                  src={img}
+                  key={img.preview + idx}
+                  src={img.preview}
                   alt="preview"
                   className="me-2 mb-2"
                   style={{
@@ -120,32 +215,36 @@ const ReviewSection = ({ vendor }) => {
           </div>
 
           {/* Submit */}
-          <button className="btn btn-primary" onClick={handleSubmit}>
-            Submit Review
+          <button
+            className="btn btn-primary"
+            onClick={handleSubmit}
+            disabled={submitting}
+          >
+            {submitting ? "Submitting..." : "Submit Review"}
           </button>
         </div>
 
         {/* Show Reviews */}
-        {reviews.length > 0 && (
+        {reviews && reviews.length > 0 && (
           <div className="card-body border-top">
             <h6 className="fw-bold mb-3">User Reviews</h6>
             {reviews.map((r) => (
               <div key={r.id} className="mb-3">
-                <div className="d-flex align-items-center mb-1">
-                  <strong>{r.user}</strong>
+                <div className="d-flex align-items-center mb-1 flex-wrap">
+                  <strong>{r.user?.name || r.user || "Anonymous"}</strong>
                   <span className="ms-2 text-warning">
-                    {[...Array(r.rating)].map((_, i) => (
-                      <FaStar key={i} size={16} />
+                    {r.rating && [...Array(Number(r.rating))].map((_, i) => (
+                      <FaStar key={i} size={14} />
                     ))}
                   </span>
                   <small className="text-muted ms-2">{r.date}</small>
                 </div>
-                <p className="mb-1">{r.experience}</p>
+                <p className="mb-1">{r.comment || r.experience}</p>
                 {r.spent && (
                   <p className="text-muted small mb-1">Spent: ₹{r.spent}</p>
                 )}
                 <div className="d-flex flex-wrap">
-                  {r.images.map((img, idx) => (
+                  {r.images && Array.isArray(r.images) && r.images.map((img, idx) => (
                     <img
                       key={idx}
                       src={img}

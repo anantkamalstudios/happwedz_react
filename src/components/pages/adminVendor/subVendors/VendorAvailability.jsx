@@ -1,7 +1,12 @@
 import React from "react";
 import VendorAvailabilityCalendar from "./VendorAvailabilityCalendar";
 
-const VendorAvailability = ({ formData, setFormData, onSave }) => {
+const VendorAvailability = ({
+  formData,
+  setFormData,
+  onSave,
+  onShowSuccess,
+}) => {
   const handleNestedInputChange = (subSection, field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -10,6 +15,16 @@ const VendorAvailability = ({ formData, setFormData, onSave }) => {
         [field]: value,
       },
     }));
+  };
+
+  // Handler to save and show success modal
+  const handleSaveAndShow = async () => {
+    if (onSave) {
+      await onSave();
+    }
+    if (onShowSuccess) {
+      onShowSuccess();
+    }
   };
 
   return (
@@ -87,7 +102,9 @@ const VendorAvailability = ({ formData, setFormData, onSave }) => {
           <VendorAvailabilityCalendar />
         </div>
 
-        <button className="btn btn-primary mt-2" onClick={onSave}>Save Availability Details</button>
+        <button className="btn btn-primary mt-2" onClick={handleSaveAndShow}>
+          Save Availability Details
+        </button>
       </div>
     </div>
   );

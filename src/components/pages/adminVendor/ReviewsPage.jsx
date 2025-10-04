@@ -1,58 +1,81 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import ReviewsCollector from "./subVendors/ReviewsCollector";
 import Reviews from "./subVendors/Reviews";
 import ReviewsSidebar from "./subVendors/ReviewsSidebar";
 import ReviewsDashboard from "./subVendors/ReviewsDashboard";
 
+const API_BASE_URL = "https://happywedz.com/api";
+
 const ReviewsPage = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState("reviews");
+  const { token: vendorToken } = useSelector((state) => state.vendorAuth);
 
-  const [reviews, setReviews] = useState([
-    {
-      id: 1,
-      name: "Priya Sharma",
-      rating: 5,
-      title: "Outstanding Photography Service!",
-      review:
-        "The photographer captured every beautiful moment of our wedding day. The quality of photos exceeded our expectations and the team was very professional throughout the event.",
-      date: "2024-12-15",
-      serviceType: "Photography",
-      eventDate: "2024-11-20",
-      verified: true,
-    },
-    {
-      id: 2,
-      name: "Rahul Kumar",
-      rating: 4,
-      title: "Great Catering Experience",
-      review:
-        "Food was delicious and the presentation was excellent. All our guests complimented the menu. The service staff was courteous and efficient.",
-      date: "2024-12-10",
-      serviceType: "Catering",
-      eventDate: "2024-10-25",
-      verified: true,
-    },
-    {
-      id: 3,
-      name: "Anita Patel",
-      rating: 5,
-      title: "Perfect Venue for Our Dream Wedding",
-      review:
-        "The venue was absolutely stunning with beautiful decorations. The management team helped us coordinate everything perfectly. Highly recommended!",
-      date: "2024-12-05",
-      serviceType: "Venue",
-      eventDate: "2024-09-15",
-      verified: false,
-    },
-  ]);
+  const [reviews, setReviews] = useState([]);
+  const [stats, setStats] = useState({
+    averageRating: 0,
+    reviewCount: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const totalReviews = reviews.length;
-  const averageRating =
-    totalReviews > 0
-      ? reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
-      : 0;
+  useEffect(() => {
+    if (!vendorToken) {
+      setError("Vendor not authenticated.");
+      setLoading(false);
+      return;
+    }
 
+    const fetchReviews = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/reviews/my-reviews`, {
+          headers: { Authorization: `Bearer ${vendorToken}` },
+        });
+        if (!res.ok) throw new Error("Failed to fetch reviews");
+        const data = await res.json();
+        const formattedReviews = data.reviews.map((r) => ({
+          id: r.id,
+          name: r.user?.name || "Anonymous",
+          rating: r.rating,
+          review: r.comment,
+          date: new Date(r.createdAt).toLocaleDateString(),
+          verified: true, // You can adjust this based on your API
+        }));
+        setReviews(formattedReviews);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/reviews/my-average-rating`, {
+          headers: { Authorization: `Bearer ${vendorToken}` },
+        });
+        if (!res.ok) throw new Error("Failed to fetch stats");
+        const data = await res.json();
+        setStats({
+          averageRating: parseFloat(data.averageRating) || 0,
+          reviewCount: parseInt(data.reviewCount) || 0,
+        });
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    const fetchAll = async () => {
+      setLoading(true);
+      setError(null);
+      await Promise.all([fetchReviews(), fetchStats()]);
+      setLoading(false);
+    };
+
+    fetchAll();
+  }, [vendorToken]);
+
+  const totalReviews = stats.reviewCount;
+  const averageRating = stats.averageRating;
   const positiveReviews = reviews.filter((r) => r.rating >= 4).length;
   const negativeReviews = reviews.filter((r) => r.rating <= 2).length;
 
@@ -60,6 +83,12 @@ const ReviewsPage = () => {
     return Array.from({ length: 5 }, (_, i) => (
       <span key={i}>{i < rating ? "⭐" : "☆"}</span>
     ));
+  };
+
+  const refetchData = () => {
+    // This function can be called to refresh data after a new review is submitted
+    // For now, we'll just log it. You can implement the fetch logic here again.
+    console.log("Refetching reviews...");
   };
 
   const handleSubmitReview = (newReview) => {
@@ -74,15 +103,20 @@ const ReviewsPage = () => {
             <h1>Collect a Review</h1>
             <p>Invite customers to share their experience</p>
           </div>
-          <ReviewsDashboard
-            totalReviews={totalReviews}
-            averageRating={averageRating}
-            positiveReviews={positiveReviews}
-            negativeReviews={negativeReviews}
-            reviewsData={reviews}
-            renderStars={renderStars}
-            onSubmitReview={handleSubmitReview}
-          />
+          {loading ? (
+            <p>Loading dashboard...</p>
+          ) : error ? (
+            <p className="text-danger">{error}</p>
+          ) : (
+            <ReviewsDashboard
+              totalReviews={totalReviews}
+              averageRating={averageRating}
+              positiveReviews={positiveReviews}
+              negativeReviews={negativeReviews}
+              reviewsData={reviews}
+              renderStars={renderStars}
+            />
+          )}
         </div>
       );
     }
@@ -94,7 +128,13 @@ const ReviewsPage = () => {
             <h1>Wedding Reviews</h1>
             <p>Real experiences from real couples</p>
           </div>
-          <Reviews reviews={reviews} />
+          {loading ? (
+            <p>Loading reviews...</p>
+          ) : error ? (
+            <p className="text-danger">{error}</p>
+          ) : (
+            <Reviews reviews={reviews} />
+          )}
         </div>
       );
     }
@@ -108,9 +148,10 @@ const ReviewsPage = () => {
   };
 
   return (
-    <div className="vendor-dashboard">
+    <div className="">
       <div className="row">
-        <div className={`col-md-2 ${sidebarCollapsed ? "d-none" : ""}`}>
+        {/* Sidebar */}
+        <div className={`col-md-3 ${sidebarCollapsed ? "d-none" : ""}`}>
           <ReviewsSidebar
             isCollapsed={sidebarCollapsed}
             onToggle={() => setSidebarCollapsed((prev) => !prev)}
@@ -119,7 +160,8 @@ const ReviewsPage = () => {
           />
         </div>
 
-        <div className={`col-md-${sidebarCollapsed ? 12 : 9}`}>
+        {/* Main content area */}
+        <div className={`col-md-${sidebarCollapsed ? 12 : 8}`}>
           <div className="py-4">{renderContent()}</div>
         </div>
       </div>
