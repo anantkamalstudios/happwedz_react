@@ -23,7 +23,16 @@ const ReviewSection = ({ vendor }) => {
 
     const fetchReviews = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/reviews/${vendor.id}`);
+        // Use the correct API endpoint: /reviews/{vendorId}
+        const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+        const url = `${baseUrl}/reviews/${vendor.id}`;
+        console.log("Fetching reviews from URL:", url);
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
         if (!response.ok) {
           // Don't throw an error if no reviews are found (404), just show an empty list.
           if (response.status !== 404) {
@@ -32,7 +41,7 @@ const ReviewSection = ({ vendor }) => {
           return;
         }
         const data = await response.json();
-        setReviews(data.reviews || []);
+        setReviews(data.reviews || data || []);
       } catch (err) {
         console.error(err.message);
       }
@@ -74,7 +83,14 @@ const ReviewSection = ({ vendor }) => {
     });
 
     try {
-      const response = await fetch(`${API_BASE_URL}/reviews`, {
+      // Use the correct API endpoint: /reviews/{vendorId}
+      const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+      const url = `${baseUrl}/reviews/${vendor.id}`;
+      console.log("API_BASE_URL:", API_BASE_URL);
+      console.log("Submitting review to URL:", url);
+      console.log("FormData contents:", Object.fromEntries(formData.entries()));
+
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           // The browser will set the 'Content-Type' to 'multipart/form-data' automatically
@@ -84,9 +100,11 @@ const ReviewSection = ({ vendor }) => {
       });
 
       const result = await response.json();
+      console.log("Response status:", response.status);
+      console.log("Response data:", result);
 
       if (!response.ok) {
-        throw new Error(result.message || "Failed to submit review.");
+        throw new Error(result.message || `Failed to submit review. Status: ${response.status}`);
       }
 
       toast.success("Review submitted successfully!");
@@ -207,7 +225,7 @@ const ReviewSection = ({ vendor }) => {
         </div>
 
         {/* Show Reviews */}
-        {reviews.length > 0 && (
+        {reviews && reviews.length > 0 && (
           <div className="card-body border-top">
             <h6 className="fw-bold mb-3">User Reviews</h6>
             {reviews.map((r) => (
@@ -215,7 +233,7 @@ const ReviewSection = ({ vendor }) => {
                 <div className="d-flex align-items-center mb-1 flex-wrap">
                   <strong>{r.user?.name || r.user || "Anonymous"}</strong>
                   <span className="ms-2 text-warning">
-                    {[...Array(r.rating)].map((_, i) => (
+                    {r.rating && [...Array(Number(r.rating))].map((_, i) => (
                       <FaStar key={i} size={14} />
                     ))}
                   </span>
@@ -226,7 +244,7 @@ const ReviewSection = ({ vendor }) => {
                   <p className="text-muted small mb-1">Spent: ₹{r.spent}</p>
                 )}
                 <div className="d-flex flex-wrap">
-                  {r.images.map((img, idx) => (
+                  {r.images && Array.isArray(r.images) && r.images.map((img, idx) => (
                     <img
                       key={idx}
                       src={img}
@@ -240,8 +258,7 @@ const ReviewSection = ({ vendor }) => {
                       }}
                     />
                   ))}
-                </div>{" "}
-                */}
+                </div>
                 <hr />
               </div>
             ))}

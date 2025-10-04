@@ -83,7 +83,7 @@ const Settings = () => {
                       Notifications
                     </Nav.Link>
                   </Nav.Item>
-                  <Nav.Item>
+                  {/* <Nav.Item>
                     <Nav.Link
                       active={activeTab === "security"}
                       onClick={() => setActiveTab("security")}
@@ -118,7 +118,7 @@ const Settings = () => {
                       <FiEye className="me-2" />
                       Privacy
                     </Nav.Link>
-                  </Nav.Item>
+                  </Nav.Item> */}
                 </Nav>
               </Card.Body>
             </Card>

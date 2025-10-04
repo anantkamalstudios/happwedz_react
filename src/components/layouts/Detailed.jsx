@@ -60,8 +60,8 @@ const Detailed = () => {
         data.attributes.capacity_min && data.attributes.capacity_max
           ? `${data.attributes.capacity_min}-${data.attributes.capacity_max} Guests`
           : data.attributes.capacity_min
-          ? `${data.attributes.capacity_min}+ Guests`
-          : `Up to ${data.attributes.capacity_max} Guests`;
+            ? `${data.attributes.capacity_min}+ Guests`
+            : `Up to ${data.attributes.capacity_max} Guests`;
       amenities.push({ icon: <FaUsers />, name: `Capacity: ${capacity}` });
     }
 
@@ -275,11 +275,17 @@ const Detailed = () => {
 
   // Create activeVendor from API data
   const activeVendor = {
-    id: venueData.id,
+    id: venueData.vendor_id, // Use vendor_id instead of service id
     name:
       venueData.attributes?.name ||
       venueData.vendor?.businessName ||
       "Unknown Venue",
+    businessName: venueData.vendor?.businessName || venueData.attributes?.name,
+    firstName: venueData.vendor?.firstName,
+    lastName: venueData.vendor?.lastName,
+    email: venueData.vendor?.email || venueData.attributes?.email,
+    phone: venueData.vendor?.phone || venueData.attributes?.contact?.phone,
+    city: venueData.vendor?.city || venueData.attributes?.location?.city,
     location: venueData.attributes?.location
       ? `${venueData.attributes.location.city}, ${venueData.attributes.location.state}`
       : "Location not specified",
@@ -349,13 +355,11 @@ const Detailed = () => {
                   {images.map((img, idx) => (
                     <SwiperSlide key={idx}>
                       <div
-                        className={`thumbnail-item ${
-                          mainImage === img ? "active" : ""
-                        } ${
-                          hoveredIndex !== null && hoveredIndex !== idx
+                        className={`thumbnail-item ${mainImage === img ? "active" : ""
+                          } ${hoveredIndex !== null && hoveredIndex !== idx
                             ? "blurred"
                             : ""
-                        }`}
+                          }`}
                         onClick={() => setMainImage(img)}
                         onMouseEnter={() => setHoveredIndex(idx)}
                         onMouseLeave={() => setHoveredIndex(null)}
@@ -559,10 +563,10 @@ const Detailed = () => {
                     {venueData.attributes?.starting_price
                       ? `₹${venueData.attributes.starting_price.toLocaleString()} onwards`
                       : venueData.attributes?.price_range?.min
-                      ? `₹${parseInt(
+                        ? `₹${parseInt(
                           venueData.attributes.price_range.min
                         ).toLocaleString()} onwards`
-                      : "Contact for pricing"}
+                        : "Contact for pricing"}
                   </div>
                   <p className="price-note">
                     {venueData.attributes?.price_unit

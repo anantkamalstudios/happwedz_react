@@ -47,7 +47,6 @@ import {
   Legend,
 } from "chart.js";
 
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -160,7 +159,7 @@ const HomeAdmin = () => {
       value: loadingLeads ? "..." : leadCount,
       change: "+12%",
       trend: "up",
-      daily_avg: 4.7,
+      // daily_avg: 4.7,
       icon: <FiUsers size={24} />,
     },
     impressions: {
@@ -168,7 +167,7 @@ const HomeAdmin = () => {
       value: loadingStats ? "..." : stats.impressions.toLocaleString(),
       change: "+8.5%",
       trend: "up",
-      daily_avg: "827",
+      // daily_avg: "827",
       icon: <FiEye size={24} />,
     },
     profile_views: {
@@ -176,15 +175,15 @@ const HomeAdmin = () => {
       value: loadingStats ? "..." : stats.profileViews.toLocaleString(),
       change: "+5.2%",
       trend: "up",
-      daily_avg: "40",
+      // daily_avg: "40",
       icon: <FiBarChart2 size={24} />,
     },
     conversion: {
       title: "Phone number views",
-      value: "6.8%",
+      // value: "6.8%",
       change: "+1.2%",
       trend: "up",
-      daily_avg: "0.23%",
+      // daily_avg: "0.23%",
       icon: <FiPercent size={24} />,
     },
   };

@@ -212,7 +212,9 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
             />
           </div>
         </div>
-        <button className="btn btn-primary mt-2" onClick={onSave}>Save Location Details</button>
+        <button className="btn btn-primary mt-2" onClick={onSave}>
+          Save Location Details
+        </button>
       </div>
     </div>
   );

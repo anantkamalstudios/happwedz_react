@@ -67,10 +67,7 @@ import vendorServicesApi from "../../../services/api/vendorServicesApi";
 const Storefront = () => {
   const [active, setActive] = useState("business");
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState(() => {
-    const saved = localStorage.getItem("vendorFormData");
-    return saved ? JSON.parse(saved) : {};
-  });
+  const [formData, setFormData] = useState({});
   const [photoDrafts, setPhotoDrafts] = useState([]);
   const [videoDrafts, setVideoDrafts] = useState([]);
   const { token, vendor } = useSelector((state) => state.vendorAuth || {});
@@ -80,15 +77,66 @@ const Storefront = () => {
     const fetchServiceData = async () => {
       if (vendor?.id && token) {
         try {
+          // Clear localStorage for new vendor to prevent data leakage
+          const lastVendorId = localStorage.getItem("lastVendorId");
+          if (lastVendorId && lastVendorId !== vendor.id.toString()) {
+            localStorage.removeItem("vendorFormData");
+            localStorage.removeItem("photoDraftsMeta");
+            localStorage.removeItem("videoDraftsMeta");
+            setFormData({});
+            setPhotoDrafts([]);
+            setVideoDrafts([]);
+          }
+          localStorage.setItem("lastVendorId", vendor.id.toString());
+
           const serviceData =
             await vendorServicesApi.getVendorServiceByVendorId(
               vendor.id,
               token
             );
+
+          console.log("serviceData", serviceData);
           // If data exists, merge it into formData.
           // The local storage draft will be preserved for any fields not in the API response.
           if (serviceData) {
-            setFormData((prev) => ({ ...prev, ...serviceData }));
+            // Handle case where API returns an array with one object
+            const actualData = Array.isArray(serviceData)
+              ? serviceData[0]
+              : serviceData;
+            if (actualData) {
+              // Extract media data and set up photo/video drafts
+              if (actualData.media) {
+                const { gallery = [], videos = [] } = actualData.media;
+
+                // Convert gallery data to photoDrafts format
+                if (Array.isArray(gallery) && gallery.length > 0) {
+                  const photoDraftsData = gallery.map((item, index) => ({
+                    id: item.id || `photo_${index}`,
+                    title: item.title || "",
+                    preview:
+                      typeof item === "string"
+                        ? item
+                        : item.url || item.path || "",
+                    file: null,
+                  }));
+                  setPhotoDrafts(photoDraftsData);
+                }
+
+                // Convert videos data to videoDrafts format
+                if (Array.isArray(videos) && videos.length > 0) {
+                  const videoDraftsData = videos.map((item, index) => ({
+                    id: item.id || `video_${index}`,
+                    title: item.title || "",
+                    type: item.type || "video",
+                    preview: item.url || item.path || "",
+                    file: null,
+                  }));
+                  setVideoDrafts(videoDraftsData);
+                }
+              }
+
+              setFormData((prev) => ({ ...prev, ...actualData }));
+            }
           }
         } catch (error) {
           console.error("Failed to fetch vendor service data:", error);
@@ -119,39 +167,10 @@ const Storefront = () => {
     setShowModal(true);
   };
 
-  // Hydrate lightweight draft metadata (titles only) on mount if present
-  useEffect(() => {
-    try {
-      const photoMeta = JSON.parse(
-        localStorage.getItem("photoDraftsMeta") || "null"
-      );
-      const videoMeta = JSON.parse(
-        localStorage.getItem("videoDraftsMeta") || "null"
-      );
-      if (Array.isArray(photoMeta) && photoDrafts.length === 0) {
-        setPhotoDrafts(
-          photoMeta.map((m) => ({
-            id: m.id,
-            title: m.title,
-            preview: m.preview || "",
-            file: m.file || null,
-          }))
-        );
-      }
-      if (Array.isArray(videoMeta) && videoDrafts.length === 0) {
-        setVideoDrafts(
-          videoMeta.map((m) => ({
-            id: m.id,
-            title: m.title,
-            type: m.type || "video",
-            preview: m.preview || "",
-            file: m.file || null,
-          }))
-        );
-      }
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Expose show success modal to subcomponents
+  const showSuccessModal = useMemo(() => () => setShowModal(true), []);
+
+  // This effect is removed since we now load data from API instead of localStorage
 
   // Persist lightweight drafts (no File blobs) whenever they change
   useEffect(() => {
@@ -441,7 +460,11 @@ const Storefront = () => {
     switch (active) {
       case "business":
         return (
-          <BusinessDetails formData={formData} setFormData={setFormData} />
+          <BusinessDetails
+            formData={formData}
+            setFormData={setFormData}
+            onShowSuccess={showSuccessModal}
+          />
         );
       case "faq":
         return (
@@ -449,15 +472,16 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
-
       case "vendor-basic":
         return (
           <VendorBasicInfo
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
       case "vendor-contact":
@@ -466,6 +490,7 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
       case "vendor-location":
@@ -474,15 +499,24 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
       case "photos":
         return (
-          <PhotoGallery images={photoDrafts} onImagesChange={setPhotoDrafts} />
+          <PhotoGallery
+            images={photoDrafts}
+            onImagesChange={setPhotoDrafts}
+            onShowSuccess={showSuccessModal}
+          />
         );
       case "videos":
         return (
-          <VideoGallery videos={videoDrafts} onVideosChange={setVideoDrafts} />
+          <VideoGallery
+            videos={videoDrafts}
+            onVideosChange={setVideoDrafts}
+            onShowSuccess={showSuccessModal}
+          />
         );
       case "promotions":
         return (
@@ -490,6 +524,7 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
       case "vendor-pricing":
@@ -498,6 +533,7 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
       case "vendor-facilities":
@@ -506,6 +542,7 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
       case "vendor-policies":
@@ -514,6 +551,7 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
       case "vendor-availability":
@@ -522,6 +560,7 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
       case "vendor-menus":
@@ -530,19 +569,19 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
-
       case "vendor-marketing":
         return (
           <VendorMarketing
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
             onSubmit={handleSubmit}
           />
         );
-
       default:
         return (
           <div className="p-3 border rounded bg-white">
