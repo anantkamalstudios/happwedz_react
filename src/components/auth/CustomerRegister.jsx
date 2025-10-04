@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useDispatch } from "react-redux";
-
 import { useSelector } from "react-redux";
 import { setCredentials } from "../../redux/authSlice";
-// import { useToast } from "../layouts/toasts/Toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CustomerRegister = () => {
   const [formData, setFormData] = useState({
@@ -28,7 +28,6 @@ const CustomerRegister = () => {
   const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
   const navigate = useNavigate();
-  // const { appToast } = useToast();
   const auth = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -64,7 +63,7 @@ const CustomerRegister = () => {
   const validate = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = "Full name is required";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
       newErrors.email = "Valid email is required";
     if (formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
@@ -136,12 +135,29 @@ const CustomerRegister = () => {
             coverImage: "",
             captchaToken: "test-captcha-token",
           });
+          toast.success("Registration successful!");
           navigate("/");
         } else {
-          // appToast(data.message || "Registration failed", "error");
+          // Check for mobile or email already exists
+          const msg = data.message || "Registration failed";
+          if (
+            msg.toLowerCase().includes("mobile") &&
+            msg.toLowerCase().includes("already")
+          ) {
+            toast.error(
+              "Mobile number already exists. Please use a different number."
+            );
+          } else if (
+            msg.toLowerCase().includes("email") &&
+            msg.toLowerCase().includes("already")
+          ) {
+            toast.error("Email already exists. Please use a different email.");
+          } else {
+            toast.error(msg);
+          }
         }
       } catch (error) {
-        // appToast(error.message, "error");
+        toast.error(error.message);
       }
 
       setIsSubmitting(false);
@@ -150,6 +166,7 @@ const CustomerRegister = () => {
 
   return (
     <div className="container py-5" style={{ maxWidth: "1200px" }}>
+      <ToastContainer position="top-center" autoClose={3000} />
       <div className="row g-0 shadow-lg rounded-4 overflow-hidden bg-white">
         {/* Left Image */}
         <div
