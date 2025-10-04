@@ -95,18 +95,6 @@ const Reviews = ({ reviews }) => {
         <div className="row">
           <div className="col-md-6">
             <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="reviews__filter-select form-control"
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="highest">Highest Rated</option>
-              <option value="lowest">Lowest Rated</option>
-            </select>
-          </div>
-          <div className="col-md-6">
-            <select
               value={filterRating}
               onChange={(e) => setFilterRating(e.target.value)}
               className="reviews__filter-select form-control"
@@ -165,11 +153,6 @@ const Reviews = ({ reviews }) => {
               )}
 
               <p className="reviews__review-text">{review.review}</p>
-
-              <div className="reviews__actions">
-                <button className="reviews__action-btn">👍 Helpful</button>
-                <button className="reviews__action-btn">💬 Reply</button>
-              </div>
             </div>
           ))
         ) : (

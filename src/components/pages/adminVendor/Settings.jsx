@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import {
   Container,
   Row,
@@ -24,10 +25,33 @@ import {
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [showSuccess, setShowSuccess] = useState(false);
+  const { vendor } = useSelector((state) => state.vendorAuth || {});
+
+  const [profileData, setProfileData] = useState({
+    businessName: "",
+    contactPerson: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
+
+  useEffect(() => {
+    if (vendor) {
+      setProfileData({
+        businessName: vendor.businessName || "",
+        contactPerson: `${vendor.firstName || ""} ${
+          vendor.lastName || ""
+        }`.trim(),
+        email: vendor.email || "",
+        phone: vendor.phone || "",
+        address: vendor.city || "",
+      });
+    }
+  }, [vendor]);
 
   const handleSave = () => {
     setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
+    setTimeout(() => setShowSuccess(false), 3000); // You can add API call logic here
   };
 
   return (
@@ -131,14 +155,29 @@ const Settings = () => {
                         <Form.Label>Business Name</Form.Label>
                         <Form.Control
                           type="text"
-                          defaultValue="Wedding Photography Pro"
+                          value={profileData.businessName}
+                          onChange={(e) =>
+                            setProfileData({
+                              ...profileData,
+                              businessName: e.target.value,
+                            })
+                          }
                         />
                       </Form.Group>
                     </Col>
                     <Col md={6}>
                       <Form.Group className="mb-3">
                         <Form.Label>Contact Person</Form.Label>
-                        <Form.Control type="text" defaultValue="John Doe" />
+                        <Form.Control
+                          type="text"
+                          value={profileData.contactPerson}
+                          onChange={(e) =>
+                            setProfileData({
+                              ...profileData,
+                              contactPerson: e.target.value,
+                            })
+                          }
+                        />
                       </Form.Group>
                     </Col>
                     <Col md={6}>
@@ -146,7 +185,13 @@ const Settings = () => {
                         <Form.Label>Email</Form.Label>
                         <Form.Control
                           type="email"
-                          defaultValue="john@weddingphoto.com"
+                          value={profileData.email}
+                          onChange={(e) =>
+                            setProfileData({
+                              ...profileData,
+                              email: e.target.value,
+                            })
+                          }
                         />
                       </Form.Group>
                     </Col>
@@ -155,7 +200,13 @@ const Settings = () => {
                         <Form.Label>Phone</Form.Label>
                         <Form.Control
                           type="tel"
-                          defaultValue="+1 (555) 123-4567"
+                          value={profileData.phone}
+                          onChange={(e) =>
+                            setProfileData({
+                              ...profileData,
+                              phone: e.target.value,
+                            })
+                          }
                         />
                       </Form.Group>
                     </Col>
@@ -165,7 +216,14 @@ const Settings = () => {
                         <Form.Control
                           as="textarea"
                           rows={3}
-                          defaultValue="123 Wedding Street, City, State 12345"
+                          value={profileData.address}
+                          onChange={(e) =>
+                            setProfileData({
+                              ...profileData,
+                              address: e.target.value,
+                            })
+                          }
+                          placeholder="City, State"
                         />
                       </Form.Group>
                     </Col>

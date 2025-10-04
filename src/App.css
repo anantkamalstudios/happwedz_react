@@ -3823,7 +3823,7 @@ body {
 
 .stats-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
   margin-bottom: 30px;
 }
@@ -7890,7 +7890,6 @@ input:checked + .slider:before {
   /* max-width: 1200px; */
   margin: 0 auto;
   padding: 5px;
-  font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, var(--light-pink) 0%, var(--white) 100%);
   border-radius: 16px;
   box-shadow: 0 8px 32px var(--shadow-light);

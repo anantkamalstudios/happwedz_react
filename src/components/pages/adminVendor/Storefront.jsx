@@ -435,18 +435,6 @@ const Storefront = () => {
       label: "Marketing & CTA",
       icon: <GoGift size={20} />,
     },
-    {
-      id: "location",
-      label: "Location and map",
-      icon: <CiLocationOn size={20} />,
-    },
-
-    // { id: "vendor-media", label: "Media & Gallery", icon: <FaImage /> },
-    // { id: "events", label: "Events", icon: <FaCalendarAlt /> },
-    // { id: "vendors", label: "Preferred vendors", icon: <FaHandshake /> },
-    // { id: "team", label: "Meet the team", icon: <FaUsers /> },
-    // { id: "social", label: "Social networks", icon: <FaShareAlt /> },
-    // { id: "button", label: "WeddingWire button", icon: <FaRing /> },
   ];
 
   const renderContent = () => {
@@ -555,24 +543,6 @@ const Storefront = () => {
           />
         );
 
-      // case "vendor-media":
-      //   return <VendorMedia formData={formData} setFormData={setFormData} />;
-      // Original sections
-
-      // case "promotions":
-      //   return <PromoForm />;
-      // case "photos":
-      //   return <PhotoGallery />;
-      // case "videos":
-      //   return <VideoGallery />;
-      // case "events":
-      //   return <Event />;
-      // case "vendors":
-      //   return <EndorsementForm />;
-      // case "team":
-      //   return <OwnersManager />;
-      // case "social":
-      //   return <SocialDetails />;
       default:
         return (
           <div className="p-3 border rounded bg-white">
