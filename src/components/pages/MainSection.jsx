@@ -68,7 +68,6 @@ const MainSection = () => {
       <>
         <MainSearch />
         <MainByRegion type="venues" />
-        <DynamicAside section={"venues"} view={view} setView={setView} />
         {loading && data.length === 0 && <LoadingState title="Venues" />}
         {!loading && data.length === 0 && (
           <EmptyState section="venues" title="Venues" />

@@ -6,17 +6,9 @@ import { BarLoader, ClipLoader } from "react-spinners";
 import Swal from "sweetalert2";
 import { IoClose } from "react-icons/io5";
 import { FaHome } from "react-icons/fa";
+import { IoIosArrowBack } from "react-icons/io";
 
-const MAKEUP_CATEGORIES = [
-  "foundation",
-  "blush",
-  "lipstick",
-  "eyeshadow",
-  "kajal",
-  "concealer",
-  "contour",
-  "bindi",
-];
+// Remove static filtering - show all categories dynamically from API
 
 const SLIDER_CATEGORIES = [
   "foundation",
@@ -27,7 +19,25 @@ const SLIDER_CATEGORIES = [
   "eyeshadow",
   "lipstick",
   "bindi",
+  "mascara",
+  "mangtika",
+  "contactlenses",
 ];
+
+// Default intensity values for each category
+const DEFAULT_INTENSITIES = {
+  foundation: 0.6,
+  concealer: 0.9,
+  blush: 0.2,
+  contour: 0.3,
+  kajal: 1.0,
+  eyeshadow: 0.4,
+  lipstick: 0.8,
+  bindi: 6,
+  mascara: 0.8,
+  mangtika: 0.6,
+  contactlenses: 0.2,
+};
 
 const DEBOUNCE_DELAY = 400;
 
@@ -39,7 +49,7 @@ const FiltersPage = () => {
   const [isApplying, setIsApplying] = React.useState(false);
   const [appliedProducts, setAppliedProducts] = React.useState({});
   const [intensity, setIntensity] = useState(0.6);
-  const [intensities, setIntensities] = useState({});
+  const [intensities, setIntensities] = useState(DEFAULT_INTENSITIES);
   const [isLoading, setIsLoading] = useState(true);
   const debounceTimer = useRef();
 
@@ -66,13 +76,8 @@ const FiltersPage = () => {
           : Array.isArray(response?.data)
           ? response.data
           : [];
-        // Filter only makeup categories
-        const filtered = items.filter((cat) =>
-          MAKEUP_CATEGORIES.includes(
-            (cat.product_detailed_category_name || "").toLowerCase()
-          )
-        );
-        setCategories(filtered);
+        // Show all categories dynamically from API - no filtering
+        setCategories(items);
       } catch (e) {
         console.error("Failed to load products", e);
       } finally {
@@ -87,8 +92,14 @@ const FiltersPage = () => {
     setExpandedProductId(null);
   };
 
+  const handleBackToMainFilters = () => {
+    setExpandedCatIdx(null);
+    setExpandedProductId(null);
+  };
+
   const handleSelectProduct = (productId) => {
     setExpandedProductId((prev) => (prev === productId ? null : productId));
+    // Don't auto-apply when selecting product, only when color is clicked
   };
 
   const handleApplyOne = async (productId, colorHex) => {
@@ -120,7 +131,8 @@ const FiltersPage = () => {
 
     Object.values(newAppliedProducts).forEach((product) => {
       const { productId: pid, colorHex: hex, categoryName } = product;
-      const intensityValue = intensities[categoryName] ?? 0.6;
+      const intensityValue =
+        intensities[categoryName] ?? DEFAULT_INTENSITIES[categoryName] ?? 0.6;
 
       switch (categoryName) {
         case "foundation":
@@ -151,7 +163,7 @@ const FiltersPage = () => {
           break;
         case "bindi":
           payload.bindi_color = hex;
-          payload.bindi_size = intensityValue * 10;
+          payload.bindi_size = intensityValue; // Use intensity value directly as size
           break;
         case "kajal":
           payload.kajal_color = hex;
@@ -220,20 +232,22 @@ const FiltersPage = () => {
 
     Object.values(productsToApply).forEach((product) => {
       const { colorHex: hex, categoryName } = product;
+      const intensityValue =
+        intensities[categoryName] ?? DEFAULT_INTENSITIES[categoryName] ?? 0.6;
 
       switch (categoryName) {
         case "blush":
           payload.blush_color = hex;
-          payload.blush_intensity = 0.4;
+          payload.blush_intensity = intensityValue;
           payload.blush_radius = 60;
           break;
         case "lipstick":
           payload.lipstick_color = hex;
-          payload.lipstick_intensity = 0.8;
+          payload.lipstick_intensity = intensityValue;
           break;
         case "eyeshadow":
           payload.eyeshadow_color = hex;
-          payload.eyeshadow_intensity = 0.4;
+          payload.eyeshadow_intensity = intensityValue;
           payload.eyeshadow_thickness = 25;
           break;
         case "lens":
@@ -243,27 +257,27 @@ const FiltersPage = () => {
           break;
         case "foundation":
           payload.foundation_color = hex;
-          payload.foundation_intensity = 0.6;
+          payload.foundation_intensity = intensityValue;
           break;
         case "kajal":
           payload.kajal_color = hex;
-          payload.kajal_intensity = 1.0;
+          payload.kajal_intensity = intensityValue;
           break;
         case "concealer":
           payload.concealer_color = hex;
-          payload.concealer_intensity = 0.9;
+          payload.concealer_intensity = intensityValue;
           break;
         case "contour":
           payload.contour_color = hex;
-          payload.contour_intensity = 0.3;
+          payload.contour_intensity = intensityValue;
           break;
         case "bindi":
           payload.bindi_color = hex;
-          payload.bindi_size = 6;
+          payload.bindi_size = intensityValue;
           break;
         default:
           payload.lipstick_color = hex;
-          payload.lipstick_intensity = 0.6;
+          payload.lipstick_intensity = intensityValue;
           break;
       }
     });
@@ -299,41 +313,42 @@ const FiltersPage = () => {
 
   const safeArray = (arr) => (Array.isArray(arr) ? arr : []);
 
-  useEffect(() => {
-    if (
-      expandedCatIdx !== null &&
-      expandedProductId !== null &&
-      SLIDER_CATEGORIES.includes(
-        (
-          categories[expandedCatIdx]?.product_detailed_category_name || ""
-        ).toLowerCase()
-      )
-    ) {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+  // Remove the auto-apply effect - only apply when color is clicked
+  // useEffect(() => {
+  //   if (
+  //     expandedCatIdx !== null &&
+  //     expandedProductId !== null &&
+  //     SLIDER_CATEGORIES.includes(
+  //       (
+  //         categories[expandedCatIdx]?.product_detailed_category_name || ""
+  //       ).toLowerCase()
+  //     )
+  //   ) {
+  //     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
-      debounceTimer.current = setTimeout(() => {
-        const cat = categories[expandedCatIdx];
-        const product = safeArray(cat.products).find(
-          (p) => p.id === expandedProductId
-        );
-        const colorHex = product?.product_colors?.[0] || "#fff";
-        if (colorHex) {
-          handleApplyOne(expandedProductId, colorHex);
-        }
-      }, DEBOUNCE_DELAY);
-    }
-    return () => {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    };
-  }, [
-    intensities[
-      (
-        categories[expandedCatIdx]?.product_detailed_category_name || ""
-      ).toLowerCase()
-    ],
-    expandedCatIdx,
-    expandedProductId,
-  ]);
+  //     debounceTimer.current = setTimeout(() => {
+  //       const cat = categories[expandedCatIdx];
+  //       const product = safeArray(cat.products).find(
+  //         (p) => p.id === expandedProductId
+  //       );
+  //       const colorHex = product?.product_colors?.[0] || "#fff";
+  //       if (colorHex) {
+  //         handleApplyOne(expandedProductId, colorHex);
+  //       }
+  //     }, DEBOUNCE_DELAY);
+  //   }
+  //   return () => {
+  //     if (debounceTimer.current) clearTimeout(debounceTimer.current);
+  //   };
+  // }, [
+  //   intensities[
+  //     (
+  //       categories[expandedCatIdx]?.product_detailed_category_name || ""
+  //     ).toLowerCase()
+  //   ],
+  //   expandedCatIdx,
+  //   expandedProductId,
+  // ]);
 
   if (isLoading) {
     return (
@@ -448,15 +463,7 @@ const FiltersPage = () => {
               </div>
             )}
             {expandedCatIdx !== null &&
-              [
-                "foundation",
-                "concealer",
-                "blush",
-                "contour",
-                "eyeshadow",
-                "lipstick",
-                "bindi",
-              ].includes(
+              SLIDER_CATEGORIES.includes(
                 (
                   categories[expandedCatIdx]?.product_detailed_category_name ||
                   ""
@@ -481,20 +488,53 @@ const FiltersPage = () => {
                   }}
                 >
                   <label style={{ fontSize: 13, marginBottom: 4 }}>
-                    Intensity
+                    {(
+                      categories[expandedCatIdx]
+                        ?.product_detailed_category_name || ""
+                    ).toLowerCase() === "bindi"
+                      ? "Size"
+                      : "Intensity"}
                   </label>
                   <input
                     type="range"
-                    min={0}
-                    max={1}
-                    step={0.01}
+                    min={
+                      (
+                        categories[expandedCatIdx]
+                          ?.product_detailed_category_name || ""
+                      ).toLowerCase() === "bindi"
+                        ? 1
+                        : 0
+                    }
+                    max={
+                      (
+                        categories[expandedCatIdx]
+                          ?.product_detailed_category_name || ""
+                      ).toLowerCase() === "bindi"
+                        ? 10
+                        : 1
+                    }
+                    step={
+                      (
+                        categories[expandedCatIdx]
+                          ?.product_detailed_category_name || ""
+                      ).toLowerCase() === "bindi"
+                        ? 1
+                        : 0.01
+                    }
                     value={
                       intensities[
                         (
                           categories[expandedCatIdx]
                             ?.product_detailed_category_name || ""
                         ).toLowerCase()
-                      ] ?? 0.6
+                      ] ??
+                      DEFAULT_INTENSITIES[
+                        (
+                          categories[expandedCatIdx]
+                            ?.product_detailed_category_name || ""
+                        ).toLowerCase()
+                      ] ??
+                      0.6
                     }
                     onChange={(e) =>
                       setIntensities({
@@ -508,15 +548,38 @@ const FiltersPage = () => {
                     style={{ width: "100%" }}
                   />
                   <span style={{ fontSize: 12 }}>
-                    {Math.round(
-                      (intensities[
-                        (
-                          categories[expandedCatIdx]
-                            ?.product_detailed_category_name || ""
-                        ).toLowerCase()
-                      ] ?? 0.6) * 100
-                    )}
-                    %
+                    {(
+                      categories[expandedCatIdx]
+                        ?.product_detailed_category_name || ""
+                    ).toLowerCase() === "bindi"
+                      ? intensities[
+                          (
+                            categories[expandedCatIdx]
+                              ?.product_detailed_category_name || ""
+                          ).toLowerCase()
+                        ] ??
+                        DEFAULT_INTENSITIES[
+                          (
+                            categories[expandedCatIdx]
+                              ?.product_detailed_category_name || ""
+                          ).toLowerCase()
+                        ] ??
+                        6
+                      : Math.round(
+                          (intensities[
+                            (
+                              categories[expandedCatIdx]
+                                ?.product_detailed_category_name || ""
+                            ).toLowerCase()
+                          ] ??
+                            DEFAULT_INTENSITIES[
+                              (
+                                categories[expandedCatIdx]
+                                  ?.product_detailed_category_name || ""
+                              ).toLowerCase()
+                            ] ??
+                            0.6) * 100
+                        ) + "%"}
                   </span>
                 </div>
               )}
@@ -545,19 +608,46 @@ const FiltersPage = () => {
           display: "block",
           marginBottom: "8px",
           marginTop: "0px",
+          scrollbarWidth: "thin",
+          scrollbarColor: "#ed1173 #f1f1f1",
         }}
       >
         <DragScroll>
           <div
             style={{
               display: "flex",
-              justifyContent: "center",
+              justifyContent: categories.length <= 4 ? "center" : "flex-start",
               alignItems: "flex-start",
               gap: "8px",
               minWidth: "max-content",
+              padding: "0 8px",
             }}
           >
-            <div style={{ display: "inline-flex", gap: 8 }}>
+            <div style={{ display: "inline-flex", gap: 8, flexWrap: "nowrap" }}>
+              {/* Back button when a category is expanded */}
+              {expandedCatIdx !== null && (
+                <button
+                  type="button"
+                  className="d-flex flex-column align-items-center px-2 py-2 border rounded bg-white"
+                  onClick={handleBackToMainFilters}
+                  style={{
+                    cursor: "pointer",
+                    minWidth: 70,
+                    transition: "all 0.3s ease",
+                    borderColor: "#ed1173",
+                    flexShrink: 0,
+                  }}
+                  title="Back to main filters"
+                >
+                  <IoIosArrowBack style={{ fontSize: 24, color: "#ed1173" }} />
+                  <strong
+                    style={{ fontSize: 11, marginTop: 2, color: "#ed1173" }}
+                  >
+                    Back
+                  </strong>
+                </button>
+              )}
+
               {categories.map((cat, idx) => {
                 const categoryName = (
                   cat.product_detailed_category_name || ""
@@ -584,7 +674,8 @@ const FiltersPage = () => {
                       style={{
                         cursor: "pointer",
                         minWidth: 70,
-                        transition: "box-shadow 0.2s",
+                        transition: "all 0.3s ease",
+                        flexShrink: 0,
                       }}
                     >
                       <img
@@ -623,6 +714,7 @@ const FiltersPage = () => {
                           borderRadius: 8,
                           whiteSpace: "normal",
                           marginLeft: 8,
+                          animation: "slideIn 0.3s ease-out",
                         }}
                       >
                         <div
@@ -671,6 +763,7 @@ const FiltersPage = () => {
                                     alignItems: "center",
                                     gap: 8,
                                     flexDirection: "row",
+                                    animation: "fadeIn 0.3s ease-out",
                                   }}
                                 >
                                   {/* Colors */}
@@ -842,6 +935,41 @@ const FiltersPage = () => {
           .image-wrapper {
             min-height: 220px;
           }
+        }
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateX(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        /* Custom scrollbar for filter bar */
+        .filters-container ::-webkit-scrollbar {
+          height: 6px;
+        }
+        .filters-container ::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 3px;
+        }
+        .filters-container ::-webkit-scrollbar-thumb {
+          background: #ed1173;
+          border-radius: 3px;
+        }
+        .filters-container ::-webkit-scrollbar-thumb:hover {
+          background: #c00e5f;
         }
       `}</style>
     </div>
