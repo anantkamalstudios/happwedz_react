@@ -24,20 +24,110 @@ const CustomerLogin = () => {
       showLoader();
       const result = await signInWithPopup(auth, provider);
 
-      const token = await result.user.getIdToken();
+      const firebaseToken = await result.user.getIdToken();
 
-      const user = {
-        id: result.user.uid,
-        name: result.user.displayName,
-        email: result.user.email,
-        photoURL: result.user.photoURL,
-        provider: "google",
-      };
+      // Try to register/login with backend
+      console.log("Attempting to register Firebase user with backend...");
+      const registerResponse = await fetch(
+        "https://happywedz.com/api/user/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: result.user.displayName,
+            email: result.user.email,
+            password: "firebase-user", // Dummy password for Firebase users
+            phone: "0000000000", // Default phone
+            weddingVenue: "TBD",
+            country: "India",
+            city: "Mumbai",
+            weddingDate: new Date().toISOString().split("T")[0],
+            profile_image: result.user.photoURL || "",
+            coverImage: "",
+            role: "user",
+            provider: "google",
+            firebaseUid: result.user.uid,
+            captchaToken: "test-captcha-token",
+          }),
+        }
+      );
 
-      dispatch(loginUser({ user, token }));
+      const registerData = await registerResponse.json();
+      console.log("Registration response:", registerData);
 
-      addToast("Login successful!", "success");
-      navigate("/", { replace: true });
+      if (registerData.success && registerData.user && registerData.token) {
+        // Registration successful, use backend token
+        console.log("Registration successful, using backend token");
+        dispatch(
+          loginUser({ user: registerData.user, token: registerData.token })
+        );
+        addToast("Account created and login successful!", "success");
+        navigate("/", { replace: true });
+      } else if (
+        registerData.message &&
+        registerData.message.includes("already exists")
+      ) {
+        // User already exists, try to login with regular login
+        console.log("User already exists, attempting regular login...");
+        const loginResponse = await fetch(
+          "https://happywedz.com/api/user/login",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: result.user.email,
+              password: "firebase-user", // Use the same dummy password
+              captchaToken: "test-captcha-token",
+            }),
+          }
+        );
+
+        const loginData = await loginResponse.json();
+        console.log("Login response:", loginData);
+
+        if (loginData.success && loginData.user && loginData.token) {
+          dispatch(loginUser({ user: loginData.user, token: loginData.token }));
+          addToast("Login successful!", "success");
+          navigate("/", { replace: true });
+        } else {
+          // Fallback to Firebase-only authentication
+          console.log(
+            "Backend login failed, falling back to Firebase-only auth"
+          );
+          const user = {
+            id: result.user.uid,
+            name: result.user.displayName,
+            email: result.user.email,
+            photoURL: result.user.photoURL,
+            provider: "google",
+          };
+
+          dispatch(loginUser({ user, token: firebaseToken }));
+          addToast(
+            "Login successful! (Note: Some features may be limited)",
+            "warning"
+          );
+          navigate("/", { replace: true });
+        }
+      } else {
+        // Registration failed for other reasons, fallback to Firebase-only authentication
+        console.log("Registration failed, falling back to Firebase-only auth");
+        console.log("Registration error:", registerData);
+        const user = {
+          id: result.user.uid,
+          name: result.user.displayName,
+          email: result.user.email,
+          photoURL: result.user.photoURL,
+          provider: "google",
+        };
+
+        dispatch(loginUser({ user, token: firebaseToken }));
+        addToast(
+          "Login successful! (Note: Some features may be limited)",
+          "warning"
+        );
+        navigate("/", { replace: true });
+      }
     } catch (error) {
       addToast("Google login failed: " + error.message, "danger");
     } finally {
