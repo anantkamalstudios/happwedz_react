@@ -1,7 +1,7 @@
 const FILTER_CONFIG = {
   photographers: {
     locality: ["locality 1", "locality 2"],
-    noOfDays: ["1 day", "2 days", "3 days", "4 days"],
+    "no Of Days": ["1 day", "2 days", "3 days", "4 days"],
     services: ["photo + video", "photo package"],
     prices: [
       "40,000",
