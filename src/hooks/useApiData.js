@@ -27,7 +27,9 @@ const useApiData = (section, slug, city = null, vendorType = null) => {
       if (vendorType) {
         console.log("vendorType in UAP", vendorType);
         params.append("vendorType", vendorType);
-      } else if (subCategory) {
+      }
+
+      if (!vendorType && subCategory) {
         params.append("subCategory", subCategory);
       }
 
