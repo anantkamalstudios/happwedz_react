@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useToast } from "../../layouts/toasts/Toast";
 
 const API_BASE_URL = "https://happywedz.com";
 
@@ -17,6 +18,7 @@ export default function VendorLeadsPage() {
     message: "",
   });
   const { token: vendorToken } = useSelector((state) => state.vendorAuth);
+  const { addToast } = useToast();
 
   useEffect(() => {
     if (!vendorToken) {
@@ -121,8 +123,9 @@ export default function VendorLeadsPage() {
       if (!response.ok) {
         throw new Error(result.message || "Failed to send quotation.");
       }
+      addToast("Quotation sent successfully!", "success");
 
-      alert(result.message || "Quotation sent successfully!");
+      // alert(result.message || "Quotation sent successfully!");
       closeModal();
     } catch (err) {
       alert(`Error: ${err.message}`);
