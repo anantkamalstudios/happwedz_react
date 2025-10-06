@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaEdit,
   FaTrash,
@@ -14,114 +14,51 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { useSelector } from "react-redux";
 
 const Budget = () => {
   // Budget data structure
   const [budget, setBudget] = useState({
     estimated: 2000000,
-    categories: [
-      {
-        id: 1,
-        name: "Events",
-        amount: 290284,
-        subcategories: [
-          {
-            id: 101,
-            name: "Venue Rental",
-            estimated: 150000,
-            final: 0,
-            paid: 0,
-          },
-          {
-            id: 102,
-            name: "Decorations",
-            estimated: 100000,
-            final: 0,
-            paid: 0,
-          },
-          {
-            id: 103,
-            name: "Entertainment",
-            estimated: 40284,
-            final: 0,
-            paid: 0,
-          },
-        ],
-      },
-      {
-        id: 2,
-        name: "Catering",
-        amount: 1414216,
-        subcategories: [
-          { id: 201, name: "Food", estimated: 1000000, final: 0, paid: 0 },
-          { id: 202, name: "Beverages", estimated: 300000, final: 0, paid: 0 },
-          { id: 203, name: "Service", estimated: 114216, final: 0, paid: 0 },
-        ],
-      },
-      {
-        id: 3,
-        name: "Photography and Video",
-        amount: 10086,
-        subcategories: [
-          { id: 301, name: "Photographer", estimated: 8000, final: 0, paid: 0 },
-          { id: 302, name: "Videographer", estimated: 2086, final: 0, paid: 0 },
-        ],
-      },
-      {
-        id: 4,
-        name: "Planning",
-        amount: 50426,
-        subcategories: [
-          {
-            id: 401,
-            name: "Wedding Planner",
-            estimated: 50000,
-            final: 0,
-            paid: 0,
-          },
-          { id: 402, name: "Consultation", estimated: 426, final: 0, paid: 0 },
-        ],
-      },
-      {
-        id: 5,
-        name: "Transportation",
-        amount: 20172,
-        subcategories: [
-          {
-            id: 501,
-            name: "Guest Transport",
-            estimated: 15000,
-            final: 0,
-            paid: 0,
-          },
-          { id: 502, name: "Bridal Car", estimated: 5172, final: 0, paid: 0 },
-        ],
-      },
-      {
-        id: 6,
-        name: "Bridal Accessories",
-        amount: 3026,
-        subcategories: [
-          { id: 601, name: "Jewelry", estimated: 2000, final: 0, paid: 0 },
-          { id: 602, name: "Shoes", estimated: 1026, final: 0, paid: 0 },
-        ],
-      },
-      {
-        id: 7,
-        name: "Groom's Accessories",
-        amount: 10084,
-        subcategories: [
-          { id: 701, name: "Suit", estimated: 8000, final: 0, paid: 0 },
-          { id: 702, name: "Accessories", estimated: 2084, final: 0, paid: 0 },
-        ],
-      },
-    ],
+    categories: [],
   });
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [newBudgetAmount, setNewBudgetAmount] = useState(budget.estimated);
   const [newExpense, setNewExpense] = useState({ name: "", estimated: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBudgetCategories = async () => {
+      try {
+        const response = await fetch(
+          "https://happywedz.com/api/vendor-types/with-subcategories/all"
+        );
+        const data = await response.json();
+        const categoriesFromApi = data.map((cat) => ({
+          id: cat.id,
+          name: cat.name,
+          amount: 0, // Default amount
+          subcategories:
+            cat.subcategories?.map((sub) => ({
+              id: sub.id,
+              name: sub.name,
+              estimated: 0, // Default estimated
+              final: 0,
+              paid: 0,
+            })) || [],
+        }));
+        setBudget((prev) => ({ ...prev, categories: categoriesFromApi }));
+      } catch (error) {
+        console.error("Error fetching budget categories:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBudgetCategories();
+  }, []);
 
   // Colors for pie chart
   const COLORS = [
@@ -297,6 +234,10 @@ const Budget = () => {
       ),
     0
   );
+
+  if (loading) {
+    return <div className="container text-center py-5">Loading budget...</div>;
+  }
 
   return (
     <div className="wb-container">

@@ -10,12 +10,9 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const Wedding = () => {
-  const [completedTasks, setCompletedTasks] = useState(new Set([0, 2]));
-  const [budget, setBudget] = useState({
-    total: 500000,
-    spent: 275000,
-    remaining: 225000,
-  });
+  const [budget, setBudget] = useState({ total: 0, spent: 0, remaining: 0 });
+  const [guestStats, setGuestStats] = useState({ total: 0, attending: 0 });
+  const [taskStats, setTaskStats] = useState({ total: 0, completed: 0 });
 
   // User state will be populated from an API call
   const [user, setUser] = useState(null);
@@ -33,51 +30,7 @@ const Wedding = () => {
 
   // Get the token at the top level of the component
   const token = useSelector((state) => state.auth.token);
-
-  const upcomingTasks = [
-    {
-      id: 0,
-      task: "Book wedding venue",
-      deadline: "2 weeks left",
-      priority: "high",
-      completed: true,
-    },
-    {
-      id: 1,
-      task: "Send wedding invitations",
-      deadline: "1 week left",
-      priority: "high",
-      completed: false,
-    },
-    {
-      id: 2,
-      task: "Final dress fitting",
-      deadline: "3 days left",
-      priority: "medium",
-      completed: true,
-    },
-    {
-      id: 3,
-      task: "Confirm catering menu",
-      deadline: "5 days left",
-      priority: "medium",
-      completed: false,
-    },
-    {
-      id: 4,
-      task: "Wedding rehearsal",
-      deadline: "1 day left",
-      priority: "low",
-      completed: false,
-    },
-  ];
-
-  const guestStats = {
-    totalInvited: 150,
-    responded: 95,
-    attending: 87,
-    notAttending: 8,
-  };
+  const userId = useSelector((state) => state.auth.user?.id);
 
   // Predefined icons for categories
   const iconMapping = [
@@ -135,7 +88,7 @@ const Wedding = () => {
         }
 
         // Replace with your actual user profile API endpoint
-        const response = await fetch("https://happywedz.com/api/user/profile", {
+        const response = await fetch("https://happywedz.com/api/user", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -154,6 +107,58 @@ const Wedding = () => {
 
     fetchUserData();
   }, [token]); // Re-run the effect if the token changes
+
+  // Fetch dashboard stats (budget, guests, tasks)
+  useEffect(() => {
+    if (!token || !userId) return;
+
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch Budget Summary
+        const budgetRes = await fetch(
+          "https://happywedz.com/api/expense/summary",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const budgetData = await budgetRes.json();
+        if (budgetData.success) {
+          const total = parseFloat(budgetData.data.totalEstimated) || 0;
+          const spent = parseFloat(budgetData.data.totalPaid) || 0;
+          setBudget({
+            total: total,
+            spent: spent,
+            remaining: total - spent,
+          });
+        }
+
+        // Fetch Guest Summary
+        const guestsRes = await fetch("https://happywedz.com/api/guest-list", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const guestsData = await guestsRes.json();
+        if (guestsData.success) {
+          const totalGuests = guestsData.data.length;
+          const attendingGuests = guestsData.data.filter(
+            (g) => g.status === "Attending"
+          ).length;
+          setGuestStats({ total: totalGuests, attending: attendingGuests });
+        }
+
+        // Fetch Task Summary (assuming you have a similar endpoint)
+        // Example:
+        // const tasksRes = await fetch("https://happywedz.com/api/tasks/summary", { headers: { Authorization: `Bearer ${token}` } });
+        // const tasksData = await tasksRes.json();
+        // if (tasksData.success) {
+        //   setTaskStats({ total: tasksData.total, completed: tasksData.completed });
+        // }
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      }
+    };
+
+    fetchDashboardData();
+  }, [token, userId]);
 
   // Countdown Timer Logic
   useEffect(() => {
@@ -213,18 +218,6 @@ const Wedding = () => {
     return `${day}${getOrdinal(day)} of ${month} ${year}`;
   };
 
-  const toggleTask = (taskId) => {
-    const newCompleted = new Set(completedTasks);
-    if (newCompleted.has(taskId)) newCompleted.delete(taskId);
-    else newCompleted.add(taskId);
-    setCompletedTasks(newCompleted);
-  };
-
-  const completedTasksCount = upcomingTasks.filter((task) =>
-    completedTasks.has(task.id)
-  ).length;
-  const progressPercentage = (completedTasksCount / upcomingTasks.length) * 100;
-
   const toggleShowAll = () => setShowAll(!showAll);
   const displayedCategories = showAll
     ? vendorCategories
@@ -271,7 +264,7 @@ const Wedding = () => {
             {/* Right Side Content */}
             <div className="col-md-8 p-4 d-flex flex-column justify-content-center">
               <h4 className="fw-bold mb-2 text-dark">
-                {user?.groomName || "Groom"} & {user?.brideName || "Bride"}
+                Welcome, {user?.name || "User"}!
               </h4>
 
               <p className="text-muted mb-4">{formatDateWithOrdinal(user?.weddingDate)}</p>
@@ -288,13 +281,13 @@ const Wedding = () => {
                     <h6 className="mb-1 fw-semibold text-dark">
                       Task Complete
                     </h6>
-                    <small className="text-muted">0 of 20</small>
+                    <small className="text-muted">{taskStats.completed} of {taskStats.total}</small>
                   </div>
                   <div className="col py-3">
                     <h6 className="mb-1 fw-semibold text-dark">
                       Guest Attending
                     </h6>
-                    <small className="text-muted">0 of 100</small>
+                    <small className="text-muted">{guestStats.attending} of {guestStats.total}</small>
                   </div>
                 </div>
               </div>
@@ -360,44 +353,27 @@ const Wedding = () => {
                   Upcoming Tasks
                 </h4>
                 <span className="task-progress">
-                  {completedTasksCount}/{upcomingTasks.length} completed
+                  {taskStats.completed}/{taskStats.total} completed
                 </span>
               </div>
               <div className="progress-bar-container mb-4">
                 <div className="progress-bar">
                   <div
                     className="progress-fill"
-                    style={{ width: `${progressPercentage}%` }}
+                    style={{ width: `${taskStats.total > 0 ? (taskStats.completed / taskStats.total) * 100 : 0}%` }}
                   ></div>
                 </div>
                 <span className="progress-text">
-                  {Math.round(progressPercentage)}% complete
+                  {Math.round(taskStats.total > 0 ? (taskStats.completed / taskStats.total) * 100 : 0)}% complete
                 </span>
               </div>
               <div className="tasks-list">
-                {upcomingTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className={`task-item ${completedTasks.has(task.id) ? "completed" : ""
-                      }`}
-                  >
-                    <div
-                      className="task-checkbox"
-                      onClick={() => toggleTask(task.id)}
-                    >
-                      {completedTasks.has(task.id) && <CheckCircle size={16} />}
-                    </div>
-                    <div className="task-content">
-                      <div className="task-name">{task.task}</div>
-                      <div className="task-meta">
-                        <span className="task-deadline">{task.deadline}</span>
-                        <span className={`task-priority ${task.priority}`}>
-                          {task.priority}
-                        </span>
-                      </div>
-                    </div>
+                {/* This section should be populated by a tasks API call */}
+                <div className="task-item">
+                  <div className="task-content">
+                    <div className="task-name">No tasks found.</div>
                   </div>
-                ))}
+                </div>
                 <button className="add-task-btn">
                   <Plus size={16} /> Add new task
                 </button>
@@ -419,13 +395,13 @@ const Wedding = () => {
               <div className="guest-stats row">
                 <div className="col-6 col-sm-3">
                   <div className="guest-stat">
-                    <div className="stat-number">{guestStats.totalInvited}</div>
+                    <div className="stat-number">{guestStats.total}</div>
                     <div className="stat-label">Invited</div>
                   </div>
                 </div>
                 <div className="col-6 col-sm-3">
                   <div className="guest-stat">
-                    <div className="stat-number">{guestStats.responded}</div>
+                    <div className="stat-number">{guestStats.attending}</div>
                     <div className="stat-label">Responded</div>
                   </div>
                 </div>
@@ -440,7 +416,7 @@ const Wedding = () => {
                 <div className="col-6 col-sm-3">
                   <div className="guest-stat">
                     <div className="stat-number text-muted">
-                      {guestStats.notAttending}
+                      {guestStats.total - guestStats.attending}
                     </div>
                     <div className="stat-label">Declined</div>
                   </div>
@@ -466,17 +442,17 @@ const Wedding = () => {
               <div className="budget-overview">
                 <div className="budget-total">
                   <div className="budget-amount">
-                    ₹{(budget.total / 1000).toFixed(0)}k
+                    ₹{(budget.total / 100000).toFixed(1)}L
                   </div>
                   <div className="budget-label">Total Budget</div>
                 </div>
                 <div className="budget-breakdown">
                   <div className="budget-item">
                     <span className="budget-spent">
-                      ₹{(budget.spent / 1000).toFixed(0)}k spent
+                      ₹{(budget.spent / 100000).toFixed(1)}L spent
                     </span>
                     <span className="budget-remaining">
-                      ₹{(budget.remaining / 1000).toFixed(0)}k remaining
+                      ₹{(budget.remaining / 100000).toFixed(1)}L remaining
                     </span>
                   </div>
                 </div>
@@ -485,12 +461,12 @@ const Wedding = () => {
                     <div
                       className="budget-fill"
                       style={{
-                        width: `${(budget.spent / budget.total) * 100}%`,
+                        width: `${budget.total > 0 ? (budget.spent / budget.total) * 100 : 0}%`,
                       }}
                     ></div>
                   </div>
                   <span className="budget-percentage">
-                    {Math.round((budget.spent / budget.total) * 100)}% used
+                    {Math.round(budget.total > 0 ? (budget.spent / budget.total) * 100 : 0)}% used
                   </span>
                 </div>
               </div>
