@@ -1,6 +1,6 @@
 import React from "react";
 
-const VendorPricing = ({ formData, setFormData }) => {
+const VendorPricing = ({ formData, setFormData, onSave, onShowSuccess }) => {
   const priceRange = formData.priceRange || { min: "", max: "" };
 
   const handleNestedInputChange = (subSection, field, value) => {
@@ -11,6 +11,11 @@ const VendorPricing = ({ formData, setFormData }) => {
         [field]: value,
       },
     }));
+  };
+
+  const handleSave = async () => {
+    if (onSave) await onSave();
+    if (onShowSuccess) onShowSuccess();
   };
 
   return (
@@ -88,7 +93,9 @@ const VendorPricing = ({ formData, setFormData }) => {
             />
           </div>
         </div>
-        <button className="btn btn-primary mt-2">Save Pricing Details</button>
+        <button className="btn btn-primary mt-2" onClick={handleSave}>
+          Save Pricing Details
+        </button>
       </div>
     </div>
   );

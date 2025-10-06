@@ -19,11 +19,14 @@ const RealWeddingForm = ({ user, token }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [vendorTypes, setVendorTypes] = useState([]);
+  const [countries, setCountries] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState("India");
   const [formData, setFormData] = useState({
     // Basic Info
     title: "",
     slug: "",
     weddingDate: "",
+    country: "India",
     city: "",
     venues: [],
 
@@ -98,6 +101,16 @@ const RealWeddingForm = ({ user, token }) => {
     });
   };
 
+  const handleCountryChange = (e) => {
+    const country = e.target.value;
+    setSelectedCountry(country);
+    setFormData((prev) => ({
+      ...prev,
+      country: country,
+      city: ""
+    }));
+  };
+
   const handleArrayChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -149,7 +162,21 @@ const RealWeddingForm = ({ user, token }) => {
         console.error("Failed to load vendor types", err);
       }
     };
+
+    const loadCountries = async () => {
+      try {
+        const res = await axios.get("https://countriesnow.space/api/v0.1/countries/");
+        if (res.data && res.data.data) {
+          setCountries(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to load countries", err);
+      }
+    };
+
+
     loadVendorTypes();
+    loadCountries();
   }, []);
 
   const nextStep = () => {
@@ -214,7 +241,7 @@ const RealWeddingForm = ({ user, token }) => {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "An error occurred while submitting the form."
+        "An error occurred while submitting the form."
       );
       console.error("Submission error:", err);
     } finally {
@@ -232,6 +259,9 @@ const RealWeddingForm = ({ user, token }) => {
             handleInputChange={handleInputChange}
             handleArrayChange={handleArrayChange}
             handleRemoveItem={handleRemoveItem}
+            handleCountryChange={handleCountryChange}
+            countries={countries}
+            selectedCountry={selectedCountry}
           />
         );
       case 1:
@@ -295,6 +325,11 @@ const RealWeddingForm = ({ user, token }) => {
           <BasicInfoStep
             formData={formData}
             handleInputChange={handleInputChange}
+            handleArrayChange={handleArrayChange}
+            handleRemoveItem={handleRemoveItem}
+            handleCountryChange={handleCountryChange}
+            countries={countries}
+            selectedCountry={selectedCountry}
           />
         );
     }
@@ -313,16 +348,14 @@ const RealWeddingForm = ({ user, token }) => {
           {steps.map((step, index) => (
             <div
               key={index}
-              className={`step ${index === currentStep ? "active" : ""} ${
-                index < currentStep ? "completed" : ""
-              }`}
+              className={`step ${index === currentStep ? "active" : ""} ${index < currentStep ? "completed" : ""
+                }`}
             >
               <div className="step-icon">{index + 1}</div>
               <span className="step-label">{step}</span>
             </div>
           ))}
         </div>
-
         <form
           onSubmit={handleSubmit}
           onKeyDown={(e) => {
@@ -406,6 +439,9 @@ const BasicInfoStep = ({
   handleInputChange,
   handleArrayChange,
   handleRemoveItem,
+  handleCountryChange,
+  countries,
+  selectedCountry,
 }) => {
   return (
     <div className="form-card">
@@ -464,19 +500,37 @@ const BasicInfoStep = ({
         </div>
 
         <div className="form-group">
-          <label className="form-label">City</label>
+          <label className="form-label">Country</label>
           <select
+            className="form-control"
+            name="country"
+            value={selectedCountry}
+            onChange={handleCountryChange}
+          >
+            <option value="">Select a country</option>
+            {countries.map((country, index) => (
+              <option key={index} value={country.country}>
+                {country.country}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="form-row">
+        <div className="form-group">
+          <label className="form-label">City</label>
+          <input
+            type="text"
             className="form-control"
             name="city"
             value={formData.city}
             onChange={handleInputChange}
-          >
-            <option value="">Select a city</option>
-            <option value="bali">Bali, Indonesia</option>
-            <option value="paris">Paris, France</option>
-            <option value="tuscany">Tuscany, Italy</option>
-            <option value="santorini">Santorini, Greece</option>
-          </select>
+            placeholder="Enter your city (e.g., Mumbai, Delhi, New York)"
+          />
+          <small className="form-text text-muted">
+            Enter the city where your wedding took place
+          </small>
         </div>
       </div>
 

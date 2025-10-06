@@ -44,7 +44,7 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
           const response = await axios.get(
             `https://happywedz.com/api/vendor-types/${vendor.vendor_type_id}`
           );
-          const vendorTypeData = response.data; // API should return a single object for a given ID
+          const vendorTypeData = response.data;
           setVendorTypeName(vendorTypeData?.name || "Unknown Type");
           setSubCategories(vendorTypeData?.subcategories || []);
         } catch (err) {

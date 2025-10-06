@@ -38,7 +38,14 @@ const MainSection = () => {
   const [selectedCity, setSelectedCity] = useState(reduxLocation);
   const [show, setShow] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-  const [view, setView] = useState("images");
+  const [view, setView] = useState("images"); 
+  
+  const { data, loading, error } = useApiData(
+    "venues",
+    null,
+    selectedCity,
+    "Venues"
+  );
 
   useEffect(() => {
     setSelectedCity(reduxLocation);
@@ -55,17 +62,10 @@ const MainSection = () => {
   };
 
   if (section === "venues") {
-    const { data, loading, error } = useApiData(
-      "venues",
-      null,
-      selectedCity,
-      "Venues"
-    );
     return (
       <>
         <MainSearch />
-        <MainByRegion />
-        <DynamicAside section={"venues"} view={view} setView={setView} />
+        <MainByRegion type="venues" />
         {loading && data.length === 0 && <LoadingState title="Venues" />}
         {!loading && data.length === 0 && (
           <EmptyState section="venues" title="Venues" />
@@ -104,7 +104,7 @@ const MainSection = () => {
     return (
       <>
         <MainSearch title="Wedding Vendor" />
-        <MainByRegion />
+        <MainByRegion type="vendors" />
         <AllCategories />
         <FindMain />
         <FaqsSection />

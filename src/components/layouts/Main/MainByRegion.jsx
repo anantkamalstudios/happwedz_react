@@ -3,20 +3,32 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import { useNavigate } from "react-router-dom";
 import "swiper/css";
-import regions from "../../../data/regions";
+import useRegions from "../../../hooks/useRegions";
 
-const MainByRegion = () => {
+const MainByRegion = ({ type }) => {
   const navigate = useNavigate();
+  const { regions, loading, error } = useRegions(
+    type === "venues" ? "venues" : null
+  );
 
   const handleRegionClick = (regionName) => {
-    const slug = regionName.toLowerCase().replace(/\s+/g, "-");
-    navigate(`/venues/${slug}`);
+    const cityParam = `city=${encodeURIComponent(regionName)}`;
+    if (type === "venues") {
+      navigate(`/venues/all?vendorType=venues&${cityParam}`);
+    } else {
+      navigate(`/vendors/all?${cityParam}`);
+    }
   };
+
+  if (loading) return <p>Loading regions...</p>;
+  if (error) return <p>Error loading regions</p>;
 
   return (
     <div className="container">
       <div className="venue-region-section px-4 my-5">
-        <h3 className="fw-bold mb-0 text-dark mb-5">Venues by region</h3>
+        <h3 className="fw-bold mb-0 text-dark mb-5">
+          {type === "venues" ? "Venues" : "Vendors"} by region
+        </h3>
 
         <Swiper
           modules={[Navigation, Autoplay]}

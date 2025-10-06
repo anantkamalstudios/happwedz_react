@@ -67,43 +67,91 @@ import vendorServicesApi from "../../../services/api/vendorServicesApi";
 const Storefront = () => {
   const [active, setActive] = useState("business");
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState(() => {
-    const saved = localStorage.getItem("vendorFormData");
-    return saved ? JSON.parse(saved) : {};
-  });
+  const [formData, setFormData] = useState({});
   const [photoDrafts, setPhotoDrafts] = useState([]);
   const [videoDrafts, setVideoDrafts] = useState([]);
+  const [vendorTypeName, setVendorTypeName] = useState("");
   const { token, vendor } = useSelector((state) => state.vendorAuth || {});
 
-  // Fetch existing service data when vendor is available
   useEffect(() => {
     const fetchServiceData = async () => {
       if (vendor?.id && token) {
         try {
+          // Clear localStorage for new vendor to prevent data leakage
+          const lastVendorId = localStorage.getItem("lastVendorId");
+          if (lastVendorId && lastVendorId !== vendor.id.toString()) {
+            localStorage.removeItem("vendorFormData");
+            localStorage.removeItem("photoDraftsMeta");
+            localStorage.removeItem("videoDraftsMeta");
+            setFormData({});
+            setPhotoDrafts([]);
+            setVideoDrafts([]);
+          }
+          localStorage.setItem("lastVendorId", vendor.id.toString());
+
           const serviceData =
             await vendorServicesApi.getVendorServiceByVendorId(
               vendor.id,
               token
             );
+
+          // Fetch vendor type name from API (like VendorBasicInfo)
+          if (vendor.vendor_type_id) {
+            try {
+              const response = await fetch(
+                `https://happywedz.com/api/vendor-types/${vendor.vendor_type_id}`
+              );
+              const vendorTypeData = await response.json();
+              setVendorTypeName(vendorTypeData?.name || "");
+            } catch (err) {
+              setVendorTypeName("");
+            }
+          }
+
           // If data exists, merge it into formData.
-          // The local storage draft will be preserved for any fields not in the API response.
           if (serviceData) {
-            setFormData((prev) => ({ ...prev, ...serviceData }));
+            const actualData = Array.isArray(serviceData)
+              ? serviceData[0]
+              : serviceData;
+            if (actualData) {
+              if (actualData.media) {
+                const { gallery = [], videos = [] } = actualData.media;
+                if (Array.isArray(gallery) && gallery.length > 0) {
+                  const photoDraftsData = gallery.map((item, index) => ({
+                    id: item.id || `photo_${index}`,
+                    title: item.title || "",
+                    preview:
+                      typeof item === "string"
+                        ? item
+                        : item.url || item.path || "",
+                    file: null,
+                  }));
+                  setPhotoDrafts(photoDraftsData);
+                }
+                if (Array.isArray(videos) && videos.length > 0) {
+                  const videoDraftsData = videos.map((item, index) => ({
+                    id: item.id || `video_${index}`,
+                    title: item.title || "",
+                    type: item.type || "video",
+                    preview: item.url || item.path || "",
+                    file: null,
+                  }));
+                  setVideoDrafts(videoDraftsData);
+                }
+              }
+              setFormData((prev) => ({ ...prev, ...actualData }));
+            }
           }
         } catch (error) {
           console.error("Failed to fetch vendor service data:", error);
         }
       }
     };
-
     fetchServiceData();
   }, [vendor, token]);
 
-  // Save handler: update if id exists, else create
   const handleSave = async () => {
-    // Always update localStorage
     localStorage.setItem("vendorFormData", JSON.stringify(formData));
-    // If formData has an id, call update API
     if (formData.id) {
       try {
         const fd = buildFormData();
@@ -119,39 +167,10 @@ const Storefront = () => {
     setShowModal(true);
   };
 
-  // Hydrate lightweight draft metadata (titles only) on mount if present
-  useEffect(() => {
-    try {
-      const photoMeta = JSON.parse(
-        localStorage.getItem("photoDraftsMeta") || "null"
-      );
-      const videoMeta = JSON.parse(
-        localStorage.getItem("videoDraftsMeta") || "null"
-      );
-      if (Array.isArray(photoMeta) && photoDrafts.length === 0) {
-        setPhotoDrafts(
-          photoMeta.map((m) => ({
-            id: m.id,
-            title: m.title,
-            preview: m.preview || "",
-            file: m.file || null,
-          }))
-        );
-      }
-      if (Array.isArray(videoMeta) && videoDrafts.length === 0) {
-        setVideoDrafts(
-          videoMeta.map((m) => ({
-            id: m.id,
-            title: m.title,
-            type: m.type || "video",
-            preview: m.preview || "",
-            file: m.file || null,
-          }))
-        );
-      }
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Expose show success modal to subcomponents
+  const showSuccessModal = useMemo(() => () => setShowModal(true), []);
+
+  // This effect is removed since we now load data from API instead of localStorage
 
   // Persist lightweight drafts (no File blobs) whenever they change
   useEffect(() => {
@@ -257,6 +276,10 @@ const Storefront = () => {
       within_24hr_available:
         (formData.within24HrAvailable || "No").toString().toLowerCase() ===
         "yes",
+      // Always include menus if present in attributes
+      ...(Array.isArray(formData.attributes?.menus)
+        ? { menus: formData.attributes.menus }
+        : {}),
     };
 
     // Remove undefined keys
@@ -321,10 +344,7 @@ const Storefront = () => {
       });
     }
 
-    // Optional: menus for caterers
-    if (Array.isArray(formData.menus)) {
-      fd.append("menus", JSON.stringify(formData.menus));
-    }
+    // Menus are now included only inside attributes for backend compatibility
     return fd;
   };
 
@@ -379,6 +399,10 @@ const Storefront = () => {
     }
   };
 
+  // Only show Menus sidebar for vendorTypeName 'Venues' or 'Caterers' (case-insensitive)
+  const allowedMenuTypes = ["venues", "caterers"];
+  const normalizedVendorTypeName = (vendorTypeName || "").trim().toLowerCase();
+
   const menuItems = [
     {
       id: "business",
@@ -391,7 +415,6 @@ const Storefront = () => {
       icon: <IoIosInformationCircleOutline size={20} />,
     },
     { id: "faq", label: "FAQ", icon: <CiCircleQuestion size={20} /> },
-
     {
       id: "vendor-contact",
       label: "Contact Details",
@@ -425,35 +448,32 @@ const Storefront = () => {
       label: "Availability & Slots",
       icon: <MdOutlineEventAvailable size={20} />,
     },
-    {
-      id: "vendor-menus",
-      label: "Menus",
-      icon: <MdCurrencyRupee size={20} />,
-    },
+    // Only show Menus if vendorTypeName is allowed
+    ...(allowedMenuTypes.includes(normalizedVendorTypeName)
+      ? [
+          {
+            id: "vendor-menus",
+            label: "Menus",
+            icon: <MdCurrencyRupee size={20} />,
+          },
+        ]
+      : []),
     {
       id: "vendor-marketing",
       label: "Marketing & CTA",
       icon: <GoGift size={20} />,
     },
-    {
-      id: "location",
-      label: "Location and map",
-      icon: <CiLocationOn size={20} />,
-    },
-
-    // { id: "vendor-media", label: "Media & Gallery", icon: <FaImage /> },
-    // { id: "events", label: "Events", icon: <FaCalendarAlt /> },
-    // { id: "vendors", label: "Preferred vendors", icon: <FaHandshake /> },
-    // { id: "team", label: "Meet the team", icon: <FaUsers /> },
-    // { id: "social", label: "Social networks", icon: <FaShareAlt /> },
-    // { id: "button", label: "WeddingWire button", icon: <FaRing /> },
   ];
 
   const renderContent = () => {
     switch (active) {
       case "business":
         return (
-          <BusinessDetails formData={formData} setFormData={setFormData} />
+          <BusinessDetails
+            formData={formData}
+            setFormData={setFormData}
+            onShowSuccess={showSuccessModal}
+          />
         );
       case "faq":
         return (
@@ -461,15 +481,16 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
-
       case "vendor-basic":
         return (
           <VendorBasicInfo
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
       case "vendor-contact":
@@ -478,6 +499,7 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
       case "vendor-location":
@@ -486,15 +508,24 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
       case "photos":
         return (
-          <PhotoGallery images={photoDrafts} onImagesChange={setPhotoDrafts} />
+          <PhotoGallery
+            images={photoDrafts}
+            onImagesChange={setPhotoDrafts}
+            onShowSuccess={showSuccessModal}
+          />
         );
       case "videos":
         return (
-          <VideoGallery videos={videoDrafts} onVideosChange={setVideoDrafts} />
+          <VideoGallery
+            videos={videoDrafts}
+            onVideosChange={setVideoDrafts}
+            onShowSuccess={showSuccessModal}
+          />
         );
       case "promotions":
         return (
@@ -502,6 +533,7 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
       case "vendor-pricing":
@@ -510,6 +542,7 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
       case "vendor-facilities":
@@ -518,6 +551,7 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
       case "vendor-policies":
@@ -526,6 +560,7 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
       case "vendor-availability":
@@ -534,6 +569,7 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
       case "vendor-menus":
@@ -542,37 +578,19 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
           />
         );
-
       case "vendor-marketing":
         return (
           <VendorMarketing
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onShowSuccess={showSuccessModal}
             onSubmit={handleSubmit}
           />
         );
-
-      // case "vendor-media":
-      //   return <VendorMedia formData={formData} setFormData={setFormData} />;
-      // Original sections
-
-      // case "promotions":
-      //   return <PromoForm />;
-      // case "photos":
-      //   return <PhotoGallery />;
-      // case "videos":
-      //   return <VideoGallery />;
-      // case "events":
-      //   return <Event />;
-      // case "vendors":
-      //   return <EndorsementForm />;
-      // case "team":
-      //   return <OwnersManager />;
-      // case "social":
-      //   return <SocialDetails />;
       default:
         return (
           <div className="p-3 border rounded bg-white">

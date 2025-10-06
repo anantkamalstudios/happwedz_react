@@ -69,10 +69,8 @@ const Header = () => {
         );
         if (venues && Array.isArray(venues.subcategories)) {
           setVenueSubcategories(venues.subcategories);
-          // console.log("Fetched venue subcategories:", venues.subcategories);
         } else {
           setVenueSubcategories([]);
-          // console.log("Fetched venue subcategories: none");
         }
       } catch (error) {
         console.error("Error fetching subcategories:", error);
