@@ -923,14 +923,13 @@ export default function WeddingPage({ post, onBackClick }) {
           }}
         >
           {/* Animated gradient border */}
-          <div
+          <div className="primary-light-bg text-black"
             style={{
-              content: '""',
+              content: '',
               position: "absolute",
               inset: "-3px",
               borderRadius: "18px",
               padding: "3px",
-              background: "linear-gradient(270deg, #C31162, #ff66b2, #C31162)",
               backgroundSize: "400% 400%",
               animation: "gradientMove 6s ease infinite",
               zIndex: -1,
@@ -938,12 +937,50 @@ export default function WeddingPage({ post, onBackClick }) {
           ></div>
 
           <p
-            className="mb-0 text-muted"
+            className="mb-0 text-justify"
             style={{ fontSize: "1.1rem", lineHeight: "1.8" }}
           >
             {post.story}
           </p>
         </div>
+      </Container>
+
+      {/* Highlights */}
+      <Container className="my-4">
+        <h2
+          style={{
+            color: "#C31162",
+            fontWeight: "bold",
+            textAlign: "center",
+            marginBottom: "30px",
+          }}
+        >
+          Highlights
+        </h2>
+        <Row>
+          {post.highlightPhotos.map((photo, index) => (
+            <Col key={index} md={4} className="mb-4">
+              <Card
+                style={{
+                  border: "none",
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                }}
+              >
+                <Card.Img
+                  variant="top"
+                  src={"https://happywedzbackend.happywedz.com/" + photo}
+                  alt={`Highlight ${index + 1}`}
+                  style={{
+                    width: "100%",
+                    height: "250px",
+                    objectFit: "cover",
+                    borderRadius: "10px",
+                  }}
+                />
+              </Card>
+            </Col>
+          ))}
+        </Row>
       </Container>
 
       {/* Events */}
@@ -964,7 +1001,7 @@ export default function WeddingPage({ post, onBackClick }) {
                     className="card-title d-flex align-items-center"
                     style={{ color: "#C31162" }}
                   >
-                    <FaRegStar className="me-2" /> {event.eventName}
+                    <FaRegStar className="me-2" /> {event.name}
                   </h5>
                   <p className="card-text mb-2 d-flex align-items-center">
                     <FaCalendarAlt color="#C31162" className="me-2" />
