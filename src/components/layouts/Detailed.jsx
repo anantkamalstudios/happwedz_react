@@ -60,8 +60,8 @@ const Detailed = () => {
         data.attributes.capacity_min && data.attributes.capacity_max
           ? `${data.attributes.capacity_min}-${data.attributes.capacity_max} Guests`
           : data.attributes.capacity_min
-            ? `${data.attributes.capacity_min}+ Guests`
-            : `Up to ${data.attributes.capacity_max} Guests`;
+          ? `${data.attributes.capacity_min}+ Guests`
+          : `Up to ${data.attributes.capacity_max} Guests`;
       amenities.push({ icon: <FaUsers />, name: `Capacity: ${capacity}` });
     }
 
@@ -130,7 +130,6 @@ const Detailed = () => {
     setImages([]);
   };
 
-  // Fetch venue data
   useEffect(() => {
     const fetchVenueData = async () => {
       if (!id) return;
@@ -355,11 +354,13 @@ const Detailed = () => {
                   {images.map((img, idx) => (
                     <SwiperSlide key={idx}>
                       <div
-                        className={`thumbnail-item ${mainImage === img ? "active" : ""
-                          } ${hoveredIndex !== null && hoveredIndex !== idx
+                        className={`thumbnail-item ${
+                          mainImage === img ? "active" : ""
+                        } ${
+                          hoveredIndex !== null && hoveredIndex !== idx
                             ? "blurred"
                             : ""
-                          }`}
+                        }`}
                         onClick={() => setMainImage(img)}
                         onMouseEnter={() => setHoveredIndex(idx)}
                         onMouseLeave={() => setHoveredIndex(null)}
@@ -563,10 +564,10 @@ const Detailed = () => {
                     {venueData.attributes?.starting_price
                       ? `₹${venueData.attributes.starting_price.toLocaleString()} onwards`
                       : venueData.attributes?.price_range?.min
-                        ? `₹${parseInt(
+                      ? `₹${parseInt(
                           venueData.attributes.price_range.min
                         ).toLocaleString()} onwards`
-                        : "Contact for pricing"}
+                      : "Contact for pricing"}
                   </div>
                   <p className="price-note">
                     {venueData.attributes?.price_unit
