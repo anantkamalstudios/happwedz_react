@@ -411,9 +411,9 @@ const CATEGORY_API =
   "https://happywedz.com/api/vendor-types/with-subcategories/all"; // For categories
 
 const Check = () => {
+  const user = useSelector((state) => state.auth.user);
   const userId = useSelector((state) => state.auth.user?.id);
   const token = useSelector((state) => state.auth.token);
-  const selectToken = useSelector((state) => state.auth.token);
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -421,18 +421,43 @@ const Check = () => {
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [loading, setLoading] = useState(false);
   const [refresh, setRefresh] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Axios instance with auth header
+  // Debug user object and try different ID fields
+  console.log("Full user object:", user);
+  console.log("User ID (id):", userId);
+  console.log("User ID (user_id):", user?.user_id);
+  console.log("User ID (_id):", user?._id);
+  console.log("Token:", token ? "Present" : "Missing");
+
+  // Use the first available ID
+  const actualUserId = userId || user?.user_id || user?._id;
+  console.log("Actual User ID used:", actualUserId);
+
+  // Axios instance with auth header and timeout
   const axiosInstance = axios.create({
     headers: {
       Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     },
+    timeout: 10000, // 10 seconds timeout
   });
 
   // Fetch checklist items for the user
   const fetchTasks = async () => {
-    if (!userId) return;
+    if (!actualUserId || !token) {
+      setError("User not authenticated. Please login again.");
+      setLoading(false);
+      return;
+    }
     setLoading(true);
+    setError(null);
+
+    // Create a timeout promise
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Request timeout")), 15000)
+    );
+
     try {
       const params = { user_id: userId };
       if (selectedStatus !== "All")
@@ -446,12 +471,27 @@ const Check = () => {
       // Handle cases where the data is nested under a 'data' property or is a direct array
       if (response.data && Array.isArray(response.data.data)) {
         setTasks(response.data.data || []);
-      } else {
+      } else if (Array.isArray(response.data)) {
         setTasks(response.data || []);
+      } else {
+        setTasks([]);
       }
     } catch (err) {
+      console.error("Error fetching tasks:", err);
+      if (err.message === "Request timeout") {
+        setError("Request timed out. Please check your internet connection.");
+      } else if (err.code === "ECONNABORTED") {
+        setError("Request was cancelled or timed out.");
+      } else if (err.response?.status === 404) {
+        setError("Checklist API endpoint not found. Please contact support.");
+      } else if (err.response?.status === 401) {
+        setError("Authentication failed. Please login again.");
+      } else {
+        setError(
+          err.response?.data?.message || err.message || "Failed to load tasks"
+        );
+      }
       setTasks([]);
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -459,7 +499,7 @@ const Check = () => {
 
   useEffect(() => {
     fetchTasks();
-  }, [userId, selectedCategory, selectedPeriod, selectedStatus, refresh]);
+  }, [actualUserId, selectedCategory, selectedPeriod, selectedStatus, refresh]);
 
   const [categories, setCategories] = useState([]);
 
@@ -471,6 +511,16 @@ const Check = () => {
         setCategories(["All", ...categoryNames]);
       } catch (error) {
         console.error("Error fetching categories:", error);
+        // Set default categories if API fails
+        setCategories([
+          "All",
+          "Planning",
+          "Venues",
+          "Catering",
+          "Photography",
+          "Music",
+          "Decorations",
+        ]);
       }
     };
     fetchCategories();
@@ -496,26 +546,56 @@ const Check = () => {
       });
       setRefresh((prev) => !prev); // Trigger re-fetch
     } catch (err) {
-      console.error(err);
+      console.error("Error toggling task:", err);
+      setError(
+        err.response?.data?.message || err.message || "Failed to update task"
+      );
     }
   };
 
   // Add new task
   const addTask = async () => {
-    if (!newTask.trim() || !userId) return;
+    if (!newTask.trim() || !actualUserId || !token) {
+      setError("Please provide task description and ensure you're logged in.");
+      return;
+    }
     const payload = {
-      user_id: userId,
-      title: newTask, // 'title' instead of 'text'
+      user_id: actualUserId,
+      title: newTask,
       category: selectedCategory !== "All" ? selectedCategory : "Planning",
-      period: selectedPeriod !== "All" ? selectedPeriod : "10-12 months", // 'period' instead of 'timePeriod'
+      period: selectedPeriod !== "All" ? selectedPeriod : "10-12 months",
       status: "pending",
     };
+
+    // Create a timeout promise
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Request timeout")), 15000)
+    );
+
     try {
-      const res = await axiosInstance.post(API_BASE, payload);
+      console.log("Adding task with payload:", payload);
+      const res = await Promise.race([
+        axiosInstance.post(API_BASE, payload),
+        timeoutPromise,
+      ]);
+      console.log("Add task response:", res.data);
       setNewTask("");
       setRefresh((prev) => !prev); // Trigger re-fetch
     } catch (err) {
-      console.error(err);
+      console.error("Error adding task:", err);
+      if (err.message === "Request timeout") {
+        setError("Request timed out. Please try again.");
+      } else if (err.code === "ECONNABORTED") {
+        setError("Request was cancelled or timed out.");
+      } else if (err.response?.status === 404) {
+        setError("Add task API endpoint not found. Please contact support.");
+      } else if (err.response?.status === 401) {
+        setError("Authentication failed. Please login again.");
+      } else {
+        setError(
+          err.response?.data?.message || err.message || "Failed to add task"
+        );
+      }
     }
   };
 
@@ -525,7 +605,10 @@ const Check = () => {
       await axiosInstance.delete(`${API_BASE}/${id}`);
       setRefresh((prev) => !prev); // Trigger re-fetch
     } catch (err) {
-      console.error(err);
+      console.error("Error deleting task:", err);
+      setError(
+        err.response?.data?.message || err.message || "Failed to delete task"
+      );
     }
   };
 
@@ -669,6 +752,34 @@ const Check = () => {
                 </h5>
               </div>
 
+              {/* Test API Connection Button */}
+              <div className="mb-3">
+                <button
+                  className="btn btn-outline-info btn-sm me-2"
+                  onClick={async () => {
+                    try {
+                      console.log("Testing API connection...");
+                      const response = await fetch(
+                        `${API_BASE}/${actualUserId}`,
+                        {
+                          method: "GET",
+                          headers: {
+                            Authorization: `Bearer ${token}`,
+                            "Content-Type": "application/json",
+                          },
+                        }
+                      );
+                      console.log("Test API Response Status:", response.status);
+                      console.log("Test API Response:", await response.text());
+                    } catch (err) {
+                      console.error("Test API Error:", err);
+                    }
+                  }}
+                >
+                  Test API Connection
+                </button>
+              </div>
+
               {/* Add new task */}
               <div className="wc-add-task card mb-4">
                 <div className="wc-card-header card-header bg-light text-black">
@@ -719,16 +830,35 @@ const Check = () => {
                       </select>
                     </div>
                   </div>
-                  <button className="btn btn-primary" onClick={addTask}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={addTask}
+                    disabled={!newTask.trim() || !actualUserId || !token}
+                  >
                     <FaPlus className="me-1" /> Add Task
                   </button>
                 </div>
               </div>
 
+              {/* Error display */}
+              {error && <div className="alert alert-danger mb-3">{error}</div>}
+
+              {/* Authentication check */}
+              {!actualUserId || !token ? (
+                <div className="alert alert-warning mb-3">
+                  Please login to access your checklist.
+                </div>
+              ) : null}
+
               {/* Task list */}
               <div className="wc-task-list">
                 {loading ? (
-                  <div>Loading tasks...</div>
+                  <div className="text-center py-4">
+                    <div className="spinner-border text-primary" role="status">
+                      <span className="visually-hidden">Loading tasks...</span>
+                    </div>
+                    <div className="mt-2">Loading tasks...</div>
+                  </div>
                 ) : tasks.length > 0 ? (
                   <ul className="list-group">
                     {tasks.map((task) => (

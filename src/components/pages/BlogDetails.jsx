@@ -211,8 +211,8 @@ const BlogDetails = ({ blogId, onBackClick }) => {
                 </div>
               )}
 
-              {/* Paragraph content */}
-              <p
+              {/* Paragraph content (Summernote HTML) */}
+              <div
                 style={{
                   fontSize: "1.05rem",
                   lineHeight: "1.8",
@@ -220,9 +220,8 @@ const BlogDetails = ({ blogId, onBackClick }) => {
                   textAlign: "justify",
                   marginBottom: "2rem",
                 }}
-              >
-                {paragraph}
-              </p>
+                dangerouslySetInnerHTML={{ __html: paragraph }}
+              ></div>
             </div>
           ))}
 

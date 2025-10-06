@@ -130,7 +130,6 @@ const Detailed = () => {
     setImages([]);
   };
 
-  // Fetch venue data
   useEffect(() => {
     const fetchVenueData = async () => {
       if (!id) return;
@@ -275,11 +274,17 @@ const Detailed = () => {
 
   // Create activeVendor from API data
   const activeVendor = {
-    id: venueData.id,
+    id: venueData.vendor_id, // Use vendor_id instead of service id
     name:
       venueData.attributes?.name ||
       venueData.vendor?.businessName ||
       "Unknown Venue",
+    businessName: venueData.vendor?.businessName || venueData.attributes?.name,
+    firstName: venueData.vendor?.firstName,
+    lastName: venueData.vendor?.lastName,
+    email: venueData.vendor?.email || venueData.attributes?.email,
+    phone: venueData.vendor?.phone || venueData.attributes?.contact?.phone,
+    city: venueData.vendor?.city || venueData.attributes?.location?.city,
     location: venueData.attributes?.location
       ? `${venueData.attributes.location.city}, ${venueData.attributes.location.state}`
       : "Location not specified",
@@ -422,7 +427,10 @@ const Detailed = () => {
                               >
                                 <i
                                   className="fa-solid fa-check me-2"
-                                  style={{ color: "#0e6214", marginTop: "4px" }}
+                                  style={{
+                                    color: "#f44e4eff",
+                                    marginTop: "4px",
+                                  }}
                                 ></i>
                                 <span className="text-muted">{a}</span>
                               </div>

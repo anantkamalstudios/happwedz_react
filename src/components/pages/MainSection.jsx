@@ -38,9 +38,8 @@ const MainSection = () => {
   const [selectedCity, setSelectedCity] = useState(reduxLocation);
   const [show, setShow] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-  const [view, setView] = useState("images");
-
-  // Always call hooks at the top level, regardless of section
+  const [view, setView] = useState("images"); 
+  
   const { data, loading, error } = useApiData(
     "venues",
     null,
@@ -62,13 +61,11 @@ const MainSection = () => {
     setSelectedId(null);
   };
 
-  // Render based on section after all hooks are called
   if (section === "venues") {
     return (
       <>
         <MainSearch />
         <MainByRegion type="venues" />
-        <DynamicAside section={"venues"} view={view} setView={setView} />
         {loading && data.length === 0 && <LoadingState title="Venues" />}
         {!loading && data.length === 0 && (
           <EmptyState section="venues" title="Venues" />
