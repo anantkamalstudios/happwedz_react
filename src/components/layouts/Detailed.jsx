@@ -130,7 +130,6 @@ const Detailed = () => {
     setImages([]);
   };
 
-  // Fetch venue data
   useEffect(() => {
     const fetchVenueData = async () => {
       if (!id) return;
