@@ -523,8 +523,14 @@ function Faq({ formData, setFormData, onSave }) {
                     min="0"
                     type="number"
                     className="form-control w-25"
-                    value={answers[q.id] || ""}
-                    onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+                    value={
+                      (answers[q.id] && answers[q.id][index]) || ""
+                    }
+                    onChange={(e) => {
+                      const newAnswer = { ...(answers[q.id] || {}) };
+                      newAnswer[index] = e.target.value;
+                      handleAnswerChange(q.id, newAnswer);
+                    }}
                   />
                 </div>
               ))

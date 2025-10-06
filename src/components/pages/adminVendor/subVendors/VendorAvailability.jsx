@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import VendorAvailabilityCalendar from "./VendorAvailabilityCalendar";
 
 const VendorAvailability = ({
@@ -7,6 +7,10 @@ const VendorAvailability = ({
   onSave,
   onShowSuccess,
 }) => {
+  const [availableDates, setAvailableDates] = useState(
+    (formData?.available_slots || []).map((item) => item.date)
+  );
+
   const handleNestedInputChange = (subSection, field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -19,12 +23,17 @@ const VendorAvailability = ({
 
   // Handler to save and show success modal
   const handleSaveAndShow = async () => {
-    if (onSave) {
-      await onSave();
-    }
-    if (onShowSuccess) {
-      onShowSuccess();
-    }
+    const available_slots = availableDates.map((d) => ({ date: d, slots: [] }));
+    setFormData((prev) => ({ ...prev, available_slots }));
+
+    setTimeout(async () => {
+      if (onSave) {
+        await onSave();
+      }
+      if (onShowSuccess) {
+        onShowSuccess();
+      }
+    }, 0);
   };
 
   return (
@@ -99,7 +108,10 @@ const VendorAvailability = ({
           </div>
         </div>
         <div className="row">
-          <VendorAvailabilityCalendar />
+          <VendorAvailabilityCalendar
+            initialAvailableDates={availableDates}
+            onAvailabilityChange={setAvailableDates}
+          />
         </div>
 
         <button className="btn btn-primary mt-2" onClick={handleSaveAndShow}>

@@ -272,6 +272,10 @@ const Storefront = () => {
       within_24hr_available:
         (formData.within24HrAvailable || "No").toString().toLowerCase() ===
         "yes",
+      // Always include menus if present in attributes
+      ...(Array.isArray(formData.attributes?.menus)
+        ? { menus: formData.attributes.menus }
+        : {}),
     };
 
     // Remove undefined keys
@@ -336,10 +340,7 @@ const Storefront = () => {
       });
     }
 
-    // Optional: menus for caterers
-    if (Array.isArray(formData.menus)) {
-      fd.append("menus", JSON.stringify(formData.menus));
-    }
+    // Menus are now included only inside attributes for backend compatibility
     return fd;
   };
 
