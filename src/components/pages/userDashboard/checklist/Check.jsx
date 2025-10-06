@@ -398,15 +398,17 @@
 
 // export default Check;
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaCheck, FaPlus, FaDownload, FaPrint } from "react-icons/fa";
 import { FiCheck, FiTrash } from "react-icons/fi";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import CheckList from "./CheckList";
 
 const API_BASE = "https://happywedz.com/api/checklist_new"; // For tasks
-const CATEGORY_API = "https://happywedz.com/api/vendor-types/with-subcategories/all"; // For categories
+const CATEGORY_API =
+  "https://happywedz.com/api/vendor-types/with-subcategories/all"; // For categories
 
 const Check = () => {
   const userId = useSelector((state) => state.auth.user?.id);
@@ -433,11 +435,14 @@ const Check = () => {
     setLoading(true);
     try {
       const params = { user_id: userId };
-      if (selectedStatus !== "All") params.status = selectedStatus.toLowerCase();
+      if (selectedStatus !== "All")
+        params.status = selectedStatus.toLowerCase();
       if (selectedCategory !== "All") params.category = selectedCategory;
       if (selectedPeriod !== "All") params.period = selectedPeriod;
 
-      const response = await axiosInstance.get(`${API_BASE}/${userId}`, { params });
+      const response = await axiosInstance.get(`${API_BASE}/${userId}`, {
+        params,
+      });
       // Handle cases where the data is nested under a 'data' property or is a direct array
       if (response.data && Array.isArray(response.data.data)) {
         setTasks(response.data.data || []);
@@ -462,7 +467,7 @@ const Check = () => {
     const fetchCategories = async () => {
       try {
         const response = await axiosInstance.get(CATEGORY_API);
-        const categoryNames = response.data.map(cat => cat.name);
+        const categoryNames = response.data.map((cat) => cat.name);
         setCategories(["All", ...categoryNames]);
       } catch (error) {
         console.error("Error fetching categories:", error);
@@ -487,9 +492,9 @@ const Check = () => {
   const toggleTask = async (id, currentStatus) => {
     try {
       const res = await axiosInstance.put(`${API_BASE}/${id}`, {
-        status: currentStatus === "completed" ? "pending" : "completed"
+        status: currentStatus === "completed" ? "pending" : "completed",
       });
-      setRefresh(prev => !prev); // Trigger re-fetch
+      setRefresh((prev) => !prev); // Trigger re-fetch
     } catch (err) {
       console.error(err);
     }
@@ -508,7 +513,7 @@ const Check = () => {
     try {
       const res = await axiosInstance.post(API_BASE, payload);
       setNewTask("");
-      setRefresh(prev => !prev); // Trigger re-fetch
+      setRefresh((prev) => !prev); // Trigger re-fetch
     } catch (err) {
       console.error(err);
     }
@@ -518,7 +523,7 @@ const Check = () => {
   const deleteTask = async (id) => {
     try {
       await axiosInstance.delete(`${API_BASE}/${id}`);
-      setRefresh(prev => !prev); // Trigger re-fetch
+      setRefresh((prev) => !prev); // Trigger re-fetch
     } catch (err) {
       console.error(err);
     }
@@ -536,16 +541,17 @@ const Check = () => {
   });
   const countByPeriod = {};
   periods.forEach((p) => {
-    if (p !== "All") countByPeriod[p] = tasks.filter((t) => t.period === p).length;
+    if (p !== "All")
+      countByPeriod[p] = tasks.filter((t) => t.period === p).length;
   });
 
   // Style for scrollable category list
-  const categoryListStyle = { maxHeight: '250px', overflowY: 'auto' };
+  const categoryListStyle = { maxHeight: "250px", overflowY: "auto" };
   return (
     <div className="wc-container container-fluid py-4">
       <div className="wc-row row">
         {/* Sidebar */}
-        <div className="wc-sidebar col-md-3">
+        <div className="wc-sidebar col-md-4">
           {/* STATUS */}
           <div className="wc-card card mb-4 border-0">
             <div className="wc-card-header card-header text-white">
@@ -556,8 +562,9 @@ const Check = () => {
                 {["All", "Pending", "Completed"].map((status) => (
                   <li
                     key={status}
-                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${selectedStatus === status ? "wc-active" : ""
-                      }`}
+                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${
+                      selectedStatus === status ? "wc-active" : ""
+                    }`}
                     onClick={() => setSelectedStatus(status)}
                   >
                     {status}
@@ -565,8 +572,8 @@ const Check = () => {
                       {status === "All"
                         ? tasks.length
                         : status === "Pending"
-                          ? pendingCount
-                          : completedCount}
+                        ? pendingCount
+                        : completedCount}
                     </span>
                   </li>
                 ))}
@@ -584,8 +591,9 @@ const Check = () => {
                 {periods.map((period) => (
                   <li
                     key={period}
-                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${selectedPeriod === period ? "wc-active" : ""
-                      }`}
+                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${
+                      selectedPeriod === period ? "wc-active" : ""
+                    }`}
                     onClick={() => setSelectedPeriod(period)}
                   >
                     {period}
@@ -606,16 +614,22 @@ const Check = () => {
               <h5 className="mb-0">CATEGORY</h5>
             </div>
             <div className="wc-card-body card-body p-0">
-              <ul className="wc-list-group list-group" style={categoryListStyle}>
+              <ul
+                className="wc-list-group list-group"
+                style={categoryListStyle}
+              >
                 {categories.map((cat) => (
                   <li
                     key={cat}
-                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${selectedCategory === cat ? "wc-active" : ""
-                      }`}
+                    className={`wc-list-item list-group-item d-flex justify-content-between align-items-center ${
+                      selectedCategory === cat ? "wc-active" : ""
+                    }`}
                     onClick={() => setSelectedCategory(cat)}
                   >
                     {cat}
-                    <span className="wc-badge badge rounded-pill">{cat === "All" ? tasks.length : countByCategory[cat] || 0}</span>
+                    <span className="wc-badge badge rounded-pill">
+                      {cat === "All" ? tasks.length : countByCategory[cat] || 0}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -624,10 +638,14 @@ const Check = () => {
         </div>
 
         {/* Main Content */}
-        <div className="wc-main-content col-md-9">
+        <div className="wc-main-content col-md-8">
+          {/* <div>
+            <CheckList />
+          </div> */}
           <div className="wc-card card">
             <div className="wc-card-header card-header bg-white d-flex justify-content-between align-items-center">
               <h5 className="mb-0">Checklist</h5>
+              {/* print and download button */}
               <div className="d-flex">
                 <button className="wc-btn btn btn-outline-secondary me-2">
                   <FaDownload className="me-1" /> Download
@@ -719,8 +737,9 @@ const Check = () => {
                         className="list-group-item d-flex align-items-center"
                       >
                         <div
-                          className={`wc-task-checkbox me-3 ${task.status === "completed" ? "wc-completed" : ""
-                            }`}
+                          className={`wc-task-checkbox me-3 ${
+                            task.status === "completed" ? "wc-completed" : ""
+                          }`}
                           onClick={() => toggleTask(task.id, task.status)}
                         >
                           {task.status === "completed" && <FiCheck />}
