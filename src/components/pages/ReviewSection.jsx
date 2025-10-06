@@ -24,8 +24,10 @@ const ReviewSection = ({ vendor }) => {
     const fetchReviews = async () => {
       try {
         // Use the correct API endpoint: /reviews/{vendorId}
-        const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
-        const url = `${baseUrl}/reviews/${vendor.id}`;
+        const baseUrl = API_BASE_URL.endsWith("/")
+          ? API_BASE_URL.slice(0, -1)
+          : API_BASE_URL;
+        const url = `${baseUrl}/reviews/vendor/${vendor.id}`;
         console.log("Fetching reviews from URL:", url);
         const response = await fetch(url, {
           method: "GET",
@@ -84,7 +86,9 @@ const ReviewSection = ({ vendor }) => {
 
     try {
       // Use the correct API endpoint: /reviews/{vendorId}
-      const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+      const baseUrl = API_BASE_URL.endsWith("/")
+        ? API_BASE_URL.slice(0, -1)
+        : API_BASE_URL;
       const url = `${baseUrl}/reviews/${vendor.id}`;
       console.log("API_BASE_URL:", API_BASE_URL);
       console.log("Submitting review to URL:", url);
@@ -104,7 +108,10 @@ const ReviewSection = ({ vendor }) => {
       console.log("Response data:", result);
 
       if (!response.ok) {
-        throw new Error(result.message || `Failed to submit review. Status: ${response.status}`);
+        throw new Error(
+          result.message ||
+            `Failed to submit review. Status: ${response.status}`
+        );
       }
 
       toast.success("Review submitted successfully!");
@@ -233,9 +240,10 @@ const ReviewSection = ({ vendor }) => {
                 <div className="d-flex align-items-center mb-1 flex-wrap">
                   <strong>{r.user?.name || r.user || "Anonymous"}</strong>
                   <span className="ms-2 text-warning">
-                    {r.rating && [...Array(Number(r.rating))].map((_, i) => (
-                      <FaStar key={i} size={14} />
-                    ))}
+                    {r.rating &&
+                      [...Array(Number(r.rating))].map((_, i) => (
+                        <FaStar key={i} size={14} />
+                      ))}
                   </span>
                   <small className="text-muted ms-2">{r.date}</small>
                 </div>
@@ -244,20 +252,22 @@ const ReviewSection = ({ vendor }) => {
                   <p className="text-muted small mb-1">Spent: ₹{r.spent}</p>
                 )}
                 <div className="d-flex flex-wrap">
-                  {r.images && Array.isArray(r.images) && r.images.map((img, idx) => (
-                    <img
-                      key={idx}
-                      src={img}
-                      alt="review"
-                      className="me-2 mb-2"
-                      style={{
-                        width: 80,
-                        height: 80,
-                        objectFit: "cover",
-                        borderRadius: 6,
-                      }}
-                    />
-                  ))}
+                  {r.images &&
+                    Array.isArray(r.images) &&
+                    r.images.map((img, idx) => (
+                      <img
+                        key={idx}
+                        src={img}
+                        alt="review"
+                        className="me-2 mb-2"
+                        style={{
+                          width: 80,
+                          height: 80,
+                          objectFit: "cover",
+                          borderRadius: 6,
+                        }}
+                      />
+                    ))}
                 </div>
                 <hr />
               </div>

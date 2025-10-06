@@ -70,6 +70,7 @@ const Storefront = () => {
   const [formData, setFormData] = useState({});
   const [photoDrafts, setPhotoDrafts] = useState([]);
   const [videoDrafts, setVideoDrafts] = useState([]);
+  const [vendorTypeName, setVendorTypeName] = useState("");
   const { token, vendor } = useSelector((state) => state.vendorAuth || {});
 
   useEffect(() => {
@@ -94,20 +95,27 @@ const Storefront = () => {
               token
             );
 
-          console.log("serviceData", serviceData);
+          // Fetch vendor type name from API (like VendorBasicInfo)
+          if (vendor.vendor_type_id) {
+            try {
+              const response = await fetch(
+                `https://happywedz.com/api/vendor-types/${vendor.vendor_type_id}`
+              );
+              const vendorTypeData = await response.json();
+              setVendorTypeName(vendorTypeData?.name || "");
+            } catch (err) {
+              setVendorTypeName("");
+            }
+          }
+
           // If data exists, merge it into formData.
-          // The local storage draft will be preserved for any fields not in the API response.
           if (serviceData) {
-            // Handle case where API returns an array with one object
             const actualData = Array.isArray(serviceData)
               ? serviceData[0]
               : serviceData;
             if (actualData) {
-              // Extract media data and set up photo/video drafts
               if (actualData.media) {
                 const { gallery = [], videos = [] } = actualData.media;
-
-                // Convert gallery data to photoDrafts format
                 if (Array.isArray(gallery) && gallery.length > 0) {
                   const photoDraftsData = gallery.map((item, index) => ({
                     id: item.id || `photo_${index}`,
@@ -120,8 +128,6 @@ const Storefront = () => {
                   }));
                   setPhotoDrafts(photoDraftsData);
                 }
-
-                // Convert videos data to videoDrafts format
                 if (Array.isArray(videos) && videos.length > 0) {
                   const videoDraftsData = videos.map((item, index) => ({
                     id: item.id || `video_${index}`,
@@ -133,7 +139,6 @@ const Storefront = () => {
                   setVideoDrafts(videoDraftsData);
                 }
               }
-
               setFormData((prev) => ({ ...prev, ...actualData }));
             }
           }
@@ -142,7 +147,6 @@ const Storefront = () => {
         }
       }
     };
-
     fetchServiceData();
   }, [vendor, token]);
 
@@ -395,6 +399,10 @@ const Storefront = () => {
     }
   };
 
+  // Only show Menus sidebar for vendorTypeName 'Venues' or 'Caterers' (case-insensitive)
+  const allowedMenuTypes = ["venues", "caterers"];
+  const normalizedVendorTypeName = (vendorTypeName || "").trim().toLowerCase();
+
   const menuItems = [
     {
       id: "business",
@@ -407,7 +415,6 @@ const Storefront = () => {
       icon: <IoIosInformationCircleOutline size={20} />,
     },
     { id: "faq", label: "FAQ", icon: <CiCircleQuestion size={20} /> },
-
     {
       id: "vendor-contact",
       label: "Contact Details",
@@ -441,11 +448,16 @@ const Storefront = () => {
       label: "Availability & Slots",
       icon: <MdOutlineEventAvailable size={20} />,
     },
-    {
-      id: "vendor-menus",
-      label: "Menus",
-      icon: <MdCurrencyRupee size={20} />,
-    },
+    // Only show Menus if vendorTypeName is allowed
+    ...(allowedMenuTypes.includes(normalizedVendorTypeName)
+      ? [
+          {
+            id: "vendor-menus",
+            label: "Menus",
+            icon: <MdCurrencyRupee size={20} />,
+          },
+        ]
+      : []),
     {
       id: "vendor-marketing",
       label: "Marketing & CTA",
