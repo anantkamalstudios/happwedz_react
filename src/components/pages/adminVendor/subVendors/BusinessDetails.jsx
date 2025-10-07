@@ -30,6 +30,20 @@ const BusinessDetails = ({ formData, setFormData }) => {
           username: prev.attributes?.username || vendor.email || "",
           vendor_type_id:
             prev.attributes?.vendor_type_id || vendor.vendor_type_id || "",
+          years_in_business:
+            prev.attributes?.years_in_business ||
+            vendor.years_in_business ||
+            "",
+          firstName: prev.attributes?.firstName || vendor.firstName || "",
+          lastName: prev.attributes?.lastName || vendor.lastName || "",
+          city: prev.attributes?.city || vendor.city || "",
+          state: prev.attributes?.state || vendor.state || "",
+          zip: prev.attributes?.zip || vendor.zip || "",
+          website: prev.attributes?.website || vendor.website || "",
+          facebook_link:
+            prev.attributes?.facebook_link || vendor.facebook_link || "",
+          instagram_link:
+            prev.attributes?.instagram_link || vendor.instagram_link || "",
         },
       }));
     }
@@ -256,7 +270,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
           )}
         </div>
         <div className="mb-3">
-          <label className="form-label">Phone Number *</label>
+          <label className="form-label">Mobile Number *</label>
           <input
             name="phone"
             type="text"
@@ -269,7 +283,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
             <div className="text-danger small">{validationErrors.phone}</div>
           )}
         </div>
-        <div className="mb-3">
+        {/* <div className="mb-3">
           <label className="form-label">Mobile Number</label>
           <input
             name="mobile"
@@ -279,7 +293,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
             value={formData.attributes?.mobile || ""}
             onChange={handleAttributeChange}
           />
-        </div>
+        </div> */}
         {/* <div className="mb-3">
           <label className="form-label">Fax</label>
           <input

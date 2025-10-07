@@ -37,7 +37,7 @@ import VideoGallery from "./subVendors/VideoGallery";
 import Event from "./subVendors/Event";
 import EndorsementForm from "./subVendors/EndorsementForm";
 import OwnersManager from "./subVendors/OwnersManager";
-import SocialDetails from "./subVendors/SocialDetails";
+// import SocialDetails from "./subVendors/SocialDetails";
 // Vendor Form Sections
 import VendorBasicInfo from "./subVendors/VendorBasicInfo";
 import VendorContact from "./subVendors/VendorContact";
