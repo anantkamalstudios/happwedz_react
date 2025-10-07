@@ -65,6 +65,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
   const buildRegisterPayload = () => {
     const a = formData.attributes || {};
     const payload = {
+      id: vendor?.id || null,
       businessName: a.businessName || "",
       email: a.email || "",
       phone: a.phone || "",
@@ -83,6 +84,10 @@ const BusinessDetails = ({ formData, setFormData }) => {
     };
     if (newPassword && newPassword === confirmPassword) {
       payload.password = newPassword;
+    }
+    // Add profileImageFile for update
+    if (profileImageFile) {
+      payload.profileImage = profileImageFile;
     }
     return payload;
   };
@@ -118,7 +123,16 @@ const BusinessDetails = ({ formData, setFormData }) => {
 
       if (vendor?.id) {
         // Update existing vendor
-        await vendorsApi.updateVendor(vendor.id, payload);
+        // If profileImageFile is present, use FormData
+        if (profileImageFile) {
+          const formDataObj = new FormData();
+          Object.entries(payload).forEach(([key, value]) => {
+            formDataObj.append(key, value);
+          });
+          await vendorsApi.updateVendor(vendor.id, formDataObj);
+        } else {
+          await vendorsApi.updateVendor(vendor.id, payload);
+        }
       } else {
         // Register new vendor
         await vendorsAuthApi.register(payload);
