@@ -9,53 +9,14 @@ import { IoCloseCircleOutline } from "react-icons/io5";
 const LocationModalWithAPI = () => {
   const [show, setShow] = useState(false);
   const dispatch = useDispatch();
-  const selectedLocation = useSelector((state) => state.location.selectedLocation);
+  const selectedLocation = useSelector(
+    (state) => state.location.selectedLocation
+  );
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("India");
-
-  const cityCategories = {
-    "Top Cities": [
-      "All Cities",
-      "Delhi NCR",
-      "Mumbai",
-      "Bangalore",
-      "Hyderabad",
-      "Chennai",
-      "Pune",
-      "Lucknow",
-      "Jaipur",
-      "Kolkata",
-    ],
-    "Popular Cities": [
-      "Gurgaon",
-      "Goa",
-      "Udaipur",
-      "Chandigarh",
-      "Jim Corbett",
-      "Ahmedabad",
-      "Indore",
-      "Agra",
-      "Kanpur",
-      "Kochi",
-    ],
-    "Other Cities": [
-      "Nagpur",
-      "Dehradun",
-      "Thane",
-      "Surat",
-      "Vadodara",
-      "Raipur",
-      "Mysore",
-      "Hubli",
-      "Dhitara",
-      "Toranagallu",
-    ],
-    States: ["Kerala", "Rajasthan", "Himachal Pradesh", "Maharashtra"],
-    "International Cities": ["Dubai", "Thailand", "Bali", "Abu Dhabi"],
-  };
 
   // Fetch countries
   useEffect(() => {
@@ -92,12 +53,11 @@ const LocationModalWithAPI = () => {
   const handleCityClick = (city) => {
     dispatch(setLocation(city));
     setShow(false);
-    // Navigate to /vendors/all with city as query param or slug
     navigate(`/vendors/all?city=${encodeURIComponent(city)}`);
   };
 
   const handleClearLocation = (e) => {
-    e.stopPropagation(); // Prevent opening modal
+    e.stopPropagation();
     dispatch(clearLocation());
   };
 

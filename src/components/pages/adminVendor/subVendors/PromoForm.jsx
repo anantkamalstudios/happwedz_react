@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
 
-export default function PromoForm() {
+export default function PromoForm({ formData, setFormData, onSave }) {
+  const { vendor, token } = useSelector((state) => state.vendorAuth || {});
   const [form, setForm] = useState({
     title: "",
     promoCode: "",
@@ -16,6 +18,9 @@ export default function PromoForm() {
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [serverError, setServerError] = useState("");
+  const [serverSuccess, setServerSuccess] = useState("");
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -49,12 +54,39 @@ export default function PromoForm() {
     return Object.keys(err).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    const payload = { ...form, imageName: imageFile?.name || null };
-    localStorage.setItem("promoDraft", JSON.stringify(payload));
-    alert("Promotion saved successfully!");
+    setSubmitting(true);
+    setServerError("");
+    setServerSuccess("");
+    try {
+      // merge this promo into storefront formData.deals for saving alongside service
+      const newDeal = {
+        title: form.title,
+        code: form.promoCode,
+        type: form.type,
+        value: Number(form.value),
+        startDate: form.startDate,
+        endDate: form.endDate,
+        description: form.description,
+        active: !!form.active,
+        imageName: imageFile?.name || null,
+      };
+      setFormData((prev) => ({
+        ...prev,
+        deals: Array.isArray(prev.deals) ? [...prev.deals, newDeal] : [newDeal],
+      }));
+      // Let parent handle actual API via onSave (vendorServicesApi)
+      await onSave?.();
+      setServerSuccess("Promotion added to your service and saved.");
+      const payload = { ...form, imageName: imageFile?.name || null };
+      localStorage.setItem("promoDraft", JSON.stringify(payload));
+    } catch (err) {
+      setServerError(typeof err === "string" ? err : err?.message || "Failed to save");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const resetForm = () => {
@@ -116,9 +148,8 @@ export default function PromoForm() {
                     name="promoCode"
                     value={form.promoCode}
                     onChange={handleChange}
-                    className={`form-control ${
-                      errors.promoCode ? "error" : ""
-                    }`}
+                    className={`form-control ${errors.promoCode ? "error" : ""
+                      }`}
                     placeholder="E.g. WWCOUPLE10"
                   />
                   {errors.promoCode && (
@@ -187,9 +218,8 @@ export default function PromoForm() {
                     type="date"
                     value={form.startDate}
                     onChange={handleChange}
-                    className={`form-control ${
-                      errors.startDate || errors.date ? "error" : ""
-                    }`}
+                    className={`form-control ${errors.startDate || errors.date ? "error" : ""
+                      }`}
                   />
                   {errors.startDate && (
                     <div className="error-message">{errors.startDate}</div>
@@ -202,9 +232,8 @@ export default function PromoForm() {
                     type="date"
                     value={form.endDate}
                     onChange={handleChange}
-                    className={`form-control ${
-                      errors.endDate || errors.date ? "error" : ""
-                    }`}
+                    className={`form-control ${errors.endDate || errors.date ? "error" : ""
+                      }`}
                   />
                   {(errors.endDate || errors.date) && (
                     <div className="error-message">
@@ -256,9 +285,8 @@ export default function PromoForm() {
                     onChange={handleChange}
                   />
                   <span
-                    className={`checkmark ${
-                      errors.termsAccepted ? "error" : ""
-                    }`}
+                    className={`checkmark ${errors.termsAccepted ? "error" : ""
+                      }`}
                   ></span>
                   I confirm this offer and its terms
                 </label>
@@ -275,8 +303,9 @@ export default function PromoForm() {
                     background:
                       "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)",
                   }}
+                  disabled={submitting}
                 >
-                  Save Promotion
+                  {submitting ? "Saving..." : "Save Promotion"}
                 </button>
                 <button
                   type="button"
@@ -299,6 +328,12 @@ export default function PromoForm() {
                 </button>
               </div>
             </form>
+            {serverError && (
+              <div className="alert alert-danger mt-3">{serverError}</div>
+            )}
+            {serverSuccess && (
+              <div className="alert alert-success mt-3">{serverSuccess}</div>
+            )}
           </div>
         </div>
 

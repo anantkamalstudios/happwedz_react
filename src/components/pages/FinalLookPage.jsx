@@ -1,4 +1,5 @@
 import React from "react";
+import CompareImage from "react-compare-image";
 import { useLocation, useNavigate } from "react-router-dom";
 import { beautyApi } from "../../services/api";
 
@@ -6,7 +7,10 @@ const FinalLookPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Get all selected items from previous page
+  const imageUrl = sessionStorage.getItem("finalLookImage");
+  const filters = JSON.parse(
+    sessionStorage.getItem("finalLookFilters") || "{}"
+  );
   const selectedImage = location.state?.selectedImage;
   const selectedProducts = location.state?.selectedProducts || {};
   const selectedDress = location.state?.selectedDress;
@@ -15,6 +19,13 @@ const FinalLookPage = () => {
   const processedImageUrlFromState = location.state?.processedImageUrl;
   const [fetchedImageUrl, setFetchedImageUrl] = React.useState(null);
   const [isLoadingImage, setIsLoadingImage] = React.useState(false);
+
+  const originalImageUrl = sessionStorage.getItem("try_uploaded_image_id")
+    ? `${
+        import.meta.env.VITE_API_BASE_URL || "/api"
+      }/images/${sessionStorage.getItem("try_uploaded_image_id")}`
+    : null;
+  const filteredImageUrl = imageUrl || profileImage;
 
   React.useEffect(() => {
     if (processedImageUrlFromState) {
@@ -60,35 +71,55 @@ const FinalLookPage = () => {
         <div className="final-look-content">
           <div className="final-image-container">
             <div className="final-image">
-              <img
-                src={profileImage}
-                alt="Your final look"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src =
-                    " width='200' height='300' viewBox='0 0 200 300'%3E%3Crect width='200' height='300' fill='%23fce4ec'/%3E%3Ccircle cx='100' cy='100' r='30' fill='%23ed1173'/%3E%3Cpath d='M70 130 Q100 160 130 130' stroke='%23ed1173' strokeWidth='3' fill='none'/%3E%3C/svg%3E";
-                }}
-              />
+              {originalImageUrl && filteredImageUrl ? (
+                <CompareImage
+                  leftImage={originalImageUrl}
+                  rightImage={filteredImageUrl}
+                  sliderLineColor="#ed1173"
+                  sliderLineWidth={3}
+                  handleSize={40}
+                  leftImageLabel="Original"
+                  rightImageLabel="Filtered"
+                />
+              ) : (
+                <img
+                  src={filteredImageUrl}
+                  alt="Your final look"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                  }}
+                />
+              )}
             </div>
           </div>
 
           <div className="applied-filters">
             <div className="applied-filters-title">Applied Filters</div>
 
-            {Object.entries(selectedProducts).map(([type, product]) => {
+            {Object.entries(filters).map(([type, product]) => {
               if (!product) return null;
               return (
-                <div key={`${type}-${product.id}`} className="filter-item">
+                <div
+                  key={`${type}-${product.productId}`}
+                  className="filter-item"
+                >
                   <div className="filter-type">
                     {type.charAt(0).toUpperCase() + type.slice(1)}
                   </div>
                   <div className="filter-name">
-                    {product.name}
-                    {product.color && (
+                    {product.productName || "Product"}
+                    {product.colorHex && (
                       <span
-                        className="filter-color"
-                        style={{ backgroundColor: product.color }}
-                      ></span>
+                        style={{
+                          marginLeft: 8,
+                          fontWeight: 400,
+                          color: "#ad1457",
+                        }}
+                      >
+                        ({product.colorHex})
+                      </span>
                     )}
                   </div>
                 </div>

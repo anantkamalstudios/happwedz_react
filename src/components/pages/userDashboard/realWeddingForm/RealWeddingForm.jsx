@@ -19,11 +19,14 @@ const RealWeddingForm = ({ user, token }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [vendorTypes, setVendorTypes] = useState([]);
+  const [countries, setCountries] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState("India");
   const [formData, setFormData] = useState({
     // Basic Info
     title: "",
     slug: "",
     weddingDate: "",
+    country: "India",
     city: "",
     venues: [],
 
@@ -77,9 +80,34 @@ const RealWeddingForm = ({ user, token }) => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
+    setFormData((prev) => {
+      if (name === "title") {
+        const slug = value
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-");
+        return {
+          ...prev,
+          title: value,
+          slug,
+        };
+      }
+      return {
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      };
+    });
+  };
+
+  const handleCountryChange = (e) => {
+    const country = e.target.value;
+    setSelectedCountry(country);
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      country: country,
+      city: ""
     }));
   };
 
@@ -134,7 +162,21 @@ const RealWeddingForm = ({ user, token }) => {
         console.error("Failed to load vendor types", err);
       }
     };
+
+    const loadCountries = async () => {
+      try {
+        const res = await axios.get("https://countriesnow.space/api/v0.1/countries/");
+        if (res.data && res.data.data) {
+          setCountries(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to load countries", err);
+      }
+    };
+
+
     loadVendorTypes();
+    loadCountries();
   }, []);
 
   const nextStep = () => {
@@ -185,16 +227,22 @@ const RealWeddingForm = ({ user, token }) => {
     data.set("status", "pending");
 
     try {
-      const response = await axios.post("https://happywedz.com/api/realwedding", data, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.post(
+        "https://happywedz.com/api/realwedding",
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setSuccess("Your wedding story has been submitted successfully!");
-      console.log("Server response:", response.data);
     } catch (err) {
-      setError(err.response?.data?.message || "An error occurred while submitting the form.");
+      setError(
+        err.response?.data?.message ||
+        "An error occurred while submitting the form."
+      );
       console.error("Submission error:", err);
     } finally {
       setIsLoading(false);
@@ -211,6 +259,9 @@ const RealWeddingForm = ({ user, token }) => {
             handleInputChange={handleInputChange}
             handleArrayChange={handleArrayChange}
             handleRemoveItem={handleRemoveItem}
+            handleCountryChange={handleCountryChange}
+            countries={countries}
+            selectedCountry={selectedCountry}
           />
         );
       case 1:
@@ -274,6 +325,11 @@ const RealWeddingForm = ({ user, token }) => {
           <BasicInfoStep
             formData={formData}
             handleInputChange={handleInputChange}
+            handleArrayChange={handleArrayChange}
+            handleRemoveItem={handleRemoveItem}
+            handleCountryChange={handleCountryChange}
+            countries={countries}
+            selectedCountry={selectedCountry}
           />
         );
     }
@@ -300,18 +356,23 @@ const RealWeddingForm = ({ user, token }) => {
             </div>
           ))}
         </div>
-
-        <form onSubmit={handleSubmit} onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            // Prevent accidental submit when pressing Enter in inputs
-            const tag = e.target.tagName.toLowerCase();
-            const type = e.target.getAttribute("type");
-            const isSubmit = type === "submit";
-            if (!isSubmit && (tag === "input" || tag === "textarea" || tag === "select")) {
-              e.preventDefault();
+        <form
+          onSubmit={handleSubmit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              // Prevent accidental submit when pressing Enter in inputs
+              const tag = e.target.tagName.toLowerCase();
+              const type = e.target.getAttribute("type");
+              const isSubmit = type === "submit";
+              if (
+                !isSubmit &&
+                (tag === "input" || tag === "textarea" || tag === "select")
+              ) {
+                e.preventDefault();
+              }
             }
-          }
-        }}>
+          }}
+        >
           {/* Render current step */}
           {error && (
             <div className="alert alert-danger" role="alert">
@@ -347,10 +408,20 @@ const RealWeddingForm = ({ user, token }) => {
                     Next <FiChevronRight />
                   </button>
                 ) : (
-                  <button type="submit" className="btn-next" disabled={isLoading}>
+                  <button
+                    type="submit"
+                    className="btn-next"
+                    disabled={isLoading}
+                  >
                     {isLoading ? (
-                      <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                    ) : "Submit for Approval"}
+                      <span
+                        className="spinner-border spinner-border-sm"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
+                    ) : (
+                      "Submit for Approval"
+                    )}
                   </button>
                 )}
               </div>
@@ -363,7 +434,15 @@ const RealWeddingForm = ({ user, token }) => {
 };
 
 // Step Components
-const BasicInfoStep = ({ formData, handleInputChange, handleArrayChange, handleRemoveItem }) => {
+const BasicInfoStep = ({
+  formData,
+  handleInputChange,
+  handleArrayChange,
+  handleRemoveItem,
+  handleCountryChange,
+  countries,
+  selectedCountry,
+}) => {
   return (
     <div className="form-card">
       <h2 className="form-section-title">
@@ -377,8 +456,19 @@ const BasicInfoStep = ({ formData, handleInputChange, handleArrayChange, handleR
           className="form-control"
           name="title"
           value={formData.title}
-          onChange={handleInputChange}
-          placeholder="e.g., Emma and James' Romantic Beach Wedding"
+          onChange={(e) => {
+            handleInputChange(e);
+
+            // Auto-generate slug from title
+            const newTitle = e.target.value;
+            const slug = newTitle
+              .toLowerCase()
+              .trim()
+              .replace(/[^a-z0-9\s-]/g, "")
+              .replace(/\s+/g, "-")
+              .replace(/-+/g, "-");
+          }}
+          placeholder="e.g., krishna and Radha Romantic Beach Wedding"
         />
       </div>
 
@@ -389,10 +479,10 @@ const BasicInfoStep = ({ formData, handleInputChange, handleArrayChange, handleR
           className="form-control"
           name="slug"
           value={formData.slug}
-          onChange={handleInputChange}
+          disabled
           placeholder="e.g., emma-james-beach-wedding"
         />
-        <small className="text-muted">
+        <small className="form-text text-muted">
           This will be used for the wedding story URL
         </small>
       </div>
@@ -410,19 +500,37 @@ const BasicInfoStep = ({ formData, handleInputChange, handleArrayChange, handleR
         </div>
 
         <div className="form-group">
-          <label className="form-label">City</label>
+          <label className="form-label">Country</label>
           <select
+            className="form-control"
+            name="country"
+            value={selectedCountry}
+            onChange={handleCountryChange}
+          >
+            <option value="">Select a country</option>
+            {countries.map((country, index) => (
+              <option key={index} value={country.country}>
+                {country.country}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="form-row">
+        <div className="form-group">
+          <label className="form-label">City</label>
+          <input
+            type="text"
             className="form-control"
             name="city"
             value={formData.city}
             onChange={handleInputChange}
-          >
-            <option value="">Select a city</option>
-            <option value="bali">Bali, Indonesia</option>
-            <option value="paris">Paris, France</option>
-            <option value="tuscany">Tuscany, Italy</option>
-            <option value="santorini">Santorini, Greece</option>
-          </select>
+            placeholder="Enter your city (e.g., Mumbai, Delhi, New York)"
+          />
+          <small className="form-text text-muted">
+            Enter the city where your wedding took place
+          </small>
         </div>
       </div>
 
@@ -549,7 +657,12 @@ const WeddingStoryStep = ({ formData, handleInputChange }) => {
 
 // Small controlled creator for Events
 const EventCreator = ({ onAdd }) => {
-  const [local, setLocal] = useState({ name: "", date: "", venue: "", description: "" });
+  const [local, setLocal] = useState({
+    name: "",
+    date: "",
+    venue: "",
+    description: "",
+  });
   const canAdd = local.name && local.date && local.venue;
   return (
     <div className="mb-3 p-3 border rounded">
@@ -562,7 +675,7 @@ const EventCreator = ({ onAdd }) => {
             value={local.name}
             onChange={(e) => setLocal({ ...local, name: e.target.value })}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && canAdd) {
+              if (e.key === "Enter" && canAdd) {
                 e.preventDefault();
                 onAdd({ ...local });
                 setLocal({ name: "", date: "", venue: "", description: "" });
@@ -579,7 +692,7 @@ const EventCreator = ({ onAdd }) => {
             value={local.date}
             onChange={(e) => setLocal({ ...local, date: e.target.value })}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && canAdd) {
+              if (e.key === "Enter" && canAdd) {
                 e.preventDefault();
                 onAdd({ ...local });
                 setLocal({ name: "", date: "", venue: "", description: "" });
@@ -595,7 +708,7 @@ const EventCreator = ({ onAdd }) => {
             value={local.venue}
             onChange={(e) => setLocal({ ...local, venue: e.target.value })}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && canAdd) {
+              if (e.key === "Enter" && canAdd) {
                 e.preventDefault();
                 onAdd({ ...local });
                 setLocal({ name: "", date: "", venue: "", description: "" });
@@ -637,7 +750,9 @@ const VendorCreator = ({ vendorTypes = [], onAdd }) => {
   const [local, setLocal] = useState({ typeId: "", type: "", name: "" });
   useEffect(() => {
     if (local.typeId && vendorTypes?.length) {
-      const found = vendorTypes.find((v) => String(v.id) === String(local.typeId));
+      const found = vendorTypes.find(
+        (v) => String(v.id) === String(local.typeId)
+      );
       setLocal((prev) => ({ ...prev, type: found?.name || prev.type }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -657,7 +772,9 @@ const VendorCreator = ({ vendorTypes = [], onAdd }) => {
           >
             <option value="">Select type</option>
             {vendorTypes.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
             ))}
           </select>
         </div>
@@ -733,7 +850,12 @@ const EventsStep = ({ formData, handleArrayChange, handleRemoveItem }) => {
   );
 };
 
-const VendorsStep = ({ formData, handleArrayChange, handleRemoveItem, vendorTypes }) => {
+const VendorsStep = ({
+  formData,
+  handleArrayChange,
+  handleRemoveItem,
+  vendorTypes,
+}) => {
   return (
     <div className="form-card">
       <h2 className="form-section-title">
@@ -743,7 +865,10 @@ const VendorsStep = ({ formData, handleArrayChange, handleRemoveItem, vendorType
       <div className="form-group">
         <label className="form-label">Add Your Wedding Vendors</label>
 
-        <VendorCreator vendorTypes={vendorTypes} onAdd={(v) => handleArrayChange("vendors", v)} />
+        <VendorCreator
+          vendorTypes={vendorTypes}
+          onAdd={(v) => handleArrayChange("vendors", v)}
+        />
 
         {formData.vendors.length > 0 && (
           <div className="mt-3">
@@ -770,7 +895,12 @@ const VendorsStep = ({ formData, handleArrayChange, handleRemoveItem, vendorType
   );
 };
 
-const GalleryStep = ({ formData, handleInputChange, handleFilesAdd, handleRemoveFile }) => {
+const GalleryStep = ({
+  formData,
+  handleInputChange,
+  handleFilesAdd,
+  handleRemoveFile,
+}) => {
   return (
     <div className="form-card">
       <h2 className="form-section-title">
@@ -813,9 +943,18 @@ const GalleryStep = ({ formData, handleInputChange, handleFilesAdd, handleRemove
               <img
                 src={URL.createObjectURL(formData.coverPhoto)}
                 alt="Cover"
-                style={{ width: 120, height: 80, objectFit: "cover", borderRadius: 6 }}
+                style={{
+                  width: 120,
+                  height: 80,
+                  objectFit: "cover",
+                  borderRadius: 6,
+                }}
               />
-              <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveFile("coverPhoto")}>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-danger"
+                onClick={() => handleRemoveFile("coverPhoto")}
+              >
                 <FiX />
               </button>
             </div>
@@ -857,11 +996,20 @@ const GalleryStep = ({ formData, handleInputChange, handleFilesAdd, handleRemove
         {formData.highlightPhotos?.length > 0 && (
           <div className="mt-2 d-flex flex-wrap gap-2">
             {formData.highlightPhotos.map((file, idx) => (
-              <div key={idx} className="position-relative" style={{ width: 100 }}>
+              <div
+                key={idx}
+                className="position-relative"
+                style={{ width: 100 }}
+              >
                 <img
                   src={URL.createObjectURL(file)}
                   alt={`Highlight ${idx + 1}`}
-                  style={{ width: 100, height: 80, objectFit: "cover", borderRadius: 6 }}
+                  style={{
+                    width: 100,
+                    height: 80,
+                    objectFit: "cover",
+                    borderRadius: 6,
+                  }}
                 />
                 <button
                   type="button"
@@ -911,11 +1059,20 @@ const GalleryStep = ({ formData, handleInputChange, handleFilesAdd, handleRemove
         {formData.allPhotos?.length > 0 && (
           <div className="mt-2 d-flex flex-wrap gap-2">
             {formData.allPhotos.map((file, idx) => (
-              <div key={idx} className="position-relative" style={{ width: 100 }}>
+              <div
+                key={idx}
+                className="position-relative"
+                style={{ width: 100 }}
+              >
                 <img
                   src={URL.createObjectURL(file)}
                   alt={`All ${idx + 1}`}
-                  style={{ width: 100, height: 80, objectFit: "cover", borderRadius: 6 }}
+                  style={{
+                    width: 100,
+                    height: 80,
+                    objectFit: "cover",
+                    borderRadius: 6,
+                  }}
                 />
                 <button
                   type="button"
@@ -934,7 +1091,12 @@ const GalleryStep = ({ formData, handleInputChange, handleFilesAdd, handleRemove
   );
 };
 
-const HighlightsStep = ({ formData, handleInputChange, handleArrayChange, handleRemoveItem }) => {
+const HighlightsStep = ({
+  formData,
+  handleInputChange,
+  handleArrayChange,
+  handleRemoveItem,
+}) => {
   return (
     <div className="form-card">
       <h2 className="form-section-title">

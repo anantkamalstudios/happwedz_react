@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Alert } from "react-bootstrap";
 import {
   Inbox,
   Mail,
@@ -18,16 +19,96 @@ import {
   Star,
 } from "lucide-react";
 
+import { useSelector } from "react-redux";
+
+const API_BASE_URL = "https://happywedz.com";
+
 const EnquiryManagement = () => {
   const [activeFolder, setActiveFolder] = useState("inbox");
   const [searchTerm, setSearchTerm] = useState("");
+  const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedLead, setSelectedLead] = useState(null);
+  const [readLeadIds, setReadLeadIds] = useState(new Set());
+  const [error, setError] = useState(null);
+  const { token: vendorToken } = useSelector((state) => state.vendorAuth);
+
+  useEffect(() => {
+    if (!vendorToken) {
+      setError("Authentication token not found. Please log in.");
+      setLoading(false);
+      return;
+    }
+
+    const fetchLeads = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch(
+          `${API_BASE_URL}/api/request-pricing/vendor/dashboard`,
+          {
+            headers: { Authorization: `Bearer ${vendorToken}` },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch leads.");
+        }
+
+        const data = await response.json();
+        if (data && Array.isArray(data.requests)) {
+          setLeads(data.requests);
+          if (data.requests.length > 0) {
+            setSelectedLead(data.requests[0]); // Select the first lead by default
+          }
+        } else {
+          setLeads([]);
+        }
+      } catch (err) {
+        setError(err.message);
+        setLeads([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeads();
+  }, [vendorToken]);
+
+  const handleLeadClick = (lead) => {
+    setSelectedLead(lead);
+    // Add the lead's ID to the set of read leads
+    setReadLeadIds((prev) => new Set(prev).add(lead.id));
+  };
+
+  const filteredLeads = useMemo(() => {
+    if (activeFolder === "read") {
+      return leads.filter((l) => readLeadIds.has(l.id));
+    }
+    if (activeFolder === "unread") {
+      return leads.filter((l) => !readLeadIds.has(l.id));
+    }
+    // Default to "inbox"
+    return leads;
+  }, [activeFolder, leads, readLeadIds]);
 
   const folders = [
-    { id: "inbox", name: "Inbox", count: 0 },
-    { id: "unread", name: "Unread", count: 0 },
-    { id: "read", name: "Read", count: 0 },
+    { id: "inbox", name: "Inbox", count: filteredLeads.length },
+    {
+      id: "unread",
+      name: "Unread",
+      count: leads.filter((l) => !readLeadIds.has(l.id)).length,
+    },
+    { id: "read", name: "Read", count: readLeadIds.size },
     { id: "archived", name: "Archived", count: 0 },
   ];
+
+  const stats = {
+    replied: leads.filter((l) => l.status === "replied").length,
+    booked: leads.filter((l) => l.status === "booked").length,
+    discarded: leads.filter((l) => l.status === "discarded").length,
+    avgResponseTime: "-- : --",
+  };
 
   const statuses = [
     { id: "pending", name: "Pending", count: 0, color: "#f39c12" },
@@ -46,13 +127,6 @@ const EnquiryManagement = () => {
       premium: true,
     },
   ];
-
-  const stats = {
-    replied: 0,
-    booked: 0,
-    discarded: 0,
-    avgResponseTime: "-- : --",
-  };
 
   return (
     <div className="enquiry-management-container">
@@ -138,8 +212,8 @@ const EnquiryManagement = () => {
                 {/* Main Content */}
                 <div className="col-md-10">
                   <div className="container">
-                    {/* Stats Section */}
-                    <div className="stats-section">
+                    {/* Stats Row at Top */}
+                    <div className="stats-section mb-4 d-flex flex-row gap-3 justify-content-start">
                       <div className="stat-card">
                         <div className="stat-number">{stats.replied}</div>
                         <div className="stat-label">Replied</div>
@@ -160,27 +234,142 @@ const EnquiryManagement = () => {
                       </div>
                     </div>
 
-                    {/* Messages Section */}
-                    <div className="messages-section">
-                      <div className="messages-header">
-                        <h5 className="messages-title">
-                          {folders.find((f) => f.id === activeFolder)?.name ||
-                            "Messages"}
-                        </h5>
-                        <button className="btn btn-link p-0">
-                          <MoreVertical size={18} />
-                        </button>
+                    {/* Leads Row at Top */}
+                    <div className="leads-list-row mb-4">
+                      <div className="d-flex flex-row overflow-auto gap-3">
+                        {loading ? (
+                          <div className="text-center py-5 w-100">
+                            <div
+                              className="spinner-border text-primary"
+                              role="status"
+                            >
+                              <span className="visually-hidden">
+                                Loading...
+                              </span>
+                            </div>
+                          </div>
+                        ) : error ? (
+                          <Alert variant="danger">{error}</Alert>
+                        ) : filteredLeads.length === 0 ? (
+                          <div className="empty-state w-100">
+                            <Inbox className="empty-icon" />
+                            <div className="empty-title">No messages found</div>
+                            <div className="empty-message">
+                              No messages have been found in this folder.
+                              <br />
+                              New enquiries will appear here when they arrive.
+                            </div>
+                          </div>
+                        ) : (
+                          filteredLeads.map((lead) => (
+                            <div
+                              key={lead.id}
+                              className={`lead-item card ${
+                                selectedLead?.id === lead.id
+                                  ? "active border-primary"
+                                  : ""
+                              }`}
+                              style={{ minWidth: 250, cursor: "pointer" }}
+                              onClick={() => handleLeadClick(lead)}
+                            >
+                              <div className="card-body">
+                                <div className="d-flex justify-content-between">
+                                  <h6 className="card-title mb-1">
+                                    {lead.firstName} {lead.lastName}
+                                  </h6>
+                                  <small className="text-muted">
+                                    {new Date(
+                                      lead.createdAt
+                                    ).toLocaleDateString()}
+                                  </small>
+                                </div>
+                                <p className="card-text small text-muted mb-1">
+                                  {lead.email} | {lead.phone}
+                                </p>
+                                <p className="card-text small">
+                                  {lead.message || "No message provided."}
+                                </p>
+                                <p className="card-text small fw-bold">
+                                  Event Date:{" "}
+                                  {new Date(
+                                    lead.eventDate
+                                  ).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          ))
+                        )}
                       </div>
+                    </div>
 
-                      <div className="empty-state">
-                        <Mail className="empty-icon" />
-                        <div className="empty-title">No messages found</div>
-                        <div className="empty-message">
-                          No messages have been found in this folder.
-                          <br />
-                          New enquiries will appear here when they arrive.
-                        </div>
-                      </div>
+                    {/* Lead Detail View Below */}
+                    <div className="lead-detail-view p-4 bg-white rounded h-100">
+                      {selectedLead ? (
+                        <>
+                          <div className="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                              <h4 className="mb-0">
+                                {selectedLead.firstName} {selectedLead.lastName}
+                              </h4>
+                              <a
+                                href={`mailto:${selectedLead.email}`}
+                                className="text-muted"
+                              >
+                                {selectedLead.email}
+                              </a>
+                            </div>
+                            <div className="d-flex gap-2">
+                              <button className="btn btn-sm btn-outline-secondary">
+                                <Archive size={16} />
+                              </button>
+                              <button className="btn btn-sm btn-outline-danger">
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="lead-meta mb-4">
+                            <div className="meta-item">
+                              <Calendar size={16} />
+                              <span>
+                                Event:{" "}
+                                {new Date(
+                                  selectedLead.eventDate
+                                ).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="meta-item">
+                              <Clock size={16} />
+                              <span>
+                                Received:{" "}
+                                {new Date(
+                                  selectedLead.createdAt
+                                ).toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="lead-message">
+                            <p>
+                              {selectedLead.message || "No message provided."}
+                            </p>
+                          </div>
+                          <div className="lead-actions mt-auto pt-4">
+                            <button className="btn btn-primary w-100">
+                              <MessageCircleReply className="me-2" /> Reply
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        !loading && (
+                          <div className="empty-state h-100">
+                            <MailOpen className="empty-icon" />
+                            <div className="empty-title">Select a message</div>
+                            <div className="empty-message">
+                              Choose a message from the list to view its
+                              details.
+                            </div>
+                          </div>
+                        )
+                      )}
                     </div>
                   </div>
                 </div>

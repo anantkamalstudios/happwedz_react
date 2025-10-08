@@ -1,240 +1,152 @@
-// import React, { useEffect } from "react";
-// import Swiper from "swiper/bundle";
-// import "swiper/css/bundle";
-// import venues from "../../data/venue";
-// import { Link } from "react-router-dom";
-
-// const VenueSlider = () => {
-//   useEffect(() => {
-//     new Swiper(".venueSwiper", {
-//       slidesPerView: "auto",
-//       loop: true,
-//       speed: 8000,
-//       spaceBetween: 20,
-//       slidesPerView: "auto",
-//       autoplay: {
-//         delay: 0,
-//         disableOnInteraction: false,
-//       },
-//       freeMode: true,
-//       freeModeMomentum: false,
-//       breakpoints: {
-//         0: {
-//           slidesPerView: 1.2,
-//         },
-//         576: {
-//           slidesPerView: 1.8,
-//         },
-//         768: {
-//           slidesPerView: 2.5,
-//         },
-//         992: {
-//           slidesPerView: 3.2,
-//         },
-//       },
-//     });
-//   }, []);
-
-//   return (
-//     <div className="container py-5">
-//       <div className="d-flex justify-content-around align-items-center">
-//         <div className="col-md-10">
-//           <h3 className="fw-bold mb-4 text-dark">Popular Venue Searches</h3>
-//         </div>
-//         <div className="col-md-2 ">
-//           <Link to="/venues" className="text-decoration-none">
-//             <h6 className="fw-bold mb-4 text-dark">
-//               View All Venue{" "}
-//               <svg
-//                 xmlns="http://www.w3.org/2000/svg"
-//                 width="20"
-//                 height="20"
-//                 viewBox="0 0 24 24"
-//                 fill="none"
-//                 stroke="currentColor"
-//                 strokeWidth="2"
-//                 strokeLinecap="round"
-//                 strokeLinejoin="round"
-//                 className="primary-text lucide lucide-chevron-right-icon lucide-chevron-right"
-//               >
-//                 <path d="m9 18 6-6-6-6" />
-//               </svg>
-//             </h6>
-//           </Link>
-//         </div>
-//       </div>
-
-//       <div className="swiper venueSwiper">
-//         <div className="venue-swiper-wrapper swiper-wrapper">
-//           {venues.map((venue, index) => (
-//             <div
-//               className="swiper-slide"
-//               key={index}
-//               style={{ width: "250px" }}
-//             >
-//               <div className="card border-0 shadow-sm rounded-4 overflow-hidden">
-//                 <img
-//                   src={venue.image}
-//                   className="card-img-top rounded-4 venues-swiper-img"
-//                   alt={venue.name}
-//                 />
-//                 <div className="row">
-//                   <div className="d-flex">
-//                     <div className="card-body">
-//                       <h6 className="card-title fw-bold mb-1">{venue.name}</h6>
-//                       <p className="card-text text-muted small">
-//                         {venue.location}
-//                       </p>
-//                     </div>
-//                     <div className="card-body text-end">
-//                       <svg
-//                         xmlns="http://www.w3.org/2000/svg"
-//                         width="18"
-//                         height="18"
-//                         viewBox="0 0 24 24"
-//                         fill="orange"
-//                         stroke="orange"
-//                         strokeWidth="2"
-//                         strokeLinecap="round"
-//                         strokeLinejoin="round"
-//                         className="lucide lucide-star-icon lucide-star"
-//                       >
-//                         <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />
-//                       </svg>{" "}
-//                       <span className="small">5.0</span>
-//                     </div>
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default VenueSlider;
-import React, { useEffect, useState } from "react";
-import Swiper from "swiper/bundle";
-import "swiper/css/bundle";
+import React, { useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay } from "swiper/modules";
+import "swiper/css";
 import { Link } from "react-router-dom";
-import axios from "axios";
+
+const venues = [
+  {
+    id: 1,
+    name: "The Regent",
+    image:
+      "https://img.freepik.com/free-photo/decorated-banquet-hall-with-served-round-table-with-hydrangea-centerpiece-chiavari-chairs_8353-10059.jpg?w=740&q=80",
+    rating: 4.93,
+    reviews: 111,
+  },
+  {
+    id: 2,
+    name: "The Regent",
+    image:
+      "https://img.freepik.com/free-photo/decorated-banquet-hall-with-served-round-table-with-hydrangea-centerpiece-chiavari-chairs_8353-10059.jpg?w=740&q=80",
+    rating: 4.93,
+    reviews: 111,
+  },
+  {
+    id: 3,
+    name: "The Regent",
+    image:
+      "https://img.freepik.com/free-photo/decorated-banquet-hall-with-served-round-table-with-hydrangea-centerpiece-chiavari-chairs_8353-10059.jpg?w=740&q=80",
+    rating: 4.93,
+    reviews: 111,
+  },
+  {
+    id: 4,
+    name: "Grand Palace",
+    image:
+      "https://img.freepik.com/free-photo/decorated-banquet-hall-with-served-round-table-with-hydrangea-centerpiece-chiavari-chairs_8353-10059.jpg?w=740&q=80",
+    rating: 4.85,
+    reviews: 98,
+  },
+];
 
 const VenueSlider = () => {
-  const [venues, setVenues] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [activeFilter, setActiveFilter] = useState("Top Rated");
 
-  useEffect(() => {
-    const fetchVenues = async () => {
-      try {
-        const response = await axios.get(
-          "https://happywedz.com/api/home/PopularVenues"
-        );
-        setVenues(response.data);
-      } catch (error) {
-        console.error("Error fetching popular venues:", error);
-      }
-    };
+  const filterOptions = [
+    { name: "Top Rated", slug: "top-rated" },
+    { name: "Resorts", slug: "top-rated" },
+    { name: "Banquet Halls", slug: "top-rated" },
+    { name: "Farmhouses", slug: "top-rated" },
+    { name: "Recommendation", slug: "ai-recommandation" },
+  ];
 
-    fetchVenues();
-  }, []);
-
-  useEffect(() => {
-    if (venues.length > 0) {
-      new Swiper(".venueSwiper", {
-        slidesPerView: "auto",
-        loop: true,
-        speed: 8000,
-        spaceBetween: 20,
-        autoplay: {
-          delay: 0,
-          disableOnInteraction: false,
-        },
-        freeMode: true,
-        freeModeMomentum: false,
-        breakpoints: {
-          0: { slidesPerView: 1.2 },
-          576: { slidesPerView: 1.8 },
-          768: { slidesPerView: 2.5 },
-          992: { slidesPerView: 3.2 },
-        },
-      });
-    }
-  }, [venues]);
+  const toggleFavorite = (id) => {
+    setFavorites((prev) =>
+      prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]
+    );
+  };
 
   return (
-    <div className="container py-5">
-      <div className="d-flex justify-content-around align-items-center">
-        <div className="col-md-10">
-          <h3 className="fw-bold mb-4 text-dark">Popular Venue Searches</h3>
-        </div>
-        <div className="col-md-2">
-          <Link to="/venues" className="text-decoration-none">
-            <h6 className="fw-bold mb-4 text-dark">
-              View All Venue{" "}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="primary-text lucide lucide-chevron-right-icon lucide-chevron-right"
-              >
-                <path d="m9 18 6-6-6-6" />
-              </svg>
-            </h6>
-          </Link>
-        </div>
+    <div className="venues-slider-container">
+      {/* Header */}
+      <div className="venues-slider-header">
+        <h2 className="venues-slider-title">Pick your Venue</h2>
+        <Link to="/venues" className="venues-slider-see-more">
+          SEE MORE
+        </Link>
       </div>
 
-      <div className="swiper venueSwiper">
-        <div className="venue-swiper-wrapper swiper-wrapper">
-          {venues.map((venue, index) => (
-            <div
-              className="swiper-slide"
-              key={index}
-              style={{ width: "250px" }}
-            >
-              <div className="card border-0 shadow-sm rounded-4 overflow-hidden">
+      {/* Filters */}
+      <div className="venues-slider-filters px-2 fs-12">
+        {filterOptions.map((filter, index) => (
+          <Link
+            key={index}
+            onClick={() => setActiveFilter(filter.name)}
+            className={`venues-slider-filter-btn ${
+              activeFilter === filter.name ? "active" : ""
+            }`}
+            to={`/${filter.slug}`}
+            style={{ textDecoration: "none" }}
+          >
+            {filter.name}
+          </Link>
+        ))}
+      </div>
+
+      <Swiper
+        modules={[Autoplay]}
+        spaceBetween={30}
+        slidesPerView={1}
+        navigation={false}
+        autoplay={{
+          delay: 3000,
+          disableOnInteraction: false,
+        }}
+        breakpoints={{
+          576: { slidesPerView: 1 },
+          768: { slidesPerView: 2 },
+          992: { slidesPerView: 3 },
+        }}
+      >
+        {venues.map((venue) => (
+          <SwiperSlide key={venue.id}>
+            <div className="venues-slider-card shadow-sm">
+              <div className="venues-slider-image-container">
                 <img
-                  src={venue.url}
-                  className="card-img-top rounded-4 venues-swiper-img"
-                  alt={venue.title}
+                  src={venue.image}
+                  alt={venue.name}
+                  className="venues-slider-image"
                 />
-                <div className="row">
-                  <div className="d-flex">
-                    <div className="card-body">
-                      <h6 className="card-title fw-bold mb-1">{venue.title}</h6>
-                      <p className="card-text text-muted small">{venue.city}</p>
-                    </div>
-                    <div className="card-body text-end">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="orange"
-                        stroke="orange"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="lucide lucide-star-icon lucide-star"
-                      >
-                        <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />
-                      </svg>{" "}
-                      <span className="small">5.0</span>
-                    </div>
-                  </div>
+                <button
+                  onClick={() => toggleFavorite(venue.id)}
+                  className="venues-slider-favorite-btn"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill={favorites.includes(venue.id) ? "#e91e63" : "none"}
+                    stroke={favorites.includes(venue.id) ? "#e91e63" : "white"}
+                    strokeWidth="2"
+                    className="venues-slider-heart-icon"
+                  >
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
+                </button>
+              </div>
+
+              <div className="venues-slider-content">
+                <h5 className="venues-slider-name">{venue.name}</h5>
+                <div className="venues-slider-rating">
+                  <svg
+                    className="venues-slider-star"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                  </svg>
+                  <span className="venues-slider-rating-number">
+                    {venue.rating}
+                  </span>
+                  <span className="venues-slider-review-count">
+                    ({venue.reviews} reviews)
+                  </span>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
     </div>
   );
 };

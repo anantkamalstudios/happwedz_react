@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useToast } from "../../layouts/toasts/Toast";
+
+const API_BASE_URL = "https://happywedz.com";
 
 export default function VendorLeadsPage() {
   const [rows, setRows] = useState([]);
@@ -15,6 +18,7 @@ export default function VendorLeadsPage() {
     message: "",
   });
   const { token: vendorToken } = useSelector((state) => state.vendorAuth);
+  const { addToast } = useToast();
 
   useEffect(() => {
     if (!vendorToken) {
@@ -29,16 +33,21 @@ export default function VendorLeadsPage() {
         setLoading(true);
         setError(null);
 
-        const response = await fetch("/api-main/request-pricing/all", {
-          headers: { Authorization: `Bearer ${vendorToken}` },
-        });
+        const response = await fetch(
+          `${API_BASE_URL}/api/request-pricing/vendor/dashboard`,
+          {
+            headers: { Authorization: `Bearer ${vendorToken}` },
+          }
+        );
 
         if (!response.ok) throw new Error("Failed to fetch leads.");
 
         const data = await response.json();
         // Check for a 'leads' property in the response object first.
-        if (data && Array.isArray(data.leads)) {
-          setRows(data.leads);
+        if (data && Array.isArray(data.requests)) {
+          setRows(data.requests);
+        } else if (data && Array.isArray(data.leads)) {
+          setRows(data.leads); // Keep old fallbacks just in case
         } else if (data && Array.isArray(data.data)) {
           // Fallback for { data: [...] }
           setRows(data.data);
@@ -94,10 +103,11 @@ export default function VendorLeadsPage() {
         services: formData.service,
         validTill: formData.date,
         message: formData.message,
+        userId: activeRow.userId,
       };
 
       const response = await fetch(
-        `/api-main/request-pricing/requests/${activeRow.id}/quotation`,
+        `${API_BASE_URL}/api/request-pricing/requests/${activeRow.id}/quotation`,
         {
           method: "POST",
           headers: {
@@ -113,8 +123,9 @@ export default function VendorLeadsPage() {
       if (!response.ok) {
         throw new Error(result.message || "Failed to send quotation.");
       }
+      addToast("Quotation sent successfully!", "success");
 
-      alert(result.message || "Quotation sent successfully!");
+      // alert(result.message || "Quotation sent successfully!");
       closeModal();
     } catch (err) {
       alert(`Error: ${err.message}`);
@@ -288,3 +299,138 @@ export default function VendorLeadsPage() {
     </div>
   );
 }
+
+// import React, { useState, useEffect } from "react";
+// import { useSelector } from "react-redux";
+
+// const API_BASE_URL = "https://happywedz.com";
+
+// export default function VendorLeadsPage() {
+//   const [rows, setRows] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+//   const [showModal, setShowModal] = useState(false);
+//   const [activeRow, setActiveRow] = useState(null);
+//   const [submitting, setSubmitting] = useState(false);
+//   const [formData, setFormData] = useState({
+//     price: "",
+//     service: "",
+//     date: "",
+//     message: "",
+//   });
+
+//   const { token: vendorToken, vendor } = useSelector(
+//     (state) => state.vendorAuth
+//   );
+
+//   useEffect(() => {
+//     if (!vendorToken) {
+//       setError("Authentication token not found. Please log in.");
+//       setLoading(false);
+//       setRows([]);
+//       return;
+//     }
+
+//     const fetchLeads = async () => {
+//       try {
+//         setLoading(true);
+//         setError(null);
+
+//         const response = await fetch(
+//           `${API_BASE_URL}/api/request-pricing/all`,
+//           {
+//             headers: { Authorization: `Bearer ${vendorToken}` },
+//           }
+//         );
+
+//         if (!response.ok) throw new Error("Failed to fetch leads.");
+
+//         const data = await response.json();
+
+//         let allLeads = [];
+//         if (Array.isArray(data.requests)) allLeads = data.requests;
+//         else if (Array.isArray(data.leads)) allLeads = data.leads;
+//         else if (Array.isArray(data.data)) allLeads = data.data;
+//         else if (Array.isArray(data)) allLeads = data;
+
+//         // ✅ filter only this vendor’s leads
+//         const filtered = vendor?.id
+//           ? allLeads.filter((lead) => lead.vendorId === vendor.id)
+//           : allLeads;
+
+//         setRows(filtered);
+//       } catch (err) {
+//         setError(err.message);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     fetchLeads();
+//   }, [vendorToken, vendor]);
+
+//   // --- modal stuff same as before ---
+
+//   return (
+//     <div className="container my-5">
+//       <h3 className="mb-4">My Leads</h3>
+//       <div className="table-responsive shadow-sm bg-white rounded">
+//         <table className="table align-middle mb-0">
+//           <thead>
+//             <tr>
+//               <th>Name</th>
+//               <th>Email</th>
+//               <th>Phone</th>
+//               <th>Event Date</th>
+//               <th>Message</th>
+//               <th></th>
+//             </tr>
+//           </thead>
+//           <tbody>
+//             {loading && (
+//               <tr>
+//                 <td colSpan="6" className="text-center py-4">
+//                   <div className="spinner-border text-primary" />
+//                 </td>
+//               </tr>
+//             )}
+//             {error && (
+//               <tr>
+//                 <td colSpan="6" className="text-center text-danger py-4">
+//                   {error}
+//                 </td>
+//               </tr>
+//             )}
+//             {!loading &&
+//               !error &&
+//               rows.map((row) => (
+//                 <tr key={row.id}>
+//                   <td>
+//                     {row.firstName} {row.lastName}
+//                   </td>
+//                   <td>{row.email}</td>
+//                   <td>{row.phone}</td>
+//                   <td>{new Date(row.eventDate).toLocaleDateString()}</td>
+//                   <td className="text-wrap">{row.message}</td>
+//                   <td className="text-end">
+//                     <button
+//                       className="btn btn-pink"
+//                       onClick={() => setShowModal(true)}
+//                     >
+//                       Send quotation
+//                     </button>
+//                   </td>
+//                 </tr>
+//               ))}
+//             {!loading && !error && rows.length === 0 && (
+//               <tr>
+//                 <td colSpan="6" className="text-center text-muted py-4">
+//                   No leads for your vendor account.
+//                 </td>
+//               </tr>
+//             )}
+//           </tbody>
+//         </table>
+//       </div>
+//     </div>
+//   );
+// }

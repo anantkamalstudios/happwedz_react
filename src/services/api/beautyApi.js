@@ -1,14 +1,21 @@
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.DEV ? "/api" : "https://www.happywedz.com/ai/api");
+  (import.meta.env.DEV ? "/ai" : "https://www.happywedz.com/ai");
 
 class BeautyApiService {
   constructor() {
-    this.baseURL = API_BASE_URL;
+    this.baseURL = API_BASE_URL.replace(/\/+$/, ""); // Remove trailing slash
+  }
+
+  // Helper to safely join base URL and path
+  buildUrl(path) {
+    const cleanPath = path.replace(/^\/+/, ""); // Remove leading slash from path
+    return `${this.baseURL}/${cleanPath}`;
   }
 
   async makeJsonRequest(path, options = {}) {
-    const url = `${this.baseURL}${path}`;
+    const url = this.buildUrl(path);
+
     const defaultOptions = {
       headers: {
         "Content-Type": "application/json",
@@ -23,18 +30,22 @@ class BeautyApiService {
         ...(options.headers || {}),
       },
     };
+
     const response = await fetch(url, config);
+
     if (!response.ok) {
       const text = await response.text().catch(() => "");
       throw new Error(
         `HTTP ${response.status}: ${text || response.statusText}`
       );
     }
+
     return response.json().catch(() => ({}));
   }
 
   async makeFormRequest(path, formData, options = {}) {
-    const url = `${this.baseURL}${path}`;
+    const url = this.buildUrl(path);
+
     const config = {
       method: "POST",
       body: formData,
@@ -44,13 +55,16 @@ class BeautyApiService {
         ...((options && options.headers) || {}),
       },
     };
+
     const response = await fetch(url, config);
+
     if (!response.ok) {
       const text = await response.text().catch(() => "");
       throw new Error(
         `HTTP ${response.status}: ${text || response.statusText}`
       );
     }
+
     return response.json().catch(() => ({}));
   }
 
@@ -58,6 +72,7 @@ class BeautyApiService {
     const qs = new URLSearchParams();
     if (category) qs.set("category", category);
     if (detailedCategory) qs.set("detailed_category", detailedCategory);
+
     return this.makeJsonRequest(`/products/filter_products?${qs.toString()}`, {
       method: "GET",
     });
@@ -68,11 +83,11 @@ class BeautyApiService {
     form.append("image", file);
     form.append("file", file);
     form.append("image_type", imageType);
-    return this.makeFormRequest(`/images`, form);
+    return this.makeFormRequest("/images", form);
   }
 
   async applyMakeup(payload) {
-    return this.makeJsonRequest(`/images/apply-makeup`, {
+    return this.makeJsonRequest("/images/apply-makeup", {
       method: "POST",
       body: JSON.stringify(payload),
     });

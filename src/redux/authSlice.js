@@ -1,11 +1,10 @@
-
 import { createSlice } from "@reduxjs/toolkit";
+import { vendorLogout } from "./vendorAuthSlice";
 
 const initialState = {
     user: JSON.parse(localStorage.getItem("user")) || null,
     token: localStorage.getItem("token") || null,
 };
-
 
 const authSlice = createSlice({
     name: "auth",
@@ -29,4 +28,9 @@ const authSlice = createSlice({
 });
 
 export const { setCredentials, logout } = authSlice.actions;
+export const loginUser = (payload) => (dispatch) => {
+    dispatch(vendorLogout());
+    dispatch(setCredentials(payload));
+};
+
 export default authSlice.reducer;

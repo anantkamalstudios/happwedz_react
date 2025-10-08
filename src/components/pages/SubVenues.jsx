@@ -16,7 +16,7 @@ const SubVenues = () => {
       .replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
-  const [view, setView] = useState("list");
+  const [view, setView] = useState("images");
 
   const toggleView = () => {
     setToggleSwitch(toggleSwitch === "grid" ? "list" : "grid");

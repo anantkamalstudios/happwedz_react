@@ -5,8 +5,7 @@ const API_BASE = "https://happywedz.com/api/vendor";
 export const vendorsApi = {
   getVendors: (params) =>
     axios.get(`${API_BASE}/list`, { params }).then((res) => res.data),
-  getVendorById: (id) =>
-    axios.get(`${API_BASE}/${id}`).then((res) => res.data),
+  getVendorById: (id) => axios.get(`${API_BASE}/${id}`).then((res) => res.data),
   createVendor: (data) =>
     axios.post(`${API_BASE}/create`, data).then((res) => res.data),
   updateVendor: (id, data) =>

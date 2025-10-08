@@ -1,6 +1,7 @@
 // src/pages/adminpanel/HomeAdmin.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import {
   Container,
   Row,
@@ -46,7 +47,6 @@ import {
   Legend,
 } from "chart.js";
 
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -58,6 +58,8 @@ ChartJS.register(
   Legend
 );
 
+const API_BASE_URL = "https://happywedz.com";
+
 const HomeAdmin = () => {
   const [dateFilter, setDateFilter] = useState("this_month");
   const [showFilter, setShowFilter] = useState(false);
@@ -66,39 +68,122 @@ const HomeAdmin = () => {
     key: "date",
     direction: "desc",
   });
+  const [leadCount, setLeadCount] = useState(0);
+  const [loadingLeads, setLoadingLeads] = useState(true);
+  const [stats, setStats] = useState({
+    impressions: 0,
+    profileViews: 0,
+    chartData: { labels: [], leads: [], impressions: [] },
+  });
+  const [loadingStats, setLoadingStats] = useState(true);
+  const { token: vendorToken } = useSelector((state) => state.vendorAuth || {});
+
+  useEffect(() => {
+    if (!vendorToken) {
+      setLoadingLeads(false);
+      return;
+    }
+
+    const fetchDashboardData = async () => {
+      try {
+        setLoadingLeads(true);
+        setLoadingStats(true); // We'll load stats and leads together
+
+        const response = await fetch(
+          `${API_BASE_URL}/api/request-pricing/vendor/dashboard`,
+          {
+            headers: { Authorization: `Bearer ${vendorToken}` },
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch leads.");
+        }
+
+        const data = await response.json();
+        const leads = data?.requests || [];
+
+        // 1. Set total lead count
+        setLeadCount(data?.count ?? leads.length);
+
+        // 2. Process leads for the chart
+        const leadsByDate = leads.reduce((acc, lead) => {
+          const date = new Date(lead.createdAt).toISOString().split("T")[0];
+          acc[date] = (acc[date] || 0) + 1;
+          return acc;
+        }, {});
+
+        // Create labels for the last 30 days
+        const labels = [];
+        for (let i = 29; i >= 0; i--) {
+          labels.push(
+            new Date(Date.now() - i * 24 * 60 * 60 * 1000)
+              .toISOString()
+              .split("T")[0]
+          );
+        }
+
+        const leadChartValues = labels.map((label) => leadsByDate[label] || 0);
+
+        // 3. Update stats state with new chart data
+        setStats((prev) => ({
+          ...prev, // Keep existing impressions/views if they come from another API
+          chartData: {
+            labels: labels.map((d) =>
+              new Date(d).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })
+            ),
+            leads: leadChartValues,
+            impressions: prev.chartData.impressions, // Preserve impressions data
+          },
+        }));
+      } catch (err) {
+        console.error("Error fetching leads count:", err);
+        setLeadCount(0); // Set to 0 on error
+      } finally {
+        setLoadingLeads(false);
+      }
+    };
+
+    fetchDashboardData();
+    // You can keep the separate fetchStats call if it provides different data like impressions.
+    // For this example, I've integrated leads data processing into one call.
+    // fetchStats();
+  }, [vendorToken]);
 
   // Stats data
   const statsData = {
     leads: {
       title: "Total Leads",
-      value: 142,
+      value: loadingLeads ? "..." : leadCount,
       change: "+12%",
       trend: "up",
-      daily_avg: 4.7,
+      // daily_avg: 4.7,
       icon: <FiUsers size={24} />,
     },
     impressions: {
       title: "Impressions",
-      value: "24.8K",
+      value: loadingStats ? "..." : stats.impressions.toLocaleString(),
       change: "+8.5%",
       trend: "up",
-      daily_avg: "827",
+      // daily_avg: "827",
       icon: <FiEye size={24} />,
     },
     profile_views: {
       title: "Profile Views",
-      value: "1.2K",
+      value: loadingStats ? "..." : stats.profileViews.toLocaleString(),
       change: "+5.2%",
       trend: "up",
-      daily_avg: "40",
+      // daily_avg: "40",
       icon: <FiBarChart2 size={24} />,
     },
     conversion: {
       title: "Phone number views",
-      value: "6.8%",
+      // value: "6.8%",
       change: "+1.2%",
       trend: "up",
-      daily_avg: "0.23%",
+      // daily_avg: "0.23%",
       icon: <FiPercent size={24} />,
     },
   };
@@ -187,27 +272,20 @@ const HomeAdmin = () => {
 
   // Chart data
   const leadsChartData = {
-    labels: [
-      "1 Oct",
-      "5 Oct",
-      "10 Oct",
-      "15 Oct",
-      "20 Oct",
-      "25 Oct",
-      "30 Oct",
-    ],
+    labels: stats.chartData.labels,
     datasets: [
       {
         label: "Leads",
-        data: [8, 12, 6, 14, 10, 16, 12],
+        data: stats.chartData.leads,
         borderColor: "#8e44ad",
         backgroundColor: "rgba(142, 68, 173, 0.2)",
         tension: 0.3,
         fill: true,
+        yAxisID: "y",
       },
       {
         label: "Impressions",
-        data: [1200, 1800, 1500, 2200, 1900, 2500, 2100],
+        data: stats.chartData.impressions,
         borderColor: "#e67e22",
         backgroundColor: "rgba(230, 126, 34, 0.2)",
         tension: 0.3,
@@ -304,10 +382,10 @@ const HomeAdmin = () => {
                 {dateFilter === "this_week"
                   ? "This Week"
                   : dateFilter === "this_month"
-                    ? "This Month"
-                    : dateFilter === "last_month"
-                      ? "Last Month"
-                      : "Custom Range"}
+                  ? "This Month"
+                  : dateFilter === "last_month"
+                  ? "Last Month"
+                  : "Custom Range"}
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 <Dropdown.Item onClick={() => setDateFilter("this_week")}>
@@ -351,8 +429,9 @@ const HomeAdmin = () => {
                     <h3 className="mb-0">{data.value}</h3>
                   </div>
                   <div
-                    className={`icon-circle bg-${data.trend === "up" ? "success" : "danger"
-                      }-light`}
+                    className={`icon-circle bg-${
+                      data.trend === "up" ? "success" : "danger"
+                    }-light`}
                   >
                     {data.icon}
                   </div>
@@ -383,7 +462,7 @@ const HomeAdmin = () => {
 
       {/* Charts */}
       <Row className="mb-4">
-        <Col lg={8} className="mb-4 mb-lg-0">
+        <Col lg={12} className="mb-4 mb-lg-0">
           <Card className="h-100">
             <Card.Body>
               <div className="d-flex justify-content-between align-items-center mb-4">
@@ -408,193 +487,7 @@ const HomeAdmin = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col lg={4}>
-          <Card className="h-100">
-            <Card.Body>
-              <Card.Title className="mb-4">Leads by Source</Card.Title>
-              <div style={{ height: "300px" }}>
-                <Bar data={sourcesChartData} options={sourcesChartOptions} />
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
       </Row>
-
-      {/* Leads Table */}
-      {/* <Card>
-      {/* {/* <Card>
-        <Card.Body>
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <Card.Title className="mb-0">Recent Leads</Card.Title>
-            <div className="d-flex gap-2">
-              <div className="position-relative">
-                <Form.Control
-                  type="text"
-                  placeholder="Search leads..."
-                  className="ps-5"
-                />
-                <FiSearch className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
-              </div>
-              <Button variant="outline-primary">
-                <FiFilter className="me-1" /> Filter
-              </Button>
-            </div>
-          </div>
-
-          <Tabs
-            activeKey={activeTab}
-            onSelect={(k) => setActiveTab(k)}
-            className="mb-4"
-          >
-            <Tab eventKey="leads" title="All Leads" />
-            <Tab eventKey="new" title="New" />
-            <Tab eventKey="contacted" title="Contacted" />
-            <Tab eventKey="converted" title="Converted" />
-          </Tabs>
-
-          <div className="table-responsive">
-            <Table hover className="mb-0">
-              <thead>
-                <tr>
-                  <th>
-                    <Button
-                      variant="link"
-                      className="p-0 text-decoration-none"
-                      onClick={() => requestSort("name")}
-                    >
-                      Lead Name{" "}
-                      {sortConfig.key === "name" &&
-                        (sortConfig.direction === "asc" ? "↑" : "↓")}
-                    </Button>
-                  </th>
-                  <th>
-                    <Button
-                      variant="link"
-                      className="p-0 text-decoration-none"
-                      onClick={() => requestSort("date")}
-                    >
-                      Date{" "}
-                      {sortConfig.key === "date" &&
-                        (sortConfig.direction === "asc" ? "↑" : "↓")}
-                    </Button>
-                  </th>
-                  <th>Service</th>
-                  <th>Status</th>
-                  <th>Source</th>
-                  <th>Priority</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedLeads.map((lead) => (
-                  <tr key={lead.id}>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <div className="avatar me-3">{lead.name.charAt(0)}</div>
-                        <div>
-                          <div className="fw-medium">{lead.name}</div>
-                          <div className="text-muted small">{lead.source}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="text-muted small">{lead.date}</div>
-                    </td>
-                    <td>{lead.service}</td>
-                    <td>
-                      <StatusBadge status={lead.status} />
-                    </td>
-                    <td>
-                      <Badge bg="light" text="dark" className="text-uppercase">
-                        {lead.source}
-                      </Badge>
-                    </td>
-                    <td>
-                      <PriorityBadge priority={lead.priority} />
-                    </td>
-                    <td>
-                      <div className="d-flex gap-2">
-                        <Button variant="light" size="sm">
-                          <FiEye />
-                        </Button>
-                        <Button
-                          variant={
-                            lead.contacted
-                              ? "outline-success"
-                              : "outline-primary"
-                          }
-                          size="sm"
-                        >
-                          {lead.contacted ? <FiPhone /> : <FiMail />}
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-
-          <div className="d-flex justify-content-between align-items-center mt-4">
-            <div className="text-muted">Showing 1 to 6 of 42 entries</div>
-            <div className="d-flex gap-2">
-              <Button variant="outline-secondary" size="sm">
-                Previous
-              </Button>
-              <Button variant="primary" size="sm">
-                1
-              </Button>
-              <Button variant="outline-secondary" size="sm">
-                2
-              </Button>
-              <Button variant="outline-secondary" size="sm">
-                3
-              </Button>
-              <Button variant="outline-secondary" size="sm">
-                Next
-              </Button>
-            </div>
-          </div>
-        </Card.Body>
-      </Card> */}
-
-      {/* Phone number views */}
-      <Card className="mt-4">
-        <Card.Body>
-          <Card.Title className="mb-4">Lead Phone number views</Card.Title>
-          <Row>
-            <Col md={3} className="text-center mb-4 mb-md-0">
-              <div className="display-4 fw-bold text-primary">6.8%</div>
-              <div className="text-muted">Overall Phone number views</div>
-            </Col>
-            <Col md={9}>
-              <div className="d-flex justify-content-between mb-2">
-                <div className="text-muted">New Leads</div>
-                <div className="fw-medium">42%</div>
-              </div>
-              <ProgressBar variant="primary" now={42} className="mb-3" />
-
-              <div className="d-flex justify-content-between mb-2">
-                <div className="text-muted">Contacted</div>
-                <div className="fw-medium">28%</div>
-              </div>
-              <ProgressBar variant="info" now={28} className="mb-3" />
-
-              <div className="d-flex justify-content-between mb-2">
-                <div className="text-muted">Follow Up</div>
-                <div className="fw-medium">18%</div>
-              </div>
-              <ProgressBar variant="warning" now={18} className="mb-3" />
-
-              <div className="d-flex justify-content-between mb-2">
-                <div className="text-muted">Converted</div>
-                <div className="fw-medium">12%</div>
-              </div>
-              <ProgressBar variant="success" now={12} />
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
     </Container>
   );
 };
