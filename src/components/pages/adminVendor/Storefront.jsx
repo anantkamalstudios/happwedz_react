@@ -1,3 +1,4 @@
+import { IMAGE_BASE_URL } from "../../../config/constants.js";
 import React, { useMemo, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { FaQuestion, FaRegBuilding } from "react-icons/fa";
@@ -37,7 +38,7 @@ import VideoGallery from "./subVendors/VideoGallery";
 import Event from "./subVendors/Event";
 import EndorsementForm from "./subVendors/EndorsementForm";
 import OwnersManager from "./subVendors/OwnersManager";
-import SocialDetails from "./subVendors/SocialDetails";
+// import SocialDetails from "./subVendors/SocialDetails";
 // Vendor Form Sections
 import VendorBasicInfo from "./subVendors/VendorBasicInfo";
 import VendorContact from "./subVendors/VendorContact";
@@ -63,6 +64,7 @@ import Faq from "./subVendors/Faq.jsx";
 import { GoGift } from "react-icons/go";
 import VendorMenus from "./subVendors/VendorMenus";
 import vendorServicesApi from "../../../services/api/vendorServicesApi";
+import { name } from "dayjs/locale/en.js";
 
 const Storefront = () => {
   const [active, setActive] = useState("business");
@@ -116,30 +118,134 @@ const Storefront = () => {
             if (actualData) {
               if (actualData.media) {
                 const { gallery = [], videos = [] } = actualData.media;
-                if (Array.isArray(gallery) && gallery.length > 0) {
-                  const photoDraftsData = gallery.map((item, index) => ({
-                    id: item.id || `photo_${index}`,
-                    title: item.title || "",
-                    preview:
-                      typeof item === "string"
-                        ? item
-                        : item.url || item.path || "",
-                    file: null,
-                  }));
-                  setPhotoDrafts(photoDraftsData);
-                }
-                if (Array.isArray(videos) && videos.length > 0) {
-                  const videoDraftsData = videos.map((item, index) => ({
-                    id: item.id || `video_${index}`,
-                    title: item.title || "",
-                    type: item.type || "video",
-                    preview: item.url || item.path || "",
-                    file: null,
-                  }));
-                  setVideoDrafts(videoDraftsData);
-                }
+                // Normalize gallery: objects and string URLs, prefix relative paths
+                const photoDraftsData = Array.isArray(gallery)
+                  ? gallery.map((item, index) => {
+                      let preview = "";
+                      if (typeof item === "string") {
+                        preview = item;
+                      } else {
+                        preview = item.url || item.path || "";
+                      }
+                      // Prefix relative paths
+                      if (preview.startsWith("/uploads/")) {
+                        preview = IMAGE_BASE_URL + preview;
+                      }
+                      return {
+                        id:
+                          typeof item === "string"
+                            ? `photo_${index}`
+                            : item.id || `photo_${index}`,
+                        title: typeof item === "string" ? "" : item.title || "",
+                        preview,
+                        file: null,
+                      };
+                    })
+                  : [];
+                setPhotoDrafts(photoDraftsData);
+
+                const videoDraftsData = Array.isArray(videos)
+                  ? videos.map((item, index) => {
+                      let preview = item.url || item.path || "";
+                      if (preview.startsWith("/uploads/")) {
+                        preview = IMAGE_BASE_URL + preview;
+                      }
+                      return {
+                        id: item.id || `video_${index}`,
+                        title: item.title || "",
+                        type: item.type || "video",
+                        preview,
+                        file: null,
+                      };
+                    })
+                  : [];
+                setVideoDrafts(videoDraftsData);
               }
-              setFormData((prev) => ({ ...prev, ...actualData }));
+              if (actualData && actualData.attributes) {
+                setFormData((prev) => ({
+                  ...prev,
+                  ...actualData,
+                  contact: actualData.attributes.contact
+                    ? {
+                        contactName: actualData.attributes.contact.name || "",
+                        phone: actualData.attributes.contact.phone || "",
+                        altPhone: actualData.attributes.contact.altPhone || "",
+                        email: actualData.attributes.contact.email || "",
+                        website: actualData.attributes.contact.website || "",
+                        whatsappNumber:
+                          actualData.attributes.contact.whatsapp || "",
+                        inquiryEmail:
+                          actualData.attributes.contact.inquiryEmail || "",
+                      }
+                    : {},
+
+                  location: actualData.attributes.location
+                    ? {
+                        addressLine1:
+                          actualData.attributes.location.address || "",
+                        addressLine2:
+                          actualData.attributes.location.addressLine2 || "",
+                        city: actualData.attributes.location.city || "",
+                        state: actualData.attributes.location.state || "",
+                        country:
+                          actualData.attributes.location.country || "India",
+                        pincode: actualData.attributes.location.pincode || "",
+                        lat: actualData.attributes.location.lat || "",
+                        lng: actualData.attributes.location.lng || "",
+                        landmark: actualData.attributes.location.landmark || "",
+                        serviceAreas:
+                          actualData.attributes.location.serviceAreas || [],
+                      }
+                    : {},
+
+                  // Pricing fields mapping
+                  startingPrice: actualData.attributes.starting_price || "",
+                  priceRange: actualData.attributes.price_range || {
+                    min: "",
+                    max: "",
+                  },
+                  priceUnit: actualData.attributes.price_unit || "",
+                  currency: actualData.attributes.currency || "INR",
+                  capacity: actualData.attributes.capacity || {
+                    min: "",
+                    max: "",
+                  },
+                  indoorOutdoor: actualData.attributes.indoor_outdoor || "",
+                  alcoholPolicy: actualData.attributes.alcohol_policy || "",
+                  cateringPolicy: actualData.attributes.catering_policy || "",
+                  rooms: actualData.attributes.rooms || "",
+                  cancellationPolicy:
+                    actualData.attributes.cancellation_policy || "",
+                  refundPolicy: actualData.attributes.refund_policy || "",
+                  paymentTerms: actualData.attributes.payment_terms
+                    ? {
+                        advancePercent:
+                          actualData.attributes.payment_terms.advance,
+                      }
+                    : {},
+                  tnc: actualData.attributes.tnc || "",
+
+                  isFeatureAvailable:
+                    actualData.attributes.is_feature_available,
+                  within24HrAvailable:
+                    actualData.attributes.within_24hr_available,
+                  djPolicy: actualData.attributes.dj_policy || "",
+                  primaryCTA: actualData.attributes.primary_cta || "enquire",
+                  sortWeight: actualData.attributes.sort_weight || "",
+                  timing: actualData.attributes.timing || {
+                    open: "",
+                    close: "",
+                    lastEntry: "",
+                  },
+                  ctaUrl: actualData.attributes.cta_url || "",
+                  ctaPhone: actualData.attributes.cta_phone || "",
+                  autoReply: actualData.attributes.auto_reply || "",
+
+                  attributes: actualData.attributes,
+
+                  // add other fields as needed
+                }));
+              }
             }
           }
         } catch (error) {
@@ -205,9 +311,13 @@ const Storefront = () => {
       badges: formData.badges || {},
       rating: formData.rating ? Number(formData.rating) : undefined,
       contact: {
+        name: formData.contact?.contactName || "",
         phone: formData.contact?.phone || "",
-        website: formData.contact?.website || "",
+        // website: formData.contact?.website || "",
         whatsapp: formData.contact?.whatsappNumber || "",
+        altPhone: formData.contact?.altPhone || "",
+        email: formData.contact?.email || "",
+        // contactName: formData.contact?.contactName || "",
       },
       cta_url: formData.ctaUrl || "",
       tagline: formData.attributes?.tagline || "",
@@ -216,6 +326,10 @@ const Storefront = () => {
         city: formData.location?.city || "",
         state: formData.location?.state || "",
         address: formData.location?.addressLine1 || "",
+        country: formData.location?.country || "India",
+        pincode: formData.location?.pincode || "",
+        lat: formData.location?.lat || "",
+        lng: formData.location?.lng || "",
       },
       packages: formData.packages || [],
       subtitle: formData.attributes?.subtitle || "",

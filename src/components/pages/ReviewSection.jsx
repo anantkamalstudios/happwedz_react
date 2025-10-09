@@ -1,5 +1,6 @@
 // ReviewSection.jsx
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { toast, ToastContainer } from "react-toastify";
@@ -14,6 +15,7 @@ const ReviewSection = ({ vendor }) => {
   const [spent, setSpent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const { user, token } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
   const [images, setImages] = useState([]);
   const [reviews, setReviews] = useState([]);
 
@@ -67,7 +69,7 @@ const ReviewSection = ({ vendor }) => {
     }
 
     if (!user || !token) {
-      toast.error("You must be logged in to write a review.");
+      navigate("/customer-login");
       return;
     }
 
