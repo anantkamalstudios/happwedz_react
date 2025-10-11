@@ -17980,8 +17980,6 @@ input:checked + .slider:before {
   background: linear-gradient(145deg, #fff, #ffe6f0);
 }
 
-<<<<<<< HEAD
-=======
 /* ============================================
    E-INVITE STYLES
    ============================================ */
@@ -18073,7 +18071,6 @@ input:checked + .slider:before {
 }
 
 @keyframes float {
-
   0%,
   100% {
     transform: translateY(0px) rotate(0deg);
@@ -18145,7 +18142,11 @@ input:checked + .slider:before {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(233, 30, 99, 0.9), rgba(255, 107, 157, 0.9));
+  background: linear-gradient(
+    135deg,
+    rgba(233, 30, 99, 0.9),
+    rgba(255, 107, 157, 0.9)
+  );
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18364,7 +18365,7 @@ input:checked + .slider:before {
   border-color: #e91e63;
 }
 
-.einvite-share-methods .form-check-input:checked+.form-check-label {
+.einvite-share-methods .form-check-input:checked + .form-check-label {
   color: #e91e63;
   font-weight: 600;
 }
@@ -18492,8 +18493,6 @@ input:checked + .slider:before {
   }
 }
 
-
->>>>>>> 1bb36da5a3282d5d37d13110297b6d81eb550613
 .custom-modal {
   position: fixed;
   top: 0;
@@ -18510,8 +18509,4 @@ input:checked + .slider:before {
 .modal-content-custom {
   background: #fff;
   border-radius: 8px;
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 1bb36da5a3282d5d37d13110297b6d81eb550613
