@@ -121,7 +121,7 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
                 </div>
               </Form>
 
-              <div className="d-flex gap-2 mt-3 flex-wrap">
+              {/* <div className="d-flex gap-2 mt-3 flex-wrap">
                 {["Banquet Halls", "Wedding Resorts", "Photographers"].map(
                   (chip) => (
                     <p style={{}}>
@@ -140,7 +140,7 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
                     </p>
                   )
                 )}
-              </div>
+              </div> */}
             </div>
           </Col>
 

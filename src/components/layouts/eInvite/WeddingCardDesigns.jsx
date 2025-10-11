@@ -92,7 +92,6 @@ const WeddingCardDesigns = () => {
       };
       navigate("/video-editor", { state: { template: videoTemplate } });
     } else {
-      // For other cards, navigate to the regular editor
       const editorUrl = `/editor?template=${encodeURIComponent(
         JSON.stringify(template)
       )}`;

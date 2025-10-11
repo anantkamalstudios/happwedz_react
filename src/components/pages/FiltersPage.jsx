@@ -341,7 +341,7 @@ const FiltersPage = () => {
   return (
     <div
       className="filters-container my-5"
-      style={{ margin: "32px auto 0 auto", maxWidth: 900 }}
+      style={{ margin: "32px auto 0 auto", maxWidth: 650 }}
     >
       <div
         className="preview-area"
@@ -354,7 +354,8 @@ const FiltersPage = () => {
       >
         <div
           className="single-image-container"
-          style={{ width: "100%", maxWidth: 400 }}
+          style={{ width: "100%" }}
+          // style={{ width: "100%", maxWidth: 400 }}
         >
           <div
             className="image-wrapper"
@@ -373,9 +374,6 @@ const FiltersPage = () => {
                 left: 16,
                 zIndex: 30,
                 cursor: "pointer",
-                background: "#fff",
-                borderRadius: "50%",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                 padding: 8,
                 display: "flex",
                 alignItems: "center",
@@ -384,7 +382,7 @@ const FiltersPage = () => {
               title="Home"
               onClick={() => navigate("/try")}
             >
-              <FaHome />
+              <FaHome className="primary-text" size={30} />
             </div>
             <div
               style={{
@@ -393,9 +391,6 @@ const FiltersPage = () => {
                 right: 16,
                 zIndex: 30,
                 cursor: "pointer",
-                background: "#fff",
-                borderRadius: "50%",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                 padding: 8,
                 display: "flex",
                 alignItems: "center",
@@ -430,9 +425,27 @@ const FiltersPage = () => {
                 }
               }}
             >
-              <IoClose />
+              <IoClose className="primary-text" size={40} />
             </div>
-            <img src={previewUrl} alt="preview" className="preview-img" />
+            <div
+              style={{
+                width: "100%",
+                height: "600px",
+                overflow: "hidden",
+                borderRadius: "12px",
+              }}
+            >
+              <img
+                src={previewUrl}
+                alt="preview"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  objectPosition: "top center",
+                }}
+              />
+            </div>
             {isApplying && (
               <div className="processing-overlay">
                 <BarLoader />
@@ -644,7 +657,7 @@ const FiltersPage = () => {
                   >
                     <button
                       type="button"
-                      className={`d-flex flex-column align-items-center px-2 py-2 border rounded bg-white position-relative ${
+                      className={`d-flex flex-column align-items-center px-2 py-2 border-0 rounded bg-white position-relative ${
                         expandedCatIdx === idx ? "border-primary" : ""
                       } ${isApplied ? "border-success" : ""}`}
                       onClick={() => handleSelectCategory(idx)}
@@ -659,10 +672,9 @@ const FiltersPage = () => {
                         src={cat.product_detailed_image}
                         alt={cat.product_detailed_category_name}
                         style={{
-                          width: 32,
-                          height: 32,
+                          width: "100%",
+                          height: "90px",
                           objectFit: "cover",
-                          borderRadius: 8,
                         }}
                       />
                       <strong style={{ fontSize: 11, marginTop: 2 }}>
@@ -695,12 +707,13 @@ const FiltersPage = () => {
                         }}
                       >
                         <div
+                          className="border-start"
                           style={{
                             display: "inline-flex",
                             alignItems: "flex-start",
                             gap: 8,
                             overflowX: "auto",
-                            maxWidth: 380,
+                            maxWidth: "100%",
                           }}
                         >
                           {safeArray(cat.products).map((p) => (
@@ -708,7 +721,7 @@ const FiltersPage = () => {
                               <button
                                 type="button"
                                 onClick={() => handleSelectProduct(p.id)}
-                                className={`d-flex flex-column align-items-center px-2 py-2 border rounded bg-white ${
+                                className={`d-flex flex-column align-items-center px-2 py-2 border-0 rounded bg-white ${
                                   expandedProductId === p.id
                                     ? "border-primary"
                                     : ""
@@ -719,10 +732,10 @@ const FiltersPage = () => {
                                   src={p.product_real_image}
                                   alt={p.product_name}
                                   style={{
-                                    width: 32,
-                                    height: 32,
+                                    borderRadius: 10,
+                                    width: "100%",
+                                    height: "90px",
                                     objectFit: "cover",
-                                    borderRadius: 8,
                                   }}
                                 />
                                 <strong
