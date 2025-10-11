@@ -22,9 +22,10 @@ const toTitleCase = (str) =>
 const SubSection = () => {
   const { section, slug } = useParams();
   const location = useLocation();
-  // Parse vendorType from query string
+  // Parse query string
   const searchParams = new URLSearchParams(location.search);
   const vendorType = searchParams.get("vendorType");
+  const cityFromQuery = searchParams.get("city");
   const title = slug ? toTitleCase(slug) : "";
 
   const [show, setShow] = useState(false);
@@ -35,7 +36,9 @@ const SubSection = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   const reduxLocation = useSelector((state) => state.location.selectedLocation);
-  const [selectedCity, setSelectedCity] = useState(reduxLocation);
+  const [selectedCity, setSelectedCity] = useState(
+    cityFromQuery || reduxLocation
+  );
 
   const {
     data: apiData,
@@ -67,10 +70,14 @@ const SubSection = () => {
     setSelectedCity(city);
   };
 
-  // Sync selectedCity with Redux location state
+  // Sync selectedCity with URL query first, then Redux location state
   useEffect(() => {
+    if (cityFromQuery && cityFromQuery !== "all") {
+      setSelectedCity(cityFromQuery);
+      return;
+    }
     setSelectedCity(reduxLocation);
-  }, [reduxLocation]);
+  }, [cityFromQuery, reduxLocation]);
 
   const getFallbackData = (section) => {
     switch (section) {

@@ -3,6 +3,7 @@ import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import herosection from "../../assets/Hero_2.jpg";
 import { categories, locations, popularSearches } from "../../data/herosection";
+import { useVendorType } from "../../hooks/useVendorType";
 
 const RotatingWordHeadline = () => {
   const words = ["Unique", "Dreamy", "Perfect"];
@@ -42,26 +43,36 @@ const RotatingWordHeadline = () => {
 };
 
 const Herosection = () => {
-  const [categoriesApi, setCategoriesApi] = useState([]);
+  const { vendorTypes, loading } = useVendorType();
   const [selectedCategory, setSelectedCategory] = useState("");
   const navigate = useNavigate();
+  // useEffect(() => {
+  //   const fetchCategories = async () => {
+  //     try {
+  //       const response = await fetch(
+  //         "https://happywedz.com/api/vendor-types/with-subcategories/all"
+  //       );
+  //       const data = await response.json();
+  //       setCategoriesApi(Array.isArray(data) ? data : []);
+  //       if (Array.isArray(data) && data.length > 0) {
+  //         setSelectedCategory(data[0].name);
+  //       }
+  //     } catch (error) {
+  //       setCategoriesApi([]);
+  //     }
+  //   };
+  //   fetchCategories();
+  // }, []);
+
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch(
-          "https://happywedz.com/api/vendor-types/with-subcategories/all"
-        );
-        const data = await response.json();
-        setCategoriesApi(Array.isArray(data) ? data : []);
-        if (Array.isArray(data) && data.length > 0) {
-          setSelectedCategory(data[0].name);
-        }
-      } catch (error) {
-        setCategoriesApi([]);
-      }
-    };
-    fetchCategories();
-  }, []);
+    if (
+      !selectedCategory &&
+      Array.isArray(vendorTypes) &&
+      vendorTypes.length > 0
+    ) {
+      setSelectedCategory(vendorTypes[0].name);
+    }
+  }, [vendorTypes, selectedCategory]);
 
   return (
     <section
@@ -110,14 +121,16 @@ const Herosection = () => {
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
                   >
-                    {categoriesApi.length > 0 ? (
-                      categoriesApi.map((c) => (
+                    {Array.isArray(vendorTypes) && vendorTypes.length > 0 ? (
+                      vendorTypes.map((c) => (
                         <option key={c.id} value={c.name}>
                           {c.name}
                         </option>
                       ))
                     ) : (
-                      <option value="">Loading...</option>
+                      <option value="" disabled>
+                        {loading ? "Loading..." : "No categories found"}
+                      </option>
                     )}
                   </Form.Select>
                 </Col>

@@ -1,6 +1,6 @@
 import React from "react";
 
-const VendorFacilities = ({ formData, setFormData }) => {
+const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
   const capacity = formData.capacity || { min: "", max: "" };
 
   const handleNestedInputChange = (subSection, field, value) => {
@@ -11,6 +11,11 @@ const VendorFacilities = ({ formData, setFormData }) => {
         [field]: value,
       },
     }));
+  };
+
+  const handleSave = async () => {
+    if (onSave) await onSave();
+    if (onShowSuccess) onShowSuccess();
   };
 
   return (
@@ -103,7 +108,7 @@ const VendorFacilities = ({ formData, setFormData }) => {
             </select>
           </div>
         </div>
-        <button className="btn btn-primary mt-2">
+        <button className="btn btn-primary mt-2" onClick={handleSave}>
           Save Facilities Details
         </button>
       </div>

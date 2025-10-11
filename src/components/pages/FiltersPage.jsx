@@ -20,7 +20,7 @@ const SLIDER_CATEGORIES = [
   "lipstick",
   "bindi",
   "mascara",
-  "mangtika",
+  // "mangtika",
   "contactlenses",
 ];
 
@@ -35,7 +35,7 @@ const DEFAULT_INTENSITIES = {
   lipstick: 0.8,
   bindi: 6,
   mascara: 0.8,
-  mangtika: 0.6,
+  // mangtika: 0.6,
   contactlenses: 0.2,
 };
 
@@ -313,42 +313,19 @@ const FiltersPage = () => {
 
   const safeArray = (arr) => (Array.isArray(arr) ? arr : []);
 
-  // Remove the auto-apply effect - only apply when color is clicked
-  // useEffect(() => {
-  //   if (
-  //     expandedCatIdx !== null &&
-  //     expandedProductId !== null &&
-  //     SLIDER_CATEGORIES.includes(
-  //       (
-  //         categories[expandedCatIdx]?.product_detailed_category_name || ""
-  //       ).toLowerCase()
-  //     )
-  //   ) {
-  //     if (debounceTimer.current) clearTimeout(debounceTimer.current);
+  // Re-apply makeup when intensity changes for any applied product
+  useEffect(() => {
+    if (Object.keys(appliedProducts).length > 0) {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
-  //     debounceTimer.current = setTimeout(() => {
-  //       const cat = categories[expandedCatIdx];
-  //       const product = safeArray(cat.products).find(
-  //         (p) => p.id === expandedProductId
-  //       );
-  //       const colorHex = product?.product_colors?.[0] || "#fff";
-  //       if (colorHex) {
-  //         handleApplyOne(expandedProductId, colorHex);
-  //       }
-  //     }, DEBOUNCE_DELAY);
-  //   }
-  //   return () => {
-  //     if (debounceTimer.current) clearTimeout(debounceTimer.current);
-  //   };
-  // }, [
-  //   intensities[
-  //     (
-  //       categories[expandedCatIdx]?.product_detailed_category_name || ""
-  //     ).toLowerCase()
-  //   ],
-  //   expandedCatIdx,
-  //   expandedProductId,
-  // ]);
+      debounceTimer.current = setTimeout(() => {
+        applyAllProducts(appliedProducts);
+      }, DEBOUNCE_DELAY);
+    }
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, [intensities, appliedProducts]);
 
   if (isLoading) {
     return (
