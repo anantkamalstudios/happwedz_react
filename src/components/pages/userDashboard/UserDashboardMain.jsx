@@ -63,15 +63,12 @@ import WishList from "./wishlist/WishList";
 // import Booking from "./booking/Booking";
 import Messages from "./messages/Messages";
 import RealWeddingForm from "./realWeddingForm/RealWeddingForm";
+import UserProfile from "./userProfile/UserProfile";
 
 const UserDashboardMain = () => {
   const { slug } = useParams();
 
-  // ✅ Get user and token from Redux
   const { user, token } = useSelector((state) => state.auth);
-
-  // console.log("Logged-in user:", user);
-  // console.log("Token:", token);
 
   const renderContent = () => {
     switch (slug) {
@@ -87,6 +84,8 @@ const UserDashboardMain = () => {
         return <Budget user={user} token={token} />;
       case "wishlist":
         return <WishList user={user} token={token} />;
+      case "user-profile":
+        return <UserProfile user={user} token={token} />;
       // case "booking":
       //   return <Booking user={user} token={token} />;
       case "message":
