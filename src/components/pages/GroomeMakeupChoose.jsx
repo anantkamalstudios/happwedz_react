@@ -26,28 +26,28 @@ const SectionCard = ({ title, subtitle, image, onTry }) => {
   );
 };
 
-const BrideMakeupChoose = () => {
+const GroomeMakeupChoose = () => {
   const navigate = useNavigate();
 
   return (
     <div className="">
       <SectionCard
         title="Makeup"
-        subtitle="Explore stunning bridal makeup looks curated by professionals."
+        subtitle="Explore stunning groome makeup looks curated by professionals."
         image="/images/try/makeup1.png"
         onTry={() => navigate("/try/makeup")}
       />
 
       <SectionCard
         title="Jewellery"
-        subtitle="Try elegant jewellery pieces that complement your bridal style."
+        subtitle="Try elegant jewellery pieces that complement your groome style."
         image="/images/try/jewelry.png"
         onTry={() => navigate("/try/makeup")}
       />
 
       <SectionCard
         title="Outfit"
-        subtitle="Visualize outfits to complete your perfect bridal look."
+        subtitle="Visualize outfits to complete your perfect groome look."
         image="/images/try/outfit.png"
         onTry={() => navigate("/try/makeup")}
       />
@@ -55,4 +55,4 @@ const BrideMakeupChoose = () => {
   );
 };
 
-export default BrideMakeupChoose;
+export default GroomeMakeupChoose;

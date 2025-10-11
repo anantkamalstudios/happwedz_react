@@ -8,8 +8,6 @@ import { IoClose } from "react-icons/io5";
 import { FaHome } from "react-icons/fa";
 import { IoIosArrowBack } from "react-icons/io";
 
-// Remove static filtering - show all categories dynamically from API
-
 const SLIDER_CATEGORIES = [
   "foundation",
   "concealer",
@@ -76,7 +74,6 @@ const FiltersPage = () => {
           : Array.isArray(response?.data)
           ? response.data
           : [];
-        // Show all categories dynamically from API - no filtering
         setCategories(items);
       } catch (e) {
         console.error("Failed to load products", e);
@@ -99,7 +96,6 @@ const FiltersPage = () => {
 
   const handleSelectProduct = (productId) => {
     setExpandedProductId((prev) => (prev === productId ? null : productId));
-    // Don't auto-apply when selecting product, only when color is clicked
   };
 
   const handleApplyOne = async (productId, colorHex) => {
@@ -112,7 +108,6 @@ const FiltersPage = () => {
       categories[expandedCatIdx]?.product_detailed_category_name || ""
     ).toLowerCase();
 
-    // Add or update the product in appliedProducts
     const newAppliedProducts = {
       ...appliedProducts,
       [activeCategoryName]: {
@@ -593,224 +588,234 @@ const FiltersPage = () => {
         style={{
           overflowX: "auto",
           whiteSpace: "nowrap",
-          paddingBottom: "0px",
           width: "100%",
           display: "block",
           marginBottom: "8px",
-          marginTop: "0px",
           scrollbarWidth: "thin",
           scrollbarColor: "#ed1173 #f1f1f1",
         }}
       >
-        <DragScroll>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: categories.length <= 4 ? "center" : "flex-start",
-              alignItems: "flex-start",
-              gap: "8px",
-              minWidth: "max-content",
-              padding: "0 8px",
-            }}
-          >
-            <div style={{ display: "inline-flex", gap: 8, flexWrap: "nowrap" }}>
-              {/* Back button when a category is expanded */}
-              {expandedCatIdx !== null && (
-                <button
-                  type="button"
-                  className="d-flex flex-column align-items-center px-2 py-2 border rounded bg-white"
-                  onClick={handleBackToMainFilters}
-                  style={{
-                    cursor: "pointer",
-                    minWidth: 70,
-                    transition: "all 0.3s ease",
-                    borderColor: "#ed1173",
-                    flexShrink: 0,
-                  }}
-                  title="Back to main filters"
-                >
-                  <IoIosArrowBack style={{ fontSize: 24, color: "#ed1173" }} />
-                  <strong
-                    style={{ fontSize: 11, marginTop: 2, color: "#ed1173" }}
+        <div style={{ display: "inline-block", minWidth: "100%" }}>
+          <DragScroll>
+            <div
+              style={{
+                display: "flex",
+                justifyContent:
+                  categories.length <= 4 ? "center" : "flex-start",
+                alignItems: "flex-start",
+                gap: "8px",
+                minWidth: "max-content",
+                padding: "0 8px",
+              }}
+            >
+              <div
+                style={{
+                  display: "inline-flex",
+                  gap: 8,
+                  flexWrap: "nowrap",
+                }}
+              >
+                {expandedCatIdx !== null && (
+                  <button
+                    type="button"
+                    className="d-flex flex-column align-items-center px-2 py-2 border rounded bg-white"
+                    onClick={handleBackToMainFilters}
+                    style={{
+                      cursor: "pointer",
+                      minWidth: 70,
+                      transition: "all 0.3s ease",
+                      borderColor: "#ed1173",
+                      flexShrink: 0,
+                    }}
+                    title="Back to main filters"
                   >
-                    Back
-                  </strong>
-                </button>
-              )}
-
-              {categories.map((cat, idx) => {
-                const categoryName = (
-                  cat.product_detailed_category_name || ""
-                ).toLowerCase();
-                const isApplied = appliedProducts[categoryName];
-
-                // Collapse logic: show only expanded category if one is expanded
-                if (expandedCatIdx !== null && expandedCatIdx !== idx) {
-                  return null;
-                }
-
-                return (
-                  <React.Fragment
-                    key={`${
-                      cat.product_detailed_category_name || "cat"
-                    }-${idx}`}
-                  >
-                    <button
-                      type="button"
-                      className={`d-flex flex-column align-items-center px-2 py-2 border-0 rounded bg-white position-relative ${
-                        expandedCatIdx === idx ? "border-primary" : ""
-                      } ${isApplied ? "border-success" : ""}`}
-                      onClick={() => handleSelectCategory(idx)}
-                      style={{
-                        cursor: "pointer",
-                        minWidth: 70,
-                        transition: "all 0.3s ease",
-                        flexShrink: 0,
-                      }}
+                    <IoIosArrowBack
+                      style={{ fontSize: 24, color: "#ed1173" }}
+                    />
+                    <strong
+                      style={{ fontSize: 11, marginTop: 2, color: "#ed1173" }}
                     >
-                      <img
-                        src={cat.product_detailed_image}
-                        alt={cat.product_detailed_category_name}
+                      Back
+                    </strong>
+                  </button>
+                )}
+
+                {categories.map((cat, idx) => {
+                  const categoryName = (
+                    cat.product_detailed_category_name || ""
+                  ).toLowerCase();
+                  const isApplied = appliedProducts[categoryName];
+
+                  // Collapse logic: show only expanded category if one is expanded
+                  if (expandedCatIdx !== null && expandedCatIdx !== idx) {
+                    return null;
+                  }
+
+                  return (
+                    <React.Fragment
+                      key={`${
+                        cat.product_detailed_category_name || "cat"
+                      }-${idx}`}
+                    >
+                      <button
+                        type="button"
+                        className={`d-flex flex-column align-items-center px-2 py-2 border-0 border-end bg-white position-relative ${
+                          expandedCatIdx === idx ? "border-primary" : ""
+                        } ${isApplied ? "border-success" : ""}`}
+                        onClick={() => handleSelectCategory(idx)}
                         style={{
-                          width: "100%",
-                          height: "90px",
-                          objectFit: "cover",
-                        }}
-                      />
-                      <strong style={{ fontSize: 11, marginTop: 2 }}>
-                        {cat.product_detailed_category_name || "Category"}
-                      </strong>
-                      {isApplied && (
-                        <div
-                          className="position-absolute top-0 end-0 translate-middle rounded-circle"
-                          style={{
-                            width: 10,
-                            height: 10,
-                            backgroundColor: isApplied.colorHex,
-                            border: "2px solid white",
-                            transform: "translate(50%, -50%)",
-                          }}
-                          title={`Applied: ${isApplied.colorHex}`}
-                        />
-                      )}
-                    </button>
-                    {expandedCatIdx === idx && (
-                      <div
-                        style={{
-                          display: "inline-block",
-                          minWidth: 220,
-                          maxWidth: 400,
-                          borderRadius: 8,
-                          whiteSpace: "normal",
-                          marginLeft: 8,
-                          animation: "slideIn 0.3s ease-out",
+                          cursor: "pointer",
+                          minWidth: 70,
+                          transition: "all 0.3s ease",
+                          flexShrink: 0,
                         }}
                       >
-                        <div
-                          className="border-start"
+                        <img
+                          src={cat.product_detailed_image}
+                          alt={cat.product_detailed_category_name}
                           style={{
-                            display: "inline-flex",
-                            alignItems: "flex-start",
-                            gap: 8,
-                            overflowX: "auto",
-                            maxWidth: "100%",
+                            width: "100%",
+                            height: "90px",
+                            objectFit: "cover",
+                          }}
+                        />
+                        <strong style={{ fontSize: 11, marginTop: 2 }}>
+                          {cat.product_detailed_category_name || "Category"}
+                        </strong>
+                        {isApplied && (
+                          <div
+                            className="position-absolute top-0 end-0 translate-middle rounded-circle"
+                            style={{
+                              width: 10,
+                              height: 10,
+                              backgroundColor: isApplied.colorHex,
+                              border: "2px solid white",
+                              transform: "translate(50%, -50%)",
+                            }}
+                            title={`Applied: ${isApplied.colorHex}`}
+                          />
+                        )}
+                      </button>
+                      {expandedCatIdx === idx && (
+                        <div
+                          style={{
+                            display: "inline-block",
+                            minWidth: 220,
+                            maxWidth: 400,
+                            borderRadius: 8,
+                            whiteSpace: "normal",
+                            marginLeft: 8,
+                            animation: "slideIn 0.3s ease-out",
                           }}
                         >
-                          {safeArray(cat.products).map((p) => (
-                            <React.Fragment key={p.id}>
-                              <button
-                                type="button"
-                                onClick={() => handleSelectProduct(p.id)}
-                                className={`d-flex flex-column align-items-center px-2 py-2 border-0 rounded bg-white ${
-                                  expandedProductId === p.id
-                                    ? "border-primary"
-                                    : ""
-                                }`}
-                                style={{ cursor: "pointer", minWidth: 80 }}
-                              >
-                                <img
-                                  src={p.product_real_image}
-                                  alt={p.product_name}
-                                  style={{
-                                    borderRadius: 10,
-                                    width: "100%",
-                                    height: "90px",
-                                    objectFit: "cover",
-                                  }}
-                                />
-                                <strong
-                                  className="mt-1"
-                                  style={{ fontSize: 11 }}
+                          <div
+                            className=""
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "flex-start",
+                              gap: 8,
+                              overflowX: "auto",
+                              maxWidth: "100%",
+                            }}
+                          >
+                            {safeArray(cat.products).map((p) => (
+                              <React.Fragment key={p.id}>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSelectProduct(p.id)}
+                                  className={`d-flex flex-column align-items-center px-2 py-2 border-0 rounded bg-white ${
+                                    expandedProductId === p.id
+                                      ? "border-primary"
+                                      : ""
+                                  }`}
+                                  style={{ cursor: "pointer", minWidth: 80 }}
                                 >
-                                  {p.product_name}
-                                </strong>
-                              </button>
-                              {expandedProductId === p.id && (
-                                <div
-                                  className="ms-2 px-2 py-2 border rounded bg-white"
-                                  style={{
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: 8,
-                                    flexDirection: "row",
-                                    animation: "fadeIn 0.3s ease-out",
-                                  }}
-                                >
-                                  {/* Colors */}
-                                  {safeArray(p.product_colors).length > 0 ? (
-                                    safeArray(p.product_colors).map(
-                                      (hex, i) => (
-                                        <React.Fragment
-                                          key={`${p.id}-${hex}-${i}`}
-                                        >
-                                          <button
-                                            type="button"
-                                            title={hex}
-                                            onClick={() =>
-                                              handleApplyOne(p.id, hex)
-                                            }
-                                            disabled={isApplying}
-                                            className="border rounded-circle"
-                                            style={{
-                                              width: 18,
-                                              height: 18,
-                                              background: hex,
-                                              borderColor: "#ccc",
-                                            }}
-                                          />
-                                          {i <
-                                            safeArray(p.product_colors).length -
-                                              1 && (
-                                            <span className="text-muted">
-                                              |
-                                            </span>
-                                          )}
-                                        </React.Fragment>
+                                  <img
+                                    src={p.product_real_image}
+                                    alt={p.product_name}
+                                    style={{
+                                      borderRadius: 10,
+                                      width: "100%",
+                                      height: "90px",
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                  <strong
+                                    className="mt-1"
+                                    style={{ fontSize: 11 }}
+                                  >
+                                    {p.product_name}
+                                  </strong>
+                                </button>
+                                {expandedProductId === p.id && (
+                                  <div
+                                    className="ms-2 px-2 py-2 border rounded bg-white"
+                                    style={{
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      gap: 8,
+                                      flexDirection: "row",
+                                      animation: "fadeIn 0.3s ease-out",
+                                    }}
+                                  >
+                                    {/* Colors */}
+                                    {safeArray(p.product_colors).length > 0 ? (
+                                      safeArray(p.product_colors).map(
+                                        (hex, i) => (
+                                          <React.Fragment
+                                            key={`${p.id}-${hex}-${i}`}
+                                          >
+                                            <button
+                                              type="button"
+                                              title={hex}
+                                              onClick={() =>
+                                                handleApplyOne(p.id, hex)
+                                              }
+                                              disabled={isApplying}
+                                              className="border rounded-circle"
+                                              style={{
+                                                width: 18,
+                                                height: 18,
+                                                background: hex,
+                                                borderColor: "#ccc",
+                                              }}
+                                            />
+                                            {i <
+                                              safeArray(p.product_colors)
+                                                .length -
+                                                1 && (
+                                              <span className="text-muted">
+                                                |
+                                              </span>
+                                            )}
+                                          </React.Fragment>
+                                        )
                                       )
-                                    )
-                                  ) : (
-                                    <span className="small text-muted">
-                                      No colors
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                            </React.Fragment>
-                          ))}
-                          {safeArray(cat.products).length === 0 && (
-                            <div className="text-muted small">No products</div>
-                          )}
+                                    ) : (
+                                      <span className="small text-muted">
+                                        No colors
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </React.Fragment>
+                            ))}
+                            {safeArray(cat.products).length === 0 && (
+                              <div className="text-muted small">
+                                No products
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </React.Fragment>
-                );
-              })}
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        </DragScroll>
+          </DragScroll>
+        </div>
       </div>
-
       {/* Applied Products Display */}
       {Object.keys(appliedProducts).length > 0 && (
         <div className="applied-products-section mb-2">

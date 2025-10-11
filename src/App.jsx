@@ -57,6 +57,9 @@ const CancellationPolicy = lazy(() =>
   import("./components/pages/CancellationPolicy")
 );
 const CardEditorPage = lazy(() => import("./components/CardEditorPage"));
+const PhotographyDetailsPage = lazy(() =>
+  import("./components/layouts/photography/PhotographyDetailsPage")
+);
 const VideoEditorPage = lazy(() => import("./components/VideoEditorPage"));
 const VideoTemplates = lazy(() =>
   import("./components/layouts/eInvite/VideoTemplates")
@@ -70,6 +73,9 @@ const ProfileImageSelector = lazy(() =>
 const TryLanding = lazy(() => import("./components/pages/TryLanding"));
 const BrideMakeupChoose = lazy(() =>
   import("./components/pages/BrideMakeupChoose")
+);
+const GroomeMakeupChoose = lazy(() =>
+  import("./components/pages/GroomeMakeupChoose")
 );
 const TryMakeupLanding = lazy(() =>
   import("./components/pages/TryMakeupLanding")
@@ -118,6 +124,10 @@ function App() {
           <Routes>
             <Route element={<MainLayout />}>
               <Route path="/" element={<Home />} />
+              <Route
+                path="/photos/details/:slug"
+                element={<PhotographyDetailsPage />}
+              />
               <Route path="/:section" element={<MainSection />} />
               <Route path="/:section/:slug" element={<SubSection />} />
               <Route path="/details/:section/:id" element={<Detailed />} />
@@ -150,6 +160,14 @@ function App() {
                 element={
                   <UserPrivateRoute>
                     <BrideMakeupChoose />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/try/groome"
+                element={
+                  <UserPrivateRoute>
+                    <GroomeMakeupChoose />
                   </UserPrivateRoute>
                 }
               />

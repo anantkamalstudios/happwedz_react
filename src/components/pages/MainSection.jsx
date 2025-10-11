@@ -106,7 +106,7 @@ const MainSection = () => {
         <MainSearch title="Wedding Vendor" />
         <MainByRegion type="vendors" />
         <AllCategories />
-        <FindMain />
+        {/* <FindMain /> */}
         <FaqsSection />
       </>
     );
