@@ -279,6 +279,7 @@ function App() {
               />
               <Route path="/edit-profile" element={<EditProfile />} />
             </Route>
+            <Route path="/ai-recommandation" element={<RecommandPage />} />
 
             {/*  Fallback  */}
             <Route path="*" element={<NotFound />} />

@@ -170,14 +170,22 @@ const HomeAdmin = () => {
       // daily_avg: "827",
       icon: <FiEye size={24} />,
     },
+    // profile_views: {
+    //   title: "Profile Views",
+    //   value: loadingStats ? "..." : stats.profileViews.toLocaleString(),
+    //   change: "+5.2%",
+    //   trend: "up",
+    //   // daily_avg: "40",
+    //   icon: <FiBarChart2 size={24} />,
+    // },
     profile_views: {
       title: "Profile Views",
       value: loadingStats ? "..." : stats.profileViews.toLocaleString(),
       change: "+5.2%",
       trend: "up",
-      // daily_avg: "40",
       icon: <FiBarChart2 size={24} />,
     },
+
     conversion: {
       title: "Phone number views",
       // value: "6.8%",
