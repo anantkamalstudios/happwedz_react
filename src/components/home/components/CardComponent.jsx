@@ -1,38 +1,16 @@
 import { Link } from "react-router-dom";
 
-const CardComponent = ({ cat }) => {
-  const data = cat.attributes;
-  const media = cat.media;
-  console.log(data);
-  console.log(media);
+const CardComponent = ({ data }) => {
+  console.log("Data is ===> ", data);
 
   return (
     <div
       className="card border-0 shadow-sm rounded-4 overflow-hidden p-2"
       style={{ maxWidth: "400px" }}
-      key={data.id}
     >
-      <div style={{ position: "relative" }}>
-        <div
-          className="w-100 d-flex justify-content-between align-items-center"
-          style={{
-            position: "absolute",
-            padding: "10px",
-          }}
-        >
-          <span role="button">
-            <img
-              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADQElEQVR4nO2YW4hOURTHf+M6mcKMSxj3QWoKo5QHGWLcy2VcXqZoXijlYZBymZgXIo9ueSIp8sALDyiXEnI3xGhoSG4zJiMxYj7tWqdWu32+b853znzzjc6/9ss+/70uZ6+99toLYsSIESNGjBjZjYHAHqAOaANagVvAqhTregKVwA3gJ9AATPDhrhSZrUp+eRTGzwA+AgmfUe2zbgxw38Hf7OAeTCL/QFgH3iYRbsYfoMhaMwR44+A+BUZb3OUp5JuxLIwDj0TIB2AFkAsUADeVgo3WmvPq2y9glzjlwnXFNesGAYOBC2r+WhgHjMAKEapxTCmoUvPTHH8wWUx/V7xhar5QzbcQESYCNcAZCR1PwRzF2ZciHOyYTqhBgG9p4bXDoCdAjuLcDRjTiUw68NLnEC9QnPcBYzqRSQdGAVuAw1Zqva04rQFjOtHRDpi0t0mMt/O8J9xcUh5a1PxIS443/y0EPzDqRMhXYAMwQtJolVJgUqyHK2r+MjAOGO+YT5cfycG1hwkpDwvbwZ8fgh8YJUB9EuHPgAHWmmofbptcaoTkB0aehI+5fb9ITD4Adso3F8qAS8BnGReBuUl0lAXk/9/IkdxuwidbMFVs0pemE2uAxyoOTS2/Fsgn88gH1lmFoykuV7vI/YFzPofJlNRH5DLKFApFp185fxbo55ELJJtoQqMUXsV0PorFlkbLxlr58Ry16vftUvdnG3KBHWKjZ+8h5Jb1JkrJfsxW9jbZDujKMgyKpPAzpUHUWKTsbUZKAR1C24A+EZXeTZICo0AesBv4rew9iRyEWuuAfJLX1aQ0lb2wtjmME5OB/VIFaBvfAUM9Ul9JTa6U9Qo4Lm9jExrd2qG0RAwP6kSO6KiQ5OJXh5lmwHCXAPPwfpiiOvwB3JPtq5GuxFJgurybx0pqLrVSn58TvWW371iPfNeol2ZZ91R/wZS5p+SQJCIcTY4+UmWKNcap08ASoAcB0QuYB+yVh4XOWOkO3YYxmAX8Vd8b5A1tDuxMaVFGCvMHFwPrJYROAFclrJ7LNjdK2d2eHfBu29JOqrl8McU6A83S+OoSKEkzC2UN6rqy8boZ0CWNR1ojW6V/FCNGDDoO/wC6BtvvL7Su+gAAAABJRU5ErkJggg=="
-              alt="360-view"
-              style={{ width: "25px" }}
-            />
-          </span>
-          <span>
-            <i className="fa-regular fa-heart" style={{ color: "#00040a" }}></i>
-          </span>
-        </div>
+      <div>
         <img
-          src={`https://happywedzbackend.happywedz.com/${media.gallery[3]}`}
+          src="https://images.unsplash.com/photo-1759528278887-71c168973ad1?q=80&w=1076&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           className="card-img-top w-100"
           alt="Banquet Hall"
           style={{ height: "220px", objectFit: "cover", borderRadius: "5%" }}
@@ -40,7 +18,7 @@ const CardComponent = ({ cat }) => {
       </div>
       <div className="card-body">
         <div className="d-flex justify-content-between align-items-center mb-2">
-          <h5 className="card-title mb-0">{data.name}</h5>
+          <h5 className="card-title mb-0">Name</h5>
           <p className="rating text-warning small mb-0 mt-1">
             ★<span className="text-muted">5.0 (2 Reviews)</span>
           </p>
@@ -52,7 +30,7 @@ const CardComponent = ({ cat }) => {
             fontSize: "12px",
           }}
         >
-          {data.location.city}, {data.location.state}
+          location, state
         </p>
 
         <div className="d-flex gap-4 mb-3">
@@ -94,18 +72,7 @@ const CardComponent = ({ cat }) => {
                 color: "#C31162",
               }}
             >
-              {data.rooms} Rooms
-            </p>
-            <p>
-              <Link
-                style={{
-                  color: "#C31162",
-                  fontSize: "12px",
-                  borderOffSet: "1px",
-                }}
-              >
-                + 5 more
-              </Link>
+              rooms
             </p>
           </div>
         </div>

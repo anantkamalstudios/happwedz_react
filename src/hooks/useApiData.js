@@ -17,23 +17,30 @@ const useApiData = (section, slug, city = null, vendorType = null) => {
 
     try {
       const subCategory = slug
-        ? slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
+        ? slug
+            .replace(/-{2,}/g, " / ")
+            .replace(/-/g, " ")
+            .replace(/\s*\/\s*/g, " / ")
+            .replace(/\s{2,}/g, " ")
+            .replace(/\b\w/g, (l) => l.toUpperCase())
+            .trim()
         : null;
 
       const params = new URLSearchParams();
+      if (vendorType) {
+        params.append("vendorType", vendorType);
+      }
       if (city && city !== "all") {
         params.append("city", city);
       }
-      if (vendorType) {
-        console.log("vendorType in UAP", vendorType);
-        params.append("vendorType", vendorType);
-      }
 
-      if (!vendorType && subCategory) {
+      if (!vendorType && subCategory && subCategory.toLowerCase() !== "all") {
         params.append("subCategory", subCategory);
       }
 
       const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
+      if (subCategory) {
+      }
       console.log("[useApiData] Fetching:", apiUrl);
       const response = await fetch(apiUrl);
 

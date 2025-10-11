@@ -82,8 +82,9 @@ const PhotoGallery = ({ images = [], onImagesChange }) => {
 
           {/* Drag & Drop Area */}
           <div
-            className={`border-2 border-dashed rounded-4 p-5 text-center ${isDragging ? "border-primary bg-blue-10" : "border-gray-300"
-              }`}
+            className={`border-2 border-dashed rounded-4 p-5 text-center ${
+              isDragging ? "border-primary bg-blue-10" : "border-gray-300"
+            }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -140,7 +141,7 @@ const PhotoGallery = ({ images = [], onImagesChange }) => {
               Browse Files
             </button>
             <p className="small text-muted mt-2 mb-0">
-              JPG, PNG up to 8MB (Max 8 images)
+              JPG, PNG up to 1MB (Max 8 images)
             </p>
 
             {localImages.length >= 8 && (
