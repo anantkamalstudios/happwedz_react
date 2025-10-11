@@ -473,6 +473,10 @@ const Detailed = () => {
               </Row>
             </div>
 
+            <div className="py-5">
+              <ReviewSection vendor={activeVendor} />
+            </div>
+
             {/* Testimonials */}
             <div className="testimonials mb-5">
               <h3 className="details-section-title fw-bold">
@@ -711,10 +715,6 @@ const Detailed = () => {
           </Row>
         </Container>
       </section>
-
-      <div className="py-5">
-        <ReviewSection vendor={activeVendor} />
-      </div>
 
       <PricingModal
         show={showPricingModal}
