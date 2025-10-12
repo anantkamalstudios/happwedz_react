@@ -16,25 +16,29 @@ const useRegions = (vendorType = null) => {
           : baseUrl;
 
         const { data } = await axios.get(url);
+        console.log("VT", vendorType, "url", url, "data", data);
 
         const cityMap = {};
         data.forEach((item) => {
-          const rawCity = item.attributes?.location?.city;
-          const city = rawCity ? String(rawCity).trim() : null;
+          let city = null;
+          if (
+            item.attributes &&
+            item.attributes.location &&
+            item.attributes.location.city
+          ) {
+            city = String(item.attributes.location.city).trim();
+          }
+          if (!city) return;
 
-          if (!city) return; // skip empty/null city
-
-          // ✅ Only include if exists in cityImages
           const matchedKey = Object.keys(cityImages).find(
             (k) => k.toLowerCase() === city.toLowerCase()
           );
-
-          if (!matchedKey) return; // skip cities not in cityImages
+          if (!matchedKey) return;
 
           if (!cityMap[matchedKey]) {
             cityMap[matchedKey] = {
               id: Object.keys(cityMap).length + 1,
-              name: matchedKey, // use exact key from cityImages
+              name: matchedKey,
               venueCount: 0,
               image: cityImages[matchedKey],
             };
