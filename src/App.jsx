@@ -57,6 +57,9 @@ const CancellationPolicy = lazy(() =>
   import("./components/pages/CancellationPolicy")
 );
 const CardEditorPage = lazy(() => import("./components/CardEditorPage"));
+const PhotographyDetailsPage = lazy(() =>
+  import("./components/layouts/photography/PhotographyDetailsPage")
+);
 const VideoEditorPage = lazy(() => import("./components/VideoEditorPage"));
 const VideoTemplates = lazy(() =>
   import("./components/layouts/eInvite/VideoTemplates")
@@ -67,9 +70,19 @@ const VideoEditorDemo = lazy(() =>
 const ProfileImageSelector = lazy(() =>
   import("./components/pages/ProfileImageSelector")
 );
+
+// E-Invite Pages
+const EinviteHomePage = lazy(() => import("./components/pages/EinviteHomePage"));
+const EinviteCategoryPage = lazy(() => import("./components/pages/EinviteCategoryPage"));
+const EinviteEditorPage = lazy(() => import("./components/pages/EinviteEditorPage"));
+const EinviteSharePage = lazy(() => import("./components/pages/EinviteSharePage"));
+const EinviteMyCards = lazy(() => import("./components/layouts/einvites/EinviteMyCards"));
 const TryLanding = lazy(() => import("./components/pages/TryLanding"));
 const BrideMakeupChoose = lazy(() =>
   import("./components/pages/BrideMakeupChoose")
+);
+const GroomeMakeupChoose = lazy(() =>
+  import("./components/pages/GroomeMakeupChoose")
 );
 const TryMakeupLanding = lazy(() =>
   import("./components/pages/TryMakeupLanding")
@@ -118,6 +131,10 @@ function App() {
           <Routes>
             <Route element={<MainLayout />}>
               <Route path="/" element={<Home />} />
+              <Route
+                path="/photos/details/:slug"
+                element={<PhotographyDetailsPage />}
+              />
               <Route path="/:section" element={<MainSection />} />
               <Route path="/:section/:slug" element={<SubSection />} />
               <Route path="/details/:section/:id" element={<Detailed />} />
@@ -150,6 +167,14 @@ function App() {
                 element={
                   <UserPrivateRoute>
                     <BrideMakeupChoose />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/try/groome"
+                element={
+                  <UserPrivateRoute>
+                    <GroomeMakeupChoose />
                   </UserPrivateRoute>
                 }
               />
@@ -200,6 +225,14 @@ function App() {
                 element={<VideoEditorPage />}
               />
               <Route path="/video-demo" element={<VideoEditorDemo />} />
+
+              {/* E-Invite Routes */}
+              <Route path="/einvites" element={<EinviteHomePage />} />
+              <Route path="/einvites/category/:category" element={<EinviteCategoryPage />} />
+              <Route path="/einvites/editor/:id" element={<EinviteEditorPage />} />
+              <Route path="/einvites/preview/:id" element={<EinviteSharePage />} />
+              <Route path="/einvites/share/:id" element={<EinviteSharePage />} />
+              <Route path="/einvites/my-cards" element={<EinviteMyCards />} />
 
               {/*  User Protected Routes  */}
               <Route
@@ -264,6 +297,7 @@ function App() {
               />
               <Route path="/edit-profile" element={<EditProfile />} />
             </Route>
+            <Route path="/ai-recommandation" element={<RecommandPage />} />
 
             {/*  Fallback  */}
             <Route path="*" element={<NotFound />} />

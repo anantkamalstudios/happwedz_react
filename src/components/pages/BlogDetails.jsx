@@ -99,7 +99,6 @@ const BlogDetails = ({ blogId, onBackClick }) => {
         backgroundColor: "#fff",
       }}
     >
-      {/* Back Button */}
       <div
         className="container"
         style={{ paddingTop: "2rem", paddingBottom: "1rem" }}
@@ -113,12 +112,10 @@ const BlogDetails = ({ blogId, onBackClick }) => {
         </button>
       </div>
 
-      {/* Article Container */}
       <div
         className="container"
         style={{ maxWidth: "700px", paddingBottom: "4rem" }}
       >
-        {/* Category Badge */}
         {blogData.category && (
           <div className="text-center mb-3">
             <span
@@ -137,7 +134,6 @@ const BlogDetails = ({ blogId, onBackClick }) => {
           </div>
         )}
 
-        {/* Title */}
         <h1
           className="text-center mb-4"
           style={{
@@ -152,7 +148,6 @@ const BlogDetails = ({ blogId, onBackClick }) => {
           {blogData.title}
         </h1>
 
-        {/* Meta Info */}
         <div
           className="text-center mb-4"
           style={{ fontSize: "0.9rem", color: "#666" }}
@@ -177,7 +172,6 @@ const BlogDetails = ({ blogId, onBackClick }) => {
           </span>
         </div>
 
-        {/* Short Description */}
         <p
           className="text-center mb-4"
           style={{
@@ -190,7 +184,6 @@ const BlogDetails = ({ blogId, onBackClick }) => {
           {blogData.shortDescription}
         </p>
 
-        {/* Content with interspersed images */}
         {blogData.fullDescription &&
           blogData.fullDescription.map((paragraph, index) => (
             <div key={index}>
@@ -225,7 +218,6 @@ const BlogDetails = ({ blogId, onBackClick }) => {
             </div>
           ))}
 
-        {/* Remaining images if any */}
         {blogData.images &&
           blogData.images.length > (blogData.fullDescription?.length || 0) && (
             <div className="mt-4">
@@ -249,7 +241,6 @@ const BlogDetails = ({ blogId, onBackClick }) => {
             </div>
           )}
 
-        {/* Decorative Hearts Separator */}
         <div className="text-center my-5">
           <Heart
             size={28}
@@ -262,7 +253,6 @@ const BlogDetails = ({ blogId, onBackClick }) => {
           />
         </div>
 
-        {/* Tags Section */}
         {blogData.tags && blogData.tags.length > 0 && (
           <div className="text-center mb-4">
             <h6
@@ -298,7 +288,6 @@ const BlogDetails = ({ blogId, onBackClick }) => {
           </div>
         )}
 
-        {/* Like Button */}
         <div className="text-center mt-4">
           <button
             className="btn"
@@ -326,7 +315,6 @@ const BlogDetails = ({ blogId, onBackClick }) => {
           </button>
         </div>
 
-        {/* Social Share */}
         <div
           className="mt-5 pt-4 text-center"
           style={{ borderTop: "1px solid #eee" }}
@@ -388,7 +376,6 @@ const BlogDetails = ({ blogId, onBackClick }) => {
           </div>
         </div>
 
-        {/* Author Section */}
         <div
           className="mt-5 p-4 text-center"
           style={{ backgroundColor: "#fef5f8", borderRadius: "15px" }}

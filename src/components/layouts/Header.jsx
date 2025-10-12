@@ -1,23 +1,37 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import LocationModalWithCategories from "./LocationModalWithCategories";
 import { RiMenuFill } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/authSlice";
 import { vendorLogout } from "../../redux/vendorAuthSlice";
 import { FaArrowRightLong } from "react-icons/fa6";
+import {
+  FaRing,
+  FaClipboardList,
+  FaStore,
+  FaUsers,
+  FaPiggyBank,
+  FaHeart,
+  FaShoppingCart,
+  FaEnvelopeOpenText,
+  FaUserFriends,
+  FaUser,
+} from "react-icons/fa";
 
 const Header = () => {
   const dispatch = useDispatch();
+  const { slug } = useParams();
   const reduxLocation = useSelector((state) => state.location.selectedLocation);
+  const [activeTab, setActiveTab] = useState("");
   const [selectedCity, setSelectedCity] = useState(reduxLocation);
+  const navigate = useNavigate();
   const formatName = (name) => name.replace(/\band\b/gi, "&");
 
   const handleLogout = () => {
     dispatch(logout());
     dispatch(vendorLogout());
 
-    // Clear any cached storefront data on logout
     localStorage.removeItem("vendorFormData");
     localStorage.removeItem("photoDraftsMeta");
     localStorage.removeItem("videoDraftsMeta");
@@ -44,17 +58,57 @@ const Header = () => {
     if (collapse && collapse.classList.contains("show")) {
       collapse.classList.remove("show");
     }
-    // If using Bootstrap JS, trigger collapse
     if (window.bootstrap && window.bootstrap.Collapse) {
       try {
         const bsCollapse =
           window.bootstrap.Collapse.getOrCreateInstance(collapse);
         bsCollapse.hide();
-      } catch {
-        //  console.log("Error in collapsing navbar")
-      }
+      } catch { }
     }
   }, [location]);
+
+  const tabs = [
+    {
+      id: "wedding",
+      slug: "my-wedding",
+      label: "My Wedding",
+      icon: <FaRing />,
+    },
+    {
+      id: "checklist",
+      slug: "checklist",
+      label: "Checklist",
+      icon: <FaClipboardList />,
+    },
+    { id: "vendors", slug: "vendor", label: "Vendor", icon: <FaStore /> },
+    {
+      id: "guest-list",
+      slug: "guest-list",
+      label: "Guest list",
+      icon: <FaUsers />,
+    },
+    { id: "budget", slug: "budget", label: "Budget", icon: <FaPiggyBank /> },
+    { id: "wishlist", slug: "wishlist", label: "Wishlist", icon: <FaHeart /> },
+    // { id: "booking", slug: "booking", label: "Booking", icon: <FaShoppingCart /> },
+    {
+      id: "message",
+      slug: "message",
+      label: "Message",
+      icon: <FaEnvelopeOpenText />,
+    },
+    {
+      id: "real-wedding",
+      slug: "real-wedding",
+      label: "Real wedding",
+      icon: <FaUserFriends />,
+    },
+    {
+      id: "user-profile",
+      slug: "user-profile",
+      label: "Profile",
+      icon: <FaUser />,
+    },
+  ];
 
   const [venueSubcategories, setVenueSubcategories] = useState([]);
   useEffect(() => {
@@ -350,6 +404,139 @@ const Header = () => {
                     </div>
                     <ul className="navbar-nav d-flex flex-wrap justify-content-center gap-3">
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper">
+                          <button className="nav-link dropdown-toggle text-white fs-18">
+                            Planning Tools
+                          </button>
+
+                          <div className="dropdown-menu mega-dropdown w-100 border-0 mt-0 p-4 rounded-4 shadow-sm bg-white">
+                            <div className="container">
+                              <div className="row g-4">
+                                {/* LEFT SECTION */}
+                                <div className="col-md-8">
+                                  <h6 className="fw-semibold text-dark mb-4 fs-5">
+                                    Plan your unique wedding
+                                  </h6>
+
+                                  <div
+                                    style={{
+                                      display: "grid",
+                                      gridTemplateColumns: "repeat(3, 1fr)",
+                                      gap: "1.25rem 1rem",
+                                    }}
+                                  >
+                                    {tabs.map((tab) => (
+                                      <div
+                                        key={tab.id}
+                                        onClick={() =>
+                                          navigate(
+                                            `/user-dashboard/${tab.slug}`
+                                          )
+                                        }
+                                        className="d-flex align-items-center"
+                                        style={{
+                                          cursor: "pointer",
+                                          transition: "color 0.2s ease-in-out",
+                                        }}
+                                        onMouseEnter={(e) =>
+                                        (e.currentTarget.style.color =
+                                          "#e91e63")
+                                        }
+                                        onMouseLeave={(e) =>
+                                        (e.currentTarget.style.color =
+                                          "#212529")
+                                        }
+                                      >
+                                        <span
+                                          style={{
+                                            fontSize: "30px",
+                                            color: "#555",
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            width: "38px",
+                                            height: "38px",
+                                          }}
+                                        >
+                                          {tab.icon}
+                                        </span>
+                                        <span className="ms-2 fw-medium fs-20">
+                                          {tab.label}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* RIGHT SECTION */}
+                                <div className="col-md-4">
+                                  <div className="d-flex flex-column gap-3">
+                                    {[
+                                      {
+                                        title: "Get the HappyWedz App",
+                                        desc: "Plan your wedding on the go with the HappyWedz app.",
+                                        image: "/images/header/playstore.png",
+                                      },
+                                      {
+                                        title: "Wedshots",
+                                        desc: "Easily collect all your guests' event photos in one album!",
+                                        image: "/images/header/tryimg.png",
+                                      },
+                                    ].map((item, i) => (
+                                      <div
+                                        key={i}
+                                        className="p-3 rounded-4 bg-white shadow-sm"
+                                        style={{
+                                          border: "1px solid #f0f0f0",
+                                          cursor: "pointer",
+                                          transition: "all 0.2s ease-in-out",
+                                        }}
+                                        onMouseEnter={(e) =>
+                                        (e.currentTarget.style.boxShadow =
+                                          "0 4px 12px rgba(0,0,0,0.08)")
+                                        }
+                                        onMouseLeave={(e) =>
+                                        (e.currentTarget.style.boxShadow =
+                                          "0 2px 4px rgba(0,0,0,0.04)")
+                                        }
+                                      >
+                                        <div className="d-flex justify-content-between align-items-center">
+                                          <div className="me-3">
+                                            <h6 className="fw-semibold mb-1 text-dark fs-6">
+                                              {item.title}
+                                            </h6>
+                                            <p
+                                              className="mb-0 text-muted"
+                                              style={{
+                                                fontSize: "13px",
+                                                lineHeight: "1.4",
+                                              }}
+                                            >
+                                              {item.desc}
+                                            </p>
+                                          </div>
+                                          <img
+                                            src={item.image}
+                                            alt={item.title}
+                                            style={{
+                                              width: "38px",
+                                              height: "38px",
+                                              borderRadius: "8px",
+                                              objectFit: "cover",
+                                            }}
+                                          />
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+
+                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <Link
                           // to={targetURL}
                           to="/venues"
@@ -402,40 +589,39 @@ const Header = () => {
                                 <div className="row">
                                   {(venueSubcategories.length > 0
                                     ? [
-                                        ...venueSubcategories.map(
-                                          (s) => s.name
-                                        ),
-                                        "View All Venues",
-                                      ]
+                                      ...venueSubcategories.map(
+                                        (s) => s.name
+                                      ),
+                                      "View All Venues",
+                                    ]
                                     : [
-                                        "Banquet Halls",
-                                        "Marriage Garden / Lawns",
-                                        "Wedding Resorts",
-                                        "Small Function / Party Halls",
-                                        "Destination Wedding Venues",
-                                        "Kalyana Mandapams",
-                                        "4 Star & Above Wedding Hotels",
-                                        "Venue Concierge Services",
-                                        "View All Venues",
-                                      ]
+                                      "Banquet Halls",
+                                      "Marriage Garden / Lawns",
+                                      "Wedding Resorts",
+                                      "Small Function / Party Halls",
+                                      "Destination Wedding Venues",
+                                      "Kalyana Mandapams",
+                                      "4 Star & Above Wedding Hotels",
+                                      "Venue Concierge Services",
+                                      "View All Venues",
+                                    ]
                                   ).map((item, i) => {
                                     const isShowMore =
                                       item === "View All Venues";
                                     const path = isShowMore
                                       ? "/venues"
                                       : `/venues/${item
-                                          .toLowerCase()
-                                          .replace(/\s+/g, "-")
-                                          .replace(/[^a-z0-9\-]/g, "")}`;
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "-")
+                                        .replace(/[^a-z0-9\-]/g, "")}`;
                                     return (
                                       <div className="col-12 mb-2" key={i}>
                                         <Link
                                           to={path}
-                                          className={`dropdown-link d-flex align-items-center ${
-                                            isShowMore
+                                          className={`dropdown-link d-flex align-items-center ${isShowMore
                                               ? "primary-text fw-bold text-decoration-underline"
                                               : ""
-                                          }`}
+                                            }`}
                                         >
                                           <i className="bi bi-check-circle me-2 text-primary"></i>
                                           <span className="small">{item}</span>
@@ -809,7 +995,7 @@ const Header = () => {
                           <Link
                             // className="nav-link dropdown-toggle text-white"
                             className="nav-link text-white fs-18"
-                            to="/e-invites"
+                            to="/einvites"
                             state={{ title: "E-Invites" }}
                             id="photoDropdown"
                             role="button"

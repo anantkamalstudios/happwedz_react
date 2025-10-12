@@ -1,14 +1,37 @@
 import React, { useState } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
-import { faqssection } from "../../../data/faqssection";
+import { useFaqFrontend } from "../../../hooks/useFaq";
 
-const FaqsSection = () => {
+const FaqsSection = ({ navbarId = null }) => {
   const [activeIndex, setActiveIndex] = useState(null);
+  const { faqs, loading, error } = useFaqFrontend(navbarId);
 
   const toggleFAQ = (index) => {
     setActiveIndex(activeIndex === index ? null : index);
   };
+
+  if (loading) {
+    return (
+      <div className="faq-section container my-5">
+        <h2 className="text-center mb-4 faq-heading">
+          Frequently Asked Questions
+        </h2>
+        <p className="text-center">Loading FAQs...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="faq-section container my-5">
+        <h2 className="text-center mb-4 faq-heading">
+          Frequently Asked Questions
+        </h2>
+        <p className="text-center text-danger">Failed to load FAQs</p>
+      </div>
+    );
+  }
 
   return (
     <div className="faq-section container my-5">
@@ -16,9 +39,9 @@ const FaqsSection = () => {
         Frequently Asked Questions
       </h2>
       <div className="accordion">
-        {faqssection.map((faq, index) => (
+        {faqs.map((faq, index) => (
           <div
-            key={index}
+            key={faq.id || index}
             className={`faq-card ${activeIndex === index ? "active" : ""}`}
             onClick={() => toggleFAQ(index)}
           >

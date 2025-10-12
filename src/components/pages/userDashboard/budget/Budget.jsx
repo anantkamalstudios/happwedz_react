@@ -631,6 +631,8 @@ const Budget = () => {
   const [newExpense, setNewExpense] = useState({ name: "", estimated: 0 });
   const [loading, setLoading] = useState(true);
 
+  const { user } = useSelector((state) => state.auth);
+
   useEffect(() => {
     const fetchBudgetCategories = async () => {
       try {
@@ -661,6 +663,52 @@ const Budget = () => {
 
     fetchBudgetCategories();
   }, []);
+
+  useEffect(() => {
+    // Don't fetch user budget until categories and user are loaded
+    if (budget.categories.length === 0 || !user?.id) {
+      return;
+    }
+
+    const fetchUserBudget = async () => {
+      try {
+        const response = await fetch(
+          `https://happywedz.com/api/budgets/user/${user.id}`
+        );
+        const result = await response.json();
+
+        if (result.success && result.data.length > 0) {
+          const userBudgetData = result.data;
+
+          setBudget((prev) => {
+            const categoriesWithData = prev.categories.map((category) => {
+              const matchingBudgets = userBudgetData.filter(
+                (b) => b.vendor_type_id === category.id
+              );
+
+              if (matchingBudgets.length > 0) {
+                const newSubcategories = matchingBudgets.map((b) => ({
+                  id: b.id, // Use the budget entry ID as the unique ID
+                  name: `Expense #${b.id}`, // API doesn't provide a name, so we create one
+                  estimated: b.estimated_budget,
+                  final: b.final_cost,
+                  paid: b.paid_amount,
+                }));
+
+                return { ...category, subcategories: newSubcategories };
+              }
+              return category;
+            });
+            return { ...prev, categories: categoriesWithData };
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching user budget:", error);
+      }
+    };
+
+    fetchUserBudget();
+  }, [budget.categories.length, user?.id]); // Rerun when categories or user are populated
 
   // Colors for pie chart
   const COLORS = [
@@ -707,37 +755,68 @@ const Budget = () => {
   };
 
   // Add new expense to category
-  const addExpense = (categoryId) => {
+  const addExpense = async (categoryId) => {
+    if (!user?.id) return; // Do not proceed if there is no user
     if (!newExpense.name || newExpense.estimated <= 0) return;
 
-    const updatedCategories = budget.categories.map((category) => {
-      if (category.id === categoryId) {
-        const newExpenseId =
-          Math.max(...category.subcategories.map((sc) => sc.id), 0) + 1;
-        return {
-          ...category,
-          subcategories: [
-            ...category.subcategories,
-            {
-              id: newExpenseId,
-              name: newExpense.name,
-              estimated: Number(newExpense.estimated),
-              final: 0,
-              paid: 0,
-            },
-          ],
-          amount: category.amount + Number(newExpense.estimated),
-        };
-      }
-      return category;
-    });
+    const payload = {
+      vendor_type_id: categoryId,
+      // name is not in the API payload, but it's part of your UI state.
+      // The backend might handle it differently.
+      estimated_budget: Number(newExpense.estimated),
+      final_cost: 0,
+      paid_amount: 0,
+    };
 
-    setBudget({
-      ...budget,
-      categories: updatedCategories,
-      estimated: budget.estimated + Number(newExpense.estimated),
-    });
-    setNewExpense({ name: "", estimated: 0 });
+    try {
+      // The API likely expects the user ID in the URL to associate the budget with the user
+      const response = await fetch(`https://happywedz.com/api/budgets/user/${user.id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Add Authorization header if needed
+          // 'Authorization': `Bearer ${your_auth_token}`
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add expense");
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        const newExpenseFromServer = result.data;
+        const updatedCategories = budget.categories.map((category) => {
+          if (category.id === categoryId) {
+            const newSubcategory = {
+              id: newExpenseFromServer.vendor_subcategory_id || newExpenseFromServer.id, // Use ID from server
+              name: newExpense.name, // Keep the name from the form
+              estimated: newExpenseFromServer.estimated_budget,
+              final: newExpenseFromServer.final_cost,
+              paid: newExpenseFromServer.paid_amount,
+            };
+            return {
+              ...category,
+              subcategories: [...category.subcategories, newSubcategory],
+              amount: category.amount + newSubcategory.estimated,
+            };
+          }
+          return category;
+        });
+
+        setBudget((prev) => ({
+          ...prev,
+          categories: updatedCategories,
+        }));
+        setNewExpense({ name: "", estimated: 0 }); // Reset form
+      } else {
+        console.error("Failed to add expense:", result.message);
+      }
+    } catch (error) {
+      console.error("Error adding expense:", error);
+    }
   };
 
   // Update expense field

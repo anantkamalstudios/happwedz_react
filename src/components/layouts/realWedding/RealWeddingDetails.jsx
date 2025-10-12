@@ -757,8 +757,9 @@ export default function WeddingPage({ post, onBackClick }) {
           }}
         >
           <h1
-            className="fw-bold display-5"
+            className="fw-bold display-5 text-white"
             style={{
+              color: "white",
               fontSize: "5rem",
               letterSpacing: "1px",
               wordSpacing: "5px",
@@ -923,9 +924,10 @@ export default function WeddingPage({ post, onBackClick }) {
           }}
         >
           {/* Animated gradient border */}
-          <div className="primary-light-bg text-black"
+          <div
+            className="primary-light-bg text-black"
             style={{
-              content: '',
+              content: "",
               position: "absolute",
               inset: "-3px",
               borderRadius: "18px",

@@ -1,3 +1,4 @@
+// frontend
 import React, { useState, useEffect } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import CardEditor from "./layouts/eInvite/CardEditor";
@@ -10,13 +11,10 @@ const CardEditorPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Method 1: From location state (navigate with state)
     if (location.state?.template) {
       setTemplate(location.state.template);
       setLoading(false);
-    }
-    // Method 2: From URL params (template data in URL)
-    else if (location.search) {
+    } else if (location.search) {
       const urlParams = new URLSearchParams(location.search);
       const templateData = urlParams.get("template");
       if (templateData) {
@@ -29,24 +27,15 @@ const CardEditorPage = () => {
           navigate("/templates");
         }
       }
-    }
-    // Method 3: From template ID (fetch from API/database)
-    else if (params.templateId) {
-      // Fetch template data from your API
+    } else if (params.templateId) {
       fetchTemplateById(params.templateId);
     } else {
-      // No template data found, redirect to templates
       navigate("/templates");
     }
   }, [location, params, navigate]);
 
   const fetchTemplateById = async (templateId) => {
     try {
-      // Replace with your actual API call
-      // const response = await fetch(`/api/templates/${templateId}`);
-      // const templateData = await response.json();
-
-      // For demo, using hardcoded data
       const mockTemplate = {
         id: templateId,
         name: "Sample Template",

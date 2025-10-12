@@ -105,7 +105,7 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
           </div>
 
           {/* Slug (auto-generated, disabled) */}
-          <div className="col-md-6 mb-3">
+          {/* <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">Slug</label>
             <input
               type="text"
@@ -115,7 +115,7 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
               disabled
               placeholder="vendor-name-slug"
             />
-          </div>
+          </div> */}
 
           {/* Tagline */}
           <div className="col-md-6 mb-3">

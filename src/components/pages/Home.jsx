@@ -48,7 +48,6 @@ const Home = () => {
         btnName="Create Your E-Invite"
       />
       <RealWeddings />
-      <HowItWorksSection />
       {/* <FeaturedVendorsSection /> */}
 
       {/* <TestimonialsSection /> */}
@@ -65,8 +64,8 @@ const Home = () => {
       <MainTestimonial />
       <BlogInspirationTeasers />
       {/* <NewsletterSection /> */}
+      <HowItWorksSection />
       <AppDownloadSection />
-
       <MetroCities />
     </>
   );

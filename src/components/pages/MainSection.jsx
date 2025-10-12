@@ -38,8 +38,8 @@ const MainSection = () => {
   const [selectedCity, setSelectedCity] = useState(reduxLocation);
   const [show, setShow] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-  const [view, setView] = useState("images"); 
-  
+  const [view, setView] = useState("images");
+
   const { data, loading, error } = useApiData(
     "venues",
     null,
@@ -106,7 +106,7 @@ const MainSection = () => {
         <MainSearch title="Wedding Vendor" />
         <MainByRegion type="vendors" />
         <AllCategories />
-        <FindMain />
+        {/* <FindMain /> */}
         <FaqsSection />
       </>
     );
@@ -123,8 +123,6 @@ const MainSection = () => {
           onSearchChange={setSearchQuery}
         />
         <GridImages category={selectedCategory} searchQuery={searchQuery} />
-        {/* <FactorsList />
-        <FaqsSection /> */}
       </>
     );
   }
@@ -132,7 +130,6 @@ const MainSection = () => {
   if (section === "real-wedding") {
     return (
       <>
-        {/* <MainSearch title="Real Wedding" /> */}
         <RealWedding />
       </>
     );
@@ -142,14 +139,7 @@ const MainSection = () => {
     return (
       <>
         <MainSearch title="E Invites" />
-        {/* <MainByRegion /> */}
-        {/* <MainEInvites /> */}
         <WeddingCardDesigns />
-        {/* <FindMain /> */}
-        {/* <MainHeroSection loc={"Panjab"} />
-        <MainHeroSection loc={"Karela "} />
-        <MainHeroSection loc={"Goa"} />
-        */}
         <FaqsSection />
       </>
     );
@@ -157,15 +147,7 @@ const MainSection = () => {
   if (section === "e-invite-wedding-card-designs") {
     return (
       <>
-        {/* <VenuesSearch title="E Invites" /> */}
-        {/* <MainByRegion /> */}
-        {/* <MainEInvites /> */}
         <WeddingCardDesigns />
-        {/* <FindMain /> */}
-        {/* <MainHeroSection loc={"Panjab"} />
-        <MainHeroSection loc={"Karela "} />
-        <MainHeroSection loc={"Goa"} />
-        */}
         <FactorsList />
         <FaqsSection />
       </>

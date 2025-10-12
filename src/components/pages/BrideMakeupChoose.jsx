@@ -10,15 +10,6 @@ const SectionCard = ({ title, subtitle, image, onTry }) => {
         className="w-100 h-100"
         style={{ objectFit: "cover", filter: "brightness(1)" }}
       />
-      {/* <div className="position-absolute bottom-50 end-10 p-4 text-end text-white w-100">
-        <h1 className="fw-bold mb-2 ">{title}</h1>
-        <p className="mb-3" style={{ opacity: 0.9 }}>
-          {subtitle}
-        </p>
-        <button className="try-btn w-25 rounded-2" onClick={onTry}>
-          Get Started
-        </button>
-      </div> */}
       <div className="row position-absolute bottom-50 end-0 p-4 text-center text-white w-100 d-flex justify-content-end">
         <div className="col-md-6"></div>
         <div className="col-md-4 justify-content-end">

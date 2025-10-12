@@ -8,17 +8,28 @@ const VideoGallery = ({ videos = [], onVideosChange }) => {
 
   const handleAddUrl = () => {
     if (newVideoUrl.trim()) {
-      setLocalVideos((prev) => [
-        ...prev,
-        {
-          id: Math.random().toString(36).substr(2, 9),
-          url: newVideoUrl.trim(),
-          preview: newVideoUrl.trim(),
-          title: "",
-          type: "video",
-          file: null,
-        },
-      ]);
+      const newVideo = {
+        id: Math.random().toString(36).substr(2, 9),
+        url: newVideoUrl.trim(),
+        preview: newVideoUrl.trim(),
+        title: "",
+        type: "video",
+        file: null,
+      };
+      const updatedVideos = [...localVideos, newVideo];
+      setLocalVideos(updatedVideos);
+      // Immediately notify parent so backend can store the url
+      if (onVideosChange) {
+        // Only send id, url, title, type (no preview/file)
+        onVideosChange(
+          updatedVideos.map(({ id, url, title, type }) => ({
+            id,
+            url,
+            title,
+            type,
+          }))
+        );
+      }
       setNewVideoUrl("");
     }
   };
@@ -30,7 +41,19 @@ const VideoGallery = ({ videos = [], onVideosChange }) => {
   };
 
   const handleRemoveVideo = (id) => {
-    setLocalVideos((prev) => prev.filter((img) => img.id !== id));
+    const updatedVideos = localVideos.filter((img) => img.id !== id);
+    setLocalVideos(updatedVideos);
+    // Immediately notify parent so backend stays in sync
+    if (onVideosChange) {
+      onVideosChange(
+        updatedVideos.map(({ id, url, title, type }) => ({
+          id,
+          url,
+          title,
+          type,
+        }))
+      );
+    }
   };
 
   // Sync down from parent when prop changes
@@ -61,7 +84,17 @@ const VideoGallery = ({ videos = [], onVideosChange }) => {
 
   // Notify parent on change
   useEffect(() => {
-    onVideosChange && onVideosChange(localVideos);
+    if (onVideosChange) {
+      // Only send id, url, title, type (no preview/file)
+      onVideosChange(
+        localVideos.map(({ id, url, title, type }) => ({
+          id,
+          url,
+          title,
+          type,
+        }))
+      );
+    }
   }, [localVideos, onVideosChange]);
 
   return (

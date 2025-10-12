@@ -23,7 +23,6 @@ const GridView = ({ subVenuesData, handleShow }) => {
           subVenuesData.map((venue) => (
             <Col key={venue.id} xs={12} sm={6} lg={4} className="mb-4">
               <Card className="border-0 main-grid-cards rounded-4 overflow-hidden p-2 h-100">
-                {/* Image Section */}
                 <div className="position-relative" style={{ height: "240px" }}>
                   <Card.Img
                     variant="top"
@@ -41,7 +40,6 @@ const GridView = ({ subVenuesData, handleShow }) => {
                     }}
                   />
 
-                  {/* 360 View Icon (Left Side) */}
                   <button
                     className="btn btn-light position-absolute rounded-circle border-0 shadow-sm"
                     style={{
@@ -62,7 +60,6 @@ const GridView = ({ subVenuesData, handleShow }) => {
                     <TbView360Number className="text-dark" size={18} />
                   </button>
 
-                  {/* Favorite Icon (Right Side) */}
                   <button
                     className="btn btn-light position-absolute rounded-circle border-0 shadow-sm"
                     style={{

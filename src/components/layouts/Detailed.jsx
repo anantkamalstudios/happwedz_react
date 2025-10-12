@@ -427,7 +427,10 @@ const Detailed = () => {
                               >
                                 <i
                                   className="fa-solid fa-check me-2"
-                                  style={{ color: "#0e6214", marginTop: "4px" }}
+                                  style={{
+                                    color: "#f44e4eff",
+                                    marginTop: "4px",
+                                  }}
                                 ></i>
                                 <span className="text-muted">{a}</span>
                               </div>
@@ -468,6 +471,10 @@ const Detailed = () => {
                   </Col>
                 )}
               </Row>
+            </div>
+
+            <div className="py-5">
+              <ReviewSection vendor={activeVendor} />
             </div>
 
             {/* Testimonials */}
@@ -708,10 +715,6 @@ const Detailed = () => {
           </Row>
         </Container>
       </section>
-
-      <div className="py-5">
-        <ReviewSection vendor={activeVendor} />
-      </div>
 
       <PricingModal
         show={showPricingModal}

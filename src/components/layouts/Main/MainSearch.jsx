@@ -143,6 +143,26 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
               </Form>
 
               <div className="d-flex gap-2 mt-3 flex-wrap"></div>
+              {/* <div className="d-flex gap-2 mt-3 flex-wrap">
+                {["Banquet Halls", "Wedding Resorts", "Photographers"].map(
+                  (chip) => (
+                    <p style={{}}>
+                      <span
+                        key={chip}
+                        className="badge  rounded-pill px-4 py-2"
+                        style={{
+                          fontWeight: 300,
+                          fontSize: "10px",
+                          color: "#C31162",
+                          backgroundColor: "#fbcfe3ff",
+                        }}
+                      >
+                        {chip}
+                      </span>
+                    </p>
+                  )
+                )}
+              </div> */}
             </div>
           </Col>
 

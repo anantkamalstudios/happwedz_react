@@ -103,7 +103,14 @@ const LocationModalWithAPI = () => {
         )}
       </div>
 
-      <Modal show={show} onHide={() => setShow(false)} size="xl" centered>
+      <Modal
+        show={show}
+        onHide={() => setShow(false)}
+        size="xl"
+        centered
+        backdrop="static"
+        keyboard={false}
+      >
         <Modal.Body>
           <Form.Select
             className="mb-3"
