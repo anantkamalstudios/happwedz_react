@@ -116,7 +116,7 @@ const TryLanding = () => {
                   <div className="col-md-4">
                     <div
                       role="button"
-                      onClick={() => handleCategorySelect("groom")}
+                      onClick={() => navigate("/try/groome")}
                       className="d-flex flex-column align-items-center"
                     >
                       <div
@@ -129,12 +129,13 @@ const TryLanding = () => {
                           className="rounded-5 w-100 h-100"
                           style={{ objectFit: "cover" }}
                         />
-                        {/* Unique Overlay */}
-                        <div className="try-modal-hover-overlay-custom d-flex justify-content-center align-items-center rounded-5">
+
+                        <h4 className="mt-3 fw-semibold">Groom</h4>
+                        {/* <div className="try-modal-hover-overlay-custom d-flex justify-content-center align-items-center rounded-5">
                           <span className="text-white fs-4 fw-bold">
                             Coming Soon
                           </span>
-                        </div>
+                        </div> */}
                       </div>
                       <h4 className="mt-3 fw-semibold">Groom</h4>
                     </div>

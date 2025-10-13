@@ -74,10 +74,90 @@ const FILTER_CONFIG = {
 
   venues: {
     "venue Type": [
-      "banquet hall",
+      "banquet-halls",
       "lawn",
       "farmhouse",
       "resort",
+      "destination venue",
+    ],
+    capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
+    "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
+    rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
+  },
+
+  "banquet-halls": {
+    "venue Type": [
+      "banquet-halls",
+      "lawn",
+      "farmhouse",
+      "resort",
+      "destination venue",
+    ],
+    capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
+    "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
+    rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
+  },
+
+  "wedding-resorts": {
+    "venue Type": [
+      "resort",
+      "farmhouse",
+      "lawn",
+      "banquet-halls",
+      "destination venue",
+    ],
+    capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
+    "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
+    rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
+  },
+
+  "destination-wedding-venues": {
+    "venue Type": [
+      "destination venue",
+      "farmhouse",
+      "lawn",
+      "banquet-halls",
+      "resort",
+    ],
+    capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
+    "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
+    rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
+  },
+
+  "small-functions-party-halls": {
+    "venue Type": [
+      "small function / party halls",
+      "farmhouse",
+      "lawn",
+      "banquet-halls",
+      "resort",
+      "destination venue",
+    ],
+    capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
+    "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
+    rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
+  },
+
+  "marriage-garden-lawns": {
+    "venue Type": [
+      "marriage garden / lawns",
+      "farmhouse",
+      "lawn",
+      "banquet-halls",
+      "resort",
+      "destination venue",
+    ],
+    capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
+    "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
+    rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
+  },
+
+  "wedding-resorts": {
+    "venue Type": [
+      "resort",
+      "farmhouse",
+      "lawn",
+      "banquet-halls",
       "destination venue",
     ],
     capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],

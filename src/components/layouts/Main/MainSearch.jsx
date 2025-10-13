@@ -12,16 +12,41 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const placeholders = useMemo(() => {
-    const t = (title || "").toLowerCase();
-    const keywordPh = t.includes("photo")
-      ? "Photographers, shoots, poses"
-      : t.includes("vendor")
-      ? "Decor, catering, planners"
-      : t.includes("venue")
-      ? "Banquet halls, resorts, lawns"
-      : "Find Best Venues";
+    const section = (title || "").toLowerCase();
+
+    let keywordPh = "";
+    let subtitle = "";
+
+    switch (true) {
+      case section.includes("venue"):
+        keywordPh = "Banquet halls, resorts, lawns";
+        subtitle =
+          "From royal palaces to cozy gardens – find the perfect setting for your big day";
+        break;
+      case section.includes("vendor"):
+        keywordPh = "Decor, catering, planners";
+        subtitle =
+          "Everything you need – from planners to caterers – to make your day hassle-free";
+        break;
+      case section.includes("photo"):
+      case section.includes("photography"):
+        keywordPh = "Photographers, shoots, poses";
+        subtitle =
+          "Capture your special moments with the best wedding photographers";
+        break;
+      case section.includes("invite"):
+      case section.includes("e-invite"):
+        keywordPh = "Wedding cards, digital invites";
+        subtitle =
+          "Send beautiful invites to your loved ones – traditional or digital";
+        break;
+      default:
+        keywordPh = "Find Best Options";
+        subtitle = "Plan your dream wedding with the best options available";
+    }
+
     const placePh = "City or locality";
-    return { keywordPh, placePh };
+    return { keywordPh, placePh, subtitle };
   }, [title]);
 
   const handleSubmit = (e) => {
@@ -50,7 +75,6 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
       .catch(() => setCities([]));
   }, []);
 
-  // ✅ Filter cities locally
   const filteredCities = cities.filter((city) =>
     city.toLowerCase().startsWith(searchTerm.toLowerCase())
   );
@@ -78,10 +102,7 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
               >
                 {title || "Plan your perfect day"}
               </h1>
-              <p className="text-muted mb-4" style={{}}>
-                From royal palaces to cozy gardens - find the perfect setting
-                for your big day
-              </p>
+              <p className="text-muted mb-4">{placeholders.subtitle}</p>
 
               <Form onSubmit={handleSubmit} className="w-100 position-relative">
                 <div
@@ -121,6 +142,7 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
                 </div>
               </Form>
 
+              <div className="d-flex gap-2 mt-3 flex-wrap"></div>
               {/* <div className="d-flex gap-2 mt-3 flex-wrap">
                 {["Banquet Halls", "Wedding Resorts", "Photographers"].map(
                   (chip) => (

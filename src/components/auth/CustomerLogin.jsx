@@ -56,7 +56,6 @@ const CustomerLogin = () => {
       console.log("Registration response:", registerData);
 
       if (registerData.success && registerData.user && registerData.token) {
-        // Registration successful, use backend token
         console.log("Registration successful, using backend token");
         dispatch(
           loginUser({ user: registerData.user, token: registerData.token })
@@ -109,7 +108,6 @@ const CustomerLogin = () => {
           navigate("/", { replace: true });
         }
       } else {
-        // Registration failed for other reasons, fallback to Firebase-only authentication
         console.log("Registration failed, falling back to Firebase-only auth");
         console.log("Registration error:", registerData);
         const user = {

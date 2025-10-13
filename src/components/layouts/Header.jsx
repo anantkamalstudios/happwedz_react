@@ -448,19 +448,18 @@ const Header = () => {
                                         }
                                       >
                                         <span
+                                          className="fs-18"
                                           style={{
                                             fontSize: "30px",
                                             color: "#555",
                                             display: "inline-flex",
                                             alignItems: "center",
                                             justifyContent: "center",
-                                            width: "38px",
-                                            height: "38px",
                                           }}
                                         >
                                           {tab.icon}
                                         </span>
-                                        <span className="ms-2 fw-medium fs-20">
+                                        <span className="ms-2 fw-medium small">
                                           {tab.label}
                                         </span>
                                       </div>
@@ -996,7 +995,7 @@ const Header = () => {
                           <Link
                             // className="nav-link dropdown-toggle text-white"
                             className="nav-link text-white fs-18"
-                            to="/e-invites"
+                            to="/einvites"
                             state={{ title: "E-Invites" }}
                             id="photoDropdown"
                             role="button"

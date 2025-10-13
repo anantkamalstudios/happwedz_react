@@ -53,7 +53,10 @@ const LocationModalWithAPI = () => {
   const handleCityClick = (city) => {
     dispatch(setLocation(city));
     setShow(false);
-    navigate(`/vendors/all?city=${encodeURIComponent(city)}`);
+
+    setTimeout(() => {
+      navigate(`/vendors/all?city=${encodeURIComponent(city)}`);
+    }, 300);
   };
 
   const handleClearLocation = (e) => {
@@ -103,7 +106,14 @@ const LocationModalWithAPI = () => {
         )}
       </div>
 
-      <Modal show={show} onHide={() => setShow(false)} size="xl" centered>
+      <Modal
+        show={show}
+        onHide={() => setShow(false)}
+        size="xl"
+        centered
+        backdrop="static"
+        keyboard={true}
+      >
         <Modal.Body>
           <Form.Select
             className="mb-3"
