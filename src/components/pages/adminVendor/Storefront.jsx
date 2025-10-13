@@ -69,190 +69,195 @@ import { name } from "dayjs/locale/en.js";
 const Storefront = () => {
   const [active, setActive] = useState("business");
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({});
+  const { token, vendor } = useSelector((state) => state.vendorAuth || {});
+  const [formData, setFormData] = useState({ attributes: vendor || {} });
   const [photoDrafts, setPhotoDrafts] = useState([]);
   const [videoDrafts, setVideoDrafts] = useState([]);
   const [vendorTypeName, setVendorTypeName] = useState("");
-  const { token, vendor } = useSelector((state) => state.vendorAuth || {});
+
+  const fetchServiceData = async () => {
+    if (vendor?.id && token) {
+      try {
+        // Clear localStorage for new vendor to prevent data leakage
+        const lastVendorId = localStorage.getItem("lastVendorId");
+        if (lastVendorId && lastVendorId !== vendor.id.toString()) {
+          localStorage.removeItem("vendorFormData");
+          localStorage.removeItem("photoDraftsMeta");
+          localStorage.removeItem("videoDraftsMeta");
+          setFormData({});
+          setPhotoDrafts([]);
+          setVideoDrafts([]);
+        }
+        localStorage.setItem("lastVendorId", vendor.id.toString());
+
+        const serviceData = await vendorServicesApi.getVendorServiceByVendorId(
+          vendor.id,
+          token
+        );
+
+        // Fetch vendor type name from API (like VendorBasicInfo)
+        if (vendor.vendor_type_id) {
+          try {
+            const response = await fetch(
+              `https://happywedz.com/api/vendor-types/${vendor.vendor_type_id}`
+            );
+            const vendorTypeData = await response.json();
+            setVendorTypeName(vendorTypeData?.name || "");
+          } catch (err) {
+            setVendorTypeName("");
+          }
+        }
+
+        // If data exists, merge it into formData.
+        if (serviceData) {
+          const actualData = Array.isArray(serviceData)
+            ? serviceData[0]
+            : serviceData;
+          if (actualData) {
+            if (actualData.media) {
+              const { gallery = [], videos = [] } = actualData.media;
+              // Normalize gallery: objects and string URLs, prefix relative paths
+              const photoDraftsData = Array.isArray(gallery)
+                ? gallery.map((item, index) => {
+                    let preview = "";
+                    if (typeof item === "string") {
+                      preview = item;
+                    } else {
+                      preview = item.url || item.path || "";
+                    }
+                    // Prefix relative paths
+                    if (preview.startsWith("/uploads/")) {
+                      preview = IMAGE_BASE_URL + preview;
+                    }
+                    return {
+                      id:
+                        typeof item === "string"
+                          ? `photo_${index}`
+                          : item.id || `photo_${index}`,
+                      title: typeof item === "string" ? "" : item.title || "",
+                      preview,
+                      file: null,
+                    };
+                  })
+                : [];
+              setPhotoDrafts(photoDraftsData);
+
+              const videoDraftsData = Array.isArray(videos)
+                ? videos.map((item, index) => {
+                    let preview = item.url || item.path || "";
+                    if (preview.startsWith("/uploads/")) {
+                      preview = IMAGE_BASE_URL + preview;
+                    }
+                    return {
+                      id: item.id || `video_${index}`,
+                      title: item.title || "",
+                      type: item.type || "video",
+                      preview,
+                      file: null,
+                    };
+                  })
+                : [];
+              setVideoDrafts(videoDraftsData);
+            }
+            if (actualData && actualData.attributes) {
+              setFormData((prev) => ({
+                ...prev,
+                ...actualData,
+                contact: actualData.attributes.contact
+                  ? {
+                      contactName: actualData.attributes.contact.name || "",
+                      phone: actualData.attributes.contact.phone || "",
+                      altPhone: actualData.attributes.contact.altPhone || "",
+                      email: actualData.attributes.contact.email || "",
+                      website: actualData.attributes.contact.website || "",
+                      whatsappNumber:
+                        actualData.attributes.contact.whatsapp || "",
+                      inquiryEmail:
+                        actualData.attributes.contact.inquiryEmail || "",
+                    }
+                  : {},
+
+                location: actualData.attributes.location
+                  ? {
+                      addressLine1:
+                        actualData.attributes.location.address || "",
+                      addressLine2:
+                        actualData.attributes.location.addressLine2 || "",
+                      city: actualData.attributes.location.city || "",
+                      state: actualData.attributes.location.state || "",
+                      country:
+                        actualData.attributes.location.country || "India",
+                      pincode: actualData.attributes.location.pincode || "",
+                      lat: actualData.attributes.location.lat || "",
+                      lng: actualData.attributes.location.lng || "",
+                      landmark: actualData.attributes.location.landmark || "",
+                      serviceAreas:
+                        actualData.attributes.location.serviceAreas || [],
+                    }
+                  : {},
+
+                // Pricing fields mapping
+                startingPrice: actualData.attributes.starting_price || "",
+                priceRange: actualData.attributes.price_range || {
+                  min: "",
+                  max: "",
+                },
+                priceUnit: actualData.attributes.price_unit || "",
+                currency: actualData.attributes.currency || "INR",
+                capacity: actualData.attributes.capacity || {
+                  min: "",
+                  max: "",
+                },
+                indoorOutdoor: actualData.attributes.indoor_outdoor || "",
+                alcoholPolicy: actualData.attributes.alcohol_policy || "",
+                cateringPolicy: actualData.attributes.catering_policy || "",
+                rooms: actualData.attributes.rooms || "",
+                cancellationPolicy:
+                  actualData.attributes.cancellation_policy || "",
+                refundPolicy: actualData.attributes.refund_policy || "",
+                paymentTerms: actualData.attributes.payment_terms
+                  ? {
+                      advancePercent:
+                        actualData.attributes.payment_terms.advance,
+                    }
+                  : {},
+                tnc: actualData.attributes.tnc || "",
+
+                isFeatureAvailable: actualData.attributes.is_feature_available,
+                within24HrAvailable:
+                  actualData.attributes.within_24hr_available,
+                djPolicy: actualData.attributes.dj_policy || "",
+                primaryCTA: actualData.attributes.primary_cta || "enquire",
+                sortWeight: actualData.attributes.sort_weight || "",
+                timing: actualData.attributes.timing || {
+                  open: "",
+                  close: "",
+                  lastEntry: "",
+                },
+                ctaUrl: actualData.attributes.cta_url || "",
+                ctaPhone: actualData.attributes.cta_phone || "",
+                autoReply: actualData.attributes.auto_reply || "",
+
+                attributes: {
+                  ...prev.attributes,
+                  ...actualData.attributes,
+                  email:
+                    actualData.attributes.contact?.email ||
+                    prev.attributes?.email,
+                },
+
+                // add other fields as needed
+              }));
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch vendor service data:", error);
+      }
+    }
+  };
 
   useEffect(() => {
-    const fetchServiceData = async () => {
-      if (vendor?.id && token) {
-        try {
-          // Clear localStorage for new vendor to prevent data leakage
-          const lastVendorId = localStorage.getItem("lastVendorId");
-          if (lastVendorId && lastVendorId !== vendor.id.toString()) {
-            localStorage.removeItem("vendorFormData");
-            localStorage.removeItem("photoDraftsMeta");
-            localStorage.removeItem("videoDraftsMeta");
-            setFormData({});
-            setPhotoDrafts([]);
-            setVideoDrafts([]);
-          }
-          localStorage.setItem("lastVendorId", vendor.id.toString());
-
-          const serviceData =
-            await vendorServicesApi.getVendorServiceByVendorId(
-              vendor.id,
-              token
-            );
-
-          // Fetch vendor type name from API (like VendorBasicInfo)
-          if (vendor.vendor_type_id) {
-            try {
-              const response = await fetch(
-                `https://happywedz.com/api/vendor-types/${vendor.vendor_type_id}`
-              );
-              const vendorTypeData = await response.json();
-              setVendorTypeName(vendorTypeData?.name || "");
-            } catch (err) {
-              setVendorTypeName("");
-            }
-          }
-
-          // If data exists, merge it into formData.
-          if (serviceData) {
-            const actualData = Array.isArray(serviceData)
-              ? serviceData[0]
-              : serviceData;
-            if (actualData) {
-              if (actualData.media) {
-                const { gallery = [], videos = [] } = actualData.media;
-                // Normalize gallery: objects and string URLs, prefix relative paths
-                const photoDraftsData = Array.isArray(gallery)
-                  ? gallery.map((item, index) => {
-                      let preview = "";
-                      if (typeof item === "string") {
-                        preview = item;
-                      } else {
-                        preview = item.url || item.path || "";
-                      }
-                      // Prefix relative paths
-                      if (preview.startsWith("/uploads/")) {
-                        preview = IMAGE_BASE_URL + preview;
-                      }
-                      return {
-                        id:
-                          typeof item === "string"
-                            ? `photo_${index}`
-                            : item.id || `photo_${index}`,
-                        title: typeof item === "string" ? "" : item.title || "",
-                        preview,
-                        file: null,
-                      };
-                    })
-                  : [];
-                setPhotoDrafts(photoDraftsData);
-
-                const videoDraftsData = Array.isArray(videos)
-                  ? videos.map((item, index) => {
-                      let preview = item.url || item.path || "";
-                      if (preview.startsWith("/uploads/")) {
-                        preview = IMAGE_BASE_URL + preview;
-                      }
-                      return {
-                        id: item.id || `video_${index}`,
-                        title: item.title || "",
-                        type: item.type || "video",
-                        preview,
-                        file: null,
-                      };
-                    })
-                  : [];
-                setVideoDrafts(videoDraftsData);
-              }
-              if (actualData && actualData.attributes) {
-                setFormData((prev) => ({
-                  ...prev,
-                  ...actualData,
-                  contact: actualData.attributes.contact
-                    ? {
-                        contactName: actualData.attributes.contact.name || "",
-                        phone: actualData.attributes.contact.phone || "",
-                        altPhone: actualData.attributes.contact.altPhone || "",
-                        email: actualData.attributes.contact.email || "",
-                        website: actualData.attributes.contact.website || "",
-                        whatsappNumber:
-                          actualData.attributes.contact.whatsapp || "",
-                        inquiryEmail:
-                          actualData.attributes.contact.inquiryEmail || "",
-                      }
-                    : {},
-
-                  location: actualData.attributes.location
-                    ? {
-                        addressLine1:
-                          actualData.attributes.location.address || "",
-                        addressLine2:
-                          actualData.attributes.location.addressLine2 || "",
-                        city: actualData.attributes.location.city || "",
-                        state: actualData.attributes.location.state || "",
-                        country:
-                          actualData.attributes.location.country || "India",
-                        pincode: actualData.attributes.location.pincode || "",
-                        lat: actualData.attributes.location.lat || "",
-                        lng: actualData.attributes.location.lng || "",
-                        landmark: actualData.attributes.location.landmark || "",
-                        serviceAreas:
-                          actualData.attributes.location.serviceAreas || [],
-                      }
-                    : {},
-
-                  // Pricing fields mapping
-                  startingPrice: actualData.attributes.starting_price || "",
-                  priceRange: actualData.attributes.price_range || {
-                    min: "",
-                    max: "",
-                  },
-                  priceUnit: actualData.attributes.price_unit || "",
-                  currency: actualData.attributes.currency || "INR",
-                  capacity: actualData.attributes.capacity || {
-                    min: "",
-                    max: "",
-                  },
-                  indoorOutdoor: actualData.attributes.indoor_outdoor || "",
-                  alcoholPolicy: actualData.attributes.alcohol_policy || "",
-                  cateringPolicy: actualData.attributes.catering_policy || "",
-                  rooms: actualData.attributes.rooms || "",
-                  cancellationPolicy:
-                    actualData.attributes.cancellation_policy || "",
-                  refundPolicy: actualData.attributes.refund_policy || "",
-                  paymentTerms: actualData.attributes.payment_terms
-                    ? {
-                        advancePercent:
-                          actualData.attributes.payment_terms.advance,
-                      }
-                    : {},
-                  tnc: actualData.attributes.tnc || "",
-
-                  isFeatureAvailable:
-                    actualData.attributes.is_feature_available,
-                  within24HrAvailable:
-                    actualData.attributes.within_24hr_available,
-                  djPolicy: actualData.attributes.dj_policy || "",
-                  primaryCTA: actualData.attributes.primary_cta || "enquire",
-                  sortWeight: actualData.attributes.sort_weight || "",
-                  timing: actualData.attributes.timing || {
-                    open: "",
-                    close: "",
-                    lastEntry: "",
-                  },
-                  ctaUrl: actualData.attributes.cta_url || "",
-                  ctaPhone: actualData.attributes.cta_phone || "",
-                  autoReply: actualData.attributes.auto_reply || "",
-
-                  attributes: actualData.attributes,
-
-                  // add other fields as needed
-                }));
-              }
-            }
-          }
-        } catch (error) {
-          console.error("Failed to fetch vendor service data:", error);
-        }
-      }
-    };
     fetchServiceData();
   }, [vendor, token]);
 
@@ -572,6 +577,12 @@ const Storefront = () => {
           },
         ]
       : []),
+    // {
+    //   id: "social",
+    //   label: "Social Media",
+    //   icon: <FaShareAlt size={20} />,
+    // },
+
     {
       id: "vendor-marketing",
       label: "Marketing & CTA",
@@ -587,6 +598,7 @@ const Storefront = () => {
             formData={formData}
             setFormData={setFormData}
             onShowSuccess={showSuccessModal}
+            onSaveSuccess={fetchServiceData}
           />
         );
       case "faq":
@@ -695,6 +707,15 @@ const Storefront = () => {
             onShowSuccess={showSuccessModal}
           />
         );
+      // case "social":
+      //   return (
+      //     <SocialDetails
+      //       formData={formData}
+      //       setFormData={setFormData}
+      //       onSave={handleSave}
+      //       onShowSuccess={showSuccessModal}
+      //     />
+      //   );
       case "vendor-marketing":
         return (
           <VendorMarketing

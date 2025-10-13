@@ -246,7 +246,7 @@
 //                         </div>
 //                       </div>
 
-//                       <div className="d-flex align-items-center mb-2">
+//                       <div className="d-flex align-items-start mb-2">
 //                         {Array.from({ length: 5 }).map((_, i) => (
 //                           <FaStar
 //                             key={i}
@@ -270,7 +270,7 @@
 //                           ? review.comment.slice(0, 120) + "..."
 //                           : review.comment}
 //                       </p>
-//                       <a href="#" className="fw-semibold text-decoration-none">
+//                       <a className="fw-semibold text-decoration-none">
 //                         Read more
 //                       </a>
 //                     </Card.Body>
@@ -460,7 +460,7 @@ const ReviewModalFlow = ({ vendor }) => {
   const { user, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
-  const [showModal, setShowModal] = useState(false); // Write review modal
+  const [showModal, setShowModal] = useState(false);
   const [step, setStep] = useState(1);
   const [reviews, setReviews] = useState([]);
   const [formData, setFormData] = useState({
@@ -479,7 +479,11 @@ const ReviewModalFlow = ({ vendor }) => {
   const [images, setImages] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
-  const [showDetailModal, setShowDetailModal] = useState(false); // Read more modal
+  // ADDED: State for validation error message inside the modal
+  const [modalError, setModalError] = useState("");
+
+  // ADDED: State for the review detail modal
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
 
   // Fetch reviews
@@ -494,21 +498,34 @@ const ReviewModalFlow = ({ vendor }) => {
     }
   }, [vendor]);
 
+  // ADDED: Function to handle "Read More" click
+  const handleReadMoreClick = (review) => {
+    setSelectedReview(review);
+    setShowDetailModal(true);
+  };
+
   const handleWriteReviewClick = () => {
     if (!user || !token) {
       navigate("/customer-login");
     } else {
       setShowModal(true);
       setStep(1);
+      setModalError(""); // Clear previous error when opening
     }
   };
 
-  const handleStarClick = (field, value) =>
+  const handleStarClick = (field, value) => {
     setFormData({ ...formData, [field]: value });
+    setModalError(""); // Clear error when a star is clicked
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    // Clear error when user starts typing in required fields
+    if (name === "title" || name === "comment") {
+      setModalError("");
+    }
   };
 
   const handleImageUpload = (e) => {
@@ -528,13 +545,47 @@ const ReviewModalFlow = ({ vendor }) => {
     "rating_flexibility",
   ];
 
+  // UPDATED: Function to handle 'Next' click based on the current step
+  const handleNextClick = () => {
+    setModalError(""); // Clear previous errors
+
+    if (step === 1) {
+      const emptyRating = requiredRatings.some(
+        (field) => !formData[field] || formData[field] === 0
+      );
+      if (emptyRating) {
+        // Step 1 Validation: All 5 star ratings must be selected
+        setModalError(
+          "Please select a star rating for all fields before proceeding."
+        );
+        return;
+      }
+      setStep(step + 1);
+    } else if (step === 2) {
+      if (!formData.title.trim()) {
+        // Step 2 Validation: Check for empty title
+        setModalError("Please provide a title for your review.");
+        return;
+      }
+      if (!formData.comment.trim()) {
+        // Step 2 Validation: Check for empty comment
+        setModalError("Please write a comment about your experience.");
+        return;
+      }
+      setStep(step + 1);
+    }
+  };
+
   const handleSubmit = async () => {
+    // Final validation check (should be mostly covered by step validations)
     const emptyRating = requiredRatings.some(
       (field) => !formData[field] || formData[field] === 0
     );
 
     if (!formData.title.trim() || !formData.comment.trim() || emptyRating) {
-      toast.error("Please fill in all required fields and ratings.");
+      toast.error(
+        "Please complete all required fields and ratings before submitting."
+      );
       return;
     }
 
@@ -555,6 +606,7 @@ const ReviewModalFlow = ({ vendor }) => {
 
       toast.success("Review submitted successfully!");
       setShowModal(false);
+      setModalError(""); // Clear error on success
 
       // Reset form
       setFormData({
@@ -617,11 +669,6 @@ const ReviewModalFlow = ({ vendor }) => {
   };
   const groupedReviews = chunkReviews(reviews, 3);
 
-  const openDetailModal = (review) => {
-    setSelectedReview(review);
-    setShowDetailModal(true);
-  };
-
   return (
     <div className="container my-5">
       <ToastContainer position="top-center" autoClose={3000} />
@@ -647,7 +694,7 @@ const ReviewModalFlow = ({ vendor }) => {
 
         <div className="d-flex align-items-center">
           <Button
-            color="#ff2d55"
+            color="#ed1173"
             className="fw-semibold"
             style={{ fontSize: "14px", padding: "8px 20px", minWidth: "140px" }}
             onClick={handleWriteReviewClick}
@@ -659,15 +706,18 @@ const ReviewModalFlow = ({ vendor }) => {
 
       {/* Review Carousel */}
       {reviews.length > 0 ? (
-        <Carousel interval={null} indicators={false} controls={true}>
+        <Carousel interval={null} indicators={false}>
           {groupedReviews.map((group, index) => (
             <Carousel.Item key={index}>
-              <div className="d-flex justify-content-start gap-4 flex-wrap">
+              <div
+                className="d-flex justify-content-start gap-4 flex-wrap"
+                style={{ position: "relative", zIndex: 2 }}
+              >
                 {group.map((review) => (
                   <Card
                     key={review.id}
                     className="shadow-sm border rounded-3"
-                    style={{ width: "300px" }}
+                    style={{ width: "250px" }}
                   >
                     <Card.Body>
                       <div className="d-flex align-items-center mb-3">
@@ -700,7 +750,7 @@ const ReviewModalFlow = ({ vendor }) => {
                         </div>
                       </div>
 
-                      <div className="d-flex align-items-center mb-2">
+                      <div className="d-flex align-items-start mb-2">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <FaStar
                             key={i}
@@ -724,10 +774,11 @@ const ReviewModalFlow = ({ vendor }) => {
                           ? review.comment.slice(0, 120) + "..."
                           : review.comment}
                       </p>
+                      {/* UPDATED: Attach handler to "Read more" link */}
                       <a
-                        href="#"
                         className="fw-semibold text-decoration-none"
-                        onClick={() => openDetailModal(review)}
+                        onClick={() => handleReadMoreClick(review)}
+                        style={{ cursor: "pointer" }}
                       >
                         Read more
                       </a>
@@ -744,8 +795,159 @@ const ReviewModalFlow = ({ vendor }) => {
         </p>
       )}
 
-      {/* Review Details Modal */}
+      {/* Review Modal Flow (Steps 1-3) */}
+      {showModal && (
+        <div className="custom-modal">
+          <div
+            className="modal-content-custom p-4"
+            style={{ maxWidth: 700, margin: "0 auto" }}
+          >
+            <h4 className="text-center mb-4">Step {step} of 3</h4>
 
+            {/* ADDED: Display modal error message */}
+            {modalError && (
+              <div className="alert alert-danger text-center mb-4" role="alert">
+                {modalError}
+              </div>
+            )}
+
+            {step === 1 && (
+              <div className="row">
+                <h2>How was your experience with {vendor?.businessName}?</h2>
+                <RatingInput label="Quality" field="rating_quality" />
+                <RatingInput
+                  label="Responsiveness"
+                  field="rating_responsiveness"
+                />
+                <RatingInput
+                  label="Professionalism"
+                  field="rating_professionalism"
+                />
+                <RatingInput label="Value" field="rating_value" />
+                <RatingInput label="Flexibility" field="rating_flexibility" />
+              </div>
+            )}
+
+            {step === 2 && (
+              <div>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">
+                    Give your review a title
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    className="form-control"
+                    placeholder="Amazing Experience"
+                    value={formData.title}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">Comment</label>
+                  <textarea
+                    name="comment"
+                    rows="3"
+                    className="form-control"
+                    placeholder="Write about your experience..."
+                    value={formData.comment}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">
+                    Upload Images (Optional)
+                  </label>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="form-control"
+                  />
+                  <div className="d-flex flex-wrap mt-2">
+                    {images.map((img, idx) => (
+                      <img
+                        key={idx}
+                        src={img.preview}
+                        alt="preview"
+                        className="me-2 mb-2"
+                        style={{
+                          width: 100,
+                          height: 100,
+                          objectFit: "cover",
+                          borderRadius: 8,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label className="form-label fw-semibold">
+                    How many guests attended ? (Optional)
+                  </label>
+                  <input
+                    type="number"
+                    name="guest_count"
+                    className="form-control"
+                    value={formData.guest_count}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label className="form-label fw-semibold">
+                    How much did you spend? (Optional)
+                  </label>
+                  <input
+                    type="number"
+                    name="spent"
+                    className="form-control"
+                    value={formData.spent}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="d-flex justify-content-between mt-4">
+              <button
+                className="btn btn-secondary px-4"
+                onClick={() => {
+                  setModalError(""); // Clear error on 'Back'
+                  step === 1 ? setShowModal(false) : setStep(step - 1);
+                }}
+              >
+                Back
+              </button>
+
+              {step === 3 ? (
+                <button
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                  className="btn btn-primary px-4"
+                >
+                  {submitting ? "Submitting..." : "Submit Review"}
+                </button>
+              ) : (
+                // UPDATED: Use the new handler for 'Next' button
+                <button
+                  className="btn btn-primary px-4"
+                  onClick={handleNextClick}
+                >
+                  Next
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Review Details Modal */}
       <Modal
         show={showDetailModal}
         onHide={() => setShowDetailModal(false)}
@@ -759,29 +961,18 @@ const ReviewModalFlow = ({ vendor }) => {
         <Modal.Body>
           {selectedReview && (
             <div className="p-3">
-              {/* Reviewer Info */}
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                  <h6 className="fw-bold mb-1">
-                    {selectedReview.user?.name || "Anonymous"}
-                  </h6>
-                  <small className="text-muted">
-                    Sent on{" "}
-                    {new Date(selectedReview.createdAt).toLocaleDateString()}
-                  </small>
-                </div>
-                <div></div>
-              </div>
-
-              {/* Title */}
-              <h5 className="fw-bold mb-2">{selectedReview.title}</h5>
-
-              {/* Comment */}
-              <p className="text-muted mb-4" style={{ lineHeight: "1.6" }}>
+              <h6 className="fw-bold mb-1">
+                {selectedReview.user?.name || "Anonymous"}
+              </h6>
+              <small className="text-muted">
+                Sent on{" "}
+                {new Date(selectedReview.createdAt).toLocaleDateString()}
+              </small>
+              <h5 className="fw-bold my-3">{selectedReview.title}</h5>
+              <p className="text-muted" style={{ lineHeight: "1.6" }}>
                 {selectedReview.comment}
               </p>
 
-              {/* Ratings */}
               <div className="border rounded p-3 bg-light mb-4">
                 <div className="d-flex justify-content-between mb-2">
                   <span>Quality of service</span>
@@ -845,7 +1036,6 @@ const ReviewModalFlow = ({ vendor }) => {
                 </div>
               </div>
 
-              {/* Vendor Reply */}
               {selectedReview.vendor_reply && (
                 <div className="bg-light border rounded p-3 mt-4">
                   <h6 className="text-uppercase text-muted fw-semibold mb-2">
