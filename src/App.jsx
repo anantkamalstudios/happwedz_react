@@ -229,7 +229,14 @@ function App() {
               {/* E-Invite Routes */}
               <Route path="/einvites" element={<EinviteHomePage />} />
               <Route path="/einvites/category/:category" element={<EinviteCategoryPage />} />
-              <Route path="/einvites/editor/:id" element={<EinviteEditorPage />} />
+              <Route
+                path="/einvites/editor/:id"
+                element={
+                  <UserPrivateRoute>
+                    <EinviteEditorPage />
+                  </UserPrivateRoute>
+                }
+              />
               <Route path="/einvites/preview/:id" element={<EinviteSharePage />} />
               <Route path="/einvites/share/:id" element={<EinviteSharePage />} />
               <Route path="/einvites/my-cards" element={<EinviteMyCards />} />

@@ -1,7 +1,73 @@
 const API_BASE_URL = 'https://happywedz.com/api';
 
+// Helper to get auth headers
+const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+};
+
 export const einviteApi = {
-    // Get all e-invites
+    createInstance: async (payload) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/einvites/cards/instances`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) {
+                let body;
+                try {
+                    body = await response.json();
+                    console.log(body);
+                    console.error('API Error response:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        url: `${API_BASE_URL}/einvites/cards/instances`,
+                        requestBody: payload,
+                        responseBody: body
+                    });
+                } catch (e) {
+                    body = await response.text();
+                    console.error('Failed to parse API response:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        url: `${API_BASE_URL}/einvites/cards/instances`,
+                        requestBody: payload,
+                        responseBody: body
+                    });
+                }
+                throw new Error(typeof body === 'string' ? body : (body?.message || 'Failed to create instance'));
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error creating instance:', error);
+            throw error;
+        }
+    },
+
+    updateInstance: async (id, payload) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/einvites/cards/${id}/instance`, {
+                method: 'PUT',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) {
+                let body;
+                try { body = await response.json(); } catch { body = await response.text(); }
+                throw new Error(typeof body === 'string' ? body : (body?.message || 'Failed to update instance'));
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error updating instance:', error);
+            throw error;
+        }
+    },
+
     getAllEinvites: async () => {
         try {
             const response = await fetch(`${API_BASE_URL}/einvites/cards`);
@@ -35,7 +101,6 @@ export const einviteApi = {
         }
     },
 
-    // Get single e-invite by ID
     getEinviteById: async (id) => {
         try {
             const response = await fetch(`${API_BASE_URL}/einvites/cards/${id}`);
@@ -47,7 +112,6 @@ export const einviteApi = {
         }
     },
 
-    // Create new e-invite
     createEinvite: async (einviteData) => {
         try {
             const response = await fetch(`${API_BASE_URL}/einvites/cards`, {
@@ -65,17 +129,32 @@ export const einviteApi = {
         }
     },
 
-    // Update e-invite
     updateEinvite: async (id, einviteData) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/einvites/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/einvites/cards/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                 },
                 body: JSON.stringify(einviteData),
             });
-            if (!response.ok) throw new Error('Failed to update e-invite');
+            if (!response.ok) {
+                let errorBody;
+                try {
+                    errorBody = await response.json();
+                } catch (_) {
+                    errorBody = await response.text();
+                }
+                console.error('Update einvite failed', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    url: `${API_BASE_URL}/einvites/cards/${id}`,
+                    requestBody: einviteData,
+                    responseBody: errorBody,
+                });
+                throw new Error(typeof errorBody === 'string' ? errorBody : (errorBody?.message || 'Failed to update e-invite'));
+            }
             return await response.json();
         } catch (error) {
             console.error('Error updating e-invite:', error);
@@ -83,7 +162,6 @@ export const einviteApi = {
         }
     },
 
-    // Delete e-invite
     deleteEinvite: async (id) => {
         try {
             const response = await fetch(`${API_BASE_URL}/einvites/${id}`, {
@@ -97,7 +175,6 @@ export const einviteApi = {
         }
     },
 
-    // Get user's e-invites
     getUserEinvites: async (userId) => {
         try {
             const response = await fetch(`${API_BASE_URL}/users/${userId}/einvites`);
@@ -109,7 +186,6 @@ export const einviteApi = {
         }
     },
 
-    // Search e-invites
     searchEinvites: async (query) => {
         try {
             const response = await fetch(`${API_BASE_URL}/einvites/search?q=${encodeURIComponent(query)}`);
@@ -121,7 +197,6 @@ export const einviteApi = {
         }
     },
 
-    // Get categories
     getCategories: async () => {
         try {
             // Since the categories endpoint doesn't exist, return default categories

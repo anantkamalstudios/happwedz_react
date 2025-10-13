@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import EinviteCardEditor from "../layouts/einvites/EinviteCardEditor";
 import EinviteShareModal from "../layouts/einvites/EinviteShareModal";
 import { einviteApi } from "../../services/api/einviteApi";
+import { useSelector } from "react-redux";
 
 const EinviteEditorPage = () => {
   const { id } = useParams();
@@ -11,6 +12,8 @@ const EinviteEditorPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showShareModal, setShowShareModal] = useState(false);
+  const authUser = useSelector((s) => s.auth?.user);
+  const currentUserId = authUser?.id || authUser?._id || authUser?.userId;
 
   useEffect(() => {
     if (id) {
@@ -31,10 +34,44 @@ const EinviteEditorPage = () => {
     }
   };
 
-  const handleSave = async (updatedCard) => {
+  const handleSave = async (updatedPayload) => {
     try {
-      await einviteApi.updateEinvite(id, updatedCard);
-      setCard(updatedCard);
+      // If we're editing a template (no ownerUserId or explicitly marked isTemplate),
+      // first create a user-owned instance by cloning.
+      const isTemplate = card?.isTemplate === true || !card?.ownerUserId;
+
+      if (isTemplate) {
+        if (!currentUserId) {
+          alert("Please log in to customize this card.");
+          return;
+        }
+
+        const createBody = {
+          originalTemplateId: card.id,
+          ownerUserId: currentUserId,
+          name: updatedPayload.name || card.name,
+          cardType: updatedPayload.cardType || card.cardType,
+          backgroundUrl: updatedPayload.backgroundUrl || card.backgroundUrl,
+          thumbnailUrl: updatedPayload.thumbnailUrl || card.thumbnailUrl,
+          editableFields: updatedPayload.editableFields, // string or array OK
+        };
+
+        const created = await einviteApi.createInstance(createBody);
+        const newCard = created?.data || created;
+        if (!newCard?.id) {
+          throw new Error("Failed to create instance");
+        }
+        setCard(newCard);
+        // Navigate to new instance id so subsequent edits target the instance
+        navigate(`/einvites/editor/${newCard.id}`);
+        alert("Your personal copy has been created. You can continue editing.");
+        return;
+      }
+
+      // Otherwise, update existing user-owned instance
+      const updateRes = await einviteApi.updateInstance(card.id, updatedPayload);
+      const saved = updateRes?.data || updateRes;
+      setCard(saved);
       alert("Card saved successfully!");
     } catch (err) {
       console.error("Error saving card:", err);
