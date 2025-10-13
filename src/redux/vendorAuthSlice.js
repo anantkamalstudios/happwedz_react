@@ -38,10 +38,15 @@ const vendorAuthSlice = createSlice({
       localStorage.removeItem("vendor");
       localStorage.removeItem("vendorToken");
     },
+    setVendor: (state, action) => {
+      state.vendor = action.payload;
+      localStorage.setItem("vendor", JSON.stringify(action.payload));
+    },
   },
 });
 
-export const { setVendorCredentials, vendorLogout } = vendorAuthSlice.actions;
+export const { setVendorCredentials, vendorLogout, setVendor } =
+  vendorAuthSlice.actions;
 export const loginVendor = (payload) => (dispatch) => {
   dispatch(logout());
   dispatch(setVendorCredentials(payload));
