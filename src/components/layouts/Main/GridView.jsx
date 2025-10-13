@@ -15,6 +15,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
       [id]: !prev[id],
     }));
   };
+  console.log("subVenuesData", subVenuesData);
 
   return (
     <Container>
