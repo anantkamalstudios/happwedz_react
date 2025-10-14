@@ -243,8 +243,8 @@ const BusinessDetails = ({ formData, setFormData }) => {
       </div> */}
       {/* Contact Details */}
       <div className="p-3 border rounded bg-white">
-        <h6 className="mb-3 fw-bold">Contact Details</h6>
-        <div className="mb-3">
+        <h6 className="mb-3 fw-bold">Bussiness Details</h6>
+        {/* <div className="mb-3">
           <label className="form-label">Profile Image</label>
           <input
             type="file"
@@ -252,7 +252,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
             className="form-control"
             onChange={handleProfileImage}
           />
-        </div>
+        </div> */}
         <div className="mb-3">
           <label className="form-label">Business Name *</label>
           <input
