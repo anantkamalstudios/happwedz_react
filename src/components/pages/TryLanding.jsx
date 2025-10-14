@@ -1,14 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { FaBolt, FaPalette, FaMobileAlt } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const TryLanding = () => {
   const [showModal, setShowModal] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const user = useSelector((state) => state.auth.user);
+
   useEffect(() => {
     setIsLoaded(true);
   }, []);
+
+  useEffect(() => {
+    if (user && location.state?.openPopup) {
+      setShowModal(true);
+      navigate(location.pathname, { replace: true });
+    }
+  }, [user, location.state, navigate]);
 
   const handleModalClose = () => {
     setShowModal(false);
@@ -35,13 +47,27 @@ const TryLanding = () => {
             <div className="try-first-page-particle"></div>
           </div>
 
-          <div className="try-first-page-hero-content">
-            <div className="try-first-page-content-wrapper">
-              <h1 className="try-first-page-title">
-                Transform Your Look with
-                <span className="try-first-page-gradient-text"> AI Magic</span>
+          <div
+            className="try-first-page-hero-content px-6"
+            style={{
+              placeSelf: "flex-end",
+              display: "flex",
+              justifyContent: "start",
+              alignItems: "start",
+            }}
+          >
+            <div
+              className="try-first-page-content-wrapper"
+              style={{ marginBottom: "8rem", marginLeft: "3rem" }}
+            >
+              <h1
+                className="try-first-page-title"
+                style={{ fontWeight: "400", textAlign: "start" }}
+              >
+                Virtual Try On
+                {/* <span className="try-first-page-gradient-text"> AI Magic</span> */}
               </h1>
-              <div className="try-first-page-features">
+              {/* <div className="try-first-page-features">
                 <div className="try-first-page-feature">
                   <FaBolt className="try-first-page-icon" />
                   <span>Instant Results</span>
@@ -54,19 +80,47 @@ const TryLanding = () => {
                   <FaMobileAlt className="try-first-page-icon" />
                   <span>Mobile Friendly</span>
                 </div>
-              </div>
-              <button
-                className="try-first-page-cta-button"
-                onClick={() => setShowModal(true)}
+              </div> */}
+              <p
+                style={{
+                  color: "#fff",
+                  fontSize: "1.6rem",
+                  fontWeight: "500",
+                  wordSpacing: "1.5px",
+                }}
               >
-                <span>Start Your Transformation</span>
-                <i className="try-first-page-button-icon">→</i>
+                Makeup, Jewellary & Outfits in One Place
+              </p>
+              <button
+                style={{
+                  background: "linear-gradient(to right, #E83580, #821E48)",
+                  color: "#fff",
+                  border: "2px solid #C31162",
+                  padding: "0.5rem 0",
+                  fontWeight: "500",
+                  borderRadius: "10px",
+                  fontSize: "1.5rem",
+                  width: "100%",
+                }}
+                onClick={() => {
+                  if (!user) {
+                    navigate("/customer-login", {
+                      state: { from: "/try", openPopup: true },
+                    });
+                  } else {
+                    setShowModal(true);
+                    navigate("/try");
+                  }
+                }}
+              >
+                Get Started
               </button>
             </div>
           </div>
         </div>
 
         {/* Enhanced Modal */}
+
         {showModal && (
           <div
             className="try-first-page-modal-backdrop"
@@ -77,8 +131,10 @@ const TryLanding = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="try-first-page-modal-header">
-                <h2>Choose Your Style</h2>
-                <p>Select a category to start your virtual makeover</p>
+                <h2 style={{ color: "#C31162" }}>Choose Your Style</h2>
+                <p style={{ color: "#000", fontWeight: "700" }}>
+                  Instantly try on makeup look and find your perfect shades
+                </p>
 
                 <button
                   className="try-first-page-modal-close"
@@ -108,7 +164,12 @@ const TryLanding = () => {
                         }}
                       />
 
-                      <h4 className="mt-3 fw-semibold">Bride</h4>
+                      <h4
+                        className="mt-3 fw-semibold"
+                        style={{ color: "#C31162" }}
+                      >
+                        Bride
+                      </h4>
                     </div>
                   </div>
 
@@ -137,7 +198,12 @@ const TryLanding = () => {
                           </span>
                         </div> */}
                       </div>
-                      <h4 className="mt-3 fw-semibold">Groom</h4>
+                      <h4
+                        className="mt-3 fw-semibold"
+                        style={{ color: "#C31162" }}
+                      >
+                        Groom
+                      </h4>
                     </div>
                   </div>
 
@@ -165,7 +231,12 @@ const TryLanding = () => {
                           </span>
                         </div>
                       </div>
-                      <h4 className="mt-3 fw-semibold">Other</h4>
+                      <h4
+                        className="mt-3 fw-semibold"
+                        style={{ color: "#C31162" }}
+                      >
+                        Other
+                      </h4>
                     </div>
                   </div>
                 </div>

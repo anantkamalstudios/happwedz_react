@@ -4,7 +4,7 @@ import * as faceapi from "face-api.js";
 import { beautyApi } from "../../services/api";
 import Swal from "sweetalert2";
 import { IoClose } from "react-icons/io5";
-import { FaHome } from "react-icons/fa";
+import { FaHome, FaTimes } from "react-icons/fa";
 
 const UploadSelfiePage = () => {
   const navigate = useNavigate();
@@ -151,51 +151,102 @@ const UploadSelfiePage = () => {
   const triggerModalUpload = () => fileRef.current?.click();
 
   return (
-    <div className="container py-5">
+    <div className="container py-1">
       <div className="row g-4">
-        <div className="col-12 text-center">
+        {/* <div className="col-12 text-center">
           <h2 className="fw-semibold">Upload your image or take a selfie</h2>
           <p className="text-muted">We will guide you for best results</p>
-        </div>
+        </div> */}
 
         <div className="py-4 d-flex flex-column align-items-center justify-content-center">
           <div
-            className="card shadow-sm border-0 p-4 text-center"
-            style={{ maxWidth: 500, width: "100%" }}
+            className="card shadow-sm border-0 text-center"
+            style={{ maxWidth: 450, width: "100%", overflow: "hidden" }}
           >
             <div className="mb-3">
               <div
                 style={{
                   position: "absolute",
-                  top: 16,
-                  left: 16,
-                  zIndex: 30,
-                  cursor: "pointer",
-                  background: "#fff",
+                  top: 14,
+                  left: 14,
+                  width: 36,
+                  height: 36,
                   borderRadius: "50%",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                  padding: 8,
+                  background: "#E0006C",
+                  color: "#fff",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
+                  boxShadow: "0 3px 10px rgba(0,0,0,0.25)",
+                  cursor: "pointer",
+                  zIndex: 10,
                 }}
                 title="Home"
                 onClick={() => navigate("/try")}
               >
-                <FaHome size={30} />
+                <FaHome size={18} />
               </div>
-              <img
-                src="/images/try/upload-default.png"
-                alt="placeholder"
-                className="img-fluid rounded-4"
-                style={{ objectFit: "contain" }}
-              />
+              <div
+                style={{
+                  position: "absolute",
+                  top: 14,
+                  right: 14,
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  background: "#E0006C",
+                  color: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 3px 10px rgba(0,0,0,0.25)",
+                  cursor: "pointer",
+                  zIndex: 10,
+                }}
+              >
+                <FaTimes size={18} />
+              </div>
+              <div>
+                <img
+                  src="/images/try/upload-default.png"
+                  alt="placeholder"
+                  className="img-fluid"
+                  style={{
+                    width: "100%",
+                    height: "420px",
+                    objectFit: "cover",
+                  }}
+                />
+              </div>
             </div>
 
-            <div className="d-flex gap-3 flex-column flex-sm-row justify-content-center">
-              <button className="btn btn-primary px-4" onClick={handlePick}>
-                Upload Image
-              </button>
+            <div className="w-100 d-flex flex-column justify-content-center align-items-center mb-4">
+              <div className="col-12 text-start w-75">
+                <h3 className="fw-semibold">Virtual Try - On</h3>
+                <p className="text-muted">We will guide you for best results</p>
+              </div>
+
+              <div className="d-flex gap-3 flex-column justify-content-center w-75">
+                <button
+                  className="btn px-4"
+                  style={{
+                    background: "linear-gradient(to right, #E83580, #821E48)",
+                    color: "#fff",
+                  }}
+                >
+                  Selfie Mode
+                </button>
+                <button
+                  className="btn px-4"
+                  onClick={handlePick}
+                  style={{
+                    background: "linear-gradient(to right, #E83580, #821E48)",
+                    color: "#fff",
+                  }}
+                >
+                  Upload Image
+                </button>
+              </div>
             </div>
           </div>
 
@@ -234,10 +285,10 @@ const UploadSelfiePage = () => {
               <div className="modal-content">
                 <div className="modal-header">
                   <div className="d-flex flex-column">
-                    <h5 className="modal-title text-danger">
-                      Capture Your Face
-                    </h5>
-                    <p className="modal-title">
+                    <h4 className="modal-title text-danger fw-bold">
+                      Photo Instruction
+                    </h4>
+                    <p className="modal-title text-dark">
                       For accurate results, please follow these guidelines:
                     </p>
                   </div>
@@ -320,8 +371,13 @@ const UploadSelfiePage = () => {
 
                   <div className="d-grid">
                     <button
-                      className="btn btn-primary w-auto"
+                      className="btn w-auto"
                       onClick={triggerModalUpload}
+                      style={{
+                        background:
+                          "linear-gradient(to right, #E83580, #821E48)",
+                        color: "#fff",
+                      }}
                     >
                       Upload Photo
                     </button>

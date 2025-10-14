@@ -18510,3 +18510,25 @@ input:checked + .slider:before {
   background: #fff;
   border-radius: 8px;
 }
+
+/* Add this to your CSS file */
+.custom-checkbox {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ec4899; /* Tailwind pink-500 */
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  position: relative;
+}
+
+.custom-checkbox:checked::after {
+  content: '✔';
+  color: #ec4899; /* pink checkmark */
+  font-size: 16px;
+  position: absolute;
+  top: 0;
+  left: 3px;
+}
+

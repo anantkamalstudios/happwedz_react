@@ -31,16 +31,20 @@ const PolicyModal = ({ open, onClose, onAgree }) => {
       <div className="modal-dialog modal-dialog-centered border-0">
         <div
           className="modal-content border-0 p-4"
-          style={{ maxWidth: "480px", margin: "0 auto" }}
+          style={{
+            maxWidth: "430px",
+            margin: "0 auto",
+            fontWeight: "300",
+            color: "#fff",
+            backgroundColor: "#C31162",
+          }}
         >
           {/* Close button */}
-          <div className="d-flex flex-row justify-content-between">
-            <div className="text-center">
-              <h4 className="fw-bold" style={{ color: "#C8006E" }}>
-                Our Privacy
-              </h4>
+          <div className="d-flex" style={{ position: "relative" }}>
+            <div className="w-100 text-center">
+              <h4 className="fw-bold">Our Privacy</h4>
             </div>
-            <div className="">
+            <div style={{ position: "absolute", right: "-5px", top: "-5px" }}>
               <button
                 type="button"
                 className="btn p-0 border-0"
@@ -48,8 +52,8 @@ const PolicyModal = ({ open, onClose, onAgree }) => {
                 style={{
                   fontSize: "1.5rem",
                   lineHeight: 1,
-                  color: "#C8006E",
                   fontWeight: "bold",
+                  color: "#fff",
                 }}
               >
                 <IoClose />
@@ -57,33 +61,44 @@ const PolicyModal = ({ open, onClose, onAgree }) => {
             </div>
           </div>
           {/* Intro Text */}
-          <p className="mt-3 text-center small text-justify fs-16 text-dark">
+          <p className="mt-3 text-start small text-justify fs-14">
             To access this service, you must be at least 18 years old.
           </p>
-          <p className="fs-16 text-justify text-justify">
-            By continuing, you agree that{" "}
-            <strong className="text-danger">HappyWedz</strong> may temporarily
-            store your uploaded image only for the purpose of applying AI
-            filters and generating your virtual try-on experience. Your photos
-            are <strong>never shared, sold, or used</strong> for any purpose
-            other than providing this feature. Images are stored securely and
-            automatically deleted within a short period after processing, in
-            line with our data retention policy.
+          <p className="fs-14 text-justify text-justify">
+            By continuing, you agree that HappyWedz may temporarily store your
+            uploaded image only for the purpose of applying AI filters and
+            generating your virtual try-on experience. Your photos are never
+            shared, sold, or used for any purpose other than providing this
+            feature. Images are stored securely and automatically deleted within
+            a short period after processing, in line with our data retention
+            policy.
           </p>
 
-          <h6 className="fw-bold text-center mb-3">Privacy Notice</h6>
+          <span className="fw-medium text-center mb-3">Privacy Notice</span>
           {/* Checkbox 1 */}
           <div className="mb-3 d-flex align-items-start gap-2">
             <div>
               <input
                 type="checkbox"
-                className="form-check-input mt-1"
+                // className="form-check-input mt-1"
                 checked={agreeOne}
                 onChange={(e) => setAgreeOne(e.target.checked)}
                 id="agreeOne"
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  cursor: "pointer",
+                  accentColor: agreeOne ? "#fff" : "#fb3990ff",
+                  backgroundColor: "#fb3990ff",
+                  borderColor: "#C31162",
+                }}
               />
             </div>
-            <label htmlFor="agreeOne" className="fs-16 text-justify">
+            <label
+              htmlFor="agreeOne"
+              className="fs-14 text-justify"
+              style={{ fontWeight: "400", color: "#fff" }}
+            >
               I consent to the use of my image to apply virtual makeup filters
               (blush, lipstick, etc.) and agree to the use of AI processing as
               described.
@@ -94,13 +109,25 @@ const PolicyModal = ({ open, onClose, onAgree }) => {
             <div>
               <input
                 type="checkbox"
-                className="form-check-input mt-1"
+                // className="form-check-input mt-1"
                 checked={agreeTwo}
                 onChange={(e) => setAgreeTwo(e.target.checked)}
                 id="agreeTwo"
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  cursor: "pointer",
+                  accentColor: agreeTwo ? "#fff" : "#C31162",
+                  backgroundColor: "#fb3990ff",
+                  borderColor: "#C31162",
+                }}
               />
             </div>
-            <label htmlFor="agreeTwo" className="fs-16 text-justify">
+            <label
+              htmlFor="agreeTwo"
+              className="fs-14 text-justify"
+              style={{ fontWeight: "400", color: "#fff" }}
+            >
               I am at least 18 years old and agree to the terms and privacy
               practices of HappyWedz.
             </label>
@@ -108,11 +135,15 @@ const PolicyModal = ({ open, onClose, onAgree }) => {
           {/* CTA Button */}
           <div className="d-grid">
             <button
-              className="btn"
               style={{
-                backgroundColor: "#C8006E",
-                color: "#fff",
+                backgroundColor: "#fff",
                 fontWeight: "500",
+                border: "2px solid #C31162",
+                padding: "0.5rem 0",
+                borderRadius: "10px",
+                color: "#C31162",
+                fontSize: "1.1rem",
+                width: "100%",
               }}
               disabled={!allAgreed}
               onClick={onAgree}

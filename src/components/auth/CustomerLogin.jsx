@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Form, Button } from "react-bootstrap";
 import { useUser } from "../../hooks";
 import { useDispatch } from "react-redux";
@@ -15,6 +15,7 @@ const CustomerLogin = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
   const { showLoader, hideLoader } = useLoader();
+  const location = useLocation();
 
   const dispatch = useDispatch();
   const { login, loading } = useUser();
@@ -87,7 +88,10 @@ const CustomerLogin = () => {
         if (loginData.success && loginData.user && loginData.token) {
           dispatch(loginUser({ user: loginData.user, token: loginData.token }));
           toast.success("Login successful!");
-          navigate("/", { replace: true });
+          navigate(location.state?.from || "/", {
+            state: { openPopup: true },
+            replace: true,
+          });
         } else {
           // Fallback to Firebase-only authentication
           console.log(
