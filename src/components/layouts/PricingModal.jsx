@@ -225,7 +225,7 @@
 // export default PricingModal;
 
 import React, { useState, useEffect } from "react";
-import { Modal, Button, Form, Row, Col } from "react-bootstrap";
+import { Modal, Button, Form, Row, Col, Image } from "react-bootstrap";
 import { FaPaperPlane } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -234,6 +234,7 @@ import EventDatePicker from "./DayPicker";
 const PricingModal = ({ show, handleClose, vendorId }) => {
   const { user, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+  const [vendorDetails, setVendorDetails] = useState(null);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -246,6 +247,27 @@ const PricingModal = ({ show, handleClose, vendorId }) => {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (vendorId && show) {
+      const fetchVendorDetails = async () => {
+        try {
+          const response = await fetch(
+            `https://happywedz.com/api/vendor-services/${vendorId}`
+          );
+          const result = await response.json();
+          if (result.success) {
+            setVendorDetails(result.data);
+          }
+        } catch (err) {
+          console.error("Failed to fetch vendor details:", err);
+        }
+      };
+      fetchVendorDetails();
+    } else {
+      setVendorDetails(null); // Reset when modal is closed or no vendorId
+    }
+  }, [vendorId, show]);
 
   useEffect(() => {
     if (user) {
@@ -348,20 +370,25 @@ const PricingModal = ({ show, handleClose, vendorId }) => {
     <div className="pricing-model">
       <Modal show={show} onHide={handleClose} size="lg" centered>
         <Modal.Header closeButton>
-          <div className="d-flex flex-column">
-            <h4 className="mb-1 text-muted" style={{ fontSize: "16px" }}>
-              Location
-            </h4>
-            <h4 className="mb-1">Request Pricing Information</h4>
-            {/* {vendorId && (
-              <div className="mb-1 text-primary" style={{ fontSize: "13px" }}>
-                <strong>Vendor ID:</strong> {vendorId}
-              </div>
-            )} */}
-            <p className="mb-0 text-muted" style={{ fontSize: "12px" }}>
-              Please provide your details below to request pricing from this
-              vendor.
-            </p>
+          <div className="d-flex align-items-center w-100">
+            {vendorDetails?.image && (
+              <Image
+                src={`https://happywedzbackend.happywedz.com${vendorDetails.image}`}
+                rounded
+                style={{ width: "60px", height: "60px", objectFit: "cover" }}
+                className="me-3"
+              />
+            )}
+            <div className="d-flex flex-column">
+              <h5 className="mb-1">Request Pricing</h5>
+              <h6 className="mb-1 text-muted fw-normal">
+                {vendorDetails?.business_name || "Loading..."}
+              </h6>
+              <p className="mb-0 text-muted" style={{ fontSize: "12px" }}>
+                Please provide your details below to request pricing from this
+                vendor.
+              </p>
+            </div>
           </div>
         </Modal.Header>
 

@@ -32,11 +32,7 @@ import axios from "axios";
 
 const API_BASE_URL = "https://happywedz.com/api";
 
-const vendorServicesApi = {
-  /**
-   * Get vendor service details by ID
-   * @param {number|string} id - Vendor service ID
-   */
+const vendorServicesApi = { 
   getVendorServiceById: async (id) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/vendor-services/${id}`);
@@ -49,13 +45,7 @@ const vendorServicesApi = {
       );
       throw error.response?.data || new Error("API request failed");
     }
-  },
-
-  /**
-   * Get vendor service details by VENDOR ID
-   * @param {number|string} vendorId - The vendor's own ID
-   * @param {string} token - The vendor's auth token
-   */
+  }, 
   getVendorServiceByVendorId: async (vendorId, token) => {
     try {
       const response = await axios.get(

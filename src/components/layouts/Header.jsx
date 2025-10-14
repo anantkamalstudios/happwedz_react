@@ -30,11 +30,7 @@ const Header = () => {
 
   const handleLogout = () => {
     dispatch(logout());
-    dispatch(vendorLogout());
-
-    localStorage.removeItem("vendorFormData");
-    localStorage.removeItem("photoDraftsMeta");
-    localStorage.removeItem("videoDraftsMeta");
+    localStorage.clear();
   };
 
   const { user, token: userToken } = useSelector((state) => state.auth);
