@@ -210,12 +210,6 @@ const EinviteSharePage = () => {
                 >
                   <i className="fas fa-edit me-2"></i>Edit Card
                 </Link>
-                <Link
-                  className="btn btn-outline-secondary w-100"
-                  to="/einvites"
-                >
-                  <i className="fas fa-plus me-2"></i>Create New
-                </Link>
               </div>
             </div>
           </div>

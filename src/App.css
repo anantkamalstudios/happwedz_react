@@ -187,6 +187,10 @@ body {
   background: var(--accent-pink) !important;
 }
 
+.light-pink-bg {
+  background: var(--light-pink) !important;
+}
+
 .primary-text {
   color: var(--primary-color) !important;
 }
@@ -2660,12 +2664,8 @@ body {
   font-weight: 800;
   text-align: left;
   margin-bottom: 80px;
-  /* margin-top: 20px; */
   color: #222;
-  border-bottom: 4px solid #ff4081;
-  /* Pink underline */
   display: inline-block;
-  /* Ensure underline is only under the text */
   padding-bottom: 10px;
 }
 
@@ -18724,5 +18724,219 @@ input:checked+.slider:before {
     width: 100%;
     margin-top: 8px;
     flex-basis: 100%;
+  }
+}
+
+
+/* Einvite Card items */
+.einvite-card-item-container {
+  max-width: 1200px;
+}
+
+.einvite-card-item-header h4 {
+  color: #333;
+}
+
+.einvite-card-item-count {
+  font-size: 0.95rem;
+}
+
+/* Card Grid */
+.einvite-card-item-grid {
+  row-gap: 1.5rem;
+}
+
+.einvite-card-item-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.einvite-card-item-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* Image */
+.einvite-card-item-img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 0 !important;
+}
+
+/* Edit Button */
+.einvite-card-item-edit-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.einvite-card-item-edit-btn:hover {
+  background: #007bff !important;
+  color: #fff !important;
+}
+
+/* Title */
+.einvite-card-item-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Wedding Invitation Card Styles */
+.einvite-card-wrapper {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.einvite-card-wrapper:hover {
+  transform: translateY(-5px);
+}
+
+.einvite-card {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.einvite-card:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.einvite-image-container {
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  background-color: #f8f9fa;
+}
+
+.einvite-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.einvite-card:hover .einvite-image {
+  transform: scale(1.05);
+}
+
+/* Edit Button Overlay */
+.einvite-edit-btn {
+  top: 12px;
+  right: -5px;
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: none;
+  border-radius: 50px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+  z-index: 10;
+  color: #495057;
+}
+
+.einvite-edit-btn:hover {
+  background-color: rgba(255, 255, 255, 1);
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  color: #212529;
+}
+
+.einvite-edit-btn i {
+  font-size: 14px;
+}
+
+/* Video Play Overlay */
+.einvite-play-overlay {
+  background-color: rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.einvite-play-icon {
+  width: 64px;
+  height: 64px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.einvite-play-icon i {
+  font-size: 24px;
+  color: #212529;
+  margin-left: 4px;
+}
+
+/* Card Body */
+.einvite-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 8px;
+}
+
+.einvite-meta {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.einvite-meta i {
+  font-size: 14px;
+}
+
+.einvite-tags .badge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background-color: #f8f9fa !important;
+  color: #495057 !important;
+  border: 1px solid #e9ecef;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .einvite-edit-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    top: 8px;
+    right: 8px;
+  }
+
+  .einvite-play-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .einvite-play-icon i {
+    font-size: 18px;
+  }
+
+  .einvite-title {
+    font-size: 16px;
+  }
+}
+
+/* Grid Layout Helper (Optional - use in parent component) */
+.einvite-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  padding: 20px 0;
+}
+
+@media (max-width: 576px) {
+  .einvite-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 }

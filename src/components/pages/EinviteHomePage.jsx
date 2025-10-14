@@ -19,9 +19,8 @@ const EinviteHomePage = () => {
     const fetchCards = async () => {
         try {
             setLoading(true);
-            const data = await einviteApi.getAllEinvites();
+            const data = await einviteApi.getEinvitesByTemplateStatus(true);
             console.log("data -> ", data);
-            // Ensure data is an array
             const cardsArray = Array.isArray(data) ? data : [];
             setCards(cardsArray);
             setFilteredCards(cardsArray);
@@ -137,7 +136,7 @@ const EinviteHomePage = () => {
                                                     href={`/einvites/category/${category.key.toLowerCase().replace(/\s+/g, '-')}`}
                                                     className="btn btn-outline-primary"
                                                 >
-                                                    View All <i className="fas fa-arrow-right ms-1"></i>
+                                                    Our Cards <i className="fas fa-arrow-right ms-1"></i>
                                                 </a>
                                             </div>
                                         </div>

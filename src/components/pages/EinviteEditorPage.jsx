@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import EinviteCardEditor from "../layouts/einvites/EinviteCardEditor";
 import EinviteShareModal from "../layouts/einvites/EinviteShareModal";
 import { einviteApi } from "../../services/api/einviteApi";
@@ -140,9 +140,9 @@ const EinviteEditorPage = () => {
     <div className="einvite-editor-page">
       <div className="einvite-editor-header">
         <div className="container">
-          <div className="row align-items-center">
+          <div className="row align-items-center mt-3">
             <div className="col-md-6">
-              <nav aria-label="breadcrumb">
+              {/* <nav aria-label="breadcrumb">
                 <ol className="breadcrumb">
                   <li className="breadcrumb-item">
                     <a href="/einvites">E-Invites</a>
@@ -151,7 +151,7 @@ const EinviteEditorPage = () => {
                     Editor
                   </li>
                 </ol>
-              </nav>
+              </nav> */}
               <h4 className="mb-0">Editing: {card.name}</h4>
             </div>
             <div className="col-md-6 text-end">
@@ -162,18 +162,12 @@ const EinviteEditorPage = () => {
                 >
                   Cancel
                 </button>
-                <button
+                <Link
                   className="btn btn-outline-primary me-2"
-                  onClick={() => setShowShareModal(true)}
+                  to={`/einvites/my-cards`}
                 >
-                  Preview
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => setShowShareModal(true)}
-                >
-                  Publish
-                </button>
+                  My Cards
+                </Link>
               </div>
             </div>
           </div>
