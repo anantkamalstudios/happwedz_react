@@ -77,6 +77,7 @@ const EinviteCategoryPage = lazy(() => import("./components/pages/EinviteCategor
 const EinviteEditorPage = lazy(() => import("./components/pages/EinviteEditorPage"));
 const EinviteSharePage = lazy(() => import("./components/pages/EinviteSharePage"));
 const EinviteMyCards = lazy(() => import("./components/layouts/einvites/EinviteMyCards"));
+const OurCards = lazy(() => import("./components/pages/OurCards"));
 const TryLanding = lazy(() => import("./components/pages/TryLanding"));
 const BrideMakeupChoose = lazy(() =>
   import("./components/pages/BrideMakeupChoose")
@@ -240,6 +241,14 @@ function App() {
               <Route path="/einvites/preview/:id" element={<EinviteSharePage />} />
               <Route path="/einvites/share/:id" element={<EinviteSharePage />} />
               <Route path="/einvites/my-cards" element={<EinviteMyCards />} />
+              <Route
+                path="/einvites/our-cards"
+                element={
+                  <UserPrivateRoute>
+                    <OurCards />
+                  </UserPrivateRoute>
+                }
+              />
 
               {/*  User Protected Routes  */}
               <Route

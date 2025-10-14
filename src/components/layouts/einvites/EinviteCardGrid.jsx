@@ -1,7 +1,7 @@
 import React from 'react';
 import EinviteCardItem from './EinviteCardItem';
 
-const EinviteCardGrid = ({ cards = [], loading = false, showActions = true }) => {
+const EinviteCardGrid = ({ cards = [], loading = false, showActions = true, onCardClickEdit = false, fixedImageHeight }) => {
     if (loading) {
         return (
             <div className="row">
@@ -40,6 +40,8 @@ const EinviteCardGrid = ({ cards = [], loading = false, showActions = true }) =>
                     <EinviteCardItem
                         card={card}
                         showActions={showActions}
+                        onCardClickEdit={onCardClickEdit}
+                        fixedImageHeight={fixedImageHeight}
                     />
                 </div>
             ))}

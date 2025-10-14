@@ -214,5 +214,25 @@ export const einviteApi = {
                 { value: 'Save The Date', label: 'Save The Date' }
             ];
         }
+    },
+
+    getEinvitesByTemplateStatus: async (isTemplate) => {
+        try {
+            const allCards = await einviteApi.getAllEinvites();
+            return allCards.filter(card => card.isTemplate === isTemplate);
+        } catch (error) {
+            console.error('Error fetching e-invites by template status:', error);
+            throw error;
+        }
+    },
+
+    getEinvitesByCategoryAndTemplate: async (category, isTemplate) => {
+        try {
+            const categoryCards = await einviteApi.getEinvitesByCategory(category);
+            return categoryCards.filter(card => card.isTemplate === isTemplate);
+        } catch (error) {
+            console.error('Error fetching e-invites by category and template status:', error);
+            throw error;
+        }
     }
 };

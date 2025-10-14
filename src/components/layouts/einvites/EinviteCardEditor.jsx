@@ -5,7 +5,8 @@ import { IoIosClose } from "react-icons/io";
 import { FiEdit2 } from "react-icons/fi";
 import { TbTextResize } from "react-icons/tb";
 import { AiOutlineUndo } from "react-icons/ai";
-
+import { useSelector } from "react-redux";
+import { FaCopy, FaWhatsapp, FaDownload } from "react-icons/fa";
 
 const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
   const [editedCard, setEditedCard] = useState(card || {});
@@ -15,9 +16,44 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSizePanel, setShowSizePanel] = useState(false);
   const [history, setHistory] = useState([]);
+  const [isPreview, setIsPreview] = useState(false);
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isPublished, setIsPublished] = useState(false);
 
   const pushHistory = (state) => {
     setHistory((prev) => [...prev, state]);
+  };
+
+  const shareUrl = `${window.location.origin}/einvites/view/${card.id}`;
+
+  const authUser = useSelector((state) => state?.auth?.user);
+  const vendorUser = useSelector((state) => state?.vendorAuth?.vendor);
+  const userPhone = authUser?.phone || vendorUser?.phone || "";
+
+  const normalizePhoneForWhatsApp = (phone) => {
+    if (!phone) return "";
+    const digitsOnly = String(phone).replace(/\D/g, "");
+    return digitsOnly;
+  };
+
+  const openWhatsAppShare = () => {
+    const targetPhone = normalizePhoneForWhatsApp(userPhone);
+    const message = `Hey! Check out my e-invite: ${shareUrl}`;
+    const base = targetPhone ? `https://wa.me/${targetPhone}` : "https://wa.me/";
+    const url = `${base}?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard
+      .writeText(shareUrl)
+      .then(() => {
+        alert("Link copied to clipboard!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+      });
   };
 
   const handleFieldChange = (fieldId, value) => {
@@ -74,9 +110,17 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
     };
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const cleanedCard = buildCleanPayload();
-    onSave(cleanedCard);
+    try {
+      setIsPublishing(true);
+      await Promise.resolve(onSave(cleanedCard));
+      setIsPublished(true);
+      setIsPreview(false);
+      setShowPublishConfirm(false);
+    } finally {
+      setIsPublishing(false);
+    }
   }
 
   const handleSaveDraft = () => {
@@ -208,7 +252,10 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                 {editedCard.editableFields?.map((field) => (
                   <div
                     key={field.id}
-                    onMouseDown={(e) => beginDrag(e, field)}
+                    onMouseDown={(e) => {
+                      if (isPreview || isPublished) return; // disable drag in preview/published view
+                      beginDrag(e, field)
+                    }}
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedFieldId(field.id);
@@ -220,17 +267,17 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                       color: field.color,
                       fontFamily: field.fontFamily,
                       fontSize: `${field.fontSize}px`,
-                      cursor: "move",
+                      cursor: isPreview || isPublished ? "default" : "move",
                       userSelect: "none",
-                      border: selectedFieldId === field.id ? "2px dashed #d91d6e" : "none",
-                      padding: selectedFieldId === field.id ? "4px 8px" : 0,
-                      background: selectedFieldId === field.id ? "rgba(217, 29, 110, 0.08)" : "transparent",
+                      border: !isPreview && !isPublished && selectedFieldId === field.id ? "2px dashed #d91d6e" : "none",
+                      padding: !isPreview && !isPublished && selectedFieldId === field.id ? "4px 8px" : 0,
+                      background: !isPreview && !isPublished && selectedFieldId === field.id ? "rgba(217, 29, 110, 0.08)" : "transparent",
                       borderRadius: "4px",
                       transition: "all 0.2s ease",
                     }}
                   >
                     {field.defaultText}
-                    {selectedFieldId === field.id && (
+                    {!isPreview && !isPublished && selectedFieldId === field.id && (
                       <button
                         type="button"
                         className="btn btn-sm btn-light position-absolute"
@@ -255,109 +302,194 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
             </div>
 
             {/* Bottom customizables */}
-            <div className="einvite-card-editor">
-              {showSizePanel && selectedField && (
-                <div className="size-panel">
-                  <div className="size-panel-header">
-                    <h6 className="size-panel-title">
-                      Size {selectedField.fontSize}
-                    </h6>
-                    <button
-                      type="button"
-                      className="btn-close-panel"
-                      onClick={() => setShowSizePanel(false)}
-                      aria-label="Close"
-                    >
-                      <IoIosClose color="#000" size={20} />
-                    </button>
-                  </div>
+            {!isPreview && !isPublished && (
+              <div className="einvite-card-editor">
+                {showSizePanel && selectedField && (
+                  <div className="size-panel">
+                    <div className="size-panel-header">
+                      <h6 className="size-panel-title">
+                        Size {selectedField.fontSize}
+                      </h6>
+                      <button
+                        type="button"
+                        className="btn-close-panel"
+                        onClick={() => setShowSizePanel(false)}
+                        aria-label="Close"
+                      >
+                        <IoIosClose color="#000" size={20} />
+                      </button>
+                    </div>
 
-                  <div className="size-panel-body">
-                    <input
-                      type="range"
-                      className="size-slider"
-                      min="8"
-                      max="120"
-                      value={selectedField.fontSize}
-                      onChange={handleFontSizeChange}
-                      onMouseDown={() => pushHistory(JSON.parse(JSON.stringify(editedCard)))}
-                    />
+                    <div className="size-panel-body">
+                      <input
+                        type="range"
+                        className="size-slider"
+                        min="8"
+                        max="120"
+                        value={selectedField.fontSize}
+                        onChange={handleFontSizeChange}
+                        onMouseDown={() => pushHistory(JSON.parse(JSON.stringify(editedCard)))}
+                      />
 
-                    {/* {showFontSizeValue && (
+                      {/* {showFontSizeValue && (
                       <div className="size-value">{selectedField.fontSize}px</div>
                     )} */}
+                    </div>
                   </div>
+                )}
+
+
+                <div className="editor-toolbar">
+                  <button
+                    type="button"
+                    className="toolbar-btn"
+                    onClick={openEdit}
+                    disabled={!selectedField}
+                    title="Edit"
+                  >
+                    <FiEdit2 />
+
+                    <span>Edit</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="toolbar-btn"
+                    onClick={handleSizeOpen}
+                    disabled={!selectedField}
+                    title="Size"
+                  >
+                    <TbTextResize />
+
+                    <span>Size</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="toolbar-btn"
+                    onClick={handleUndo}
+                    disabled={history.length === 0}
+                    title="Undo"
+                  >
+                    <AiOutlineUndo />
+
+                    <span>Undo</span>
+                  </button>
+
+                  <div className="toolbar-spacer"></div>
+
+                  <button
+                    type="button"
+                    className="btn btn-light btn-save-draft me-2 fs-12"
+                    onClick={handleSaveDraft}
+                  >
+                    Save Draft
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-next fs-12 text-white"
+                    onClick={() => setIsPreview(true)}
+                  >
+                    Next
+                  </button>
                 </div>
-              )}
+              </div>
+            )}
 
-
-              <div className="editor-toolbar">
+            {/* Preview toolbar */}
+            {isPreview && !isPublished && (
+              <div className="mt-3 d-flex justify-content-end gap-2">
                 <button
                   type="button"
-                  className="toolbar-btn"
-                  onClick={openEdit}
-                  disabled={!selectedField}
-                  title="Edit"
+                  className="btn btn-outline-secondary me-2 fs-12"
+                  onClick={() => setIsPreview(false)}
                 >
-                  <FiEdit2 />
-
-                  <span>Edit</span>
+                  Edit
                 </button>
-
                 <button
                   type="button"
-                  className="toolbar-btn"
-                  onClick={handleSizeOpen}
-                  disabled={!selectedField}
-                  title="Size"
+                  className="btn btn-success fs-12 text-white"
+                  onClick={() => setShowPublishConfirm(true)}
                 >
-                  <TbTextResize />
-
-                  <span>Size</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="toolbar-btn"
-                  onClick={handleUndo}
-                  disabled={history.length === 0}
-                  title="Undo"
-                >
-                  <AiOutlineUndo />
-
-                  <span>Undo</span>
-                </button>
-
-                <div className="toolbar-spacer"></div>
-
-                <button
-                  type="button"
-                  className="btn btn-light btn-save-draft me-2 fs-12"
-                  onClick={handleSaveDraft}
-                >
-                  Save Draft
-                </button>
-
-                <button
-                  type="button"
-                  className="btn btn-primary btn-next fs-12 text-white"
-                  onClick={handleSave}
-                >
-                  Next
+                  Publish
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
+            )}
 
-        {/* Footer Buttons */}
-        <div className="text-end mt-4">
-          <button className="btn btn-secondary me-2 fs-16" onClick={onCancel}>
-            Cancel
-          </button>
-          <button className="btn btn-primary fs-16" onClick={handleSave}>
-            Save Changes
-          </button>
+            {/* Post-publish options */}
+            {isPublished && (
+              <div className="container my-4">
+                <div className="row g-4">
+                  {/* Card 1 - Share Only Free */}
+                  <div className="col-12">
+                    <div className="border rounded-4 shadow-sm p-4 bg-white">
+                      <h5 className="fw-bold mb-3">Share Only — <span className="primary-text">Free</span></h5>
+
+                      <div className="d-flex align-items-center mb-3">
+                        <div className="d-flex align-items-center flex-wrap">
+                          <span
+                            className="text-primary small me-2"
+                            style={{ cursor: "pointer" }}
+                            onClick={handleCopy}
+                            title={shareUrl}
+                          >
+                            {shareUrl.length > 60
+                              ? shareUrl.slice(0, 60) + "..."
+                              : shareUrl}
+                          </span>
+                          <FaCopy
+                            role="button"
+                            style={{ cursor: "pointer" }}
+                            className="text-primary"
+                            onClick={handleCopy}
+                            title="Copy Link"
+                          />
+                        </div>
+                      </div>
+
+                      <ul className="mb-3 text-secondary">
+                        <li>Share link with Guests</li>
+                        <li>Guests RSVP, map location & comment</li>
+                        <li>No Downloadable Digital Invite</li>
+                      </ul>
+                      <button className="btn btn-success d-flex align-items-center" onClick={openWhatsAppShare}>
+                        <FaWhatsapp className="me-2" /> Share on WhatsApp
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Card 2 - Share + Download */}
+                  <div className="col-12">
+                    <div className="border rounded-4 shadow-sm p-4 bg-white">
+                      <h5 className="fw-bold mb-3 ">Share + Download — <span className="primary-text">₹249 only</span></h5>
+
+                      <div className="d-flex align-items-center mb-3">
+                        <span className="text-primary small me-2"
+                          style={{ cursor: "pointer" }} onClick={handleCopy}>{shareUrl}</span>
+                        <FaCopy
+                          role="button"
+                          className="text-primary"
+                          onClick={handleCopy}
+                          title="Copy Link"
+                        />
+                      </div>
+
+                      <ul className="mb-3 text-secondary">
+                        <li>Share link with Guests</li>
+                        <li>Guests RSVP, map location & comment</li>
+                        <li>Downloadable card allowed [Non-Animated PDF]</li>
+                      </ul>
+
+                      <button className="btn btn-primary text-white d-flex align-items-center">
+                        <FaDownload className="me-2" /> Download
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -397,6 +529,31 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                 </button>
                 <button type="button" className="btn btn-primary" onClick={() => setShowEditModal(false)}>
                   Save
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Publish Confirm Modal */}
+      {showPublishConfirm && (
+        <div className="modal fade show d-block" tabIndex="-1" role="dialog" onClick={() => !isPublishing && setShowPublishConfirm(false)}>
+          <div className="modal-dialog" role="document" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Confirm Publish</h5>
+                <button type="button" className="btn-close" onClick={() => !isPublishing && setShowPublishConfirm(false)}></button>
+              </div>
+              <div className="modal-body">
+                Are you sure to publish card?
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" disabled={isPublishing} onClick={() => setShowPublishConfirm(false)}>
+                  Dismiss
+                </button>
+                <button type="button" className="btn btn-primary" disabled={isPublishing} onClick={handleSave}>
+                  {isPublishing ? 'Publishing...' : 'Publish'}
                 </button>
               </div>
             </div>
