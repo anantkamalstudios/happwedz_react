@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getImageUrl, handleImageError } from '../../../utils/imageUtils';
 
-const EinviteCardItem = ({ card, showActions = true }) => {
+const EinviteCardItem = ({ card, showActions = true, onCardClickEdit = false, fixedImageHeight }) => {
     const navigate = useNavigate();
 
     const handleCustomize = () => {
@@ -13,82 +13,76 @@ const EinviteCardItem = ({ card, showActions = true }) => {
         navigate(`/einvites/preview/${card.id}`);
     };
 
+    const handleWholeCardClick = () => {
+        if (onCardClickEdit) {
+            handleCustomize();
+        }
+    };
+
     return (
-        <div className="einvite-card-item">
-            <div className="card h-100 shadow-sm">
-                <div className="einvite-card-image-wrapper">
+        <div className="einvite-card-wrapper" onClick={handleWholeCardClick} style={{ cursor: onCardClickEdit ? 'pointer' : 'default' }}>
+            <div className="card h-100 shadow-sm einvite-card">
+                {/* Card Image Container */}
+                <div className="einvite-image-container position-relative" style={fixedImageHeight ? { height: fixedImageHeight, overflow: 'hidden' } : undefined}>
                     <img
                         src={getImageUrl(card.thumbnailUrl || card.thumbnail_url || card.image)}
                         alt={card.name}
-                        className="card-img-top einvite-card-image"
+                        className="card-img-top einvite-image"
+                        style={fixedImageHeight ? { height: '100%', width: '100%', objectFit: 'cover' } : undefined}
                         onError={(e) => handleImageError(e, card.thumbnailUrl || card.thumbnail_url || card.image)}
                     />
-                    <div className="einvite-card-overlay">
-                        <div className="einvite-card-actions">
-                            <button
-                                className="btn btn-primary btn-sm me-2"
-                                onClick={handleCustomize}
-                            >
-                                <i className="fas fa-edit me-1"></i>
-                                Customize
-                            </button>
-                            <button
-                                className="btn btn-outline-light btn-sm"
-                                onClick={handlePreview}
-                            >
-                                <i className="fas fa-eye me-1"></i>
-                                Preview
-                            </button>
-                        </div>
-                    </div>
+
+                    {/* Edit Button Overlay - Top Right */}
+                    <button
+                        onClick={handleCustomize}
+                        className="btn accent-pink-bg einvite-edit-btn position-absolute text-white"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClickCapture={(e) => { e.stopPropagation(); handleCustomize(); }}
+                    >
+                        <i className="fas fa-edit me-2"></i>
+                        Edit
+                    </button>
+
+                    {/* Video Play Icon */}
                     {card.cardType === 'video_invite' && (
-                        <div className="einvite-play-button">
-                            <i className="fas fa-play"></i>
+                        <div className="einvite-play-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
+                            <div className="einvite-play-icon">
+                                <i className="fas fa-play"></i>
+                            </div>
                         </div>
                     )}
                 </div>
 
-                <div className="card-body">
-                    <h6 className="card-title einvite-card-title">{card.name}</h6>
-                    <div className="einvite-card-meta">
-                        <div className="einvite-card-rating">
-                            <i className="fas fa-star text-warning"></i>
-                            <span className="ms-1">{card.rating || '4.5'}</span>
-                        </div>
-                        {card.cardType === 'video_invite' && (
-                            <span className="einvite-card-duration">{card.duration || '2:30'}</span>
-                        )}
-                    </div>
-                    <div className="einvite-card-tags">
-                        {card.theme && (
-                            <span className="badge bg-light text-dark me-1">{card.theme}</span>
-                        )}
-                        {card.culture && (
-                            <span className="badge bg-light text-dark">{card.culture}</span>
-                        )}
-                    </div>
-                </div>
+                {/* Card Footer with Title */}
+                <div className="card-body text-center">
+                    <h6 className=" einvite-title mb-2 fs-24 text-center">{card.name}</h6>
 
-                {showActions && (
-                    <div className="card-footer bg-transparent">
-                        <div className="d-flex justify-content-between align-items-center">
-                            <button
-                                className="btn btn-outline-primary btn-sm"
-                                onClick={handleCustomize}
-                            >
-                                <i className="fas fa-edit me-1"></i>
-                                Edit
-                            </button>
-                            <button
-                                className="btn btn-outline-danger btn-sm"
-                                onClick={() => console.log('Delete card:', card.id)}
-                            >
-                                <i className="fas fa-trash me-1"></i>
-                                Delete
-                            </button>
+                    {(card.rating || (card.cardType === 'video_invite' && card.duration)) && (
+                        <div className="d-flex align-items-center justify-content-center gap-3 mb-2 einvite-meta">
+                            {card.rating && (
+                                <div className="d-flex align-items-center">
+                                    <i className="fas fa-star text-warning me-1"></i>
+                                    <span>{card.rating}</span>
+                                </div>
+                            )}
+                            {card.cardType === 'video_invite' && card.duration && (
+                                <span className="text-muted">{card.duration}</span>
+                            )}
                         </div>
-                    </div>
-                )}
+                    )}
+
+                    {/* Tags */}
+                    {(card.theme || card.culture) && (
+                        <div className="d-flex align-items-center justify-content-center gap-2 einvite-tags">
+                            {card.theme && (
+                                <span className="badge bg-light text-dark">{card.theme}</span>
+                            )}
+                            {card.culture && (
+                                <span className="badge bg-light text-dark">{card.culture}</span>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

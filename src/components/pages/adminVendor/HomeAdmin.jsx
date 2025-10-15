@@ -162,14 +162,14 @@ const HomeAdmin = () => {
       // daily_avg: 4.7,
       icon: <FiUsers size={24} />,
     },
-    impressions: {
-      title: "Impressions",
-      value: loadingStats ? "..." : stats.impressions.toLocaleString(),
-      change: "+8.5%",
-      trend: "up",
-      // daily_avg: "827",
-      icon: <FiEye size={24} />,
-    },
+    // impressions: {
+    //   title: "Impressions",
+    //   value: loadingStats ? "..." : stats.impressions.toLocaleString(),
+    //   change: "+8.5%",
+    //   trend: "up",
+    //   // daily_avg: "827",
+    //   icon: <FiEye size={24} />,
+    // },
     // profile_views: {
     //   title: "Profile Views",
     //   value: loadingStats ? "..." : stats.profileViews.toLocaleString(),

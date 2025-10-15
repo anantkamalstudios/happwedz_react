@@ -1,1 +1,1 @@
-export const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com/";
+export const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";

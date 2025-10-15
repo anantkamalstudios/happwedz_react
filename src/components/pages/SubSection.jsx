@@ -138,6 +138,7 @@ const SubSection = () => {
     return <LoadingState title={title} />;
   }
 
+  console.log("dts", dataToSend);
   return (
     <div className="container-fluid">
       <MainSearch

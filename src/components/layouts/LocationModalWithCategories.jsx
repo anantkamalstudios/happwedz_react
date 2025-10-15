@@ -53,7 +53,10 @@ const LocationModalWithAPI = () => {
   const handleCityClick = (city) => {
     dispatch(setLocation(city));
     setShow(false);
-    navigate(`/vendors/all?city=${encodeURIComponent(city)}`);
+
+    setTimeout(() => {
+      navigate(`/vendors/all?city=${encodeURIComponent(city)}`);
+    }, 300);
   };
 
   const handleClearLocation = (e) => {
@@ -109,7 +112,7 @@ const LocationModalWithAPI = () => {
         size="xl"
         centered
         backdrop="static"
-        keyboard={false}
+        keyboard={true}
       >
         <Modal.Body>
           <Form.Select
