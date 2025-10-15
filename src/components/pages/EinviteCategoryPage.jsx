@@ -18,7 +18,7 @@ const EinviteCategoryPage = () => {
     const fetchCategoryCards = async () => {
         try {
             setLoading(true);
-            const data = await einviteApi.getEinvitesByCategory(category);
+            const data = await einviteApi.getEinvitesByCategoryAndTemplate(category, true);
             setCards(data);
             setFilteredCards(data);
         } catch (err) {

@@ -110,7 +110,7 @@
 
 import axios from "axios";
 
-const API_BASE = "https://happywedz.com/api"; // change to your backend URL
+const API_BASE = "https://happywedz.com/api";
 
 const userApi = {
   register: async (data) => {

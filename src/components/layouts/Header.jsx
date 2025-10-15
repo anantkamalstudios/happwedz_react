@@ -63,7 +63,7 @@ const Header = () => {
         const bsCollapse =
           window.bootstrap.Collapse.getOrCreateInstance(collapse);
         bsCollapse.hide();
-      } catch {}
+      } catch { }
     }
   }, [location]);
 
@@ -116,6 +116,7 @@ const Header = () => {
       try {
         const response = await fetch(
           "https://happywedz.com/api/vendor-types/with-subcategories/all"
+          // "http://localhost:4000/vendor-types/with-subcategories/all"
         );
         const data = await response.json();
         const venues = data.find(
@@ -139,6 +140,7 @@ const Header = () => {
       try {
         const response = await fetch(
           "https://happywedz.com/api/vendor-types/with-subcategories/all"
+          // "http://localhost:4000/vendor-types/with-subcategories/all"
         );
         const data = await response.json();
         setVendorCategories(Array.isArray(data) ? data : []);
@@ -439,12 +441,12 @@ const Header = () => {
                                           transition: "color 0.2s ease-in-out",
                                         }}
                                         onMouseEnter={(e) =>
-                                          (e.currentTarget.style.color =
-                                            "#e91e63")
+                                        (e.currentTarget.style.color =
+                                          "#e91e63")
                                         }
                                         onMouseLeave={(e) =>
-                                          (e.currentTarget.style.color =
-                                            "#212529")
+                                        (e.currentTarget.style.color =
+                                          "#212529")
                                         }
                                       >
                                         <span
@@ -459,7 +461,7 @@ const Header = () => {
                                         >
                                           {tab.icon}
                                         </span>
-                                        <span className="ms-2 fw-medium small">
+                                        <span className="ms-2 small">
                                           {tab.label}
                                         </span>
                                       </div>
@@ -475,31 +477,33 @@ const Header = () => {
                                         title: "Get the HappyWedz App",
                                         desc: "Plan your wedding on the go with the HappyWedz app.",
                                         image: "/images/header/playstore.png",
+                                        route: "/get-app"
                                       },
                                       {
-                                        title: "Wedshots",
-                                        desc: "Easily collect all your guests' event photos in one album!",
-                                        image: "/images/header/tryimg.png",
+                                        title: "Happywedz Website",
+                                        desc: "Showcase your wedding website to friends and family.",
+                                        image: "/images/couple.png",
+                                        route: "/choose-template"
                                       },
                                     ].map((item, i) => (
                                       <div
                                         key={i}
-                                        className="p-3 rounded-4 bg-white shadow-sm"
+                                        className="p-3 rounded-4 bg-white shadow-lg border-2"
                                         style={{
                                           border: "1px solid #f0f0f0",
                                           cursor: "pointer",
                                           transition: "all 0.2s ease-in-out",
                                         }}
                                         onMouseEnter={(e) =>
-                                          (e.currentTarget.style.boxShadow =
-                                            "0 4px 12px rgba(0,0,0,0.08)")
+                                        (e.currentTarget.style.boxShadow =
+                                          "0 4px 12px rgba(0,0,0,0.08)")
                                         }
                                         onMouseLeave={(e) =>
-                                          (e.currentTarget.style.boxShadow =
-                                            "0 2px 4px rgba(0,0,0,0.04)")
+                                        (e.currentTarget.style.boxShadow =
+                                          "0 2px 4px rgba(0,0,0,0.04)")
                                         }
                                       >
-                                        <div className="d-flex justify-content-between align-items-center">
+                                        <Link to={item.route} target="_blank" rel="noopener noreferrer" className="text-decoration-none d-flex justify-content-between align-items-center">
                                           <div className="me-3">
                                             <h6 className="fw-semibold mb-1 text-dark fs-6">
                                               {item.title}
@@ -524,7 +528,7 @@ const Header = () => {
                                               objectFit: "cover",
                                             }}
                                           />
-                                        </div>
+                                        </Link>
                                       </div>
                                     ))}
                                   </div>
@@ -588,40 +592,39 @@ const Header = () => {
                                 <div className="row">
                                   {(venueSubcategories.length > 0
                                     ? [
-                                        ...venueSubcategories.map(
-                                          (s) => s.name
-                                        ),
-                                        "View All Venues",
-                                      ]
+                                      ...venueSubcategories.map(
+                                        (s) => s.name
+                                      ),
+                                      "View All Venues",
+                                    ]
                                     : [
-                                        "Banquet Halls",
-                                        "Marriage Garden / Lawns",
-                                        "Wedding Resorts",
-                                        "Small Function / Party Halls",
-                                        "Destination Wedding Venues",
-                                        "Kalyana Mandapams",
-                                        "4 Star & Above Wedding Hotels",
-                                        "Venue Concierge Services",
-                                        "View All Venues",
-                                      ]
+                                      "Banquet Halls",
+                                      "Marriage Garden / Lawns",
+                                      "Wedding Resorts",
+                                      "Small Function / Party Halls",
+                                      "Destination Wedding Venues",
+                                      "Kalyana Mandapams",
+                                      "4 Star & Above Wedding Hotels",
+                                      "Venue Concierge Services",
+                                      "View All Venues",
+                                    ]
                                   ).map((item, i) => {
                                     const isShowMore =
                                       item === "View All Venues";
                                     const path = isShowMore
                                       ? "/venues"
                                       : `/venues/${item
-                                          .toLowerCase()
-                                          .replace(/\s+/g, "-")
-                                          .replace(/[^a-z0-9\-]/g, "")}`;
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "-")
+                                        .replace(/[^a-z0-9\-]/g, "")}`;
                                     return (
                                       <div className="col-12 mb-2" key={i}>
                                         <Link
                                           to={path}
-                                          className={`dropdown-link d-flex align-items-center ${
-                                            isShowMore
-                                              ? "primary-text fw-bold text-decoration-underline"
-                                              : ""
-                                          }`}
+                                          className={`dropdown-link d-flex align-items-center ${isShowMore
+                                            ? "primary-text fw-bold text-decoration-underline"
+                                            : ""
+                                            }`}
                                         >
                                           <i className="bi bi-check-circle me-2 text-primary"></i>
                                           <span className="small">{item}</span>

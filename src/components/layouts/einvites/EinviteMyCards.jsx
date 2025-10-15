@@ -59,23 +59,12 @@ const EinviteMyCards = () => {
 
     return (
         <div className="einvite-my-cards">
-            <div className="container py-5">
-                <div className="row mb-4">
-                    <div className="col-md-8">
-                        <h2 className="einvite-page-title">
-                            <i className="fas fa-heart me-2 text-primary"></i>
-                            My E-Invitations
-                        </h2>
-                        <p className="text-muted">Manage your published e-invitations</p>
-                    </div>
-                    <div className="col-md-4 text-end">
-                        <Link className="btn btn-primary" to="/einvites">
-                            <i className="fas fa-plus me-2"></i>
-                            Create New
-                        </Link>
-                    </div>
+            <div className="row mb-4 light-pink-bg p-4">
+                <div className="col-12 container">
+                    <h2 className="einvite-page-title display-6 fw-medium primary-text mb-0">Published Cards</h2>
                 </div>
-
+            </div>
+            <div className="container py-5">
                 {cards.length === 0 ? (
                     <div className="text-center py-5">
                         <i className="fas fa-heart fa-4x text-muted mb-4"></i>

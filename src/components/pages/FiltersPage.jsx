@@ -80,8 +80,8 @@ const FiltersPage = () => {
         const items = Array.isArray(response)
           ? response
           : Array.isArray(response?.data)
-          ? response.data
-          : [];
+            ? response.data
+            : [];
         setCategories(items);
       } catch (e) {
         console.error("Failed to load products", e);
@@ -388,7 +388,7 @@ const FiltersPage = () => {
         <div
           className="single-image-container"
           style={{ width: "100%" }}
-          // style={{ width: "100%", maxWidth: 400 }}
+        // style={{ width: "100%", maxWidth: 400 }}
         >
           <div
             className="image-wrapper"
@@ -898,21 +898,14 @@ const FiltersPage = () => {
                   </label> */}
                   <input
                     type="range"
-                    min={
-                      (
-                        categories[expandedCatIdx]
-                          ?.product_detailed_category_name || ""
-                      ).toLowerCase() === "bindi"
-                        ? 1
-                        : 0
-                    }
+                    min={0}
                     max={
+                      DEFAULT_INTENSITIES[
                       (
                         categories[expandedCatIdx]
                           ?.product_detailed_category_name || ""
-                      ).toLowerCase() === "bindi"
-                        ? 10
-                        : 1
+                      ).toLowerCase()
+                      ] ?? 1
                     }
                     step={
                       (
@@ -924,16 +917,16 @@ const FiltersPage = () => {
                     }
                     value={
                       intensities[
-                        (
-                          categories[expandedCatIdx]
-                            ?.product_detailed_category_name || ""
-                        ).toLowerCase()
+                      (
+                        categories[expandedCatIdx]
+                          ?.product_detailed_category_name || ""
+                      ).toLowerCase()
                       ] ??
                       DEFAULT_INTENSITIES[
-                        (
-                          categories[expandedCatIdx]
-                            ?.product_detailed_category_name || ""
-                        ).toLowerCase()
+                      (
+                        categories[expandedCatIdx]
+                          ?.product_detailed_category_name || ""
+                      ).toLowerCase()
                       ] ??
                       0.6
                     }

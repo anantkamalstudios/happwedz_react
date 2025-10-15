@@ -372,7 +372,7 @@ const API_BASE_URL = "https://happywedz.com/api";
 const ReviewsPage = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState("reviews");
-  const { token: vendorToken } = useSelector((state) => state.vendorAuth);
+  const { vendor, token: vendorToken } = useSelector((state) => state.vendorAuth);
 
   const [reviews, setReviews] = useState([]);
   const [stats, setStats] = useState({
@@ -494,6 +494,7 @@ const ReviewsPage = () => {
             <p className="text-danger">{error}</p>
           ) : (
             <ReviewsDashboard
+              vendorId={vendor?.id}
               totalReviews={totalReviews}
               averageRating={averageRating}
               positiveReviews={positiveReviews}
