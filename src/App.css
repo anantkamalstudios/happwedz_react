@@ -18520,9 +18520,7 @@ input:checked + .slider:before {
 .modal-content-custom {
   background: #fff;
   border-radius: 8px;
-}
-<<<<<<< HEAD
-=======
+} 
 
 /* Add this to your CSS file */
 .custom-checkbox {
@@ -18543,9 +18541,7 @@ input:checked + .slider:before {
   position: absolute;
   top: 0;
   left: 3px;
-}
->>>>>>> 3f235d3b00ce432655502a2e677047a5e8a91245
-
+} 
 /* E-Invite Card Editor Styles */
 .einvite-canvas-wrapper {
   padding: 20px 0;
