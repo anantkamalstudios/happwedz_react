@@ -19,21 +19,7 @@ import couple2 from '../images/couple/img-1.jpg'
 
 const Homepage = () => {
     return (
-        <div>
-            {/* <Navbar />
-            <SimpleSlider />
-            <Saveday />
-            <Couple coupleimg1={couple1} coupleimg2={couple2} />
-            <Welcome />
-            <Story />
-            <People />
-            <Location />
-            <Gallery />
-            <Rsvp />
-            <Getting />
-            <Gift />
-            <Footer /> */}
-
+        <div> 
             <Navbar />
             <HeroMain />
             <Saveday saveday={'s2'} />

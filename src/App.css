@@ -18150,6 +18150,9 @@ input:checked + .slider:before {
     rgba(233, 30, 99, 0.9),
     rgba(255, 107, 157, 0.9)
   );
+  background: linear-gradient(135deg,
+      rgba(233, 30, 99, 0.9),
+      rgba(255, 107, 157, 0.9));
   background: linear-gradient(
     135deg,
     rgba(233, 30, 99, 0.9),

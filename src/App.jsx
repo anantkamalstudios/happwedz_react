@@ -110,19 +110,22 @@ const UploadSelfiePage = lazy(() =>
   import("./components/pages/UploadSelfiePage")
 );
 const FiltersPage = lazy(() => import("./components/pages/FiltersPage"));
+const MyWeddingWebsites = lazy(() => import("./components/pages/MyWeddingWebsites"));
+const WeddingWebsiteView = lazy(() => import("./components/pages/WeddingWebsiteView"));
+const WeddingWebsiteForm = lazy(() => import("./components/pages/WeddingWebsiteForm"));
 
 const FinalLookPage = lazy(() => import("./components/pages/FinalLookPage"));
-const WeddingWebsiteForm = lazy(() =>
-  import("./components/pages/WeddingWebsiteForm")
-);
-const MyWeddingWebsites = lazy(() =>
-  import("./components/pages/MyWeddingWebsites")
-);
+// const WeddingWebsiteForm = lazy(() =>
+//   import("./components/pages/WeddingWebsiteForm")
+// );
+// const MyWeddingWebsites = lazy(() =>
+//   import("./components/pages/MyWeddingWebsites")
+// );
 
-const WeddingWebsiteView = lazy(() =>
-  // const WeddingWebsiteView = lazy(() =>
-  import("./components/pages/WeddingWebsiteView")
-);
+// const WeddingWebsiteView = lazy(() =>
+//   // const WeddingWebsiteView = lazy(() =>
+//   import("./components/pages/WeddingWebsiteView")
+// );
 
 const VendorPremium = lazy(() =>
   import("./components/pages/adminVendor/VendorPremium")

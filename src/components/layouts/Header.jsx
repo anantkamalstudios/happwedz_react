@@ -30,11 +30,7 @@ const Header = () => {
 
   const handleLogout = () => {
     dispatch(logout());
-    dispatch(vendorLogout());
-
-    localStorage.removeItem("vendorFormData");
-    localStorage.removeItem("photoDraftsMeta");
-    localStorage.removeItem("videoDraftsMeta");
+    localStorage.clear();
   };
 
   const { user, token: userToken } = useSelector((state) => state.auth);
@@ -115,8 +111,7 @@ const Header = () => {
     const fetchSubcategories = async () => {
       try {
         const response = await fetch(
-          "https://happywedz.com/api/vendor-types/with-subcategories/all"
-          // "http://localhost:4000/vendor-types/with-subcategories/all"
+          "https://happywedz.com/api/vendor-types/with-subcategories/all" 
         );
         const data = await response.json();
         const venues = data.find(
