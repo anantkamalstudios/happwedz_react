@@ -18,6 +18,8 @@ import {
   FaUserFriends,
   FaUser,
 } from "react-icons/fa";
+import axios from "axios";
+import usePhotography from "../../hooks/usePhotography";
 
 const Header = () => {
   const dispatch = useDispatch();
@@ -63,7 +65,7 @@ const Header = () => {
         const bsCollapse =
           window.bootstrap.Collapse.getOrCreateInstance(collapse);
         bsCollapse.hide();
-      } catch { }
+      } catch {}
     }
   }, [location]);
 
@@ -116,7 +118,6 @@ const Header = () => {
       try {
         const response = await fetch(
           "https://happywedz.com/api/vendor-types/with-subcategories/all"
-          // "http://localhost:4000/vendor-types/with-subcategories/all"
         );
         const data = await response.json();
         const venues = data.find(
@@ -140,7 +141,6 @@ const Header = () => {
       try {
         const response = await fetch(
           "https://happywedz.com/api/vendor-types/with-subcategories/all"
-          // "http://localhost:4000/vendor-types/with-subcategories/all"
         );
         const data = await response.json();
         setVendorCategories(Array.isArray(data) ? data : []);
@@ -151,6 +151,24 @@ const Header = () => {
     };
     fetchVendorCategories();
   }, []);
+
+  const {
+    typesWithCategories,
+    fetchTypesWithCategories,
+    loading: photographyLoading,
+    error: photographyError,
+  } = usePhotography();
+
+  const [photography, setPhotography] = useState([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchTypesWithCategories();
+    };
+    fetchData();
+  }, []);
+  useEffect(() => {
+    setPhotography(typesWithCategories);
+  }, [typesWithCategories]);
 
   const vendorType = encodeURIComponent("Venues");
   const cityParam = selectedCity
@@ -441,12 +459,12 @@ const Header = () => {
                                           transition: "color 0.2s ease-in-out",
                                         }}
                                         onMouseEnter={(e) =>
-                                        (e.currentTarget.style.color =
-                                          "#e91e63")
+                                          (e.currentTarget.style.color =
+                                            "#e91e63")
                                         }
                                         onMouseLeave={(e) =>
-                                        (e.currentTarget.style.color =
-                                          "#212529")
+                                          (e.currentTarget.style.color =
+                                            "#212529")
                                         }
                                       >
                                         <span
@@ -493,12 +511,12 @@ const Header = () => {
                                           transition: "all 0.2s ease-in-out",
                                         }}
                                         onMouseEnter={(e) =>
-                                        (e.currentTarget.style.boxShadow =
-                                          "0 4px 12px rgba(0,0,0,0.08)")
+                                          (e.currentTarget.style.boxShadow =
+                                            "0 4px 12px rgba(0,0,0,0.08)")
                                         }
                                         onMouseLeave={(e) =>
-                                        (e.currentTarget.style.boxShadow =
-                                          "0 2px 4px rgba(0,0,0,0.04)")
+                                          (e.currentTarget.style.boxShadow =
+                                            "0 2px 4px rgba(0,0,0,0.04)")
                                         }
                                       >
                                         <div className="d-flex justify-content-between align-items-center">
@@ -590,39 +608,40 @@ const Header = () => {
                                 <div className="row">
                                   {(venueSubcategories.length > 0
                                     ? [
-                                      ...venueSubcategories.map(
-                                        (s) => s.name
-                                      ),
-                                      "View All Venues",
-                                    ]
+                                        ...venueSubcategories.map(
+                                          (s) => s.name
+                                        ),
+                                        "View All Venues",
+                                      ]
                                     : [
-                                      "Banquet Halls",
-                                      "Marriage Garden / Lawns",
-                                      "Wedding Resorts",
-                                      "Small Function / Party Halls",
-                                      "Destination Wedding Venues",
-                                      "Kalyana Mandapams",
-                                      "4 Star & Above Wedding Hotels",
-                                      "Venue Concierge Services",
-                                      "View All Venues",
-                                    ]
+                                        "Banquet Halls",
+                                        "Marriage Garden / Lawns",
+                                        "Wedding Resorts",
+                                        "Small Function / Party Halls",
+                                        "Destination Wedding Venues",
+                                        "Kalyana Mandapams",
+                                        "4 Star & Above Wedding Hotels",
+                                        "Venue Concierge Services",
+                                        "View All Venues",
+                                      ]
                                   ).map((item, i) => {
                                     const isShowMore =
                                       item === "View All Venues";
                                     const path = isShowMore
                                       ? "/venues"
                                       : `/venues/${item
-                                        .toLowerCase()
-                                        .replace(/\s+/g, "-")
-                                        .replace(/[^a-z0-9\-]/g, "")}`;
+                                          .toLowerCase()
+                                          .replace(/\s+/g, "-")
+                                          .replace(/[^a-z0-9\-]/g, "")}`;
                                     return (
                                       <div className="col-12 mb-2" key={i}>
                                         <Link
                                           to={path}
-                                          className={`dropdown-link d-flex align-items-center ${isShowMore
+                                          className={`dropdown-link d-flex align-items-center ${
+                                            isShowMore
                                               ? "primary-text fw-bold text-decoration-underline"
                                               : ""
-                                            }`}
+                                          }`}
                                         >
                                           <i className="bi bi-check-circle me-2 text-primary"></i>
                                           <span className="small">{item}</span>
@@ -704,7 +723,7 @@ const Header = () => {
                             Photography
                           </Link>
 
-                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                          {/* <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
                               <div
                                 style={{ columnCount: 4, columnGap: "1rem" }}
@@ -834,6 +853,50 @@ const Header = () => {
                                       )}
                                   </div>
                                 ))}
+                              </div>
+                            </div>
+                          </div> */}
+
+                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                            <div className="container">
+                              <div
+                                style={{
+                                  columnCount: 4,
+                                  columnGap: "1rem",
+                                }}
+                                className="grid-layout"
+                              >
+                                {photography.length > 0 &&
+                                  photography.map((cat, i) => (
+                                    <div
+                                      className="mb-4 d-inline-block w-100"
+                                      key={cat.id || i}
+                                    >
+                                      <div className="fw-bold primary-text text-uppercase mb-2">
+                                        {cat.name}
+                                      </div>
+                                      {Array.isArray(cat.categories) &&
+                                        cat.categories.length > 0 && (
+                                          <ul className="list-unstyled">
+                                            {cat.categories.map((sub, j) => (
+                                              <li
+                                                key={sub.id || j}
+                                                className="mb-1"
+                                              >
+                                                <Link
+                                                  to={`/photography/${toSlug(
+                                                    sub.name
+                                                  )}`}
+                                                  className="dropdown-link small d-block"
+                                                >
+                                                  {formatName(sub.name)}
+                                                </Link>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        )}
+                                    </div>
+                                  ))}
                               </div>
                             </div>
                           </div>
