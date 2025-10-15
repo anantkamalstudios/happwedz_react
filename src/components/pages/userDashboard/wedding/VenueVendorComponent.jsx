@@ -2,10 +2,10 @@ import React, { useEffect, useMemo, useState } from "react";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { FaCircleArrowLeft, FaCircleArrowRight } from "react-icons/fa6";
 import useApiData from "../../../../hooks/useApiData";
-import { Swiper, SwiperSlide } from "swiper/react";
+import { Swiper, SwiperSlide } from "swiper/react"; //
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const toSlug = (text) =>
   (text || "")
@@ -14,6 +14,7 @@ const toSlug = (text) =>
     .replace(/[^a-z0-9\-]/g, "");
 
 const VenueVendorComponent = ({ type = "vendor" }) => {
+  const navigate = useNavigate();
   const isVendorBox = type === "vendor";
 
   const [categories, setCategories] = useState([]);
@@ -41,7 +42,12 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
         setLoadingCategories(true);
         const res = await fetch("https://happywedz.com/api/vendor-subcategories");
         const data = await res.json();
-        setCategories(Array.isArray(data) ? data : []);
+        const cats = Array.isArray(data) ? data : [];
+        setCategories(cats);
+        if (cats.length > 0) {
+          setSelectedSlug(toSlug(cats[0].name));
+          setSelectedLabel(cats[0].name);
+        }
       } catch (e) {
         console.error("Failed to load vendor subcategories", e);
         setCategories([]);
@@ -98,7 +104,6 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
                   setSelectedLabel(opt && opt.value ? opt.text : "");
                 }}
               >
-                <option value="">Select Category</option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={toSlug(cat.name)}>
                     {cat.name}
@@ -222,6 +227,9 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
                 borderRadius: "10px",
               }}
               disabled={!selectedSlug || loadingVendors}
+              onClick={() => {
+                if (selectedSlug) navigate(`/vendors/${selectedSlug}`);
+              }}
             >
               {loadingVendors ? "Loading..." : selectedLabel ? `Search ${selectedLabel}` : "Search"}
             </button>
