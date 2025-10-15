@@ -16,6 +16,7 @@ import VendorPrivateRoute from "./components/routes/VendorPrivateRoute";
 import UserPrivateRoute from "./components/routes/UserPrivateRoute";
 import VendorLeadsPage from "./components/pages/adminVendor/VendorLeadsPage";
 import RecommandedPage from "./components/home/RecommandedPage";
+import ReviewsPage from "./components/pages/WriteReviewPage";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
@@ -72,11 +73,21 @@ const ProfileImageSelector = lazy(() =>
 );
 
 // E-Invite Pages
-const EinviteHomePage = lazy(() => import("./components/pages/EinviteHomePage"));
-const EinviteCategoryPage = lazy(() => import("./components/pages/EinviteCategoryPage"));
-const EinviteEditorPage = lazy(() => import("./components/pages/EinviteEditorPage"));
-const EinviteSharePage = lazy(() => import("./components/pages/EinviteSharePage"));
-const EinviteMyCards = lazy(() => import("./components/layouts/einvites/EinviteMyCards"));
+const EinviteHomePage = lazy(() =>
+  import("./components/pages/EinviteHomePage")
+);
+const EinviteCategoryPage = lazy(() =>
+  import("./components/pages/EinviteCategoryPage")
+);
+const EinviteEditorPage = lazy(() =>
+  import("./components/pages/EinviteEditorPage")
+);
+const EinviteSharePage = lazy(() =>
+  import("./components/pages/EinviteSharePage")
+);
+const EinviteMyCards = lazy(() =>
+  import("./components/layouts/einvites/EinviteMyCards")
+);
 const OurCards = lazy(() => import("./components/pages/OurCards"));
 const TryLanding = lazy(() => import("./components/pages/TryLanding"));
 const BrideMakeupChoose = lazy(() =>
@@ -100,6 +111,7 @@ const VendorPremium = lazy(() =>
 );
 
 const RecommandPage = lazy(() => import("./components/home/RecommandedPage"));
+const WriteReviewPage = lazy(() => import("./components/pages/WriteReviewPage"));
 
 function App() {
   const location = useLocation();
@@ -139,10 +151,8 @@ function App() {
               <Route path="/:section" element={<MainSection />} />
               <Route path="/:section/:slug" element={<SubSection />} />
               <Route path="/details/:section/:id" element={<Detailed />} />
-
               {/* Recommandation */}
               <Route path="/ai-recommandation" element={<RecommandPage />} />
-
               {/* Auth Pages */}
               <Route path="/customer-login" element={<CustomerLogin />} />
               <Route path="/customer-register" element={<CustomerRegister />} />
@@ -152,15 +162,12 @@ function App() {
                 path="/user-forgot-password"
                 element={<ForgotPassword />}
               />
-
               {/* Blog */}
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog-details" element={<BlogDetails />} />
-
               {/* Static Pages */}
               <Route path="/terms" element={<TermsCondition />} />
               <Route path="/cancellation" element={<CancellationPolicy />} />
-
               {/* Try Flow */}
               <Route path="/try" element={<TryLanding />} />
               <Route
@@ -215,8 +222,8 @@ function App() {
                 path="/vendor-dashboard/total-leads"
                 element={<VendorLeadsPage />}
               />
-
-              {/* Editors / Video */}
+              <Route path="/write-review/:vendorId" element={<ReviewsPage />} />
+              s{/* Editors / Video */}
               <Route path="/editor" element={<CardEditorPage />} />
               <Route path="/editor/:templateId" element={<CardEditorPage />} />
               <Route path="/video-templates" element={<VideoTemplates />} />
@@ -226,10 +233,12 @@ function App() {
                 element={<VideoEditorPage />}
               />
               <Route path="/video-demo" element={<VideoEditorDemo />} />
-
               {/* E-Invite Routes */}
               <Route path="/einvites" element={<EinviteHomePage />} />
-              <Route path="/einvites/category/:category" element={<EinviteCategoryPage />} />
+              <Route
+                path="/einvites/category/:category"
+                element={<EinviteCategoryPage />}
+              />
               <Route
                 path="/einvites/editor/:id"
                 element={
@@ -238,8 +247,14 @@ function App() {
                   </UserPrivateRoute>
                 }
               />
-              <Route path="/einvites/preview/:id" element={<EinviteSharePage />} />
-              <Route path="/einvites/share/:id" element={<EinviteSharePage />} />
+              <Route
+                path="/einvites/preview/:id"
+                element={<EinviteSharePage />}
+              />
+              <Route
+                path="/einvites/share/:id"
+                element={<EinviteSharePage />}
+              />
               <Route path="/einvites/my-cards" element={<EinviteMyCards />} />
               <Route
                 path="/einvites/our-cards"
@@ -249,7 +264,6 @@ function App() {
                   </UserPrivateRoute>
                 }
               />
-
               {/*  User Protected Routes  */}
               <Route
                 path="/user-dashboard"
@@ -267,7 +281,6 @@ function App() {
                   </UserPrivateRoute>
                 }
               />
-
               {/*  Vendor Protected Routes  */}
               <Route
                 path="/vendor-dashboard"
