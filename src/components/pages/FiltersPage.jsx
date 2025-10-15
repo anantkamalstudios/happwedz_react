@@ -191,6 +191,10 @@ const FiltersPage = () => {
           payload.kajal_color = hex;
           payload.kajal_intensity = intensityValue;
           break;
+        case "mascara":
+          payload.mascara_color = hex;
+          payload.mascara_intensity = intensityValue;
+          break;
         default:
           // fallback for other makeup categories
           payload.lipstick_color = hex;
@@ -308,6 +312,10 @@ const FiltersPage = () => {
         case "bindi":
           payload.bindi_color = hex;
           payload.bindi_size = intensityValue;
+          break;
+        case "mascara":
+          payload.mascara_color = hex;
+          payload.mascara_intensity = intensityValue;
           break;
         default:
           payload.lipstick_color = hex;
