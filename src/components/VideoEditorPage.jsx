@@ -53,7 +53,7 @@ const VideoEditorPage = () => {
         theme: "romantic",
         category: "wedding",
         thumbnail:
-          "https://image.wedmegood.com/e-invite-images/5921489f-e0f7-411a-8b19-a85f2c11d2e9-1.JPEG",
+          "https://image.happywedz.com/e-invite-images/5921489f-e0f7-411a-8b19-a85f2c11d2e9-1.JPEG",
         videoUrl:
           "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4",
         duration: "2:30",

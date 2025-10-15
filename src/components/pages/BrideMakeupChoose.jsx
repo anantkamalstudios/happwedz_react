@@ -7,17 +7,27 @@ const SectionCard = ({ title, subtitle, image, onTry }) => {
       <img
         src={image}
         alt={title}
-        className="w-100 h-100"
-        style={{ objectFit: "cover", filter: "brightness(1)" }}
+        className="w-100"
+        style={{ objectFit: "cover", filter: "brightness(1)", height:"90vh" }}
       />
       <div className="row position-absolute bottom-50 end-0 p-4 text-center text-white w-100 d-flex justify-content-end">
         <div className="col-md-6"></div>
         <div className="col-md-4 justify-content-end">
-          <h1 className="fw-bold mb-2 ">{title}</h1>
-          <p className="mb-3" style={{ opacity: 0.9 }}>
+          <h1 className="fw-semibold mb-2 ">{title}</h1>
+          <p className="mb-3 fs-20" style={{ opacity: 0.9 }}>
             {subtitle}
           </p>
-          <button className="btn-primary rounded-2" onClick={onTry}>
+          <button
+            className="rounded-4 w-75 mt-2"
+            style={{
+              padding: "10px 0",
+              background: "linear-gradient(to right, #E83580, #821E48)",
+              color: "#fff",
+              border: "none",
+              fontSize: "20px",
+            }}
+            onClick={onTry}
+          >
             Get Started
           </button>
         </div>
@@ -33,22 +43,22 @@ const BrideMakeupChoose = () => {
     <div className="">
       <SectionCard
         title="Makeup"
-        subtitle="Explore stunning bridal makeup looks curated by professionals."
+        subtitle="Instantly Try On Makeup Looks And Find Your Perfect Shades."
         image="/images/try/makeup1.png"
         onTry={() => navigate("/try/makeup")}
       />
 
       <SectionCard
         title="Jewellery"
-        subtitle="Try elegant jewellery pieces that complement your bridal style."
-        image="/images/try/jewelry.png"
+        subtitle="Instantly Try On Jewellery Looks And Find Your Perfect Piece."
+        image="/images/try/jewellaryImage.png"
         onTry={() => navigate("/try/makeup")}
       />
 
       <SectionCard
         title="Outfit"
-        subtitle="Visualize outfits to complete your perfect bridal look."
-        image="/images/try/outfit.png"
+        subtitle="Instantly Try On Outfits And Find Your Perfect Look."
+        image="/images/try/outfitImage.png"
         onTry={() => navigate("/try/makeup")}
       />
     </div>

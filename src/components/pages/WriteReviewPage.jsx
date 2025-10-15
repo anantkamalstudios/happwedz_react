@@ -322,6 +322,7 @@ const WriteReviewPage = () => {
                 <button
                   className="btn btn-primary px-4"
                   onClick={handleNextClick}
+                  disabled={step === 1 && requiredRatings.some((field) => !formData[field] || formData[field] === 0)}
                 >
                   Next
                 </button>

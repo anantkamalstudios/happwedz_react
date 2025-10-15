@@ -280,7 +280,6 @@ const EnquiryManagement = () => {
             <div
               className="card border-0 shadow-sm"
               style={{
-                // background: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
                 borderRadius: "16px",
               }}
             >
@@ -329,26 +328,11 @@ const EnquiryManagement = () => {
           <div className="col-lg-3 col-md-6 mb-3">
             <div
               className="card border-0 shadow-sm"
-              style={{
-                background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-                borderRadius: "16px",
-              }}
-            >
-              {/* <div className="card-body text-white">
-                <div className="d-flex justify-content-between align-items-start">
-                  <div>
-                    <p className="mb-1 text-white-50 small">Avg Response</p>
-                    <h3 className="mb-0 fw-bold">{stats.avgResponseTime}</h3>
-                  </div>
-                  <div className="bg-white bg-opacity-25 p-2 rounded">
-                    <Clock size={24} />
-                  </div>
-                </div>
-                <div className="mt-2">
-                  <small className="text-white-50">Response time</small>
-                </div>
-              </div> */}
-            </div>
+              // style={{
+              //   background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+              //   borderRadius: "16px",
+              // }}
+            ></div>
           </div>
         </div>
 
@@ -381,16 +365,14 @@ const EnquiryManagement = () => {
                         <div
                           key={folder.id}
                           className={`d-flex align-items-center p-3 mb-2 ${
-                            filter === folder.id ? "text-white" : "text-dark"
+                            filter === folder.id ? "text-dark" : "text-dark"
                           }`}
                           role="button"
                           onClick={() => setFilter(folder.id)}
                           style={{
                             borderRadius: "12px",
                             background:
-                              filter === folder.id
-                                ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                                : "transparent",
+                              filter === folder.id ? "" : "transparent",
                             transition: "all 0.3s ease",
                             fontSize: "14px",
                           }}
@@ -564,9 +546,7 @@ const EnquiryManagement = () => {
                                 )?.color || "#95a5a6"
                               }`,
                               background:
-                                selectedLead?.id === lead.id
-                                  ? "linear-gradient(135deg, #667eea15 0%, #764ba215 100%)"
-                                  : "#fff",
+                                selectedLead?.id === lead.id ? "" : "#fff",
                               transition: "all 0.3s ease",
                               transform:
                                 selectedLead?.id === lead.id
@@ -582,8 +562,7 @@ const EnquiryManagement = () => {
                                     style={{
                                       width: "40px",
                                       height: "40px",
-                                      background:
-                                        "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                      background: "#e91e63",
                                       fontSize: "16px",
                                     }}
                                   >
@@ -678,8 +657,7 @@ const EnquiryManagement = () => {
                               style={{
                                 width: "60px",
                                 height: "60px",
-                                background:
-                                  "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                background: "#e91e63",
                                 fontSize: "24px",
                               }}
                             >
@@ -854,8 +832,7 @@ const EnquiryManagement = () => {
                           <button
                             className="btn btn-lg w-100 text-white fw-semibold shadow"
                             style={{
-                              background:
-                                "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                              background: "#e91e63",
                               border: "none",
                               borderRadius: "12px",
                               padding: "14px",

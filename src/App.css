@@ -16259,7 +16259,7 @@ input:checked + .slider:before {
 
 .try-first-page-hero {
   position: relative;
-  min-height: 100vh;
+  min-height: 90vh;
   background-image: url("/images/try/trybgimage.png");
   background-size: cover;
   background-position: center;
@@ -16441,9 +16441,9 @@ input:checked + .slider:before {
   background: rgba(0, 0, 0, 0.8);
   z-index: 1000;
   display: flex;
-  align-items: center;
+  align-items: start;
   justify-content: center;
-  padding: 20px;
+  /* padding: 20px; */
   animation: try-first-page-fadeIn 0.3s ease;
 }
 
@@ -16475,7 +16475,7 @@ input:checked + .slider:before {
 
 .try-first-page-modal {
   background: white;
-  border-radius: 24px;
+  border-radius: 0px;
   width: 100%;
   max-width: 1000px;
   max-height: 90vh;
@@ -16531,14 +16531,17 @@ input:checked + .slider:before {
 
 .try-first-page-modal-close {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  border: 1px solid black;
+  top: 1.5rem;
+  right: 1.5rem;
+  border: none;
+  background-color: #fff;
+  /* border: 1px solid black; */
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  color: black;
-  font-size: 1.5rem;
+  /* border-radius: 50%; */
+  /* color: black; */
+  color: #c31162;
+  font-size: 2.5rem;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -16548,7 +16551,7 @@ input:checked + .slider:before {
 
 .try-first-page-modal-close:hover {
   background: rgba(255, 255, 255, 0.3);
-  transform: rotate(90deg);
+  /* transform: rotate(90deg); */
 }
 
 .try-first-page-modal-content {
@@ -18515,6 +18518,30 @@ input:checked + .slider:before {
   background: #fff;
   border-radius: 8px;
 }
+<<<<<<< HEAD
+=======
+
+/* Add this to your CSS file */
+.custom-checkbox {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ec4899; /* Tailwind pink-500 */
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  position: relative;
+}
+
+.custom-checkbox:checked::after {
+  content: "✔";
+  color: #ec4899; /* pink checkmark */
+  font-size: 16px;
+  position: absolute;
+  top: 0;
+  left: 3px;
+}
+>>>>>>> 3f235d3b00ce432655502a2e677047a5e8a91245
 
 /* E-Invite Card Editor Styles */
 .einvite-canvas-wrapper {
