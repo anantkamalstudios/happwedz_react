@@ -90,6 +90,13 @@ const EinviteMyCards = lazy(() =>
 );
 const OurCards = lazy(() => import("./components/pages/OurCards"));
 const TryLanding = lazy(() => import("./components/pages/TryLanding"));
+const ChooseTemplate = lazy(() => import("./components/pages/ChooseTemplate"));
+const TemplatePreviewPage = lazy(() =>
+  import("./components/pages/TemplatePreviewPage")
+);
+const TemplateCustomizePage = lazy(() =>
+  import("./components/pages/TemplateCustomizePage")
+);
 const BrideMakeupChoose = lazy(() =>
   import("./components/pages/BrideMakeupChoose")
 );
@@ -111,7 +118,9 @@ const VendorPremium = lazy(() =>
 );
 
 const RecommandPage = lazy(() => import("./components/home/RecommandedPage"));
-const WriteReviewPage = lazy(() => import("./components/pages/WriteReviewPage"));
+const WriteReviewPage = lazy(() =>
+  import("./components/pages/WriteReviewPage")
+);
 
 function App() {
   const location = useLocation();
@@ -142,6 +151,10 @@ function App() {
       <LoaderProvider>
         <ToastProvider>
           <Routes>
+            {/* Template routes without MainLayout - full screen */}
+            <Route path="/preview/:id" element={<TemplatePreviewPage />} />
+            <Route path="/customize/:id" element={<TemplateCustomizePage />} />
+
             <Route element={<MainLayout />}>
               <Route path="/" element={<Home />} />
               <Route
@@ -264,6 +277,7 @@ function App() {
                   </UserPrivateRoute>
                 }
               />
+              <Route path="/choose-template" element={<ChooseTemplate />} />
               {/*  User Protected Routes  */}
               <Route
                 path="/user-dashboard"

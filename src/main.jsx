@@ -21,5 +21,3 @@ createRoot(document.getElementById("root")).render(
     </LoaderProvider>
   </StrictMode>
 );
-
-// Make Forgot password page only use app cssOk okayyyyyyyyyyyyyy
