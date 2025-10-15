@@ -5,7 +5,7 @@ export default function ChooseTemplate() {
     const navigate = useNavigate();
 
     const handleCardClick = (templateId) => {
-        navigate(`/preview/${templateId}`);
+        navigate(`/wedding-form/${templateId}`);
     };
 
     return (

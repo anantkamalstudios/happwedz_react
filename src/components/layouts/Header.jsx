@@ -477,16 +477,18 @@ const Header = () => {
                                         title: "Get the HappyWedz App",
                                         desc: "Plan your wedding on the go with the HappyWedz app.",
                                         image: "/images/header/playstore.png",
+                                        route: "/get-app"
                                       },
                                       {
-                                        title: "Wedshots",
-                                        desc: "Easily collect all your guests' event photos in one album!",
-                                        image: "/images/header/tryimg.png",
+                                        title: "Happywedz Website",
+                                        desc: "Showcase your wedding website to friends and family.",
+                                        image: "/images/couple.png",
+                                        route: "/choose-template"
                                       },
                                     ].map((item, i) => (
                                       <div
                                         key={i}
-                                        className="p-3 rounded-4 bg-white shadow-sm"
+                                        className="p-3 rounded-4 bg-white shadow-lg border-2"
                                         style={{
                                           border: "1px solid #f0f0f0",
                                           cursor: "pointer",
@@ -501,7 +503,7 @@ const Header = () => {
                                           "0 2px 4px rgba(0,0,0,0.04)")
                                         }
                                       >
-                                        <div className="d-flex justify-content-between align-items-center">
+                                        <Link to={item.route} target="_blank" rel="noopener noreferrer" className="text-decoration-none d-flex justify-content-between align-items-center">
                                           <div className="me-3">
                                             <h6 className="fw-semibold mb-1 text-dark fs-6">
                                               {item.title}
@@ -526,7 +528,7 @@ const Header = () => {
                                               objectFit: "cover",
                                             }}
                                           />
-                                        </div>
+                                        </Link>
                                       </div>
                                     ))}
                                   </div>
@@ -620,8 +622,8 @@ const Header = () => {
                                         <Link
                                           to={path}
                                           className={`dropdown-link d-flex align-items-center ${isShowMore
-                                              ? "primary-text fw-bold text-decoration-underline"
-                                              : ""
+                                            ? "primary-text fw-bold text-decoration-underline"
+                                            : ""
                                             }`}
                                         >
                                           <i className="bi bi-check-circle me-2 text-primary"></i>
