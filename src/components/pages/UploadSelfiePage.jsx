@@ -158,7 +158,7 @@ const UploadSelfiePage = () => {
           <p className="text-muted">We will guide you for best results</p>
         </div> */}
 
-        <div className="py-4 d-flex flex-column align-items-center justify-content-center">
+        <div className="py-2 d-flex flex-column align-items-center justify-content-center">
           <div
             className="card shadow-sm border-0 text-center"
             style={{ maxWidth: 450, width: "100%", overflow: "hidden" }}
@@ -213,7 +213,7 @@ const UploadSelfiePage = () => {
                   className="img-fluid"
                   style={{
                     width: "100%",
-                    height: "420px",
+                    height: "380px",
                     objectFit: "cover",
                   }}
                 />
@@ -228,20 +228,23 @@ const UploadSelfiePage = () => {
 
               <div className="d-flex gap-3 flex-column justify-content-center w-75">
                 <button
-                  className="btn px-4"
+                  className="btn w-100"
                   style={{
                     background: "linear-gradient(to right, #E83580, #821E48)",
                     color: "#fff",
+                    padding:"10px 0",
+
                   }}
                 >
                   Selfie Mode
                 </button>
                 <button
-                  className="btn px-4"
+                  className="btn w-100"
                   onClick={handlePick}
                   style={{
                     background: "linear-gradient(to right, #E83580, #821E48)",
                     color: "#fff",
+                    padding:"10px 0"
                   }}
                 >
                   Upload Image
@@ -371,12 +374,13 @@ const UploadSelfiePage = () => {
 
                   <div className="d-grid">
                     <button
-                      className="btn w-auto"
+                      className="btn w-100"
                       onClick={triggerModalUpload}
                       style={{
                         background:
                           "linear-gradient(to right, #E83580, #821E48)",
                         color: "#fff",
+                        padding:"10px 0"
                       }}
                     >
                       Upload Photo

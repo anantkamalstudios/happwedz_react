@@ -7,8 +7,8 @@ const SectionCard = ({ title, subtitle, image, onTry }) => {
       <img
         src={image}
         alt={title}
-        className="w-100 h-100"
-        style={{ objectFit: "cover", filter: "brightness(1)" }}
+        className="w-100"
+        style={{ objectFit: "cover", filter: "brightness(1)", height:"90vh" }}
       />
       <div className="row position-absolute bottom-50 end-0 p-4 text-center text-white w-100 d-flex justify-content-end">
         <div className="col-md-6"></div>

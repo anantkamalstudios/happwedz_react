@@ -2,6 +2,9 @@ import React from "react";
 import CompareImage from "react-compare-image";
 import { useLocation, useNavigate } from "react-router-dom";
 import { beautyApi } from "../../services/api";
+import { Download, Heart, Home, Share } from "lucide-react";
+import { MdRestartAlt } from "react-icons/md";
+import { IoClose } from "react-icons/io5";
 
 const FinalLookPage = () => {
   const location = useLocation();
@@ -71,86 +74,181 @@ const FinalLookPage = () => {
         <div className="final-look-content">
           <div className="final-image-container">
             <div className="final-image">
-              {originalImageUrl && filteredImageUrl ? (
-                <CompareImage
-                  leftImage={originalImageUrl}
-                  rightImage={filteredImageUrl}
-                  sliderLineColor="#ed1173"
-                  sliderLineWidth={3}
-                  handleSize={40}
-                  leftImageLabel="Original"
-                  rightImageLabel="Filtered"
-                />
-              ) : (
-                <img
-                  src={filteredImageUrl}
-                  alt="Your final look"
+                {originalImageUrl && filteredImageUrl ? (
+                  <CompareImage
+                    leftImage={originalImageUrl}
+                    rightImage={filteredImageUrl}
+                    sliderLineColor="#ed1173"
+                    sliderLineWidth={3}
+                    handleSize={40}
+                    leftImageLabel="Original"
+                    rightImageLabel="Filtered"
+                  />
+                ) : (
+                  <img
+                    src={filteredImageUrl}
+                    alt="Your final look"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain",
+                    }}
+                  />
+                )}
+
+                <div
                   style={{
                     width: "100%",
-                    height: "100%",
-                    objectFit: "contain",
+                    position: "absolute",
+                    top: 10,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "10px 10px",
                   }}
-                />
-              )}
-            </div>
-          </div>
-
-          <div className="applied-filters">
-            <div className="applied-filters-title">Applied Filters</div>
-
-            {Object.entries(filters).map(([type, product]) => {
-              if (!product) return null;
-              return (
-                <div
-                  key={`${type}-${product.productId}`}
-                  className="filter-item"
                 >
-                  <div className="filter-type">
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                  </div>
-                  <div className="filter-name">
-                    {product.productName || "Product"}
-                    {product.colorHex && (
-                      <span
+                  <Home
+                    size={30}
+                    style={{
+                      color: "#fff",
+                      backgroundColor: "#C31162",
+                      borderRadius: "100%",
+                      padding: "5px",
+                    }}
+                  />
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "10px",
+                    }}
+                  >
+                    
+                    <div>
+                      <Heart
+                        size={30}
                         style={{
-                          marginLeft: 8,
-                          fontWeight: 400,
-                          color: "#ad1457",
+                          color: "#fff",
+                          backgroundColor: "#C31162",
+                          borderRadius: "100%",
+                          padding: "5px",
                         }}
-                      >
-                        ({product.colorHex})
-                      </span>
-                    )}
+                      />
+                    </div>
+                    <div
+                      onClick={async () => {
+                        const confirmed = Swal.fire({
+                          title: "Warning",
+                          text: "Are you sure you want to delete all applied products ?",
+                          confirmButtonColor: "#C31162",
+                          cancelButtonColor: "#aaa",
+                          confirmButtonText: "Reset",
+                          cancelButtonText: "Close",
+                        });
+
+                        if (confirmed.isConfirmed) {
+                          Swal.fire({
+                            title: "Reset",
+                            text: "Your Image has been reset",
+                            icon: "success",
+                            confirmButtonColor: "#C31162",
+                          });
+                        }
+                      }}
+                    >
+                      <MdRestartAlt
+                        size={30}
+                        style={{
+                          color: "#fff",
+                          backgroundColor: "#C31162",
+                          borderRadius: "100%",
+                          padding: "5px",
+                        }}
+                      />
+                    </div>
+                    <div
+                      onClick={async () => {
+                        const confirmed = await Swal.fire({
+                          title: "Remove image?",
+                          text: "Are you sure you want to delete this image and clear all try data?",
+                          icon: "warning",
+                          showCancelButton: true,
+                          confirmButtonColor: "#ed1173",
+                          cancelButtonColor: "#aaa",
+                          confirmButtonText: "Yes, delete it",
+                        });
+                      }}
+                    >
+                      <IoClose
+                        size={30}
+                        style={{
+                          color: "#fff",
+                          backgroundColor: "#C31162",
+                          borderRadius: "100%",
+                          padding: "5px",
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
-              );
-            })}
-
-            {selectedDress && (
-              <div className="filter-item">
-                <div className="filter-type">Dress</div>
-                <div className="filter-name">
-                  {selectedDress.name}
-                  <span
-                    className="filter-color"
-                    style={{ backgroundColor: selectedDress.color }}
-                  ></span>
-                </div>
               </div>
-            )}
+            </div>
 
-            {selectedLook && (
-              <div className="filter-item">
-                <div className="filter-type">Complete Look</div>
-                <div className="filter-name">{selectedLook.name}</div>
-                <div
-                  className="filter-description"
-                  style={{ fontSize: "0.85rem", color: colors.grey }}
-                >
-                  {selectedLook.description}
+            <div className="applied-filters">
+              <div className="applied-filters-title">Applied Filters</div>
+
+              {Object.entries(filters).map(([type, product]) => {
+                if (!product) return null;
+                return (
+                  <div
+                    key={`${type}-${product.productId}`}
+                    className="filter-item"
+                  >
+                    <div className="filter-type">
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </div>
+                    <div className="filter-name">
+                      {product.productName || "Product"}
+                      {product.colorHex && (
+                        <span
+                          style={{
+                            marginLeft: 8,
+                            fontWeight: 400,
+                            color: "#ad1457",
+                          }}
+                        >
+                          ({product.colorHex})
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {selectedDress && (
+                <div className="filter-item">
+                  <div className="filter-type">Dress</div>
+                  <div className="filter-name">
+                    {selectedDress.name}
+                    <span
+                      className="filter-color"
+                      style={{ backgroundColor: selectedDress.color }}
+                    ></span>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+
+              {selectedLook && (
+                <div className="filter-item">
+                  <div className="filter-type">Complete Look</div>
+                  <div className="filter-name">{selectedLook.name}</div>
+                  <div
+                    className="filter-description"
+                    style={{ fontSize: "0.85rem", color: colors.grey }}
+                  >
+                    {selectedLook.description}
+                  </div>
+                </div>
+              )}
           </div>
         </div>
 

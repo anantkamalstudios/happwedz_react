@@ -131,8 +131,8 @@ const TryLanding = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="try-first-page-modal-header">
-                <h2 style={{ color: "#C31162" }}>Choose Your Style</h2>
-                <p style={{ color: "#000", fontWeight: "700" }}>
+                <h2 style={{ color: "#C31162" }}>Choose One</h2>
+                <p style={{ color: "#000", fontWeight: "600" }}>
                   Instantly try on makeup look and find your perfect shades
                 </p>
 
@@ -152,14 +152,15 @@ const TryLanding = () => {
                       role="button"
                       onClick={() => navigate("/try/bride")}
                       className="d-flex flex-column align-items-center"
+                      style={{ height: "320px" }}
                     >
                       <img
-                        src="/images/try/bride.jpg"
+                        src="/images/try/Bride.png"
                         alt="Bride"
-                        className="rounded-5"
+                        className=""
                         style={{
                           width: "100%",
-                          height: "280px",
+                          height: "100%",
                           objectFit: "cover",
                         }}
                       />
@@ -177,26 +178,27 @@ const TryLanding = () => {
                   <div className="col-md-4">
                     <div
                       role="button"
-                      onClick={() => navigate("/try/groome")}
+                      // onClick={() => navigate("/try/groome")}
+                      onClick={() =>{}}
                       className="d-flex flex-column align-items-center"
                     >
                       <div
                         className="position-relative w-100 try-modal-container"
-                        style={{ height: "280px" }}
+                        style={{ height: "320px" }}
                       >
                         <img
-                          src="/images/try/groome.jpg"
+                          src="/images/try/Groome.png"
                           alt="Groom"
-                          className="rounded-5 w-100 h-100"
+                          className=" w-100 h-100"
                           style={{ objectFit: "cover" }}
                         />
 
                         <h4 className="mt-3 fw-semibold">Groom</h4>
-                        {/* <div className="try-modal-hover-overlay-custom d-flex justify-content-center align-items-center rounded-5">
+                        <div className="try-modal-hover-overlay-custom d-flex justify-content-center align-items-center rounded-5">
                           <span className="text-white fs-4 fw-bold">
                             Coming Soon
                           </span>
-                        </div> */}
+                        </div>
                       </div>
                       <h4
                         className="mt-3 fw-semibold"
@@ -211,17 +213,19 @@ const TryLanding = () => {
                   <div className="col-md-4">
                     <div
                       role="button"
-                      onClick={() => handleCategorySelect("other")}
+                      onClick={() => {}}
+                      // onClick={() => handleCategorySelect("other")}
                       className="d-flex flex-column align-items-center"
+                      disabled={true}
                     >
                       <div
                         className="position-relative w-100 try-modal-container"
-                        style={{ height: "280px" }}
+                        style={{ height: "320px" }}
                       >
                         <img
-                          src="/images/try/other.jpg"
+                          src="/images/try/Others.png"
                           alt="Other"
-                          className="rounded-5 w-100 h-100"
+                          className="w-100 h-100"
                           style={{ objectFit: "cover" }}
                         />
                         {/* Unique Overlay */}
