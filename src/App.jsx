@@ -110,6 +110,9 @@ const UploadSelfiePage = lazy(() =>
   import("./components/pages/UploadSelfiePage")
 );
 const FiltersPage = lazy(() => import("./components/pages/FiltersPage"));
+const MyWeddingWebsites = lazy(() => import("./components/pages/MyWeddingWebsites"));
+const WeddingWebsiteView = lazy(() => import("./components/pages/WeddingWebsiteView"));
+const WeddingWebsiteForm = lazy(() => import("./components/pages/WeddingWebsiteForm"));
 
 const FinalLookPage = lazy(() => import("./components/pages/FinalLookPage"));
 

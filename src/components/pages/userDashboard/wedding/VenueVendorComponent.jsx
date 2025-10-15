@@ -19,6 +19,7 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [selectedSlug, setSelectedSlug] = useState(null);
+  const [selectedLabel, setSelectedLabel] = useState("");
 
   // Venue subcategories (for venues box only)
   const [venueSubcategories, setVenueSubcategories] = useState([]);
@@ -90,7 +91,12 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
                 id="vendor"
                 style={{ border: "2px solid transparent", width: "100%", padding: "8px" }}
                 value={selectedSlug || ""}
-                onChange={(e) => setSelectedSlug(e.target.value || null)}
+                onChange={(e) => {
+                  const slug = e.target.value || null;
+                  setSelectedSlug(slug);
+                  const opt = e.target.options[e.target.selectedIndex];
+                  setSelectedLabel(opt && opt.value ? opt.text : "");
+                }}
               >
                 <option value="">Select Category</option>
                 {categories.map((cat) => (
@@ -110,47 +116,52 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
           >
             {/* Cards - use old card layout, populate from API */}
             {(selectedSlug ? vendorItems : []).slice(0, 3).map((item, idx) => (
-              <div
+              <Link
+                to={`/details/info/${item.id}`}
                 key={item.id || idx}
-                className="card border-0 shadow-sm overflow-hidden p-2"
-                style={{ maxWidth: "30%" }}
+                className="text-decoration-none"
+                style={{ color: "inherit", maxWidth: "30%" }}
               >
-                <div>
-                  <img
-                    src={
-                      buildImageUrl(item.image) ||
-                      "https://images.unsplash.com/photo-1759528278887-71c168973ad1?q=80&w=1076&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                    }
-                    className="card-img-top w-100"
-                    alt={item.name || "Vendor"}
-                    style={{
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                </div>
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <h5 className="card-title mb-0">{item.name || "Name"}</h5>
-                    <p className="rating text-warning small mb-0 mt-1">
-                      ★
-                      <span className="text-muted">
-                        {(item.rating || 0).toFixed ? (item.rating || 0).toFixed(1) : item.rating || 0} (
-                        {item.review_count || 0} Reviews)
-                      </span>
+                <div className="card border-0 shadow-sm overflow-hidden p-2 h-100">
+                  <div style={{ height: "160px", overflow: "hidden", borderRadius: "10px" }}>
+                    <img
+                      src={
+                        buildImageUrl(item.image) ||
+                        "https://images.unsplash.com/photo-1759528278887-71c168973ad1?q=80&w=1076&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                      }
+                      className="card-img-top w-100"
+                      alt={item.name || "Vendor"}
+                      style={{
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+                  <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                      <h5 className="card-title mb-0" style={{ fontSize: "16px" }}>
+                        {item.name || "Name"}
+                      </h5>
+                      <p className="rating text-warning small mb-0 mt-1" style={{ fontSize: "12px" }}>
+                        ★
+                        <span className="text-muted">
+                          {(item.rating || 0).toFixed ? (item.rating || 0).toFixed(1) : item.rating || 0} (
+                          {item.review_count || 0} Reviews)
+                        </span>
+                      </p>
+                    </div>
+                    <p
+                      className=" mb-0"
+                      style={{
+                        color: "black",
+                        fontSize: "12px",
+                      }}
+                    >
+                      {item.location || item.city || "location, state"}
                     </p>
                   </div>
-                  <p
-                    className=" mb-3"
-                    style={{
-                      color: "black",
-                      fontSize: "12px",
-                    }}
-                  >
-                    {item.location || item.city || "location, state"}
-                  </p>
                 </div>
-              </div>
+              </Link>
             ))}
 
             {/* Arrows overlay (visual only) */}
@@ -212,7 +223,7 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
               }}
               disabled={!selectedSlug || loadingVendors}
             >
-              {loadingVendors ? "Loading..." : "Search"}
+              {loadingVendors ? "Loading..." : selectedLabel ? `Search ${selectedLabel}` : "Search"}
             </button>
           </div>
         )}
