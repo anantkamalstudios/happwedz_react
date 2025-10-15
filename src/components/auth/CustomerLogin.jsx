@@ -14,8 +14,8 @@ const CustomerLogin = () => {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
   const { showLoader, hideLoader } = useLoader();
+  const location = useLocation();
 
   const dispatch = useDispatch();
   const { login, loading } = useUser();
@@ -90,7 +90,10 @@ const CustomerLogin = () => {
         if (loginData.success && loginData.user && loginData.token) {
           dispatch(loginUser({ user: loginData.user, token: loginData.token }));
           toast.success("Login successful!");
-          navigate(from, { replace: true });
+          navigate(location.state?.from || "/", {
+            state: { openPopup: true },
+            replace: true,
+          });
         } else {
           // Fallback to Firebase-only authentication
           console.log(
