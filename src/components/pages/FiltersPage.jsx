@@ -72,8 +72,8 @@ const FiltersPage = () => {
         const items = Array.isArray(response)
           ? response
           : Array.isArray(response?.data)
-          ? response.data
-          : [];
+            ? response.data
+            : [];
         setCategories(items);
       } catch (e) {
         console.error("Failed to load products", e);
@@ -350,7 +350,7 @@ const FiltersPage = () => {
         <div
           className="single-image-container"
           style={{ width: "100%" }}
-          // style={{ width: "100%", maxWidth: 400 }}
+        // style={{ width: "100%", maxWidth: 400 }}
         >
           <div
             className="image-wrapper"
@@ -482,21 +482,14 @@ const FiltersPage = () => {
                   </label>
                   <input
                     type="range"
-                    min={
-                      (
-                        categories[expandedCatIdx]
-                          ?.product_detailed_category_name || ""
-                      ).toLowerCase() === "bindi"
-                        ? 1
-                        : 0
-                    }
+                    min={0}
                     max={
+                      DEFAULT_INTENSITIES[
                       (
                         categories[expandedCatIdx]
                           ?.product_detailed_category_name || ""
-                      ).toLowerCase() === "bindi"
-                        ? 10
-                        : 1
+                      ).toLowerCase()
+                      ] ?? 1
                     }
                     step={
                       (
@@ -508,16 +501,16 @@ const FiltersPage = () => {
                     }
                     value={
                       intensities[
-                        (
-                          categories[expandedCatIdx]
-                            ?.product_detailed_category_name || ""
-                        ).toLowerCase()
+                      (
+                        categories[expandedCatIdx]
+                          ?.product_detailed_category_name || ""
+                      ).toLowerCase()
                       ] ??
                       DEFAULT_INTENSITIES[
-                        (
-                          categories[expandedCatIdx]
-                            ?.product_detailed_category_name || ""
-                        ).toLowerCase()
+                      (
+                        categories[expandedCatIdx]
+                          ?.product_detailed_category_name || ""
+                      ).toLowerCase()
                       ] ??
                       0.6
                     }
@@ -533,38 +526,19 @@ const FiltersPage = () => {
                     style={{ width: "100%" }}
                   />
                   <span style={{ fontSize: 12 }}>
-                    {(
-                      categories[expandedCatIdx]
-                        ?.product_detailed_category_name || ""
-                    ).toLowerCase() === "bindi"
-                      ? intensities[
-                          (
-                            categories[expandedCatIdx]
-                              ?.product_detailed_category_name || ""
-                          ).toLowerCase()
-                        ] ??
-                        DEFAULT_INTENSITIES[
-                          (
-                            categories[expandedCatIdx]
-                              ?.product_detailed_category_name || ""
-                          ).toLowerCase()
-                        ] ??
-                        6
-                      : Math.round(
-                          (intensities[
-                            (
-                              categories[expandedCatIdx]
-                                ?.product_detailed_category_name || ""
-                            ).toLowerCase()
-                          ] ??
-                            DEFAULT_INTENSITIES[
-                              (
-                                categories[expandedCatIdx]
-                                  ?.product_detailed_category_name || ""
-                              ).toLowerCase()
-                            ] ??
-                            0.6) * 100
-                        ) + "%"}
+                    {(() => {
+                      const key = (
+                        categories[expandedCatIdx]
+                          ?.product_detailed_category_name || ""
+                      ).toLowerCase();
+                      const maxVal = DEFAULT_INTENSITIES[key] ?? 1;
+                      const currentVal =
+                        (intensities[key] ?? DEFAULT_INTENSITIES[key] ?? 0.6);
+                      if (key === "bindi") {
+                        return currentVal;
+                      }
+                      return Math.round((currentVal / maxVal) * 100) + "%";
+                    })()}
                   </span>
                 </div>
               )}
@@ -653,15 +627,13 @@ const FiltersPage = () => {
 
                   return (
                     <React.Fragment
-                      key={`${
-                        cat.product_detailed_category_name || "cat"
-                      }-${idx}`}
+                      key={`${cat.product_detailed_category_name || "cat"
+                        }-${idx}`}
                     >
                       <button
                         type="button"
-                        className={`d-flex flex-column align-items-center px-2 py-2 border-0 border-end bg-white position-relative ${
-                          expandedCatIdx === idx ? "border-primary" : ""
-                        } ${isApplied ? "border-success" : ""}`}
+                        className={`d-flex flex-column align-items-center px-2 py-2 border-0 border-end bg-white position-relative ${expandedCatIdx === idx ? "border-primary" : ""
+                          } ${isApplied ? "border-success" : ""}`}
                         onClick={() => handleSelectCategory(idx)}
                         style={{
                           cursor: "pointer",
@@ -723,11 +695,10 @@ const FiltersPage = () => {
                                 <button
                                   type="button"
                                   onClick={() => handleSelectProduct(p.id)}
-                                  className={`d-flex flex-column align-items-center px-2 py-2 border-0 rounded bg-white ${
-                                    expandedProductId === p.id
-                                      ? "border-primary"
-                                      : ""
-                                  }`}
+                                  className={`d-flex flex-column align-items-center px-2 py-2 border-0 rounded bg-white ${expandedProductId === p.id
+                                    ? "border-primary"
+                                    : ""
+                                    }`}
                                   style={{ cursor: "pointer", minWidth: 80 }}
                                 >
                                   <img
@@ -783,11 +754,11 @@ const FiltersPage = () => {
                                             {i <
                                               safeArray(p.product_colors)
                                                 .length -
-                                                1 && (
-                                              <span className="text-muted">
-                                                |
-                                              </span>
-                                            )}
+                                              1 && (
+                                                <span className="text-muted">
+                                                  |
+                                                </span>
+                                              )}
                                           </React.Fragment>
                                         )
                                       )

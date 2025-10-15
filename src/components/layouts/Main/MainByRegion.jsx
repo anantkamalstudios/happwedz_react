@@ -65,7 +65,7 @@ const MainByRegion = ({ type }) => {
                 </div>
                 <div className="region-title fw-medium">{region.name}</div>
                 <div className="text-muted small">
-                  {region.venueCount} venues
+                  {region.venueCount} {type === "venues" ? "Venues" : "Vendors"}
                 </div>
               </div>
             </SwiperSlide>

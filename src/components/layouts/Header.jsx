@@ -116,6 +116,7 @@ const Header = () => {
       try {
         const response = await fetch(
           "https://happywedz.com/api/vendor-types/with-subcategories/all"
+          // "http://localhost:4000/vendor-types/with-subcategories/all"
         );
         const data = await response.json();
         const venues = data.find(
@@ -139,6 +140,7 @@ const Header = () => {
       try {
         const response = await fetch(
           "https://happywedz.com/api/vendor-types/with-subcategories/all"
+          // "http://localhost:4000/vendor-types/with-subcategories/all"
         );
         const data = await response.json();
         setVendorCategories(Array.isArray(data) ? data : []);
@@ -448,19 +450,18 @@ const Header = () => {
                                         }
                                       >
                                         <span
+                                          className="fs-18"
                                           style={{
                                             fontSize: "30px",
                                             color: "#555",
                                             display: "inline-flex",
                                             alignItems: "center",
                                             justifyContent: "center",
-                                            width: "38px",
-                                            height: "38px",
                                           }}
                                         >
                                           {tab.icon}
                                         </span>
-                                        <span className="ms-2 fw-medium fs-20">
+                                        <span className="ms-2 small">
                                           {tab.label}
                                         </span>
                                       </div>
