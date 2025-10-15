@@ -1,4 +1,3 @@
-// src/pages/adminpanel/HomeAdmin.js
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -410,12 +409,7 @@ const HomeAdmin = () => {
                 </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
-            <Button
-              variant="outline-primary"
-              onClick={() => setShowFilter(!showFilter)}
-            >
-              <FiFilter className="me-1" /> Filters
-            </Button>
+
             <Button variant="primary">
               <FiDownload className="me-1" /> Export
             </Button>
@@ -480,12 +474,6 @@ const HomeAdmin = () => {
                 <div className="d-flex gap-2">
                   <Button variant="outline-secondary" size="sm">
                     Leads
-                  </Button>
-                  <Button variant="outline-secondary" size="sm">
-                    Impressions
-                  </Button>
-                  <Button variant="primary" size="sm">
-                    Both
                   </Button>
                 </div>
               </div>
