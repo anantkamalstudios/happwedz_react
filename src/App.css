@@ -18010,7 +18010,6 @@ input:checked+.slider:before {
 }
 
 @keyframes float {
-
   0%,
   100% {
     transform: translateY(0px) rotate(0deg);
@@ -18082,9 +18081,17 @@ input:checked+.slider:before {
   left: 0;
   right: 0;
   bottom: 0;
+<<<<<<< HEAD
+  background: linear-gradient(
+    135deg,
+    rgba(233, 30, 99, 0.9),
+    rgba(255, 107, 157, 0.9)
+  );
+=======
   background: linear-gradient(135deg,
       rgba(233, 30, 99, 0.9),
       rgba(255, 107, 157, 0.9));
+>>>>>>> b6cfe17f70ca62fa1e32bda53714b9e270993a87
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18303,7 +18310,7 @@ input:checked+.slider:before {
   border-color: #e91e63;
 }
 
-.einvite-share-methods .form-check-input:checked+.form-check-label {
+.einvite-share-methods .form-check-input:checked + .form-check-label {
   color: #e91e63;
   font-weight: 600;
 }
@@ -18448,6 +18455,8 @@ input:checked+.slider:before {
   background: #fff;
   border-radius: 8px;
 }
+<<<<<<< HEAD
+=======
 
 
 /* E-Invite Card Editor Styles */
@@ -18940,3 +18949,4 @@ input:checked+.slider:before {
     gap: 16px;
   }
 }
+>>>>>>> b6cfe17f70ca62fa1e32bda53714b9e270993a87

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Form, Button } from "react-bootstrap";
 import { useUser } from "../../hooks";
 import { useDispatch } from "react-redux";
@@ -14,10 +14,13 @@ const CustomerLogin = () => {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { showLoader, hideLoader } = useLoader();
 
   const dispatch = useDispatch();
   const { login, loading } = useUser();
+
+  const from = location.state?.from?.pathname || "/";
 
   const handleGoogleLogin = async () => {
     try {
@@ -61,7 +64,7 @@ const CustomerLogin = () => {
           loginUser({ user: registerData.user, token: registerData.token })
         );
         toast.success("Account created and login successful!");
-        navigate("/", { replace: true });
+        navigate(from, { replace: true });
       } else if (
         registerData.message &&
         registerData.message.includes("already exists")
@@ -87,7 +90,7 @@ const CustomerLogin = () => {
         if (loginData.success && loginData.user && loginData.token) {
           dispatch(loginUser({ user: loginData.user, token: loginData.token }));
           toast.success("Login successful!");
-          navigate("/", { replace: true });
+          navigate(from, { replace: true });
         } else {
           // Fallback to Firebase-only authentication
           console.log(
@@ -105,7 +108,7 @@ const CustomerLogin = () => {
           toast.warning(
             "Login successful! (Note: Some features may be limited)"
           );
-          navigate("/", { replace: true });
+          navigate(from, { replace: true });
         }
       } else {
         console.log("Registration failed, falling back to Firebase-only auth");
@@ -120,7 +123,7 @@ const CustomerLogin = () => {
 
         dispatch(loginUser({ user, token: firebaseToken }));
         toast.warning("Login successful! (Note: Some features may be limited)");
-        navigate("/", { replace: true });
+        navigate(from, { replace: true });
       }
     } catch (error) {
       toast.error("Google login failed: " + error.message);
@@ -152,7 +155,7 @@ const CustomerLogin = () => {
         dispatch(loginUser({ user: response.user, token: null }));
       }
       toast.success("Login successful!");
-      navigate("/", { replace: true });
+      navigate(from, { replace: true });
     } else {
       // Custom toast for invalid credentials or email already exists
       const msg = response.message || "Login failed";
