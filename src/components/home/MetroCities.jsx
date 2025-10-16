@@ -17,13 +17,7 @@ const MetroCities = () => {
     <div className="container my-5">
       <h3 className="mb-4 text-center">Wedding Vendors By Location</h3>
 
-      <div
-        className="mt-5"
-        style={{
-          columnCount: 4,
-          columnGap: "2rem",
-        }}
-      >
+      <div className="mt-5 metro-cities-container">
         {Object.entries(citiesData).map(([state, venues]) => (
           <div key={state} className="mb-4 break-inside-avoid">
             <h5 className="fw-bold">{state}</h5>

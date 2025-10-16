@@ -110,7 +110,9 @@
 
 import axios from "axios";
 
-const API_BASE = "https://happywedz.com/api";
+// const API_BASE = "https://happywedz.com/api";
+const API_BASE = import.meta.env.VITE_API_URL;
+
 
 const userApi = {
   register: async (data) => {
