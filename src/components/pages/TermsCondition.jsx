@@ -6,13 +6,13 @@ const TermsCondition = () => {
   const legalSections = {
     terms: {
       title: "Terms of Service",
-      content: `Welcome to WeddingWire! These Terms of Service govern your use of our website and services. By accessing or using WeddingWire, you agree to be bound by these Terms.
+      content: `Welcome to Happywedz! These Terms of Service govern your use of our website and services. By accessing or using Happywedz, you agree to be bound by these Terms.
 
       1. Account Registration
       You must create an account to access certain features. You agree to provide accurate information and keep your password secure.
 
       2. User Content
-      You retain ownership of content you post, but grant WeddingWire a license to use it. You are responsible for your content and agree not to post illegal or infringing material.
+      You retain ownership of content you post, but grant Happywedz a license to use it. You are responsible for your content and agree not to post illegal or infringing material.
 
       3. Prohibited Activities
       You agree not to: harass other users, use automated systems, violate laws, or interfere with the service.
@@ -21,7 +21,7 @@ const TermsCondition = () => {
       We may suspend or terminate your account for violations of these Terms.
 
       5. Disclaimer
-      WeddingWire provides the service "as is" without warranties.`,
+      Happywedz provides the service "as is" without warranties.`,
     },
     privacy: {
       title: "Privacy Policy",
@@ -60,10 +60,10 @@ const TermsCondition = () => {
     },
     intellectual: {
       title: "Intellectual Property",
-      content: `All content on WeddingWire is protected by intellectual property laws.
+      content: `All content on Happywedz is protected by intellectual property laws.
 
       1. Our Content
-      The WeddingWire name, logos, and all related names are trademarks of WeddingWire. All website content is protected by copyright.
+      The Happywedz name, logos, and all related names are trademarks of Happywedz. All website content is protected by copyright.
 
       2. Your Content
       You retain ownership of content you post but grant us a license to use it.
@@ -73,7 +73,7 @@ const TermsCondition = () => {
     },
     disclaimer: {
       title: "Disclaimer of Liability",
-      content: `WeddingWire provides a platform for wedding professionals and couples to connect.
+      content: `Happywedz provides a platform for wedding professionals and couples to connect.
 
       1. No Endorsement
       We do not endorse any vendors listed on our site. We are not responsible for the quality of services provided.
@@ -82,7 +82,7 @@ const TermsCondition = () => {
       We are not responsible for content posted by users or third parties.
 
       3. Limitation of Liability
-      To the fullest extent permitted by law, WeddingWire shall not be liable for any indirect, incidental, or consequential damages.`,
+      To the fullest extent permitted by law, Happywedz shall not be liable for any indirect, incidental, or consequential damages.`,
     },
   };
 

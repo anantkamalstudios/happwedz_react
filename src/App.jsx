@@ -17,6 +17,7 @@ import UserPrivateRoute from "./components/routes/UserPrivateRoute";
 import VendorLeadsPage from "./components/pages/adminVendor/VendorLeadsPage";
 import RecommandedPage from "./components/home/RecommandedPage";
 import ReviewsPage from "./components/pages/WriteReviewPage";
+import AboutUs from "./components/layouts/AboutUs";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
@@ -96,6 +97,19 @@ const TemplatePreviewPage = lazy(() =>
 const TemplateCustomizePage = lazy(() =>
   import("./components/pages/TemplateCustomizePage")
 );
+
+const WeddingWebsiteForm = lazy(() =>
+  import("./components/pages/WeddingWebsiteForm")
+);
+
+const WeddingWebsiteView = lazy(() =>
+  import("./components/pages/WeddingWebsiteView")
+);
+
+const MyWeddingWebsites = lazy(() =>
+  import("./components/pages/MyWeddingWebsites")
+);
+
 const BrideMakeupChoose = lazy(() =>
   import("./components/pages/BrideMakeupChoose")
 );
@@ -109,9 +123,6 @@ const UploadSelfiePage = lazy(() =>
   import("./components/pages/UploadSelfiePage")
 );
 const FiltersPage = lazy(() => import("./components/pages/FiltersPage"));
-const MyWeddingWebsites = lazy(() => import("./components/pages/MyWeddingWebsites"));
-const WeddingWebsiteView = lazy(() => import("./components/pages/WeddingWebsiteView"));
-const WeddingWebsiteForm = lazy(() => import("./components/pages/WeddingWebsiteForm"));
 const ContactUs = lazy(() => import("./components/pages/Contactus"));
 
 const FinalLookPage = lazy(() => import("./components/pages/FinalLookPage"));
@@ -305,6 +316,10 @@ function App() {
                 path="/my-wedding-websites"
                 element={<MyWeddingWebsites />}
               />
+              <Route
+                path="/my-wedding-websites"
+                element={<MyWeddingWebsites />}
+              />
               {/*  User Protected Routes  */}
               <Route
                 path="/user-dashboard"
@@ -367,6 +382,7 @@ function App() {
               />
               <Route path="/edit-profile" element={<EditProfile />} />
             </Route>
+
             <Route path="/ai-recommandation" element={<RecommandPage />} />
 
             {/*  Fallback  */}

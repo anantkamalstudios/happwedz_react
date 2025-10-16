@@ -112,7 +112,7 @@ const Footer = () => {
             <h6 className="footer-title">Company</h6>
             <ul className="footer-list">
               <li>
-                <a href="#about">About HappyWedz</a>
+                <Link to="/about-us">About HappyWedz</Link>
               </li>
               <li>
                 <a href="#careers">Careers</a>

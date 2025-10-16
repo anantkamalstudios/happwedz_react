@@ -213,7 +213,7 @@ const HomeAdmin = () => {
       date: "Yesterday, 3:45 PM",
       service: "Full Wedding Package",
       status: "Contacted",
-      source: "WeddingWire",
+      source: "HappyWedz",
       priority: "Medium",
       contacted: true,
     },
@@ -233,7 +233,7 @@ const HomeAdmin = () => {
       date: "Oct 11, 2023",
       service: "Bridal Makeup",
       status: "New",
-      source: "WeddingWire",
+      source: "HappyWedz",
       priority: "Low",
       contacted: false,
     },
@@ -253,7 +253,7 @@ const HomeAdmin = () => {
       date: "Oct 9, 2023",
       service: "Full Wedding Package",
       status: "Lost",
-      source: "WeddingWire",
+      source: "HappyWedz",
       priority: "Medium",
       contacted: true,
     },
@@ -303,7 +303,7 @@ const HomeAdmin = () => {
   };
 
   const sourcesChartData = {
-    labels: ["WeddingWire", "Website", "Google", "Social Media", "Referrals"],
+    labels: ["HappyWedz", "Website", "Google", "Social Media", "Referrals"],
     datasets: [
       {
         label: "Leads by Source",
