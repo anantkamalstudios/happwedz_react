@@ -66,7 +66,7 @@
   margin-bottom: 15px;
   background: linear-gradient(90deg, #ffb3d9 25%, #ff8cc8 50%, #ff69b4 75%);
   background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+  /* animation: shimmer 2s infinite; */
 }
 
 .shimmer-text {
@@ -79,7 +79,7 @@
   background-size: 200% 100%;
   border-radius: 4px;
   margin-bottom: 10px;
-  animation: shimmer 2s infinite;
+  /* animation: shimmer 2s infinite; */
 }
 
 .shimmer-line-medium {
@@ -116,7 +116,7 @@
   background: linear-gradient(90deg, #ffb3d9 25%, #ff8cc8 50%, #ff69b4 75%);
   background-size: 200% 100%;
   border-radius: 20px;
-  animation: shimmer 2s infinite;
+  /* animation: shimmer 2s infinite; */
 }
 
 /* Footer Shimmer */
