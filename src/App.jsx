@@ -17,6 +17,7 @@ import UserPrivateRoute from "./components/routes/UserPrivateRoute";
 import VendorLeadsPage from "./components/pages/adminVendor/VendorLeadsPage";
 import RecommandedPage from "./components/home/RecommandedPage";
 import ReviewsPage from "./components/pages/WriteReviewPage";
+import AboutUs from "./components/layouts/AboutUs";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
@@ -125,6 +126,17 @@ const UploadSelfiePage = lazy(() =>
 const FiltersPage = lazy(() => import("./components/pages/FiltersPage"));
 
 const FinalLookPage = lazy(() => import("./components/pages/FinalLookPage"));
+// const WeddingWebsiteForm = lazy(() =>
+//   import("./components/pages/WeddingWebsiteForm")
+// );
+// const MyWeddingWebsites = lazy(() =>
+//   import("./components/pages/MyWeddingWebsites")
+// );
+
+// const WeddingWebsiteView = lazy(() =>
+//   // const WeddingWebsiteView = lazy(() =>
+//   import("./components/pages/WeddingWebsiteView")
+// );
 
 const VendorPremium = lazy(() =>
   import("./components/pages/adminVendor/VendorPremium")
@@ -303,6 +315,10 @@ function App() {
                 path="/my-wedding-websites"
                 element={<MyWeddingWebsites />}
               />
+              <Route
+                path="/my-wedding-websites"
+                element={<MyWeddingWebsites />}
+              />
               {/*  User Protected Routes  */}
               <Route
                 path="/user-dashboard"
@@ -365,6 +381,7 @@ function App() {
               />
               <Route path="/edit-profile" element={<EditProfile />} />
             </Route>
+
             <Route path="/ai-recommandation" element={<RecommandPage />} />
 
             {/*  Fallback  */}

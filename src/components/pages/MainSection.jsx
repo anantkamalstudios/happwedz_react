@@ -29,16 +29,16 @@ import LoadingState from "../LoadingState";
 import EmptyState from "../EmptyState";
 import useApiData from "../../hooks/useApiData";
 import DynamicAside from "../layouts/aside/DynamicAside";
+import usePhotography from "../../hooks/usePhotography";
 
 const MainSection = () => {
   const { section } = useParams();
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
   const reduxLocation = useSelector((state) => state.location.selectedLocation);
   const [selectedCity, setSelectedCity] = useState(reduxLocation);
   const [show, setShow] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [view, setView] = useState("images");
+  const [photos, setPhotos] = useState([]);
 
   const { data, loading, error } = useApiData(
     "venues",
@@ -46,6 +46,32 @@ const MainSection = () => {
     selectedCity,
     "Venues"
   );
+  const { fetchAllPhotos, fetchPhotosByType, allPhotos, photosByType } =
+    usePhotography();
+
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [displayPhotos, setDisplayPhotos] = useState([]);
+
+  useEffect(() => {
+    const loadPhotos = async () => {
+      if (selectedCategory === "all") {
+        await fetchAllPhotos();
+      } else {
+        await fetchPhotosByType(selectedCategory);
+      }
+    };
+    loadPhotos();
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    if (selectedCategory === "all") {
+      console.log("allPhotos", allPhotos);
+      setDisplayPhotos(allPhotos || []);
+    } else {
+      setDisplayPhotos(photosByType || []);
+    }
+  }, [allPhotos, photosByType, selectedCategory]);
 
   useEffect(() => {
     setSelectedCity(reduxLocation);
@@ -117,12 +143,22 @@ const MainSection = () => {
       <>
         <MainSearch title="Photography" />
         <TopSlider onCategorySelect={setSelectedCategory} />
+
         <SortSection
           category={selectedCategory}
           onCategoryChange={setSelectedCategory}
           onSearchChange={setSearchQuery}
         />
-        <GridImages category={selectedCategory} searchQuery={searchQuery} />
+
+        {loading ? (
+          <p className="text-center my-5">Loading photos...</p>
+        ) : (
+          <GridImages
+            photos={displayPhotos}
+            category={selectedCategory}
+            searchQuery={searchQuery}
+          />
+        )}
       </>
     );
   }

@@ -601,7 +601,7 @@
 // };
 
 // export default Budget;
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   FaEdit,
   FaTrash,
@@ -618,6 +618,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useSelector } from "react-redux";
+import Swal from "sweetalert2";
 
 const Budget = () => {
   const [budget, setBudget] = useState({
@@ -630,8 +631,9 @@ const Budget = () => {
   const [newBudgetAmount, setNewBudgetAmount] = useState(budget.estimated);
   const [newExpense, setNewExpense] = useState({ name: "", estimated: 0 });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const { user } = useSelector((state) => state.auth);
+  const { user, token } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchBudgetCategories = async () => {
@@ -656,6 +658,7 @@ const Budget = () => {
         setBudget((prev) => ({ ...prev, categories: categoriesFromApi }));
       } catch (error) {
         console.error("Error fetching budget categories:", error);
+        setError("Could not load budget categories. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -672,9 +675,11 @@ const Budget = () => {
 
     const fetchUserBudget = async () => {
       try {
-        const response = await fetch(
-          `https://happywedz.com/api/budgets/user/${user.id}`
-        );
+        const response = await fetch(`https://happywedz.com/api/budgets/user/${user.id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const result = await response.json();
 
         if (result.success && result.data.length > 0) {
@@ -704,11 +709,46 @@ const Budget = () => {
         }
       } catch (error) {
         console.error("Error fetching user budget:", error);
+        setError("Could not load your saved budget. Please try again later.");
       }
     };
 
     fetchUserBudget();
-  }, [budget.categories.length, user?.id]); // Rerun when categories or user are populated
+  }, [budget.categories.length, user?.id, token]); // Rerun when categories or user are populated
+
+  // Recalculate totals whenever budget or categories change
+  const { totalSpent, remainingBudget, totalFinalCost } = useMemo(() => {
+    const spent = budget.categories.reduce(
+      (total, category) =>
+        total +
+        category.subcategories.reduce(
+          (catTotal, expense) => catTotal + expense.paid,
+          0
+        ),
+      0
+    );
+    const final = budget.categories.reduce(
+      (total, category) =>
+        total +
+        category.subcategories.reduce(
+          (catTotal, expense) => catTotal + expense.final,
+          0
+        ),
+      0
+    );
+    const remaining = budget.estimated - spent;
+
+    if (remaining < 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Budget Exceeded",
+        text: "You have spent more than your estimated budget. Please adjust your budget or expenses.",
+        confirmButtonColor: "#c2185b",
+      });
+    }
+
+    return { totalSpent: spent, remainingBudget: remaining, totalFinalCost: final };
+  }, [budget]);
 
   // Colors for pie chart
   const COLORS = [
@@ -749,33 +789,60 @@ const Budget = () => {
   };
 
   // Update budget amount
-  const handleBudgetUpdate = () => {
-    setBudget({ ...budget, estimated: Number(newBudgetAmount) });
-    setIsEditingBudget(false);
+  const handleBudgetUpdate = async () => {
+    const newAmount = Number(newBudgetAmount);
+    // Here you would make an API call to save the new budget
+    // For now, we'll just update the state.
+    try {
+      // Example API call (replace with your actual API endpoint)
+      await fetch(`https://happywedz.com/api/user-budget/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ estimated: newAmount })
+      });
+
+      setBudget({ ...budget, estimated: newAmount });
+      setIsEditingBudget(false);
+      Swal.fire({
+        icon: "success",
+        title: "Budget Updated!",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    } catch (err) {
+      console.error("Failed to update budget:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Failed to update your budget. Please try again.",
+      });
+    }
   };
 
   // Add new expense to category
-  const addExpense = async (categoryId) => {
+  const addExpense = async (categoryId, categoryName) => {
     if (!user?.id) return; // Do not proceed if there is no user
     if (!newExpense.name || newExpense.estimated <= 0) return;
 
     const payload = {
+      user_id: user.id,
       vendor_type_id: categoryId,
-      // name is not in the API payload, but it's part of your UI state.
-      // The backend might handle it differently.
+      name: newExpense.name, // Sending the name to the backend
       estimated_budget: Number(newExpense.estimated),
       final_cost: 0,
       paid_amount: 0,
     };
 
     try {
-      // The API likely expects the user ID in the URL to associate the budget with the user
-      const response = await fetch(`https://happywedz.com/api/budgets/user/${user.id}`, {
+      // API call to save the new expense
+      const response = await fetch(`https://happywedz.com/api/budgets/user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Add Authorization header if needed
-          // 'Authorization': `Bearer ${your_auth_token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
@@ -791,7 +858,7 @@ const Budget = () => {
         const updatedCategories = budget.categories.map((category) => {
           if (category.id === categoryId) {
             const newSubcategory = {
-              id: newExpenseFromServer.vendor_subcategory_id || newExpenseFromServer.id, // Use ID from server
+              id: newExpenseFromServer.id, // Use the ID from the server response
               name: newExpense.name, // Keep the name from the form
               estimated: newExpenseFromServer.estimated_budget,
               final: newExpenseFromServer.final_cost,
@@ -813,14 +880,27 @@ const Budget = () => {
         setNewExpense({ name: "", estimated: 0 }); // Reset form
       } else {
         console.error("Failed to add expense:", result.message);
+        Swal.fire("Error", "Failed to save your new expense.", "error");
       }
     } catch (error) {
       console.error("Error adding expense:", error);
+      Swal.fire("Error", "An error occurred while saving.", "error");
     }
   };
 
   // Update expense field
-  const updateExpense = (categoryId, expenseId, field, value) => {
+  const updateExpense = async (categoryId, expenseId, field, value) => {
+    // Find the specific expense to create the payload
+    let expenseToUpdate;
+    budget.categories.forEach(cat => {
+      if (cat.id === categoryId) {
+        expenseToUpdate = cat.subcategories.find(exp => exp.id === expenseId);
+      }
+    });
+
+    if (!expenseToUpdate) return;
+
+    // Optimistically update the UI
     const updatedCategories = budget.categories.map((category) => {
       if (category.id === categoryId) {
         const updatedSubcategories = category.subcategories.map((expense) => {
@@ -845,21 +925,43 @@ const Budget = () => {
       return category;
     });
 
-    // Recalculate total estimated budget
-    const newTotalBudget = updatedCategories.reduce(
-      (sum, cat) => sum + cat.amount,
-      0
-    );
-
     setBudget({
       ...budget,
       categories: updatedCategories,
-      estimated: newTotalBudget,
     });
+
+    // Now, make the API call to persist the change
+    const payload = {
+      ...expenseToUpdate,
+      [field]: Number(value), // Update the specific field
+    };
+
+    try {
+      const response = await fetch(`https://happywedz.com/api/budgets/${expenseId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update expense. Please try again.');
+      }
+      // Optionally show a success message or handle the response
+    } catch (err) {
+      console.error("Update expense error:", err);
+      // Optionally revert the state change if the API call fails
+      Swal.fire("Error", err.message, "error");
+    }
   };
 
   // Delete expense
-  const deleteExpense = (categoryId, expenseId) => {
+  const deleteExpense = async (categoryId, expenseId) => {
+    const originalCategories = budget.categories;
+
+    // Optimistically update UI
     const updatedCategories = budget.categories.map((category) => {
       if (category.id === categoryId) {
         const expenseToDelete = category.subcategories.find(
@@ -878,46 +980,38 @@ const Budget = () => {
       return category;
     });
 
-    // Recalculate total estimated budget
-    const newTotalBudget = updatedCategories.reduce(
-      (sum, cat) => sum + cat.amount,
-      0
-    );
-
     setBudget({
       ...budget,
       categories: updatedCategories,
-      estimated: newTotalBudget,
     });
+
+    // API call to delete the expense
+    try {
+      const response = await fetch(`https://happywedz.com/api/budgets/${expenseId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete expense.');
+      }
+      // Success! No need to do anything as UI is already updated.
+    } catch (err) {
+      console.error("Delete expense error:", err);
+      // If API call fails, revert the UI change
+      setBudget(prev => ({ ...prev, categories: originalCategories }));
+      Swal.fire("Error", err.message, "error");
+    }
   };
-
-  // Calculate total spent
-  const totalSpent = budget.categories.reduce(
-    (total, category) =>
-      total +
-      category.subcategories.reduce(
-        (catTotal, expense) => catTotal + expense.paid,
-        0
-      ),
-    0
-  );
-
-  // Calculate remaining budget
-  const remainingBudget = budget.estimated - totalSpent;
-
-  // Calculate total final cost (sum of all final costs)
-  const totalFinalCost = budget.categories.reduce(
-    (total, category) =>
-      total +
-      category.subcategories.reduce(
-        (catTotal, expense) => catTotal + expense.final,
-        0
-      ),
-    0
-  );
 
   if (loading) {
     return <div className="container text-center py-5">Loading budget...</div>;
+  }
+
+  if (error) {
+    return <div className="container text-center py-5 text-danger">{error}</div>;
   }
 
   return (
@@ -1067,7 +1161,7 @@ const Budget = () => {
                     <span className="wb-currency">₹</span>
                     <button
                       className="wb-button wb-add-button"
-                      onClick={() => addExpense(category.id)}
+                      onClick={() => addExpense(category.id, category.name)}
                     >
                       <FaPlus /> Add
                     </button>

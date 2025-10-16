@@ -40,7 +40,7 @@ const UserDashboardNavbar = () => {
     },
     { id: "budget", slug: "budget", label: "Budget", icon: <FaPiggyBank /> },
     { id: "wishlist", slug: "wishlist", label: "Wishlist", icon: <FaHeart /> },
-    // { id: "booking", slug: "booking", label: "Booking", icon: <FaShoppingCart /> },
+    { id: "booking", slug: "booking", label: "Booking", icon: <FaShoppingCart /> },
     {
       id: "message",
       slug: "message",

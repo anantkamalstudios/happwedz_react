@@ -18,6 +18,8 @@ import {
   FaUserFriends,
   FaUser,
 } from "react-icons/fa";
+import axios from "axios";
+import usePhotography from "../../hooks/usePhotography";
 
 const Header = () => {
   const dispatch = useDispatch();
@@ -30,11 +32,7 @@ const Header = () => {
 
   const handleLogout = () => {
     dispatch(logout());
-    dispatch(vendorLogout());
-
-    localStorage.removeItem("vendorFormData");
-    localStorage.removeItem("photoDraftsMeta");
-    localStorage.removeItem("videoDraftsMeta");
+    localStorage.clear();
   };
 
   const { user, token: userToken } = useSelector((state) => state.auth);
@@ -116,7 +114,6 @@ const Header = () => {
       try {
         const response = await fetch(
           "https://happywedz.com/api/vendor-types/with-subcategories/all"
-          // "http://localhost:4000/vendor-types/with-subcategories/all"
         );
         const data = await response.json();
         const venues = data.find(
@@ -140,7 +137,6 @@ const Header = () => {
       try {
         const response = await fetch(
           "https://happywedz.com/api/vendor-types/with-subcategories/all"
-          // "http://localhost:4000/vendor-types/with-subcategories/all"
         );
         const data = await response.json();
         setVendorCategories(Array.isArray(data) ? data : []);
@@ -151,6 +147,24 @@ const Header = () => {
     };
     fetchVendorCategories();
   }, []);
+
+  const {
+    typesWithCategories,
+    fetchTypesWithCategories,
+    loading: photographyLoading,
+    error: photographyError,
+  } = usePhotography();
+
+  const [photography, setPhotography] = useState([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchTypesWithCategories();
+    };
+    fetchData();
+  }, []);
+  useEffect(() => {
+    setPhotography(typesWithCategories);
+  }, [typesWithCategories]);
 
   const vendorType = encodeURIComponent("Venues");
   const cityParam = selectedCity
@@ -182,7 +196,7 @@ const Header = () => {
           </button>
         </div>
 
-        <div className="w-100" id="mainNav">
+        <div className="collapse navbar-collapse w-100" id="mainNav">
           <div className="row">
             <div className="col-12 bg-white p-2">
               <div className="container-fluid w-100">
@@ -477,13 +491,13 @@ const Header = () => {
                                         title: "Get the HappyWedz App",
                                         desc: "Plan your wedding on the go with the HappyWedz app.",
                                         image: "/images/header/playstore.png",
-                                        route: "/get-app"
+                                        route: "/get-app",
                                       },
                                       {
                                         title: "Happywedz Website",
                                         desc: "Showcase your wedding website to friends and family.",
                                         image: "/images/couple.png",
-                                        route: "/choose-template"
+                                        route: "/choose-template",
                                       },
                                     ].map((item, i) => (
                                       <div
@@ -503,7 +517,12 @@ const Header = () => {
                                           "0 2px 4px rgba(0,0,0,0.04)")
                                         }
                                       >
-                                        <Link to={item.route} target="_blank" rel="noopener noreferrer" className="text-decoration-none d-flex justify-content-between align-items-center">
+                                        <Link
+                                          to={item.route}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-decoration-none d-flex justify-content-between align-items-center"
+                                        >
                                           <div className="me-3">
                                             <h6 className="fw-semibold mb-1 text-dark fs-6">
                                               {item.title}
@@ -622,8 +641,8 @@ const Header = () => {
                                         <Link
                                           to={path}
                                           className={`dropdown-link d-flex align-items-center ${isShowMore
-                                            ? "primary-text fw-bold text-decoration-underline"
-                                            : ""
+                                              ? "primary-text fw-bold text-decoration-underline"
+                                              : ""
                                             }`}
                                         >
                                           <i className="bi bi-check-circle me-2 text-primary"></i>
@@ -706,7 +725,7 @@ const Header = () => {
                             Photography
                           </Link>
 
-                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                          {/* <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
                               <div
                                 style={{ columnCount: 4, columnGap: "1rem" }}
@@ -836,6 +855,50 @@ const Header = () => {
                                       )}
                                   </div>
                                 ))}
+                              </div>
+                            </div>
+                          </div> */}
+
+                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                            <div className="container">
+                              <div
+                                style={{
+                                  columnCount: 4,
+                                  columnGap: "1rem",
+                                }}
+                                className="grid-layout"
+                              >
+                                {photography.length > 0 &&
+                                  photography.map((cat, i) => (
+                                    <div
+                                      className="mb-4 d-inline-block w-100"
+                                      key={cat.id || i}
+                                    >
+                                      <div className="fw-bold primary-text text-uppercase mb-2">
+                                        {cat.name}
+                                      </div>
+                                      {Array.isArray(cat.categories) &&
+                                        cat.categories.length > 0 && (
+                                          <ul className="list-unstyled">
+                                            {cat.categories.map((sub, j) => (
+                                              <li
+                                                key={sub.id || j}
+                                                className="mb-1"
+                                              >
+                                                <Link
+                                                  to={`/photography/${toSlug(
+                                                    sub.name
+                                                  )}`}
+                                                  className="dropdown-link small d-block"
+                                                >
+                                                  {formatName(sub.name)}
+                                                </Link>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        )}
+                                    </div>
+                                  ))}
                               </div>
                             </div>
                           </div>

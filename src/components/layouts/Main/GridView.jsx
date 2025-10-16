@@ -250,17 +250,23 @@ import React, { useState } from "react";
 import { Row, Col, Card, Container } from "react-bootstrap";
 import { FaStar, FaHeart, FaRegHeart } from "react-icons/fa";
 import { TbView360Number } from "react-icons/tb";
+import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
+import { toggleWishlist } from "../../../redux/authSlice";
 
 const GridView = ({ subVenuesData, handleShow }) => {
   const [favorites, setFavorites] = useState({});
+  const dispatch = useDispatch();
 
-  const toggleFavorite = (id, e) => {
+  const toggleFavorite = (venue, e) => {
     e.preventDefault();
     e.stopPropagation();
+    // Dispatch the toggle action
+    dispatch(toggleWishlist(venue));
+    // Optimistically update the UI
     setFavorites((prev) => ({
       ...prev,
-      [id]: !prev[id],
+      [venue.id]: !prev[venue.id],
     }));
   };
   console.log("subVenuesData", subVenuesData);
@@ -321,7 +327,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                       alignItems: "center",
                       justifyContent: "center",
                     }}
-                    onClick={(e) => toggleFavorite(venue.id, e)}
+                    onClick={(e) => toggleFavorite(venue, e)}
                   >
                     {favorites[venue.id] ? (
                       <FaHeart className="text-danger" size={18} />

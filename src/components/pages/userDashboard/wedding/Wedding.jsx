@@ -348,9 +348,15 @@ const Wedding = () => {
           </div>
         </div>
 
-        <section className="d-flex justify-content-between gap-4 w-100">
-          <VenueVendorComponent />
-          <VenueVendorComponent />
+        <section className="w-100">
+          <div className="row g-4">
+            <div className="col-12 col-md-6">
+              <VenueVendorComponent type="venue" />
+            </div>
+            <div className="col-12 col-md-6">
+              <VenueVendorComponent type="vendor" />
+            </div>
+          </div>
         </section>
 
         {/* CTA Panel */}

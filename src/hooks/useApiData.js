@@ -552,10 +552,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-// ⚠️ NOTE: You must define or import IMAGE_BASE_URL from a config file.
-const IMAGE_BASE_URL = "https://your.image.base.url/";
-// Replace the above line with your actual import or definition:
-// import { IMAGE_BASE_URL } from "../config/constants";
+const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
 
 const useApiData = (section, slug, city = null, vendorType = null) => {
   const [data, setData] = useState([]);

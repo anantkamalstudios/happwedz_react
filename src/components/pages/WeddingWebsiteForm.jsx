@@ -1,7 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { FiImage, FiUpload, FiX, FiCalendar, FiHeart, FiUsers, FiMapPin, FiPlus, FiCamera } from 'react-icons/fi';
+import { useSelector } from 'react-redux';
+// import { weddingWebsiteApi } from '../../services/api';
+import { weddingWebsiteApi } from '../../services/api/weddingWebsiteApi';
+
 
 const WeddingWebsiteForm = () => {
+    const navigate = useNavigate();
+    const { templateId } = useParams();
+    const [searchParams] = useSearchParams();
+    const editId = useMemo(() => searchParams.get('edit'), [searchParams]);
+    const auth = useSelector((state) => state.auth);
     const [formData, setFormData] = useState({
         sliderImages: [],
         weddingDate: "",
@@ -22,6 +32,7 @@ const WeddingWebsiteForm = () => {
     });
 
     const [loading, setLoading] = useState(false);
+    const [initializing, setInitializing] = useState(!!editId);
 
     // File upload handlers
     const handleFileUpload = (e, section, index = null) => {
@@ -147,16 +158,249 @@ const WeddingWebsiteForm = () => {
         }));
     };
 
+
+    const { user, token: userToken } = useSelector((state) => state.auth);
+
+    // ✅ Helper function: Convert JSON + Files into FormData
+    const buildFormData = (data) => {
+        const formData = new FormData();
+
+        formData.append("userId", data.userId);
+        formData.append("templateId", data.templateId);
+        formData.append("weddingDate", data.weddingDate);
+
+        // JSON sections
+        formData.append("brideData", JSON.stringify(data.brideData));
+        formData.append("groomData", JSON.stringify(data.groomData));
+        formData.append("loveStory", JSON.stringify(data.loveStory));
+        formData.append("weddingParty", JSON.stringify(data.weddingParty));
+        formData.append("whenWhere", JSON.stringify(data.whenWhere));
+
+        // Image files
+        data.sliderImages?.forEach((file) => file && formData.append("sliderImages", file));
+        data.loveStoryImages?.forEach((file) => file && formData.append("loveStoryImages", file));
+        data.weddingPartyImages?.forEach((file) => file && formData.append("weddingPartyImages", file));
+        data.whenWhereImages?.forEach((file) => file && formData.append("whenWhereImages", file));
+        data.galleryFiles?.forEach((file) => file && formData.append("galleryFiles", file));
+
+        // Bride & Groom individual images
+        if (data.brideImage) formData.append("brideImage", data.brideImage);
+        if (data.groomImage) formData.append("groomImage", data.groomImage);
+
+        return formData;
+    };
+
+
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault();
+    //     setLoading(true);
+
+    //     try {
+    //         // Prepare the data for the API
+    //         const apiData = {
+    //             userId: user?.id,
+    //             templateId: templateId || 'royal',
+    //             weddingDate: formData.weddingDate,
+    //             brideData: {
+    //                 name: formData.bride.name,
+    //                 description: formData.bride.description,
+    //             },
+    //             groomData: {
+    //                 name: formData.groom.name,
+    //                 description: formData.groom.description,
+    //             },
+    //             loveStory: formData.loveStory.map((story) => ({
+    //                 title: story.title || '',
+    //                 date: story.date || '',
+    //                 description: story.description || '',
+    //             })),
+    //             weddingParty: formData.weddingParty.map((member) => ({
+    //                 name: member.name || '',
+    //                 relation: member.relation || '',
+    //             })),
+    //             whenWhere: formData.whenWhere.map((event) => ({
+    //                 title: event.title || '',
+    //                 location: event.location || '',
+    //                 description: event.description || '',
+    //                 date: event.date || '',
+    //             })),
+    //             galleryImages: formData.gallery
+    //                 .filter((g) => typeof g.preview === 'string' && g.preview.startsWith('/uploads/'))
+    //                 .map((g) => g.preview),
+    //             // File arrays for upload
+    //             sliderImages: formData.sliderImages.map((img) => img.file).filter(Boolean),
+    //             brideImage: formData.bride.image,
+    //             groomImage: formData.groom.image,
+    //             loveStoryImages: formData.loveStory.map((story) => story.image).filter(Boolean),
+    //             weddingPartyImages: formData.weddingParty.map((member) => member.image).filter(Boolean),
+    //             whenWhereImages: formData.whenWhere.map((event) => event.image).filter(Boolean),
+    //             galleryFiles: formData.gallery.map((img) => img.file).filter(Boolean),
+    //         };
+
+    //         // Handle existing images (from edit mode)
+    //         if (formData.bride.preview && typeof formData.bride.preview === 'string' && formData.bride.preview.startsWith('/uploads/')) {
+    //             apiData.brideData.image_url = formData.bride.preview;
+    //         }
+    //         if (formData.groom.preview && typeof formData.groom.preview === 'string' && formData.groom.preview.startsWith('/uploads/')) {
+    //             apiData.groomData.image_url = formData.groom.preview;
+    //         }
+
+    //         let result;
+    //         if (editId) {
+    //             // Update existing website
+    //             result = await weddingWebsiteApi.updateWebsite(editId, apiData);
+    //             alert('Wedding website updated successfully!');
+    //         } else {
+    //             // Create new website
+    //             result = await weddingWebsiteApi.createWebsite(apiData);
+    //             alert('Wedding website created successfully!');
+    //         }
+
+    //         // Navigate based on result
+    //         if (result?.id) {
+    //             navigate(`/wedding-website/${result.id}`);
+    //         } else if (editId) {
+    //             navigate(`/wedding-website/${editId}`);
+    //         } else {
+    //             navigate('/my-wedding-websites');
+    //         }
+    //     } catch (err) {
+    //         console.error('Error saving wedding website:', err);
+    //         alert(`Failed to save wedding website: ${err.message}`);
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+      
+        try {
+          // Build FormData from form inputs
+          const formPayload = buildFormData({
+            userId: user?.id,
+            templateId: templateId || 'royal',
+            weddingDate: formData.weddingDate,
+            brideData: { name: formData.bride.name, description: formData.bride.description },
+            groomData: { name: formData.groom.name, description: formData.groom.description },
+            loveStory: formData.loveStory.map(s => ({ title: s.title, date: s.date, description: s.description })),
+            weddingParty: formData.weddingParty.map(m => ({ name: m.name, relation: m.relation })),
+            whenWhere: formData.whenWhere.map(w => ({ title: w.title, location: w.location, description: w.description, date: w.date })),
+            sliderImages: formData.sliderImages.map(i => i.file).filter(Boolean),
+            brideImage: formData.bride.image,
+            groomImage: formData.groom.image,
+            loveStoryImages: formData.loveStory.map(s => s.image).filter(Boolean),
+            weddingPartyImages: formData.weddingParty.map(m => m.image).filter(Boolean),
+            whenWhereImages: formData.whenWhere.map(w => w.image).filter(Boolean),
+            galleryFiles: formData.gallery.map(g => g.file).filter(Boolean),
+          });
+      
+          let result;
+          if (editId) {
+            result = await weddingWebsiteApi.updateWebsite(editId, formPayload, userToken);
+            alert("Wedding website updated successfully!");
+          } else {
+            result = await weddingWebsiteApi.createWebsite(formPayload, userToken);
+            alert("Wedding website created successfully!");
+          }
+      
+          if (result?.id) navigate(`/wedding-website/${result.id}`);
+          else navigate('/my-wedding-websites');
+      
+        } catch (err) {
+          console.error("Error saving wedding website:", err);
+          alert(`Failed to save wedding website: ${err.message}`);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
 
-        // Simulate API call
-        setTimeout(() => {
-            alert('Wedding website created successfully!');
-            setLoading(false);
-        }, 2000);
-    };
+
+    useEffect(() => {
+        if (!editId) return;
+        let isMounted = true;
+        (async () => {
+            try {
+                const data = await weddingWebsiteApi.getWebsiteById(editId);
+                if (!isMounted) return;
+
+                // Best-effort mapping; tolerate variations
+                const toPreviewItem = (src) => ({ id: Date.now() + Math.random(), file: null, preview: src });
+                setFormData((prev) => ({
+                    ...prev,
+                    weddingDate: data.weddingDate ? String(data.weddingDate).slice(0, 10) : '',
+                    bride: {
+                        image: null,
+                        preview: data.brideImageUrl || data?.bride?.imageUrl || data?.bride?.image_url || null,
+                        name: data.brideName || data?.bride?.name || '',
+                        description: data?.brideDescription || data?.bride?.description || '',
+                    },
+                    groom: {
+                        image: null,
+                        preview: data.groomImageUrl || data?.groom?.imageUrl || data?.groom?.image_url || null,
+                        name: data.groomName || data?.groom?.name || '',
+                        description: data?.groomDescription || data?.groom?.description || '',
+                    },
+                    sliderImages: Array.isArray(data.slider)
+                        ? data.slider.map((u) => toPreviewItem(typeof u === 'string' ? u : (u?.url || ''))).filter((x) => x.preview)
+                        : Array.isArray(data.sliderImages)
+                            ? data.sliderImages.map((u) => toPreviewItem(typeof u === 'string' ? u : (u?.url || ''))).filter((x) => x.preview)
+                            : [],
+                    loveStory: Array.isArray(data.loveStory)
+                        ? data.loveStory.map((s) => ({
+                            id: Date.now() + Math.random(),
+                            image: null,
+                            preview: s.imageUrl || s.image_url || s.image || null,
+                            title: s.title || '',
+                            date: s.date || '',
+                            description: s.description || '',
+                        }))
+                        : [],
+                    weddingParty: Array.isArray(data.weddingParty)
+                        ? data.weddingParty.map((m) => ({
+                            id: Date.now() + Math.random(),
+                            image: null,
+                            preview: m.imageUrl || m.image_url || m.image || null,
+                            name: m.name || '',
+                            relation: m.relation || '',
+                        }))
+                        : [],
+                    whenWhere: Array.isArray(data.whenWhere)
+                        ? data.whenWhere.map((w) => ({
+                            id: Date.now() + Math.random(),
+                            image: null,
+                            preview: w.imageUrl || w.image_url || w.image || null,
+                            title: w.title || '',
+                            location: w.location || '',
+                            description: w.description || '',
+                            date: w.date || '',
+                        }))
+                        : [],
+                    gallery: Array.isArray(data.gallery)
+                        ? data.gallery.map((u) => toPreviewItem(typeof u === 'string' ? u : (u?.url || ''))).filter((x) => x.preview)
+                        : [],
+                }));
+            } catch (e) {
+                console.error('Error loading website data:', e);
+                alert('Failed to load existing website data');
+            } finally {
+                if (isMounted) setInitializing(false);
+            }
+        })();
+        return () => { isMounted = false; };
+    }, [editId]);
+
+    if (initializing) {
+        return (
+            <div className="d-flex justify-content-center align-items-center min-vh-100">
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div style={{
@@ -513,7 +757,7 @@ const WeddingWebsiteForm = () => {
                                                     borderRadius: '50%',
                                                     background: '#667eea'
                                                 }}></span>
-                                                Groom Details
+                                                Bride Details
                                             </h4>
 
                                             <div className="mb-4">
@@ -524,14 +768,14 @@ const WeddingWebsiteForm = () => {
                                                     marginBottom: '12px',
                                                     fontSize: '15px'
                                                 }}>
-                                                    Groom's Photo
+                                                    Bride's Photo
                                                 </label>
                                                 <div style={{ position: 'relative' }}>
-                                                    {formData.groom.preview ? (
+                                                    {formData.bride.preview ? (
                                                         <div style={{ position: 'relative', display: 'inline-block' }}>
                                                             <img
-                                                                src={formData.groom.preview}
-                                                                alt="Groom"
+                                                                src={formData.bride.preview}
+                                                                alt="Bride"
                                                                 style={{
                                                                     width: '120px',
                                                                     height: '120px',
@@ -544,7 +788,7 @@ const WeddingWebsiteForm = () => {
                                                                 type="button"
                                                                 onClick={() => setFormData(prev => ({
                                                                     ...prev,
-                                                                    groom: { ...prev.groom, image: null, preview: null }
+                                                                    bride: { ...prev.bride, image: null, preview: null }
                                                                 }))}
                                                                 style={{
                                                                     position: 'absolute',
@@ -597,8 +841,8 @@ const WeddingWebsiteForm = () => {
                                                                     if (file) {
                                                                         setFormData(prev => ({
                                                                             ...prev,
-                                                                            groom: {
-                                                                                ...prev.groom,
+                                                                            bride: {
+                                                                                ...prev.bride,
                                                                                 image: file,
                                                                                 preview: URL.createObjectURL(file)
                                                                             }
@@ -620,17 +864,17 @@ const WeddingWebsiteForm = () => {
                                                     marginBottom: '12px',
                                                     fontSize: '15px'
                                                 }}>
-                                                    Groom's Name
+                                                    Bride's Name
                                                 </label>
                                                 <input
                                                     type="text"
                                                     className="form-control"
-                                                    value={formData.groom.name}
+                                                    value={formData.bride.name}
                                                     onChange={(e) => setFormData(prev => ({
                                                         ...prev,
-                                                        groom: { ...prev.groom, name: e.target.value }
+                                                        bride: { ...prev.bride, name: e.target.value }
                                                     }))}
-                                                    placeholder="Enter groom's name"
+                                                    placeholder="Enter bride's name"
                                                     required
                                                     style={{
                                                         border: '2px solid #e6edff',
@@ -658,17 +902,17 @@ const WeddingWebsiteForm = () => {
                                                     marginBottom: '12px',
                                                     fontSize: '15px'
                                                 }}>
-                                                    About the Groom
+                                                    About the Bride
                                                 </label>
                                                 <textarea
                                                     className="form-control"
                                                     rows="4"
-                                                    value={formData.groom.description}
+                                                    value={formData.bride.description}
                                                     onChange={(e) => setFormData(prev => ({
                                                         ...prev,
-                                                        groom: { ...prev.groom, description: e.target.value }
+                                                        bride: { ...prev.bride, description: e.target.value }
                                                     }))}
-                                                    placeholder="Share something special about the groom..."
+                                                    placeholder="Share something special about the bride..."
                                                     style={{
                                                         border: '2px solid #e6edff',
                                                         borderRadius: '12px',
