@@ -13,3 +13,18 @@ export default defineConfig({
     },
   },
 });
+
+
+// export default defineConfig({
+//   plugins: [react()],
+//   server: {
+//     proxy: {
+//       "/api": {
+//         target: "https://www.happywedz.com",
+//         changeOrigin: true,
+//         secure: false,
+//         rewrite: (path) => path.replace(/^\/api/, "/ai"),
+//       },
+//     },
+//   },
+// });

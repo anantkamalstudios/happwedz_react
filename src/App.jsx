@@ -17,6 +17,7 @@ import UserPrivateRoute from "./components/routes/UserPrivateRoute";
 import VendorLeadsPage from "./components/pages/adminVendor/VendorLeadsPage";
 import RecommandedPage from "./components/home/RecommandedPage";
 import ReviewsPage from "./components/pages/WriteReviewPage";
+import AboutUs from "./components/layouts/AboutUs";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
@@ -110,19 +111,22 @@ const UploadSelfiePage = lazy(() =>
   import("./components/pages/UploadSelfiePage")
 );
 const FiltersPage = lazy(() => import("./components/pages/FiltersPage"));
+const MyWeddingWebsites = lazy(() => import("./components/pages/MyWeddingWebsites"));
+const WeddingWebsiteView = lazy(() => import("./components/pages/WeddingWebsiteView"));
+const WeddingWebsiteForm = lazy(() => import("./components/pages/WeddingWebsiteForm"));
 
 const FinalLookPage = lazy(() => import("./components/pages/FinalLookPage"));
-const WeddingWebsiteForm = lazy(() =>
-  import("./components/pages/WeddingWebsiteForm")
-);
-const MyWeddingWebsites = lazy(() =>
-  import("./components/pages/MyWeddingWebsites")
-);
+// const WeddingWebsiteForm = lazy(() =>
+//   import("./components/pages/WeddingWebsiteForm")
+// );
+// const MyWeddingWebsites = lazy(() =>
+//   import("./components/pages/MyWeddingWebsites")
+// );
 
-const WeddingWebsiteView = lazy(() =>
-  // const WeddingWebsiteView = lazy(() =>
-  import("./components/pages/WeddingWebsiteView")
-);
+// const WeddingWebsiteView = lazy(() =>
+//   // const WeddingWebsiteView = lazy(() =>
+//   import("./components/pages/WeddingWebsiteView")
+// );
 
 const VendorPremium = lazy(() =>
   import("./components/pages/adminVendor/VendorPremium")
@@ -174,6 +178,7 @@ function App() {
               element={<WeddingWebsiteView />}
             />
 
+
             <Route element={<MainLayout />}>
               <Route path="/" element={<Home />} />
               <Route
@@ -202,6 +207,8 @@ function App() {
               <Route path="/cancellation" element={<CancellationPolicy />} />
               {/* Try Flow */}
               <Route path="/try" element={<TryLanding />} />
+              <Route path="/about-us" element={<AboutUs />} />
+
               <Route
                 path="/try/bride"
                 element={
@@ -363,6 +370,7 @@ function App() {
               />
               <Route path="/edit-profile" element={<EditProfile />} />
             </Route>
+
             <Route path="/ai-recommandation" element={<RecommandPage />} />
 
             {/*  Fallback  */}

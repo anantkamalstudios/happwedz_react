@@ -381,7 +381,7 @@ const MyWeddingWebsites = () => {
                                             <button
                                                 className="action-btn btn-success-action"
                                                 onClick={() => {
-                                                    navigator.clipboard.writeText(`${window.location.origin}/wedding/${website.websiteUrl}`);
+                                                    navigator.clipboard.writeText(`${window.location.origin}/api/wedding/${website.websiteUrl}`);
                                                     alert('Website link copied to clipboard!');
                                                 }}
                                             >

@@ -1,73 +1,61 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
+import { Autoplay, Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import { Link } from "react-router-dom";
+import { IMAGE_BASE_URL } from "../../../config/constants";
+import usePhotography from "../../../hooks/usePhotography";
 
-const TopSlider = ({ onCategorySelect }) => {
-  const categories = [
-    {
-      label: "All",
-      slug: "all",
-      image:
-        "https://image.wedmegood.com/resized/200X/uploads/im_cat_image/36/bridal-lehenga.jpg",
-    },
-    {
-      label: "Bridal Wear",
-      slug: "Mehendi",
-      image:
-        "https://image.wedmegood.com/resized/200X/uploads/im_cat_image/36/bridal-lehenga.jpg",
-    },
-    {
-      label: "Groom Wear",
-      slug: "Reception",
-      image:
-        "https://image.wedmegood.com/resized/200X/uploads/im_cat_image/36/bridal-lehenga.jpg",
-    },
-    {
-      label: "Venues",
-      slug: "Makeup",
-      image:
-        "https://image.wedmegood.com/resized/200X/uploads/im_cat_image/36/bridal-lehenga.jpg",
-    },
-    {
-      label: "Photographers",
-      slug: "Real-Wedding",
-      image:
-        "https://image.wedmegood.com/resized/200X/uploads/im_cat_image/36/bridal-lehenga.jpg",
-    },
-    {
-      label: "Mehndi",
-      slug: "Decor",
-      image:
-        "https://image.wedmegood.com/resized/200X/uploads/im_cat_image/36/bridal-lehenga.jpg",
-    },
-    {
-      label: "Makeup",
-      slug: "Haldi",
-      image:
-        "https://image.wedmegood.com/resized/200X/uploads/im_cat_image/36/bridal-lehenga.jpg",
-    },
-    {
-      label: "Decor",
-      slug: "Haldi",
-      image:
-        "https://image.wedmegood.com/resized/200X/uploads/im_cat_image/36/bridal-lehenga.jpg",
-    },
-    {
-      label: "Planning",
-      slug: "Haldi",
-      image:
-        "https://image.wedmegood.com/resized/200X/uploads/im_cat_image/36/bridal-lehenga.jpg",
-    },
-    {
-      label: "Invitations",
-      slug: "Haldi",
-      image:
-        "https://image.wedmegood.com/resized/200X/uploads/im_cat_image/36/bridal-lehenga.jpg",
-    },
-  ];
+const TopSlider = ({ onCategorySelect, onPhotosFetched }) => {
+  const {
+    types,
+    fetchTypes,
+    fetchAllPhotos,
+    fetchPhotosByType,
+    loading,
+    error,
+  } = usePhotography();
+
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      await fetchTypes();
+    };
+    loadCategories();
+  }, []);
+
+  useEffect(() => {
+    if (types && Array.isArray(types)) {
+      setCategories(types);
+    }
+  }, [types]);
+
+  const handleCategoryClick = async (category) => {
+    onCategorySelect?.(category.id || "all");
+
+    if (category.name === "all") {
+      const data = await fetchAllPhotos();
+      onPhotosFetched?.(data);
+    } else {
+      const data = await fetchPhotosByType(category.id);
+      onPhotosFetched?.(data);
+    }
+  };
+
+  if (loading)
+    return (
+      <div className="text-center my-5">
+        <p>Loading categories...</p>
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="text-center my-5 text-danger">
+        <p>Failed to load categories.</p>
+      </div>
+    );
 
   return (
     <div className="container px-3 py-2 my-5">
@@ -75,19 +63,50 @@ const TopSlider = ({ onCategorySelect }) => {
         slidesPerView="auto"
         spaceBetween={10}
         navigation={true}
-        modules={[Navigation]}
+        loop={true}
+        autoplay={{
+          delay: 2500,
+          disableOnInteraction: false,
+        }}
+        modules={[Navigation, Autoplay]}
         className="category-swiper"
       >
-        {categories.map((cat, idx) => (
-          <SwiperSlide key={idx} style={{ width: "auto" }}>
+        <SwiperSlide style={{ width: "auto" }}>
+          <div
+            className="category-wrapper"
+            onClick={() => handleCategoryClick({ name: "all" })}
+            style={{ cursor: "pointer" }}
+          >
+            <img
+              src="./images/photography-all.png"
+              alt="All"
+              className="category-image mx-auto d-block mb-2"
+              style={{
+                width: "150px",
+                height: "80px",
+                objectFit: "cover",
+                borderRadius: "0.25rem",
+              }}
+            />
+          </div>
+          <span
+            className="d-flex justify-content-around text-center"
+            style={{ fontSize: "14px" }}
+          >
+            All
+          </span>
+        </SwiperSlide>
+
+        {categories.map((cat) => (
+          <SwiperSlide key={cat.id} style={{ width: "auto" }}>
             <div
               className="category-wrapper"
-              onClick={() => onCategorySelect(cat.slug)}
+              onClick={() => handleCategoryClick(cat)}
               style={{ cursor: "pointer" }}
             >
               <img
-                src={cat.image}
-                alt={cat.label}
+                src={`${IMAGE_BASE_URL}${cat.hero_image}`}
+                alt={cat.name}
                 className="category-image mx-auto d-block mb-2"
                 style={{
                   width: "150px",
@@ -98,10 +117,10 @@ const TopSlider = ({ onCategorySelect }) => {
               />
             </div>
             <span
-              className="d-flex justify-content-around text-center fa-bold"
+              className="d-flex justify-content-around text-center"
               style={{ fontSize: "14px" }}
             >
-              {cat.label}
+              {cat.name}
             </span>
           </SwiperSlide>
         ))}

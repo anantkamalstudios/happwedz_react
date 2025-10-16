@@ -198,7 +198,7 @@ const WeddingWebsiteView = () => {
                                 className="btn btn-secondary-action"
                                 onClick={() => {
                                     if (websiteData.isPublished) {
-                                        navigator.clipboard.writeText(`${window.location.origin}/wedding/${websiteData.websiteUrl}`);
+                                        navigator.clipboard.writeText(`${window.location.origin}/api/wedding/${websiteData.websiteUrl}`);
                                         alert('Website link copied to clipboard!');
                                     } else {
                                         alert('Please publish your website first to share it.');
@@ -218,7 +218,7 @@ const WeddingWebsiteView = () => {
                     <div className="col-lg-8">
                         <div className="website-preview">
                             <iframe
-                                src={`/wedding/${websiteData.websiteUrl}`}
+                                src={`/api/wedding/${websiteData.websiteUrl}`}
                                 className="preview-frame"
                                 title="Wedding Website Preview"
                             />
@@ -267,7 +267,7 @@ const WeddingWebsiteView = () => {
                                     <span className="info-label">Public URL:</span>
                                     <span className="info-value">
                                         <a
-                                            href={`/wedding/${websiteData.websiteUrl}`}
+                                            href={`/api/wedding/${websiteData.websiteUrl}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-decoration-none"

@@ -110,8 +110,8 @@ const LocationModalWithAPI = () => {
         show={show}
         onHide={() => setShow(false)}
         size="xl"
-        centered
-        backdrop="static"
+        centered 
+        backdrop={true}
         keyboard={true}
       >
         <Modal.Body>
