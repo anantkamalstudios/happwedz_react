@@ -30,7 +30,6 @@ const ForgotPassword = lazy(() => import("./components/auth/ForgotPassword"));
 const MainSection = lazy(() => import("./components/pages/MainSection"));
 const SubSection = lazy(() => import("./components/pages/SubSection"));
 const Detailed = lazy(() => import("./components/layouts/Detailed"));
-
 const Main = lazy(() => import("./components/pages/adminVendor/Main"));
 const Search = lazy(() => import("./components/pages/matrimonial/Search"));
 const MatrimonialMain = lazy(() =>
@@ -113,6 +112,7 @@ const FiltersPage = lazy(() => import("./components/pages/FiltersPage"));
 const MyWeddingWebsites = lazy(() => import("./components/pages/MyWeddingWebsites"));
 const WeddingWebsiteView = lazy(() => import("./components/pages/WeddingWebsiteView"));
 const WeddingWebsiteForm = lazy(() => import("./components/pages/WeddingWebsiteForm"));
+const ContactUs = lazy(() => import("./components/pages/Contactus"));
 
 const FinalLookPage = lazy(() => import("./components/pages/FinalLookPage"));
 // const WeddingWebsiteForm = lazy(() =>
@@ -191,6 +191,7 @@ function App() {
               {/* Auth Pages */}
               <Route path="/customer-login" element={<CustomerLogin />} />
               <Route path="/customer-register" element={<CustomerRegister />} />
+              <Route path="/contact-us" element={<ContactUs />} />
               <Route path="/vendor-login" element={<VendorLogin />} />
               <Route path="/vendor-register" element={<VendorRegister />} />
               <Route

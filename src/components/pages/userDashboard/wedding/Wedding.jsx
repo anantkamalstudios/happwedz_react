@@ -16,7 +16,11 @@ import UpComingTask from "./UpComingTask";
 import EInvites from "./EInviteCard";
 
 const Wedding = () => {
-  const [budget, setBudget] = useState({ total: 0, spent: 0, remaining: 0 });
+  const [budget, setBudget] = useState({
+    total: 500000,
+    spent: 200000,
+    remaining: 300000,
+  });
   const [guestStats, setGuestStats] = useState({ total: 0, attending: 0 });
   const [taskStats, setTaskStats] = useState({ total: 0, completed: 0 });
 
@@ -135,23 +139,23 @@ const Wedding = () => {
     const fetchDashboardData = async () => {
       try {
         // Fetch Budget Summary
-        const budgetRes = await fetch(
-          // This should be user-specific
-          `https://happywedz.com/api/expense/summary/${userId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const budgetData = await budgetRes.json();
-        if (budgetData.success) {
-          const total = parseFloat(budgetData.data.totalEstimated) || 0;
-          const spent = parseFloat(budgetData.data.totalPaid) || 0;
-          setBudget({
-            total: total,
-            spent: spent,
-            remaining: total - spent,
-          });
-        }
+        // const budgetRes = await fetch(
+        //   // This should be user-specific
+        //   `https://happywedz.com/api/expense/summary/${userId}`,
+        //   {
+        //     headers: { Authorization: `Bearer ${token}` },
+        //   }
+        // );
+        // const budgetData = await budgetRes.json();
+        // if (budgetData.success) {
+        //   const total = parseFloat(budgetData.data.totalEstimated) || 0;
+        //   const spent = parseFloat(budgetData.data.totalPaid) || 0;
+        //   setBudget({
+        //     total: total,
+        //     spent: spent,
+        //     remaining: total - spent,
+        //   });
+        // }
 
         // Fetch Guest Summary
         // This should fetch guests for the current user
@@ -445,57 +449,84 @@ const Wedding = () => {
                 </div>
 
                 <p>You haven't added any guest yet</p>
-                <button
-                  style={{
-                    padding: "0.5rem 2rem",
-                    backgroundColor: "#C31162",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "10px",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Add Guest
-                </button>
+                <Link to="/user-dashboard/guest-list">
+                  <button
+                    style={{
+                      padding: "0.5rem 2rem",
+                      backgroundColor: "#C31162",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "10px",
+                      cursor: "pointer",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Add Guest
+                  </button>
+                </Link>
               </div>
             </div>
             {/* budget */}
             <div
-              className="shadow-lg"
+              className="dashboard-card shadow-lg"
               style={{
                 gridColumn: "span 2/span 2",
                 gridRow: "span 3/span 3",
                 gridColumnStart: 3,
                 gridRowStart: 4,
-                padding: "1rem",
                 height: "100%",
               }}
             >
-              <h3>Budget</h3>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "0.5rem",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "80%",
-                }}
-              >
-                <button
-                  style={{
-                    padding: "0.5rem 2rem",
-                    backgroundColor: "#C31162",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "10px",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                >
+              <div className="card-header d-flex justify-content-between align-items-center">
+                <h4 className="card-title">
+                  <DollarSign size={20} className="me-2" />
+                  Wedding Budget
+                </h4>
+                <Link to="/user-dashboard/budget" className="btn-small">
+                  Edit
+                </Link>
+              </div>
+              <div className="budget-overview">
+                <div className="budget-total">
+                  <div className="budget-amount">
+                    ₹{(budget.total / 100000).toFixed(1)}L
+                  </div>
+                  <div className="budget-label">Total Budget</div>
+                </div>
+                <div className="budget-breakdown">
+                  <div className="budget-item">
+                    <span className="budget-spent">
+                      ₹{(budget.spent / 100000).toFixed(1)}L spent
+                    </span>
+                    <span className="budget-remaining">
+                      ₹{(budget.remaining / 100000).toFixed(1)}L remaining
+                    </span>
+                  </div>
+                </div>
+                <div className="budget-progress">
+                  <div className="budget-bar">
+                    <div
+                      className="budget-fill"
+                      style={{
+                        width: `${budget.total > 0
+                          ? (budget.spent / budget.total) * 100
+                          : 0
+                          }%`,
+                      }}
+                    ></div>
+                  </div>
+                  <span className="budget-percentage">
+                    {Math.round(
+                      budget.total > 0 ? (budget.spent / budget.total) * 100 : 0
+                    )}
+                    % used
+                  </span>
+                </div>
+              </div>
+              <div className="text-center mt-3">
+                <Link to="/user-dashboard/budget" className="btn-action">
                   + Add Budget
-                </button>
+                </Link>
               </div>
             </div>
             <div
