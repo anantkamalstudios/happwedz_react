@@ -118,9 +118,7 @@ const userApi = {
       const res = await axios.post(`${API_BASE}/user/register`, data);
       return res.data;
     } catch (err) {
-      return (
-        err.response?.data || { success: false, message: "Registration failed" }
-      );
+      return err.response?.data || { success: false, message: "Registration failed" };
     }
   },
 
@@ -131,7 +129,7 @@ const userApi = {
     } catch (err) {
       return err.response?.data || { success: false, message: "Login failed" };
     }
-  },
+  }
 };
 
 export default userApi;
