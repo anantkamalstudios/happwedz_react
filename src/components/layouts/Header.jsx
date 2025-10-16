@@ -182,7 +182,7 @@ const Header = () => {
           </button>
         </div>
 
-        <div className="w-100" id="mainNav">
+        <div className="collapse navbar-collapse w-100" id="mainNav">
           <div className="row">
             <div className="col-12 bg-white p-2">
               <div className="container-fluid w-100">

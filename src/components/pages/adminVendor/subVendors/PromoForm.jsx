@@ -134,7 +134,7 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                   value={form.title}
                   onChange={handleChange}
                   className={`form-control ${errors.title ? "error" : ""}`}
-                  placeholder="e.g. 10% off for WeddingWire couples"
+                  placeholder="placeholder for offer"
                 />
                 {errors.title && (
                   <div className="error-message">{errors.title}</div>

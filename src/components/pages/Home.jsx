@@ -18,9 +18,10 @@ import image from "../../../public/images/home/try.png";
 import einviteImage from "../../../public/images/home/einvite.png";
 import MainTestimonial from "../home/MainTestimonial";
 import MetroCities from "../home/MetroCities";
+import HomeGennie from "../common/HomeGennie";
 const Home = () => {
   return (
-    <>
+    <div style={{ position: "relative" }}>
       <Herosection />
       {/* <StatisticsSection /> */}
       <WeddingCategories />
@@ -41,8 +42,8 @@ const Home = () => {
         logo={logo}
         img={einviteImage}
         heading="Digital Wedding Invitations"
-        subHeading="Personalize & Send Invites Instantly"
-        title="Create Stunning Digital Wedding Invitations That Wow"
+        subHeading="Customize & Share in Moments"
+        title="Make a Statement with Stylish Online Wedding Invites"
         subtitle="Design beautiful e-invites using our easy-to-use editor. Customize templates, add your personal touch, and send invites digitally to your guests in minutes."
         link="/e-invites"
         btnName="Create Your E-Invite"
@@ -67,7 +68,17 @@ const Home = () => {
       <HowItWorksSection />
       <AppDownloadSection />
       <MetroCities />
-    </>
+      <div
+        style={{
+          position: "fixed",
+          bottom: "10vh",
+          right: "60px",
+          zIndex: "99",
+        }}
+      >
+          <HomeGennie />
+      </div>
+    </div>
   );
 };
 
