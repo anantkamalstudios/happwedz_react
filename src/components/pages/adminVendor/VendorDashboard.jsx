@@ -1,4 +1,3 @@
-// src/components/pages/VendorDashboard.js
 import React, { useState } from "react";
 import { Outlet, useLocation, Link } from "react-router-dom";
 import { Container, Navbar, Nav, Button, Offcanvas } from "react-bootstrap";

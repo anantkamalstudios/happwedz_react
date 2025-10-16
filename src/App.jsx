@@ -97,6 +97,19 @@ const TemplatePreviewPage = lazy(() =>
 const TemplateCustomizePage = lazy(() =>
   import("./components/pages/TemplateCustomizePage")
 );
+
+const WeddingWebsiteForm = lazy(() =>
+  import("./components/pages/WeddingWebsiteForm")
+);
+
+const WeddingWebsiteView = lazy(() =>
+  import("./components/pages/WeddingWebsiteView")
+);
+
+const MyWeddingWebsites = lazy(() =>
+  import("./components/pages/MyWeddingWebsites")
+);
+
 const BrideMakeupChoose = lazy(() =>
   import("./components/pages/BrideMakeupChoose")
 );
@@ -154,8 +167,14 @@ function App() {
             {/* Template routes without MainLayout - full screen */}
             <Route path="/preview/:id" element={<TemplatePreviewPage />} />
             <Route path="/customize/:id" element={<TemplateCustomizePage />} />
-            <Route path="/wedding-form/:templateId" element={<WeddingWebsiteForm />} />
-            <Route path="/wedding-website/:id" element={<WeddingWebsiteView />} />
+            <Route
+              path="/wedding-form/:templateId"
+              element={<WeddingWebsiteForm />}
+            />
+            <Route
+              path="/wedding-website/:id"
+              element={<WeddingWebsiteView />}
+            />
 
             <Route element={<MainLayout />}>
               <Route path="/" element={<Home />} />
@@ -280,7 +299,10 @@ function App() {
                 }
               />
               <Route path="/choose-template" element={<ChooseTemplate />} />
-              <Route path="/my-wedding-websites" element={<MyWeddingWebsites />} />
+              <Route
+                path="/my-wedding-websites"
+                element={<MyWeddingWebsites />}
+              />
               {/*  User Protected Routes  */}
               <Route
                 path="/user-dashboard"
