@@ -102,7 +102,7 @@ const CancellationPolicy = () => {
                 contact us:
               </p>
               <ul className="policy-list">
-                <li>Email: support@weddingwire.com</li>
+                <li>Email: support@happywedz.com</li>
                 <li>Phone: +1 (800) 123-4567</li>
                 <li>Mail: 123 Wedding Lane, Suite 100, New York, NY 10001</li>
               </ul>

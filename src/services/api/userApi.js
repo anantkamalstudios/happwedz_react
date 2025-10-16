@@ -110,7 +110,9 @@
 
 import axios from "axios";
 
-const API_BASE = "https://happywedz.com/api";
+// const API_BASE = "https://happywedz.com/api";
+const API_BASE = import.meta.env.VITE_API_URL;
+
 
 const userApi = {
   register: async (data) => {
@@ -118,9 +120,7 @@ const userApi = {
       const res = await axios.post(`${API_BASE}/user/register`, data);
       return res.data;
     } catch (err) {
-      return (
-        err.response?.data || { success: false, message: "Registration failed" }
-      );
+      return err.response?.data || { success: false, message: "Registration failed" };
     }
   },
 
@@ -131,7 +131,7 @@ const userApi = {
     } catch (err) {
       return err.response?.data || { success: false, message: "Login failed" };
     }
-  },
+  }
 };
 
 export default userApi;
