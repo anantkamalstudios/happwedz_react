@@ -15,7 +15,7 @@ import useApiData from "../../hooks/useApiData";
 import EmptyState from "../EmptyState";
 import LoadingState from "../LoadingState";
 import ErrorState from "../ErrorState";
-
+import { ChevronLeft, ChevronRight } from "lucide-react";
 const toTitleCase = (str) =>
   str.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
@@ -45,6 +45,10 @@ const SubSection = () => {
     loading,
     error,
     refetch,
+    pagination,
+    nextPage,
+    prevPage,
+    goToPage,
   } = useApiData(section, slug, selectedCity, vendorType);
 
   // Modal handlers
@@ -104,7 +108,7 @@ const SubSection = () => {
     return apiData;
   }, [section, apiData, error]);
 
-  useEffect(() => {}, [
+  useEffect(() => { }, [
     section,
     slug,
     title,
@@ -183,6 +187,98 @@ const SubSection = () => {
           {view === "map" && (
             <MapView subVenuesData={dataToSend} section={section} />
           )}
+
+          {/* Pagination */}
+
+
+
+
+          {pagination?.totalPages > 1 && (
+            <div className="d-flex justify-content-center align-items-center my-4 gap-3">
+              {/* Previous Button */}
+              <button
+                className="d-flex align-items-center justify-content-center shadow-sm"
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  backgroundColor:
+                    pagination.page <= 1 ? "#f8d7da" : "#e91e63",
+                  color: pagination.page <= 1 ? "#ccc" : "#fff",
+                  border: "none",
+                  transition: "0.3s ease",
+                  cursor: pagination.page <= 1 ? "not-allowed" : "pointer",
+                }}
+                disabled={pagination.page <= 1 || loading}
+                onClick={() => prevPage()}
+              >
+                <ChevronLeft size={18} strokeWidth={2.5} />
+              </button>
+
+              {/* Page Numbers */}
+              <div className="d-flex align-items-center gap-2">
+                {Array.from({ length: pagination.totalPages }, (_, index) => index + 1)
+                  .filter((page) => {
+                    const total = pagination.totalPages;
+                    const current = pagination.page;
+                    return (
+                      page === 1 ||
+                      page === total ||
+                      (page >= current - 2 && page <= current + 2)
+                    );
+                  })
+                  .map((page, idx, arr) => (
+                    <React.Fragment key={page}>
+                      {idx > 0 && page - arr[idx - 1] > 1 && (
+                        <span className="text-secondary">...</span>
+                      )}
+                      <button
+                        className="btn fw-medium"
+                        style={{
+                          borderRadius: "8px",
+                          fontSize: "14px",
+                          padding: "5px 10px",
+                          backgroundColor:
+                            pagination.page === page ? "#f8f8f8" : "transparent",
+                          color: "#e91e63",
+                          border:
+                            pagination.page === page
+                              ? "1px solid #e91e63"
+                              : "1px solid transparent",
+                          transition: "0.2s ease",
+                        }}
+                        onClick={() => goToPage(page)}
+                      >
+                        {page}
+                      </button>
+                    </React.Fragment>
+                  ))}
+              </div>
+
+              {/* Next Button */}
+              <button
+                className="d-flex align-items-center justify-content-center shadow-sm"
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  backgroundColor:
+                    pagination.page >= pagination.totalPages ? "#f8d7da" : "#e91e63",
+                  color:
+                    pagination.page >= pagination.totalPages ? "#ccc" : "#fff",
+                  border: "none",
+                  transition: "0.3s ease",
+                  cursor:
+                    pagination.page >= pagination.totalPages ? "not-allowed" : "pointer",
+                }}
+                disabled={pagination.page >= pagination.totalPages || loading}
+                onClick={() => nextPage()}
+              >
+                <ChevronRight size={18} strokeWidth={2.5} />
+              </button>
+            </div>
+          )}
+
 
           <PricingModal
             show={show}

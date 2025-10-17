@@ -366,6 +366,7 @@ import { useSelector } from "react-redux";
 import ReviewsSidebar from "./subVendors/ReviewsSidebar";
 import ReviewsDashboard from "./subVendors/ReviewsDashboard";
 import Reviews from "./subVendors/Reviews";
+import ReviewsCollector from "./subVendors/ReviewsCollector";
 
 const API_BASE_URL = "https://happywedz.com/api";
 
@@ -484,25 +485,11 @@ const ReviewsPage = () => {
     if (activeSection === "review-collector") {
       return (
         <div>
-          <div className="text-center mb-5">
-            <h1>Collect a Review</h1>
-            <p>Invite customers to share their experience</p>
+          <div className="text-center mb-4">
+            <h1>Review Collector</h1>
+            <p>Send requests and collect reviews from your clients</p>
           </div>
-          {loading ? (
-            <p>Loading dashboard...</p>
-          ) : error ? (
-            <p className="text-danger">{error}</p>
-          ) : (
-            <ReviewsDashboard
-              vendorId={vendor?.id}
-              totalReviews={totalReviews}
-              averageRating={averageRating}
-              positiveReviews={positiveReviews}
-              negativeReviews={negativeReviews}
-              reviewsData={reviews}
-              renderStars={renderStars}
-            />
-          )}
+          <ReviewsCollector />
         </div>
       );
     }

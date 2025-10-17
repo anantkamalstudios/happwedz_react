@@ -72,24 +72,42 @@ const GridView = ({ subVendorsData }) => {
                       <FaRegHeart className="text-white flip-icon" />
                     )}
                   </button>
-
+                  {/* Price tag: show venue veg/non-veg or starting price for other vendors */}
                   <div className="price-tag">
-                    <FaIndianRupeeSign /> {v.price}
+                    {v.vegPrice || v.nonVegPrice ? (
+                      <>
+                        {v.vegPrice && (
+                          <span>
+                            <FaIndianRupeeSign /> {String(v.vegPrice)}
+                          </span>
+                        )}
+                        {v.nonVegPrice && v.vegPrice && <span className="ms-2">|</span>}
+                        {v.nonVegPrice && (
+                          <span className="ms-2">
+                            <FaIndianRupeeSign /> {String(v.nonVegPrice)}
+                          </span>
+                        )}
+                      </>
+                    ) : v.starting_price ? (
+                      <span>
+                        <FaIndianRupeeSign /> {String(v.starting_price)}
+                      </span>
+                    ) : (
+                      <span>Contact for pricing</span>
+                    )}
                   </div>
                 </div>
                 <Card.Body className="d-flex flex-column">
                   <Card.Title as="h5" className="venue-name">
                     {v.name}
                   </Card.Title>
-                  <div className="text-muted small venue-location">
-                    {v.location}
-                  </div>
+                  <div className="text-muted small venue-location">{v.city || v.location}</div>
 
                   <div className="d-flex align-items-center my-2">
                     <div className="rating-badge">
                       <FaStar className="text-warning me-1" />
                       <span>{v.rating}</span>
-                      <span className="text-muted ms-1">({v.reviews})</span>
+                      <span className="text-muted ms-1">({v.review_count || v.reviews})</span>
                     </div>
                     <div className="ms-3 capacity-badge">
                       <span className="text-muted">

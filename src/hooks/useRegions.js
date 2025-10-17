@@ -15,18 +15,25 @@ const useRegions = (vendorType = null) => {
           ? `${baseUrl}?vendorType=${encodeURIComponent(vendorType)}`
           : baseUrl;
 
-        const { data } = await axios.get(url);
-        console.log("VT", vendorType, "url", url, "data", data);
+        const resp = await axios.get(url);
+        const payload = resp.data;
+        console.log("VT", vendorType, "url", url, "data", payload);
+
+        const items = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.data)
+          ? payload.data
+          : [];
 
         const cityMap = {};
-        data.forEach((item) => {
+        items.forEach((item) => {
           let city = null;
-          if (
-            item.attributes &&
-            item.attributes.location &&
-            item.attributes.location.city
-          ) {
+          if (item?.attributes?.city) {
+            city = String(item.attributes.city).trim();
+          } else if (item?.attributes?.location?.city) {
             city = String(item.attributes.location.city).trim();
+          } else if (item?.vendor?.city) {
+            city = String(item.vendor.city).trim();
           }
           if (!city) return;
 
