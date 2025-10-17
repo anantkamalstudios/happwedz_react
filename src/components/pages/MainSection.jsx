@@ -40,7 +40,7 @@ const MainSection = () => {
   const [view, setView] = useState("images");
   const [photos, setPhotos] = useState([]);
 
-  const { data, loading, error } = useApiData(
+  const { data, loading, error, pagination, nextPage, prevPage, goToPage } = useApiData(
     "venues",
     null,
     selectedCity,
@@ -50,6 +50,7 @@ const MainSection = () => {
     usePhotography();
 
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedCategoryName, setSelectedCategoryName] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [displayPhotos, setDisplayPhotos] = useState([]);
 
@@ -66,7 +67,6 @@ const MainSection = () => {
 
   useEffect(() => {
     if (selectedCategory === "all") {
-      console.log("allPhotos", allPhotos);
       setDisplayPhotos(allPhotos || []);
     } else {
       setDisplayPhotos(photosByType || []);
@@ -114,6 +114,88 @@ const MainSection = () => {
               section="venues"
               handleShow={handleShow}
             />
+
+            {pagination?.totalPages > 1 && (
+              <div className="d-flex justify-content-center align-items-center my-4 gap-3">
+                <button
+                  className="d-flex align-items-center justify-content-center shadow-sm"
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    backgroundColor: pagination.page <= 1 ? "#f8d7da" : "#e91e63",
+                    color: pagination.page <= 1 ? "#ccc" : "#fff",
+                    border: "none",
+                    transition: "0.3s ease",
+                    cursor: pagination.page <= 1 ? "not-allowed" : "pointer",
+                  }}
+                  disabled={pagination.page <= 1 || loading}
+                  onClick={() => prevPage()}
+                >
+                  <span className="fw-bold">‹</span>
+                </button>
+
+                <div className="d-flex align-items-center gap-2">
+                  {Array.from({ length: pagination.totalPages }, (_, index) => index + 1)
+                    .filter((page) => {
+                      const total = pagination.totalPages;
+                      const current = pagination.page;
+                      return (
+                        page === 1 ||
+                        page === total ||
+                        (page >= current - 2 && page <= current + 2)
+                      );
+                    })
+                    .map((page, idx, arr) => (
+                      <React.Fragment key={page}>
+                        {idx > 0 && page - arr[idx - 1] > 1 && (
+                          <span className="text-secondary">...</span>
+                        )}
+                        <button
+                          className="btn fw-medium"
+                          style={{
+                            borderRadius: "8px",
+                            fontSize: "14px",
+                            padding: "5px 10px",
+                            backgroundColor:
+                              pagination.page === page ? "#f8f8f8" : "transparent",
+                            color: "#e91e63",
+                            border:
+                              pagination.page === page
+                                ? "1px solid #e91e63"
+                                : "1px solid transparent",
+                            transition: "0.2s ease",
+                          }}
+                          onClick={() => goToPage(page)}
+                        >
+                          {page}
+                        </button>
+                      </React.Fragment>
+                    ))}
+                </div>
+
+                <button
+                  className="d-flex align-items-center justify-content-center shadow-sm"
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    backgroundColor:
+                      pagination.page >= pagination.totalPages ? "#f8d7da" : "#e91e63",
+                    color:
+                      pagination.page >= pagination.totalPages ? "#ccc" : "#fff",
+                    border: "none",
+                    transition: "0.3s ease",
+                    cursor:
+                      pagination.page >= pagination.totalPages ? "not-allowed" : "pointer",
+                  }}
+                  disabled={pagination.page >= pagination.totalPages || loading}
+                  onClick={() => nextPage()}
+                >
+                  <span className="fw-bold">›</span>
+                </button>
+              </div>
+            )}
             <PricingModal
               show={show}
               handleClose={handleClose}
@@ -142,10 +224,15 @@ const MainSection = () => {
     return (
       <>
         <MainSearch title="Photography" />
-        <TopSlider onCategorySelect={setSelectedCategory} />
+        <TopSlider
+          onCategorySelect={(id, name) => {
+            setSelectedCategory(id);
+            setSelectedCategoryName(name);
+          }}
+        />
 
         <SortSection
-          category={selectedCategory}
+          category={selectedCategoryName}
           onCategoryChange={setSelectedCategory}
           onSearchChange={setSearchQuery}
         />

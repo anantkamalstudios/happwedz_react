@@ -104,8 +104,7 @@ const usePhotography = () => {
       setLoading(true);
       setError(null);
       try {
-        const data = await getPhotographyByType(id);
-        console.log("phot", data);
+        const data = await getPhotographyByType(id); 
         setPhotosByType(data.data);
       } catch (err) {
         setError(err);

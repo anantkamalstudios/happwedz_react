@@ -65,9 +65,6 @@ class Rsvp extends Component {
                 error: {}
             })
         }
-
-        console.log(this.state);
-        console.log(this.state.error.notes);
     }
 
     render() {

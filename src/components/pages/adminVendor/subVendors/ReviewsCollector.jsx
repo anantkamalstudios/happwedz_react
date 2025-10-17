@@ -1,164 +1,425 @@
+// import React, { useState } from 'react';
+// import { useSelector } from 'react-redux';
+// import 'bootstrap/dist/css/bootstrap.min.css';
+// import { UserPlus, Copy, Check } from 'lucide-react';
+
+// export default function ReviewRequestForm() {
+//   const { vendor } = useSelector((state) => state.vendorAuth) || {};
+//   const [recipients, setRecipients] = useState([]);
+//   const [username, setUsername] = useState('');
+//   const [email, setEmail] = useState('');
+//   const [message, setMessage] = useState(`Hi [Name],
+
+// It was a pleasure to be part of your event! If you have a few moments, could you provide a review of our services on happywedz?
+
+// Thank you in advance for your feedback. We greatly appreciate your help!
+
+// Best,
+// shree venues`);
+//   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
+//   const [copied, setCopied] = useState(false);
+
+//   const vendorId = vendor?.id || vendor?._id || vendor?.vendorId;
+//   const ccEmail = vendor?.email || vendor?.contactEmail || vendor?.businessEmail || '';
+//   const reviewUrl = vendorId
+//     ? `${window.location.origin}/write-review/${vendorId}`
+//     : `${window.location.origin}/write-review/`;
+
+//   const addRecipient = () => {
+//     if (username.trim() && email.trim()) {
+//       setRecipients([...recipients, { username, email }]);
+//       setUsername('');
+//       setEmail('');
+//     }
+//   };
+
+//   const removeRecipient = (index) => {
+//     setRecipients(recipients.filter((_, i) => i !== index));
+//   };
+
+//   const handleSend = () => {
+//     alert('Review request sent successfully!');
+//   };
+
+//   const copyUrl = () => {
+//     navigator.clipboard.writeText(reviewUrl);
+//     setCopied(true);
+//     setTimeout(() => setCopied(false), 2000);
+//   };
+
+//   return (
+//     <div className="container py-4" style={{ maxWidth: '800px' }}>
+//       <div className="card shadow-sm">
+//         <div className="card-body p-4">
+//           <h5 className="card-title mb-3">Recipients</h5>
+//           <p className="text-muted small mb-4">
+//             Edit and send this message to request reviews from your clients. You will also receive a copy of the email.
+//           </p>
+
+//           <div className="mb-3">
+//             <label className="form-label fw-semibold">TO:</label>
+//             <div className="row g-2 mb-2">
+//               <div className="col-md-5">
+//                 <input
+//                   type="text"
+//                   className="form-control"
+//                   placeholder="Username"
+//                   value={username}
+//                   onChange={(e) => setUsername(e.target.value)}
+//                   onKeyPress={(e) => e.key === 'Enter' && addRecipient()}
+//                 />
+//               </div>
+//               <div className="col-md-5">
+//                 <input
+//                   type="email"
+//                   className="form-control"
+//                   placeholder="Email"
+//                   value={email}
+//                   onChange={(e) => setEmail(e.target.value)}
+//                   onKeyPress={(e) => e.key === 'Enter' && addRecipient()}
+//                 />
+//               </div>
+//               <div className="col-md-2">
+//                 <button
+//                   className="btn btn-danger w-100"
+//                   onClick={addRecipient}
+//                 >
+//                   Add
+//                 </button>
+//               </div>
+//             </div>
+
+//             {recipients.length > 0 && (
+//               <div className="mb-2">
+//                 {recipients.map((recipient, index) => (
+//                   <span key={index} className="badge bg-light text-dark me-2 mb-2 p-2">
+//                     {recipient.username} ({recipient.email})
+//                     <button
+//                       className="btn-close btn-close-sm ms-2"
+//                       style={{ fontSize: '0.7em' }}
+//                       onClick={() => removeRecipient(index)}
+//                     ></button>
+//                   </span>
+//                 ))}
+//               </div>
+//             )}
+
+//             <button className="btn btn-link text-danger p-0 text-decoration-none">
+//               <UserPlus size={16} className="me-1" />
+//               Add clients
+//             </button>
+//           </div>
+
+//           <div className="mb-3">
+//             <label className="form-label fw-semibold">CC:</label>
+//             <span className="text-muted ms-2">{ccEmail}</span>
+//           </div>
+
+//           <div className="mb-3">
+//             <div className="d-flex justify-content-between align-items-center mb-2">
+//               <label className="form-label fw-semibold mb-0">Message</label>
+//               <button className="btn btn-link btn-sm text-decoration-none p-0">
+//                 Template
+//               </button>
+//             </div>
+//             <textarea
+//               className="form-control"
+//               rows="10"
+//               value={message}
+//               onChange={(e) => setMessage(e.target.value)}
+//             ></textarea>
+//             <small className="text-muted">
+//               Note: a link to write a review directly on your Storefront will be included in the email. [Link]
+//             </small>
+//           </div>
+
+//           <div className="form-check mb-3">
+//             <input
+//               className="form-check-input"
+//               type="checkbox"
+//               checked={saveAsTemplate}
+//               onChange={(e) => setSaveAsTemplate(e.target.checked)}
+//               id="saveTemplate"
+//             />
+//             <label className="form-check-label" htmlFor="saveTemplate">
+//               Save as template
+//             </label>
+//           </div>
+
+//           <button className="btn btn-secondary" onClick={handleSend}>
+//             Send
+//           </button>
+//         </div>
+//       </div>
+
+//       <div className="card shadow-sm mt-4">
+//         <div className="card-body p-4">
+//           <h5 className="card-title mb-3">Share your personalised review URL</h5>
+//           <p className="text-muted mb-3">
+//             Send this personalised URL to your past clients for a quick way to collect wedding reviews for your services.
+//           </p>
+
+//           <div className="input-group">
+//             <input
+//               type="text"
+//               className="form-control"
+//               value={reviewUrl}
+//               readOnly
+//             />
+//             <button
+//               className="btn btn-outline-danger"
+//               onClick={copyUrl}
+//             >
+//               {copied ? (
+//                 <>
+//                   <Check size={16} className="me-1" />
+//                   COPIED
+//                 </>
+//               ) : (
+//                 <>
+//                   <Copy size={16} className="me-1" />
+//                   COPY
+//                 </>
+//               )}
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
+import axios from "axios";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { UserPlus, Copy, Check } from "lucide-react";
 
-const ReviewsCollector = ({ onSubmitReview }) => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    rating: 5,
-    title: "",
-    review: "",
-    serviceType: "",
-    eventDate: "",
-  });
+export default function ReviewRequestForm() {
+  const { vendor } = useSelector((state) => state.vendorAuth) || {};
+  const [recipients, setRecipients] = useState([]);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState(`Hi [Name],
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+It was a pleasure to be part of your event! If you have a few moments, could you provide a review of our services on happywedz?
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (formData.name && formData.review && formData.rating) {
-      onSubmitReview({
-        ...formData,
-        id: Date.now(),
-        date: new Date().toLocaleDateString(),
-        verified: Math.random() > 0.5,
-      });
-      setFormData({
-        name: "",
-        email: "",
-        rating: 5,
-        title: "",
-        review: "",
-        serviceType: "",
-        eventDate: "",
-      });
+Thank you in advance for your feedback. We greatly appreciate your help!
+
+Best,
+shree venues`);
+  const [saveAsTemplate, setSaveAsTemplate] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const vendorId = vendor?.id || vendor?._id || vendor?.vendorId;
+  const ccEmail =
+    vendor?.email || vendor?.contactEmail || vendor?.businessEmail || "";
+  const reviewUrl = vendorId
+    ? `${window.location.origin}/write-review/${vendorId}`
+    : `${window.location.origin}/write-review/`;
+
+  const addRecipient = () => {
+    if (username.trim() && email.trim()) {
+      setRecipients([...recipients, { username, email }]);
+      setUsername("");
+      setEmail("");
     }
   };
 
-  const renderStars = (rating, onClick) => {
-    return [...Array(5)].map((_, index) => (
-      <span
-        key={index}
-        className={`reviews-collector__star ${index < rating ? "active" : ""}`}
-        onClick={() => onClick(index + 1)}
-      >
-        ★
-      </span>
-    ));
+  const removeRecipient = (index) => {
+    setRecipients(recipients.filter((_, i) => i !== index));
+  };
+
+  const handleSend = async () => {
+    if (recipients.length === 0) {
+      alert("Please add at least one recipient.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const payload = {
+        vendorId,
+        ccEmail,
+        recipients,
+        message,
+        saveAsTemplate,
+        reviewUrl,
+      };
+
+      // const response = await axios.post(
+      //   'http://localhost:4000/reviews/review-requests',
+      //   payload
+      // );
+
+      const response = await axios.post(
+        "https://happywedz.com/api/reviews/review-requests",
+        payload
+      );
+
+      if (response.data?.success) {
+        alert("Review request sent successfully!");
+        setRecipients([]);
+      } else {
+        alert(response.data?.message || "Failed to send review requests.");
+      }
+    } catch (error) {
+      console.error("Error sending review requests:", error);
+      alert("Something went wrong while sending review requests.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyUrl = () => {
+    navigator.clipboard.writeText(reviewUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="reviews-collector">
-      <div className="reviews-collector__header">
-        <h3 className="reviews-collector__title">Share Your Experience</h3>
-        <p className="reviews-collector__subtitle">
-          Help other couples by sharing your review
-        </p>
+    <div className="container py-4" style={{ maxWidth: "800px" }}>
+      <div className="card shadow-sm">
+        <div className="card-body p-4">
+          <h5 className="card-title mb-3">Recipients</h5>
+          <p className="text-muted small mb-4">
+            Edit and send this message to request reviews from your clients. You
+            will also receive a copy of the email.
+          </p>
+
+          {/* Recipients Input */}
+          <div className="mb-3">
+            <label className="form-label fw-semibold">TO:</label>
+            <div className="row g-2 mb-2">
+              <div className="col-md-5">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && addRecipient()}
+                />
+              </div>
+              <div className="col-md-5">
+                <input
+                  type="email"
+                  className="form-control"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && addRecipient()}
+                />
+              </div>
+              <div className="col-md-2">
+                <button className="btn btn-danger w-100" onClick={addRecipient}>
+                  Add
+                </button>
+              </div>
+            </div>
+
+            {recipients.length > 0 && (
+              <div className="mb-2">
+                {recipients.map((recipient, index) => (
+                  <span
+                    key={index}
+                    className="badge bg-light text-dark me-2 mb-2 p-2"
+                  >
+                    {recipient.username} ({recipient.email})
+                    <button
+                      className="btn-close btn-close-sm ms-2"
+                      style={{ fontSize: "0.7em" }}
+                      onClick={() => removeRecipient(index)}
+                    ></button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label fw-semibold">CC:</label>
+            <span className="text-muted ms-2">{ccEmail}</span>
+          </div>
+
+          {/* Message Section */}
+          <div className="mb-3">
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <label className="form-label fw-semibold mb-0">Message</label>
+              <button className="btn btn-link btn-sm text-decoration-none p-0">
+                Template
+              </button>
+            </div>
+            <textarea
+              className="form-control"
+              rows="10"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            ></textarea>
+            <small className="text-muted">
+              Note: a link to write a review directly on your Storefront will be
+              included in the email. [Link]
+            </small>
+          </div>
+
+          <div className="form-check mb-3">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              checked={saveAsTemplate}
+              onChange={(e) => setSaveAsTemplate(e.target.checked)}
+              id="saveTemplate"
+            />
+            <label className="form-check-label" htmlFor="saveTemplate">
+              Save as template
+            </label>
+          </div>
+
+          <button
+            className="btn btn-secondary"
+            onClick={handleSend}
+            disabled={loading}
+          >
+            {loading ? "Sending..." : "Send"}
+          </button>
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="reviews-collector__form">
-        <div className="row">
-          <div className="col-md-6 mb-3">
-            <label className="reviews-collector__label">Your Name *</label>
+      {/* Review URL Share Section */}
+      <div className="card shadow-sm mt-4">
+        <div className="card-body p-4">
+          <h5 className="card-title mb-3">
+            Share your personalised review URL
+          </h5>
+          <p className="text-muted mb-3">
+            Send this personalised URL to your past clients for a quick way to
+            collect wedding reviews for your services.
+          </p>
+
+          <div className="input-group">
             <input
               type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="reviews-collector__input form-control"
-              required
+              className="form-control"
+              value={reviewUrl}
+              readOnly
             />
-          </div>
-          <div className="col-md-6 mb-3">
-            <label className="reviews-collector__label">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="reviews-collector__input form-control"
-            />
-          </div>
-        </div>
-
-        <div className="row">
-          <div className="col-md-6 mb-3">
-            <label className="reviews-collector__label">Service Type</label>
-            <select
-              name="serviceType"
-              value={formData.serviceType}
-              onChange={handleChange}
-              className="reviews-collector__select form-control"
-            >
-              <option value="">Select Service</option>
-              <option value="Photography">Photography</option>
-              <option value="Catering">Catering</option>
-              <option value="Decoration">Decoration</option>
-              <option value="Venue">Venue</option>
-              <option value="Music/DJ">Music/DJ</option>
-              <option value="Makeup">Makeup & Hair</option>
-            </select>
-          </div>
-          <div className="col-md-6 mb-3">
-            <label className="reviews-collector__label">Event Date</label>
-            <input
-              type="date"
-              name="eventDate"
-              value={formData.eventDate}
-              onChange={handleChange}
-              className="reviews-collector__input form-control"
-            />
+            <button className="btn btn-outline-danger" onClick={copyUrl}>
+              {copied ? (
+                <>
+                  <Check size={16} className="me-1" />
+                  COPIED
+                </>
+              ) : (
+                <>
+                  <Copy size={16} className="me-1" />
+                  COPY
+                </>
+              )}
+            </button>
           </div>
         </div>
-
-        <div className="mb-3">
-          <label className="reviews-collector__label">Rating *</label>
-          <div className="reviews-collector__rating">
-            {renderStars(formData.rating, (rating) =>
-              setFormData((prev) => ({ ...prev, rating }))
-            )}
-            <span className="reviews-collector__rating-text">
-              ({formData.rating}/5)
-            </span>
-          </div>
-        </div>
-
-        <div className="mb-3">
-          <label className="reviews-collector__label">Review Title</label>
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            className="reviews-collector__input form-control"
-            placeholder="Summarize your experience"
-          />
-        </div>
-
-        <div className="mb-3">
-          <label className="reviews-collector__label">Your Review *</label>
-          <textarea
-            name="review"
-            value={formData.review}
-            onChange={handleChange}
-            className="reviews-collector__textarea form-control"
-            rows="4"
-            placeholder="Share your detailed experience..."
-            required
-          />
-        </div>
-
-        <button type="submit" className="reviews-collector__submit-btn btn">
-          Submit Review
-        </button>
-      </form>
+      </div>
     </div>
   );
-};
-
-export default ReviewsCollector;
+}

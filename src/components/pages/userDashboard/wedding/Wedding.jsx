@@ -120,7 +120,6 @@ const Wedding = () => {
         );
 
         const data = await response.json();
-        console.log("user ->", data.user);
         setUser(data.user);
       } catch (error) {
         console.error("Failed to fetch user data:", error);

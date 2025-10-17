@@ -5,7 +5,6 @@ const EinviteShareModal = ({ show, onHide, card, onPublish }) => {
   const [shareMethod, setShareMethod] = useState("whatsapp");
   const [personalMessage, setPersonalMessage] = useState("");
 
-  console.log("cards->", card);
 
   const handlePublish = () => {
     onPublish({

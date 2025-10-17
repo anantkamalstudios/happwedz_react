@@ -20,7 +20,6 @@ const EinviteHomePage = () => {
         try {
             setLoading(true);
             const data = await einviteApi.getEinvitesByTemplateStatus(true);
-            console.log("data -> ", data);
             const cardsArray = Array.isArray(data) ? data : [];
             setCards(cardsArray);
             setFilteredCards(cardsArray);
