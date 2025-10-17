@@ -1,3 +1,2 @@
-// API Configuration
-export const API_BASE_URL = "http://localhost:4000/api";
-export const IMAGE_BASE_URL = "http://localhost:4000/uploads";
+export const API_BASE_URL = "https://happywedz.com/api";
+export const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com/";

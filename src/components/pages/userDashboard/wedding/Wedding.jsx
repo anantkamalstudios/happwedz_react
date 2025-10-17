@@ -12,7 +12,7 @@ import CtaPanel from "../../../../components/home/CtaPanel";
 import logo from "../../../../../public/happywed_white.png";
 import image from "../../../../../public/images/home/try.png";
 import VenueVendorComponent from "./VenueVendorComponent";
-import UpComingTask from "./UpComingTask";
+import UpComingTask from "../wedding/UpcomingTask";
 import EInvites from "./EInviteCard";
 
 const Wedding = () => {
@@ -176,18 +176,19 @@ const Wedding = () => {
 
         // Fetch Task Summary
         const tasksRes = await fetch(
-          `https://happywedz.com/api/checklist_new/${userId}`,
+          `https://happywedz.com/api/new-checklist/newChecklist/user/${userId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
         const tasksData = await tasksRes.json();
         if (tasksData.success) {
-          const completedTasks = tasksData.data.filter(
+          const allTasks = Array.isArray(tasksData.data) ? tasksData.data : [];
+          const completedTasks = allTasks.filter(
             (t) => t.status === "completed"
           ).length;
           setTaskStats({
-            total: tasksData.data.length,
+            total: allTasks.length,
             completed: completedTasks,
           });
         }
@@ -468,63 +469,54 @@ const Wedding = () => {
             </div>
             {/* budget */}
             <div
-              className="dashboard-card shadow-lg"
+              className="shadow-lg d-flex flex-column p-4"
               style={{
                 gridColumn: "span 2/span 2",
                 gridRow: "span 3/span 3",
                 gridColumnStart: 3,
                 gridRowStart: 4,
                 height: "100%",
+                borderRadius: "16px",
+                background: "#fff",
               }}
             >
-              <div className="card-header d-flex justify-content-between align-items-center">
-                <h4 className="card-title">
-                  <DollarSign size={20} className="me-2" />
-                  Wedding Budget
-                </h4>
-                <Link to="/user-dashboard/budget" className="btn-small">
-                  Edit
-                </Link>
-              </div>
-              <div className="budget-overview">
-                <div className="budget-total">
-                  <div className="budget-amount">
+              <div className="text-center my-auto">
+                <h3 className="fw-bold text-dark mb-4">Wedding Budget</h3>
+                <div className="mb-3">
+                  <h1 className="display-5 fw-bold text-primary mb-1">
                     ₹{(budget.total / 100000).toFixed(1)}L
-                  </div>
-                  <div className="budget-label">Total Budget</div>
+                  </h1>
+                  <div className="text-muted">Total Budget</div>
                 </div>
-                <div className="budget-breakdown">
-                  <div className="budget-item">
-                    <span className="budget-spent">
-                      ₹{(budget.spent / 100000).toFixed(1)}L spent
-                    </span>
-                    <span className="budget-remaining">
-                      ₹{(budget.remaining / 100000).toFixed(1)}L remaining
-                    </span>
-                  </div>
-                </div>
-                <div className="budget-progress">
-                  <div className="budget-bar">
-                    <div
-                      className="budget-fill"
-                      style={{
-                        width: `${budget.total > 0
-                          ? (budget.spent / budget.total) * 100
-                          : 0
-                          }%`,
-                      }}
-                    ></div>
-                  </div>
-                  <span className="budget-percentage">
-                    {Math.round(
-                      budget.total > 0 ? (budget.spent / budget.total) * 100 : 0
-                    )}
-                    % used
+                <div className="d-flex justify-content-center gap-4 small text-muted mb-4">
+                  <span>
+                    Spent: ₹{(budget.spent / 100000).toFixed(1)}L
+                  </span>
+                  <span>
+                    Remaining: ₹{(budget.remaining / 100000).toFixed(1)}L
                   </span>
                 </div>
+                <div className="progress mx-auto mb-2" style={{ height: "8px", maxWidth: "200px" }}>
+                  <div
+                    className="progress-bar bg-primary"
+                    role="progressbar"
+                    style={{
+                      width: `${budget.total > 0
+                        ? (budget.spent / budget.total) * 100
+                        : 0
+                        }%`,
+                    }}
+                    aria-valuenow={budget.total > 0 ? (budget.spent / budget.total) * 100 : 0}
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  />
+                </div>
+                <small className="text-muted">
+                  {Math.round(budget.total > 0 ? (budget.spent / budget.total) * 100 : 0)}% used
+                </small>
               </div>
-              <div className="text-center mt-3">
-                <Link to="/user-dashboard/budget" className="btn-action">
+              <div className="text-center mt-auto">
+                <Link to="/user-dashboard/budget" className="btn btn-primary rounded-pill px-4 py-2">
                   + Add Budget
                 </Link>
               </div>
