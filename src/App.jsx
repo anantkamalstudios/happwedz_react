@@ -98,6 +98,19 @@ const TemplatePreviewPage = lazy(() =>
 const TemplateCustomizePage = lazy(() =>
   import("./components/pages/TemplateCustomizePage")
 );
+
+const WeddingWebsiteForm = lazy(() =>
+  import("./components/pages/WeddingWebsiteForm")
+);
+
+const WeddingWebsiteView = lazy(() =>
+  import("./components/pages/WeddingWebsiteView")
+);
+
+const MyWeddingWebsites = lazy(() =>
+  import("./components/pages/MyWeddingWebsites")
+);
+
 const BrideMakeupChoose = lazy(() =>
   import("./components/pages/BrideMakeupChoose")
 );
@@ -111,9 +124,6 @@ const UploadSelfiePage = lazy(() =>
   import("./components/pages/UploadSelfiePage")
 );
 const FiltersPage = lazy(() => import("./components/pages/FiltersPage"));
-const MyWeddingWebsites = lazy(() => import("./components/pages/MyWeddingWebsites"));
-const WeddingWebsiteView = lazy(() => import("./components/pages/WeddingWebsiteView"));
-const WeddingWebsiteForm = lazy(() => import("./components/pages/WeddingWebsiteForm"));
 
 const FinalLookPage = lazy(() => import("./components/pages/FinalLookPage"));
 // const WeddingWebsiteForm = lazy(() =>
@@ -178,7 +188,6 @@ function App() {
               element={<WeddingWebsiteView />}
             />
 
-
             <Route element={<MainLayout />}>
               <Route path="/" element={<Home />} />
               <Route
@@ -207,8 +216,6 @@ function App() {
               <Route path="/cancellation" element={<CancellationPolicy />} />
               {/* Try Flow */}
               <Route path="/try" element={<TryLanding />} />
-              <Route path="/about-us" element={<AboutUs />} />
-
               <Route
                 path="/try/bride"
                 element={
@@ -304,6 +311,10 @@ function App() {
                 }
               />
               <Route path="/choose-template" element={<ChooseTemplate />} />
+              <Route
+                path="/my-wedding-websites"
+                element={<MyWeddingWebsites />}
+              />
               <Route
                 path="/my-wedding-websites"
                 element={<MyWeddingWebsites />}

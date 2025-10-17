@@ -812,7 +812,7 @@ export const FaqQuestions = {
         text: "Awards, recognitions and publications",
         description: "",
         label: [],
-        type: "checkbox",
+        type: "textarea",
         options: [],
         min: null,
         max: null,

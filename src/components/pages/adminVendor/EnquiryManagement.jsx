@@ -525,7 +525,7 @@ const EnquiryManagement = () => {
                       <div
                         style={{
                           maxHeight: "calc(100vh - 300px)",
-                          overflowY: "auto",
+                          overflowY: "none",
                         }}
                       >
                         {leads.map((lead) => (
@@ -830,7 +830,7 @@ const EnquiryManagement = () => {
                             ))}
                           </div>
                           <button
-                            className="btn btn-lg w-100 text-white fw-semibold shadow"
+                            className="btn btn-lg w-50 text-white fw-semibold "
                             style={{
                               background: "#e91e63",
                               border: "none",
