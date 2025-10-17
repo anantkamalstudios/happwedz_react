@@ -25,7 +25,6 @@ const initialGuestFormState = {
 const Guests = () => {
   const token = useSelector((state) => state.auth.token);
   const userId = useSelector((state) => state.auth.user?.id);
-  console.log("User ID:", userId);
   const [guests, setGuests] = useState([]);
   const [newGuestForm, setNewGuestForm] = useState(initialGuestFormState);
   const [searchTerm, setSearchTerm] = useState("");
@@ -74,9 +73,6 @@ const Guests = () => {
         `https://happywedz.com/api/guestlist/user/${userIdToSend}`
       );
 
-      console.log("Guests Data:", res.data);
-      console.log("Guests Array:", res.data?.guests);
-
       if (res.data?.success && Array.isArray(res.data?.guests)) {
         setGuests(res.data.guests);
       } else {
@@ -104,10 +100,10 @@ const Guests = () => {
 
   // Pagination calculations
   const [currentPage, setCurrentPage] = useState(1);
-  const [guestsPerPage] = useState(5);
+  const guestsPerPage = 10;
 
   // Calculate currentGuests
-  const indexOfLastGuest = currentPage * guestsPerPage;
+  const indexOfLastGuest = currentPage * guestsPerPage; // This is correct
   const indexOfFirstGuest = indexOfLastGuest - guestsPerPage;
   const currentGuests = guests.slice(indexOfFirstGuest, indexOfLastGuest);
 
@@ -153,7 +149,6 @@ const Guests = () => {
           companions: parseInt(newGuestForm.companions, 10) || 0,
         }
       );
-      console.log("Add Guest Response:", res);
       if (res.data?.success && res.data.guest) {
         setGuests((prev) => [res.data.guest, ...prev]);
       }
@@ -197,11 +192,14 @@ const Guests = () => {
   const deleteGuestAPI = async (id) => {
     if (!axiosInstance) return;
     if (!window.confirm("Are you sure?")) return;
+    // Optimistically update the UI
+    setGuests((prevGuests) => prevGuests.filter((guest) => guest.id !== id));
     try {
       await axiosInstance.delete(`https://happywedz.com/api/guestlist/${id}`);
-      setRefresh((prev) => !prev); // Trigger re-fetch
+      // No need to refetch, the optimistic update is sufficient
     } catch (err) {
       console.error("Delete Guest Error:", err);
+      setRefresh((prev) => !prev); // Re-fetch to revert if the delete fails
     }
   };
 
@@ -517,7 +515,7 @@ const Guests = () => {
               </tr>
             </thead>
             <tbody>
-              {guests.map((g) => (
+              {currentGuests.map((g) => (
                 <tr key={g.id} className="wgl-guest-row">
                   <td className="wgl-guest-name">{g.name}</td>
                   <td className="wgl-guest-group">{g.group}</td>
@@ -529,9 +527,6 @@ const Guests = () => {
                         updateGuestField(g.id, "status", e.target.value)
                       }
                     >
-                      {statusOptions.map((s) => (
-                        <option key={s}>{s}</option>
-                      ))}
                       {statusOptions.map((s) => (
                         <option key={s}>{s}</option>
                       ))}
@@ -590,12 +585,6 @@ const Guests = () => {
             >
               Previous
             </button>
-            <button
-              disabled={currentPage === 1}
-              onClick={() => paginate(currentPage - 1)}
-            >
-              Previous
-            </button>
             {[...Array(totalPages)].map((_, i) => (
               <button
                 key={i + 1}
@@ -605,12 +594,6 @@ const Guests = () => {
                 {i + 1}
               </button>
             ))}
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => paginate(currentPage + 1)}
-            >
-              Next
-            </button>
             <button
               disabled={currentPage === totalPages}
               onClick={() => paginate(currentPage + 1)}

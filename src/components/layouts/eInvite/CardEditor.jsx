@@ -1051,7 +1051,6 @@ const CardEditor = () => {
       })),
     };
 
-    console.log("Save to backend:", customizationData);
     alert("Customization saved! (Check console for data)");
   };
 
@@ -1096,11 +1095,10 @@ const CardEditor = () => {
                 {userFields.map((field, index) => (
                   <div
                     key={field.id}
-                    className={`mb-4 p-3 border rounded ${
-                      selectedFieldIndex === index
+                    className={`mb-4 p-3 border rounded ${selectedFieldIndex === index
                         ? "border-primary bg-light"
                         : ""
-                    }`}
+                      }`}
                     onClick={() => setSelectedFieldIndex(index)}
                     style={{ cursor: "pointer" }}
                   >
@@ -1193,8 +1191,8 @@ const CardEditor = () => {
                     cursor: isDragging
                       ? "grabbing"
                       : isResizing
-                      ? "nwse-resize"
-                      : "grab",
+                        ? "nwse-resize"
+                        : "grab",
                   }}
                   onMouseDown={handleMouseDown}
                   onMouseMove={handleMouseMove}

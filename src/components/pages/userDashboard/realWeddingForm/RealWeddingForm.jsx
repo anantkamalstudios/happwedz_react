@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Swal from "sweetalert2";
 import {
   FiUser,
   FiCalendar,
@@ -17,7 +18,6 @@ const RealWeddingForm = ({ user, token }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
   const [vendorTypes, setVendorTypes] = useState([]);
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("India");
@@ -195,7 +195,6 @@ const RealWeddingForm = ({ user, token }) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    setSuccess(null);
 
     const data = new FormData();
 
@@ -237,7 +236,12 @@ const RealWeddingForm = ({ user, token }) => {
           },
         }
       );
-      setSuccess("Your wedding story has been submitted successfully!");
+      Swal.fire({
+        title: "Success!",
+        text: "Your wedding story has been submitted successfully!",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -377,11 +381,6 @@ const RealWeddingForm = ({ user, token }) => {
           {error && (
             <div className="alert alert-danger" role="alert">
               {error}
-            </div>
-          )}
-          {success && (
-            <div className="alert alert-success" role="alert">
-              {success}
             </div>
           )}
 

@@ -34,7 +34,6 @@ const RealWeddings = ({ onPostClick }) => {
     fetchWeddings();
   }, []);
 
-  console.log(weddings);
 
   const filteredWeddings = weddings.filter(
     (wedding) =>
@@ -239,9 +238,8 @@ const RealWeddings = ({ onPostClick }) => {
                           </li>
                         )}
                         <li
-                          className={`page-item ${
-                            currentPage === page ? "active" : ""
-                          }`}
+                          className={`page-item ${currentPage === page ? "active" : ""
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -262,9 +260,8 @@ const RealWeddings = ({ onPostClick }) => {
 
                 {/* Next Button */}
                 <li
-                  className={`page-item ${
-                    currentPage === totalPages ? "disabled" : ""
-                  }`}
+                  className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                    }`}
                 >
                   <button
                     className="page-link"

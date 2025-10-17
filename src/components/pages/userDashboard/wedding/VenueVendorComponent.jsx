@@ -116,89 +116,62 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
 
         {isVendorBox ? (
           <div
-            className="d-flex justify-content-around align-items-center"
             style={{ position: "relative", minHeight: "220px" }}
           >
-            {/* Cards - use old card layout, populate from API */}
-            {(selectedSlug ? vendorItems : []).slice(0, 3).map((item, idx) => (
-              <Link
-                to={`/details/info/${item.id}`}
-                key={item.id || idx}
-                className="text-decoration-none"
-                style={{ color: "inherit", maxWidth: "30%" }}
-              >
-                <div className="card border-0 shadow-sm overflow-hidden p-2 h-100">
-                  <div style={{ height: "160px", overflow: "hidden", borderRadius: "10px" }}>
-                    <img
-                      src={
-                        buildImageUrl(item.image) ||
-                        "https://images.unsplash.com/photo-1759528278887-71c168973ad1?q=80&w=1076&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                      }
-                      className="card-img-top w-100"
-                      alt={item.name || "Vendor"}
-                      style={{
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  </div>
-                  <div className="card-body">
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <h5 className="card-title mb-0" style={{ fontSize: "16px" }}>
-                        {item.name || "Name"}
-                      </h5>
-                      <p className="rating text-warning small mb-0 mt-1" style={{ fontSize: "12px" }}>
-                        ★
-                        <span className="text-muted">
-                          {(item.rating || 0).toFixed ? (item.rating || 0).toFixed(1) : item.rating || 0} (
-                          {item.review_count || 0} Reviews)
-                        </span>
-                      </p>
-                    </div>
-                    <p
-                      className=" mb-0"
-                      style={{
-                        color: "black",
-                        fontSize: "12px",
-                      }}
-                    >
-                      {item.location || item.city || "location, state"}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            ))}
-
-            {/* Arrows overlay (visual only) */}
-            <div
-              style={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "space-between",
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                zIndex: 1,
+            <Swiper
+              modules={[Navigation, Autoplay]}
+              spaceBetween={16}
+              slidesPerView={1.2}
+              autoplay={{ delay: 3500, disableOnInteraction: false }}
+              loop={true}
+              breakpoints={{
+                576: { slidesPerView: 1.5, spaceBetween: 16 },
+                768: { slidesPerView: 2.2, spaceBetween: 16 },
+                992: { slidesPerView: 2.5, spaceBetween: 16 },
+                1200: { slidesPerView: 3, spaceBetween: 16 },
               }}
             >
-              <FaAngleLeft
-                style={{
-                  height: "25px",
-                  width: "25px",
-                  borderRadius: "50%",
-                  backgroundColor: "#fff",
-                }}
-              />
-              <FaAngleRight
-                style={{
-                  height: "25px",
-                  width: "25px",
-                  borderRadius: "50%",
-                  backgroundColor: "#fff",
-                }}
-              />
-            </div>
+              {(selectedSlug ? vendorItems : []).map((item, idx) => (
+                <SwiperSlide key={item.id || idx}>
+                  <Link
+                    to={`/details/info/${item.id}`}
+                    className="text-decoration-none h-100 d-block"
+                    style={{ color: "inherit" }}
+                  >
+                    <div className="card border-0 shadow-sm overflow-hidden p-2 h-100">
+                      <div style={{ height: "160px", overflow: "hidden", borderRadius: "10px" }}>
+                        <img
+                          src={
+                            buildImageUrl(item.image) ||
+                            "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80"
+                          }
+                          className="card-img-top w-100"
+                          alt={item.name || "Vendor"}
+                          style={{ height: "100%", objectFit: "cover" }}
+                        />
+                      </div>
+                      <div className="card-body">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <h5 className="card-title mb-0 text-truncate" style={{ fontSize: "16px" }}>
+                            {item.name || "Name"}
+                          </h5>
+                          <p className="rating text-warning small mb-0 mt-1" style={{ fontSize: "12px" }}>
+                            ★
+                            <span className="text-muted">
+                              {(item.rating || 0).toFixed ? (item.rating || 0).toFixed(1) : item.rating || 0} (
+                              {item.review_count || 0} Reviews)
+                            </span>
+                          </p>
+                        </div>
+                        <p className=" mb-0 text-truncate" style={{ color: "black", fontSize: "12px" }}>
+                          {item.location || item.city || "location, state"}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                </SwiperSlide>
+              ))}
+            </Swiper>
 
             {/* Empty state when no category selected */}
             {!selectedSlug && (

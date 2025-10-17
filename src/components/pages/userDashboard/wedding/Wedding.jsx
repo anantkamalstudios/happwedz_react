@@ -12,11 +12,15 @@ import CtaPanel from "../../../../components/home/CtaPanel";
 import logo from "../../../../../public/happywed_white.png";
 import image from "../../../../../public/images/home/try.png";
 import VenueVendorComponent from "./VenueVendorComponent";
-import UpComingTask from "./UpComingTask";
+import UpComingTask from "../wedding/UpcomingTask";
 import EInvites from "./EInviteCard";
 
 const Wedding = () => {
-  const [budget, setBudget] = useState({ total: 0, spent: 0, remaining: 0 });
+  const [budget, setBudget] = useState({
+    total: 500000,
+    spent: 200000,
+    remaining: 300000,
+  });
   const [guestStats, setGuestStats] = useState({ total: 0, attending: 0 });
   const [taskStats, setTaskStats] = useState({ total: 0, completed: 0 });
 
@@ -116,7 +120,6 @@ const Wedding = () => {
         );
 
         const data = await response.json();
-        console.log("user ->", data.user);
         setUser(data.user);
       } catch (error) {
         console.error("Failed to fetch user data:", error);
@@ -135,23 +138,23 @@ const Wedding = () => {
     const fetchDashboardData = async () => {
       try {
         // Fetch Budget Summary
-        const budgetRes = await fetch(
-          // This should be user-specific
-          `https://happywedz.com/api/expense/summary/${userId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const budgetData = await budgetRes.json();
-        if (budgetData.success) {
-          const total = parseFloat(budgetData.data.totalEstimated) || 0;
-          const spent = parseFloat(budgetData.data.totalPaid) || 0;
-          setBudget({
-            total: total,
-            spent: spent,
-            remaining: total - spent,
-          });
-        }
+        // const budgetRes = await fetch(
+        //   // This should be user-specific
+        //   `https://happywedz.com/api/expense/summary/${userId}`,
+        //   {
+        //     headers: { Authorization: `Bearer ${token}` },
+        //   }
+        // );
+        // const budgetData = await budgetRes.json();
+        // if (budgetData.success) {
+        //   const total = parseFloat(budgetData.data.totalEstimated) || 0;
+        //   const spent = parseFloat(budgetData.data.totalPaid) || 0;
+        //   setBudget({
+        //     total: total,
+        //     spent: spent,
+        //     remaining: total - spent,
+        //   });
+        // }
 
         // Fetch Guest Summary
         // This should fetch guests for the current user
@@ -172,18 +175,19 @@ const Wedding = () => {
 
         // Fetch Task Summary
         const tasksRes = await fetch(
-          `https://happywedz.com/api/checklist_new/${userId}`,
+          `https://happywedz.com/api/new-checklist/newChecklist/user/${userId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
         const tasksData = await tasksRes.json();
         if (tasksData.success) {
-          const completedTasks = tasksData.data.filter(
+          const allTasks = Array.isArray(tasksData.data) ? tasksData.data : [];
+          const completedTasks = allTasks.filter(
             (t) => t.status === "completed"
           ).length;
           setTaskStats({
-            total: tasksData.data.length,
+            total: allTasks.length,
             completed: completedTasks,
           });
         }
@@ -445,57 +449,75 @@ const Wedding = () => {
                 </div>
 
                 <p>You haven't added any guest yet</p>
-                <button
-                  style={{
-                    padding: "0.5rem 2rem",
-                    backgroundColor: "#C31162",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "10px",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Add Guest
-                </button>
+                <Link to="/user-dashboard/guest-list">
+                  <button
+                    style={{
+                      padding: "0.5rem 2rem",
+                      backgroundColor: "#C31162",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "10px",
+                      cursor: "pointer",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Add Guest
+                  </button>
+                </Link>
               </div>
             </div>
             {/* budget */}
             <div
-              className="shadow-lg"
+              className="shadow-lg d-flex flex-column p-4"
               style={{
                 gridColumn: "span 2/span 2",
                 gridRow: "span 3/span 3",
                 gridColumnStart: 3,
                 gridRowStart: 4,
-                padding: "1rem",
                 height: "100%",
+                borderRadius: "16px",
+                background: "#fff",
               }}
             >
-              <h3>Budget</h3>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "0.5rem",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "80%",
-                }}
-              >
-                <button
-                  style={{
-                    padding: "0.5rem 2rem",
-                    backgroundColor: "#C31162",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "10px",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                >
+              <div className="text-center my-auto">
+                <h3 className="fw-bold text-dark mb-4">Wedding Budget</h3>
+                <div className="mb-3">
+                  <h1 className="display-5 fw-bold text-primary mb-1">
+                    ₹{(budget.total / 100000).toFixed(1)}L
+                  </h1>
+                  <div className="text-muted">Total Budget</div>
+                </div>
+                <div className="d-flex justify-content-center gap-4 small text-muted mb-4">
+                  <span>
+                    Spent: ₹{(budget.spent / 100000).toFixed(1)}L
+                  </span>
+                  <span>
+                    Remaining: ₹{(budget.remaining / 100000).toFixed(1)}L
+                  </span>
+                </div>
+                <div className="progress mx-auto mb-2" style={{ height: "8px", maxWidth: "200px" }}>
+                  <div
+                    className="progress-bar bg-primary"
+                    role="progressbar"
+                    style={{
+                      width: `${budget.total > 0
+                        ? (budget.spent / budget.total) * 100
+                        : 0
+                        }%`,
+                    }}
+                    aria-valuenow={budget.total > 0 ? (budget.spent / budget.total) * 100 : 0}
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  />
+                </div>
+                <small className="text-muted">
+                  {Math.round(budget.total > 0 ? (budget.spent / budget.total) * 100 : 0)}% used
+                </small>
+              </div>
+              <div className="text-center mt-auto">
+                <Link to="/user-dashboard/budget" className="btn btn-primary rounded-pill px-4 py-2">
                   + Add Budget
-                </button>
+                </Link>
               </div>
             </div>
             <div

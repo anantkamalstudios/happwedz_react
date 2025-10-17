@@ -14,7 +14,7 @@ const CustomerLogin = () => {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -98,7 +98,7 @@ const CustomerLogin = () => {
 
     try {
       setLoading(true);
-      
+
       const payload = {
         email,
         password,
@@ -113,7 +113,7 @@ const CustomerLogin = () => {
         navigate(from, { replace: true });
       } else {
         const msg = response.message || "Login failed";
-        
+
         if (msg.toLowerCase().includes("invalid") || msg.toLowerCase().includes("wrong")) {
           toast.error("Invalid credentials. Please check your email and password.");
         } else if (msg.toLowerCase().includes("already exists") || msg.toLowerCase().includes("email already")) {
