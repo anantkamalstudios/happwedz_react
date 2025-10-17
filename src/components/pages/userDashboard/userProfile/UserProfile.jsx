@@ -26,7 +26,6 @@ const initialState = {
 };
 
 const UserProfile = ({ user, token }) => {
-  console.log("user", user);
   const userId = user?.id ?? user?._id ?? user?.user_id;
 
   const [formData, setFormData] = useState(initialState);
@@ -65,16 +64,16 @@ const UserProfile = ({ user, token }) => {
     return formData.profileImage && typeof formData.profileImage !== "string"
       ? URL.createObjectURL(formData.profileImage)
       : typeof formData.profileImage === "string"
-      ? formData.profileImage
-      : "";
+        ? formData.profileImage
+        : "";
   }, [formData.profileImage]);
 
   const coverPreview = useMemo(() => {
     return formData.coverImage && typeof formData.coverImage !== "string"
       ? URL.createObjectURL(formData.coverImage)
       : typeof formData.coverImage === "string"
-      ? formData.coverImage
-      : "";
+        ? formData.coverImage
+        : "";
   }, [formData.coverImage]);
 
   useEffect(() => {
@@ -214,9 +213,8 @@ const UserProfile = ({ user, token }) => {
                 height: "180px",
                 background:
                   coverPreview || formData.coverImage
-                    ? `url(${
-                        coverPreview || formData.coverImage
-                      }) center/cover no-repeat`
+                    ? `url(${coverPreview || formData.coverImage
+                    }) center/cover no-repeat`
                     : "linear-gradient(135deg, #fdf2f8 0%, #e9d5ff 100%)",
                 borderTopLeftRadius: "0.375rem",
                 borderTopRightRadius: "0.375rem",

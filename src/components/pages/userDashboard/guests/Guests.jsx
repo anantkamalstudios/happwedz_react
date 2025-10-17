@@ -25,7 +25,6 @@ const initialGuestFormState = {
 const Guests = () => {
   const token = useSelector((state) => state.auth.token);
   const userId = useSelector((state) => state.auth.user?.id);
-  console.log("User ID:", userId);
   const [guests, setGuests] = useState([]);
   const [newGuestForm, setNewGuestForm] = useState(initialGuestFormState);
   const [searchTerm, setSearchTerm] = useState("");
@@ -73,9 +72,6 @@ const Guests = () => {
       const res = await axiosInstance.get(
         `https://happywedz.com/api/guestlist/user/${userIdToSend}`
       );
-
-      console.log("Guests Data:", res.data);
-      console.log("Guests Array:", res.data?.guests);
 
       if (res.data?.success && Array.isArray(res.data?.guests)) {
         setGuests(res.data.guests);
@@ -153,7 +149,6 @@ const Guests = () => {
           companions: parseInt(newGuestForm.companions, 10) || 0,
         }
       );
-      console.log("Add Guest Response:", res);
       if (res.data?.success && res.data.guest) {
         setGuests((prev) => [res.data.guest, ...prev]);
       }

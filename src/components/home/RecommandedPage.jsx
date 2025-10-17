@@ -28,7 +28,6 @@ const RecommandedPage = () => {
         setRecommandData(response);
         setLoading(false);
       } catch (error) {
-        console.log("Something went wrong:", error);
         setLoading(false);
       }
     }
@@ -36,7 +35,6 @@ const RecommandedPage = () => {
   }, [token]);
 
   const [preference, recommand] = recommandData;
-  console.log(recommand);
 
   // const recommand = {
   //   method: "hybrid_weighted",
@@ -692,7 +690,6 @@ const RecommandedPage = () => {
         {Object.keys(vendorCategories).map((key) => {
           const category = vendorCategories[key];
           const items = category.items || [];
-          console.log(category);
 
           // if (items.length === 0) return null;
 

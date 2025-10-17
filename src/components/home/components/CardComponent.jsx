@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 
 const CardComponent = ({ data }) => {
-  console.log("Data is ===> ", data);
 
   return (
     <div

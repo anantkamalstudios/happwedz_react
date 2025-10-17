@@ -40,7 +40,6 @@ const GridImages = ({ category, searchQuery, photos }) => {
       return matchesCategory && matchesSearch;
     });
 
-  console.log("filteredImages", filteredImages);
 
   return (
     <div className="py-5 container">

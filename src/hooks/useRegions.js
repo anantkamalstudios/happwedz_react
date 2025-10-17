@@ -16,7 +16,6 @@ const useRegions = (vendorType = null) => {
           : baseUrl;
 
         const { data } = await axios.get(url);
-        console.log("VT", vendorType, "url", url, "data", data);
 
         const cityMap = {};
         data.forEach((item) => {

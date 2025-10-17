@@ -67,7 +67,6 @@ const MainSection = () => {
 
   useEffect(() => {
     if (selectedCategory === "all") {
-      console.log("allPhotos", allPhotos);
       setDisplayPhotos(allPhotos || []);
     } else {
       setDisplayPhotos(photosByType || []);

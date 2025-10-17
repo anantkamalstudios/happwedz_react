@@ -24,7 +24,6 @@ const BlogLists = ({ onPostClick }) => {
           "https://happywedz.com/api/blog-deatils/all"
         );
         const data = await response.json();
-        console.log("data -> ", data);
 
         let apiBlogs = [];
         if (data.success && Array.isArray(data.data)) {
@@ -278,9 +277,8 @@ const BlogLists = ({ onPostClick }) => {
               <nav className="mt-5">
                 <ul className="pagination justify-content-center">
                   <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === 1 ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -295,9 +293,8 @@ const BlogLists = ({ onPostClick }) => {
                   {[...Array(totalPages)].map((_, idx) => (
                     <li
                       key={idx}
-                      className={`page-item ${
-                        currentPage === idx + 1 ? "active" : ""
-                      }`}
+                      className={`page-item ${currentPage === idx + 1 ? "active" : ""
+                        }`}
                     >
                       <button
                         className="page-link"
@@ -314,9 +311,8 @@ const BlogLists = ({ onPostClick }) => {
                     </li>
                   ))}
                   <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"

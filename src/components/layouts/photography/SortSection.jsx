@@ -5,8 +5,7 @@ import { BiSort } from "react-icons/bi";
 import { TbArrowsSort } from "react-icons/tb";
 import { FiHash } from "react-icons/fi";
 
-const SortSection = ({ category, onCategoryChange, onSearchChange }) => {
-  console.log("category", category);
+const SortSection = ({ category, onCategoryChange, onSearchChange }) => { 
   return (
     <Container>
       <Row className="align-items-center justify-content-between mb-3">

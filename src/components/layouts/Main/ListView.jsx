@@ -72,7 +72,6 @@ const ListView = ({ subVenuesData, handleShow }) => {
                     className="btn btn-light rounded-circle position-absolute top-0 start-0 m-2"
                     onClick={(e) => {
                       e.stopPropagation();
-                      console.log("360 view clicked for:", venue.id);
                     }}
                   >
                     <TbView360Number className="text-dark" />
