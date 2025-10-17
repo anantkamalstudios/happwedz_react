@@ -22,7 +22,6 @@ const toTitleCase = (str) =>
 const SubSection = () => {
   const { section, slug } = useParams();
   const location = useLocation();
-  // Parse query string
   const searchParams = new URLSearchParams(location.search);
   const vendorType = searchParams.get("vendorType");
   const cityFromQuery = searchParams.get("city");
@@ -104,7 +103,7 @@ const SubSection = () => {
     return apiData;
   }, [section, apiData, error]);
 
-  useEffect(() => {}, [
+  useEffect(() => { }, [
     section,
     slug,
     title,

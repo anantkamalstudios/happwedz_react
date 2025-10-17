@@ -45,9 +45,9 @@ const VenueSlider = () => {
 
   const filterOptions = [
     { name: "Top Rated", slug: "top-rated" },
-    { name: "Resorts", slug: "top-rated" },
-    { name: "Banquet Halls", slug: "top-rated" },
-    { name: "Farmhouses", slug: "top-rated" },
+    // { name: "Resorts", slug: "top-rated" },
+    { name: "Banquet Halls", slug: "venues/banquet-halls" },
+    // { name: "Farmhouses", slug: "top-rated" },
     { name: "Recommendation", slug: "ai-recommandation" },
   ];
 

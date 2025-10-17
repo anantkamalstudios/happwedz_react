@@ -1,19 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import BlogLists from "./BlogLists";
 import BlogDetails from "./BlogDetails";
+import { useLoader } from "../context/LoaderContext";
 
 const Blog = () => {
+  const { blogId } = useParams();
+  const navigate = useNavigate();
   const [currentView, setCurrentView] = useState("list");
   const [selectedBlogId, setSelectedBlogId] = useState(null);
+  const { showLoader, hideLoader } = useLoader();
+  useEffect(() => {
+    showLoader();
+    if (blogId) {
+      setSelectedBlogId(blogId);
+      setCurrentView("detail");
+    } else {
+      setCurrentView("list");
+      setSelectedBlogId(null);
+    }
+    hideLoader();
+  }, [blogId]);
 
   const handlePostClick = (blogId) => {
-    setSelectedBlogId(blogId);
-    setCurrentView("detail");
+    navigate(`/blog/${blogId}`);
   };
 
   const handleBackClick = () => {
-    setCurrentView("list");
-    setSelectedBlogId(null);
+    navigate("/blog");
   };
 
   return (

@@ -210,6 +210,7 @@ function App() {
               />
               {/* Blog */}
               <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:blogId" element={<Blog />} />
               <Route path="/blog-details" element={<BlogDetails />} />
               {/* Static Pages */}
               <Route path="/terms" element={<TermsCondition />} />
@@ -269,7 +270,6 @@ function App() {
                 element={<VendorLeadsPage />}
               />
               <Route path="/write-review/:vendorId" element={<ReviewsPage />} />
-              s{/* Editors / Video */}
               <Route path="/editor" element={<CardEditorPage />} />
               <Route path="/editor/:templateId" element={<CardEditorPage />} />
               <Route path="/video-templates" element={<VideoTemplates />} />
@@ -361,7 +361,14 @@ function App() {
                   </VendorPrivateRoute>
                 }
               />
+
+              <Route
+                path="/about-us"
+                element={<AboutUs />}
+              />
             </Route>
+
+
 
             {/*  Matrimonial Routes  */}
             <Route element={<MatrimonialLayout />}>

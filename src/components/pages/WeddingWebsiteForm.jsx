@@ -176,16 +176,16 @@ const WeddingWebsiteForm = () => {
         formData.append("weddingParty", JSON.stringify(data.weddingParty));
         formData.append("whenWhere", JSON.stringify(data.whenWhere));
 
-        // Image files
-        data.sliderImages?.forEach((file) => file && formData.append("sliderImages", file));
-        data.loveStoryImages?.forEach((file) => file && formData.append("loveStoryImages", file));
-        data.weddingPartyImages?.forEach((file) => file && formData.append("weddingPartyImages", file));
-        data.whenWhereImages?.forEach((file) => file && formData.append("whenWhereImages", file));
-        data.galleryFiles?.forEach((file) => file && formData.append("galleryFiles", file));
+        // Image files (use backend's expected field names)
+        data.sliderImages?.forEach((file) => file && formData.append("slider", file));
+        data.loveStoryImages?.forEach((file) => file && formData.append("loveStory", file));
+        data.weddingPartyImages?.forEach((file) => file && formData.append("weddingParty", file));
+        data.whenWhereImages?.forEach((file) => file && formData.append("whenWhere", file));
+        data.galleryFiles?.forEach((file) => file && formData.append("gallery", file));
 
         // Bride & Groom individual images
-        if (data.brideImage) formData.append("brideImage", data.brideImage);
-        if (data.groomImage) formData.append("groomImage", data.groomImage);
+        if (data.brideImage) formData.append("bride", data.brideImage);
+        if (data.groomImage) formData.append("groom", data.groomImage);
 
         return formData;
     };

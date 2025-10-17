@@ -6,6 +6,7 @@ import { TbArrowsSort } from "react-icons/tb";
 import { FiHash } from "react-icons/fi";
 
 const SortSection = ({ category, onCategoryChange, onSearchChange }) => {
+  console.log("category", category);
   return (
     <Container>
       <Row className="align-items-center justify-content-between mb-3">
