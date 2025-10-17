@@ -38,7 +38,6 @@ const Vendors = () => {
       ?.toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9\-]/g, "") || "";
-  console.log(categories);
 
   function getLightColor() {
     return randomColor({ luminosity: "light" });

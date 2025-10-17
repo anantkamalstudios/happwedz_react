@@ -28,16 +28,18 @@ import React, { useEffect, useState } from "react";
 import { FaChevronLeft } from "react-icons/fa";
 
 import { User, Calendar, Clock, Heart } from "lucide-react";
+import { useLoader } from "../context/LoaderContext";
 
 const BlogDetails = ({ blogId, onBackClick }) => {
   const [blogData, setBlogData] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [liked, setLiked] = React.useState(false);
+  const { showLoader, hideLoader } = useLoader();
 
   React.useEffect(() => {
     const fetchBlogDetail = async () => {
       try {
-        setLoading(true);
+        showLoader();
         const response = await fetch(
           `https://happywedz.com/api/blog-deatils/${blogId}`
         );
@@ -49,7 +51,7 @@ const BlogDetails = ({ blogId, onBackClick }) => {
       } catch (err) {
         console.error("Error fetching blog details:", err);
       } finally {
-        setLoading(false);
+        hideLoader();
       }
     };
 
@@ -67,19 +69,6 @@ const BlogDetails = ({ blogId, onBackClick }) => {
       year: "numeric",
     });
   };
-
-  if (loading) {
-    return (
-      <div
-        className="d-flex justify-content-center align-items-center"
-        style={{ minHeight: "100vh" }}
-      >
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
-  }
 
   if (!blogData) {
     return (

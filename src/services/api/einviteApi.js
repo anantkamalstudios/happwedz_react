@@ -21,8 +21,7 @@ export const einviteApi = {
             if (!response.ok) {
                 let body;
                 try {
-                    body = await response.json();
-                    console.log(body);
+                    body = await response.json(); 
                     console.error('API Error response:', {
                         status: response.status,
                         statusText: response.statusText,
@@ -70,8 +69,7 @@ export const einviteApi = {
 
     getAllEinvites: async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/einvites/cards`);
-            console.log("response -> ", response);
+            const response = await fetch(`${API_BASE_URL}/einvites/cards`); 
             if (!response.ok) throw new Error('Failed to fetch e-invites');
             const result = await response.json();
             if (result.success && result.data) {

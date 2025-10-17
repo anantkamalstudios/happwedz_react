@@ -50,6 +50,7 @@ const MainSection = () => {
     usePhotography();
 
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedCategoryName, setSelectedCategoryName] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [displayPhotos, setDisplayPhotos] = useState([]);
 
@@ -66,7 +67,6 @@ const MainSection = () => {
 
   useEffect(() => {
     if (selectedCategory === "all") {
-      console.log("allPhotos", allPhotos);
       setDisplayPhotos(allPhotos || []);
     } else {
       setDisplayPhotos(photosByType || []);
@@ -224,10 +224,15 @@ const MainSection = () => {
     return (
       <>
         <MainSearch title="Photography" />
-        <TopSlider onCategorySelect={setSelectedCategory} />
+        <TopSlider
+          onCategorySelect={(id, name) => {
+            setSelectedCategory(id);
+            setSelectedCategoryName(name);
+          }}
+        />
 
         <SortSection
-          category={selectedCategory}
+          category={selectedCategoryName}
           onCategoryChange={setSelectedCategory}
           onSearchChange={setSearchQuery}
         />

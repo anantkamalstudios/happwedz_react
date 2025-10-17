@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { Link } from "react-router-dom";
 
 const RealWeddings = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -85,7 +86,7 @@ const RealWeddings = () => {
               <p className="text-muted fs-6 mb-4">Real Wedding Stories</p>
 
               {/* See More Button */}
-              <button
+              <Link to="/real-wedding"
                 className="btn btn-link p-0 fw-bold text-decoration-none d-flex align-items-center align-self-start"
                 style={{ color: "#e91e63", fontSize: "1.1rem" }}
               >
@@ -101,7 +102,7 @@ const RealWeddings = () => {
                 >
                   <path d="m9 18 6-6-6-6" />
                 </svg>
-              </button>
+              </Link>
             </div>
           </div>
         </div>

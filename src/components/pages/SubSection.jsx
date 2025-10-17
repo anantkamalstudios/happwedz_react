@@ -4,9 +4,6 @@ import { useParams, useLocation } from "react-router-dom";
 import ListView from "../layouts/Main/ListView";
 import GridView from "../layouts/Main/GridView";
 import MapView from "../layouts/Main/MapView";
-import { subVenuesData } from "../../data/subVenuesData";
-import { subVendorsData } from "../../data/subVendorsData";
-import { twoSoul } from "../../data/twoSoul";
 import MainSearch from "../layouts/Main/MainSearch";
 import PricingModal from "../layouts/PricingModal";
 import Photos from "../layouts/photography/Photos";
@@ -22,7 +19,6 @@ const toTitleCase = (str) =>
 const SubSection = () => {
   const { section, slug } = useParams();
   const location = useLocation();
-  // Parse query string
   const searchParams = new URLSearchParams(location.search);
   const vendorType = searchParams.get("vendorType");
   const cityFromQuery = searchParams.get("city");
@@ -83,26 +79,14 @@ const SubSection = () => {
     setSelectedCity(reduxLocation);
   }, [cityFromQuery, reduxLocation]);
 
-  const getFallbackData = (section) => {
-    switch (section) {
-      case "vendors":
-        return subVendorsData;
-      case "venues":
-        return subVenuesData;
-      case "twosoul":
-        return twoSoul;
-      default:
-        return [];
-    }
-  };
-
   const dataToSend = useMemo(() => {
     if (section === "photography") {
       return [];
     }
 
+    // Return empty array if no data, don't use fallback dummy data
     if (error || !apiData || apiData.length === 0) {
-      return getFallbackData(section);
+      return [];
     }
 
     return apiData;
@@ -142,7 +126,6 @@ const SubSection = () => {
     return <LoadingState title={title} />;
   }
 
-  console.log("dts", dataToSend);
   return (
     <div className="container-fluid">
       <MainSearch

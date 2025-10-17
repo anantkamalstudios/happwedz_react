@@ -32,7 +32,8 @@ const TopSlider = ({ onCategorySelect, onPhotosFetched }) => {
   }, [types]);
 
   const handleCategoryClick = async (category) => {
-    onCategorySelect?.(category.id || "all");
+    // Pass both id and name to parent
+    onCategorySelect?.(category.id || "all", category.name || "All");
 
     if (category.name === "all") {
       const data = await fetchAllPhotos();

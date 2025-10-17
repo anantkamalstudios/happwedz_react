@@ -309,7 +309,6 @@ const GridView = ({ subVenuesData, handleShow }) => {
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      console.log("360 view clicked for venue:", venue.id);
                     }}
                   >
                     <TbView360Number className="text-dark" size={18} />

@@ -63,8 +63,6 @@ const EinviteSharePage = () => {
   };
 
   const handleDownload = () => {
-    // This would implement the actual download functionality
-    console.log("Downloading card:", card);
     alert("Download functionality coming soon!");
   };
 

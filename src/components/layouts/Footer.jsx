@@ -116,9 +116,10 @@ const Footer = () => {
               </li>
               <li>
                 <a href="#careers">Careers</a>
+
               </li>
               <li>
-                <a href="#contact">Contact Us</a>
+                <Link to="contact-us">Contact Us</Link>
               </li>
               <li>
                 <a href="#sitemap">Site Map</a>

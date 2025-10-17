@@ -84,7 +84,6 @@ const EinviteEditorPage = () => {
   };
 
   const handlePublish = (shareData) => {
-    console.log("Publishing card with data:", shareData);
     // Here you would implement the actual publishing logic
     navigate(`/einvites/share/${id}`);
   };

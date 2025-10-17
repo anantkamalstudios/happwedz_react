@@ -1,90 +1,57 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import usePhotography from "../../hooks/usePhotography";
+import { useLoader } from "../context/LoaderContext";
 
 const MasonryImageSection = () => {
-  const [images] = useState([
-    {
-      id: 1,
-      url: "https://img.freepik.com/premium-photo/bride-groom-standing-front-chandelier_1113980-2347.jpg?w=1060",
-      title: "Wedding Cake",
-      category: "Catering",
-      height: 280,
-    },
-    {
-      id: 2,
-      url: "https://img.freepik.com/premium-photo/photo-traditional-indian-wedding-ceremony_1325814-2854.jpg",
-      title: "Elegant Wedding Venue",
-      category: "Venues",
-      height: 360,
-    },
-    {
-      id: 3,
-      url: "https://img.freepik.com/premium-photo/bride-groom-pink-gold-wedding-dress_1120246-25950.jpg?w=1060",
-      title: "Wedding Photography",
-      category: "Photography",
-      height: 220,
-    },
-    {
-      id: 4,
-      url: "https://img.freepik.com/free-photo/beautiful-woman-long-red-dress-walks-around-city-with-her-husband_1157-13373.jpg?w=1060",
-      title: "Bridal Makeup",
-      category: "Makeup",
-      height: 340,
-    },
-    {
-      id: 5,
-      url: "https://img.freepik.com/premium-photo/indian-bride-traditional-red-sari-with-golden-jewelry_143921-233.jpg",
-      title: "Wedding Rings",
-      category: "Jewelry",
-      height: 300,
-    },
-    {
-      id: 6,
-      url: "https://img.freepik.com/premium-photo/photo-traditional-indian-wedding-ceremony_1325814-2854.jpg",
-      title: "Elegant Wedding Venue",
-      category: "Venues",
-      height: 360,
-    },
-  ]);
+  const { fetchAllPhotos, allPhotos, loading } = usePhotography();
+  const { showLoader, hideLoader } = useLoader();
+  const [weddingImages, setWeddingImages] = useState([]);
 
-  const weddingImages = [
-    {
-      id: 1,
-      src: "https://img.freepik.com/premium-photo/bride-groom-standing-front-chandelier_1113980-2347.jpg?w=1060",
-      title: "Elegant Wedding Venue",
-      size: "large",
-    },
-    {
-      id: 2,
-      src: "https://img.freepik.com/premium-photo/photo-traditional-indian-wedding-ceremony_1325814-2854.jpg",
-      title: "Wedding",
-      size: "medium",
-    },
-    {
-      id: 3,
-      src: "https://img.freepik.com/premium-photo/bride-groom-pink-gold-wedding-dress_1120246-25950.jpg?w=1060",
-      title: "Wedding",
-      size: "large",
-    },
-    {
-      id: 4,
-      src: "https://img.freepik.com/free-photo/beautiful-woman-long-red-dress-walks-around-city-with-her-husband_1157-13373.jpg?w=1060",
-      title: "Wedding",
-      size: "medium",
-    },
-    {
-      id: 5,
-      src: "https://img.freepik.com/premium-photo/indian-bride-fotographiya_1108565-38.jpg?w=1060",
-      title: "Wedding",
-      size: "large",
-    },
-    {
-      id: 6,
-      src: "https://img.freepik.com/premium-photo/photo-traditional-indian-wedding-ceremony_1325814-2854.jpg",
-      title: "Wedding",
-      size: "medium",
-    },
-  ];
+  useEffect(() => {
+    const loadPhotos = async () => {
+      showLoader();
+      await fetchAllPhotos();
+      hideLoader();
+    };
+    loadPhotos();
+  }, []);
+
+  useEffect(() => {
+    if (allPhotos && allPhotos.length > 0) {
+      // Take first 6 photos and transform them
+      const transformedImages = allPhotos.slice(0, 6).map((photo, index) => {
+        // Get first image from images array
+        let imageUrl = photo.images?.[0]?.trim();
+
+        // Replace old URL prefix with backend prefix
+        if (imageUrl?.startsWith("http://happywedz.com/uploads/photography/")) {
+          imageUrl = imageUrl.replace(
+            "http://happywedz.com",
+            "https://happywedzbackend.happywedz.com"
+          );
+        }
+        if (imageUrl?.startsWith("https://happywedz.com/uploads/photography/")) {
+          imageUrl = imageUrl.replace(
+            "https://happywedz.com",
+            "https://happywedzbackend.happywedz.com"
+          );
+        }
+
+        // Alternate between large and medium sizes
+        const size = index % 2 === 0 ? "large" : "medium";
+
+        return {
+          id: photo.id,
+          src: imageUrl || "./images/noimage.jpeg",
+          title: photo.title || "Wedding",
+          size: size,
+        };
+      });
+
+      setWeddingImages(transformedImages);
+    }
+  }, [allPhotos]);
   return (
     <div style={{ padding: "40px 20px" }}>
       <div className="container">
@@ -120,53 +87,115 @@ const MasonryImageSection = () => {
           </Link>
 
           <div className="row">
-            <div className="col-12 col-md-6 col-lg-4">
-              <div className={`gallery-item ${weddingImages[0].size}`}>
-                <img src={weddingImages[0].src} alt={weddingImages[0].title} />
-                <div className="gallery-overlay">
-                  <p className="gallery-title">{weddingImages[0].title}</p>
-                </div>
+            {weddingImages.length === 0 ? (
+              <div className="text-center text-muted py-5">
+                <p>Loading wedding gallery...</p>
               </div>
+            ) : (
+              <>
+                <div className="col-12 col-md-6 col-lg-4">
+                  {weddingImages[0] && (
+                    <div className={`gallery-item ${weddingImages[0].size}`}>
+                      <img
+                        src={weddingImages[0].src}
+                        alt={weddingImages[0].title}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "./images/noimage.jpeg";
+                        }}
+                      />
+                      <div className="gallery-overlay">
+                        <p className="gallery-title">{weddingImages[0].title}</p>
+                      </div>
+                    </div>
+                  )}
 
-              <div className={`gallery-item ${weddingImages[3].size}`}>
-                <img src={weddingImages[3].src} alt={weddingImages[3].title} />
-                <div className="gallery-overlay">
-                  <p className="gallery-title">{weddingImages[3].title}</p>
+                  {weddingImages[3] && (
+                    <div className={`gallery-item ${weddingImages[3].size}`}>
+                      <img
+                        src={weddingImages[3].src}
+                        alt={weddingImages[3].title}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "./images/noimage.jpeg";
+                        }}
+                      />
+                      <div className="gallery-overlay">
+                        <p className="gallery-title">{weddingImages[3].title}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </div>
 
-            <div className="col-12 col-md-6 col-lg-4">
-              <div className={`gallery-item ${weddingImages[1].size}`}>
-                <img src={weddingImages[1].src} alt={weddingImages[1].title} />
-                <div className="gallery-overlay">
-                  <p className="gallery-title">{weddingImages[1].title}</p>
-                </div>
-              </div>
+                <div className="col-12 col-md-6 col-lg-4">
+                  {weddingImages[1] && (
+                    <div className={`gallery-item ${weddingImages[1].size}`}>
+                      <img
+                        src={weddingImages[1].src}
+                        alt={weddingImages[1].title}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "./images/noimage.jpeg";
+                        }}
+                      />
+                      <div className="gallery-overlay">
+                        <p className="gallery-title">{weddingImages[1].title}</p>
+                      </div>
+                    </div>
+                  )}
 
-              <div className={`gallery-item ${weddingImages[4].size}`}>
-                <img src={weddingImages[4].src} alt={weddingImages[4].title} />
-                <div className="gallery-overlay">
-                  <p className="gallery-title">{weddingImages[4].title}</p>
+                  {weddingImages[4] && (
+                    <div className={`gallery-item ${weddingImages[4].size}`}>
+                      <img
+                        src={weddingImages[4].src}
+                        alt={weddingImages[4].title}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "./images/noimage.jpeg";
+                        }}
+                      />
+                      <div className="gallery-overlay">
+                        <p className="gallery-title">{weddingImages[4].title}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </div>
 
-            <div className="col-12 col-md-6 col-lg-4">
-              <div className={`gallery-item ${weddingImages[2].size}`}>
-                <img src={weddingImages[2].src} alt={weddingImages[2].title} />
-                <div className="gallery-overlay">
-                  <p className="gallery-title">{weddingImages[2].title}</p>
-                </div>
-              </div>
+                <div className="col-12 col-md-6 col-lg-4">
+                  {weddingImages[2] && (
+                    <div className={`gallery-item ${weddingImages[2].size}`}>
+                      <img
+                        src={weddingImages[2].src}
+                        alt={weddingImages[2].title}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "./images/noimage.jpeg";
+                        }}
+                      />
+                      <div className="gallery-overlay">
+                        <p className="gallery-title">{weddingImages[2].title}</p>
+                      </div>
+                    </div>
+                  )}
 
-              <div className={`gallery-item ${weddingImages[5].size}`}>
-                <img src={weddingImages[5].src} alt={weddingImages[5].title} />
-                <div className="gallery-overlay">
-                  <p className="gallery-title">{weddingImages[5].title}</p>
+                  {weddingImages[5] && (
+                    <div className={`gallery-item ${weddingImages[5].size}`}>
+                      <img
+                        src={weddingImages[5].src}
+                        alt={weddingImages[5].title}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "./images/noimage.jpeg";
+                        }}
+                      />
+                      <div className="gallery-overlay">
+                        <p className="gallery-title">{weddingImages[5].title}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </div>
       </div>

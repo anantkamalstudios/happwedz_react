@@ -107,7 +107,6 @@ const Herosection = () => {
                   const encodedCategory = encodeURIComponent(
                     selectedCategory.toLowerCase()
                   );
-                  console.log("encodedCategory", encodedCategory);
                   navigate(`/vendors/all?vendorType=${encodedCategory}`);
                 }
               }}

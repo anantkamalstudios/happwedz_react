@@ -20,15 +20,26 @@ const GridImages = ({ category, searchQuery, photos }) => {
         );
       }
 
-      return { ...img, url }; // add `url` property for rendering
+      return { ...img, url };
     })
     .filter((img) => {
-      const matchesCategory = category === "all" || img.type === category;
-      const matchesSearch = img.title
-        ?.toLowerCase()
-        .includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        category === "all" ||
+        img.photography_type_id === category ||
+        img.photography_type_id === Number(category);
+
+      const searchLower = searchQuery?.toLowerCase() || "";
+      const matchesSearch =
+        !searchQuery ||
+        img.title?.toLowerCase().includes(searchLower) ||
+        img.description?.toLowerCase().includes(searchLower) ||
+        img.photographer_name?.toLowerCase().includes(searchLower) ||
+        img.city_name?.toLowerCase().includes(searchLower) ||
+        img.tags?.some(tag => tag.toLowerCase().includes(searchLower));
+
       return matchesCategory && matchesSearch;
     });
+
 
   return (
     <div className="py-5 container">
@@ -53,7 +64,7 @@ const GridImages = ({ category, searchQuery, photos }) => {
               />
               <div className="card-body p-2">
                 <h6 className="mb-1">{img.title || "No Title"}</h6>
-                <small className="text-muted">{img.type || "No Type"}</small>
+                <small className="text-muted">{img.city_name || "No City"}</small>
               </div>
             </div>
           </div>

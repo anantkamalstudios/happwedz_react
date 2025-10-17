@@ -31,7 +31,6 @@ const ForgotPassword = lazy(() => import("./components/auth/ForgotPassword"));
 const MainSection = lazy(() => import("./components/pages/MainSection"));
 const SubSection = lazy(() => import("./components/pages/SubSection"));
 const Detailed = lazy(() => import("./components/layouts/Detailed"));
-
 const Main = lazy(() => import("./components/pages/adminVendor/Main"));
 const Search = lazy(() => import("./components/pages/matrimonial/Search"));
 const MatrimonialMain = lazy(() =>
@@ -124,6 +123,7 @@ const UploadSelfiePage = lazy(() =>
   import("./components/pages/UploadSelfiePage")
 );
 const FiltersPage = lazy(() => import("./components/pages/FiltersPage"));
+const ContactUs = lazy(() => import("./components/pages/Contactus"));
 
 const FinalLookPage = lazy(() => import("./components/pages/FinalLookPage"));
 // const WeddingWebsiteForm = lazy(() =>
@@ -202,6 +202,7 @@ function App() {
               {/* Auth Pages */}
               <Route path="/customer-login" element={<CustomerLogin />} />
               <Route path="/customer-register" element={<CustomerRegister />} />
+              <Route path="/contact-us" element={<ContactUs />} />
               <Route path="/vendor-login" element={<VendorLogin />} />
               <Route path="/vendor-register" element={<VendorRegister />} />
               <Route
@@ -210,6 +211,7 @@ function App() {
               />
               {/* Blog */}
               <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:blogId" element={<Blog />} />
               <Route path="/blog-details" element={<BlogDetails />} />
               {/* Static Pages */}
               <Route path="/terms" element={<TermsCondition />} />
@@ -269,7 +271,6 @@ function App() {
                 element={<VendorLeadsPage />}
               />
               <Route path="/write-review/:vendorId" element={<ReviewsPage />} />
-              s{/* Editors / Video */}
               <Route path="/editor" element={<CardEditorPage />} />
               <Route path="/editor/:templateId" element={<CardEditorPage />} />
               <Route path="/video-templates" element={<VideoTemplates />} />
@@ -361,7 +362,14 @@ function App() {
                   </VendorPrivateRoute>
                 }
               />
+
+              <Route
+                path="/about-us"
+                element={<AboutUs />}
+              />
             </Route>
+
+
 
             {/*  Matrimonial Routes  */}
             <Route element={<MatrimonialLayout />}>
