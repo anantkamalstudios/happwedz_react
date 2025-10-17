@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const EInviteCard = () => {
   return (
     <div
@@ -50,17 +52,19 @@ const EInviteCard = () => {
           Search and compare instantly.
         </p>
 
-        <button
-          className="btn fw-bold mt-4"
-          style={{
-            backgroundColor: "#C31162",
-            color: "#fff",
-            borderRadius: "25px",
-            padding: "10px 30px",
-          }}
-        >
-          Get started
-        </button>
+        <Link to="/einvites">
+          <button
+            className="btn fw-bold mt-4"
+            style={{
+              backgroundColor: "#C31162",
+              color: "#fff",
+              borderRadius: "25px",
+              padding: "10px 30px",
+            }}
+          >
+            Get started
+          </button>
+        </Link>
       </div>
     </div>
   );
