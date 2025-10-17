@@ -127,10 +127,10 @@ const HomeGennie = () => {
   return (
     <div
       style={{
-        minHeight: "90vh",
-        background: "blue",
+        minHeight: "100vh",
         position: "relative",
         overflow: "hidden",
+        padding: "20px",
       }}
     >
       {/* Floating Chat Button */}
@@ -142,8 +142,8 @@ const HomeGennie = () => {
             position: "fixed",
             bottom: "30px",
             right: "30px",
-            width: "80px",
-            height: "80px",
+            width: "70px",
+            height: "70px",
             borderRadius: "50%",
             border: "4px solid transparent",
             cursor: "pointer",
@@ -154,7 +154,6 @@ const HomeGennie = () => {
             background: "#C31162",
             transition: "transform 0.3s ease",
             backgroundClip: "padding-box",
-            animation: "border-rotate 4s linear infinite",
           }}
           onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
           onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
@@ -176,8 +175,8 @@ const HomeGennie = () => {
             }}
           />
           <svg
-            width="35"
-            height="35"
+            width="30"
+            height="30"
             viewBox="0 0 24 24"
             fill="none"
             stroke="white"
@@ -188,55 +187,76 @@ const HomeGennie = () => {
 
           <style>
             {`
-      @keyframes rotateGradient {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-    `}
+              @keyframes rotateGradient {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `}
           </style>
         </div>
       )}
 
-      {/* Mobile-Style Chat Overlay */}
+      {/* Responsive Chat Overlay */}
       {isChatOpen && (
         <div
           style={{
             position: "fixed",
-            bottom: "20px",
-            right: "20px",
-            width: "420px",
-            height: "650px",
+            bottom: "0",
+            right: "0",
+            width: "min(420px, 100vw)",
+            height: "min(650px, 100vh)",
+            maxHeight: "100vh",
             background:
               "linear-gradient(to top, #f9d8ec 0%, #ffffff 60%, #fce7f3 100%)",
-
-            borderRadius: "20px",
+            borderRadius: window.innerWidth <= 640 ? "20px 20px 0 0" : "20px",
             boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
             zIndex: 1001,
             animation: "slideUp 0.3s ease-out",
+            margin: window.innerWidth <= 640 ? "0" : "20px",
           }}
         >
           <style>
             {`
-                                    @keyframes slideUp {
-                                        from {
-                                            transform: translateY(100%);
-                                            opacity: 0;
-                                        }
-                                        to {
-                                            transform: translateY(0);
-                                            opacity: 1;
-                                        }
-                                    }
-                                `}
+              @keyframes slideUp {
+                from {
+                  transform: translateY(100%);
+                  opacity: 0;
+                }
+                to {
+                  transform: translateY(0);
+                  opacity: 1;
+                }
+              }
+
+              @media (max-width: 640px) {
+                .chat-container {
+                  width: 100vw !important;
+                  height: 100vh !important;
+                  border-radius: 0 !important;
+                  margin: 0 !important;
+                  bottom: 0 !important;
+                  right: 0 !important;
+                }
+              }
+
+              @media (max-width: 480px) {
+                .chat-button {
+                  width: 60px !important;
+                  height: 60px !important;
+                  bottom: 20px !important;
+                  right: 20px !important;
+                }
+              }
+            `}
           </style>
 
           {/* Chat Header */}
           <div
             style={{
-              padding: "20px",
+              padding: window.innerWidth <= 640 ? "15px" : "20px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -250,13 +270,11 @@ const HomeGennie = () => {
                 flexDirection: "column",
                 alignItems: "center",
                 gap: "10px",
-                marginTop: "20px",
+                marginTop: window.innerWidth <= 640 ? "10px" : "20px",
               }}
             >
               <div
-                style={{
-                  fontSize: "24px",
-                }}
+                style={{ fontSize: window.innerWidth <= 640 ? "20px" : "24px" }}
               >
                 ✨
               </div>
@@ -264,7 +282,7 @@ const HomeGennie = () => {
                 <h5
                   style={{
                     margin: "auto",
-                    fontSize: "24px",
+                    fontSize: window.innerWidth <= 640 ? "20px" : "24px",
                     fontWeight: "400",
                     color: "#000",
                   }}
@@ -275,7 +293,7 @@ const HomeGennie = () => {
             </div>
           </div>
 
-          {/* closing button */}
+          {/* Closing buttons */}
           <div
             style={{
               position: "absolute",
@@ -283,24 +301,21 @@ const HomeGennie = () => {
               width: "100%",
               display: "flex",
               justifyContent: "space-between",
-              padding: "10px",
+              padding: window.innerWidth <= 640 ? "8px" : "10px",
             }}
           >
             <Link
               to="/genie"
-              onClick={() => setIsChatOpen(false)}
               style={{
                 border: "none",
                 borderRadius: "50%",
-                width: "35px",
-                height: "35px",
+                width: window.innerWidth <= 640 ? "30px" : "35px",
+                height: window.innerWidth <= 640 ? "30px" : "35px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
-                // position: "absolute",
-                // top: "10px",
-                // right: "10px",
+                background: "rgba(255, 255, 255, 0.2)",
               }}
               onMouseOver={(e) =>
                 (e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)")
@@ -309,25 +324,18 @@ const HomeGennie = () => {
                 (e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)")
               }
             >
-              {/* <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#C31162"
-                strokeWidth="2.5"
-              >
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg> */}
-              <ArrowUpLeftFromSquare style={{ color: "#C31162" }} />
+              <ArrowUpLeftFromSquare
+                size={window.innerWidth <= 640 ? 16 : 20}
+                style={{ color: "#C31162" }}
+              />
             </Link>
             <button
               onClick={() => setIsChatOpen(false)}
               style={{
                 border: "none",
                 borderRadius: "50%",
-                width: "35px",
-                height: "35px",
+                width: window.innerWidth <= 640 ? "30px" : "35px",
+                height: window.innerWidth <= 640 ? "30px" : "35px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -342,8 +350,8 @@ const HomeGennie = () => {
               }
             >
               <svg
-                width="20"
-                height="20"
+                width={window.innerWidth <= 640 ? "16" : "20"}
+                height={window.innerWidth <= 640 ? "16" : "20"}
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="#C31162"
@@ -354,83 +362,13 @@ const HomeGennie = () => {
             </button>
           </div>
 
-          {/* Summary Section */}
-          {/* <div
-            style={{
-              padding: "15px 20px",
-              backgroundColor: "#fef3f9",
-              borderBottom: "1px solid #fce7f3",
-              display: "flex",
-              gap: "15px",
-              flexWrap: "wrap",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span
-                style={{ fontSize: "12px", color: "#666", fontWeight: "500" }}
-              >
-                Budget:
-              </span>
-              <span
-                style={{
-                  padding: "4px 12px",
-                  backgroundColor: "#fce7f3",
-                  color: "#d946ef",
-                  borderRadius: "15px",
-                  fontSize: "12px",
-                  fontWeight: "600",
-                }}
-              >
-                {budget}
-              </span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span
-                style={{ fontSize: "12px", color: "#666", fontWeight: "500" }}
-              >
-                Guests:
-              </span>
-              <span
-                style={{
-                  padding: "4px 12px",
-                  backgroundColor: "#fce7f3",
-                  color: "#d946ef",
-                  borderRadius: "15px",
-                  fontSize: "12px",
-                  fontWeight: "600",
-                }}
-              >
-                {guests}
-              </span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span
-                style={{ fontSize: "12px", color: "#666", fontWeight: "500" }}
-              >
-                City:
-              </span>
-              <span
-                style={{
-                  padding: "4px 12px",
-                  backgroundColor: "#fce7f3",
-                  color: "#d946ef",
-                  borderRadius: "15px",
-                  fontSize: "12px",
-                  fontWeight: "600",
-                }}
-              >
-                {city}
-              </span>
-            </div>
-          </div> */}
-
           {/* Chat Messages */}
           <div
             ref={messageContainerRef}
             style={{
               flex: 1,
               overflowY: "auto",
-              padding: "20px",
+              padding: window.innerWidth <= 640 ? "15px" : "20px",
               display: "flex",
               flexDirection: "column",
               gap: "15px",
@@ -449,7 +387,7 @@ const HomeGennie = () => {
               >
                 <div
                   style={{
-                    maxWidth: "80%",
+                    maxWidth: window.innerWidth <= 640 ? "85%" : "80%",
                     display: "flex",
                     flexDirection: "column",
                     gap: "4px",
@@ -457,7 +395,7 @@ const HomeGennie = () => {
                 >
                   <div
                     style={{
-                      fontSize: "10px",
+                      fontSize: window.innerWidth <= 640 ? "9px" : "10px",
                       fontWeight: "600",
                       color: msg.type === "user" ? "#d946ef" : "#ea33d8ff",
                       textTransform: "uppercase",
@@ -471,7 +409,8 @@ const HomeGennie = () => {
                   </div>
                   <div
                     style={{
-                      padding: "12px 16px",
+                      padding:
+                        window.innerWidth <= 640 ? "10px 14px" : "12px 16px",
                       borderRadius:
                         msg.type === "user"
                           ? "15px 15px 0 15px"
@@ -480,8 +419,9 @@ const HomeGennie = () => {
                         msg.type === "user" ? "#f45fe0ff" : "#fff",
                       color: msg.type === "user" ? "#fff" : "#333",
                       boxShadow: "0 2px 5px rgba(0,0,0,0.08)",
-                      fontSize: "14px",
+                      fontSize: window.innerWidth <= 640 ? "13px" : "14px",
                       lineHeight: "1.5",
+                      wordWrap: "break-word",
                     }}
                   >
                     {msg.text}
@@ -494,26 +434,30 @@ const HomeGennie = () => {
           {/* Input Area */}
           <div
             style={{
-              padding: "15px 20px",
+              padding: window.innerWidth <= 640 ? "12px 15px" : "15px 20px",
+              borderTop: "1px solid rgba(252, 231, 243, 0.5)",
             }}
           >
             <div style={{ position: "relative" }}>
               <input
                 type="text"
-                placeholder="Ask me anything about your projects"
+                placeholder="Ask me anything..."
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
                 style={{
                   width: "100%",
-                  padding: "12px 50px 12px 15px",
+                  padding:
+                    window.innerWidth <= 640
+                      ? "10px 45px 10px 12px"
+                      : "12px 50px 12px 15px",
                   borderRadius: "10px",
                   border: "2px solid #fce7f3",
-                  fontSize: "14px",
+                  fontSize: window.innerWidth <= 640 ? "13px" : "14px",
                   outline: "none",
                   transition: "border-color 0.2s",
+                  boxSizing: "border-box",
                 }}
-                // onFocus={(e) => (e.target.style.borderColor = "#d946ef")}
                 onBlur={(e) => (e.target.style.borderColor = "#fce7f3")}
               />
               <button
@@ -526,8 +470,8 @@ const HomeGennie = () => {
                   background: "transparent",
                   border: "none",
                   borderRadius: "50%",
-                  width: "36px",
-                  height: "36px",
+                  width: window.innerWidth <= 640 ? "32px" : "36px",
+                  height: window.innerWidth <= 640 ? "32px" : "36px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -544,8 +488,8 @@ const HomeGennie = () => {
                 }
               >
                 <svg
-                  width="18"
-                  height="18"
+                  width={window.innerWidth <= 640 ? "16" : "18"}
+                  height={window.innerWidth <= 640 ? "16" : "18"}
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="#000"

@@ -5,6 +5,7 @@ import { beautyApi } from "../../services/api";
 import Swal from "sweetalert2";
 import { IoClose } from "react-icons/io5";
 import { FaHome, FaTimes } from "react-icons/fa";
+import { useSelector } from "react-redux";
 
 const UploadSelfiePage = () => {
   const navigate = useNavigate();
@@ -16,6 +17,28 @@ const UploadSelfiePage = () => {
   const [countdown, setCountdown] = useState(null);
   const [cameraError, setCameraError] = useState(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const { role, type } = useSelector((store) => store.role);
+
+  let image;
+  switch (role) {
+    case "bride":
+      if (type === "makeup") image = "/images/try/bride-makeup.png";
+      else if (type === "jewellary") image = "/images/try/bride-jewellery.png";
+      else if (type === "outfit") image = "/images/try/bride-outfit.png";
+      break;
+    case "groome":
+      if (type === "makeup") image = "/images/try/upload-groome-default.png";
+      else if (type === "jewellary")
+        image = "/images/try/upload-groome-default.png";
+      else if (type === "outfit")
+        image = "/images/try/upload-groome-default.png";
+      break;
+
+    default:
+      break;
+  }
 
   useEffect(() => {
     const loadModels = async () => {
@@ -36,6 +59,33 @@ const UploadSelfiePage = () => {
 
   const handlePick = () => setShowGuide(true);
 
+  const instructionSets = {
+    bride: [
+      {
+        src: "/images/try/staightFace.png",
+        text: "Look straight at the camera",
+      },
+      { src: "/images/try/putHairBack.png", text: "Put hair back" },
+      { src: "/images/try/removeGlasses.png", text: "Remove Glasses" },
+      { src: "/images/try/planeBg.png", text: "Use plain background" },
+    ],
+    groome: [
+      {
+        src: "/images/try/straightFace.png",
+        text: "Look straight at the camera",
+      },
+      { src: "/images/try/hairBack.png", text: "Put hair back" },
+      { src: "/images/try/straightFace.png", text: "Remove glasses" },
+      { src: "/images/try/straightFace.png", text: "Plain background" },
+    ],
+    others: [
+      { src: "", text: "Face the camera" },
+      { src: "", text: "Avoid shadows" },
+      { src: "", text: "Remove accessories" },
+      { src: "", text: "Use plain background" },
+    ],
+  };
+
   const validateFace = async (imageDataUrl) => {
     const img = new window.Image();
     img.src = imageDataUrl;
@@ -47,10 +97,22 @@ const UploadSelfiePage = () => {
   };
 
   const handleFile = async (e) => {
+    setUploading(true);
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      setUploading(false);
+      if(fileRef.current) fileRef.current.value = "";
+      return;
+    }
     if (!file.type.startsWith("image/")) {
       alert("Please select an image file");
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Please select an image file",
+      });
+      setUploading(false);
+      if(fileRef.current) fileRef.current.value = "";
       return;
     }
     const reader = new FileReader();
@@ -58,7 +120,13 @@ const UploadSelfiePage = () => {
       const dataUrl = ev.target.result;
       const ok = await validateFace(dataUrl);
       if (!ok) {
-        alert("No face detected. Please choose a clear frontal photo.");
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "No face detected. Please choose a clear frontal photo.",
+        });
+        setUploading(false);
+        if (fileRef.current) fileRef.current.value = "";
         return;
       }
       try {
@@ -66,10 +134,18 @@ const UploadSelfiePage = () => {
         const imageId = res?.data?.id || res?.id || res?.image_id;
         sessionStorage.setItem("try_uploaded_image_id", imageId);
         setShowGuide(false);
+        setUploading(false);
         navigate("/try/filters");
       } catch (err) {
         console.error(err);
-        alert("Upload failed. Please try again.");
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Upload failed. Please try again.",
+        });
+      } finally {
+        setUploading(false);
+        if (fileRef.current) fileRef.current.value = "";
       }
     };
     reader.readAsDataURL(file);
@@ -115,6 +191,7 @@ const UploadSelfiePage = () => {
     const ok = await validateFace(dataUrl);
     if (!ok) {
       alert("No face detected. Please look straight.");
+
       return;
     }
     // Convert dataURL to Blob for upload
@@ -148,7 +225,10 @@ const UploadSelfiePage = () => {
     }, 1000);
   };
 
-  const triggerModalUpload = () => fileRef.current?.click();
+  const triggerModalUpload = () => {
+    if (fileRef.current) fileRef.current.value = "";
+    fileRef.current?.click();
+  };
 
   return (
     <div className="container py-1">
@@ -208,7 +288,7 @@ const UploadSelfiePage = () => {
               </div>
               <div>
                 <img
-                  src="/images/try/upload-default.png"
+                  src={image}
                   alt="placeholder"
                   className="img-fluid"
                   style={{
@@ -232,8 +312,7 @@ const UploadSelfiePage = () => {
                   style={{
                     background: "linear-gradient(to right, #E83580, #821E48)",
                     color: "#fff",
-                    padding:"10px 0",
-
+                    padding: "10px 0",
                   }}
                 >
                   Selfie Mode
@@ -244,7 +323,7 @@ const UploadSelfiePage = () => {
                   style={{
                     background: "linear-gradient(to right, #E83580, #821E48)",
                     color: "#fff",
-                    padding:"10px 0"
+                    padding: "10px 0",
                   }}
                 >
                   Upload Image
@@ -303,87 +382,42 @@ const UploadSelfiePage = () => {
                 </div>
                 <div className="modal-body">
                   <ul className="list-unstyled mb-4">
-                    <li className="d-flex align-items-center mb-3 py-2">
-                      <img
-                        src="/images/try/staightFace.png"
-                        alt="Look straight"
-                        style={{
-                          width: 70,
-                          height: 70,
-                          objectFit: "contain",
-                          border: "1px solid #ddd",
-                          borderRadius: "10px",
-                          padding: 4,
-                          marginRight: 12,
-                        }}
-                      />
-                      <span>Look straight at the camera</span>
-                    </li>
-                    <hr />
-                    <li className="d-flex align-items-center mb-3 py-2">
-                      <img
-                        src="/images/try/putHairBack.png"
-                        alt="Hair back"
-                        style={{
-                          width: 70,
-                          height: 70,
-                          objectFit: "contain",
-                          border: "1px solid #ddd",
-                          borderRadius: "10px",
-                          padding: 4,
-                          marginRight: 12,
-                        }}
-                      />
-                      <span>Put hair back</span>
-                    </li>
-                    <hr />
-                    <li className="d-flex align-items-center mb-3 py-2">
-                      <img
-                        src="/images/try/removeGlasses.png"
-                        alt="Remove glasses"
-                        style={{
-                          width: 70,
-                          height: 70,
-                          objectFit: "contain",
-                          border: "1px solid #ddd",
-                          borderRadius: "10px",
-                          padding: 4,
-                          marginRight: 12,
-                        }}
-                      />
-                      <span>Remove glasses</span>
-                    </li>
-                    <hr />
-                    <li className="d-flex align-items-center py-2">
-                      <img
-                        src="/images/try/planeBg.png"
-                        alt="Plain background"
-                        style={{
-                          width: 70,
-                          height: 70,
-                          objectFit: "contain",
-                          border: "1px solid #ddd",
-                          borderRadius: "10px",
-                          padding: 4,
-                          marginRight: 12,
-                        }}
-                      />
-                      <span>Plain background</span>
-                    </li>
+                    {instructionSets[role]?.map((item, i) => (
+                      <React.Fragment key={i}>
+                        <li className="d-flex align-items-center mb-3 py-2">
+                          <img
+                            src={item.src}
+                            alt={item.text}
+                            style={{
+                              width: 70,
+                              height: 70,
+                              objectFit: "contain",
+                              border: "1px solid #ddd",
+                              borderRadius: "10px",
+                              padding: 4,
+                              marginRight: 12,
+                            }}
+                          />
+                          <span>{item.text}</span>
+                        </li>
+                        {i !== instructionSets[role].length - 1 && <hr />}
+                      </React.Fragment>
+                    ))}
                   </ul>
 
                   <div className="d-grid">
                     <button
                       className="btn w-100"
                       onClick={triggerModalUpload}
+                      disabled={uploading}
                       style={{
                         background:
                           "linear-gradient(to right, #E83580, #821E48)",
                         color: "#fff",
-                        padding:"10px 0"
+                        padding: "10px 0",
                       }}
                     >
-                      Upload Photo
+                      {uploading ? "Uploading..." : "Upload Photo"}
                     </button>
                   </div>
                 </div>

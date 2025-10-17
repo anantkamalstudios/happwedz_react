@@ -252,110 +252,144 @@
 
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:4000/api";
+const API_BASE_URL = "https://happywedz.com/api";
 
-
-const getAuthHeader = (token) => token ? { Authorization: `Bearer ${token}` } : {};
+const getAuthHeader = (token) =>
+  token ? { Authorization: `Bearer ${token}` } : {};
 
 export const createWebsite = async (formData, token) => {
-    try {
-        const res = await axios.post(`${API_BASE_URL}/wedding-websites`, formData, {
-            headers: {
-                ...getAuthHeader(token),
-                "Content-Type": "multipart/form-data",
-            },
-        });
-        return res.data;
-    } catch (err) {
-        console.error("❌ Error creating wedding website:", err.response?.data || err.message);
-        throw new Error(`Failed to create website: ${JSON.stringify(err.response?.data || err.message)}`);
-    }
+  try {
+    const res = await axios.post(`${API_BASE_URL}/wedding-websites`, formData, {
+      headers: {
+        ...getAuthHeader(token),
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return res.data;
+  } catch (err) {
+    console.error(
+      "❌ Error creating wedding website:",
+      err.response?.data || err.message
+    );
+    throw new Error(
+      `Failed to create website: ${JSON.stringify(
+        err.response?.data || err.message
+      )}`
+    );
+  }
 };
 
 export const getMyWebsites = async (token) => {
-    try {
-        const res = await axios.get(`${API_BASE_URL}/wedding-websites`, {
-            headers: getAuthHeader(token),
-        });
-        return res.data;
-    } catch (err) {
-        console.error("❌ Error fetching websites:", err.response?.data || err.message);
-        throw err;
-    }
+  try {
+    const res = await axios.get(`${API_BASE_URL}/wedding-websites`, {
+      headers: getAuthHeader(token),
+    });
+    return res.data;
+  } catch (err) {
+    console.error(
+      "❌ Error fetching websites:",
+      err.response?.data || err.message
+    );
+    throw err;
+  }
 };
 
 export const getWebsiteById = async (id, token) => {
-    try {
-        const res = await axios.get(`${API_BASE_URL}/wedding-websites/${id}`, {
-            headers: getAuthHeader(token),
-        });
-        return res.data;
-    } catch (err) {
-        console.error("❌ Error fetching website:", err.response?.data || err.message);
-        throw err;
-    }
+  try {
+    const res = await axios.get(`${API_BASE_URL}/wedding-websites/${id}`, {
+      headers: getAuthHeader(token),
+    });
+    return res.data;
+  } catch (err) {
+    console.error(
+      "❌ Error fetching website:",
+      err.response?.data || err.message
+    );
+    throw err;
+  }
 };
 
 export const updateWebsite = async (id, formData, token) => {
-    try {
-        const res = await axios.put(`${API_BASE_URL}/wedding-websites/${id}`, formData, {
-            headers: {
-                ...getAuthHeader(token),
-                "Content-Type": "multipart/form-data",
-            },
-        });
-        return res.data;
-    } catch (err) {
-        console.error("❌ Error updating website:", err.response?.data || err.message);
-        throw new Error(
-            `Failed to update website: ${JSON.stringify(err.response?.data || err.message)}`
-        );
-    }
+  try {
+    const res = await axios.put(
+      `${API_BASE_URL}/wedding-websites/${id}`,
+      formData,
+      {
+        headers: {
+          ...getAuthHeader(token),
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return res.data;
+  } catch (err) {
+    console.error(
+      "❌ Error updating website:",
+      err.response?.data || err.message
+    );
+    throw new Error(
+      `Failed to update website: ${JSON.stringify(
+        err.response?.data || err.message
+      )}`
+    );
+  }
 };
 
 export const deleteWebsite = async (id, token) => {
-    try {
-        const res = await axios.delete(`${API_BASE_URL}/wedding-websites/${id}`, {
-            headers: getAuthHeader(token),
-        });
-        return res.data;
-    } catch (err) {
-        console.error("❌ Error deleting website:", err.response?.data || err.message);
-        throw err;
-    }
+  try {
+    const res = await axios.delete(`${API_BASE_URL}/wedding-websites/${id}`, {
+      headers: getAuthHeader(token),
+    });
+    return res.data;
+  } catch (err) {
+    console.error(
+      "❌ Error deleting website:",
+      err.response?.data || err.message
+    );
+    throw err;
+  }
 };
 
 export const publishWebsite = async (id, token) => {
-    try {
-        const res = await axios.post(`${API_BASE_URL}/wedding-websites/${id}/publish`, {}, {
-            headers: getAuthHeader(token),
-        });
-        return res.data;
-    } catch (err) {
-        console.error("❌ Error publishing website:", err.response?.data || err.message);
-        throw err;
-    }
+  try {
+    const res = await axios.post(
+      `${API_BASE_URL}/wedding-websites/${id}/publish`,
+      {},
+      {
+        headers: getAuthHeader(token),
+      }
+    );
+    return res.data;
+  } catch (err) {
+    console.error(
+      "❌ Error publishing website:",
+      err.response?.data || err.message
+    );
+    throw err;
+  }
 };
 
-export const viewPublicWebsite = async (websiteUrl, token   ) => {
-    try {
-        const res = await axios.get(`${API_BASE_URL}/wedding/${websiteUrl}`, {
-            headers: getAuthHeader(token),
-        });
-        return res.data;
-    } catch (err) {
-        console.error("❌ Error loading public website:", err.response?.data || err.message);
-        throw err;
-    }
+export const viewPublicWebsite = async (websiteUrl, token) => {
+  try {
+    const res = await axios.get(`${API_BASE_URL}/wedding/${websiteUrl}`, {
+      headers: getAuthHeader(token),
+    });
+    return res.data;
+  } catch (err) {
+    console.error(
+      "❌ Error loading public website:",
+      err.response?.data || err.message
+    );
+    throw err;
+  }
 };
-
 
 export const weddingWebsiteApi = {
-    createWebsite,
-    getMyWebsites,
-    getWebsiteById,
-    updateWebsite,
-    deleteWebsite,
-    publishWebsite,
-    viewPublicWebsite,
+  createWebsite,
+  getMyWebsites,
+  getWebsiteById,
+  updateWebsite,
+  deleteWebsite,
+  publishWebsite,
+  viewPublicWebsite,
 };

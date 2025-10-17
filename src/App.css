@@ -17210,7 +17210,6 @@ input:checked + .slider:before {
   }
 }
 
-
 /* vendor dashboard css start here */
 .table-header {
   background-color: #fce4ec;
@@ -18186,9 +18185,11 @@ input:checked + .slider:before {
     rgba(233, 30, 99, 0.9),
     rgba(255, 107, 157, 0.9)
   );
-  background: linear-gradient(135deg,
-      rgba(233, 30, 99, 0.9),
-      rgba(255, 107, 157, 0.9));
+  background: linear-gradient(
+    135deg,
+    rgba(233, 30, 99, 0.9),
+    rgba(255, 107, 157, 0.9)
+  );
   background: linear-gradient(
     135deg,
     rgba(233, 30, 99, 0.9),
@@ -18556,7 +18557,7 @@ input:checked + .slider:before {
 .modal-content-custom {
   background: #fff;
   border-radius: 8px;
-} 
+}
 
 /* Add this to your CSS file */
 .custom-checkbox {
@@ -18577,7 +18578,7 @@ input:checked + .slider:before {
   position: absolute;
   top: 0;
   left: 3px;
-} 
+}
 /* E-Invite Card Editor Styles */
 .einvite-canvas-wrapper {
   padding: 20px 0;
@@ -19065,4 +19066,15 @@ input:checked + .slider:before {
     grid-template-columns: 1fr;
     gap: 16px;
   }
+}
+
+.custom-input {
+  background-color: #fff !important;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.custom-input:focus {
+  background-color: #fff !important;
+  box-shadow: none; /* optional, if you want */
 }
