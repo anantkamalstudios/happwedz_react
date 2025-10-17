@@ -136,7 +136,7 @@ const Navbar = () => {
               Grow Your Business ·
             </span>
             <Link
-              to="/vendor-dashboard/upgrade/vendor-plan"
+              // to="/vendor-dashboard/upgrade/vendor-plan"
               className="btn upgrade-btn border-0 p-0"
             >
               Upgrade Now

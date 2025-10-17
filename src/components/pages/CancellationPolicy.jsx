@@ -6,7 +6,8 @@ const CancellationPolicy = () => {
       <div className="policy-hero">
         <h1 className="policy-herotitle">Cancellation Policy</h1>
         <p className="policy-herosubtitle">
-          Understanding our cancellation terms and conditions
+          {/* Understanding our cancellation terms and conditions */}
+          Lorem ipsum dolor sit amet consectetur.
         </p>
       </div>
 
@@ -18,103 +19,80 @@ const CancellationPolicy = () => {
             </h2>
 
             <div className="policy-sectioncontent">
-              <p className="policy-paragraph">Last updated: January 1, 2023</p>
+              <p className="policy-paragraph">Lorem ipsum dolor sit amet consectetur.</p>
+              {/* <p className="policy-paragraph">Last updated: January 1, 2023</p> */}
 
-              <h3 className="policy-subtitle">1. General Information</h3>
+              <h3 className="policy-subtitle">1. Lorem, ipsum.</h3>
               <p className="policy-paragraph">
-                Thank you for choosing our services. This Cancellation & Refund
-                Policy outlines our guidelines regarding cancellations and
-                refunds for services purchased through our platform.
+               Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor atque nam deserunt et odit assumenda magnam quis quo quia delectus repudiandae libero, quas vero ipsa ducimus eveniet rerum sint maxime.
               </p>
 
               <h3 className="policy-subtitle">
-                2. Vendor Services Cancellation
+                2. Lorem, ipsum dolor.
               </h3>
               <p className="policy-paragraph">
-                Cancellation policies for vendor services (photographers,
-                caterers, venues, etc.) are set by the individual vendors.
-                Please review each vendor's specific cancellation policy before
-                booking their services.
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Facere consectetur ab eaque? Natus delectus consequuntur inventore et maiores consectetur, voluptatum quae voluptate illum vel aperiam nisi quibusdam dolorum asperiores ea.
               </p>
 
               <h3 className="policy-subtitle">
-                3. Premium Membership Cancellation
+                3. Lorem, ipsum dolor.
               </h3>
               <p className="policy-paragraph">
-                You may cancel your premium membership at any time. When you
-                cancel, you will still have access to your premium features
-                until the end of your current billing period.
+                Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quidem nobis impedit saepe, architecto aperiam, repudiandae reprehenderit amet error, enim velit blanditiis perspiciatis in eligendi illum eaque harum sint debitis. Nisi.
               </p>
               <ul className="policy-list">
                 <li>
-                  Monthly subscriptions: Cancel at least 24 hours before your
-                  next billing date
+                  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Distinctio provident cumque voluptates molestiae qui aut velit in quas reiciendis ducimus.
                 </li>
                 <li>
-                  Annual subscriptions: Cancel at least 7 days before your
-                  renewal date for a full refund
+                 Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur totam delectus hic maiores possimus eaque.
                 </li>
-                <li>No refunds for partial membership periods</li>
+                <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti, ea?</li>
               </ul>
 
-              <h3 className="policy-subtitle">4. Wedding Website Services</h3>
+              <h3 className="policy-subtitle">4. Lorem, ipsum dolor.</h3>
               <p className="policy-paragraph">
-                Wedding website subscriptions can be canceled at any time. Upon
-                cancellation, your website will remain active until the end of
-                your current billing cycle. No refunds are provided for partial
-                months of service.
+                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam temporibus quis minus in! Animi, deserunt sapiente. Assumenda praesentium non error veniam dolorum est ea maxime consequatur neque excepturi, harum explicabo.
               </p>
 
-              <h3 className="policy-subtitle">5. Registry Services</h3>
+              <h3 className="policy-subtitle">5. Lorem, ipsum.</h3>
               <p className="policy-paragraph">
-                Registry services are free to create and maintain. Premium
-                registry features follow the same cancellation policy as premium
-                memberships.
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia repellat id perferendis mollitia rem, eum quibusdam a, nulla non ratione itaque ex nam voluptatibus eos, vero praesentium similique. Non, omnis.
               </p>
 
-              <h3 className="policy-subtitle">6. How to Cancel</h3>
-              <p className="policy-paragraph">To cancel any service:</p>
+              <h3 className="policy-subtitle">6. Lorem, ipsum dolor.</h3>
+              <p className="policy-paragraph">Lorem ipsum dolor sit amet.</p>
               <ol className="policy-list">
-                <li>Log in to your account</li>
-                <li>Go to "Account Settings"</li>
-                <li>Select "Subscriptions" or "Manage Services"</li>
-                <li>Follow the cancellation prompts</li>
+                <li>Lorem ipsum dolor sit amet consectetur.</li>
+                <li>Lorem ipsum dolor sit amet consectetur.</li>
               </ol>
 
-              <h3 className="policy-subtitle">7. Refund Processing</h3>
+              {/* <h3 className="policy-subtitle">7. Lorem, ipsum.</h3>
               <p className="policy-paragraph">
-                Approved refunds will be processed within 7-10 business days.
-                The refund will be issued to the original payment method used
-                for purchase.
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum accusantium quas dolorem cumque doloremque! Nobis, similique? At distinctio repudiandae aliquid, expedita maxime eveniet porro dicta voluptas nesciunt voluptates, accusantium reprehenderit.
               </p>
 
-              <h3 className="policy-subtitle">8. Force Majeure</h3>
+              <h3 className="policy-subtitle">8. Lorem, ipsum.</h3>
               <p className="policy-paragraph">
-                In cases of force majeure (natural disasters, government
-                restrictions, pandemics, etc.), cancellation policies may be
-                adjusted at our discretion. We will work with both couples and
-                vendors to find reasonable solutions.
-              </p>
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Esse dolores asperiores molestias, deserunt at corrupti aspernatur tempora voluptatum consequatur aliquid et corporis temporibus aliquam vel?
+              </p> */}
 
-              <h3 className="policy-subtitle">9. Contact Us</h3>
+              <h3 className="policy-subtitle">7. Lorem, ipsum.</h3>
               <p className="policy-paragraph">
-                If you have any questions about our Cancellation Policy, please
-                contact us:
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti obcaecati quod ipsam et expedita omnis?
               </p>
               <ul className="policy-list">
-                <li>Email: support@happywedz.com</li>
-                <li>Phone: +1 (800) 123-4567</li>
-                <li>Mail: 123 Wedding Lane, Suite 100, New York, NY 10001</li>
+                <li>Email: abc@gmail.com</li>
+                <li>Phone: +1 (123) 456-7890</li>
+                <li>Mail: 123 Lorem ipsum dolor sit amet consectetur adipisicing elit.</li>
               </ul>
             </div>
           </div>
 
           <div className="policy-update">
-            <h3 className="policy-updatetitle">Policy Updates</h3>
+            <h3 className="policy-updatetitle">Lorem, ipsum.</h3>
             <p className="policy-updatetext">
-              We may update this Cancellation Policy from time to time. We will
-              notify you of any changes by posting the new policy on this page
-              and updating the "Last updated" date.
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi reiciendis sequi, quod, autem nostrum pariatur, veritatis odio a provident tenetur veniam nemo! Praesentium, consectetur veniam?
             </p>
           </div>
         </div>
