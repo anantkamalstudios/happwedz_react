@@ -641,8 +641,8 @@ const Header = () => {
                                         <Link
                                           to={path}
                                           className={`dropdown-link d-flex align-items-center ${isShowMore
-                                              ? "primary-text fw-bold text-decoration-underline"
-                                              : ""
+                                            ? "primary-text fw-bold text-decoration-underline"
+                                            : ""
                                             }`}
                                         >
                                           <i className="bi bi-check-circle me-2 text-primary"></i>
@@ -724,141 +724,6 @@ const Header = () => {
                           >
                             Photography
                           </Link>
-
-                          {/* <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
-                            <div className="container">
-                              <div
-                                style={{ columnCount: 4, columnGap: "1rem" }}
-                                className="grid-layout"
-                              >
-                                {[
-                                  {
-                                    title: "Bridal Wear",
-                                    items: [
-                                      "Bridal Lehenga",
-                                      "Wedding Sarees",
-                                      "Engagement",
-                                      "Mehndi",
-                                      "Blouse Designs",
-                                      "More",
-                                    ],
-                                  },
-                                  {
-                                    title: "Jewellery & Accessories",
-                                    items: [
-                                      "Bridal Jewellery",
-                                      "Engagement Rings",
-                                      "Floral Jewellery",
-                                      "More",
-                                    ],
-                                  },
-                                  {
-                                    title: "Mehndi",
-                                    items: [
-                                      "Arabic",
-                                      "Mehndi Designs",
-                                      "Simple",
-                                      "Unique",
-                                      "More",
-                                    ],
-                                  },
-                                  {
-                                    title: "Decor & Ideas",
-                                    items: [
-                                      "Wedding Decor",
-                                      "Bridal Entry",
-                                      "Groom Entry",
-                                      "Wedding Games",
-                                      "More",
-                                    ],
-                                  },
-                                  {
-                                    title: "Wedding Cards & Gifts",
-                                    items: [
-                                      "Designs",
-                                      "Wedding Gifts",
-                                      "Wedding Invitations",
-                                      "More",
-                                    ],
-                                  },
-                                  {
-                                    title: "Wedding Photography",
-                                    items: [
-                                      "Pre Wedding Shoot",
-                                      "Wedding",
-                                      "Photoshoot & Poses",
-                                      "More",
-                                    ],
-                                  },
-                                  {
-                                    title: "Groom Wear",
-                                    items: [
-                                      "Sherwani",
-                                      "Wedding Suits",
-                                      "More",
-                                    ],
-                                  },
-                                  {
-                                    title: "Bridal Makeup & Hair",
-                                    items: [
-                                      "Bridal Makeup",
-                                      "Bridal Hairstyles",
-                                      "Engagement",
-                                      "Mehndi",
-                                      "More",
-                                    ],
-                                  },
-                                ].map((section, i) => (
-                                  // <div className="col-6 col-md-3" key={i}>
-                                  //   <h6 className="fw-semibold text-secondary mb-3">
-                                  //     {section.title}
-                                  //   </h6>
-                                  //   <ul className="list-unstyled">
-                                  //     {section.items.map((item, idx) => (
-                                  //       <li key={idx}>
-                                  //         <Link
-                                  //           to={`/photography/${toSlug(item)}`}
-                                  //           state={{ title: item }}
-                                  //           className="dropdown-link small d-block mb-2"
-                                  //         >
-                                  //           <i className="bi bi-chevron-right me-2 text-muted"></i>
-                                  //           {item}
-                                  //         </Link>
-                                  //       </li>
-                                  //     ))}
-                                  //   </ul>
-                                  // </div>
-                                  <div
-                                    className="mb-4 d-inline-block w-100"
-                                    key={i}
-                                  >
-                                    <div className="fw-bold primary-text text-uppercase mb-2">
-                                      {section.title}
-                                    </div>
-                                    {Array.isArray(section.items) &&
-                                      section.items.length > 0 && (
-                                        <ul className="list-unstyled">
-                                          {section.items.map((item, j) => (
-                                            <li key={j} className="mb-1">
-                                              <Link
-                                                to={`/photography/${toSlug(
-                                                  item
-                                                )}`}
-                                                state={{ title: item }}
-                                                className="dropdown-link small d-block"
-                                              >
-                                                {item}
-                                              </Link>
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      )}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div> */}
-
                           <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
                               <div

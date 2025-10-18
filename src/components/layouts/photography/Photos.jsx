@@ -1,73 +1,78 @@
 import React from "react";
+import { IMAGE_BASE_URL } from "../../../config/constants";
 
-const Photos = () => {
-  const images = [
-    {
-      url: "https://image.wedmegood.com/resized/450X/uploads/images/a22617d6e787421c9425f35ae295b44arealwedding/1TSK3955Large.jpeg",
-      name: "Beautiful Mehendi Ceremony",
-      type: "Mehendi",
-    },
-    {
-      url: "https://image.wedmegood.com/resized/450X/uploads/images/420fc2b648204a759eba42429efd9fbcrealwedding/SHUBHANGI_MAYANK_SANGEET-2215.jpg",
-      name: "Grand Wedding Reception",
-      type: "Reception",
-    },
-    {
-      url: "https://image.wedmegood.com/resized/450X/uploads/images/dda6757add9b4c468bfdbe216fdd797brealwedding/Anu&Sam_ParthGarg-01.JPG",
-      name: "Grand Wedding Reception",
-      type: "Reception",
-    },
-    {
-      url: "https://image.wedmegood.com/resized/450X/uploads/member/144653/1731575191_367705890_598783169086383_6132481523517661652_n.jpg",
-      name: "Bridal Portrait",
-      type: "Makeup",
-    },
-    {
-      url: "https://image.wedmegood.com/resized/450X/uploads/images/9f99eaed032c4bf895e4c3d328928c6drealwedding/SID_9538.jpeg",
-      name: "Candid Photography",
-      type: "Real Wedding",
-    },
-    {
-      url: "https://image.wedmegood.com/resized/450X/uploads/images/d38cbc9e4ffe42c4b7fc773723426e4brealwedding/IMG_5255.JPG",
-      name: "Wedding Decor",
-      type: "Decor",
-    },
-    {
-      url: "https://image.wedmegood.com/resized/450X/uploads/images/ded5d91b0ace44d794305ffffdecde0crealwedding/2H5A0455LargeLarge.jpeg",
-      name: "Haldi Function",
-      type: "Haldi",
-    },
-    {
-      url: "https://image.wedmegood.com/resized/450X/uploads/project/298704/1727174375_DSC06904_min.jpg",
-      name: "Haldi Function",
-      type: "Haldi",
-    },
-    {
-      url: "https://image.wedmegood.com/resized/450X/uploads/images/43268b83d9b84dee90d76df69fdbf0a8realwedding/VDT04043Large.jpeg",
-      name: "Haldi Function",
-      type: "Haldi",
-    },
-  ];
+const Photos = ({ title, images = [], loading = false }) => {
+  const displayImages = images && images.length > 0 ? images : [];
+
+  const normalizeImageUrl = (url) => {
+    if (!url) return "https://via.placeholder.com/450x300?text=Image+Not+Available";
+    if (url.startsWith("http")) {
+      return url.replace("http://happywedz.com/", IMAGE_BASE_URL);
+    }
+    return IMAGE_BASE_URL + url.replace(/^\/+/, "");
+  };
+
+  if (loading) {
+    return (
+      <div className="container-fluid py-5 text-center">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!displayImages || displayImages.length === 0) {
+    return (
+      <div className="container-fluid py-5 text-center">
+        <div className="alert alert-info">
+          <h5>No photos available</h5>
+          <p>There are no photos in this category yet.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container-fluid py-5">
+      {title && (
+        <div className="mb-4">
+          <h2 className="text-center">{title}</h2>
+        </div>
+      )}
+
       <div className="masonry">
-        {images.map((img, index) => (
-          <div key={index} className="masonry-item">
-            <div className="card border-0 shadow-sm">
-              <img
-                src={img.url}
-                alt={img.name}
-                className="card-img-top"
-                loading="lazy"
-              />
-              <div className="card-body p-2">
-                <h6 className="mb-1">{img.name}</h6>
-                <small className="text-muted">{img.type}</small>
+        {displayImages.map((img, index) => {
+          const rawUrl =
+            Array.isArray(img.images) && img.images.length > 0
+              ? img.images[0]
+              : img.image_url || img.url || img.image;
+
+          const imageUrl = normalizeImageUrl(rawUrl);
+          const imageName = img.title || img.name || "Wedding Photo";
+          const imageType = img.category_name || img.type_name || img.type || "";
+
+          return (
+            <div key={img.id || index} className="masonry-item">
+              <div className="card border-0 shadow-sm">
+                <img
+                  src={imageUrl}
+                  alt={imageName}
+                  className="card-img-top"
+                  loading="lazy"
+                  onError={(e) => {
+                    e.target.src =
+                      "https://via.placeholder.com/450x300?text=Image+Not+Available";
+                  }}
+                />
+                <div className="card-body p-2">
+                  <h6 className="mb-1">{imageName}</h6>
+                  {imageType && <small className="text-muted">{imageType}</small>}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
