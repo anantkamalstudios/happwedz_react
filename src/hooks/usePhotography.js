@@ -104,7 +104,7 @@ const usePhotography = () => {
       setLoading(true);
       setError(null);
       try {
-        const data = await getPhotographyByType(id); 
+        const data = await getPhotographyByType(id);
         setPhotosByType(data.data);
       } catch (err) {
         setError(err);
@@ -117,7 +117,7 @@ const usePhotography = () => {
       setError(null);
       try {
         const data = await getPhotographyByCategory(id);
-        setPhotosByCategory(data);
+        setPhotosByCategory(data.data || data);
       } catch (err) {
         setError(err);
       } finally {

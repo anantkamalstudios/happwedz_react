@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import VideoEditor from "./layouts/eInvite/VideoEditor";
 import VideoPreview from "./layouts/eInvite/VideoPreview";
+import Swal from "sweetalert2";
 
 const VideoEditorPage = () => {
   const location = useLocation();
@@ -137,7 +138,12 @@ const VideoEditorPage = () => {
 
       const projectId = `wedding-video-${Date.now()}`;
       localStorage.setItem(projectId, JSON.stringify(projectData));
-      alert("Project saved successfully!");
+      Swal.fire({
+        icon: "success",
+        title: "Project saved successfully!",
+        showConfirmButton: false,
+        timer: 1500,
+      });
     }
   };
 

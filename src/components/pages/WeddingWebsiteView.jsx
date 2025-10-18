@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FiEdit, FiShare, FiArrowLeft } from "react-icons/fi";
+import { icons } from "lucide-react";
 
 const WeddingWebsiteView = () => {
     const { id } = useParams();
@@ -199,9 +200,21 @@ const WeddingWebsiteView = () => {
                                 onClick={() => {
                                     if (websiteData.isPublished) {
                                         navigator.clipboard.writeText(`${window.location.origin}/api/wedding/${websiteData.websiteUrl}`);
-                                        alert('Website link copied to clipboard!');
+                                        // alert('Website link copied to clipboard!');
+                                        Swal.fire({
+                                            icon: 'success',
+                                            text: 'Website link copied to clipboard!',
+                                            confirmButtonText: 'OK',
+                                            timer: '3000'
+                                        })
                                     } else {
-                                        alert('Please publish your website first to share it.');
+                                        // alert('Please publish your website first to share it.');
+                                        Swal.fire({
+                                            icon:"warning",
+                                            text: "Please publish your website first to share it.",
+                                            confirmButtonText: "OK",
+                                            timer: "3000"
+                                        })
                                     }
                                 }}
                             >

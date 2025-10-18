@@ -194,6 +194,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { UserPlus, Copy, Check } from "lucide-react";
+import Swal from "sweetalert2";
 
 export default function ReviewRequestForm() {
   const { vendor } = useSelector((state) => state.vendorAuth) || {};
@@ -233,7 +234,14 @@ shree venues`);
 
   const handleSend = async () => {
     if (recipients.length === 0) {
-      alert("Please add at least one recipient.");
+      // alert("Please add at least one recipient.");
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Please add at least one recipient.",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#ed1173",
+        })
       return;
     }
 
@@ -259,14 +267,39 @@ shree venues`);
       );
 
       if (response.data?.success) {
-        alert("Review request sent successfully!");
+        // alert("Review request sent successfully!");
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Review request sent successfully!",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#ed1173",
+          timer:"3000"
+
+        })
         setRecipients([]);
       } else {
-        alert(response.data?.message || "Failed to send review requests.");
+        // alert(response.data?.message || "Failed to send review requests.");
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: response.data?.message || "Failed to send review requests.",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#ed1173",
+          timer:"3000"
+        })
       }
     } catch (error) {
       console.error("Error sending review requests:", error);
-      alert("Something went wrong while sending review requests.");
+      // alert("Something went wrong while sending review requests.");
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Something went wrong while sending review requests.",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#ed1173",
+        timer:"3000"
+        })
     } finally {
       setLoading(false);
     }

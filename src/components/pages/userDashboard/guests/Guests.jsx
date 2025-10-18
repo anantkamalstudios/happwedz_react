@@ -230,7 +230,14 @@ const Guests = () => {
   const childrenCount = guests.filter((g) => g && g.type === "Child").length;
 
   const sendMessage = (type) => {
-    alert(`Sending ${type} message`);
+    // alert(`Sending ${type} message`);
+    Swal.fire({
+      icon: "info",
+      text: `Sending ${type} message`,
+      timer:"3000",
+      confirmButtonText:"OK",
+      confirmButtonColor:"#C31162"
+    });
     setShowMessageOptions(false);
   };
 
@@ -492,7 +499,14 @@ const Guests = () => {
             <button
               className="wgl-button wgl-button-save"
               onClick={() => {
-                alert(`Group "${newGuestForm.group}" created`);
+                // alert(`Group "${newGuestForm.group}" created`);
+                Swal.fire({
+                  icon: "info",
+                  text: `Group "${newGuestForm.group}" created`,
+                  timer:"3000",
+                  confirmButtonText:"OK",
+                  confirmButtonColor:"#C31162"
+                });
                 setShowAddGroupForm(false);
               }}
             >

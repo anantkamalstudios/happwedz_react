@@ -1,10 +1,16 @@
 // Utility to normalize image URLs
 const getImageUrl = (imageData) => {
   const baseUrl = "https://happywedzbackend.happywedz.com/";
-  const replacePrefix = (url) =>
-    typeof url === "string"
-      ? url.replace(/^https:\/\/happywedz\.com:4000\/?/, baseUrl)
-      : url;
+  const replacePrefix = (url) => {
+    if (typeof url === "string") {
+      // Replace old domain with new base URL
+      url = url.replace(/^https:\/\/happywedz\.com:4000\/?/, baseUrl);
+      // Replace 'blogs' with 'photography' in the path
+      url = url.replace(/\/uploads\/blogs\//g, "/uploads/photography/");
+      return url;
+    }
+    return url;
+  };
 
   if (!imageData) return "https://via.placeholder.com/800x400";
 
@@ -12,14 +18,18 @@ const getImageUrl = (imageData) => {
     if (imageData.startsWith("http")) {
       return replacePrefix(imageData);
     }
-    return baseUrl + imageData;
+    // Replace 'blogs' with 'photography' for relative paths
+    const path = imageData.replace(/\/uploads\/blogs\//g, "/uploads/photography/");
+    return baseUrl + path;
   }
 
   if (Array.isArray(imageData) && imageData.length > 0) {
     if (imageData[0].startsWith("http")) {
       return replacePrefix(imageData[0]);
     }
-    return baseUrl + imageData[0];
+    // Replace 'blogs' with 'photography' for relative paths
+    const path = imageData[0].replace(/\/uploads\/blogs\//g, "/uploads/photography/");
+    return baseUrl + path;
   }
 
   return "https://via.placeholder.com/800x400";

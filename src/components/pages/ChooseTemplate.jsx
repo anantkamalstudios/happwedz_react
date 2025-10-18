@@ -11,9 +11,7 @@ export default function ChooseTemplate() {
     return (
         <>
             <style>{`
-            .choose-template-container {
-                background: linear-gradient(135deg, #fdfbfb 0%, #f8f4f1 100%);
-                min-height: 100vh;
+            .choose-template-container { 
                 padding: 60px 0;
             }
 
@@ -26,8 +24,7 @@ export default function ChooseTemplate() {
                 font-size: 2.8rem;
                 font-weight: 700;
                 color: #2d2d2d;
-                margin-bottom: 15px;
-                font-family: 'Georgia', serif;
+                margin-bottom: 15px; 
             }
 
             .choose-template-subtitle {
@@ -114,8 +111,7 @@ export default function ChooseTemplate() {
                 font-size: 1.5rem;
                 font-weight: 600;
                 color: #2d2d2d;
-                margin-bottom: 10px;
-                font-family: 'Georgia', serif;
+                margin-bottom: 10px; 
             }
 
             .choose-template-description {
