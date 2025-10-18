@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { FaBolt, FaPalette, FaMobileAlt } from "react-icons/fa";
-import { useSelector } from "react-redux";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
+import LoginPopup from "./DesignStudio.LoginPopup";
+import { setRoleType } from "../../redux/roleSlice";
 
 const TryLanding = () => {
   const [showModal, setShowModal] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
+  const dispatch = useDispatch();
 
   const user = useSelector((state) => state.auth.user);
 
@@ -15,16 +18,23 @@ const TryLanding = () => {
     setIsLoaded(true);
   }, []);
 
-  useEffect(() => {
-    if (user && location.state?.openPopup) {
+  const handleLoginSuccess = () => {
+    setShowLoginPopup(false);
+    setShowModal(true);
+  };
+
+  const handleGetStarted = () => {
+    if (!user) {
+      setShowLoginPopup(true);
+    } else {
       setShowModal(true);
-      navigate(location.pathname, { replace: true });
     }
-  }, [user, location.state, navigate]);
+  };
 
   const handleModalClose = () => {
     setShowModal(false);
   };
+  const handleLoginClose = () => setShowLoginPopup(false);
 
   const handleCategorySelect = (category) => {
     setShowModal(false);
@@ -102,16 +112,17 @@ const TryLanding = () => {
                   fontSize: "1.5rem",
                   width: "100%",
                 }}
-                onClick={() => {
-                  if (!user) {
-                    navigate("/customer-login", {
-                      state: { from: "/try", openPopup: true },
-                    });
-                  } else {
-                    setShowModal(true);
-                    navigate("/try");
-                  }
-                }}
+                // onClick={() => {
+                //   if (!user) {
+                //     navigate("/customer-login", {
+                //       state: { from: "/try", openPopup: true },
+                //     });
+                //   } else {
+                //     setShowModal(true);
+                //     navigate("/try");
+                //   }
+                // }}
+                onClick={handleGetStarted}
               >
                 Get Started
               </button>
@@ -150,7 +161,15 @@ const TryLanding = () => {
                   <div className="col-md-4">
                     <div
                       role="button"
-                      onClick={() => navigate("/try/bride")}
+                      onClick={() => {
+                        const userInfo = { role: "bride" };
+                        localStorage.setItem(
+                          "userInfo",
+                          JSON.stringify(userInfo)
+                        );
+                        dispatch(setRoleType({ role: "bride" }));
+                        navigate("/try/bride");
+                      }}
                       className="d-flex flex-column align-items-center"
                       style={{ height: "320px" }}
                     >
@@ -178,8 +197,16 @@ const TryLanding = () => {
                   <div className="col-md-4">
                     <div
                       role="button"
-                      // onClick={() => navigate("/try/groome")}
-                      onClick={() =>{}}
+                      onClick={() => {
+                        localStorage.removeItem("userInfo");
+                        navigate("/try/groome");
+                        dispatch(setRoleType({ role: "groom" }));
+                        const userInfo = { role: "groom" };
+                        localStorage.setItem(
+                          "userInfo",
+                          JSON.stringify(userInfo)
+                        );
+                      }}
                       className="d-flex flex-column align-items-center"
                     >
                       <div
@@ -194,11 +221,11 @@ const TryLanding = () => {
                         />
 
                         <h4 className="mt-3 fw-semibold">Groom</h4>
-                        <div className="try-modal-hover-overlay-custom d-flex justify-content-center align-items-center rounded-5">
+                        {/* <div className="try-modal-hover-overlay-custom d-flex justify-content-center align-items-center rounded-5">
                           <span className="text-white fs-4 fw-bold">
                             Coming Soon
                           </span>
-                        </div>
+                        </div> */}
                       </div>
                       <h4
                         className="mt-3 fw-semibold"
@@ -247,6 +274,10 @@ const TryLanding = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {showLoginPopup && (
+          <LoginPopup isOpen={showLoginPopup} onClose={handleLoginClose} />
         )}
       </div>
     </>

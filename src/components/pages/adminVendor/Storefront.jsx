@@ -268,11 +268,21 @@ const Storefront = () => {
         const fd = buildFormData();
         await vendorServicesApi.createOrUpdateService(fd, token, formData.id);
       } catch (e) {
-        alert(
-          `Failed to update. ${
+        // alert(
+        //   `Failed to update. ${
+        //     typeof e === "string" ? e : e?.message || "Unknown error"
+        //   }`
+        // );
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: `Failed to update. ${
             typeof e === "string" ? e : e?.message || "Unknown error"
-          }`
-        );
+          }`,
+          timer: "3000",
+          confirmButtonText: "OK",
+          confirmButtonColor:"#C31162"
+        });
       }
     }
     setShowModal(true);
@@ -510,11 +520,21 @@ const Storefront = () => {
       }
       setShowModal(true);
     } catch (e) {
-      alert(
-        `Failed to submit. ${
+      // alert(
+      //   `Failed to submit. ${
+      //     typeof e === "string" ? e : e?.message || "Unknown error"
+      //   }`
+      // );
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: `Failed to submit. ${
           typeof e === "string" ? e : e?.message || "Unknown error"
-        }`
-      );
+        }`,
+        timer:"3000",
+        confirmButtonText: "OK",
+        confirmButtonColor:"#C31162"
+      });
     }
   };
 

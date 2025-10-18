@@ -1197,6 +1197,7 @@ import { FiCheck, FiTrash, FiLink, FiEdit } from "react-icons/fi";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const BASE_URL = "https://happywedz.com/api/new-checklist";
 const CATEGORY_API = "https://happywedz.com/api/vendor-types/with-subcategories/all";
@@ -1386,7 +1387,14 @@ const Check = () => {
 
   // Handle edit click
   const handleEdit = (id) => {
-    alert(`Edit functionality for task ID: ${id} is not yet implemented.`);
+    // alert(`Edit functionality for task ID: ${id} is not yet implemented.`);
+    Swal.fire({
+      icon: "info",
+      text: `Edit functionality for task ID: ${id} is not yet implemented.`,
+      confirmButtonText: "OK",
+      confirmButtonColor:"#C31162",
+      timer:"3000"
+    });
   };
 
   const toggleStatus = async (id, currentStatus) => {

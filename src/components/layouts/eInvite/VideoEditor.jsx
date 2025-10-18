@@ -29,6 +29,7 @@ import {
   Upload,
   Eye,
 } from "lucide-react";
+import Swal from "sweetalert2";
 
 const VideoEditor = ({ template, onBack, onVideoDataUpdate, onPreview }) => {
   const navigate = useNavigate();
@@ -236,7 +237,13 @@ const VideoEditor = ({ template, onBack, onVideoDataUpdate, onPreview }) => {
     // Simulate video export
     setTimeout(() => {
       setIsLoading(false);
-      alert("Video exported successfully!");
+      // alert("Video exported successfully!");
+      Swal.fire({
+        icon: "success",
+        title: "Video Exported",
+        text: "Your video has been successfully exported.",
+        timer:1500
+      })
     }, 3000);
   };
 
@@ -274,7 +281,12 @@ const VideoEditor = ({ template, onBack, onVideoDataUpdate, onPreview }) => {
 
     const projectId = `wedding-video-${Date.now()}`;
     localStorage.setItem(projectId, JSON.stringify(projectData));
-    alert("Project saved successfully!");
+    // alert("Project saved successfully!");
+    Swal.fire({
+      icon: "success",
+      title: "Project Saved",
+      text: "Your project has been successfully saved.",
+    })
   };
 
   const nextStep = () => {

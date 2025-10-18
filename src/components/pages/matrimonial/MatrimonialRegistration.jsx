@@ -122,7 +122,14 @@ const MatrimonialRegistration = () => {
     if (validateStep(step)) {
       // console.log("Form submitted:", formData);
       // Submit to backend
-      alert("Registration successful!");
+      // alert("Registration successful!");
+      Swal.fire({
+        icon:"success",
+        text:"Registration successfull",
+        timer:"3000",
+        confirmeButtonText:"OK",
+        confirmButtonColor:"#C31162"
+      })
     }
   };
 

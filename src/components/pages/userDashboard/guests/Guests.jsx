@@ -10,6 +10,7 @@ import {
   FaUsers,
   FaChevronDown,
 } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 const initialGuestFormState = {
   name: "",
@@ -100,10 +101,10 @@ const Guests = () => {
 
   // Pagination calculations
   const [currentPage, setCurrentPage] = useState(1);
-  const [guestsPerPage] = useState(5);
+  const guestsPerPage = 10;
 
   // Calculate currentGuests
-  const indexOfLastGuest = currentPage * guestsPerPage;
+  const indexOfLastGuest = currentPage * guestsPerPage; // This is correct
   const indexOfFirstGuest = indexOfLastGuest - guestsPerPage;
   const currentGuests = guests.slice(indexOfFirstGuest, indexOfLastGuest);
 
@@ -192,11 +193,14 @@ const Guests = () => {
   const deleteGuestAPI = async (id) => {
     if (!axiosInstance) return;
     if (!window.confirm("Are you sure?")) return;
+    // Optimistically update the UI
+    setGuests((prevGuests) => prevGuests.filter((guest) => guest.id !== id));
     try {
       await axiosInstance.delete(`https://happywedz.com/api/guestlist/${id}`);
-      setRefresh((prev) => !prev); // Trigger re-fetch
+      // No need to refetch, the optimistic update is sufficient
     } catch (err) {
       console.error("Delete Guest Error:", err);
+      setRefresh((prev) => !prev); // Re-fetch to revert if the delete fails
     }
   };
 
@@ -211,7 +215,14 @@ const Guests = () => {
   const childrenCount = guests.filter((g) => g && g.type === "Children").length;
 
   const sendMessage = (type) => {
-    alert(`Sending ${type} message`);
+    // alert(`Sending ${type} message`);
+    Swal.fire({
+      icon: "info",
+      text: `Sending ${type} message`,
+      timer:"3000",
+      confirmButtonText:"OK",
+      confirmButtonColor:"#C31162"
+    });
     setShowMessageOptions(false);
   };
 
@@ -448,7 +459,14 @@ const Guests = () => {
             <button
               className="wgl-button wgl-button-save"
               onClick={() => {
-                alert(`Group "${newGuestForm.group}" created`);
+                // alert(`Group "${newGuestForm.group}" created`);
+                Swal.fire({
+                  icon: "info",
+                  text: `Group "${newGuestForm.group}" created`,
+                  timer:"3000",
+                  confirmButtonText:"OK",
+                  confirmButtonColor:"#C31162"
+                });
                 setShowAddGroupForm(false);
               }}
             >
@@ -512,7 +530,7 @@ const Guests = () => {
               </tr>
             </thead>
             <tbody>
-              {guests.map((g) => (
+              {currentGuests.map((g) => (
                 <tr key={g.id} className="wgl-guest-row">
                   <td className="wgl-guest-name">{g.name}</td>
                   <td className="wgl-guest-group">{g.group}</td>
@@ -524,9 +542,6 @@ const Guests = () => {
                         updateGuestField(g.id, "status", e.target.value)
                       }
                     >
-                      {statusOptions.map((s) => (
-                        <option key={s}>{s}</option>
-                      ))}
                       {statusOptions.map((s) => (
                         <option key={s}>{s}</option>
                       ))}
@@ -585,12 +600,6 @@ const Guests = () => {
             >
               Previous
             </button>
-            <button
-              disabled={currentPage === 1}
-              onClick={() => paginate(currentPage - 1)}
-            >
-              Previous
-            </button>
             {[...Array(totalPages)].map((_, i) => (
               <button
                 key={i + 1}
@@ -600,12 +609,6 @@ const Guests = () => {
                 {i + 1}
               </button>
             ))}
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => paginate(currentPage + 1)}
-            >
-              Next
-            </button>
             <button
               disabled={currentPage === totalPages}
               onClick={() => paginate(currentPage + 1)}

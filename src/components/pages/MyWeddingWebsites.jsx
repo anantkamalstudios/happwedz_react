@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiPlus, FiEye, FiEdit, FiTrash2, FiShare, FiCalendar, FiHeart } from "react-icons/fi";
+import Swal from "sweetalert2";
 
 const MyWeddingWebsites = () => {
     const navigate = useNavigate();
@@ -43,11 +44,21 @@ const MyWeddingWebsites = () => {
                 if (response.ok) {
                     setWebsites(websites.filter(website => website.id !== id));
                 } else {
-                    alert('Failed to delete website');
+                    // alert('Failed to delete website');
+                    Swal.fire({
+                        icon:"error",
+                        text:"Failed to delete website",
+                        timer:1500
+                    })
                 }
             } catch (error) {
                 console.error('Error deleting website:', error);
-                alert('Error deleting website');
+                // alert('Error deleting website');
+                Swal.fire({
+                  icon: "error",
+                  text: "Error deleting website",
+                  timer: 1500,
+                });
             }
         }
     };
@@ -66,13 +77,28 @@ const MyWeddingWebsites = () => {
                 setWebsites(websites.map(website =>
                     website.id === id ? { ...website, isPublished: true, websiteUrl: result.websiteUrl } : website
                 ));
-                alert('Website published successfully!');
+                // alert('Website published successfully!');
+                Swal.fire({
+                    icon:"success",
+                    text:"Website published successfully!",
+                    timer:1500
+                })
             } else {
-                alert('Failed to publish website');
+                // alert('Failed to publish website');
+                Swal.fire({
+                    icon:"error",
+                    text:"Failed to publish website",
+                    timer:1500
+                })
             }
         } catch (error) {
             console.error('Error publishing website:', error);
-            alert('Error publishing website');
+            // alert('Error publishing website');
+            Swal.fire({
+                icon:"error",
+                text:"Error publishing website",
+                timer:1500
+            })
         }
     };
 
@@ -382,7 +408,11 @@ const MyWeddingWebsites = () => {
                                                 className="action-btn btn-success-action"
                                                 onClick={() => {
                                                     navigator.clipboard.writeText(`${window.location.origin}/api/wedding/${website.websiteUrl}`);
-                                                    alert('Website link copied to clipboard!');
+                                                    // alert('Website link copied to clipboard!');
+                                                    Swal.fire({
+                                                        text:"Website link copied to clipboard!",
+                                                        timer:1500
+                                                    })
                                                 }}
                                             >
                                                 <FiShare /> Share

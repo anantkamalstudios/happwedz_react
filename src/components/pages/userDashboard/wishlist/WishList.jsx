@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { BsPlusLg } from "react-icons/bs";
 import { IoClose } from "react-icons/io5";
 import { PiChatCircleDotsLight } from "react-icons/pi";
+import { FaShareAlt, FaSearch } from "react-icons/fa";
 import PricingModal from "../../../layouts/PricingModal";
 import vendorServicesApi from "../../../../services/api/vendorServicesApi";
 
@@ -11,6 +12,7 @@ const Wishlist = () => {
   const token = useSelector((state) => state.auth.token);
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // ✅ Modal state
   const [showModal, setShowModal] = useState(false);
@@ -66,8 +68,10 @@ const Wishlist = () => {
                   wishlist_id: item.wishlist_id,
                   vendor_services_id: item.vendor_services_id,
                   businessName:
-                    serviceData?.businessName || item.businessName || "Unknown",
-                  city: serviceData?.city || item.city || "Unknown",
+                    serviceData?.attributes?.name ||
+                    serviceData?.businessName ||
+                    "Unknown",
+                  city: serviceData?.attributes?.city || "Unknown",
                   image: imageUrl,
                 };
               } catch (err) {
@@ -76,7 +80,7 @@ const Wishlist = () => {
                   wishlist_id: item.wishlist_id,
                   vendor_services_id: item.vendor_services_id,
                   businessName: item.businessName || "Unknown",
-                  city: item.city || "Unknown",
+                  city: "Unknown",
                   image:
                     "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop",
                 };
@@ -99,41 +103,50 @@ const Wishlist = () => {
 
   // ✅ Toggle Wishlist (Add / Remove)
   const toggleWishlistItem = async (vendorId) => {
+    const originalWishlist = [...wishlist];
+    // Optimistically remove the item from the UI
+    setWishlist((prevWishlist) =>
+      prevWishlist.filter((item) => item.vendor_services_id !== vendorId)
+    );
+
     try {
-      const response = await fetch(
-        "https://happywedz.com/api/wishlist/toggle",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ vendor_services_id: vendorId }),
-        }
-      );
+      const response = await fetch("https://happywedz.com/api/wishlist/toggle", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ vendor_services_id: vendorId }),
+      });
 
       const result = await response.json();
-      if (result.success) {
-        // Refetch wishlist after toggle
-        const wishlistRes = await fetch(`https://happywedz.com/api/wishlist`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const wishlistData = await wishlistRes.json();
-        if (wishlistData.success) {
-          const mappedWishlist = (wishlistData.data || []).map((item) => ({
-            wishlist_id: item.wishlist_id,
-            vendor_services_id: item.vendor_services_id,
-            businessName: item.businessName || "Unknown",
-            city: item.city || "Unknown",
-            image: getImageUrl(item.image?.id),
-          }));
-          setWishlist(mappedWishlist);
-        }
+      if (!result.success) {
+        // If the API call fails, revert the change
+        setWishlist(originalWishlist);
+        console.error("Failed to remove item from wishlist:", result.message);
       }
+      // If successful, the optimistic update is correct.
+      // You might want to refetch or just trust the optimistic update.
+      // For now, we'll just let the optimistic update stand.
+      // If a full refetch is desired, it can be done here.
     } catch (err) {
-      console.error(err);
+      // If the API call fails, revert the change
+      setWishlist(originalWishlist);
+      console.error("Error toggling wishlist item:", err);
     }
   };
+
+  // ✅ Memoized filtered wishlist for search
+  const filteredWishlist = useMemo(() => {
+    if (!searchTerm) {
+      return wishlist;
+    }
+    return wishlist.filter(
+      (vendor) =>
+        vendor.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        vendor.city.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [wishlist, searchTerm]);
 
   // ✅ UI Loading / Empty states
   if (loading) {
@@ -144,10 +157,22 @@ const Wishlist = () => {
     );
   }
 
-  if (wishlist.length === 0) {
+  if (wishlist.length === 0 && !loading) {
     return (
-      <div className="text-center mt-5">
-        <h5>No items in your wishlist yet.</h5>
+      <div className="container py-5">
+        <div className="text-center py-5 bg-light rounded-4 shadow-sm">
+          <i
+            className="bi bi-heart text-muted"
+            style={{ fontSize: "4rem" }}
+          ></i>
+          <h4 className="fw-bold text-dark my-3">Your Wishlist is Empty</h4>
+          <p className="text-muted mb-4">
+            Browse vendors and add your favorites to your wishlist.
+          </p>
+          <Link to="/vendors" className="btn btn-primary rounded-3 px-4">
+            <BsPlusLg className="me-2" /> Browse Vendors
+          </Link>
+        </div>
       </div>
     );
   }
@@ -163,18 +188,25 @@ const Wishlist = () => {
           >
             <div className="mb-4">
               <h6
-                className="text-uppercase fw-bold text-muted mb-3"
+                className="text-uppercase fw-bold text-dark mb-3"
                 style={{ fontSize: "0.85rem" }}
               >
-                Your Search
+                Filter Wishlist
               </h6>
-              <input
-                type="text"
-                className="form-control border-2 rounded-3"
-                value="Wedding Services"
-                readOnly
-                style={{ backgroundColor: "#f8f9fa", fontSize: "0.95rem" }}
-              />
+              <div className="position-relative">
+                <FaSearch
+                  className="position-absolute text-muted"
+                  style={{ top: "12px", left: "12px" }}
+                />
+                <input
+                  type="text"
+                  className="form-control border-2 rounded-3 ps-5"
+                  placeholder="Search by name or city..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{ backgroundColor: "#f8f9fa", fontSize: "0.95rem" }}
+                />
+              </div>
             </div>
             <div className="mt-4 pt-4 border-top text-center">
               <div className="fw-bold text-primary fs-4 mb-1">
@@ -195,15 +227,15 @@ const Wishlist = () => {
               </p>
             </div>
             <div className="col-md-3 justify-content-end d-flex">
-            <Link to="/vendors" className="btn btn-primary rounded-3 px-4">
-              <BsPlusLg className="me-2" size={18} /> Add Vendor
-            </Link>
+              <Link to="/vendors" className="btn btn-primary rounded-3 px-4">
+                <BsPlusLg className="me-2" size={18} /> Add Vendor
+              </Link>
             </div>
           </div>
 
           {/* Vendors List */}
           <div className="row g-4">
-            {wishlist.map((vendor) => (
+            {filteredWishlist.map((vendor) => (
               <div
                 key={vendor.vendor_services_id}
                 className="col-md-6 col-xl-4"
@@ -244,8 +276,8 @@ const Wishlist = () => {
                           handleShowModal(vendor.vendor_services_id)
                         }
                       >
-                        <PiChatCircleDotsLight className="me-2" size={18} />{" "}
-                        Contact Us
+                        <PiChatCircleDotsLight className="me-2" size={18} />
+                        Contact
                       </button>
                     </div>
                   </div>
@@ -254,22 +286,14 @@ const Wishlist = () => {
             ))}
           </div>
 
-          {/* Empty state inside layout */}
-          {wishlist.length === 0 && !loading && (
-            <div className="text-center py-5 bg-light rounded-4">
-              <i
-                className="bi bi-heart text-muted"
-                style={{ fontSize: "4rem" }}
-              ></i>
-              <h4 className="fw-bold text-muted my-3">
-                Your Wishlist is Empty
-              </h4>
-              <p className="text-muted mb-4">
-                Browse vendors and add your favorites to your wishlist.
+          {/* Search empty state */}
+          {wishlist.length > 0 && filteredWishlist.length === 0 && (
+            <div className="text-center py-5 bg-light rounded-4 mt-4 shadow-sm">
+              <FaSearch className="text-muted mb-3" size={40} />
+              <h5 className="fw-bold text-dark">No Vendors Found</h5>
+              <p className="text-muted">
+                No items in your wishlist match your search for "{searchTerm}".
               </p>
-              <Link to="/vendors" className="btn btn-primary rounded-3 px-4">
-                <BsPlusLg className="me-2" /> Browse Vendors
-              </Link>
             </div>
           )}
         </div>
