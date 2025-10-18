@@ -92,7 +92,7 @@ const SubSection = () => {
     return apiData;
   }, [section, apiData, error]);
 
-  useEffect(() => { }, [
+  useEffect(() => {}, [
     section,
     slug,
     title,
@@ -173,9 +173,6 @@ const SubSection = () => {
 
           {/* Pagination */}
 
-
-
-
           {pagination?.totalPages > 1 && (
             <div className="d-flex justify-content-center align-items-center my-4 gap-3">
               {/* Previous Button */}
@@ -185,8 +182,7 @@ const SubSection = () => {
                   width: "40px",
                   height: "40px",
                   borderRadius: "50%",
-                  backgroundColor:
-                    pagination.page <= 1 ? "#f8d7da" : "#e91e63",
+                  backgroundColor: pagination.page <= 1 ? "#f8d7da" : "#e91e63",
                   color: pagination.page <= 1 ? "#ccc" : "#fff",
                   border: "none",
                   transition: "0.3s ease",
@@ -200,7 +196,10 @@ const SubSection = () => {
 
               {/* Page Numbers */}
               <div className="d-flex align-items-center gap-2">
-                {Array.from({ length: pagination.totalPages }, (_, index) => index + 1)
+                {Array.from(
+                  { length: pagination.totalPages },
+                  (_, index) => index + 1
+                )
                   .filter((page) => {
                     const total = pagination.totalPages;
                     const current = pagination.page;
@@ -222,7 +221,9 @@ const SubSection = () => {
                           fontSize: "14px",
                           padding: "5px 10px",
                           backgroundColor:
-                            pagination.page === page ? "#f8f8f8" : "transparent",
+                            pagination.page === page
+                              ? "#f8f8f8"
+                              : "transparent",
                           color: "#e91e63",
                           border:
                             pagination.page === page
@@ -246,13 +247,17 @@ const SubSection = () => {
                   height: "40px",
                   borderRadius: "50%",
                   backgroundColor:
-                    pagination.page >= pagination.totalPages ? "#f8d7da" : "#e91e63",
+                    pagination.page >= pagination.totalPages
+                      ? "#f8d7da"
+                      : "#e91e63",
                   color:
                     pagination.page >= pagination.totalPages ? "#ccc" : "#fff",
                   border: "none",
                   transition: "0.3s ease",
                   cursor:
-                    pagination.page >= pagination.totalPages ? "not-allowed" : "pointer",
+                    pagination.page >= pagination.totalPages
+                      ? "not-allowed"
+                      : "pointer",
                 }}
                 disabled={pagination.page >= pagination.totalPages || loading}
                 onClick={() => nextPage()}
@@ -261,7 +266,6 @@ const SubSection = () => {
               </button>
             </div>
           )}
-
 
           <PricingModal
             show={show}

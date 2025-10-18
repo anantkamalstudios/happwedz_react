@@ -107,7 +107,10 @@ const useApiData = (
             totalPages: Math.ceil(total / limit),
           };
           setPagination(nextPagination);
-          cacheRef.current.set(cacheKey, { data: transformed, pagination: nextPagination });
+          cacheRef.current.set(cacheKey, {
+            data: transformed,
+            pagination: nextPagination,
+          });
         } else {
           const transformed = transformApiData(itemsRaw);
           setData(transformed);
@@ -119,7 +122,10 @@ const useApiData = (
               totalPages: result.pagination.totalPages || 0,
             };
             setPagination(nextPagination);
-            cacheRef.current.set(cacheKey, { data: transformed, pagination: nextPagination });
+            cacheRef.current.set(cacheKey, {
+              data: transformed,
+              pagination: nextPagination,
+            });
           }
         }
       } catch (err) {
@@ -228,6 +234,21 @@ const transformApiData = (items) => {
     // Fallback prices as numbers/strings
     const priceOrZero = (v) => (v === null || v === undefined ? 0 : v);
 
+    const rawRooms =
+      attributes.rooms ??
+      attributes.Rooms ??
+      attributes.room_count ??
+      attributes.RoomCount ??
+      attributes.NoOfRooms ??
+      attributes.no_of_rooms ??
+      attributes.No_Of_Rooms;
+    let roomsParsed = null;
+    if (rawRooms !== undefined && rawRooms !== null) {
+      const onlyDigits = String(rawRooms).match(/\d+/);
+      const n = onlyDigits ? parseInt(onlyDigits[0], 10) : NaN;
+      roomsParsed = Number.isNaN(n) ? null : n;
+    }
+
     return {
       id,
       name:
@@ -268,6 +289,7 @@ const transformApiData = (items) => {
       area: attributes.area || "",
       city: attributes.city || vendor.city || "",
       location: attributes.city || vendor.city || "",
+      rooms: roomsParsed,
 
       // Ratings
       rating: attributes.rating || 0,
