@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef } from "react";
 import { getImageUrl, handleImageError } from "../../../utils/imageUtils";
 import { MdDeleteOutline } from "react-icons/md";
 import { IoIosClose } from "react-icons/io";
@@ -20,6 +20,10 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
+
+  // Refs for boundary detection
+  const canvasRef = useRef(null);
+  const textElementRefs = useRef({});
 
   const pushHistory = (state) => {
     setHistory((prev) => [...prev, state]);
@@ -140,8 +144,14 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
 
   const beginDrag = (e, field) => {
     e.stopPropagation();
-    const startX = e.clientX;
-    const startY = e.clientY;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const canvasRect = canvas.getBoundingClientRect();
+    const startX = e.clientX - canvasRect.left;
+    const startY = e.clientY - canvasRect.top;
+
     setSelectedFieldId(field.id);
     setIsDragging(true);
     setDragOffset({ x: startX - field.x, y: startY - field.y });
@@ -150,8 +160,37 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
 
   const onCanvasMouseMove = (e) => {
     if (!isDragging || !selectedField) return;
-    const newX = e.clientX - dragOffset.x;
-    const newY = e.clientY - dragOffset.y;
+
+    // Get canvas container bounds
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const canvasRect = canvas.getBoundingClientRect();
+
+    // Get the text element to measure its dimensions
+    const textElement = textElementRefs.current[selectedField.id];
+    if (!textElement) return;
+
+    const textRect = textElement.getBoundingClientRect();
+
+    // Calculate mouse position relative to canvas
+    const mouseX = e.clientX - canvasRect.left;
+    const mouseY = e.clientY - canvasRect.top;
+
+    // Calculate new position
+    let newX = mouseX - dragOffset.x;
+    let newY = mouseY - dragOffset.y;
+
+    // Calculate boundaries (relative to canvas)
+    const minX = 0;
+    const minY = 0;
+    const maxX = canvasRect.width - textRect.width;
+    const maxY = canvasRect.height - textRect.height;
+
+    // Constrain position within boundaries
+    newX = Math.max(minX, Math.min(newX, maxX));
+    newY = Math.max(minY, Math.min(newY, maxY));
+
     setEditedCard((prev) => ({
       ...prev,
       editableFields: prev.editableFields.map((f) =>
@@ -218,12 +257,15 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
               }}
             >
               <div
+                ref={canvasRef}
                 className="einvite-canvas-container position-relative border rounded shadow-sm"
                 style={{
                   width: "100%",
                   backgroundColor: "#ffffff",
+                  overflow: "hidden",
                 }}
                 onMouseMove={onCanvasMouseMove}
+                onMouseLeave={endDrag}
                 onClick={() => setSelectedFieldId(null)}
               >
                 {bgUrl ? (
@@ -252,6 +294,9 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                 {editedCard.editableFields?.map((field) => (
                   <div
                     key={field.id}
+                    ref={(el) => {
+                      if (el) textElementRefs.current[field.id] = el;
+                    }}
                     onMouseDown={(e) => {
                       if (isPreview || isPublished) return; // disable drag in preview/published view
                       beginDrag(e, field)
@@ -274,6 +319,7 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                       background: !isPreview && !isPublished && selectedFieldId === field.id ? "rgba(217, 29, 110, 0.08)" : "transparent",
                       borderRadius: "4px",
                       transition: "all 0.2s ease",
+                      whiteSpace: "nowrap",
                     }}
                   >
                     {field.defaultText}

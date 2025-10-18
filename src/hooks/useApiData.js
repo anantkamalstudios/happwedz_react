@@ -8,7 +8,8 @@ const useApiData = (
   city = null,
   vendorType = null,
   initialPage = 1,
-  initialLimit = 9
+  initialLimit = 9,
+  filters = {}
 ) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -60,6 +61,11 @@ const useApiData = (
         params.append("page", page.toString());
         params.append("limit", limit.toString());
 
+        // Add filters if present
+        if (filters && Object.keys(filters).length > 0) {
+          params.append("filters", JSON.stringify(filters));
+        }
+
         // const apiUrl = `http://localhost:4000/vendor-services?${params.toString()}`;
         const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
         // Serve from cache if available
@@ -107,7 +113,10 @@ const useApiData = (
             totalPages: Math.ceil(total / limit),
           };
           setPagination(nextPagination);
-          cacheRef.current.set(cacheKey, { data: transformed, pagination: nextPagination });
+          cacheRef.current.set(cacheKey, {
+            data: transformed,
+            pagination: nextPagination,
+          });
         } else {
           const transformed = transformApiData(itemsRaw);
           setData(transformed);
@@ -119,7 +128,10 @@ const useApiData = (
               totalPages: result.pagination.totalPages || 0,
             };
             setPagination(nextPagination);
-            cacheRef.current.set(cacheKey, { data: transformed, pagination: nextPagination });
+            cacheRef.current.set(cacheKey, {
+              data: transformed,
+              pagination: nextPagination,
+            });
           }
         }
       } catch (err) {
@@ -133,7 +145,7 @@ const useApiData = (
         setLoading(false);
       }
     },
-    [section, slug, city, vendorType, initialPage, initialLimit]
+    [section, slug, city, vendorType, initialPage, initialLimit, filters]
   );
 
   const refetch = useCallback(() => {

@@ -1,163 +1,190 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import EinviteHeroSection from '../layouts/einvites/EinviteHeroSection';
-import EinviteFilterBar from '../layouts/einvites/EinviteFilterBar';
-import EinviteCardGrid from '../layouts/einvites/EinviteCardGrid';
-import { einviteApi } from '../../services/api/einviteApi';
+import ChooseTemplate from './ChooseTemplate';
+import { useToast } from '../layouts/toasts/Toast';
 
 const EinviteHomePage = () => {
-    const [cards, setCards] = useState([]);
-    const [filteredCards, setFilteredCards] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [categories, setCategories] = useState([]);
+    const navigate = useNavigate();
+    const { addToast } = useToast();
 
-    useEffect(() => {
-        fetchCards();
-        fetchCategories();
-    }, []);
-
-    const fetchCards = async () => {
-        try {
-            setLoading(true);
-            const data = await einviteApi.getEinvitesByTemplateStatus(true);
-            const cardsArray = Array.isArray(data) ? data : [];
-            setCards(cardsArray);
-            setFilteredCards(cardsArray);
-        } catch (err) {
-            setError('Failed to load cards');
-            console.error('Error fetching cards:', err);
-        } finally {
-            setLoading(false);
+    const categories = [
+        {
+            id: 'wedding_einvite',
+            title: 'Wedding E-Invitations',
+            description: 'Beautiful digital wedding invitation cards',
+            color: '#ff6b9d',
+            image: './images/einvite/wedding-card.jpg'
+        },
+        {
+            id: 'video',
+            title: 'Video Invitations',
+            description: 'Dynamic video invitation templates',
+            color: '#6366f1',
+            image: './images/commingsoon.jpg'
+        },
+        {
+            id: 'save_the_date',
+            title: 'Save the Date',
+            description: 'Save the date card templates',
+            color: '#10b981',
+            image: './images/einvite/save-the-date.jpg'
         }
-    };
+    ];
 
-    const fetchCategories = async () => {
-        try {
-            const data = await einviteApi.getCategories();
-            setCategories(data);
-        } catch (err) {
-            console.error('Error fetching categories:', err);
-        }
-    };
-
-    const handleSearch = (searchTerm) => {
-        if (!searchTerm.trim()) {
-            setFilteredCards(cards);
+    const handleCategoryClick = (categoryId) => {
+        if (categoryId === 'video') {
+            addToast('Video invitations coming soon!', 'info');
             return;
         }
 
-        const filtered = cards.filter(card =>
-            card.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            card.theme?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            card.culture?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        setFilteredCards(filtered);
+        navigate(`/einvites/category/${categoryId}`);
     };
-
-    const handleFilterChange = ({ category, theme }) => {
-        let filtered = cards;
-
-        if (category !== 'all') {
-            filtered = filtered.filter(card => card.card_type === category);
-        }
-
-        if (theme !== 'all') {
-            filtered = filtered.filter(card => card.theme === theme);
-        }
-
-        setFilteredCards(filtered);
-    };
-
-    const getCardsByCategory = (category) => {
-        if (!Array.isArray(filteredCards)) return [];
-        return filteredCards.filter(card => {
-            // Map API cardType to our expected categories
-            const categoryMap = {
-                'Wedding E-Invitations': 'wedding_einvite',
-                'Video Invitations': 'video_invite',
-                'Save The Date': 'save_the_date'
-            };
-            const mappedCategory = categoryMap[category];
-            return card.cardType === mappedCategory;
-        });
-    };
-
-    const cardCategories = [
-        { key: 'Wedding E-Invitations', label: 'Wedding Cards', icon: 'fas fa-heart' },
-        { key: 'Video Invitations', label: 'Video Cards', icon: 'fas fa-video' },
-        { key: 'Save The Date', label: 'Save The Date', icon: 'fas fa-calendar' }
-    ];
 
     return (
         <div className="einvite-home-page">
             <EinviteHeroSection />
-            <EinviteFilterBar
-                onSearch={handleSearch}
-                onFilterChange={handleFilterChange}
-                categories={categories}
-            />
 
-            <main className="py-5">
-                {error && (
-                    <div className="container">
-                        <div className="alert alert-danger" role="alert">
-                            <i className="fas fa-exclamation-triangle me-2"></i>
-                            {error}
-                        </div>
+            <main className="py-5 bg-light">
+                <div className="container">
+                    <div className="text-center mb-5">
+                        <h2 className="display-5 fw-bold mb-3">Choose Your Invitation Type</h2>
+                        <p className="text-muted fs-5">Select from our beautiful collection of invitation templates</p>
                     </div>
-                )}
 
-                {!loading && !error && (
-                    <div className="container">
-                        {filteredCards.length === 0 ? (
-                            <div className="text-center py-5">
-                                <i className="fas fa-heart fa-4x text-muted mb-4"></i>
-                                <h4>No cards found</h4>
-                                <p className="text-muted">Try adjusting your search or filter criteria</p>
-                            </div>
-                        ) : (
-                            cardCategories.map((category) => {
-                                const categoryCards = getCardsByCategory(category.key);
-                                if (categoryCards.length === 0) return null;
+                    <div className="row g-4 justify-content-center">
+                        {categories.map((category) => (
+                            <div key={category.id} className="col-lg-4 col-md-6 border-0">
+                                <div
+                                    className="category-card border-0 bg-white overflow-hidden"
+                                    onClick={() => handleCategoryClick(category.id)}
+                                >
+                                    <div
+                                        className="category-image-wrapper"
+                                        style={{
+                                            backgroundImage: `url(${category.image})`,
+                                            backgroundSize: 'cover',
+                                            backgroundPosition: 'center',
+                                            backgroundRepeat: 'no-repeat',
+                                        }}
 
-                                return (
-                                    <div key={category.key} className="mb-5">
-                                        <div className="row mb-4">
-                                            <div className="col-md-8">
-                                                <h3 className="einvite-section-title">
-                                                    <i className={`${category.icon} me-2 text-primary`}></i>
-                                                    {category.label}
-                                                    <span className="badge bg-primary ms-2">{categoryCards.length}</span>
-                                                </h3>
-                                            </div>
-                                            <div className="col-md-4 text-end">
-                                                <a
-                                                    href={`/einvites/category/${category.key.toLowerCase().replace(/\s+/g, '-')}`}
-                                                    className="btn btn-outline-primary"
-                                                >
-                                                    Our Cards <i className="fas fa-arrow-right ms-1"></i>
-                                                </a>
-                                            </div>
+                                    >
+                                        <div className="category-overlay">
+                                            <span className="view-text">View Templates</span>
                                         </div>
-
-                                        <EinviteCardGrid
-                                            cards={categoryCards.slice(0, 6)}
-                                            loading={false}
-                                            showActions={false}
-                                        />
                                     </div>
-                                );
-                            })
-                        )}
+                                    <div className="category-content">
+                                        <h3 className="category-title">{category.title}</h3>
+                                        <p className="category-description">{category.description}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                )}
-
-                {loading && (
-                    <div className="container">
-                        <EinviteCardGrid cards={[]} loading={true} />
-                    </div>
-                )}
+                </div>
             </main>
+
+            <ChooseTemplate />
+
+            <style jsx>{`
+                .einvite-home-page { 
+                    min-height: 100vh;
+                }
+
+                .category-card {
+                    cursor: pointer;
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                    height: 100%;
+                    padding: 0px;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .category-card:hover {
+                    transform: translateY(-8px);
+                    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+                }
+
+                .category-image-wrapper {
+                    height: 500px;
+                    position: relative;
+                    overflow: hidden;
+                }
+
+                .category-overlay {
+                    position: absolute;
+                    inset: 0;
+                    background: rgba(0, 0, 0, 0.4);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                }
+
+                .category-card:hover .category-overlay {
+                    opacity: 1;
+                }
+
+                .view-text {
+                    color: white;
+                    font-size: 1.25rem;
+                    font-weight: 600;
+                    letter-spacing: 0.5px;
+                }
+
+                .category-content {
+                    padding: 2rem;
+                    flex-grow: 1;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    text-align: center;
+                }
+
+                .category-title {
+                    font-size: 1.75rem;
+                    font-weight: 700;
+                    color: #1a1a1a;
+                    margin-bottom: 0.75rem;
+                }
+
+                .category-description {
+                    font-size: 1rem;
+                    color: #666;
+                    margin-bottom: 0;
+                    line-height: 1.6;
+                }
+
+                @media (max-width: 991px) {
+                    .category-image-wrapper {
+                        height: 300px;
+                    }
+                    
+                    .category-title {
+                        font-size: 1.5rem;
+                    }
+                }
+
+                @media (max-width: 767px) {
+                    .category-image-wrapper {
+                        height: 250px;
+                    }
+                    
+                    .category-content {
+                        padding: 1.5rem;
+                    }
+                    
+                    .category-title {
+                        font-size: 1.25rem;
+                    }
+                    
+                    .category-description {
+                        font-size: 0.9rem;
+                    }
+                }
+            `}</style>
         </div>
     );
 };

@@ -61,6 +61,9 @@ const CardEditorPage = lazy(() => import("./components/CardEditorPage"));
 const PhotographyDetailsPage = lazy(() =>
   import("./components/layouts/photography/PhotographyDetailsPage")
 );
+const PhotographyDetails = lazy(() =>
+  import("./components/pages/PhotographyDetails")
+);
 const VideoEditorPage = lazy(() => import("./components/VideoEditorPage"));
 const VideoTemplates = lazy(() =>
   import("./components/layouts/eInvite/VideoTemplates")
@@ -87,6 +90,9 @@ const EinviteSharePage = lazy(() =>
 );
 const EinviteMyCards = lazy(() =>
   import("./components/layouts/einvites/EinviteMyCards")
+);
+const EinviteViewPage = lazy(() =>
+  import("./components/pages/EinviteViewPage")
 );
 const OurCards = lazy(() => import("./components/pages/OurCards"));
 const TryLanding = lazy(() => import("./components/pages/TryLanding"));
@@ -193,6 +199,10 @@ function App() {
               <Route
                 path="/photos/details/:slug"
                 element={<PhotographyDetailsPage />}
+              />
+              <Route
+                path="/photography/details/:id"
+                element={<PhotographyDetails />}
               />
               <Route path="/:section" element={<MainSection />} />
               <Route path="/:section/:slug" element={<SubSection />} />
@@ -302,6 +312,10 @@ function App() {
                 path="/einvites/share/:id"
                 element={<EinviteSharePage />}
               />
+              <Route
+                path="/einvites/view/:id"
+                element={<EinviteViewPage />}
+              />
               <Route path="/einvites/my-cards" element={<EinviteMyCards />} />
               <Route
                 path="/einvites/our-cards"
@@ -367,9 +381,10 @@ function App() {
                 path="/about-us"
                 element={<AboutUs />}
               />
+
+              {/*  Fallback  */}
+              <Route path="*" element={<NotFound />} />
             </Route>
-
-
 
             {/*  Matrimonial Routes  */}
             <Route element={<MatrimonialLayout />}>
@@ -391,10 +406,6 @@ function App() {
             </Route>
 
             <Route path="/ai-recommandation" element={<RecommandPage />} />
-
-            {/*  Fallback  */}
-            <Route path="*" element={<NotFound />} />
-            {/* just for recommanded items route for demo */}
           </Routes>
         </ToastProvider>
       </LoaderProvider>

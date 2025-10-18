@@ -31,6 +31,7 @@ const SubSection = () => {
   const [view, setView] = useState("images");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [activeFilters, setActiveFilters] = useState({});
 
   // Photography hook
   const {
@@ -58,7 +59,7 @@ const SubSection = () => {
     nextPage,
     prevPage,
     goToPage,
-  } = useApiData(section, slug, selectedCity, vendorType);
+  } = useApiData(section, slug, selectedCity, vendorType, 1, 9, activeFilters);
 
   // Modal handlers
   const handleClose = () => {
@@ -81,6 +82,10 @@ const SubSection = () => {
 
   const handleCityChange = (city) => {
     setSelectedCity(city);
+  };
+
+  const handleFiltersChange = (filters) => {
+    setActiveFilters(filters);
   };
 
   // Sync selectedCity with URL query first, then Redux location state
@@ -206,7 +211,12 @@ const SubSection = () => {
         <EmptyState section={section} title={title} />
       ) : (
         <>
-          <DynamicAside section={section} view={view} setView={setView} />
+          <DynamicAside
+            section={section}
+            view={view}
+            setView={setView}
+            onFiltersChange={handleFiltersChange}
+          />
 
           {view === "images" && (
             <GridView

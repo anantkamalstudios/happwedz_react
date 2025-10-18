@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { IMAGE_BASE_URL } from "../../../config/constants";
 
 const Photos = ({ title, images = [], loading = false }) => {
@@ -54,26 +55,42 @@ const Photos = ({ title, images = [], loading = false }) => {
 
           return (
             <div key={img.id || index} className="masonry-item">
-              <div className="card border-0 shadow-sm">
-                <img
-                  src={imageUrl}
-                  alt={imageName}
-                  className="card-img-top"
-                  loading="lazy"
-                  onError={(e) => {
-                    e.target.src =
-                      "https://via.placeholder.com/450x300?text=Image+Not+Available";
-                  }}
-                />
-                <div className="card-body p-2">
-                  <h6 className="mb-1">{imageName}</h6>
-                  {imageType && <small className="text-muted">{imageType}</small>}
+              <Link
+                to={`/photography/details/${img.id}`}
+                className="text-decoration-none"
+                style={{ cursor: "pointer" }}
+              >
+                <div className="card border-0 shadow-sm hover-card">
+                  <img
+                    src={imageUrl}
+                    alt={imageName}
+                    className="card-img-top"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.target.src =
+                        "https://via.placeholder.com/450x300?text=Image+Not+Available";
+                    }}
+                  />
+                  <div className="card-body p-2">
+                    <h6 className="mb-1 text-dark">{imageName}</h6>
+                    {imageType && <small className="text-muted">{imageType}</small>}
+                  </div>
                 </div>
-              </div>
+              </Link>
             </div>
           );
         })}
       </div>
+
+      <style jsx>{`
+        .hover-card {
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .hover-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+        }
+      `}</style>
     </div>
   );
 };
