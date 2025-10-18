@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { einviteApi } from "../../services/api/einviteApi";
 import { getImageUrl, handleImageError } from "../../utils/imageUtils";
+import Swal from "sweetalert2";
 
 const EinviteSharePage = () => {
   const { id } = useParams();
@@ -48,7 +49,11 @@ const EinviteSharePage = () => {
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
-      alert("Link copied to clipboard!");
+      // alert("Link copied to clipboard!");
+      Swal.fire({
+        text: "Link copied to clipboard!",
+        timer: 1500,
+      })
     } catch (err) {
       console.error("Failed to copy link:", err);
       // Fallback for older browsers
@@ -58,12 +63,20 @@ const EinviteSharePage = () => {
       textArea.select();
       document.execCommand("copy");
       document.body.removeChild(textArea);
-      alert("Link copied to clipboard!");
+      // alert("Link copied to clipboard!");
+      Swal.fire({
+        text: "Link copied to clipboard!",
+        timer: 1500,
+      })
     }
   };
 
   const handleDownload = () => {
-    alert("Download functionality coming soon!");
+    // alert("Download functionality coming soon!");
+    Swal.fire({
+      text: "Download functionality coming soon!",
+      timer: 1500,
+    })
   };
 
   if (loading) {

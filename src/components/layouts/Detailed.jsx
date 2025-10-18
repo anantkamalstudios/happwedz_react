@@ -25,6 +25,7 @@ import { GrFormNextLink } from "react-icons/gr";
 import ReviewSection from "../pages/ReviewSection";
 import { FaqQuestions } from "../pages/adminVendor/subVendors/FaqData";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 // Helper function to capitalize the first letter of each word
 const capitalizeWords = (str) => {
@@ -225,7 +226,11 @@ const Detailed = () => {
 
   const handleSubmit = () => {
     if (!rating || !experience) {
-      alert("Please give a rating and write your experience.");
+      Swal.fire({
+        title: "",
+        text: "Please give a rating and write your experience.",
+        timer:"1500"
+      })
       return;
     }
 

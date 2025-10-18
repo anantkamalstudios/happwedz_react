@@ -19,7 +19,8 @@ const UploadSelfiePage = () => {
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const { role, type } = useSelector((store) => store.role);
+  const userInfo = JSON.parse(localStorage.getItem("userInfo")) || {};
+  const { role, type } = userInfo;
 
   let image;
   switch (role) {
@@ -28,7 +29,7 @@ const UploadSelfiePage = () => {
       else if (type === "jewellary") image = "/images/try/bride-jewellery.png";
       else if (type === "outfit") image = "/images/try/bride-outfit.png";
       break;
-    case "groome":
+    case "groom":
       if (type === "makeup") image = "/images/try/upload-groome-default.png";
       else if (type === "jewellary")
         image = "/images/try/upload-groome-default.png";
@@ -69,7 +70,7 @@ const UploadSelfiePage = () => {
       { src: "/images/try/removeGlasses.png", text: "Remove Glasses" },
       { src: "/images/try/planeBg.png", text: "Use plain background" },
     ],
-    groome: [
+    groom: [
       {
         src: "/images/try/straightFace.png",
         text: "Look straight at the camera",
@@ -101,18 +102,17 @@ const UploadSelfiePage = () => {
     const file = e.target.files?.[0];
     if (!file) {
       setUploading(false);
-      if(fileRef.current) fileRef.current.value = "";
+      if (fileRef.current) fileRef.current.value = "";
       return;
     }
     if (!file.type.startsWith("image/")) {
-      alert("Please select an image file");
       Swal.fire({
         icon: "error",
         title: "Oops...",
         text: "Please select an image file",
       });
       setUploading(false);
-      if(fileRef.current) fileRef.current.value = "";
+      if (fileRef.current) fileRef.current.value = "";
       return;
     }
     const reader = new FileReader();
@@ -190,7 +190,14 @@ const UploadSelfiePage = () => {
     const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
     const ok = await validateFace(dataUrl);
     if (!ok) {
-      alert("No face detected. Please look straight.");
+      // alert("No face detected. Please look straight.");
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "No face detected. Please look straight.",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#ed1173",
+      });
 
       return;
     }
@@ -205,7 +212,14 @@ const UploadSelfiePage = () => {
       navigate("/try/filters");
     } catch (e) {
       console.error(e);
-      alert("Upload failed.");
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Upload failed.",
+        timer: "3000",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#ed1173",
+      });
     } finally {
       stopCamera();
     }
@@ -307,7 +321,7 @@ const UploadSelfiePage = () => {
               </div>
 
               <div className="d-flex gap-3 flex-column justify-content-center w-75">
-                <button
+                {/* <button
                   className="btn w-100"
                   style={{
                     background: "linear-gradient(to right, #E83580, #821E48)",
@@ -316,7 +330,7 @@ const UploadSelfiePage = () => {
                   }}
                 >
                   Selfie Mode
-                </button>
+                </button> */}
                 <button
                   className="btn w-100"
                   onClick={handlePick}

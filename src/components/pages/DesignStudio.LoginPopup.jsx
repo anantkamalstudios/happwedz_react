@@ -8,6 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { IoClose } from "react-icons/io5";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
+import { Link } from "react-router-dom";
 
 export default function LoginPopup({ isOpen, onClose }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -32,7 +33,7 @@ export default function LoginPopup({ isOpen, onClose }) {
       if (response.success) {
         dispatch(loginUser({ user: response.user, token: response.token }));
         toast.success("Login successful!");
-        onClose(); 
+        onClose();
       } else {
         toast.error(response.message || "Login failed");
       }
@@ -191,9 +192,12 @@ export default function LoginPopup({ isOpen, onClose }) {
                 </h2>
                 <p style={{ textAlign: "center", color: "gray" }}>
                   Don't have an account?{" "}
-                  <span style={{ color: "#C31162", fontWeight: "600" }}>
+                  <Link
+                    to="/customer-register"
+                    style={{ color: "#C31162", fontWeight: "600" }}
+                  >
                     Sign Up
-                  </span>{" "}
+                  </Link>{" "}
                 </p>
               </div>
 
@@ -303,7 +307,7 @@ export default function LoginPopup({ isOpen, onClose }) {
                       color: "#555",
                     }}
                   >
-                    {showPassword ? (
+                    {!showPassword ? (
                       <FaRegEyeSlash />
                     ) : (
                       <MdOutlineRemoveRedEye />
@@ -326,13 +330,9 @@ export default function LoginPopup({ isOpen, onClose }) {
                     Remember me
                   </label>
                 </div>
-                <a
-                  href="#"
-                  onClick={(e) => e.preventDefault()}
-                  style={{ color: "#d81b60" }}
-                >
+                <Link to="/user-forgot-password" style={{ color: "#d81b60" }}>
                   Forgot Password?
-                </a>
+                </Link>
               </div>
 
               <button

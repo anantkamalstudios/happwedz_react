@@ -81,6 +81,9 @@ const BrideMakeupChoose = () => {
         onTry={() => {
           navigate("/try/makeup");
           dispatch(setRoleType({ type: "makeup" }));
+          const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+          userInfo.type = "makeup";
+          localStorage.setItem("userInfo", JSON.stringify(userInfo));
         }}
       />
 
@@ -91,6 +94,9 @@ const BrideMakeupChoose = () => {
         onTry={() => {
           navigate("/try/makeup");
           dispatch(setRoleType({ type: "jewellary" }));
+          const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+          userInfo.type = "jewellary";
+          localStorage.setItem("userInfo", JSON.stringify(userInfo));
         }}
         comingSoon
       />
@@ -102,6 +108,9 @@ const BrideMakeupChoose = () => {
         onTry={() => {
           navigate("/try/makeup");
           dispatch(setRoleType({ type: "outfit" }));
+          const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+          userInfo.type = "outfit";
+          localStorage.setItem("userInfo", JSON.stringify(userInfo));
         }}
         comingSoon
       />

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Download, Type, ZoomIn, ZoomOut, Save, RotateCcw } from "lucide-react";
+import Swal from "sweetalert2";
 
 // Sample template data (comes from your backend)
 const SAMPLE_TEMPLATE = {
@@ -307,7 +308,12 @@ const CardEditor = () => {
       })),
     };
 
-    alert("Customization saved! (Check console for data)");
+    // alert("Customization saved! (Check console for data)");
+    Swal.fire({
+      icon: "success",
+      text: "Customization saved!",
+      timer: 1500,
+    });
   };
 
   return (

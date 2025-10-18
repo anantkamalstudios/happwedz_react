@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
+import Swal from "sweetalert2";
 
 export default function PromoForm({ formData, setFormData, onSave }) {
   const { vendor, token } = useSelector((state) => state.vendorAuth || {});
@@ -322,7 +323,12 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                 <button
                   type="button"
                   className="btn-preview folder-item border"
-                  onClick={() => alert("Preview opened")}
+                  onClick={() => Swal.fire({
+                    text:"Preview Openend",
+                    icon:"info",
+                    position:"top",
+                    timer:"1500"
+                  })}
                 >
                   Preview
                 </button>

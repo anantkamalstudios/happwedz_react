@@ -10,6 +10,11 @@ import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { Download, Heart, Home, Share } from "lucide-react";
 import { MdRestartAlt } from "react-icons/md";
 import ReactCompareImage from "react-compare-image";
+import { useDispatch, useSelector } from "react-redux";
+import { addFavorite, removeFavorite } from "../../redux/favoriteSlice";
+import FavouriteListPopup from "./FavoritesProduct";
+import { AiFillHeart } from "react-icons/ai";
+import { AiOutlineHeart } from "react-icons/ai";
 
 const SLIDER_CATEGORIES = [
   "foundation",
@@ -21,6 +26,7 @@ const SLIDER_CATEGORIES = [
   "lipstick",
   "bindi",
   "mascara",
+  "eyeliner",
   // "mangtika",
   "contactlenses",
 ];
@@ -38,6 +44,7 @@ const DEFAULT_INTENSITIES = {
   lipstick: 0.8,
   bindi: 6,
   mascara: 0.8,
+  eyeliner: 0.5,
   // mangtika: 0.6,
   contactlenses: 0.2,
 };
@@ -58,6 +65,20 @@ const FiltersPage = () => {
   const debounceTimer = useRef();
   const filterBarRef = useRef(null);
   const [showCompleteLook, setShowCompleteLook] = useState(false);
+  const dispatch = useDispatch();
+  const [likedProduct, setLikedProduct] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [showProductDetails, setShowProductDetails] = useState(true);
+
+  const handleClick = () => {
+    if (isFavorited) {
+      dispatch(removeFavorite(likedProduct));
+    } else {
+      dispatch(addFavorite(likedProduct));
+    }
+    setIsFavorited(!isFavorited);
+  };
 
   const uploadedId = sessionStorage.getItem("try_uploaded_image_id") || null;
   const uploadedPreview = React.useMemo(() => {
@@ -67,7 +88,9 @@ const FiltersPage = () => {
   }, [uploadedId]);
 
   const [previewUrl, setPreviewUrl] = React.useState(uploadedPreview);
-  
+
+  console.log(likedProduct);
+  const favorites = useSelector((store) => store.favorites.favorites);
 
   React.useEffect(() => {
     setPreviewUrl(uploadedPreview);
@@ -78,11 +101,13 @@ const FiltersPage = () => {
       setIsLoading(true);
       try {
         const response = await beautyApi.getFilteredProducts("MAKEUP");
+        console.log(response);
+
         const items = Array.isArray(response)
           ? response
           : Array.isArray(response?.data)
-            ? response.data
-            : [];
+          ? response.data
+          : [];
         setCategories(items);
       } catch (e) {
         console.error("Failed to load products", e);
@@ -96,12 +121,21 @@ const FiltersPage = () => {
   const [isCompareMode, setIsCompareMode] = useState(false);
   const originalImageUrl = uploadedPreview;
   const [compareImageUrl, setCompareImageUrl] = useState(previewUrl);
+  const [showBackButton, setShowBackButton] = useState(false);
 
   React.useEffect(() => {
     if (isCompareMode) {
       setCompareImageUrl(previewUrl);
     }
   }, [previewUrl, isCompareMode]);
+
+  useEffect(() => {
+    if (expandedCatIdx !== null || expandedProductId !== null) {
+      setShowBackButton(true);
+    } else {
+      setShowBackButton(false);
+    }
+  }, [expandedCatIdx, expandedProductId]);
 
   const handleSelectCategory = (idx) => {
     setExpandedCatIdx((prev) => (prev === idx ? null : idx));
@@ -110,10 +144,8 @@ const FiltersPage = () => {
 
   const handleBackToMainFilters = () => {
     if (expandedProductId !== null) {
-      // If we're viewing colors, go back to subcategory list
       setExpandedProductId(null);
     } else if (expandedCatIdx !== null) {
-      // If we're viewing subcategories, go back to main categories
       setExpandedCatIdx(null);
       setExpandedProductId(null);
     }
@@ -146,6 +178,7 @@ const FiltersPage = () => {
       },
     };
     setAppliedProducts(newAppliedProducts);
+    setShowProductDetails(true); // Show product details when new product is applied
 
     // Build payload with all applied products
     const payload = {
@@ -187,7 +220,7 @@ const FiltersPage = () => {
           break;
         case "bindi":
           payload.bindi_color = hex;
-          payload.bindi_size = intensityValue; // Use intensity value directly as size
+          payload.bindi_size = intensityValue;
           break;
         case "kajal":
           payload.kajal_color = hex;
@@ -197,11 +230,14 @@ const FiltersPage = () => {
           payload.mascara_color = hex;
           payload.mascara_intensity = intensityValue;
           break;
-        default:
-          // fallback for other makeup categories
-          payload.lipstick_color = hex;
-          payload.lipstick_intensity = intensityValue;
+        case "eyeliner":
+          payload.eyeliner_color = hex;
+          payload.eyeliner_intensity = intensityValue;
           break;
+        // default:
+        //   payload.lipstick_color = hex;
+        //   payload.lipstick_intensity = intensityValue;
+        //   break;
       }
     });
 
@@ -223,7 +259,6 @@ const FiltersPage = () => {
           setPreviewUrl(processedUrl);
         }
       } else if (processedId) {
-        // Fallback: construct URL using processed_image_id
         const base = import.meta.env.VITE_API_BASE_URL || "/api";
         const fallbackUrl = `${base}/images/${processedId}`;
         setPreviewUrl(fallbackUrl);
@@ -294,7 +329,7 @@ const FiltersPage = () => {
           payload.eyeshadow_intensity = intensityValue;
           payload.eyeshadow_thickness = 25;
           break;
-        case "lens":
+        case "contactlenses":
           payload.lens_color = hex;
           payload.lens_intensity = 0.2;
           payload.lens_radius_scale = 1.3;
@@ -323,10 +358,14 @@ const FiltersPage = () => {
           payload.mascara_color = hex;
           payload.mascara_intensity = intensityValue;
           break;
-        default:
-          payload.lipstick_color = hex;
-          payload.lipstick_intensity = intensityValue;
+        case "eyeliner":
+          payload.eyeliner_color = hex;
+          payload.eyeliner_intensity = intensityValue;
           break;
+        // default:
+        //   payload.lipstick_color = hex;
+        //   payload.lipstick_intensity = intensityValue;
+        //   break;
       }
     });
 
@@ -406,7 +445,7 @@ const FiltersPage = () => {
         <div
           className="single-image-container"
           style={{ width: "100%" }}
-        // style={{ width: "100%", maxWidth: 400 }}
+          // style={{ width: "100%", maxWidth: 400 }}
         >
           <div
             className="image-wrapper"
@@ -445,8 +484,9 @@ const FiltersPage = () => {
               />
             </div>
             <div
-              className={`d-flex gap-20 ${activeBtn === "Complete Look" ? "w-50" : "w-25"
-                } justify-content-between`}
+              className={`d-flex gap-20 ${
+                activeBtn === "Complete Look" ? "w-50" : "w-25"
+              } justify-content-between`}
               style={{
                 position: "absolute",
                 top: 10,
@@ -473,7 +513,33 @@ const FiltersPage = () => {
                 </div>
               )}
               {activeBtn === "Complete Look" && (
-                <div>
+                <div
+                  title="Download Image"
+                  onClick={async () => {
+                    try {
+                      const responase = await fetch(previewUrl, {
+                        mode: "cors",
+                      });
+                      const blob = await responase.blob();
+                      const url = URL.createObjectURL(blob);
+
+                      const link = document.createElement("a");
+                      link.href = url;
+                      link.download = "final_look.png";
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      URL.revokeObjectURL(url);
+                    } catch (error) {
+                      console.error("Image download failed:", error);
+                      Swal.fire({
+                        icon: "error",
+                        title: "Download Failed",
+                        text: "Could not download the image. Please try again.",
+                      });
+                    }
+                  }}
+                >
                   <Download
                     size={30}
                     style={{
@@ -487,48 +553,11 @@ const FiltersPage = () => {
               )}
 
               <div
-              // style={{
-              //   position: "absolute",
-              //   top: 16,
-              //   right: 16,
-              //   zIndex: 30,
-              //   cursor: "pointer",
-              //   padding: 8,
-              //   display: "flex",
-              //   alignItems: "center",
-              //   justifyContent: "center",
-              // }}
-              // title="Delete"
-              // onClick={async () => {
-              //   const confirmed = await Swal.fire({
-              //     title: "Remove image?",
-              //     text: "Are you sure you want to delete this image and clear all try data?",
-              //     icon: "warning",
-              //     showCancelButton: true,
-              //     confirmButtonColor: "#ed1173",
-              //     cancelButtonColor: "#aaa",
-              //     confirmButtonText: "Yes, delete it",
-              //   });
-
-              //   if (confirmed.isConfirmed) {
-              //     sessionStorage.removeItem("try_uploaded_image_id");
-              //     sessionStorage.removeItem("finalLookImage");
-              //     sessionStorage.removeItem("finalLookFilters");
-              //     setPreviewUrl(null);
-              //     setAppliedProducts({});
-              //     navigate("/try/upload");
-
-              //     Swal.fire({
-              //       title: "Deleted!",
-              //       text: "Your image has been removed.",
-              //       icon: "success",
-              //       confirmButtonColor: "#ed1173",
-              //     });
-              //   }
-              // }}
+                onClick={() => {
+                  setShowPopup(true);
+                }}
               >
                 <Heart
-                  // className="primary-text"
                   size={30}
                   style={{
                     color: "#fff",
@@ -539,47 +568,24 @@ const FiltersPage = () => {
                 />
               </div>
               <div
-              // style={{
-              //   position: "absolute",
-              //   top: 16,
-              //   right: 16,
-              //   zIndex: 30,
-              //   cursor: "pointer",
-              //   padding: 8,
-              //   display: "flex",
-              //   alignItems: "center",
-              //   justifyContent: "center",
-              // }}
-
-              // onClick={async () => {
-              //   const confirmed = await Swal.fire({
-              //     title: "Warning",
-              //     text: "Are you sure you want to reset all applied Product ?",
-              //     showCancelButton: true,
-              //     confirmButtonColor: "#ed1173",
-              //     cancelButtonColor: "#C31162",
-              //     confirmButtonText: "Reset",
-              //     cancelButtonText: "Close",
-              //   });
-
-              //   if (confirmed.isConfirmed) {
-              //     //   sessionStorage.removeItem("try_uploaded_image_id");
-              //     //   sessionStorage.removeItem("finalLookImage");
-              //     //   sessionStorage.removeItem("finalLookFilters");
-              //     //   setPreviewUrl(null);
-              //     //   setAppliedProducts({});
-              //     //   navigate("/try/upload");
-
-              //     Swal.fire({
-              //       text: "Your image has been reset.",
-              //       icon: "success",
-              //       confirmButtonColor: "#ed1173",
-              //     });
-              //   }
-              // }}
+                onClick={async () => {
+                  Swal.fire({
+                    title: "Warning",
+                    text: "Are you sure you want to reset all applied Products ?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#ed1173",
+                    cancelButtonColor: "#ed1173",
+                    cancelButtonText: "Cancel",
+                    confirmButtonText: "Reset",
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+                      setPreviewUrl(uploadedPreview);
+                    }
+                  });
+                }}
               >
                 <MdRestartAlt
-                  // className="primary-text"
                   size={30}
                   style={{
                     color: "#fff",
@@ -590,17 +596,6 @@ const FiltersPage = () => {
                 />
               </div>
               <div
-                // style={{
-                //   position: "absolute",
-                //   top: 16,
-                //   right: 16,
-                //   zIndex: 30,
-                //   cursor: "pointer",
-                //   padding: 8,
-                //   display: "flex",
-                //   alignItems: "center",
-                //   justifyContent: "center",
-                // }}
                 title="Delete"
                 onClick={async () => {
                   const confirmed = await Swal.fire({
@@ -631,7 +626,6 @@ const FiltersPage = () => {
                 }}
               >
                 <IoClose
-                  // className="primary-text"
                   size={30}
                   style={{
                     color: "#fff",
@@ -709,7 +703,8 @@ const FiltersPage = () => {
                     className="img-fluid"
                   />
                   {Object.entries(appliedProducts).length > 0 &&
-                    activeBtn !== "Complete Look" && (
+                    activeBtn !== "Complete Look" &&
+                    showProductDetails && (
                       <div
                         style={{
                           position: "absolute",
@@ -733,6 +728,7 @@ const FiltersPage = () => {
                           }}
                         >
                           <button
+                            onClick={() => setShowProductDetails(false)}
                             style={{
                               position: "absolute",
                               top: 5,
@@ -783,6 +779,7 @@ const FiltersPage = () => {
                                 style={{
                                   width: "64px",
                                   height: "64px",
+                                  position: "relative",
                                   backgroundColor: "white",
                                   borderRadius: "8px",
                                   overflow: "hidden",
@@ -790,7 +787,7 @@ const FiltersPage = () => {
                                 }}
                               >
                                 <img
-                                  src="https://images.unsplash.com/photo-1591375462077-800a22f5fba4?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=812"
+                                  src={likedProduct?.product_real_image}
                                   alt="product"
                                   style={{
                                     width: "100%",
@@ -798,10 +795,35 @@ const FiltersPage = () => {
                                     objectFit: "cover",
                                   }}
                                 />
+
+                                {/* Heart Icon */}
+                                <button
+                                  onClick={handleClick}
+                                  style={{
+                                    position: "absolute",
+                                    top: "4px",
+                                    right: "4px",
+                                    width: "24px",
+                                    height: "24px",
+                                    borderRadius: "50%",
+                                    border: "none",
+                                    backgroundColor: "rgba(255,255,255,0.8)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    cursor: "pointer",
+                                    padding: 0,
+                                  }}
+                                >
+                                  {isFavorited ? (
+                                    <AiFillHeart color="red" size={16} />
+                                  ) : (
+                                    <AiOutlineHeart color="#ccc" size={16} />
+                                  )}
+                                </button>
                               </div>
                             </div>
 
-                            {/* Product Info */}
                             <div style={{ minWidth: 0 }}>
                               <h3
                                 style={{
@@ -812,7 +834,7 @@ const FiltersPage = () => {
                                   lineHeight: "1.2",
                                 }}
                               >
-                                Maybelline New York Fit Me Matte Poreless
+                                {likedProduct?.discription}
                               </h3>
                               <p
                                 style={{
@@ -822,7 +844,7 @@ const FiltersPage = () => {
                                   margin: 0,
                                 }}
                               >
-                                Liquid Foundation
+                                {likedProduct?.product_name}
                               </p>
                               <div
                                 style={{
@@ -839,7 +861,7 @@ const FiltersPage = () => {
                                     margin: "4px 0 0 0",
                                   }}
                                 >
-                                  $40.00
+                                  {likedProduct?.price}
                                 </p>
                                 <div
                                   style={{
@@ -917,81 +939,53 @@ const FiltersPage = () => {
                   <input
                     type="range"
                     min={0}
-                    max={
-                      DEFAULT_INTENSITIES[
-                      (
-                        categories[expandedCatIdx]
-                          ?.product_detailed_category_name || ""
-                      ).toLowerCase()
-                      ] ?? 1
-                    }
-                    step={
-                      (
-                        categories[expandedCatIdx]
-                          ?.product_detailed_category_name || ""
-                      ).toLowerCase() === "bindi"
-                        ? 1
-                        : 0.01
-                    }
+                    max={100}
+                    step={1}
                     value={
-                      intensities[
-                      (
-                        categories[expandedCatIdx]
-                          ?.product_detailed_category_name || ""
-                      ).toLowerCase()
-                      ] ??
-                      DEFAULT_INTENSITIES[
-                      (
-                        categories[expandedCatIdx]
-                          ?.product_detailed_category_name || ""
-                      ).toLowerCase()
-                      ] ??
-                      0.6
-                    }
-                    onChange={(e) =>
-                      setIntensities({
-                        ...intensities,
-                        [(
+                      (() => {
+                        const categoryName = (
                           categories[expandedCatIdx]
                             ?.product_detailed_category_name || ""
-                        ).toLowerCase()]: Number(e.target.value),
-                      })
+                        ).toLowerCase();
+                        const currentIntensity = intensities[categoryName] ?? 
+                          DEFAULT_INTENSITIES[categoryName] ?? 0.6;
+                        const maxIntensity = DEFAULT_INTENSITIES[categoryName] ?? 1;
+                        
+                        // Convert actual intensity to 0-100 range
+                        return Math.round((currentIntensity / maxIntensity) * 100);
+                      })()
                     }
+                    onChange={(e) => {
+                      const categoryName = (
+                        categories[expandedCatIdx]
+                          ?.product_detailed_category_name || ""
+                      ).toLowerCase();
+                      const maxIntensity = DEFAULT_INTENSITIES[categoryName] ?? 1;
+                      const sliderValue = Number(e.target.value);
+                      
+                      // Convert 0-100 range back to actual intensity
+                      const actualIntensity = (sliderValue / 100) * maxIntensity;
+                      
+                      setIntensities({
+                        ...intensities,
+                        [categoryName]: actualIntensity,
+                      });
+                    }}
                     style={{ width: "100%" }}
                   />
                   <span style={{ fontSize: 12, color: "#fff" }}>
-                    {(
-                      categories[expandedCatIdx]
-                        ?.product_detailed_category_name || ""
-                    ).toLowerCase() === "bindi"
-                      ? intensities[
-                      (
+                    {(() => {
+                      const categoryName = (
                         categories[expandedCatIdx]
                           ?.product_detailed_category_name || ""
-                      ).toLowerCase()
-                      ] ??
-                      DEFAULT_INTENSITIES[
-                      (
-                        categories[expandedCatIdx]
-                          ?.product_detailed_category_name || ""
-                      ).toLowerCase()
-                      ] ??
-                      6
-                      : Math.round(
-                        (intensities[
-                          (
-                            categories[expandedCatIdx]
-                              ?.product_detailed_category_name || ""
-                          ).toLowerCase()
-                        ] ??
-                          DEFAULT_INTENSITIES[
-                          (
-                            categories[expandedCatIdx]
-                              ?.product_detailed_category_name || ""
-                          ).toLowerCase()
-                          ] ??
-                          0.6) * 100
-                      ) + "%"}
+                      ).toLowerCase();
+                      const currentIntensity = intensities[categoryName] ?? 
+                        DEFAULT_INTENSITIES[categoryName] ?? 0.6;
+                      const maxIntensity = DEFAULT_INTENSITIES[categoryName] ?? 1;
+                      
+                      // Convert actual intensity to 0-100 range for display
+                      return Math.round((currentIntensity / maxIntensity) * 100);
+                    })()}
                   </span>
                 </div>
               )}
@@ -1017,26 +1011,28 @@ const FiltersPage = () => {
               return (
                 <div style={{ position: "relative", width: "100%" }}>
                   {/* === Shades Section === */}
-                  <button
-                    onClick={handleBackToMainFilters}
-                    style={{
-                      position: "absolute",
-                      top: "50%",
-                      left: 0,
-                      transform: "translateY(-50%)",
-                      border: "none",
-                      cursor: "pointer",
-                      zIndex: 10,
-                      width: 36,
-                      height: 36,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      background: "transparent",
-                    }}
-                  >
-                    <IoIosArrowBack size={30} color="#000" />
-                  </button>
+                  {showBackButton && (
+                    <button
+                      onClick={handleBackToMainFilters}
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: 0,
+                        transform: "translateY(-50%)",
+                        border: "none",
+                        cursor: "pointer",
+                        zIndex: 10,
+                        width: 38,
+                        height: 38,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "transparent",
+                      }}
+                    >
+                      <IoIosArrowBack size={22} color="#000" />
+                    </button>
+                  )}
 
                   <div
                     style={{
@@ -1089,57 +1085,59 @@ const FiltersPage = () => {
 
                               return (
                                 <React.Fragment
-                                  key={`${cat.product_detailed_category_name || "cat"
-                                    }-${idx}`}
+                                  key={`${
+                                    cat.product_detailed_category_name || "cat"
+                                  }-${idx}`}
                                 >
                                   {!(
                                     expandedCatIdx === idx &&
                                     expandedProductId !== null
                                   ) && (
-                                      <button
-                                        type="button"
-                                        className={`d-flex flex-column align-items-center px-2 py-2 border-0 border-end bg-white position-relative ${expandedCatIdx === idx
+                                    <button
+                                      type="button"
+                                      className={`d-flex flex-column align-items-center px-2 py-2 border-0 border-end bg-white position-relative ${
+                                        expandedCatIdx === idx
                                           ? "border-primary"
                                           : ""
-                                          } ${isApplied ? "border-success" : ""}`}
-                                        onClick={() => handleSelectCategory(idx)}
+                                      } ${isApplied ? "border-success" : ""}`}
+                                      onClick={() => handleSelectCategory(idx)}
+                                      style={{
+                                        cursor: "pointer",
+                                        minWidth: 70,
+                                        transition: "all 0.3s ease",
+                                        flexShrink: 0,
+                                      }}
+                                    >
+                                      <img
+                                        src={cat.product_detailed_image}
+                                        alt={cat.product_detailed_category_name}
                                         style={{
-                                          cursor: "pointer",
-                                          minWidth: 70,
-                                          transition: "all 0.3s ease",
-                                          flexShrink: 0,
+                                          width: "100%",
+                                          height: "90px",
+                                          objectFit: "cover",
                                         }}
+                                      />
+                                      <strong
+                                        style={{ fontSize: 11, marginTop: 2 }}
                                       >
-                                        <img
-                                          src={cat.product_detailed_image}
-                                          alt={cat.product_detailed_category_name}
+                                        {cat.product_detailed_category_name ||
+                                          "Category"}
+                                      </strong>
+                                      {isApplied && (
+                                        <div
+                                          className="position-absolute top-0 end-0 translate-middle rounded-circle"
                                           style={{
-                                            width: "100%",
-                                            height: "90px",
-                                            objectFit: "cover",
+                                            width: 10,
+                                            height: 10,
+                                            backgroundColor: isApplied.colorHex,
+                                            border: "2px solid white",
+                                            transform: "translate(50%, -50%)",
                                           }}
+                                          title={`Applied: ${isApplied.colorHex}`}
                                         />
-                                        <strong
-                                          style={{ fontSize: 11, marginTop: 2 }}
-                                        >
-                                          {cat.product_detailed_category_name ||
-                                            "Category"}
-                                        </strong>
-                                        {isApplied && (
-                                          <div
-                                            className="position-absolute top-0 end-0 translate-middle rounded-circle"
-                                            style={{
-                                              width: 10,
-                                              height: 10,
-                                              backgroundColor: isApplied.colorHex,
-                                              border: "2px solid white",
-                                              transform: "translate(50%, -50%)",
-                                            }}
-                                            title={`Applied: ${isApplied.colorHex}`}
-                                          />
-                                        )}
-                                      </button>
-                                    )}
+                                      )}
+                                    </button>
+                                  )}
 
                                   {expandedCatIdx === idx && (
                                     <div
@@ -1161,25 +1159,29 @@ const FiltersPage = () => {
                                           maxWidth: "100%",
                                           height: 150,
                                           overflowY: "hidden",
+                                          scrollbarWidth: "none",
+                                          msOverflowStyle: "none",
                                         }}
                                       >
                                         {(expandedProductId
                                           ? safeArray(cat.products).filter(
-                                            (pp) =>
-                                              pp.id === expandedProductId
-                                          )
+                                              (pp) =>
+                                                pp.id === expandedProductId
+                                            )
                                           : safeArray(cat.products)
                                         ).map((p) => (
                                           <React.Fragment key={p.id}>
                                             <button
                                               type="button"
-                                              onClick={() =>
-                                                handleSelectProduct(p.id)
-                                              }
-                                              className={`d-flex flex-column align-items-center px-2 py-2 border-0 rounded bg-white ${expandedProductId === p.id
-                                                ? "border-primary"
-                                                : ""
-                                                }`}
+                                              onClick={() => {
+                                                handleSelectProduct(p.id);
+                                                setLikedProduct(p);
+                                              }}
+                                              className={` d-flex flex-column align-items-center px-2 py-2 border-0 rounded bg-white ${
+                                                expandedProductId === p.id
+                                                  ? "border-primary"
+                                                  : ""
+                                              }`}
                                               style={{
                                                 cursor: "pointer",
                                                 width: 100,
@@ -1205,7 +1207,6 @@ const FiltersPage = () => {
                                                 {p.product_name}
                                               </strong>
                                             </button>
-
                                             {expandedProductId === p.id && (
                                               <div
                                                 style={{
@@ -1240,7 +1241,7 @@ const FiltersPage = () => {
                                                     style={{
                                                       display: "flex",
                                                       alignItems: "center",
-                                                      justifyContent: "center",
+                                                      justifyContent: "start",
                                                       gap: 14,
                                                       flexWrap: "wrap",
                                                     }}
@@ -1284,10 +1285,10 @@ const FiltersPage = () => {
                                         ))}
                                         {safeArray(cat.products).length ===
                                           0 && (
-                                            <div className="text-muted small">
-                                              No products
-                                            </div>
-                                          )}
+                                          <div className="text-muted small">
+                                            No products
+                                          </div>
+                                        )}
                                       </div>
                                     </div>
                                   )}
@@ -1300,7 +1301,7 @@ const FiltersPage = () => {
                     </div>
                   </div>
 
-                  <button
+                  {/* <button
                     style={{
                       position: "absolute",
                       top: "50%",
@@ -1315,10 +1316,11 @@ const FiltersPage = () => {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
+
                     }}
                   >
                     <IoIosArrowForward size={30} color="#000" />
-                  </button>
+                  </button> */}
                 </div>
               );
 
@@ -1638,6 +1640,38 @@ const FiltersPage = () => {
           background: #c00e5f;
         }
       `}</style>
+
+      {showPopup && (
+        <div
+          onClick={() => setShowPopup(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
+            style={{
+              background: "transparent",
+              padding: "20px",
+              borderRadius: "12px",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
+              minWidth: "500px",
+              maxWidth: "90%",
+            }}
+          >
+            <FavouriteListPopup />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

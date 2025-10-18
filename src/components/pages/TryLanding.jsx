@@ -162,6 +162,11 @@ const TryLanding = () => {
                     <div
                       role="button"
                       onClick={() => {
+                        const userInfo = { role: "bride" };
+                        localStorage.setItem(
+                          "userInfo",
+                          JSON.stringify(userInfo)
+                        );
                         dispatch(setRoleType({ role: "bride" }));
                         navigate("/try/bride");
                       }}
@@ -193,8 +198,14 @@ const TryLanding = () => {
                     <div
                       role="button"
                       onClick={() => {
+                        localStorage.removeItem("userInfo");
                         navigate("/try/groome");
-                        dispatch(setRoleType({ role: "groome" }));
+                        dispatch(setRoleType({ role: "groom" }));
+                        const userInfo = { role: "groom" };
+                        localStorage.setItem(
+                          "userInfo",
+                          JSON.stringify(userInfo)
+                        );
                       }}
                       className="d-flex flex-column align-items-center"
                     >

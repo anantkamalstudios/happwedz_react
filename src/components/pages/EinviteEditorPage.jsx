@@ -4,6 +4,7 @@ import EinviteCardEditor from "../layouts/einvites/EinviteCardEditor";
 import EinviteShareModal from "../layouts/einvites/EinviteShareModal";
 import { einviteApi } from "../../services/api/einviteApi";
 import { useSelector } from "react-redux";
+import Swal from "sweetalert2";
 
 const EinviteEditorPage = () => {
   const { id } = useParams();
@@ -42,7 +43,12 @@ const EinviteEditorPage = () => {
 
       if (isTemplate) {
         if (!currentUserId) {
-          alert("Please log in to customize this card.");
+          // alert("Please log in to customize this card.");
+          Swal.fire({
+            text: "Please log in to customize this card.",
+            timer: 1500,
+            icon: "error",
+          });
           return;
         }
 
@@ -64,18 +70,36 @@ const EinviteEditorPage = () => {
         setCard(newCard);
         // Navigate to new instance id so subsequent edits target the instance
         navigate(`/einvites/editor/${newCard.id}`);
-        alert("Your personal copy has been created. You can continue editing.");
+        // alert("Your personal copy has been created. You can continue editing.");
+        Swal.fire({
+          text: "Your personal copy has been created. You can continue editing.",
+          timer: 1500,
+          icon: "success",
+        });
         return;
       }
 
       // Otherwise, update existing user-owned instance
-      const updateRes = await einviteApi.updateInstance(card.id, updatedPayload);
+      const updateRes = await einviteApi.updateInstance(
+        card.id,
+        updatedPayload
+      );
       const saved = updateRes?.data || updateRes;
       setCard(saved);
-      alert("Card saved successfully!");
+      // alert("Card saved successfully!");
+      Swal.fire({
+        text: "Card saved successfully!",
+        timer: 1500,
+        icon: "success",
+      });
     } catch (err) {
       console.error("Error saving card:", err);
-      alert("Failed to save card");
+      // alert("Failed to save card");
+      Swal.fire({
+        text: "Failed to save card",
+        timer: 1500,
+        icon: "error",
+      });
     }
   };
 

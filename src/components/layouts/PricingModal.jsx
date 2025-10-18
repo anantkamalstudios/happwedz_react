@@ -230,6 +230,7 @@ import { FaPaperPlane } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import EventDatePicker from "./DayPicker";
+import Swal from "sweetalert2";
 
 const PricingModal = ({ show, handleClose, vendorId }) => {
   const { user, token } = useSelector((state) => state.auth);
@@ -355,8 +356,11 @@ const PricingModal = ({ show, handleClose, vendorId }) => {
         }
         throw new Error(result.message || "Something went wrong.");
       }
-
-      alert(result.message || "Request sent successfully!");
+      Swal.fire({
+        icon:"Success",
+        text:"Request sent successfully!",
+        timer: 1500
+      })
       handleClose();
     } catch (err) {
       setError(err.message);
