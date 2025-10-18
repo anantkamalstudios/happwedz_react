@@ -269,6 +269,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
       [venue.id]: !prev[venue.id],
     }));
   };
+  console.log("vendors", subVenuesData);
 
   return (
     <Container>
@@ -377,39 +378,52 @@ const GridView = ({ subVenuesData, handleShow }) => {
                       className="text-muted mb-3"
                       style={{ fontSize: "13px" }}
                     >
-                      {venue.location || "Location not available"}
+                      {venue.city || venue.location || "Location not available"}
                     </div>
 
-                    {/* Price Row */}
+                    {/* Price Row - show veg/non-veg for venues, else starting price */}
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                      <div>
-                        <span
-                          className="fw-bold text-dark"
-                          style={{ fontSize: "16px" }}
-                        >
-                          ₹ {venue.vegPrice || venue.price || "0"}
-                        </span>
-                        <span
-                          className="text-muted ms-1"
-                          style={{ fontSize: "12px" }}
-                        >
-                          {/* per plate */}
-                        </span>
-                      </div>
-                      <div>
-                        <span
-                          className="fw-bold text-dark"
-                          style={{ fontSize: "16px" }}
-                        >
-                          ₹ {venue.nonVegPrice || venue.price || "0"}
-                        </span>
-                        <span
-                          className="text-muted ms-1"
-                          style={{ fontSize: "12px" }}
-                        >
-                          {/* per event */}
-                        </span>
-                      </div>
+                      {venue.vegPrice || venue.nonVegPrice ? (
+                        <>
+                          <div>
+                            <span
+                              className="fw-bold text-dark"
+                              style={{ fontSize: "16px" }}
+                            >
+                              ₹ {String(venue.vegPrice || "-")}
+                            </span>
+                            <span
+                              className="text-muted ms-1"
+                              style={{ fontSize: "12px" }}
+                            >
+                              {/* per plate */}
+                            </span>
+                          </div>
+                          <div>
+                            <span
+                              className="fw-bold text-dark"
+                              style={{ fontSize: "16px" }}
+                            >
+                              ₹ {String(venue.nonVegPrice || "-")}
+                            </span>
+                            <span
+                              className="text-muted ms-1"
+                              style={{ fontSize: "12px" }}
+                            >
+                              {/* per plate */}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div>
+                          <span
+                            className="fw-bold text-dark"
+                            style={{ fontSize: "16px" }}
+                          >
+                            {venue.starting_price ? `₹ ${String(venue.starting_price)}` : "Contact for pricing"}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Bottom Info Pills */}

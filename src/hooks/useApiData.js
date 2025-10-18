@@ -1,223 +1,297 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
 
-const useApiData = (section, slug, city = null, vendorType = null) => {
+const useApiData = (
+  section,
+  slug,
+  city = null,
+  vendorType = null,
+  initialPage = 1,
+  initialLimit = 9
+) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
+    page: initialPage,
+    limit: initialLimit,
+    total: 0,
+    totalPages: 0,
+  });
+  const abortRef = useRef(null);
+  const cacheRef = useRef(new Map());
 
-  const fetchData = useCallback(async () => {
-    if (!section || (!slug && !vendorType)) {
-      setData([]);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const subCategory = slug
-        ? slug
-            .replace(/-{2,}/g, " / ")
-            .replace(/-/g, " ")
-            .replace(/\s*\/\s*/g, " / ")
-            .replace(/\s{2,}/g, " ")
-            .replace(/\b\w/g, (l) => l.toUpperCase())
-            .trim()
-        : null;
-
-      const params = new URLSearchParams();
-      if (vendorType) {
-        params.append("vendorType", vendorType);
-      }
-      if (city && city !== "all") {
-        params.append("city", city);
+  const fetchData = useCallback(
+    async (page = initialPage, limit = initialLimit) => {
+      if (!section || (!slug && !vendorType)) {
+        setData([]);
+        setLoading(false);
+        return;
       }
 
-      if (!vendorType && subCategory && subCategory.toLowerCase() !== "all") {
-        params.append("subCategory", subCategory);
+      setLoading(true);
+      setError(null);
+
+      try {
+        const subCategory = slug
+          ? slug
+              .replace(/-{2,}/g, " / ")
+              .replace(/-/g, " ")
+              .replace(/\s*\/\s*/g, " / ")
+              .replace(/\s{2,}/g, " ")
+              .replace(/\b\w/g, (l) => l.toUpperCase())
+              .trim()
+          : null;
+
+        const params = new URLSearchParams();
+        if (vendorType) {
+          params.append("vendorType", vendorType);
+        }
+        if (city && city !== "all") {
+          params.append("city", city);
+        }
+
+        if (!vendorType && subCategory && subCategory.toLowerCase() !== "all") {
+          params.append("subCategory", subCategory);
+        }
+
+        // Add pagination parameters
+        params.append("page", page.toString());
+        params.append("limit", limit.toString());
+
+        // const apiUrl = `http://localhost:4000/vendor-services?${params.toString()}`;
+        const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
+        // Serve from cache if available
+        const cacheKey = apiUrl;
+        if (cacheRef.current.has(cacheKey)) {
+          const cached = cacheRef.current.get(cacheKey);
+          setData(cached.data);
+          setPagination(cached.pagination);
+          setLoading(false);
+          return;
+        }
+
+        // Abort any previous request
+        if (abortRef.current) {
+          abortRef.current.abort();
+        }
+        const controller = new AbortController();
+        abortRef.current = controller;
+        console.log("[useApiData] Fetching:", apiUrl);
+        const timeoutId = setTimeout(() => controller.abort(), 20000);
+        const response = await fetch(apiUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        const itemsRaw = Array.isArray(result)
+          ? result
+          : Array.isArray(result.data)
+          ? result.data
+          : [];
+
+        if (Array.isArray(result)) {
+          const total = itemsRaw.length;
+          const start = (page - 1) * limit;
+          const pagedItems = itemsRaw.slice(start, start + limit);
+          const transformed = transformApiData(pagedItems);
+          setData(transformed);
+          const nextPagination = {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+          };
+          setPagination(nextPagination);
+          cacheRef.current.set(cacheKey, { data: transformed, pagination: nextPagination });
+        } else {
+          const transformed = transformApiData(itemsRaw);
+          setData(transformed);
+          if (result.pagination) {
+            const nextPagination = {
+              page: result.pagination.page || page,
+              limit: result.pagination.limit || limit,
+              total: result.pagination.total || 0,
+              totalPages: result.pagination.totalPages || 0,
+            };
+            setPagination(nextPagination);
+            cacheRef.current.set(cacheKey, { data: transformed, pagination: nextPagination });
+          }
+        }
+      } catch (err) {
+        if (err.name === "AbortError") {
+          return; // silently ignore aborts
+        }
+        console.error(`❌ Error loading ${section} data:`, err);
+        setError(`Failed to load ${section} data from API: ${err.message}`);
+        setData([]);
+      } finally {
+        setLoading(false);
       }
-
-      const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
-      if (subCategory) {
-      }
-      console.log("[useApiData] Fetching:", apiUrl);
-      const response = await fetch(apiUrl);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      const items = Array.isArray(result) ? result : [];
-      const transformed = transformApiData(items);
-
-      setData(transformed);
-    } catch (err) {
-      console.error(`❌ Error loading ${section} data:`, err);
-      setError(`Failed to load ${section} data from API: ${err.message}`);
-      setData([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [section, slug, city, vendorType]);
+    },
+    [section, slug, city, vendorType, initialPage, initialLimit]
+  );
 
   const refetch = useCallback(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchData(pagination.page, pagination.limit);
+  }, [fetchData, pagination.page, pagination.limit]);
+
+  const goToPage = useCallback(
+    (page) => {
+      if (page >= 1 && page <= pagination.totalPages) {
+        fetchData(page, pagination.limit);
+      }
+    },
+    [fetchData, pagination.limit, pagination.totalPages]
+  );
+
+  const nextPage = useCallback(() => {
+    if (pagination.page < pagination.totalPages) {
+      goToPage(pagination.page + 1);
+    }
+  }, [pagination.page, pagination.totalPages, goToPage]);
+
+  const prevPage = useCallback(() => {
+    if (pagination.page > 1) {
+      goToPage(pagination.page - 1);
+    }
+  }, [pagination.page, goToPage]);
+
+  const loadMore = useCallback(() => {
+    if (pagination.page < pagination.totalPages) {
+      nextPage();
+    }
+  }, [pagination.page, pagination.totalPages, nextPage]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchData(initialPage, initialLimit);
+  }, [fetchData, initialPage, initialLimit]);
 
-  return { data, loading, error, refetch };
+  return {
+    data,
+    loading,
+    error,
+    pagination,
+    refetch,
+    goToPage,
+    nextPage,
+    prevPage,
+    loadMore,
+    hasMore: pagination.page < pagination.totalPages,
+  };
 };
 
 const transformApiData = (items) => {
   return items.map((item) => {
     const id = item.id;
-    const media = item.media || {};
+    const media = Array.isArray(item.media) ? item.media : [];
     const vendor = item.vendor || {};
+    const subcategory = item.subcategory || {};
     const attributes = item.attributes || {};
-    const location = item.location || {};
 
-    const rawGallery = media.gallery || item.gallery || [];
-    const galleryPaths = rawGallery.filter((img) => typeof img === "string");
-    const firstImage = media.coverImage
-      ? IMAGE_BASE_URL + media.coverImage
-      : galleryPaths.length > 0
-      ? IMAGE_BASE_URL + galleryPaths[0]
-      : null;
+    // Resolve gallery from media or pipe-separated Portfolio in attributes
+    const portfolioUrls = attributes.Portfolio
+      ? attributes.Portfolio.split("|")
+          .map((url) => url.trim())
+          .filter((url) => url)
+      : [];
+    const gallery = media.length > 0 ? media : portfolioUrls;
+    const firstImage = gallery.length > 0 ? gallery[0] : null;
 
-    // --- Price Transformation Correction for veg/non-veg/photographer packages ---
-    const basePrice = attributes.price || item.price || 0;
+    // Vendor type detection for pricing display
+    const vendorTypeName =
+      attributes.vendor_type ||
+      vendor?.vendorType?.name ||
+      subcategory?.vendorType?.name ||
+      "";
+    const isVenue = vendorTypeName.toLowerCase().includes("venue");
 
-    const vegPriceValue =
-      attributes.veg_price ||
-      item.veg_price ||
-      attributes.PhotoPackage || // Photographer key fallback
+    // Normalize pricing from attributes
+    const photoPackage =
       attributes.photo_package_price ||
-      basePrice;
-
-    const nonVegPriceValue =
-      attributes.non_veg_price ||
-      item.non_veg_price ||
-      attributes.Photo_video || // Photographer key fallback
+      attributes.PhotoPackage_Price ||
+      attributes.PhotoPackage ||
+      attributes.PhotoPackage_price ||
+      attributes.PhotoPackagePrice ||
+      attributes.PhotoPackage_price_inr;
+    const photoVideoPackage =
       attributes.photo_video_package_price ||
-      basePrice;
-    // -----------------------------------------------------------------------------
+      attributes.Photo_video_Price ||
+      attributes.Photo_video ||
+      attributes.PhotoVideo_Price ||
+      attributes.PhotoVideoPackage;
+
+    // Fallback prices as numbers/strings
+    const priceOrZero = (v) => (v === null || v === undefined ? 0 : v);
 
     return {
       id,
-
-      // Names & titles
-      name: item.name || vendor.businessName || "Unknown Vendor",
-      subtitle: item.subtitle || attributes.subtitle || "",
-      tagline: item.tagline || attributes.tagline || "",
+      name:
+        attributes.vendor_name ||
+        attributes.Name ||
+        vendor.businessName ||
+        "Unknown Vendor",
+      subtitle: attributes.subtitle || "",
+      tagline: attributes.tagline || "",
       description:
-        item.description || attributes.description || attributes.about_us || "",
-      slug: item.slug || attributes.slug || "",
+        attributes.about_us ||
+        attributes.Aboutus ||
+        attributes.description ||
+        "",
+      slug: attributes.slug || "",
 
-      // Media
       image: firstImage,
-      gallery: galleryPaths.map((img) => IMAGE_BASE_URL + img),
-      videos: media.videos || [],
+      gallery,
+      videos: [],
 
-      // Pricing
-      price: attributes.price_range
-        ? `${attributes.price_range.min} - ${attributes.price_range.max}`
-        : basePrice,
-      price_range: attributes.price_range || item.price_range || null,
-      price_unit: attributes.price_unit || item.price_unit || null,
-      starting_price: attributes.starting_price || item.starting_price || null,
-
-      // Keys matching GridView.js (camelCase)
-      vegPrice: vegPriceValue,
-      nonVegPrice: nonVegPriceValue,
+      // Pricing for card grids
+      vegPrice: isVenue
+        ? attributes.veg_price || attributes.VegPrice || null
+        : null,
+      nonVegPrice: isVenue
+        ? attributes.non_veg_price || attributes.NonVegPrice || null
+        : null,
+      starting_price: !isVenue
+        ? photoPackage ||
+          photoVideoPackage ||
+          attributes.PriceRange ||
+          attributes.price ||
+          null
+        : null,
 
       // Location
-      address: attributes.address || item.address || "",
-      area: attributes.area || item.area || "",
-      city: location.city || attributes.city || vendor.city || item.city || "",
-      location: `${location.city || vendor.city || ""}${
-        location.state ? ", " + location.state : ""
-      }`,
+      address: attributes.address || attributes.Address || "",
+      area: attributes.area || "",
+      city: attributes.city || vendor.city || "",
+      location: attributes.city || vendor.city || "",
 
       // Ratings
-      rating: attributes.rating || item.rating || 0,
-      review_count: attributes.review_count || item.review_count || 0,
-      reviews: attributes.reviews || item.reviews || 0,
-      within_24hr_available:
-        attributes.within_24hr_available || item.within_24hr_available || false,
+      rating: attributes.rating || 0,
+      review_count:
+        attributes.review_count ||
+        parseInt(attributes.review?.toString?.() || "0", 10) ||
+        0,
+      reviews:
+        attributes.review_count ||
+        parseInt(attributes.review?.toString?.() || "0", 10) ||
+        0,
 
-      // Capacity
-      capacity:
-        attributes.capacity_min || attributes.capacity_max
-          ? `${attributes.capacity_min || 0} - ${attributes.capacity_max || 0}`
-          : attributes.area || null,
+      // Extra
+      vendor_type: vendorTypeName,
+      subcategory_name: subcategory?.name || "",
 
-      // Facilities
-      car_parking: attributes.car_parking || item.car_parking || null,
-      // 🔑 Crucial field for the GridView component's conditional logic
-      rooms: attributes.rooms || item.rooms || null,
+      call: attributes.Phone || vendor.phone || null,
+      whatsapp: attributes.Whatsapp || null,
+      website: attributes.Website || null,
 
-      // Contact
-      call: vendor.phone || attributes.contact?.phone || item.cta_phone || null,
-      whatsapp:
-        vendor.whatsapp ||
-        attributes.contact?.whatsapp ||
-        item.contact?.whatsapp ||
-        null,
-      website:
-        vendor.website ||
-        attributes.contact?.website ||
-        item.contact?.website ||
-        attributes.url ||
-        item.url ||
-        null,
-
-      // Policies
-      alcohol_policy: attributes.alcohol_policy || item.alcohol_policy || null,
-      catering_policy:
-        attributes.catering_policy || item.catering_policy || null,
-      decor_policy:
-        attributes.decor_policy ||
-        item.decor_policy ||
-        attributes.deco_policy ||
-        item.deco_policy ||
-        null,
-      dj_policy: attributes.dj_policy || item.dj_policy || null,
-      cancellation_policy:
-        attributes.cancellation_policy || item.cancellation_policy || "",
-      refund_policy: attributes.refund_policy || item.refund_policy || "",
-      tnc: attributes.tnc || item.tnc || "",
-      payment_terms: attributes.payment_terms ||
-        item.payment_terms || { advance: null },
-
-      // Flags
-      is_featured: attributes.is_featured || item.is_featured || false,
-      is_feature_available:
-        attributes.is_feature_available || item.is_feature_available || false,
-
-      // Deals
-      deals: item.deals || attributes.deals || [],
-
-      // Timings
-      timings: {
-        open: attributes.timing_open || item.timing_open || null,
-        close: attributes.timing_close || item.timing_close || null,
-        last_entry:
-          attributes.timing_last_entry || item.timing_last_entry || null,
-      },
-
-      // Extra metadata
-      about_us: attributes.about_us || item.about_us || "",
-      imported_at: item.imported_at || attributes.imported_at || null,
+      about_us: attributes.about_us || attributes.Aboutus || "",
       vendor_name:
-        attributes.vendor_name || vendor.businessName || item.vendor_name || "",
-      url: attributes.url || item.url || null,
+        vendor.businessName || attributes.vendor_name || attributes.Name || "",
+      url: attributes.Website || attributes.URL || null,
     };
   });
 };

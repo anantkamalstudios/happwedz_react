@@ -67,6 +67,7 @@ const FiltersPage = () => {
   }, [uploadedId]);
 
   const [previewUrl, setPreviewUrl] = React.useState(uploadedPreview);
+  
 
   React.useEffect(() => {
     setPreviewUrl(uploadedPreview);
@@ -92,18 +93,15 @@ const FiltersPage = () => {
     fetchProducts();
   }, []);
 
-  // Changes for Compare Image
-  const [isCompareMode, setIsCompareMode] = useState(false); // toggle compare
-  const originalImageUrl = uploadedPreview; // fixed left image
+  const [isCompareMode, setIsCompareMode] = useState(false);
+  const originalImageUrl = uploadedPreview;
   const [compareImageUrl, setCompareImageUrl] = useState(previewUrl);
 
   React.useEffect(() => {
     if (isCompareMode) {
-      setCompareImageUrl(previewUrl); // update right side live
+      setCompareImageUrl(previewUrl);
     }
   }, [previewUrl, isCompareMode]);
-
-  // Changes for Compare Image end
 
   const handleSelectCategory = (idx) => {
     setExpandedCatIdx((prev) => (prev === idx ? null : idx));
@@ -127,7 +125,11 @@ const FiltersPage = () => {
 
   const handleApplyOne = async (productId, colorHex) => {
     if (!uploadedId) {
-      alert("Please upload an image first.");
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Please upload an image first.",
+      });
       navigate("/try/upload");
       return;
     }
@@ -228,7 +230,11 @@ const FiltersPage = () => {
       }
     } catch (e) {
       console.error("applyMakeup failed:", e?.message || e, payload);
-      alert(e?.message || "Failed to apply filter.");
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Failed to apply filter.",
+      });
     } finally {
       setIsApplying(false);
     }
@@ -347,7 +353,11 @@ const FiltersPage = () => {
       }
     } catch (e) {
       console.error("applyMakeup failed:", e?.message || e, payload);
-      alert(e?.message || "Failed to apply filter.");
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Failed to apply filter.",
+      });
     } finally {
       setIsApplying(false);
     }
@@ -884,7 +894,7 @@ const FiltersPage = () => {
                   style={{
                     position: "absolute",
                     top: "50%",
-                    right: "-130px",
+                    right: "-120px",
                     transform: "translateY(-50%) rotate(-90deg)",
                     zIndex: 20,
                     display: "flex",
@@ -894,16 +904,16 @@ const FiltersPage = () => {
                     minWidth: "60%",
                   }}
                 >
-                  {/* <label
+                  <label
                     style={{ fontSize: 13, marginBottom: 4, color: "#fff" }}
                   >
                     {(
                       categories[expandedCatIdx]
                         ?.product_detailed_category_name || ""
                     ).toLowerCase() === "bindi"
-                      ? "Size"
-                      : "Intensity"}
-                  </label> */}
+                      ? ""
+                      : ""}
+                  </label>
                   <input
                     type="range"
                     min={0}
@@ -987,7 +997,7 @@ const FiltersPage = () => {
               )}
           </div>
         </div>
-        {!previewUrl && (
+        {/* {!previewUrl && (
           <div className="upload-placeholder">
             <p>No image found. Please upload a photo.</p>
             <button
@@ -997,7 +1007,7 @@ const FiltersPage = () => {
               Upload
             </button>
           </div>
-        )}
+        )} */}
       </div>
       {/* Filter bar */}
       <>

@@ -1,14 +1,25 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
+import { setRoleType } from "../../redux/roleSlice";
 
-const SectionCard = ({ title, subtitle, image, onTry }) => {
+const SectionCard = ({ title, subtitle, image, onTry, comingSoon }) => {
   return (
-    <div className="position-relative rounded-0 overflow-hidden mb-4">
+    <div
+      className="position-relative rounded-0 overflow-hidden mb-4"
+      style={{
+        pointerEvents: comingSoon ? "none" : "auto",
+      }}
+    >
       <img
         src={image}
         alt={title}
         className="w-100"
-        style={{ objectFit: "cover", filter: "brightness(1)", height:"90vh" }}
+        style={{
+          objectFit: "cover",
+          filter: comingSoon ? "brightness(0.6)" : "brightness(1)",
+          height: "90vh",
+        }}
       />
       <div className="row position-absolute bottom-50 end-0 p-4 text-center text-white w-100 d-flex justify-content-end">
         <div className="col-md-6"></div>
@@ -32,12 +43,34 @@ const SectionCard = ({ title, subtitle, image, onTry }) => {
           </button>
         </div>
       </div>
+
+      {comingSoon && (
+        <div
+          className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+          style={{
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 10,
+          }}
+        >
+          <h1
+            style={{
+              fontSize: "3rem",
+              fontWeight: "900",
+              color: "#fff",
+              letterSpacing: "2px",
+            }}
+          >
+            Coming Soon
+          </h1>
+        </div>
+      )}
     </div>
   );
 };
 
 const BrideMakeupChoose = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   return (
     <div className="">
@@ -45,21 +78,32 @@ const BrideMakeupChoose = () => {
         title="Makeup"
         subtitle="Instantly Try On Makeup Looks And Find Your Perfect Shades."
         image="/images/try/makeup1.png"
-        onTry={() => navigate("/try/makeup")}
+        onTry={() => {
+          navigate("/try/makeup");
+          dispatch(setRoleType({ type: "makeup" }));
+        }}
       />
 
       <SectionCard
         title="Jewellery"
         subtitle="Instantly Try On Jewellery Looks And Find Your Perfect Piece."
         image="/images/try/jewellaryImage.png"
-        onTry={() => navigate("/try/makeup")}
+        onTry={() => {
+          navigate("/try/makeup");
+          dispatch(setRoleType({ type: "jewellary" }));
+        }}
+        comingSoon
       />
 
       <SectionCard
         title="Outfit"
         subtitle="Instantly Try On Outfits And Find Your Perfect Look."
-        image="/images/try/outfitImage.png"
-        onTry={() => navigate("/try/makeup")}
+        image="/images/try/BrideOutfitImage.png"
+        onTry={() => {
+          navigate("/try/makeup");
+          dispatch(setRoleType({ type: "outfit" }));
+        }}
+        comingSoon
       />
     </div>
   );

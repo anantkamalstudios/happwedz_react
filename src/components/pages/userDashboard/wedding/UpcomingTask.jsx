@@ -1,26 +1,124 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { BsPlusLg } from "react-icons/bs";
+import { useSelector } from "react-redux";
+import axios from "axios";
 
 const UpComingTask = () => {
-  const [answer, SetAnswer] = useState({});
+  const [tasks, setTasks] = useState([]);
+  const [completedTasks, setCompletedTasks] = useState({});
+  const [loading, setLoading] = useState(true);
 
-  const tasks = [
-    "Do you want a destination wedding",
-    "Short list date options for all pre-wedding functions",
-    "Delegate responsibilities",
-  ];
+  const token = useSelector((state) => state.auth.token);
+  const user = useSelector((state) => state.auth.user);
+  const userId = user?.id || user?.user_id || user?._id;
+  const [refresh, setRefresh] = useState(false); // To trigger refetch
 
-  const handleCheckboxChange = (event) => {
-    const { name, checked } = event.target;
-    SetAnswer({ ...answer, [name]: checked });
+  // Fetch real checklist tasks
+  useEffect(() => {
+    if (!userId || !token) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchTasks = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get(
+          `https://happywedz.com/api/new-checklist/newChecklist/user/${userId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const allTasks = res.data?.data || [];
+        // Filter for pending tasks and set initial completed state
+        const pending = allTasks.filter((task) => task.status === "pending");
+        setTasks(pending);
+
+        const completed = {};
+        allTasks.forEach((task) => {
+          if (task.status === "completed") {
+            completed[task.id] = true;
+          }
+        });
+        setCompletedTasks(completed);
+      } catch (error) {
+        console.error("Failed to fetch upcoming tasks:", error);
+        setTasks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, [userId, token, refresh]);
+
+  const handleCheckboxChange = async (event) => {
+    const { name: taskId, checked } = event.target;
+
+    if (!checked) return; // Only handle completion, not un-checking
+
+    // Optimistically remove from UI
+    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== parseInt(taskId)));
+
+    try {
+      const newStatus = "completed";
+      await axios.put(
+        `https://happywedz.com/api/new-checklist/update/${taskId}`,
+        { status: newStatus },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      // Trigger a full refetch to ensure data consistency
+      setRefresh((prev) => !prev);
+    } catch (error) {
+      console.error("Failed to update task status:", error);
+      // If the API call fails, trigger a refetch to revert the optimistic update
+      setRefresh((prev) => !prev);
+    }
   };
+
+  const pendingTasksCount = tasks.length;
+
+  if (loading) {
+    return (
+      <div style={{ padding: "2rem" }}>
+        <h1 style={{ marginBottom: "1.5rem" }}>Upcoming tasks</h1>
+        <p className="text-muted">Loading your checklist...</p>
+      </div>
+    );
+  }
+
+  // UI for when no checklist is found
+  if (!loading && tasks.length === 0 && Object.keys(completedTasks).length === 0) {
+    return (
+      <div style={{ padding: "2rem", textAlign: "center" }}>
+        <h1 style={{ marginBottom: "1.5rem" }}>Start Your Planning</h1>
+        <div className="bg-light p-4 p-md-5 rounded-4 d-flex flex-column align-items-center">
+          <i className="fa-solid fa-list-check fs-1 text-primary mb-3"></i>
+          <h4 className="fw-bold text-dark my-2">
+            Your Wedding Checklist is Empty
+          </h4>
+          <p className="text-muted mb-4">
+            Create a personalized checklist to stay organized and on track.
+          </p>
+          <Link to="/user-dashboard/checklist" className="btn btn-primary rounded-3 px-4">
+            <BsPlusLg className="me-2" /> Create Your Checklist
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: "2rem" }}>
       <h1 style={{ marginBottom: "1.5rem" }}>Upcoming tasks</h1>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {tasks.map((task, index) => (
+        {/* Show only the first 3 tasks */}
+        {tasks.slice(0, 3).map((task, index) => (
           <div
+            key={task.id || index}
             style={{
               display: "flex",
               justifyContent: "flex-start",
@@ -31,13 +129,13 @@ const UpComingTask = () => {
           >
             <input
               type="checkbox"
-              name={`${task}`}
+              name={`${task.id}`}
               onChange={handleCheckboxChange}
-              checked={answer[task]}
+              checked={false} // Checkboxes for pending tasks are always unchecked
               style={{ height: "20px", width: "20px" }}
             />
             <div style={{ marginLeft: "10px" }}>
-              <p>{task}</p>
+              <p className="mb-1">{task.text}</p>
               <p className="text-muted" style={{ fontSize: "12px" }}>
                 Tap to open Search
               </p>
@@ -53,10 +151,14 @@ const UpComingTask = () => {
           color: "#C31162",
         }}
       >
-        <a style={{ borderBottom: "2px solid #C31162", placeItems: "end" }}>
-          6 PENDING TAKS{" "}
-          <i class="fa-solid fa-arrow-right" style={{ color: "#C31162" }}></i>
-        </a>
+        <Link
+          to="/user-dashboard/checklist"
+          className="text-decoration-none"
+          style={{ borderBottom: "2px solid #C31162", color: "#C31162" }}
+        >
+          {pendingTasksCount} PENDING TASKS{" "}
+          <i className="fa-solid fa-arrow-right"></i>
+        </Link>
       </div>
     </div>
   );
