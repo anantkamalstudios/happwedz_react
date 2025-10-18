@@ -27,7 +27,7 @@ const Wishlist = () => {
   const getImageUrl = (path) => {
     if (!path)
       return "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop";
-    return `https://happywedzbackend.happywedz.com${path}`;
+    return `${path}`;
   };
 
   // ✅ Fetch Wishlist
@@ -52,27 +52,26 @@ const Wishlist = () => {
                   item.vendor_services_id
                 );
 
-                const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
-                let imageUrl =
-                  "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop";
-
-                if (serviceData?.media?.gallery?.length > 0) {
-                  const validImg = serviceData.media.gallery.find(
-                    (img) =>
-                      typeof img === "string" && img.startsWith("/uploads/")
-                  );
-                  if (validImg) imageUrl = `${IMAGE_BASE_URL}${validImg}`;
-                }
+                console.log("s", serviceData)
 
                 return {
                   wishlist_id: item.wishlist_id,
                   vendor_services_id: item.vendor_services_id,
                   businessName:
-                    serviceData?.attributes?.name ||
-                    serviceData?.businessName ||
-                    "Unknown",
-                  city: serviceData?.attributes?.city || "Unknown",
-                  image: imageUrl,
+                    serviceData?.vendor?.businessName || // Prioritize businessName
+                    serviceData?.attributes?.name || // Fallback to attributes.name
+                    "Unknown Vendor",
+                  city:
+                    serviceData?.location?.city || // Prioritize location.city
+                    serviceData?.attributes?.city || // Fallback to attributes.city
+                    "Unknown City",
+                  image: getImageUrl(
+                    serviceData?.media?.[0] || // Use the first gallery image
+                    serviceData?.attributes?.cover_image || // Fallback to cover_image
+                    serviceData?.cover_image || // Fallback to root cover_image
+                    serviceData?.image || // Fallback to root image
+                    null // Final fallback
+                  ),
                 };
               } catch (err) {
                 console.error("Error fetching service:", err);

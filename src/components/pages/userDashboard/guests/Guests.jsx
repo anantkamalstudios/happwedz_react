@@ -9,7 +9,9 @@ import {
   FaUserPlus,
   FaUsers,
   FaChevronDown,
+  FaTrash,
 } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 const initialGuestFormState = {
   name: "",
@@ -90,6 +92,31 @@ const Guests = () => {
     fetchGuests();
   }, [refresh, fetchGuests]);
 
+  // Create a unique list of groups from the guests for the filter dropdown
+  const uniqueGroups = [
+    "All",
+    ...new Set(guests.map((g) => g.group || "Other")),
+  ];
+
+  const filteredAndGroupedGuests = React.useMemo(() => {
+    const filtered = guests.filter(
+      (g) =>
+        g &&
+        (selectedGroup === "All" || g.group === selectedGroup) &&
+        (selectedStatus === "All" || g.status === selectedStatus) &&
+        g.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    // Group guests by their group property
+    return filtered.reduce((acc, guest) => {
+      const groupName = guest.group || "Other";
+      if (!acc[groupName]) {
+        acc[groupName] = [];
+      }
+      acc[groupName].push(guest);
+      return acc;
+    }, {});
+  }, [guests, selectedGroup, selectedStatus, searchTerm]);
+
   const filteredGuests = guests.filter(
     (g) =>
       g && // Add a check to ensure the guest object exists
@@ -100,17 +127,6 @@ const Guests = () => {
 
   // Pagination calculations
   const [currentPage, setCurrentPage] = useState(1);
-  const guestsPerPage = 10;
-
-  // Calculate currentGuests
-  const indexOfLastGuest = currentPage * guestsPerPage; // This is correct
-  const indexOfFirstGuest = indexOfLastGuest - guestsPerPage;
-  const currentGuests = guests.slice(indexOfFirstGuest, indexOfLastGuest);
-
-  // Total pages
-  const totalPages = Math.ceil(guests.length / guestsPerPage);
-
-  // Pagination function
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const handleFormChange = (e) => {
@@ -211,7 +227,7 @@ const Guests = () => {
     (g) => g && g.status === "Not Attending"
   ).length;
   const adultsCount = guests.filter((g) => g && g.type === "Adult").length;
-  const childrenCount = guests.filter((g) => g && g.type === "Children").length;
+  const childrenCount = guests.filter((g) => g && g.type === "Child").length;
 
   const sendMessage = (type) => {
     alert(`Sending ${type} message`);
@@ -224,6 +240,28 @@ const Guests = () => {
         <p>Loading guests...</p>
       </div>
     );
+  }
+
+  const handleDownload = async () => {
+    if (!axiosInstance) return;
+    try {
+      const response = await axiosInstance.get(
+        "https://happywedz.com/api/guestlist/export/excel",
+        {
+          responseType: "blob", // Important for file downloads
+        }
+      );
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "guest-list.xlsx");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error("Download Error:", err);
+      Swal.fire("Error!", "Could not download the guest list.", "error");
+    }
   }
 
   return (
@@ -314,7 +352,10 @@ const Guests = () => {
               </div>
             )}
           </div>
-          <button className="wgl-button wgl-button-secondary">
+          <button
+            className="wgl-button wgl-button-secondary"
+            onClick={handleDownload}
+          >
             <FaDownload className="wgl-button-icon" /> Download
           </button>
           <button className="wgl-button wgl-button-secondary">
@@ -348,7 +389,7 @@ const Guests = () => {
                   name="email"
                   type="email"
                   className="form-control"
-                  placeholder="e.g., john.doe@example.com"
+                  placeholder=""
                   value={newGuestForm.email}
                   onChange={handleFormChange}
                 />
@@ -474,10 +515,9 @@ const Guests = () => {
             }}
           >
             <option value="All">All Groups</option>
-            <option value="Couple">Couple</option>
-            <option value="Family">Family</option>
-            <option value="Friends">Friends</option>
-            <option value="Coworkers">Coworkers</option>
+            {uniqueGroups.slice(1).map((group) => (
+              <option key={group} value={group}>{group}</option>
+            ))}
           </select>
         </div>
         <div className="wgl-filter-group">
@@ -500,106 +540,59 @@ const Guests = () => {
 
       {/* Guest Table */}
       <div className="wgl-guest-list">
-        {guests.length > 0 ? (
-          <table className="wgl-guest-table">
-            <thead>
-              <tr>
-                <th className="wgl-table-header">Guest</th>
-                <th className="wgl-table-header">Group</th>
-                <th className="wgl-table-header">Status</th>
-                <th className="wgl-table-header">Companions</th>
-                <th className="wgl-table-header">Seat</th>
-                <th className="wgl-table-header">Type</th>
-                <th className="wgl-table-header">Menu</th>
-                <th className="wgl-table-header">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentGuests.map((g) => (
-                <tr key={g.id} className="wgl-guest-row">
-                  <td className="wgl-guest-name">{g.name}</td>
-                  <td className="wgl-guest-group">{g.group}</td>
-                  <td className="wgl-guest-status">
-                    <select
-                      className={`wgl-status-select wgl-status-${g.status.toLowerCase()}`}
-                      value={g.status}
-                      onChange={(e) =>
-                        updateGuestField(g.id, "status", e.target.value)
-                      }
-                    >
-                      {statusOptions.map((s) => (
-                        <option key={s}>{s}</option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="wgl-guest-companions">{g.companions}</td>
-                  <td className="wgl-guest-seat">{g.seat_number}</td>
-                  <td className="wgl-guest-type">
-                    <select
-                      value={g.type}
-                      onChange={(e) =>
-                        updateGuestField(g.id, "type", e.target.value)
-                      }
-                    >
-                      {typeOptions.map((t) => (
-                        <option key={t}>{t}</option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="wgl-guest-menu">
-                    <select
-                      value={g.menu}
-                      onChange={(e) =>
-                        updateGuestField(g.id, "menu", e.target.value)
-                      }
-                    >
-                      {menuOptions.map((m) => (
-                        <option key={m}>{m}</option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="wgl-guest-actions">
-                    <button
-                      className="wgl-action-button wgl-action-delete"
-                      onClick={() => deleteGuestAPI(g.id)}
-                    >
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {Object.keys(filteredAndGroupedGuests).length > 0 ? (
+          Object.entries(filteredAndGroupedGuests).map(([groupName, groupGuests]) => (
+            <div key={groupName} className="wgl-guest-group-section mb-5">
+              <h4 className="wgl-group-title">{groupName} ({groupGuests.length})</h4>
+              <table className="wgl-guest-table">
+                <thead>
+                  <tr>
+                    <th className="wgl-table-header">Guest</th>
+                    <th className="wgl-table-header">Status</th>
+                    <th className="wgl-table-header">Companions</th>
+                    <th className="wgl-table-header">Seat</th>
+                    <th className="wgl-table-header">Type</th>
+                    <th className="wgl-table-header">Menu</th>
+                    <th className="wgl-table-header">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {groupGuests.map((g) => (
+                    <tr key={g.id} className="wgl-guest-row">
+                      <td className="wgl-guest-name">{g.name}</td>
+                      <td className="wgl-guest-status">
+                        <select
+                          className={`wgl-status-select wgl-status-${g.status.toLowerCase()}`}
+                          value={g.status}
+                          onChange={(e) => updateGuestField(g.id, "status", e.target.value)}
+                        >
+                          {statusOptions.map((s) => (<option key={s}>{s}</option>))}
+                        </select>
+                      </td>
+                      <td className="wgl-guest-companions">{g.companions}</td>
+                      <td className="wgl-guest-seat">{g.seat_number}</td>
+                      <td className="wgl-guest-type">
+                        <select value={g.type} onChange={(e) => updateGuestField(g.id, "type", e.target.value)}>
+                          {typeOptions.map((t) => (<option key={t}>{t}</option>))}
+                        </select>
+                      </td>
+                      <td className="wgl-guest-menu">
+                        <select value={g.menu} onChange={(e) => updateGuestField(g.id, "menu", e.target.value)}>
+                          {menuOptions.map((m) => (<option key={m}>{m}</option>))}
+                        </select>
+                      </td>
+                      <td className="wgl-guest-actions">
+                        <button className="wgl-action-button wgl-action-delete" onClick={() => deleteGuestAPI(g.id)}><FaTrash /></button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))
         ) : (
           <div className="wgl-empty-state">
             <p>No guests found matching your criteria</p>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="wgl-pagination">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => paginate(currentPage - 1)}
-            >
-              Previous
-            </button>
-            {[...Array(totalPages)].map((_, i) => (
-              <button
-                key={i + 1}
-                className={currentPage === i + 1 ? "active" : ""}
-                onClick={() => paginate(i + 1)}
-              >
-                {i + 1}
-              </button>
-            ))}
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => paginate(currentPage + 1)}
-            >
-              Next
-            </button>
           </div>
         )}
       </div>
