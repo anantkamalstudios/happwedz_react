@@ -744,6 +744,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Download, Type, ZoomIn, ZoomOut, Save, RotateCcw } from "lucide-react";
+import Swal from "sweetalert2";
 
 // Sample template data (comes from your backend)
 const SAMPLE_TEMPLATE = {
@@ -1051,7 +1052,12 @@ const CardEditor = () => {
       })),
     };
 
-    alert("Customization saved! (Check console for data)");
+    // alert("Customization saved! (Check console for data)");
+    Swal.fire({
+      icon: "success",
+      text: "Customization saved!",
+      timer: 1500,
+    });
   };
 
   return (
@@ -1095,10 +1101,11 @@ const CardEditor = () => {
                 {userFields.map((field, index) => (
                   <div
                     key={field.id}
-                    className={`mb-4 p-3 border rounded ${selectedFieldIndex === index
+                    className={`mb-4 p-3 border rounded ${
+                      selectedFieldIndex === index
                         ? "border-primary bg-light"
                         : ""
-                      }`}
+                    }`}
                     onClick={() => setSelectedFieldIndex(index)}
                     style={{ cursor: "pointer" }}
                   >
@@ -1191,8 +1198,8 @@ const CardEditor = () => {
                     cursor: isDragging
                       ? "grabbing"
                       : isResizing
-                        ? "nwse-resize"
-                        : "grab",
+                      ? "nwse-resize"
+                      : "grab",
                   }}
                   onMouseDown={handleMouseDown}
                   onMouseMove={handleMouseMove}

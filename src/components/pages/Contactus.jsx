@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { FiMail, FiPhone, FiMapPin } from 'react-icons/fi';
 import { FaApple, FaGooglePlay } from 'react-icons/fa';
 import { text } from '@fortawesome/fontawesome-svg-core';
+import Swal from 'sweetalert2';
 
 const Contactus = () => {
     const [formData, setFormData] = useState({
@@ -22,7 +23,12 @@ const Contactus = () => {
 
     const handleSubmit = () => {
         console.log('Form submitted:', formData);
-        alert('Form submitted successfully!');
+        // alert('Form submitted successfully!');
+        Swal.fire({
+            icon:"success",
+            text:"Form submitted successfully!",
+            timer:1500
+        })
     };
 
     const styles = {

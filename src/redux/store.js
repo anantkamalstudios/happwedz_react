@@ -4,7 +4,7 @@ import vendorAuthReducer from "./vendorAuthSlice";
 import locationReducer from "./locationSlice";
 import wishlistReducer from "./wishlistSlice";
 import roleReducer from "./roleSlice";
-
+import favoriteReducer from "./favoriteSlice";
 
 const store = configureStore({
   reducer: {
@@ -13,6 +13,7 @@ const store = configureStore({
     location: locationReducer,
     wishlist: wishlistReducer,
     role: roleReducer,
+    favorites: favoriteReducer,
   },
 });
 

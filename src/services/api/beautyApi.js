@@ -4,12 +4,12 @@ const API_BASE_URL =
 
 class BeautyApiService {
   constructor() {
-    this.baseURL = API_BASE_URL.replace(/\/+$/, ""); // Remove trailing slash
+    this.baseURL = API_BASE_URL.replace(/\/+$/, "");
   }
 
   // Helper to safely join base URL and path
   buildUrl(path) {
-    const cleanPath = path.replace(/^\/+/, ""); // Remove leading slash from path
+    const cleanPath = path.replace(/^\/+/, "");
     return `${this.baseURL}/${cleanPath}`;
   }
 
@@ -70,8 +70,13 @@ class BeautyApiService {
 
   async getFilteredProducts(category, detailedCategory) {
     const qs = new URLSearchParams();
+
+    const userInfo = JSON.parse(localStorage.getItem("userInfo"))
+    const role = userInfo?.role;
+  
     if (category) qs.set("category", category);
     if (detailedCategory) qs.set("detailed_category", detailedCategory);
+    if (role) qs.set("user", role);
 
     return this.makeJsonRequest(`/products/filter_products?${qs.toString()}`, {
       method: "GET",

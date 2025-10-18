@@ -3,6 +3,7 @@ import { IoCameraOutline, IoCloudUploadOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import * as faceapi from "face-api.js";
 import { beautyApi } from "../../services/api";
+import Swal from "sweetalert2";
 
 const ProfileImageSelector = () => {
   const navigate = useNavigate();
@@ -334,11 +335,23 @@ const ProfileImageSelector = () => {
     const file = event.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert("Please select an image less than 5MB");
+        // alert("Please select an image less than 5MB");
+        Swal.fire({
+          icon: "warning",
+          text: "Please select an image less than 5MB",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#ed1173",
+        });
         return;
       }
       if (!file.type.startsWith("image/")) {
-        alert("Please select a valid image file");
+        // alert("Please select a valid image file");
+        Swal.fire({
+          icon: "warning",
+          text: "Please select a valid image file",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#ed1173",
+        });
         return;
       }
       const reader = new FileReader();
@@ -360,11 +373,23 @@ const ProfileImageSelector = () => {
     const file = event.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert("Please select an image less than 5MB");
+        // alert("Please select an image less than 5MB");
+        Swal.fire({
+          icon: "warning",
+          text: "Please select an image less than 5MB",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#ed1173",
+        });
         return;
       }
       if (!file.type.startsWith("image/")) {
-        alert("Please select a valid image file");
+        // alert("Please select a valid image file");
+        Swal.fire({
+          icon: "warning",
+          text: "Please select a valid image file",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#ed1173",
+        });
         return;
       }
       const reader = new FileReader();
@@ -519,7 +544,13 @@ const ProfileImageSelector = () => {
   const handleApply = async () => {
     if (selectedCategory === "makeup") {
       if (!uploadingImageId) {
-        alert("Please upload an image first.");
+        // alert("Please upload an image first.");
+        Swal.fire({
+          icon: "warning",
+          text: "Please upload an image first.",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#ed1173",
+        })
         return;
       }
       const productIds = Object.values(selectedProducts)
@@ -527,7 +558,13 @@ const ProfileImageSelector = () => {
         .map((p) => p.id)
         .filter((v) => v !== undefined && v !== null);
       if (productIds.length === 0) {
-        alert("Please select at least one makeup product.");
+        // alert("Please select at least one makeup product.");
+        Swal.fire({
+          icon: "warning",
+          text: "Please select at least one makeup product.",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#ed1173",
+        })
         return;
       }
       const payload = {
@@ -583,7 +620,14 @@ const ProfileImageSelector = () => {
         }
       } catch (e) {
         console.error("Apply makeup failed", e);
-        alert("Failed to apply makeup. Please try again.");
+        // alert("Failed to apply makeup. Please try again.");
+        Swal.fire({
+          icon: "error",
+          text: "Failed to apply makeup. Please try again.",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#ed1173",
+        })
+        
       } finally {
         setIsApplying(false);
       }

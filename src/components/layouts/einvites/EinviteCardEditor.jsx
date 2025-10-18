@@ -7,6 +7,7 @@ import { TbTextResize } from "react-icons/tb";
 import { AiOutlineUndo } from "react-icons/ai";
 import { useSelector } from "react-redux";
 import { FaCopy, FaWhatsapp, FaDownload } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
   const [editedCard, setEditedCard] = useState(card || {});
@@ -49,7 +50,11 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
     navigator.clipboard
       .writeText(shareUrl)
       .then(() => {
-        alert("Link copied to clipboard!");
+        // alert("Link copied to clipboard!");
+        Swal.fire({
+          text:"Link copied to clipboard!",
+          timer:1500
+        })
       })
       .catch((err) => {
         console.error("Failed to copy: ", err);

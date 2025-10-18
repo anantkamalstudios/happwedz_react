@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useToast } from "../../layouts/toasts/Toast";
+import Swal from "sweetalert2";
 
 const API_BASE_URL = "https://happywedz.com";
 
@@ -128,7 +129,15 @@ export default function VendorLeadsPage() {
       // alert(result.message || "Quotation sent successfully!");
       closeModal();
     } catch (err) {
-      alert(`Error: ${err.message}`);
+      // alert(`Error: ${err.message}`);
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: `Error: ${err.message}`,
+        confirmButtonText: "OK",
+        confirmButtonColor: "#ed1173",
+        timer:"3000"
+      })
     } finally {
       setSubmitting(false);
     }
