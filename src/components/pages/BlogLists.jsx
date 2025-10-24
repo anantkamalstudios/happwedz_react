@@ -79,7 +79,7 @@ const BlogLists = ({ onPostClick }) => {
         // Replace old domain with new base URL
         url = url.replace(/^https:\/\/happywedz\.com:4000\/?/, baseUrl);
         // Replace 'blogs' with 'photography' in the path
-        url = url.replace(/\/uploads\/blogs\//g, "/uploads/photography/");
+        url = url.replace(/\/uploads\/blogs\//g, "/uploads/blogs/");
         return url;
       }
       return url;
