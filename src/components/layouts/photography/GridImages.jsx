@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const GridImages = ({ category, searchQuery, photos }) => {
   const filteredImages = photos
@@ -49,24 +50,30 @@ const GridImages = ({ category, searchQuery, photos }) => {
         )}
         {filteredImages.map((img, index) => (
           <div key={index} className="masonry-item">
-            <div className="card border-0 shadow-sm">
-              <img
-                src={
-                  img.url || "https://via.placeholder.com/300x200?text=No+Image"
-                }
-                alt={img.title || "No Title"}
-                className="card-img-top"
-                loading="lazy"
-                onError={(e) => {
-                  e.target.src =
-                    "https://via.placeholder.com/300x200?text=No+Image";
-                }}
-              />
-              <div className="card-body p-2">
-                <h6 className="mb-1">{img.title || "No Title"}</h6>
-                <small className="text-muted">{img.city_name || "No City"}</small>
+            <Link
+              to={`/photography/details/${img.id}`}
+              className="text-decoration-none"
+              style={{ cursor: "pointer" }}
+            >
+              <div className="card border-0 shadow-sm">
+                <img
+                  src={
+                    img.url || "https://via.placeholder.com/300x200?text=No+Image"
+                  }
+                  alt={img.title || "No Title"}
+                  className="card-img-top"
+                  loading="lazy"
+                  onError={(e) => {
+                    e.target.src =
+                      "https://via.placeholder.com/300x200?text=No+Image";
+                  }}
+                />
+                <div className="card-body p-2">
+                  <h6 className="mb-1">{img.title || "No Title"}</h6>
+                  <small className="text-muted">{img.city_name || "No City"}</small>
+                </div>
               </div>
-            </div>
+            </Link>
           </div>
         ))}
       </div>

@@ -30,7 +30,7 @@ const Home = () => {
         img={image}
         heading="Design Studio"
         subHeading="Personalize & Send Invites Instantly"
-        link="/e-invites"
+        link="/try"
         title="Create Stunning Digital Wedding Invitations That Wow"
         subtitle="Design beautiful e-invites using our easy-to-use editor. Customize templates, add your personal touch, and send invites digitally to your guests in minutes."
         btnName="Get Started"

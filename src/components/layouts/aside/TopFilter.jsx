@@ -1,35 +1,33 @@
 // TopFilter.jsx
-import React, { useState } from "react";
+import React from "react";
 import { Dropdown, Form } from "react-bootstrap";
 import { CiFilter } from "react-icons/ci";
 import { FaChevronDown } from "react-icons/fa";
 import { MdClear } from "react-icons/md";
 import ViewSwitcher from "../Main/ViewSwitcher";
 
-const TopFilter = ({ view, setView, filters }) => {
-  const [selectedFilters, setSelectedFilters] = useState({});
-
+const TopFilter = ({
+  view,
+  setView,
+  filters,
+  activeFilters,
+  onToggleFilter,
+  onClearFilters,
+  isFilterActive,
+  getActiveCount,
+}) => {
   const handleCheckbox = (group, value) => {
-    const key = `${group}-${value}`;
-    setSelectedFilters((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+    onToggleFilter(group, value);
   };
 
-  const clearFilters = () => setSelectedFilters({});
-
-  const getSelectedCount = (group) =>
-    Object.keys(selectedFilters).filter(
-      (k) => k.startsWith(group) && selectedFilters[k]
-    ).length;
+  const clearFilters = () => onClearFilters();
 
   // Capitalize helper
   const capitalize = (str) =>
     str.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   const renderDropdown = (group, options) => {
-    const selectedCount = getSelectedCount(group);
+    const selectedCount = getActiveCount(group);
 
     return (
       <Dropdown key={group} className="main-filter-dropdown filter-dropdown">
@@ -79,7 +77,7 @@ const TopFilter = ({ view, setView, filters }) => {
                     </span>
                   }
                   className="mb-0 px-3 py-2 main-filter-checkbox"
-                  checked={!!selectedFilters[key]}
+                  checked={isFilterActive(group, option)}
                   onChange={() => handleCheckbox(group, option)}
                 />
               </Dropdown.Item>
@@ -90,7 +88,8 @@ const TopFilter = ({ view, setView, filters }) => {
     );
   };
 
-  const isAnyFilterSelected = Object.values(selectedFilters).some(Boolean);
+  const isAnyFilterSelected =
+    activeFilters && Object.keys(activeFilters).length > 0;
 
   return (
     <div className="aside-filters-container bg-white border-bottom py-3 mb-4">
@@ -121,25 +120,22 @@ const TopFilter = ({ view, setView, filters }) => {
         {isAnyFilterSelected && (
           <div className="d-flex flex-wrap gap-2 align-items-center mt-3">
             <small className="text-muted me-2">Active filters:</small>
-            {Object.entries(selectedFilters)
-              .filter(([_, selected]) => selected)
-              .map(([key]) => {
-                const [group, value] = key.split("-");
-                return (
-                  <span
-                    key={key}
-                    className="badge bg-light text-dark border d-flex align-items-center gap-1 fs-14 text-capitalize"
-                  >
-                    {capitalize(value)}
-                    <button
-                      type="button"
-                      className="btn-close btn-close-sm"
-                      style={{ fontSize: "0.6rem" }}
-                      onClick={() => handleCheckbox(group, value)}
-                    ></button>
-                  </span>
-                );
-              })}
+            {Object.entries(activeFilters).map(([group, values]) =>
+              values.map((value) => (
+                <span
+                  key={`${group}-${value}`}
+                  className="badge bg-light text-dark border d-flex align-items-center gap-1 fs-14 text-capitalize"
+                >
+                  {capitalize(value)}
+                  <button
+                    type="button"
+                    className="btn-close btn-close-sm"
+                    style={{ fontSize: "0.6rem" }}
+                    onClick={() => handleCheckbox(group, value)}
+                  ></button>
+                </span>
+              ))
+            )}
           </div>
         )}
       </div>

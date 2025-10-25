@@ -622,7 +622,7 @@ import Swal from "sweetalert2";
 
 const Budget = () => {
   const [budget, setBudget] = useState({
-    estimated: 2000000,
+    estimated: 0,
     categories: [],
   });
 
@@ -649,8 +649,8 @@ const Budget = () => {
           subcategories:
             cat.subcategories?.map((sub) => ({
               id: sub.id,
-              name: sub.name,
-              estimated: 0, // Default estimated
+              name: sub.name, // This will be overwritten by user data if available
+              estimated: 0,
               final: 0,
               paid: 0,
             })) || [],
@@ -687,21 +687,31 @@ const Budget = () => {
 
         if (result.success && result.data.length > 0) {
           const userBudgetData = result.data;
+          const userEstimatedBudget = userBudgetData[0]?.user_estimated_budget;
 
           setBudget((prev) => {
+            // Update estimated budget if available from user data
+            const newEstimated =
+              userEstimatedBudget !== undefined
+                ? userEstimatedBudget
+                : prev.estimated;
+            setNewBudgetAmount(newEstimated); // Sync the edit input
+
             const categoriesWithData = prev.categories.map((category) => {
               const matchingBudgets = userBudgetData.filter(
                 (b) => b.vendor_type_id === category.id
               );
 
               if (matchingBudgets.length > 0) {
-                const newSubcategories = matchingBudgets.map((b) => ({
-                  id: b.id, // Use the budget entry ID as the unique ID
-                  name: `Expense #${b.id}`, // API doesn't provide a name, so we create one
-                  estimated: b.estimated_budget,
-                  final: b.final_cost,
-                  paid: b.paid_amount,
-                }));
+                const newSubcategories = matchingBudgets
+                  .map((b) => ({
+                    id: b.id,
+                    name: b.name || `Expense #${b.id}`, // Use the name from the API
+                    estimated: b.estimated_budget || 0,
+                    final: b.final_cost || 0,
+                    paid: b.paid_amount || 0,
+                  }))
+                  .filter(Boolean);
 
                 return { ...category, subcategories: newSubcategories };
               }
@@ -1082,9 +1092,8 @@ const Budget = () => {
           <div className="wb-budget-card">
             <div className="wb-budget-label">REMAINING</div>
             <div
-              className={`wb-budget-amount ${
-                remainingBudget < 0 ? "wb-over-budget" : ""
-              }`}
+              className={`wb-budget-amount ${remainingBudget < 0 ? "wb-over-budget" : ""
+                }`}
             >
               {formatCurrency(remainingBudget)}
             </div>
