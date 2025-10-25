@@ -622,19 +622,23 @@ useEffect(() => {
   return (
     <div
       style={{
-        maxHeight: "100vh",
+        minHeight: "100vh",
         background:
           "radial-gradient(circle at 80% 50%, rgba(137, 188, 255, 0.32) 0%,rgba(137, 188, 255, 0.1) 15%,rgba(238, 174, 202, 0.2) 21%, rgba(238, 174, 202, 0.1) 100%",
       }}
     >
       <div className="container-fluid">
-        <div className="row" style={{ maxHeight: "100vh" }}>
+        <div
+          className="row"
+          style={{ minHeight: "calc(100vh - clamp(60px, 10vw, 200px))" }}
+        >
           {/* Sidebar */}
           <div
             className="col-md-3 col-lg-2 p-4"
             style={{
               backgroundColor: "#fff",
               boxShadow: "2px 0 10px rgba(0,0,0,0.05)",
+              minHeight: "100vh",
             }}
           >
             {/* Logo */}
@@ -680,7 +684,7 @@ useEffect(() => {
                 <span
                   style={{
                     display: "inline-block",
-                    width: "60px",
+                    minWidth: "clamp(60px, 80px, 100px)",
                     height: "30px",
                     lineHeight: "30px",
                     textAlign: "center",
@@ -690,6 +694,7 @@ useEffect(() => {
                     fontSize: "14px",
                     fontWeight: "500",
                     transition: "all 0.3s ease",
+                    padding: "0 5px",
                   }}
                 >
                   {budget}
@@ -712,7 +717,7 @@ useEffect(() => {
                 <span
                   style={{
                     display: "inline-block",
-                    width: "60px",
+                    minWidth: "clamp(60px, 80px, 100px)",
                     height: "30px",
                     lineHeight: "30px",
                     textAlign: "center",
@@ -722,6 +727,7 @@ useEffect(() => {
                     fontSize: "14px",
                     fontWeight: "500",
                     transition: "all 0.3s ease",
+                    padding: "0 5px",
                   }}
                 >
                   {guests}
@@ -744,7 +750,7 @@ useEffect(() => {
                 <span
                   style={{
                     display: "inline-block",
-                    width: "60px",
+                    minWidth: "clamp(60px, 80px, 100px)",
                     height: "30px",
                     lineHeight: "30px",
                     textAlign: "center",
@@ -754,6 +760,7 @@ useEffect(() => {
                     fontSize: "14px",
                     fontWeight: "500",
                     transition: "all 0.3s ease",
+                    padding: "0 5px",
                   }}
                 >
                   {city}
@@ -823,7 +830,7 @@ useEffect(() => {
 
               {/* Chat Messages */}
               <div
-              className="no-scrollbar"
+                className="no-scrollbar"
                 ref={messagesContainerRef}
                 style={{
                   flex: 1,

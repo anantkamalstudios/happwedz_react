@@ -8,12 +8,14 @@ import { toast, ToastContainer } from "react-toastify";
 import { useLoader } from "../context/LoaderContext";
 import userApi from "../../services/api/userApi";
 import "react-toastify/dist/ReactToastify.css";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -136,12 +138,16 @@ const CustomerLogin = () => {
         <div className="col-lg-6 d-none d-lg-block p-0 position-relative">
           <div className="wedding-image-overlay position-absolute w-100 h-100"></div>
           <div className="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center text-white p-5">
-            <h2 className="display-4 fw-light mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <h2
+              className="display-4 fw-light mb-4"
+              style={{ fontFamily: "'Playfair Display', serif" }}
+            >
               Create Your <span className="gold-text">Dream Wedding</span>
             </h2>
             <div className="divider mx-auto my-4"></div>
             <p className="lead text-center">
-              "The best thing to hold onto in life is each other. Plan your perfect day with us."
+              "The best thing to hold onto in life is each other. Plan your
+              perfect day with us."
             </p>
           </div>
         </div>
@@ -151,7 +157,9 @@ const CustomerLogin = () => {
             <h2 className="fw-light mb-2" style={{ color: "#8a5a76" }}>
               Welcome to <span className="primary-text fw-bold">HappyWedz</span>
             </h2>
-            <p className="text-muted">Sign in to access your wedding planning dashboard</p>
+            <p className="text-muted">
+              Sign in to access your wedding planning dashboard
+            </p>
           </div>
 
           <Form onSubmit={handleSubmit} className="mt-4">
@@ -167,16 +175,35 @@ const CustomerLogin = () => {
               />
             </Form.Group>
 
-            <Form.Group controlId="formPassword" className="mb-4">
+            <Form.Group
+              controlId="formPassword"
+              className="mb-4 position-relative"
+            >
               <Form.Label className="text-secondary">Password</Form.Label>
+
               <Form.Control
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="p-3"
+                className="p-3 pe-5" // pe-5 adds padding on right so icon doesn’t overlap text
                 required
               />
+
+              {/* Eye Icon inside input */}
+              <span
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: "absolute",
+                  right: "15px",
+                  top: "50%",
+                  cursor: "pointer",
+                  color: "#6c757d",
+                  zIndex: 2,
+                }}
+              >
+                {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+              </span>
             </Form.Group>
 
             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -188,12 +215,20 @@ const CustomerLogin = () => {
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className="text-secondary"
               />
-              <Link className="text-decoration-none wedding-link" to="/user-forgot-password">
+              <Link
+                className="text-decoration-none wedding-link"
+                to="/user-forgot-password"
+              >
                 Forgot Password?
               </Link>
             </div>
 
-            <Button variant="primary" type="submit" className="w-100 p-3 login-btn" disabled={loading}>
+            <Button
+              variant="primary"
+              type="submit"
+              className="w-100 p-3 login-btn"
+              disabled={loading}
+            >
               {loading ? "Signing In..." : "Sign In"}
             </Button>
           </Form>
@@ -215,13 +250,19 @@ const CustomerLogin = () => {
           <div className="mt-5 text-center">
             <p className="text-muted">
               Don't have an account?{" "}
-              <Link to="/customer-register" className="text-decoration-none wedding-link fw-semibold">
+              <Link
+                to="/customer-register"
+                className="text-decoration-none wedding-link fw-semibold"
+              >
                 Sign up
               </Link>
             </p>
             <p className="text-muted">
               I am a{" "}
-              <Link to="/vendor-login" className="text-decoration-none fw-semibold wedding-link">
+              <Link
+                to="/vendor-login"
+                className="text-decoration-none fw-semibold wedding-link"
+              >
                 vendor
               </Link>
             </p>

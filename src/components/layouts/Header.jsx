@@ -181,9 +181,9 @@ const Header = () => {
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light shadow-sm primary-bg p-0">
-      <div className="container-fluid">
+      <div className="container-fluid p-0">
         {/* Mobile view: logo left + toggle right */}
-        <div className="d-flex d-lg-none justify-content-between align-items-center w-100 px-3 py-2">
+        <div className="d-flex d-lg-none justify-content-between align-items-center w-100 py-2">
           <Link className="navbar-brand m-0" to="/">
             <img src="/happywed_white.png" alt="HappyWedz" height="30" />
             {/* <img src="/images/logo.webp" alt="HappyWedz" height="30" /> */}
@@ -203,9 +203,9 @@ const Header = () => {
         </div>
 
         <div className="collapse navbar-collapse w-100" id="mainNav">
-          <div className="row">
+          <div className="row w-100">
             <div className="col-12 bg-white p-2">
-              <div className="container-fluid w-100">
+              <div className="container w-100 p-0">
                 <div className="row align-items-center gy-2">
                   {/* Left: Tagline */}
                   <div className="col-12 col-sm-4 col-lg-4 d-flex align-items-center justify-content-center justify-content-sm-start">
@@ -411,7 +411,7 @@ const Header = () => {
 
             {/* Bottom */}
             <div className="col-12 py-2">
-              <div className="container-fluid">
+              <div className="container">
                 <div className="row justify-content-center">
                   <div className="col-lg-12 d-flex flex-column flex-lg-row align-items-center justify-content-evenly">
                     <div className="text-center d-none d-lg-block">
