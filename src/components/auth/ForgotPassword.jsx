@@ -274,7 +274,7 @@
 // export default ForgotPassword;
 import React, { useState } from "react";
 import { FiMail, FiLock, FiCheck, FiArrowLeft, FiLoader } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const ForgotPassword = () => {
   const [activeStep, setActiveStep] = useState("forgotPassword");
@@ -285,6 +285,7 @@ const ForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [storedOtp, setStoredOtp] = useState(""); // store backend OTP for testing
+  const navigate = useNavigate();
 
   // ---------------- SEND OTP ----------------
   const handleEmailSubmit = async (e) => {
@@ -333,7 +334,7 @@ const ForgotPassword = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
-          otp: otp.join(""), // combine 6 digits
+          otp: otp.join(""),
           newPassword,
         }),
       });
@@ -343,7 +344,8 @@ const ForgotPassword = () => {
       if (!res.ok) throw new Error(data.message || "Failed to reset password");
 
       setMessage(data.message || "Password reset successful");
-      setActiveStep("success");
+      // setActiveStep("success");
+      navigate("/customer-login");
     } catch (err) {
       setMessage(err.message);
     } finally {

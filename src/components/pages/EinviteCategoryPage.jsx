@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import EinviteCardGrid from '../layouts/einvites/EinviteCardGrid';
 import EinviteFilterBar from '../layouts/einvites/EinviteFilterBar';
 import { einviteApi } from '../../services/api/einviteApi';
+import { FaChevronLeft } from 'react-icons/fa6';
 
 const EinviteCategoryPage = () => {
     const { category } = useParams();
@@ -18,7 +19,8 @@ const EinviteCategoryPage = () => {
     const fetchCategoryCards = async () => {
         try {
             setLoading(true);
-            const data = await einviteApi.getEinvitesByCategoryAndTemplate(category, true);
+            // category param is now the cardType (wedding_einvite, video, save_the_date)
+            const data = await einviteApi.getEinvitesByCardType(category);
             setCards(data);
             setFilteredCards(data);
         } catch (err) {
@@ -59,26 +61,30 @@ const EinviteCategoryPage = () => {
 
     const getCategoryInfo = (categoryKey) => {
         const categoryMap = {
-            'wedding-e-invitations': {
+            'wedding_einvite': {
                 title: 'Wedding E-Invitations',
                 icon: 'fas fa-heart',
-                description: 'Beautiful wedding invitation templates'
+                description: 'Beautiful digital wedding invitation cards',
+                color: '#ff6b9d'
             },
-            'video-invitations': {
+            'video': {
                 title: 'Video Invitations',
                 icon: 'fas fa-video',
-                description: 'Dynamic video invitation templates'
+                description: 'Dynamic video invitation templates',
+                color: '#6366f1'
             },
-            'save-the-date': {
-                title: 'Save The Date',
+            'save_the_date': {
+                title: 'Save the Date',
                 icon: 'fas fa-calendar',
-                description: 'Save the date card templates'
+                description: 'Save the date card templates',
+                color: '#10b981'
             }
         };
         return categoryMap[categoryKey] || {
             title: 'E-Invitations',
             icon: 'fas fa-envelope',
-            description: 'Beautiful invitation templates'
+            description: 'Beautiful invitation templates',
+            color: '#6366f1'
         };
     };
 
@@ -87,26 +93,45 @@ const EinviteCategoryPage = () => {
     return (
         <div className="einvite-category-page">
             <div className="container py-5">
-                <div className="row mb-4">
-                    <div className="col-md-8">
-                        <Link to="/einvites" className="btn btn-outline-secondary mb-3">
-                            <i className="fas fa-arrow-left me-2"></i>
-                            Back to Browse
+                <div className="row mb-4 align-items-center justify-content-between">
+                    {/* LEFT SIDE */}
+                    <div className="col-md-8 d-flex align-items-center flex-wrap">
+                        <Link
+                            to="/einvites"
+                            className="col-md-1 btn btn-light border d-flex align-items-center justify-content-center me-3"
+                            aria-label="Back"
+                            style={{
+                                height: "45px",
+                                width: "45px",
+                                borderRadius: "50%",
+                                flexShrink: 0,
+                            }}
+                        >
+                            <FaChevronLeft size={20} />
                         </Link>
-                        <h2 className="einvite-page-title">
-                            <i className={`${categoryInfo.icon} me-2 text-primary`}></i>
-                            {categoryInfo.title}
-                        </h2>
-                        <p className="text-muted">{categoryInfo.description}</p>
-                    </div>
-                    <div className="col-md-4 text-end">
-                        <div className="einvite-category-stats">
-                            <span className="badge bg-primary fs-6">
-                                {filteredCards.length} Templates
-                            </span>
+
+                        <div className="flex-grow-1 col-md-11">
+                            <h2 className="einvite-page-title mb-1">{categoryInfo.title}</h2>
+                            <p className="text-muted mb-0">{categoryInfo.description}</p>
                         </div>
                     </div>
+
+                    {/* RIGHT SIDE */}
+                    <div className="col-md-2 d-flex align-items-center justify-content-md-end justify-content-start mt-3 mt-md-0 gap-3">
+                        {/* <span className="badge bg-light text-dark border fs-6 p-2">
+                            {filteredCards.length} Templates
+                        </span> */}
+
+                        <Link
+                            to="/einvites/my-cards"
+                            className={`btn btn-outline-primary`}
+                        >
+                            My Cards
+                        </Link>
+                    </div>
                 </div>
+
+
 
                 <EinviteFilterBar
                     onSearch={handleSearch}

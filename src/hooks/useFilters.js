@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import FILTER_CONFIG, { DEFAULT_FILTERS } from "../data/filtersConfig";
 
 // Backend-ready hook to retrieve filters dynamically per section/subcategory.
-// Currently uses local FILTER_CONFIG as a fallback while backend endpoints are finalized.
+// Manages both filter options and active selections.
 const useFilters = ({ section, slug }) => {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [activeFilters, setActiveFilters] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -47,7 +48,70 @@ const useFilters = ({ section, slug }) => {
     };
   }, [key, section, slug]);
 
-  return { filters, loading, error };
+  // Toggle a filter value
+  const toggleFilter = useCallback((group, value) => {
+    setActiveFilters((prev) => {
+      const groupFilters = prev[group] || [];
+      const exists = groupFilters.includes(value);
+      
+      if (exists) {
+        // Remove filter
+        const updated = groupFilters.filter((v) => v !== value);
+        if (updated.length === 0) {
+          const { [group]: _, ...rest } = prev;
+          return rest;
+        }
+        return { ...prev, [group]: updated };
+      } else {
+        // Add filter
+        return { ...prev, [group]: [...groupFilters, value] };
+      }
+    });
+  }, []);
+
+  // Clear all filters
+  const clearFilters = useCallback(() => {
+    setActiveFilters({});
+  }, []);
+
+  // Clear specific filter group
+  const clearFilterGroup = useCallback((group) => {
+    setActiveFilters((prev) => {
+      const { [group]: _, ...rest } = prev;
+      return rest;
+    });
+  }, []);
+
+  // Check if a filter is active
+  const isFilterActive = useCallback((group, value) => {
+    return activeFilters[group]?.includes(value) || false;
+  }, [activeFilters]);
+
+  // Get count of active filters in a group
+  const getActiveCount = useCallback((group) => {
+    return activeFilters[group]?.length || 0;
+  }, [activeFilters]);
+
+  // Get total active filter count
+  const totalActiveCount = useMemo(() => {
+    return Object.values(activeFilters).reduce(
+      (sum, arr) => sum + arr.length,
+      0
+    );
+  }, [activeFilters]);
+
+  return {
+    filters,
+    activeFilters,
+    loading,
+    error,
+    toggleFilter,
+    clearFilters,
+    clearFilterGroup,
+    isFilterActive,
+    getActiveCount,
+    totalActiveCount,
+  };
 };
 
 export default useFilters;

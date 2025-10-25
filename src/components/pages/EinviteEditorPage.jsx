@@ -165,16 +165,6 @@ const EinviteEditorPage = () => {
         <div className="container">
           <div className="row align-items-center mt-3">
             <div className="col-md-6">
-              {/* <nav aria-label="breadcrumb">
-                <ol className="breadcrumb">
-                  <li className="breadcrumb-item">
-                    <a href="/einvites">E-Invites</a>
-                  </li>
-                  <li className="breadcrumb-item active" aria-current="page">
-                    Editor
-                  </li>
-                </ol>
-              </nav> */}
               <h4 className="mb-0">Editing: {card.name}</h4>
             </div>
             <div className="col-md-6 text-end">

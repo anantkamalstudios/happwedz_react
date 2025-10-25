@@ -9,6 +9,7 @@ import PricingModal from "../layouts/PricingModal";
 import Photos from "../layouts/photography/Photos";
 import DynamicAside from "../layouts/aside/DynamicAside";
 import useApiData from "../../hooks/useApiData";
+import usePhotography from "../../hooks/usePhotography";
 import EmptyState from "../EmptyState";
 import LoadingState from "../LoadingState";
 import ErrorState from "../ErrorState";
@@ -30,6 +31,19 @@ const SubSection = () => {
   const [view, setView] = useState("images");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [activeFilters, setActiveFilters] = useState({});
+
+  // Photography hook
+  const {
+    typesWithCategories,
+    photosByCategory,
+    allPhotos,
+    loading: photographyLoading,
+    error: photographyError,
+    fetchTypesWithCategories,
+    fetchPhotosByCategory,
+    fetchAllPhotos,
+  } = usePhotography();
 
   const reduxLocation = useSelector((state) => state.location.selectedLocation);
   const [selectedCity, setSelectedCity] = useState(
@@ -45,7 +59,7 @@ const SubSection = () => {
     nextPage,
     prevPage,
     goToPage,
-  } = useApiData(section, slug, selectedCity, vendorType);
+  } = useApiData(section, slug, selectedCity, vendorType, 1, 9, activeFilters);
 
   // Modal handlers
   const handleClose = () => {
@@ -70,6 +84,10 @@ const SubSection = () => {
     setSelectedCity(city);
   };
 
+  const handleFiltersChange = (filters) => {
+    setActiveFilters(filters);
+  };
+
   // Sync selectedCity with URL query first, then Redux location state
   useEffect(() => {
     if (cityFromQuery && cityFromQuery !== "all") {
@@ -92,7 +110,39 @@ const SubSection = () => {
     return apiData;
   }, [section, apiData, error]);
 
-  useEffect(() => {}, [
+  // Fetch photography data when in photography section
+  useEffect(() => {
+    if (section === "photography") {
+      fetchTypesWithCategories();
+      if (slug) {
+        // Find the category ID from typesWithCategories based on slug
+        const findCategoryBySlug = () => {
+          for (const type of typesWithCategories) {
+            if (Array.isArray(type.categories)) {
+              const category = type.categories.find(
+                (cat) =>
+                  cat.name
+                    .toLowerCase()
+                    .replace(/\s+/g, "-")
+                    .replace(/[^a-z0-9\-]/g, "") === slug
+              );
+              if (category) return category.id;
+            }
+          }
+          return null;
+        };
+
+        const categoryId = findCategoryBySlug();
+        if (categoryId) {
+          fetchPhotosByCategory(categoryId);
+        }
+      } else {
+        fetchAllPhotos();
+      }
+    }
+  }, [section, slug, typesWithCategories.length]);
+
+  useEffect(() => { }, [
     section,
     slug,
     title,
@@ -104,6 +154,8 @@ const SubSection = () => {
   ]);
 
   if (section === "photography") {
+    const photographyData = slug ? photosByCategory : allPhotos;
+
     return (
       <div className="container-fluid">
         <MainSearch
@@ -112,7 +164,17 @@ const SubSection = () => {
           onCategoryChange={handleCategoryChange}
           onCityChange={handleCityChange}
         />
-        <Photos title={title} />
+        {photographyLoading ? (
+          <LoadingState title={title} />
+        ) : photographyError ? (
+          <ErrorState error={photographyError} />
+        ) : (
+          <Photos
+            title={title}
+            images={photographyData}
+            loading={photographyLoading}
+          />
+        )}
       </div>
     );
   }
@@ -149,7 +211,12 @@ const SubSection = () => {
         <EmptyState section={section} title={title} />
       ) : (
         <>
-          <DynamicAside section={section} view={view} setView={setView} />
+          <DynamicAside
+            section={section}
+            view={view}
+            setView={setView}
+            onFiltersChange={handleFiltersChange}
+          />
 
           {view === "images" && (
             <GridView

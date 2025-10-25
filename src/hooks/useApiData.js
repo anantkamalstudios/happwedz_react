@@ -8,7 +8,8 @@ const useApiData = (
   city = null,
   vendorType = null,
   initialPage = 1,
-  initialLimit = 9
+  initialLimit = 9,
+  filters = {}
 ) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -59,6 +60,11 @@ const useApiData = (
         // Add pagination parameters
         params.append("page", page.toString());
         params.append("limit", limit.toString());
+
+        // Add filters if present
+        if (filters && Object.keys(filters).length > 0) {
+          params.append("filters", JSON.stringify(filters));
+        }
 
         // const apiUrl = `http://localhost:4000/vendor-services?${params.toString()}`;
         const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
@@ -139,7 +145,7 @@ const useApiData = (
         setLoading(false);
       }
     },
-    [section, slug, city, vendorType, initialPage, initialLimit]
+    [section, slug, city, vendorType, initialPage, initialLimit, filters]
   );
 
   const refetch = useCallback(() => {

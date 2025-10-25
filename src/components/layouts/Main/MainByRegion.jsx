@@ -21,7 +21,6 @@ const MainByRegion = ({ type }) => {
   };
 
   if (loading) return <p>Loading regions...</p>;
-  if (error) return <p>Error loading regions</p>;
 
   return (
     <div className="container">

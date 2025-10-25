@@ -1,10 +1,19 @@
 // Utility to normalize image URLs
+// Utility to normalize image URLs
 const getImageUrl = (imageData) => {
   const baseUrl = "https://happywedzbackend.happywedz.com/";
-  const replacePrefix = (url) =>
-    typeof url === "string"
-      ? url.replace(/^https:\/\/happywedz\.com:4000\/?/, baseUrl)
-      : url;
+
+  const replacePrefix = (url) => {
+    if (typeof url === "string") {
+      // Replace old domain with new base URL
+      url = url.replace(/^https:\/\/happywedz\.com:4000\/?/, baseUrl);
+
+      // Replace 'photography' with 'blogs' in the path
+      url = url.replace(/\/uploads\/photography\//g, "/uploads/blogs/");
+      return url;
+    }
+    return url;
+  };
 
   if (!imageData) return "https://via.placeholder.com/800x400";
 
@@ -12,18 +21,23 @@ const getImageUrl = (imageData) => {
     if (imageData.startsWith("http")) {
       return replacePrefix(imageData);
     }
-    return baseUrl + imageData;
+    // Replace 'photography' with 'blogs' for relative paths
+    const path = imageData.replace(/\/uploads\/photography\//g, "/uploads/blogs/");
+    return baseUrl + path;
   }
 
   if (Array.isArray(imageData) && imageData.length > 0) {
     if (imageData[0].startsWith("http")) {
       return replacePrefix(imageData[0]);
     }
-    return baseUrl + imageData[0];
+    // Replace 'photography' with 'blogs' for relative paths
+    const path = imageData[0].replace(/\/uploads\/photography\//g, "/uploads/blogs/");
+    return baseUrl + path;
   }
 
   return "https://via.placeholder.com/800x400";
 };
+
 import React, { useEffect, useState } from "react";
 import { FaChevronLeft } from "react-icons/fa";
 

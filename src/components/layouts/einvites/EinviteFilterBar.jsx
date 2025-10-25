@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { IoClose } from 'react-icons/io5';
 
 const EinviteFilterBar = ({ onSearch, onFilterChange, categories = [] }) => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -35,7 +36,7 @@ const EinviteFilterBar = ({ onSearch, onFilterChange, categories = [] }) => {
         <div className="einvite-filter-bar bg-light py-4">
             <div className="container">
                 <div className="row align-items-center">
-                    <div className="col-md-4 mb-3 mb-md-0">
+                    <div className="col-md-6 mb-3 mb-md-0">
                         <div className="input-group">
                             <span className="input-group-text">
                                 <i className="fas fa-search"></i>
@@ -50,7 +51,7 @@ const EinviteFilterBar = ({ onSearch, onFilterChange, categories = [] }) => {
                         </div>
                     </div>
 
-                    <div className="col-md-3 mb-3 mb-md-0">
+                    {/* <div className="col-md-3 mb-3 mb-md-0">
                         <select
                             className="form-select"
                             value={selectedCategory}
@@ -63,9 +64,9 @@ const EinviteFilterBar = ({ onSearch, onFilterChange, categories = [] }) => {
                                 </option>
                             ))}
                         </select>
-                    </div>
+                    </div> */}
 
-                    <div className="col-md-3 mb-3 mb-md-0">
+                    <div className="col-md-4 mb-3 mb-md-0">
                         <select
                             className="form-select"
                             value={selectedTheme}
@@ -79,12 +80,13 @@ const EinviteFilterBar = ({ onSearch, onFilterChange, categories = [] }) => {
                         </select>
                     </div>
 
-                    <div className="col-md-2">
+                    <div className="col-md-2 text-center">
                         <button
-                            className="btn btn-outline-secondary w-100"
+                            className="btn btn-primary w-100"
                             onClick={clearFilters}
                         >
-                            <i className="fas fa-times me-1"></i>
+                            <IoClose className='me-2' size={20} />
+
                             Clear
                         </button>
                     </div>

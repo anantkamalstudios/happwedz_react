@@ -7,6 +7,9 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
 
 const BlogLists = ({ onPostClick }) => {
   const [blogs, setBlogs] = useState([]);
@@ -14,7 +17,7 @@ const BlogLists = ({ onPostClick }) => {
   const [selectedBlog, setSelectedBlog] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedVendor, setSelectedVendor] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedDate, setSelectedDate] = useState(null);
   const blogsPerPage = 6;
 
   useEffect(() => {
@@ -53,9 +56,22 @@ const BlogLists = ({ onPostClick }) => {
     fetchBlogs();
   }, []);
 
-  const filteredBlogs = blogs.filter((blog) =>
-    blog.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredBlogs = blogs.filter((blog) => {
+    const titleMatch = blog.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const vendorMatch =
+      !selectedVendor ||
+      (blog.author &&
+        blog.author.toLowerCase().includes(selectedVendor.toLowerCase()));
+    const dateMatch =
+      !selectedDate ||
+      (blog.postDate &&
+        new Date(blog.postDate).toDateString() ===
+          new Date(selectedDate).toDateString());
+
+    return titleMatch && vendorMatch && dateMatch;
+  });
 
   const indexOfLastBlog = currentPage * blogsPerPage;
   const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
@@ -74,10 +90,16 @@ const BlogLists = ({ onPostClick }) => {
 
   const getImageUrl = (imageData) => {
     const baseUrl = "https://happywedzbackend.happywedz.com/";
-    const replacePrefix = (url) =>
-      typeof url === "string"
-        ? url.replace(/^https:\/\/happywedz\.com:4000\/?/, baseUrl)
-        : url;
+    const replacePrefix = (url) => {
+      if (typeof url === "string") {
+        // Replace old domain with new base URL
+        url = url.replace(/^https:\/\/happywedz\.com:4000\/?/, baseUrl);
+        // Replace 'blogs' with 'photography' in the path
+        url = url.replace(/\/uploads\/blogs\//g, "/uploads/blogs/");
+        return url;
+      }
+      return url;
+    };
 
     if (!imageData) return "https://via.placeholder.com/800x400";
 
@@ -85,14 +107,18 @@ const BlogLists = ({ onPostClick }) => {
       if (imageData.startsWith("http")) {
         return replacePrefix(imageData);
       }
-      return baseUrl + imageData;
+      // Replace 'blogs' with 'photography' for relative paths
+      const path = imageData.replace(/\/uploads\/blogs\//g, "/uploads/photography/");
+      return baseUrl + path;
     }
 
     if (Array.isArray(imageData) && imageData.length > 0) {
       if (imageData[0].startsWith("http")) {
         return replacePrefix(imageData[0]);
       }
-      return baseUrl + imageData[0];
+      // Replace 'blogs' with 'photography' for relative paths
+      const path = imageData[0].replace(/\/uploads\/blogs\//g, "/uploads/photography/");
+      return baseUrl + path;
     }
 
     return "https://via.placeholder.com/800x400";
@@ -277,8 +303,9 @@ const BlogLists = ({ onPostClick }) => {
               <nav className="mt-5">
                 <ul className="pagination justify-content-center">
                   <li
-                    className={`page-item ${currentPage === 1 ? "disabled" : ""
-                      }`}
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -293,8 +320,9 @@ const BlogLists = ({ onPostClick }) => {
                   {[...Array(totalPages)].map((_, idx) => (
                     <li
                       key={idx}
-                      className={`page-item ${currentPage === idx + 1 ? "active" : ""
-                        }`}
+                      className={`page-item ${
+                        currentPage === idx + 1 ? "active" : ""
+                      }`}
                     >
                       <button
                         className="page-link"
@@ -311,8 +339,9 @@ const BlogLists = ({ onPostClick }) => {
                     </li>
                   ))}
                   <li
-                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
-                      }`}
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -351,35 +380,24 @@ const BlogLists = ({ onPostClick }) => {
               </h4>
 
               <div className="mb-3">
-                <select
-                  className="form-select"
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Wedding Vendors"
                   value={selectedVendor}
                   onChange={(e) => setSelectedVendor(e.target.value)}
-                  style={{ padding: "12px", fontSize: "15px" }}
-                >
-                  <option value="">Wedding Vendors</option>
-                  <option value="photographer">Photographer</option>
-                  <option value="venue">Venue</option>
-                  <option value="caterer">Caterer</option>
-                  <option value="decorator">Decorator</option>
-                  <option value="makeup">Makeup Artist</option>
-                </select>
+                  style={{ padding: "8px", fontSize: "15px" }}
+                />
               </div>
 
               <div className="mb-3">
-                <select
-                  className="form-select"
-                  value={selectedCity}
-                  onChange={(e) => setSelectedCity(e.target.value)}
+                <DatePicker
+                  className="form-control"
+                  placeholderText="Select Date"
+                  selected={selectedDate}
+                  onChange={(date) => setSelectedDate(date)}
                   style={{ padding: "12px", fontSize: "15px" }}
-                >
-                  <option value="">In City</option>
-                  <option value="mumbai">Mumbai</option>
-                  <option value="delhi">Delhi</option>
-                  <option value="bangalore">Bangalore</option>
-                  <option value="pune">Pune</option>
-                  <option value="hyderabad">Hyderabad</option>
-                </select>
+                />
               </div>
 
               <button

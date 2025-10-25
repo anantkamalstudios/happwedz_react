@@ -43,7 +43,10 @@ const MasonryImageSection = () => {
 
         return {
           id: photo.id,
-          src: imageUrl || "./images/noimage.jpeg",
+          src: imageUrl,
+          fallbackSrc: imageUrl?.includes("/uploads/photography/") 
+            ? imageUrl.replace("/uploads/photography/", "/uploads/blogs/")
+            : null,
           title: photo.title || "Wedding",
           size: size,
         };
@@ -96,33 +99,45 @@ const MasonryImageSection = () => {
                 <div className="col-12 col-md-6 col-lg-4">
                   {weddingImages[0] && (
                     <div className={`gallery-item ${weddingImages[0].size}`}>
-                      <img
-                        src={weddingImages[0].src}
-                        alt={weddingImages[0].title}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "./images/noimage.jpeg";
-                        }}
-                      />
-                      <div className="gallery-overlay">
-                        <p className="gallery-title">{weddingImages[0].title}</p>
-                      </div>
+                      <Link to={`/photography/details/${weddingImages[0].id}`}>
+                        <img
+                          src={weddingImages[0].src}
+                          alt={weddingImages[0].title}
+                          onError={(e) => {
+                            if (weddingImages[0].fallbackSrc && e.target.src !== weddingImages[0].fallbackSrc) {
+                              e.target.src = weddingImages[0].fallbackSrc;
+                            } else {
+                              e.target.onerror = null;
+                              e.target.src = "./images/noimage.jpeg";
+                            }
+                          }}
+                        />
+                        <div className="gallery-overlay">
+                          <p className="gallery-title">{weddingImages[0].title}</p>
+                        </div>
+                      </Link>
                     </div>
                   )}
 
                   {weddingImages[3] && (
                     <div className={`gallery-item ${weddingImages[3].size}`}>
-                      <img
-                        src={weddingImages[3].src}
-                        alt={weddingImages[3].title}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "./images/noimage.jpeg";
-                        }}
-                      />
-                      <div className="gallery-overlay">
-                        <p className="gallery-title">{weddingImages[3].title}</p>
-                      </div>
+                      <Link to={`/photography/details/${weddingImages[3].id}`}>
+                        <img
+                          src={weddingImages[3].src}
+                          alt={weddingImages[3].title}
+                          onError={(e) => {
+                            if (weddingImages[3].fallbackSrc && e.target.src !== weddingImages[3].fallbackSrc) {
+                              e.target.src = weddingImages[3].fallbackSrc;
+                            } else {
+                              e.target.onerror = null;
+                              e.target.src = "./images/noimage.jpeg";
+                            }
+                          }}
+                        />
+                        <div className="gallery-overlay">
+                          <p className="gallery-title">{weddingImages[3].title}</p>
+                        </div>
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -130,33 +145,45 @@ const MasonryImageSection = () => {
                 <div className="col-12 col-md-6 col-lg-4">
                   {weddingImages[1] && (
                     <div className={`gallery-item ${weddingImages[1].size}`}>
-                      <img
-                        src={weddingImages[1].src}
-                        alt={weddingImages[1].title}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "./images/noimage.jpeg";
-                        }}
-                      />
-                      <div className="gallery-overlay">
-                        <p className="gallery-title">{weddingImages[1].title}</p>
-                      </div>
+                      <Link to={`/photography/details/${weddingImages[1].id}`}>
+                        <img
+                          src={weddingImages[1].src}
+                          alt={weddingImages[1].title}
+                          onError={(e) => {
+                            if (weddingImages[1].fallbackSrc && e.target.src !== weddingImages[1].fallbackSrc) {
+                              e.target.src = weddingImages[1].fallbackSrc;
+                            } else {
+                              e.target.onerror = null;
+                              e.target.src = "./images/noimage.jpeg";
+                            }
+                          }}
+                        />
+                        <div className="gallery-overlay">
+                          <p className="gallery-title">{weddingImages[1].title}</p>
+                        </div>
+                      </Link>
                     </div>
                   )}
 
                   {weddingImages[4] && (
                     <div className={`gallery-item ${weddingImages[4].size}`}>
-                      <img
-                        src={weddingImages[4].src}
-                        alt={weddingImages[4].title}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "./images/noimage.jpeg";
-                        }}
-                      />
-                      <div className="gallery-overlay">
-                        <p className="gallery-title">{weddingImages[4].title}</p>
-                      </div>
+                      <Link to={`/photography/details/${weddingImages[4].id}`}>
+                        <img
+                          src={weddingImages[4].src}
+                          alt={weddingImages[4].title}
+                          onError={(e) => {
+                            if (weddingImages[4].fallbackSrc && e.target.src !== weddingImages[4].fallbackSrc) {
+                              e.target.src = weddingImages[4].fallbackSrc;
+                            } else {
+                              e.target.onerror = null;
+                              e.target.src = "./images/noimage.jpeg";
+                            }
+                          }}
+                        />
+                        <div className="gallery-overlay">
+                          <p className="gallery-title">{weddingImages[4].title}</p>
+                        </div>
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -164,33 +191,45 @@ const MasonryImageSection = () => {
                 <div className="col-12 col-md-6 col-lg-4">
                   {weddingImages[2] && (
                     <div className={`gallery-item ${weddingImages[2].size}`}>
-                      <img
-                        src={weddingImages[2].src}
-                        alt={weddingImages[2].title}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "./images/noimage.jpeg";
-                        }}
-                      />
-                      <div className="gallery-overlay">
-                        <p className="gallery-title">{weddingImages[2].title}</p>
-                      </div>
+                      <Link to={`/photography/details/${weddingImages[2].id}`}>
+                        <img
+                          src={weddingImages[2].src}
+                          alt={weddingImages[2].title}
+                          onError={(e) => {
+                            if (weddingImages[2].fallbackSrc && e.target.src !== weddingImages[2].fallbackSrc) {
+                              e.target.src = weddingImages[2].fallbackSrc;
+                            } else {
+                              e.target.onerror = null;
+                              e.target.src = "./images/noimage.jpeg";
+                            }
+                          }}
+                        />
+                        <div className="gallery-overlay">
+                          <p className="gallery-title">{weddingImages[2].title}</p>
+                        </div>
+                      </Link>
                     </div>
                   )}
 
                   {weddingImages[5] && (
                     <div className={`gallery-item ${weddingImages[5].size}`}>
-                      <img
-                        src={weddingImages[5].src}
-                        alt={weddingImages[5].title}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "./images/noimage.jpeg";
-                        }}
-                      />
-                      <div className="gallery-overlay">
-                        <p className="gallery-title">{weddingImages[5].title}</p>
-                      </div>
+                      <Link to={`/photography/details/${weddingImages[5].id}`}>
+                        <img
+                          src={weddingImages[5].src}
+                          alt={weddingImages[5].title}
+                          onError={(e) => {
+                            if (weddingImages[5].fallbackSrc && e.target.src !== weddingImages[5].fallbackSrc) {
+                              e.target.src = weddingImages[5].fallbackSrc;
+                            } else {
+                              e.target.onerror = null;
+                              e.target.src = "./images/noimage.jpeg";
+                            }
+                          }}
+                        />
+                        <div className="gallery-overlay">
+                          <p className="gallery-title">{weddingImages[5].title}</p>
+                        </div>
+                      </Link>
                     </div>
                   )}
                 </div>

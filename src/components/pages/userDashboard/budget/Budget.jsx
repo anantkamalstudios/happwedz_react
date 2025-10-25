@@ -622,7 +622,7 @@ import Swal from "sweetalert2";
 
 const Budget = () => {
   const [budget, setBudget] = useState({
-    estimated: 2000000,
+    estimated: 0,
     categories: [],
   });
 
@@ -649,8 +649,8 @@ const Budget = () => {
           subcategories:
             cat.subcategories?.map((sub) => ({
               id: sub.id,
-              name: sub.name,
-              estimated: 0, // Default estimated
+              name: sub.name, // This will be overwritten by user data if available
+              estimated: 0,
               final: 0,
               paid: 0,
             })) || [],
@@ -675,30 +675,43 @@ const Budget = () => {
 
     const fetchUserBudget = async () => {
       try {
-        const response = await fetch(`https://happywedz.com/api/budgets/user/${user.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          `https://happywedz.com/api/budgets/user/${user.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         const result = await response.json();
 
         if (result.success && result.data.length > 0) {
           const userBudgetData = result.data;
+          const userEstimatedBudget = userBudgetData[0]?.user_estimated_budget;
 
           setBudget((prev) => {
+            // Update estimated budget if available from user data
+            const newEstimated =
+              userEstimatedBudget !== undefined
+                ? userEstimatedBudget
+                : prev.estimated;
+            setNewBudgetAmount(newEstimated); // Sync the edit input
+
             const categoriesWithData = prev.categories.map((category) => {
               const matchingBudgets = userBudgetData.filter(
                 (b) => b.vendor_type_id === category.id
               );
 
               if (matchingBudgets.length > 0) {
-                const newSubcategories = matchingBudgets.map((b) => ({
-                  id: b.id, // Use the budget entry ID as the unique ID
-                  name: `Expense #${b.id}`, // API doesn't provide a name, so we create one
-                  estimated: b.estimated_budget,
-                  final: b.final_cost,
-                  paid: b.paid_amount,
-                }));
+                const newSubcategories = matchingBudgets
+                  .map((b) => ({
+                    id: b.id,
+                    name: b.name || `Expense #${b.id}`, // Use the name from the API
+                    estimated: b.estimated_budget || 0,
+                    final: b.final_cost || 0,
+                    paid: b.paid_amount || 0,
+                  }))
+                  .filter(Boolean);
 
                 return { ...category, subcategories: newSubcategories };
               }
@@ -747,7 +760,11 @@ const Budget = () => {
       });
     }
 
-    return { totalSpent: spent, remainingBudget: remaining, totalFinalCost: final };
+    return {
+      totalSpent: spent,
+      remainingBudget: remaining,
+      totalFinalCost: final,
+    };
   }, [budget]);
 
   // Colors for pie chart
@@ -796,12 +813,12 @@ const Budget = () => {
     try {
       // Example API call (replace with your actual API endpoint)
       await fetch(`https://happywedz.com/api/user-budget/${user.id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ estimated: newAmount })
+        body: JSON.stringify({ estimated: newAmount }),
       });
 
       setBudget({ ...budget, estimated: newAmount });
@@ -892,9 +909,9 @@ const Budget = () => {
   const updateExpense = async (categoryId, expenseId, field, value) => {
     // Find the specific expense to create the payload
     let expenseToUpdate;
-    budget.categories.forEach(cat => {
+    budget.categories.forEach((cat) => {
       if (cat.id === categoryId) {
-        expenseToUpdate = cat.subcategories.find(exp => exp.id === expenseId);
+        expenseToUpdate = cat.subcategories.find((exp) => exp.id === expenseId);
       }
     });
 
@@ -937,17 +954,20 @@ const Budget = () => {
     };
 
     try {
-      const response = await fetch(`https://happywedz.com/api/budgets/${expenseId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload)
-      });
+      const response = await fetch(
+        `https://happywedz.com/api/budgets/${expenseId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to update expense. Please try again.');
+        throw new Error("Failed to update expense. Please try again.");
       }
       // Optionally show a success message or handle the response
     } catch (err) {
@@ -987,21 +1007,24 @@ const Budget = () => {
 
     // API call to delete the expense
     try {
-      const response = await fetch(`https://happywedz.com/api/budgets/${expenseId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `https://happywedz.com/api/budgets/${expenseId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to delete expense.');
+        throw new Error("Failed to delete expense.");
       }
       // Success! No need to do anything as UI is already updated.
     } catch (err) {
       console.error("Delete expense error:", err);
       // If API call fails, revert the UI change
-      setBudget(prev => ({ ...prev, categories: originalCategories }));
+      setBudget((prev) => ({ ...prev, categories: originalCategories }));
       Swal.fire("Error", err.message, "error");
     }
   };
@@ -1011,7 +1034,9 @@ const Budget = () => {
   }
 
   if (error) {
-    return <div className="container text-center py-5 text-danger">{error}</div>;
+    return (
+      <div className="container text-center py-5 text-danger">{error}</div>
+    );
   }
 
   return (
@@ -1067,9 +1092,8 @@ const Budget = () => {
           <div className="wb-budget-card">
             <div className="wb-budget-label">REMAINING</div>
             <div
-              className={`wb-budget-amount ${
-                remainingBudget < 0 ? "wb-over-budget" : ""
-              }`}
+              className={`wb-budget-amount ${remainingBudget < 0 ? "wb-over-budget" : ""
+                }`}
             >
               {formatCurrency(remainingBudget)}
             </div>

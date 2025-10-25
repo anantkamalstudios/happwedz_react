@@ -8,7 +8,7 @@ const EinviteHeroSection = () => {
                     <div className="row align-items-center">
                         <div className="col-lg-8 mx-auto text-center">
                             <h1 className="einvite-hero-title">
-                                Beautiful Wedding E-Invitations
+                                Beautiful Wedding <br /> E-Invitations
                             </h1>
                         </div>
                     </div>
