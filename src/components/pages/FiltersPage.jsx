@@ -68,16 +68,21 @@ const FiltersPage = () => {
   const dispatch = useDispatch();
   const [likedProduct, setLikedProduct] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
-  const [isFavorited, setIsFavorited] = useState(false);
+
   const [showProductDetails, setShowProductDetails] = useState(true);
 
+  // const [isFavorited, setIsFavorited] = useState(false);
+  const favorites = useSelector((store) => store.favorites.favorites);
+  const isFavorited =
+    likedProduct && favorites.some((fav) => fav.id === likedProduct.id);
+
   const handleClick = () => {
+    if (!likedProduct) return;
     if (isFavorited) {
-      dispatch(removeFavorite(likedProduct));
+      dispatch(removeFavorite(likedProduct.id));
     } else {
       dispatch(addFavorite(likedProduct));
     }
-    setIsFavorited(!isFavorited);
   };
 
   const uploadedId = sessionStorage.getItem("try_uploaded_image_id") || null;
@@ -90,7 +95,6 @@ const FiltersPage = () => {
   const [previewUrl, setPreviewUrl] = React.useState(uploadedPreview);
 
   console.log(likedProduct);
-  const favorites = useSelector((store) => store.favorites.favorites);
 
   React.useEffect(() => {
     setPreviewUrl(uploadedPreview);
@@ -122,6 +126,7 @@ const FiltersPage = () => {
   const originalImageUrl = uploadedPreview;
   const [compareImageUrl, setCompareImageUrl] = useState(previewUrl);
   const [showBackButton, setShowBackButton] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
 
   React.useEffect(() => {
     if (isCompareMode) {
@@ -153,6 +158,13 @@ const FiltersPage = () => {
 
   const handleSelectProduct = (productId) => {
     setExpandedProductId((prev) => (prev === productId ? null : productId));
+    // Find the selected product and set as likedProduct
+    const selectedProduct = categories[expandedCatIdx]?.products?.find(
+      (p) => p.id === productId
+    );
+    if (selectedProduct) {
+      setLikedProduct(selectedProduct);
+    }
   };
 
   const handleApplyOne = async (productId, colorHex) => {
@@ -428,11 +440,26 @@ const FiltersPage = () => {
       </div>
     );
   }
+  // Share handler
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "My Filtered Look",
+          text: "Check out my filtered look!",
+          url: previewUrl,
+        });
+        setShowShareMenu(false);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  };
 
   return (
     <div
       // className="filters-container my-5"
-      style={{ margin: "25px auto 0 auto", maxWidth: 500 }}
+      style={{ margin: "15px auto 0 auto", maxWidth: 500 }}
     >
       <div
         className="preview-area"
@@ -450,7 +477,7 @@ const FiltersPage = () => {
           <div
             className="image-wrapper"
             style={{
-              minHeight: "500px",
+              maxHeight: "520px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -509,7 +536,275 @@ const FiltersPage = () => {
                       borderRadius: "100%",
                       padding: "5px",
                     }}
+                    title="Share Image"
+                    onClick={() => setShowShareMenu(true)}
                   />
+                </div>
+              )}
+              {/* Share Menu/Modal */}
+              {showShareMenu && (
+                <div
+                  onClick={() => setShowShareMenu(false)}
+                  style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    zIndex: 9999,
+                  }}
+                >
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      background: "#fff",
+                      padding: "24px 32px",
+                      borderRadius: "12px",
+                      minWidth: 320,
+                      boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 16,
+                      alignItems: "center",
+                    }}
+                  >
+                    <h4 style={{ marginBottom: 12 }}>Share your look</h4>
+                    {navigator.share ? (
+                      <button
+                        onClick={handleShare}
+                        style={{
+                          background: "#C31162",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: 8,
+                          padding: "10px 24px",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          marginBottom: 8,
+                        }}
+                      >
+                        Share via Apps
+                      </button>
+                    ) : null}
+                    <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
+                      {/* Copy Link */}
+                      <div
+                        onClick={() => {
+                          navigator.clipboard.writeText(previewUrl);
+                          Swal.fire({
+                            text: "Link copied to clipboard!",
+                            icon: "success",
+                            confirmButtonColor: "#ed1173",
+                            timer: 1500,
+                          });
+                        }}
+                        style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: "50%",
+                          backgroundColor: "#f0f0f0",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                          transition:
+                            "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "scale(1.1)";
+                          e.currentTarget.style.boxShadow =
+                            "0 4px 10px rgba(0,0,0,0.2)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "scale(1)";
+                          e.currentTarget.style.boxShadow =
+                            "0 2px 6px rgba(0,0,0,0.15)";
+                        }}
+                      >
+                        <img
+                          src="https://img.icons8.com/ios-filled/24/000000/link.png"
+                          alt="Copy Link"
+                          style={{ width: 24, height: 24 }}
+                        />
+                      </div>
+
+                      {/* WhatsApp */}
+                      <a
+                        href={`https://wa.me/?text=${encodeURIComponent(
+                          "Check out my look! " + previewUrl
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: "50%",
+                          backgroundColor: "#25D366",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          textDecoration: "none",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                          transition:
+                            "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "scale(1.1)";
+                          e.currentTarget.style.boxShadow =
+                            "0 4px 10px rgba(0,0,0,0.2)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "scale(1)";
+                          e.currentTarget.style.boxShadow =
+                            "0 2px 6px rgba(0,0,0,0.15)";
+                        }}
+                      >
+                        <img
+                          src="https://img.icons8.com/ios-filled/24/ffffff/whatsapp.png"
+                          alt="WhatsApp"
+                          style={{ width: 24, height: 24 }}
+                        />
+                      </a>
+
+                      {/* Instagram */}
+                      <a
+                        href={`https://www.instagram.com/?url=${encodeURIComponent(
+                          previewUrl
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: "50%",
+                          background:
+                            "radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          textDecoration: "none",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                          transition:
+                            "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "scale(1.1)";
+                          e.currentTarget.style.boxShadow =
+                            "0 4px 10px rgba(0,0,0,0.2)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "scale(1)";
+                          e.currentTarget.style.boxShadow =
+                            "0 2px 6px rgba(0,0,0,0.15)";
+                        }}
+                      >
+                        <img
+                          src="https://img.icons8.com/ios-filled/24/ffffff/instagram-new.png"
+                          alt="Instagram"
+                          style={{ width: 24, height: 24 }}
+                        />
+                      </a>
+
+                      {/* Facebook */}
+                      <a
+                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                          previewUrl
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: "50%",
+                          backgroundColor: "#1877F2",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          textDecoration: "none",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                          transition:
+                            "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "scale(1.1)";
+                          e.currentTarget.style.boxShadow =
+                            "0 4px 10px rgba(0,0,0,0.2)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "scale(1)";
+                          e.currentTarget.style.boxShadow =
+                            "0 2px 6px rgba(0,0,0,0.15)";
+                        }}
+                      >
+                        <img
+                          src="https://img.icons8.com/ios-filled/24/ffffff/facebook.png"
+                          alt="Facebook"
+                          style={{ width: 24, height: 24 }}
+                        />
+                      </a>
+
+                      {/* X (Twitter) */}
+                      <a
+                        href={`https://x.com/intent/post?url=${encodeURIComponent(
+                          previewUrl
+                        )}&text=${encodeURIComponent(
+                          "Check out my filtered look!"
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: "50%",
+                          backgroundColor: "#000",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          textDecoration: "none",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                          transition:
+                            "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "scale(1.1)";
+                          e.currentTarget.style.boxShadow =
+                            "0 4px 10px rgba(0,0,0,0.2)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "scale(1)";
+                          e.currentTarget.style.boxShadow =
+                            "0 2px 6px rgba(0,0,0,0.15)";
+                        }}
+                      >
+                        <img
+                          src="https://img.icons8.com/ios-filled/24/ffffff/x.png"
+                          alt="X"
+                          style={{ width: 24, height: 24 }}
+                        />
+                      </a>
+                    </div>
+
+                    <button
+                      onClick={() => setShowShareMenu(false)}
+                      style={{
+                        marginTop: 16,
+                        background: "#eee",
+                        color: "#C31162",
+                        border: "none",
+                        borderRadius: 8,
+                        padding: "8px 18px",
+                        fontWeight: 500,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Close
+                    </button>
+                  </div>
                 </div>
               )}
               {activeBtn === "Complete Look" && (
@@ -522,7 +817,6 @@ const FiltersPage = () => {
                       });
                       const blob = await responase.blob();
                       const url = URL.createObjectURL(blob);
-
                       const link = document.createElement("a");
                       link.href = url;
                       link.download = "final_look.png";
@@ -637,12 +931,15 @@ const FiltersPage = () => {
               </div>
             </div>
             <div
+              className="compare-container"
               style={{
                 width: "100%",
-                height: "600px",
                 overflow: "hidden",
                 borderRadius: "12px",
-                position: "relative",
+                aspectRatio: "3 / 4",
+                maxHeight: "80vh",
+                minHeight: 400,
+                // position:"relative"
               }}
             >
               {isCompareMode && originalImageUrl && compareImageUrl ? (
@@ -654,39 +951,11 @@ const FiltersPage = () => {
                   handleSize={40}
                 />
               ) : (
-                // <div
-                //   style={{
-                //     overflow: "hidden",
-                //   }}
-                // >
-                //   <img
-                //     src={previewUrl}
-                //     alt="preview"
-                //     style={{
-                //       width: "100%",
-                //       height: "90%",
-                //       objectFit: "cover",
-                //       display: "block",
-                //       verticalAlign: "top",
-                //       position: "relative",
-                //     }}
-                //     className="img-fluid"
-                //   />
-                //   <div
-                //     style={{
-                //       position: "absolute",
-                //       bottom: "0",
-                //       zIndex: "30",
-                //     }}
-                //   >
-                //     <div style={{}}>
-                //       <div></div>
-                //     </div>
-                //   </div>
-                // </div>
                 <div
                   style={{
                     overflow: "hidden",
+                    // position: "relative",
+                    borderRadius: "12px",
                   }}
                 >
                   <img
@@ -694,11 +963,9 @@ const FiltersPage = () => {
                     alt="preview"
                     style={{
                       width: "100%",
-                      height: "90%",
+                      height: "100%",
                       objectFit: "cover",
                       display: "block",
-                      verticalAlign: "top",
-                      position: "relative",
                     }}
                     className="img-fluid"
                   />
@@ -706,190 +973,200 @@ const FiltersPage = () => {
                     activeBtn !== "Complete Look" &&
                     showProductDetails && (
                       <div
+                        className="product-details"
                         style={{
                           position: "absolute",
-                          bottom: 0,
+                          bottom: 5,
                           left: 0,
                           right: 0,
-                          zIndex: 30,
-                          background: "rgba(195, 17, 98, 0.4)",
-                          boxShadow: "0 -4px 12px rgba(0,0,0,0.15)",
-                          margin: "0 60px 5px 8px",
+                          color: "white",
                         }}
                       >
                         <div
                           style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            padding: "10px 18px",
-                            gap: "12px",
+                            background: "rgba(195, 17, 98, 0.5)",
+                            width: "80%",
                             position: "relative",
+                            padding: "clamp(6px, 2vw, 12px)",
                           }}
                         >
-                          <button
-                            onClick={() => setShowProductDetails(false)}
-                            style={{
-                              position: "absolute",
-                              top: 5,
-                              right: 5,
-                              width: "32px",
-                              height: "32px",
-                              fontWeight: "900",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              background: "transparent",
-                              border: "none",
-                              cursor: "pointer",
-                            }}
-                          >
-                            <svg
-                              style={{
-                                width: "16px",
-                                height: "16px",
-                                color: "white",
-                              }}
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          </button>
-                          {/* Left: Product image + info */}
-
                           <div
                             style={{
                               display: "flex",
                               alignItems: "center",
-                              gap: "12px",
+                              justifyContent: "space-between",
+                              gap: "clamp(8px, 2vw, 12px)",
                             }}
                           >
-                            {/* Product Image */}
-                            <div
-                              style={{ position: "relative", flexShrink: 0 }}
+                            <button
+                              onClick={() => setShowProductDetails(false)}
+                              style={{
+                                position: "absolute",
+                                top: "-5px",
+                                right: "-2px",
+                                width: "clamp(28px, 5vw, 32px)",
+                                height: "clamp(28px, 5vw, 32px)",
+                                fontWeight: "900",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                background: "transparent",
+                                cursor: "pointer",
+                                color: "white",
+                                border: "none",
+                              }}
                             >
-                              <div
+                              <svg
                                 style={{
-                                  width: "64px",
-                                  height: "64px",
-                                  position: "relative",
-                                  backgroundColor: "white",
-                                  borderRadius: "8px",
-                                  overflow: "hidden",
-                                  boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                                  width: "clamp(12px, 3vw, 16px)",
+                                  height: "clamp(12px, 3vw, 16px)",
                                 }}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
                               >
-                                <img
-                                  src={likedProduct?.product_real_image}
-                                  alt="product"
-                                  style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    objectFit: "cover",
-                                  }}
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M6 18L18 6M6 6l12 12"
                                 />
-
-                                {/* Heart Icon */}
-                                <button
-                                  onClick={handleClick}
+                              </svg>
+                            </button>
+                            {/* Left: Product image + info */}
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "clamp(8px, 2vw, 12px)",
+                              }}
+                            >
+                              {/* Product Image */}
+                              <div
+                                style={{ position: "relative", flexShrink: 0 }}
+                              >
+                                <div
                                   style={{
-                                    position: "absolute",
-                                    top: "4px",
-                                    right: "4px",
-                                    width: "24px",
-                                    height: "24px",
-                                    borderRadius: "50%",
-                                    border: "none",
-                                    backgroundColor: "rgba(255,255,255,0.8)",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    cursor: "pointer",
-                                    padding: 0,
+                                    width: "clamp(40px, 15vw, 50px)",
+                                    height: "clamp(40px, 15vw, 50px)",
+                                    position: "relative",
+                                    backgroundColor: "white",
+                                    borderRadius: "8px",
+                                    overflow: "hidden",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
                                   }}
                                 >
-                                  {isFavorited ? (
-                                    <AiFillHeart color="red" size={16} />
-                                  ) : (
-                                    <AiOutlineHeart color="#ccc" size={16} />
-                                  )}
-                                </button>
+                                  <img
+                                    src={likedProduct?.product_real_image}
+                                    alt="product"
+                                    style={{
+                                      width: "100%",
+                                      height: "100%",
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                  {/* Heart Icon */}
+                                  <button
+                                    onClick={handleClick}
+                                    style={{
+                                      position: "absolute",
+                                      top: "0px",
+                                      right: "0px",
+                                      width: "clamp(20px, 4vw, 24px)",
+                                      height: "clamp(20px, 4vw, 24px)",
+                                      borderRadius: "50%",
+                                      border: "none",
+                                      backgroundColor: "rgba(255,255,255,0.8)",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      cursor: "pointer",
+                                      padding: 0,
+                                    }}
+                                  >
+                                    {isFavorited ? (
+                                      <AiFillHeart color="red" size={16} />
+                                    ) : (
+                                      <AiOutlineHeart color="#ccc" size={16} />
+                                    )}
+                                  </button>
+                                </div>
                               </div>
-                            </div>
 
-                            <div style={{ minWidth: 0 }}>
-                              <h3
-                                style={{
-                                  color: "white",
-                                  fontWeight: 600,
-                                  fontSize: "14px",
-                                  margin: "0 0 2px 0",
-                                  lineHeight: "1.2",
-                                }}
-                              >
-                                {likedProduct?.discription}
-                              </h3>
-                              <p
-                                style={{
-                                  color: "white",
-                                  fontSize: "12px",
-                                  opacity: 0.9,
-                                  margin: 0,
-                                }}
-                              >
-                                {likedProduct?.product_name}
-                              </p>
-                              <div
-                                style={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                  alignItems: "center",
-                                }}
-                              >
+                              <div style={{ minWidth: 0 }}>
+                                <h3
+                                  style={{
+                                    color: "white",
+                                    fontWeight: 600,
+                                    fontSize: "clamp(12px, 2.5vw, 14px)",
+                                    margin: "0 0 2px 0",
+                                    lineHeight: "1.2",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                  }}
+                                >
+                                  {likedProduct?.discription}
+                                </h3>
                                 <p
                                   style={{
                                     color: "white",
-                                    fontWeight: 700,
-                                    fontSize: "14px",
-                                    margin: "4px 0 0 0",
+                                    fontSize: "clamp(10px, 2vw, 12px)",
+                                    opacity: 0.9,
+                                    margin: 0,
                                   }}
                                 >
-                                  {likedProduct?.price}
+                                  {likedProduct?.product_name}
                                 </p>
                                 <div
                                   style={{
                                     display: "flex",
+                                    justifyContent: "space-between",
                                     alignItems: "center",
-                                    gap: "8px",
+                                    marginTop: "4px",
                                   }}
                                 >
-                                  <button
+                                  <p
                                     style={{
-                                      backgroundColor: "white",
-                                      color: "#db2777",
-                                      padding: "8px 14px",
-                                      borderRadius: "8px",
-                                      fontSize: "12px",
-                                      fontWeight: "600",
-                                      border: "none",
-                                      cursor: "pointer",
-                                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                                      color: "white",
+                                      fontWeight: 700,
+                                      fontSize: "clamp(12px, 2.5vw, 14px)",
+                                      margin: 0,
                                     }}
                                   >
-                                    VISIT OUR SITE
-                                  </button>
+                                    {likedProduct?.price}
+                                  </p>
                                 </div>
                               </div>
                             </div>
 
                             {/* Right: Buttons */}
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "clamp(4px, 1vw, 8px)",
+                                flexShrink: 0,
+                              }}
+                            >
+                              <button
+                                style={{
+                                  backgroundColor: "white",
+                                  color: "#db2777",
+                                  padding:
+                                    "clamp(6px, 1.5vw, 8px) clamp(10px, 2vw, 14px)",
+                                  borderRadius: "8px",
+                                  fontSize: "clamp(10px, 2vw, 12px)",
+                                  fontWeight: "600",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                VISIT SITE
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -904,6 +1181,7 @@ const FiltersPage = () => {
               </div>
             )}
             {activeBtn !== "Complete Look" &&
+              activeBtn !== "Compare" &&
               expandedCatIdx !== null &&
               SLIDER_CATEGORIES.includes(
                 (
@@ -916,7 +1194,7 @@ const FiltersPage = () => {
                   style={{
                     position: "absolute",
                     top: "50%",
-                    right: "-120px",
+                    right: "clamp(-110px, -10vw, -90px)",
                     transform: "translateY(-50%) rotate(-90deg)",
                     zIndex: 20,
                     display: "flex",
@@ -941,31 +1219,34 @@ const FiltersPage = () => {
                     min={0}
                     max={100}
                     step={1}
-                    value={
-                      (() => {
-                        const categoryName = (
-                          categories[expandedCatIdx]
-                            ?.product_detailed_category_name || ""
-                        ).toLowerCase();
-                        const currentIntensity = intensities[categoryName] ?? 
-                          DEFAULT_INTENSITIES[categoryName] ?? 0.6;
-                        const maxIntensity = DEFAULT_INTENSITIES[categoryName] ?? 1;
-                        
-                        // Convert actual intensity to 0-100 range
-                        return Math.round((currentIntensity / maxIntensity) * 100);
-                      })()
-                    }
+                    value={(() => {
+                      const categoryName = (
+                        categories[expandedCatIdx]
+                          ?.product_detailed_category_name || ""
+                      ).toLowerCase();
+                      const currentIntensity =
+                        intensities[categoryName] ??
+                        DEFAULT_INTENSITIES[categoryName] ??
+                        0.6;
+                      const maxIntensity =
+                        DEFAULT_INTENSITIES[categoryName] ?? 1;
+
+                      return Math.round(
+                        (currentIntensity / maxIntensity) * 100
+                      );
+                    })()}
                     onChange={(e) => {
                       const categoryName = (
                         categories[expandedCatIdx]
                           ?.product_detailed_category_name || ""
                       ).toLowerCase();
-                      const maxIntensity = DEFAULT_INTENSITIES[categoryName] ?? 1;
+                      const maxIntensity =
+                        DEFAULT_INTENSITIES[categoryName] ?? 1;
                       const sliderValue = Number(e.target.value);
-                      
-                      // Convert 0-100 range back to actual intensity
-                      const actualIntensity = (sliderValue / 100) * maxIntensity;
-                      
+
+                      const actualIntensity =
+                        (sliderValue / 100) * maxIntensity;
+
                       setIntensities({
                         ...intensities,
                         [categoryName]: actualIntensity,
@@ -979,12 +1260,16 @@ const FiltersPage = () => {
                         categories[expandedCatIdx]
                           ?.product_detailed_category_name || ""
                       ).toLowerCase();
-                      const currentIntensity = intensities[categoryName] ?? 
-                        DEFAULT_INTENSITIES[categoryName] ?? 0.6;
-                      const maxIntensity = DEFAULT_INTENSITIES[categoryName] ?? 1;
-                      
-                      // Convert actual intensity to 0-100 range for display
-                      return Math.round((currentIntensity / maxIntensity) * 100);
+                      const currentIntensity =
+                        intensities[categoryName] ??
+                        DEFAULT_INTENSITIES[categoryName] ??
+                        0.6;
+                      const maxIntensity =
+                        DEFAULT_INTENSITIES[categoryName] ?? 1;
+
+                      return Math.round(
+                        (currentIntensity / maxIntensity) * 100
+                      );
                     })()}
                   </span>
                 </div>
@@ -1113,16 +1398,19 @@ const FiltersPage = () => {
                                         alt={cat.product_detailed_category_name}
                                         style={{
                                           width: "100%",
-                                          height: "90px",
+                                          height: "55px",
                                           objectFit: "cover",
                                         }}
                                       />
-                                      <strong
-                                        style={{ fontSize: 11, marginTop: 2 }}
+                                      <p
+                                        style={{
+                                          fontSize: 11,
+                                          fontWeight: 600,
+                                        }}
                                       >
                                         {cat.product_detailed_category_name ||
                                           "Category"}
-                                      </strong>
+                                      </p>
                                       {isApplied && (
                                         <div
                                           className="position-absolute top-0 end-0 translate-middle rounded-circle"
@@ -1157,7 +1445,7 @@ const FiltersPage = () => {
                                           gap: 8,
                                           overflowX: "auto",
                                           maxWidth: "100%",
-                                          height: 150,
+                                          height: 100,
                                           overflowY: "hidden",
                                           scrollbarWidth: "none",
                                           msOverflowStyle: "none",
@@ -1177,7 +1465,7 @@ const FiltersPage = () => {
                                                 handleSelectProduct(p.id);
                                                 setLikedProduct(p);
                                               }}
-                                              className={` d-flex flex-column align-items-center px-2 py-2 border-0 rounded bg-white ${
+                                              className={` d-flex flex-column align-items-center px-2 border-0 rounded bg-white ${
                                                 expandedProductId === p.id
                                                   ? "border-primary"
                                                   : ""
@@ -1185,7 +1473,7 @@ const FiltersPage = () => {
                                               style={{
                                                 cursor: "pointer",
                                                 width: 100,
-                                                height: 120,
+                                                height: 100,
                                                 flexShrink: 0,
                                                 flexGrow: 0,
                                               }}
@@ -1196,16 +1484,19 @@ const FiltersPage = () => {
                                                 style={{
                                                   borderRadius: 10,
                                                   width: "100%",
-                                                  height: "80px",
+                                                  height: "55px",
                                                   objectFit: "cover",
                                                 }}
                                               />
-                                              <strong
+                                              <p
                                                 className="mt-1"
-                                                style={{ fontSize: 11 }}
+                                                style={{
+                                                  fontSize: 10,
+                                                  fontWeight: 500,
+                                                }}
                                               >
-                                                {p.product_name}
-                                              </strong>
+                                                {p.product_name.slice(0,10)}...
+                                              </p>
                                             </button>
                                             {expandedProductId === p.id && (
                                               <div
@@ -1213,7 +1504,7 @@ const FiltersPage = () => {
                                                   display: "inline-flex",
                                                   alignItems: "center",
                                                   justifyContent: "center",
-                                                  height: 150,
+                                                  height: 100,
                                                   gap: 12,
                                                   animation:
                                                     "fadeIn 0.3s ease-out",
@@ -1383,18 +1674,26 @@ const FiltersPage = () => {
                   {/* {Object.keys(appliedProducts).length > 0 && ( */}
                   <div
                     className="applied-products-section mb-2"
-                    style={{ height: 100 }}
+                    style={{
+                      height: 110,
+                      overflowX: "auto",
+                      overflowY: "hidden",
+                      whiteSpace: "nowrap",
+                      scrollbarWidth: "none",
+                    }}
                   >
-                    {/* <h6 className="mb-1" style={{ fontSize: 13 }}>
-                        Applied Products:
-                      </h6> */}
-                    <div className="d-flex justify-content-start align-items-start gap-2">
+                    <div
+                      className="d-flex justify-content-start align-items-start gap-2"
+                      style={{
+                        width: "max-content",
+                      }}
+                    >
                       {Object.entries(appliedProducts).map(
                         ([categoryName, product]) => (
                           <div
                             key={categoryName}
                             className=" gap-1 px-2 py-1 bg-light d-flex flex-column"
-                            style={{ fontSize: 12, height: 80 }}
+                            style={{ fontSize: 12, height: 55 }}
                           >
                             <img
                               src={findProductImageById(
@@ -1486,10 +1785,10 @@ const FiltersPage = () => {
                 height: "100%",
                 background: activeBtn === button ? "#C31162" : "none",
                 color: activeBtn === button ? "#fff" : "#C31162",
-                padding: "10px 2.5rem",
+                padding: "8px clamp(0.8rem, 2vw, 2.2rem)",
                 border: "none",
                 borderRadius: "10px",
-                fontWeight: "500",
+                fontWeight: "400",
                 cursor: "pointer",
                 transition: "all 0.3s ease",
               }}
@@ -1650,7 +1949,7 @@ const FiltersPage = () => {
             left: 0,
             width: "100vw",
             height: "100vh",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backgroundColor: "#ffffff",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -1658,17 +1957,15 @@ const FiltersPage = () => {
           }}
         >
           <div
-            onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
+            onClick={(e) => e.stopPropagation()}
             style={{
-              background: "transparent",
               padding: "20px",
               borderRadius: "12px",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
-              minWidth: "500px",
-              maxWidth: "90%",
+              minWidth: "450px",
+              maxWidth: "500px",
             }}
           >
-            <FavouriteListPopup />
+            <FavouriteListPopup setShowPopup={setShowPopup} />
           </div>
         </div>
       )}

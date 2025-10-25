@@ -6,6 +6,8 @@ import { useSelector } from "react-redux";
 import { setCredentials } from "../../redux/authSlice";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { RiEyeCloseLine, RiEyeFill } from "react-icons/ri";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const CustomerRegister = () => {
   const [formData, setFormData] = useState({
@@ -28,6 +30,7 @@ const CustomerRegister = () => {
   const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
   const navigate = useNavigate();
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const auth = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -63,8 +66,11 @@ const CustomerRegister = () => {
   const validate = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = "Full name is required";
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-      newErrors.email = "Valid email is required";
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
     if (formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
     if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
@@ -164,6 +170,10 @@ const CustomerRegister = () => {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setPasswordVisible((prev) => !prev);
+  };
+
   return (
     <div className="container py-5" style={{ maxWidth: "1200px" }}>
       <ToastContainer position="top-center" autoClose={3000} />
@@ -242,7 +252,7 @@ const CustomerRegister = () => {
               <div className="col-md-6">
                 <div className="form-floating">
                   <input
-                    type="password"
+                    type={passwordVisible ? "text" : "password"}
                     name="password"
                     className={`form-control ${
                       errors.password ? "is-invalid" : ""
@@ -252,6 +262,18 @@ const CustomerRegister = () => {
                     onChange={handleChange}
                   />
                   <label>Password</label>
+                  <button
+                    type="button"
+                    className="position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent"
+                    onClick={togglePasswordVisibility}
+                  >
+                    <i
+                      className={`bi ${
+                        passwordVisible ? "bi-eye-slash" : "bi-eye"
+                      }`}
+                    ></i>
+                    {passwordVisible ? <FaEye /> : <FaEyeSlash />}
+                  </button>
                   {errors.password && (
                     <div className="invalid-feedback">{errors.password}</div>
                   )}
@@ -259,12 +281,25 @@ const CustomerRegister = () => {
               </div>
 
               {/* Phone */}
+              <style jsx>
+                {`
+                  .input-number::-webkit-inner-spin-button,
+                  .input-number::-webkit-outer-spin-button {
+                    -webkit-appearance: none;
+                    margin: 0;
+                  }
+
+                  .input-number {
+                    -moz-appearance: textfield;
+                  }
+                `}
+              </style>
               <div className="col-md-6">
                 <div className="form-floating">
                   <input
-                    type="tel"
+                    type="number"
                     name="phone"
-                    className={`form-control ${
+                    className={`input-number form-control ${
                       errors.phone ? "is-invalid" : ""
                     }`}
                     placeholder="Phone"

@@ -21,6 +21,7 @@ const UploadSelfiePage = () => {
 
   const userInfo = JSON.parse(localStorage.getItem("userInfo")) || {};
   const { role, type } = userInfo;
+  const controllerRef = useRef(null);
 
   let image;
   switch (role) {
@@ -130,7 +131,12 @@ const UploadSelfiePage = () => {
         return;
       }
       try {
-        const res = await beautyApi.uploadImage(file, "ORIGINAL");
+        controllerRef.current = new AbortController();
+        const res = await beautyApi.uploadImage(
+          file,
+          "ORIGINAL",
+          controllerRef.current.signal
+        );
         const imageId = res?.data?.id || res?.id || res?.image_id;
         sessionStorage.setItem("try_uploaded_image_id", imageId);
         setShowGuide(false);
@@ -149,6 +155,14 @@ const UploadSelfiePage = () => {
       }
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleCancelUpload = () => {
+    if (controllerRef.current) {
+      controllerRef.current.abort();
+      console.log("Upload aborted by user");
+      return;
+    }
   };
 
   const startCamera = async () => {
@@ -391,7 +405,10 @@ const UploadSelfiePage = () => {
                   <button
                     type="button"
                     className="btn-close"
-                    onClick={() => setShowGuide(false)}
+                    onClick={() => {
+                      setShowGuide(false);
+                      handleCancelUpload();
+                    }}
                   ></button>
                 </div>
                 <div className="modal-body">

@@ -675,11 +675,14 @@ const Budget = () => {
 
     const fetchUserBudget = async () => {
       try {
-        const response = await fetch(`https://happywedz.com/api/budgets/user/${user.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          `https://happywedz.com/api/budgets/user/${user.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         const result = await response.json();
 
         if (result.success && result.data.length > 0) {
@@ -747,7 +750,11 @@ const Budget = () => {
       });
     }
 
-    return { totalSpent: spent, remainingBudget: remaining, totalFinalCost: final };
+    return {
+      totalSpent: spent,
+      remainingBudget: remaining,
+      totalFinalCost: final,
+    };
   }, [budget]);
 
   // Colors for pie chart
@@ -796,12 +803,12 @@ const Budget = () => {
     try {
       // Example API call (replace with your actual API endpoint)
       await fetch(`https://happywedz.com/api/user-budget/${user.id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ estimated: newAmount })
+        body: JSON.stringify({ estimated: newAmount }),
       });
 
       setBudget({ ...budget, estimated: newAmount });
@@ -892,9 +899,9 @@ const Budget = () => {
   const updateExpense = async (categoryId, expenseId, field, value) => {
     // Find the specific expense to create the payload
     let expenseToUpdate;
-    budget.categories.forEach(cat => {
+    budget.categories.forEach((cat) => {
       if (cat.id === categoryId) {
-        expenseToUpdate = cat.subcategories.find(exp => exp.id === expenseId);
+        expenseToUpdate = cat.subcategories.find((exp) => exp.id === expenseId);
       }
     });
 
@@ -937,17 +944,20 @@ const Budget = () => {
     };
 
     try {
-      const response = await fetch(`https://happywedz.com/api/budgets/${expenseId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload)
-      });
+      const response = await fetch(
+        `https://happywedz.com/api/budgets/${expenseId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to update expense. Please try again.');
+        throw new Error("Failed to update expense. Please try again.");
       }
       // Optionally show a success message or handle the response
     } catch (err) {
@@ -987,21 +997,24 @@ const Budget = () => {
 
     // API call to delete the expense
     try {
-      const response = await fetch(`https://happywedz.com/api/budgets/${expenseId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `https://happywedz.com/api/budgets/${expenseId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to delete expense.');
+        throw new Error("Failed to delete expense.");
       }
       // Success! No need to do anything as UI is already updated.
     } catch (err) {
       console.error("Delete expense error:", err);
       // If API call fails, revert the UI change
-      setBudget(prev => ({ ...prev, categories: originalCategories }));
+      setBudget((prev) => ({ ...prev, categories: originalCategories }));
       Swal.fire("Error", err.message, "error");
     }
   };
@@ -1011,7 +1024,9 @@ const Budget = () => {
   }
 
   if (error) {
-    return <div className="container text-center py-5 text-danger">{error}</div>;
+    return (
+      <div className="container text-center py-5 text-danger">{error}</div>
+    );
   }
 
   return (

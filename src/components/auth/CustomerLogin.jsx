@@ -186,7 +186,7 @@ const CustomerLogin = () => {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="p-3 pe-5" // pe-5 adds padding on right so icon doesn’t overlap text
+                className="p-3 pe-5"
                 required
               />
 
@@ -202,7 +202,7 @@ const CustomerLogin = () => {
                   zIndex: 2,
                 }}
               >
-                {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+                {showPassword ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
               </span>
             </Form.Group>
 

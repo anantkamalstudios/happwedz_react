@@ -264,146 +264,6 @@ const Header = () => {
                         }}
                       />
                     </Link>
-
-                    {/* PlayStore */}
-                    {/* <a
-                      className="app-store-link d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
-                      style={{ minWidth: 0 }}
-                      href="#"
-                    >
-                      <svg
-                        fill="#34A853"
-                        width="24px"
-                        height="24px"
-                        viewBox="-2 -2 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="jam jam-android-circle"
-                      >
-                        <path d="M6.39 8.248h-.026a.598.598 0 0 0-.596.596v2.594c0 .329.267.596.596.596h.026a.598.598 0 0 0 .596-.596V8.844a.598.598 0 0 0-.597-.596zM7.27 12.44c0 .3.247.546.548.546h.586v1.402c0 .329.268.596.596.596h.025a.598.598 0 0 0 .597-.596v-1.402h.818v1.402c0 .329.27.596.596.596h.026a.598.598 0 0 0 .596-.596v-1.402h.586c.3 0 .547-.245.547-.547V8.343H7.27v4.096zM11.406 5.859l.465-.718a.099.099 0 1 0-.166-.108l-.482.743a3.142 3.142 0 0 0-1.192-.232c-.427 0-.83.084-1.192.232l-.481-.743a.099.099 0 0 0-.137-.029.099.099 0 0 0-.03.137l.466.718c-.839.41-1.405 1.185-1.405 2.074 0 .055.004.109.009.162h5.541c.005-.053.008-.107.008-.162 0-.889-.566-1.663-1.404-2.074zm-2.66 1.284a.266.266 0 1 1 0-.532.266.266 0 0 1 0 .532zm2.57 0a.266.266 0 1 1-.001-.532.266.266 0 0 1 0 .532zM13.698 8.248h-.025a.598.598 0 0 0-.597.596v2.594c0 .329.27.596.597.596h.025a.597.597 0 0 0 .596-.596V8.844a.598.598 0 0 0-.596-.596z"></path>
-                        <path d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0 2C4.477 20 0 15.523 0 10S4.477 0 10 0s10 4.477 10 10-4.477 10-10 10z"></path>
-                      </svg>
-                      <span className="fw-semibold text-dark d-none d-lg-inline header-cta">
-                        PlayStore
-                      </span>
-                    </a> */}
-
-                    {/* AppStore */}
-                    {/* <a
-                      className="app-store-link d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
-                      href="#"
-                      style={{ minWidth: 0 }}
-                    >
-                      <svg
-                        fill="#000"
-                        width="20px"
-                        height="20px"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="icon flat-line me-2"
-                      >
-                        <line
-                          x1="21"
-                          y1="17"
-                          x2="18"
-                          y2="17"
-                          stroke="#000"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        ></line>
-                        <line
-                          x1="20"
-                          y1="21"
-                          x2="14.29"
-                          y2="10.72"
-                          stroke="#000"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        ></line>
-                        <line
-                          x1="12"
-                          y1="6.6"
-                          x2="10"
-                          y2="3"
-                          stroke="#000"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        ></line>
-                        <line
-                          x1="14"
-                          y1="3"
-                          x2="4"
-                          y2="21"
-                          stroke="#000"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        ></line>
-                        <line
-                          x1="13"
-                          y1="17"
-                          x2="3"
-                          y2="17"
-                          stroke="#000"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        ></line>
-                      </svg>
-                      <span className="fw-semibold text-dark d-none d-lg-inline header-cta">
-                        AppStore
-                      </span>
-                    </a> */}
-
-                    {/* <Link
-                      className="app-store-link-pulse d-flex align-items-center bg-white px-3 py-1 rounded-pill gap-2 text-decoration-none"
-                      style={{ minWidth: 0 }}
-                      to="/try"
-                      state={{ title: "Try" }}
-                    >                      
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="text-gray-800"
-                      >
-                        <circle
-                          cx="12"
-                          cy="9"
-                          r="3.2"
-                          fill="#fff"
-                          stroke="#000"
-                        />
-                        <path
-                          d="M4.5 20c0-4.5 3.5-8 7.5-8s7.5 3.5 7.5 8"
-                          fill="#FBCFE8"
-                          stroke="#D946EF"
-                        />
-                        <path
-                          d="M8 20c0-2.2 1.8-4 4-4s4 1.8 4 4"
-                          fill="#000"
-                          stroke="#000"
-                        />
-                        <path
-                          d="M9.5 13.5c.5.5 1.5.5 2.5.5s2-.1 2.5-.5"
-                          stroke="#000"
-                        />
-                        <path d="M11 10.5c.3.5 1.7.5 2 0" stroke="#000" />
-                        <circle cx="11" cy="9" r="0.25" fill="#000" />
-                        <circle cx="13" cy="9" r="0.25" fill="#000" />
-                      </svg>
-                      <span className="fw-semibold text-dark d-none d-lg-inline header-cta">
-                        Design Studio
-                      </span>
-                    </Link>  */}
                   </div>
                 </div>
               </div>
@@ -411,9 +271,9 @@ const Header = () => {
 
             {/* Bottom */}
             <div className="col-12 py-2">
-              <div className="container">
-                <div className="row justify-content-center">
-                  <div className="col-lg-12 d-flex flex-column flex-lg-row align-items-center justify-content-evenly">
+              <div className="container" style={{maxWidth:"1400px"}}>
+                <div className="d-flex w-100 justify-content-center">
+                  <div className="col-lg-12 d-flex flex-column flex-lg-row align-items-center justify-content-between flex-nowrap">
                     <div className="text-center d-none d-lg-block">
                       <Link className="navbar-brand-logo" to="/">
                         <img
@@ -424,7 +284,7 @@ const Header = () => {
                         />
                       </Link>
                     </div>
-                    <ul className="navbar-nav d-flex flex-wrap justify-content-center gap-3">
+                    <ul className="navbar-nav d-flex flex-wrap justify-content-center gap-2">
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <button className="nav-link dropdown-toggle text-white fs-18">

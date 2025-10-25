@@ -7,6 +7,8 @@ import vendorsAuthApi from "../../services/api/vendorAuthApi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { RiEyeCloseLine, RiEyeFill } from "react-icons/ri";
+import { FaEyeSlash } from "react-icons/fa";
+import { FaEye } from "react-icons/fa6";
 
 const API_BASE = "https://happywedz.com/api";
 const VendorRegister = () => {
@@ -41,7 +43,6 @@ const VendorRegister = () => {
     setPasswordVisible((prev) => !prev);
   };
 
-  // Fetch cities of India when the component mounts (useEffect) or the country changes
   useEffect(() => {
     if (!formData.country) return;
 
@@ -211,15 +212,17 @@ const VendorRegister = () => {
                   <div className="form-floating">
                     <input
                       type="text"
+                      id="brandName"
                       name="brandName"
-                      className={`form-control fs-16${
+                      className={`form-control fs-16 ${
                         errors.brandName ? "is-invalid" : ""
                       }`}
                       placeholder="Brand Name"
                       value={formData.brandName}
                       onChange={handleChange}
+                      required
                     />
-                    <label>Brand Name</label>
+                    <label for="brandName">Brand Name</label>
                     {errors.brandName && (
                       <div className="invalid-feedback">{errors.brandName}</div>
                     )}
@@ -236,6 +239,7 @@ const VendorRegister = () => {
                       }`}
                       value={formData.vendorType}
                       onChange={handleChange}
+                      required
                     >
                       <option value="fs-16">Select Vendor Type</option>
                       {vendorTypes.map((type) => (
@@ -266,7 +270,7 @@ const VendorRegister = () => {
                     <input
                       type="email"
                       name="email"
-                      className={`form-control fs-16${
+                      className={`form-control fs-16 ${
                         errors.email ? "is-invalid" : ""
                       }`}
                       placeholder="Email"
@@ -311,7 +315,7 @@ const VendorRegister = () => {
                     <input
                       type={passwordVisible ? "text" : "password"}
                       name="password"
-                      className={`form-control fs-16${
+                      className={`form-control fs-16 ${
                         errors.password ? "is-invalid" : ""
                       }`}
                       placeholder="Password"
@@ -329,7 +333,7 @@ const VendorRegister = () => {
                           passwordVisible ? "bi-eye-slash" : "bi-eye"
                         }`}
                       ></i>
-                      {passwordVisible ? <RiEyeFill /> : <RiEyeCloseLine />}
+                      {passwordVisible ? <FaEye /> : <FaEyeSlash />}
                     </button>
                     {errors.password && (
                       <div className="invalid-feedback">{errors.password}</div>
@@ -338,12 +342,27 @@ const VendorRegister = () => {
                 </div>
 
                 {/* Phone */}
+
+                <style jsx>
+                  {`
+                    .input-number::-webkit-inner-spin-button,
+                    .input-number::-webkit-outer-spin-button {
+                      -webkit-appearance: none;
+                      margin: 0;
+                    }
+
+                    .input-number {
+                      -moz-appearance: textfield;
+                    }
+                  `}
+                </style>
+
                 <div className="col-md-6">
                   <div className="form-floating">
                     <input
-                      type="tel"
+                      type="number"
                       name="phone"
-                      className={`form-control fs-16${
+                      className={`input-number form-control fs-16 ${
                         errors.phone ? "is-invalid" : ""
                       }`}
                       placeholder="Phone"
@@ -364,7 +383,7 @@ const VendorRegister = () => {
                   className="btn btn-lg btn-primary fw-medium py-3"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? ( // Wrap the conditional expression in curly braces
+                  {isSubmitting ? (
                     <span className="spinner-border spinner-border-sm me-2"></span>
                   ) : null}
                   Create Vendor Account

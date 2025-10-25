@@ -19035,3 +19035,10 @@ input:checked+.slider:before {
   box-shadow: none; /* optional, if you want */
 }
 
+.react-compare-image__image,
+.react-compare-image__canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
