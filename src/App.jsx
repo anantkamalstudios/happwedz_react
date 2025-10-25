@@ -27,6 +27,9 @@ const CustomerRegister = lazy(() =>
 const VendorLogin = lazy(() => import("./components/auth/VendorLogin"));
 const VendorRegister = lazy(() => import("./components/auth/VendorRegister"));
 const ForgotPassword = lazy(() => import("./components/auth/ForgotPassword"));
+const VendorForgotPassword = lazy(() =>
+  import("./components/auth/VendorForgotPassword")
+);
 
 const MainSection = lazy(() => import("./components/pages/MainSection"));
 const SubSection = lazy(() => import("./components/pages/SubSection"));
@@ -219,6 +222,10 @@ function App() {
                 path="/user-forgot-password"
                 element={<ForgotPassword />}
               />
+              <Route
+                path="/vendor-forgot-password"
+                element={<VendorForgotPassword />}
+              />
               {/* Blog */}
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:blogId" element={<Blog />} />
@@ -312,10 +319,7 @@ function App() {
                 path="/einvites/share/:id"
                 element={<EinviteSharePage />}
               />
-              <Route
-                path="/einvites/view/:id"
-                element={<EinviteViewPage />}
-              />
+              <Route path="/einvites/view/:id" element={<EinviteViewPage />} />
               <Route path="/einvites/my-cards" element={<EinviteMyCards />} />
               <Route
                 path="/einvites/our-cards"
@@ -377,10 +381,7 @@ function App() {
                 }
               />
 
-              <Route
-                path="/about-us"
-                element={<AboutUs />}
-              />
+              <Route path="/about-us" element={<AboutUs />} />
 
               {/*  Fallback  */}
               <Route path="*" element={<NotFound />} />

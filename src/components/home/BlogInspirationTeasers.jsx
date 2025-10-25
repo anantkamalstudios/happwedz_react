@@ -25,17 +25,22 @@ const BlogsCarousel = () => {
         const result = await response.json();
 
         // Map API fields to component fields
-        const mappedBlogs = result.data.map((blog) => ({
-          id: blog.id,
-          title: blog.title,
-          desc: blog.shortDescription,
-          category: "Blog",
-          img: blog.image,
-          author: blog.author,
-          authorImg: "./images/no-image.png",
-          date: new Date(blog.postDate).toLocaleDateString(),
-          tags: [],
-        }));
+        const mappedBlogs = result.data.map((blog) => {
+          // Remove the port number (4000) from the image URL
+          const cleanedImageUrl = blog.image.replace('https://happywedz.com:4000', 'https://happywedzbackend.happywedz.com/');
+
+          return {
+            id: blog.id,
+            title: blog.title,
+            desc: blog.shortDescription,
+            category: "Blog",
+            img: cleanedImageUrl,  // use the cleaned image URL
+            author: blog.author,
+            authorImg: "./images/no-image.png",
+            date: new Date(blog.postDate).toLocaleDateString(),
+            tags: [],
+          };
+        });
 
         setBlogs(mappedBlogs);
         setLoading(false);
@@ -49,6 +54,7 @@ const BlogsCarousel = () => {
 
     fetchBlogs();
   }, []);
+
 
 
   return (
@@ -96,10 +102,6 @@ const BlogsCarousel = () => {
                   <img
                     src={blog.img}
                     alt={blog.title}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "./images/noimage.jpeg";
-                    }}
                   />
                 </div>
 

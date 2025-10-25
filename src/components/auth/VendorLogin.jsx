@@ -6,6 +6,7 @@ import { loginVendor, setVendorCredentials } from "../../redux/vendorAuthSlice";
 import vendorsAuthApi from "../../services/api/vendorAuthApi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const VendorLogin = () => {
   const [email, setEmail] = useState("");
@@ -15,6 +16,7 @@ const VendorLogin = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -144,12 +146,29 @@ const VendorLogin = () => {
                   </svg>
                 </span>
                 <Form.Control
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="p-3"
                 />
+                <span
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: "absolute",
+                    right: "15px",
+                    top: "25%",
+                    cursor: "pointer",
+                    color: "#6c757d",
+                    zIndex: 2,
+                  }}
+                >
+                  {showPassword ? (
+                    <FaEye size={20} />
+                  ) : (
+                    <FaEyeSlash size={20} />
+                  )}
+                </span>
               </div>
             </Form.Group>
 
@@ -164,7 +183,7 @@ const VendorLogin = () => {
               />
               <Link
                 className="text-decoration-none wedding-link"
-                to="/user-forgot-password"
+                to="/vendor-forgot-password"
               >
                 Forgot Password?
               </Link>

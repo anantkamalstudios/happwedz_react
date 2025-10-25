@@ -19,9 +19,9 @@ const Wedding = () => {
   console.log("[Wedding Component] Mounting/Rendering");
 
   const [budget, setBudget] = useState({
-    total: 500000,
-    spent: 200000,
-    remaining: 300000,
+    total: 0,
+    spent: 0,
+    remaining: 0,
   });
   const [guestStats, setGuestStats] = useState({ total: 0, attending: 0 });
   const [taskStats, setTaskStats] = useState({ total: 0, completed: 0 });

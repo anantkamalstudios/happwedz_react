@@ -7,6 +7,9 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
 
 const BlogLists = ({ onPostClick }) => {
   const [blogs, setBlogs] = useState([]);
@@ -14,6 +17,7 @@ const BlogLists = ({ onPostClick }) => {
   const [selectedBlog, setSelectedBlog] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedVendor, setSelectedVendor] = useState("");
+  const [selectedDate, setSelectedDate] = useState(null);
   const [selectedCity, setSelectedCity] = useState("");
   const [imageErrors, setImageErrors] = useState({});
   const blogsPerPage = 6;
@@ -54,9 +58,22 @@ const BlogLists = ({ onPostClick }) => {
     fetchBlogs();
   }, []);
 
-  const filteredBlogs = blogs.filter((blog) =>
-    blog.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredBlogs = blogs.filter((blog) => {
+    const titleMatch = blog.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const vendorMatch =
+      !selectedVendor ||
+      (blog.author &&
+        blog.author.toLowerCase().includes(selectedVendor.toLowerCase()));
+    const dateMatch =
+      !selectedDate ||
+      (blog.postDate &&
+        new Date(blog.postDate).toDateString() ===
+        new Date(selectedDate).toDateString());
+
+    return titleMatch && vendorMatch && dateMatch;
+  });
 
   const indexOfLastBlog = currentPage * blogsPerPage;
   const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
@@ -78,6 +95,8 @@ const BlogLists = ({ onPostClick }) => {
     const replacePrefix = (url, shouldFallback) => {
       if (typeof url === "string") {
         url = url.replace(/^https:\/\/happywedz\.com:4000\/?/, baseUrl);
+        // Replace 'blogs' with 'photography' in the path
+        url = url.replace(/\/uploads\/blogs\//g, "/uploads/blogs/");
         if (!shouldFallback) {
           url = url.replace(/\/uploads\/blogs\//g, "/uploads/photography/");
         }
@@ -378,35 +397,24 @@ const BlogLists = ({ onPostClick }) => {
               </h4>
 
               <div className="mb-3">
-                <select
-                  className="form-select"
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Wedding Vendors"
                   value={selectedVendor}
                   onChange={(e) => setSelectedVendor(e.target.value)}
-                  style={{ padding: "12px", fontSize: "15px" }}
-                >
-                  <option value="">Wedding Vendors</option>
-                  <option value="photographer">Photographer</option>
-                  <option value="venue">Venue</option>
-                  <option value="caterer">Caterer</option>
-                  <option value="decorator">Decorator</option>
-                  <option value="makeup">Makeup Artist</option>
-                </select>
+                  style={{ padding: "8px", fontSize: "15px" }}
+                />
               </div>
 
               <div className="mb-3">
-                <select
-                  className="form-select"
-                  value={selectedCity}
-                  onChange={(e) => setSelectedCity(e.target.value)}
+                <DatePicker
+                  className="form-control"
+                  placeholderText="Select Date"
+                  selected={selectedDate}
+                  onChange={(date) => setSelectedDate(date)}
                   style={{ padding: "12px", fontSize: "15px" }}
-                >
-                  <option value="">In City</option>
-                  <option value="mumbai">Mumbai</option>
-                  <option value="delhi">Delhi</option>
-                  <option value="bangalore">Bangalore</option>
-                  <option value="pune">Pune</option>
-                  <option value="hyderabad">Hyderabad</option>
-                </select>
+                />
               </div>
 
               <button
