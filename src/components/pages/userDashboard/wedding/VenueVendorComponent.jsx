@@ -1,11 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
+import { IoLocationOutline } from "react-icons/io5";
 import { FaCircleArrowLeft, FaCircleArrowRight } from "react-icons/fa6";
 import useApiData from "../../../../hooks/useApiData";
 import { Swiper, SwiperSlide } from "swiper/react"; //
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import { Link, useNavigate } from "react-router-dom";
+import { FaStar } from 'react-icons/fa';
+import { MdLocationOn } from 'react-icons/md';
 
 const toSlug = (text) =>
   (text || "")
@@ -76,12 +79,12 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
       }}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <h2>{isVendorBox ? "Book all your Vendors" : "Find the perfect Venue"}</h2>
+        <h2 className="fw-bold dark-pink-text text-center">{isVendorBox ? "Book all your Vendors" : "Find the perfect Venue"}</h2>
 
-        <div className="d-flex justify-content-around align-items-center">
-          <h5 style={{ width: "66%" }}>
+        <div className="d-flex justify-content-around align-items-start">
+          <span className="fs-18">
             Here are some gems we recommand for you
-          </h5>
+          </span>
 
           {isVendorBox && (
             <div
@@ -95,7 +98,7 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
               <select
                 name="vendors"
                 id="vendor"
-                style={{ border: "2px solid transparent", width: "100%", padding: "8px" }}
+                style={{ border: "2px solid transparent", width: "100%", padding: "8px", fontSize: "14px" }}
                 value={selectedSlug || ""}
                 onChange={(e) => {
                   const slug = e.target.value || null;
@@ -105,7 +108,7 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
                 }}
               >
                 {categories.map((cat) => (
-                  <option key={cat.id} value={toSlug(cat.name)}>
+                  <option key={cat.id} value={toSlug(cat.name)} className="h-25">
                     {cat.name}
                   </option>
                 ))}
@@ -115,20 +118,18 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
         </div>
 
         {isVendorBox ? (
-          <div
-            style={{ position: "relative", minHeight: "220px" }}
-          >
+          <div style={{ position: "relative", minHeight: "220px" }}>
             <Swiper
               modules={[Navigation, Autoplay]}
               spaceBetween={16}
-              slidesPerView={1.2}
+              slidesPerView={2}
               autoplay={{ delay: 3500, disableOnInteraction: false }}
               loop={true}
               breakpoints={{
-                576: { slidesPerView: 1.5, spaceBetween: 16 },
-                768: { slidesPerView: 2.2, spaceBetween: 16 },
-                992: { slidesPerView: 2.5, spaceBetween: 16 },
-                1200: { slidesPerView: 3, spaceBetween: 16 },
+                576: { slidesPerView: 1, spaceBetween: 16 },
+                768: { slidesPerView: 2, spaceBetween: 16 },
+                992: { slidesPerView: 2, spaceBetween: 16 },
+                1200: { slidesPerView: 2, spaceBetween: 16 },
               }}
             >
               {(selectedSlug ? vendorItems : []).map((item, idx) => (
@@ -138,34 +139,51 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
                     className="text-decoration-none h-100 d-block"
                     style={{ color: "inherit" }}
                   >
-                    <div className="card border-0 shadow-sm overflow-hidden p-2 h-100">
-                      <div style={{ height: "160px", overflow: "hidden", borderRadius: "10px" }}>
+                    <div className="card border-0 shadow-sm overflow-hidden h-100" style={{ borderRadius: "12px" }}>
+                      <div style={{ height: "180px", overflow: "hidden", position: "relative" }}>
                         <img
                           src={
                             buildImageUrl(item.image) ||
-                            "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80"
+                            "/images/imageNotFound.jpg"
                           }
                           className="card-img-top w-100"
                           alt={item.name || "Vendor"}
                           style={{ height: "100%", objectFit: "cover" }}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/images/imageNotFound.jpg";
+                          }}
                         />
                       </div>
-                      <div className="card-body">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                          <h5 className="card-title mb-0 text-truncate" style={{ fontSize: "16px" }}>
-                            {item.name || "Name"}
-                          </h5>
-                          <p className="rating text-warning small mb-0 mt-1" style={{ fontSize: "12px" }}>
-                            ★
-                            <span className="text-muted">
-                              {(item.rating || 0).toFixed ? (item.rating || 0).toFixed(1) : item.rating || 0} (
-                              {item.review_count || 0} Reviews)
-                            </span>
+                      <div className="card-body p-3">
+                        <h5 className="card-title mb-2 fw-semibold" style={{ fontSize: "16px", lineHeight: "1.3" }}>
+                          {item.name || "Name"}
+                        </h5>
+
+                        <div className="d-flex align-items-center mb-2" style={{ gap: "6px" }}>
+                          <FaStar style={{ color: "#FFA500", fontSize: "14px" }} />
+                          <span className="fw-semibold" style={{ fontSize: "14px", color: "#333" }}>
+                            {(item.rating || 0).toFixed ? (item.rating || 0).toFixed(1) : item.rating || 0}
+                          </span>
+                          <span className="text-muted" style={{ fontSize: "13px" }}>
+                            ({item.review_count || 0} Reviews)
+                          </span>
+                        </div>
+
+                        <div className="d-flex align-items-start" style={{ gap: "6px" }}>
+                          <MdLocationOn style={{ color: "#666", fontSize: "16px", marginTop: "2px", flexShrink: 0 }} />
+                          {/* <p className="mb-0" style={{ color: "#666", fontSize: "13px", lineHeight: "1.4" }}>
+                            {item.location || item.city || "location, state"}
+                          </p> */}
+                          <p className="text-muted small mb-1">
+                            <IoLocationOutline className="me-2" />
+                            {(item.location || "")
+                              .split(" ")
+                              .slice(0, 1)
+                              .join(" ")}
+                            {item.location?.split(" ").length > 1 && "..."}
                           </p>
                         </div>
-                        <p className=" mb-0 text-truncate" style={{ color: "black", fontSize: "12px" }}>
-                          {item.location || item.city || "location, state"}
-                        </p>
                       </div>
                     </div>
                   </Link>
@@ -188,7 +206,7 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
 
         {isVendorBox && (
           <div
-            style={{ display: "flex", justifyContent: "end", marginTop: "2rem" }}
+            style={{ display: "flex", justifyContent: "end" }}
           >
             <button
               style={{
@@ -215,35 +233,47 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
 
 export default VenueVendorComponent;
 
-// Separate component to keep main component lean
 const VenueSwiper = () => {
-  const [venueSubcategories, setVenueSubcategories] = useState([]);
+  const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(false);
+  const BACKEND_BASE_URL = "https://happywedzbackend.happywedz.com";
+
+  const buildImageUrl = (path) => {
+    if (!path) return null;
+    if (typeof path !== "string") return null;
+    if (path.startsWith("http")) return path;
+    const clean = path.replace(/^\/?uploads\/?/, "");
+    return `${BACKEND_BASE_URL}/uploads/${clean}`;
+  };
 
   useEffect(() => {
-    const fetchSubcategories = async () => {
+    const fetchVenues = async () => {
       try {
         setLoading(true);
         const response = await fetch(
-          "https://happywedz.com/api/vendor-types/with-subcategories/all"
+          "https://happywedz.com/api/vendor-services?vendorType=Venues&page=1&limit=9"
         );
-        const data = await response.json();
-        const venues = data.find(
-          (vendor) => vendor.name && vendor.name.toLowerCase() === "venues"
-        );
-        if (venues && Array.isArray(venues.subcategories)) {
-          setVenueSubcategories(venues.subcategories);
-        } else {
-          setVenueSubcategories([]);
-        }
+        const result = await response.json();
+
+        // Transform API data to match expected format
+        const venueData = result.data?.map((item) => ({
+          id: item.id,
+          name: item.attributes?.vendor_name || item.vendor?.businessName || "Venue",
+          image: item.attributes?.image_url || item.media?.[0]?.url || null,
+          rating: item.attributes?.rating || 0,
+          review_count: item.attributes?.review_count || 0,
+          location: item.attributes?.city || item.vendor?.city || "Location",
+          city: item.attributes?.city || item.vendor?.city || "",
+        })) || [];
+        setVenues(venueData);
       } catch (error) {
-        console.error("Error fetching subcategories:", error);
-        setVenueSubcategories([]);
+        console.error("Error fetching venues:", error);
+        setVenues([]);
       } finally {
         setLoading(false);
       }
     };
-    fetchSubcategories();
+    fetchVenues();
   }, []);
 
   if (loading) {
@@ -254,39 +284,91 @@ const VenueSwiper = () => {
     <Swiper
       modules={[Navigation, Autoplay]}
       spaceBetween={16}
-      slidesPerView={1.2}
-      autoplay={{ delay: 3000, disableOnInteraction: false }}
-      loop={true}
+      slidesPerView={2}
+      autoplay={{ delay: 3500, disableOnInteraction: false }}
+      loop={venues.length > 2}
       breakpoints={{
-        576: { slidesPerView: 2.2, spaceBetween: 16 },
-        768: { slidesPerView: 3.2, spaceBetween: 16 },
-        992: { slidesPerView: 4.2, spaceBetween: 16 },
-        1200: { slidesPerView: 5.2, spaceBetween: 16 },
+        576: { slidesPerView: 1, spaceBetween: 16 },
+        768: { slidesPerView: 2, spaceBetween: 16 },
+        992: { slidesPerView: 2, spaceBetween: 16 },
+        1200: { slidesPerView: 2, spaceBetween: 16 },
       }}
     >
-      {venueSubcategories.map((sub) => {
-        const slug = toSlug(sub.name);
-        return (
-          <SwiperSlide key={sub.id}>
-            <Link
-              to={`/venues/${slug}`}
-              className="text-decoration-none"
-              style={{ color: "inherit" }}
-            >
-              <div className="card border-0 shadow-sm overflow-hidden p-2 h-100">
-                <div
-                  className="d-flex align-items-center justify-content-center"
-                  style={{ height: "120px", background: "#f8f9fa", borderRadius: "12px" }}
+      {venues.map((venue) => (
+        <SwiperSlide key={venue.id} style={{ height: "auto" }}>
+          <Link
+            to={`/details/info/${venue.id}`}
+            className="text-decoration-none d-block"
+            style={{ color: "inherit", height: "100%" }}
+          >
+            <div className="card border-0 shadow-sm overflow-hidden" style={{ borderRadius: "12px", height: "310px", display: "flex", flexDirection: "column" }}>
+              <div style={{ height: "180px", overflow: "hidden", position: "relative", flexShrink: 0 }}>
+                <img
+                  src={buildImageUrl(venue.image) || "/images/imageNotFound.jpg"}
+                  className="card-img-top w-100"
+                  alt={venue.name}
+                  style={{ height: "100%", objectFit: "cover" }}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/images/imageNotFound.jpg";
+                  }}
+                />
+              </div>
+              <div className="card-body p-3" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                <h5
+                  className="card-title mb-2 fw-semibold"
+                  style={{
+                    fontSize: "16px",
+                    lineHeight: "1.3",
+                    height: "42px",
+                    overflow: "hidden",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                  }}
                 >
-                  <span className="fw-semibold text-dark" style={{ fontSize: "14px" }}>
-                    {sub.name}
+                  {venue.name}
+                </h5>
+
+                <div className="d-flex align-items-center mb-2" style={{ gap: "6px", height: "20px" }}>
+                  <FaStar style={{ color: "#FFA500", fontSize: "14px" }} />
+                  <span className="fw-semibold" style={{ fontSize: "14px", color: "#333" }}>
+                    {(venue.rating || 0).toFixed ? (venue.rating || 0).toFixed(1) : venue.rating || 0}
+                  </span>
+                  <span className="text-muted" style={{ fontSize: "13px" }}>
+                    ({venue.review_count || 0} Reviews)
                   </span>
                 </div>
+
+                <div className="d-flex align-items-start" style={{ gap: "6px" }}>
+                  <MdLocationOn style={{ color: "#666", fontSize: "16px", marginTop: "2px", flexShrink: 0 }} />
+                  <p
+                    className="mb-0"
+                    style={{
+                      color: "#666",
+                      fontSize: "13px",
+                      lineHeight: "1.4",
+                      overflow: "hidden",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                    }}
+                  >
+                    <p className="text-muted small mb-1">
+                      <IoLocationOutline className="me-2" />
+                      {(venue.location || "")
+                        .split(" ")
+                        .slice(0, 10)
+                        .join(" ")}
+                      {venue.location?.split(" ").length > 10 && "..."}
+                    </p>
+                  </p>
+                </div>
               </div>
-            </Link>
-          </SwiperSlide>
-        );
-      })}
+            </div>
+          </Link>
+        </SwiperSlide>
+      ))}
     </Swiper>
   );
 };

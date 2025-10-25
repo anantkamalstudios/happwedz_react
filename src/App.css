@@ -922,7 +922,7 @@ body {
 .not-found-container {
   position: relative;
   min-height: 90vh;
-  display: flex; 
+  display: flex;
   justify-content: center;
   overflow: hidden;
   font-family: "Playfair Display", serif;
@@ -932,7 +932,7 @@ body {
 .not-found-content {
   position: relative;
   z-index: 2;
-  max-width: 700px; 
+  max-width: 700px;
   backdrop-filter: blur(10px);
 }
 /* End */
@@ -18865,4 +18865,55 @@ input:checked + .slider:before {
 .custom-input:focus {
   background-color: #fff !important;
   box-shadow: none; /* optional, if you want */
+}
+
+/* Scroll down venues */
+.scroll-down-loader {
+  position: relative;
+  width: 28px;
+  height: 45px;
+  border: 2px solid #e91e63;
+  border-radius: 25px;
+  margin: 0 auto;
+  animation: bounce 2s infinite;
+}
+
+.scroll-down-loader::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: #e91e63;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  animation: scroll 1.6s infinite;
+}
+
+@keyframes scroll {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0);
+  }
+  40% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0;
+    transform: translate(-50%, 16px);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
 }

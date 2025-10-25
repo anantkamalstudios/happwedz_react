@@ -104,13 +104,18 @@ const Herosection = () => {
               onSubmit={(e) => {
                 e.preventDefault();
                 if (selectedCategory) {
-                  const encodedCategory = encodeURIComponent(
-                    selectedCategory.toLowerCase()
-                  );
+                  const formattedCategory = selectedCategory
+                    .toLowerCase()
+                    .split(" ")
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(" ");
+
+                  const encodedCategory = encodeURIComponent(formattedCategory);
                   navigate(`/vendors/all?vendorType=${encodedCategory}`);
                 }
               }}
             >
+
               <Row className="g-3">
                 <Col xs={12} md={10}>
                   <Form.Select

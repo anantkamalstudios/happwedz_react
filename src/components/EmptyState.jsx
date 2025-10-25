@@ -31,30 +31,15 @@ const EmptyState = ({ section, title }) => {
         <div className="col-md-8 text-center">
           <div className="bg-light rounded-4 p-5">
             <div className="mb-4">
-              <svg
-                width="80"
-                height="80"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="mx-auto text-muted"
-              >
-                <path
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
-                  fill="currentColor"
-                />
-              </svg>
+              <img src="/logo-no-bg.png" alt="" />
             </div>
             <h4 className="text-muted mb-3">No {title} Available</h4>
-            <p className="text-muted mb-4">
-              We couldn't find any {title.toLowerCase()} in our database at the
-              moment. Please try searching for a different category or location.
-            </p>
 
             {suggestions.length > 0 && (
               <div className="mb-4">
                 <h6 className="text-muted mb-3">
-                  💡 Try these popular options instead:
+                  We couldn't find any {title.toLowerCase()} in our database at the
+                  moment. Please try searching for a different category or location.
                 </h6>
                 <div className="d-flex flex-wrap justify-content-center gap-2">
                   {suggestions.map((suggestion) => (
@@ -89,7 +74,7 @@ const EmptyState = ({ section, title }) => {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

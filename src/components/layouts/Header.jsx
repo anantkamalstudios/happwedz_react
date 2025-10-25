@@ -497,7 +497,6 @@ const Header = () => {
                                         title: "Get the HappyWedz App",
                                         desc: "Plan your wedding on the go with the HappyWedz app.",
                                         image: "/images/header/playstore.png",
-                                        route: "/get-app",
                                       },
                                       {
                                         title: "Happywedz Website",
@@ -647,8 +646,8 @@ const Header = () => {
                                         <Link
                                           to={path}
                                           className={`dropdown-link d-flex align-items-center ${isShowMore
-                                              ? "primary-text fw-bold text-decoration-underline"
-                                              : ""
+                                            ? "primary-text fw-bold text-decoration-underline"
+                                            : ""
                                             }`}
                                         >
                                           <i className="bi bi-check-circle me-2 text-primary"></i>

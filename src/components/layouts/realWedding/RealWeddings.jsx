@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FaMapMarkerAlt, FaSearch } from "react-icons/fa";
+import { BsExclamationTriangle } from "react-icons/bs";
 
 const RealWeddings = ({ onPostClick }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -33,7 +34,6 @@ const RealWeddings = ({ onPostClick }) => {
     };
     fetchWeddings();
   }, []);
-
 
   const filteredWeddings = weddings.filter(
     (wedding) =>
@@ -172,22 +172,49 @@ const RealWeddings = ({ onPostClick }) => {
       {/* Gallery Section */}
       <section className="gallery-section py-5">
         <div className="container">
-          {/* Results Count */}
           <p className="mb-4">
             Showing {filteredWeddings.length} results in All Cities
           </p>
-          <div className="row">
+          <div className="row justify-content-center">
             {loading ? (
-              <div className="text-center py-5">
-                <p className="text-muted fs-4">Loading weddings...</p>
+              <div className="col-12 text-center py-5">
+                <div
+                  className="spinner-border text-pink mb-3"
+                  role="status"
+                ></div>
+                <p className="text-secondary fs-5">
+                  Fetching beautiful weddings...
+                </p>
               </div>
             ) : error ? (
-              <div className="text-center py-5 text-danger">
-                <p className="fs-4">{error}</p>
+              <div className="col-12 d-flex flex-column align-items-center py-5">
+                <div
+                  className="rounded-circle bg-light shadow-sm d-flex align-items-center justify-content-center mb-3"
+                  style={{ width: "80px", height: "80px" }}
+                >
+                  <BsExclamationTriangle size={40} />
+                </div>
+                <h5 className="text-danger fw-semibold mb-2">
+                  Oops! Something went wrong
+                </h5>
+                <p className="text-muted">
+                  {error || "Unable to load weddings right now."}
+                </p>
               </div>
             ) : currentWeddings.length === 0 ? (
-              <div className="text-center py-5">
-                <p className="text-muted fs-4">No weddings found.</p>
+              <div className="col-12 d-flex flex-column align-items-center py-5">
+                <div
+                  className="rounded-circle bg-light shadow-sm d-flex align-items-center justify-content-center mb-3"
+                  style={{ width: "80px", height: "80px" }}
+                >
+                  <i className="bi bi-heart text-pink fs-1"></i>
+                </div>
+                <h5 className="text-secondary fw-semibold mb-2">
+                  No Weddings Found
+                </h5>
+                <p className="text-muted">
+                  Try adjusting your filters or check back later.
+                </p>
               </div>
             ) : (
               currentWeddings.map((w) => <WeddingCard key={w.id} wedding={w} />)
@@ -238,8 +265,9 @@ const RealWeddings = ({ onPostClick }) => {
                           </li>
                         )}
                         <li
-                          className={`page-item ${currentPage === page ? "active" : ""
-                            }`}
+                          className={`page-item ${
+                            currentPage === page ? "active" : ""
+                          }`}
                         >
                           <button
                             className="page-link"
@@ -260,8 +288,9 @@ const RealWeddings = ({ onPostClick }) => {
 
                 {/* Next Button */}
                 <li
-                  className={`page-item ${currentPage === totalPages ? "disabled" : ""
-                    }`}
+                  className={`page-item ${
+                    currentPage === totalPages ? "disabled" : ""
+                  }`}
                 >
                   <button
                     className="page-link"

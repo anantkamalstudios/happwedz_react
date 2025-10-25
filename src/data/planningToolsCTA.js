@@ -19,7 +19,7 @@ const tools = [
     title: "Guestlist Manager",
     description: "Seamlessly organize attendees and RSVPs",
     icon: guestlist,
-    url: "guestlist",
+    url: "guest-list",
   },
 ];
 

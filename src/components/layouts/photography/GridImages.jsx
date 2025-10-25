@@ -4,24 +4,35 @@ import { Link } from "react-router-dom";
 const GridImages = ({ category, searchQuery, photos }) => {
   const filteredImages = photos
     .map((img) => {
-      // Take first image from the `images` array
       let url = img.images?.[0]?.trim();
+      let fallbackUrl = null;
 
-      // Replace old URL prefix with backend prefix
       if (url?.startsWith("http://happywedz.com/uploads/photography/")) {
         url = url.replace(
           "http://happywedz.com",
           "https://happywedzbackend.happywedz.com"
         );
+        // Extract filename and create fallback URL for blogs folder
+        const filename = url.split('/').pop();
+        fallbackUrl = `https://happywedzbackend.happywedz.com/uploads/blogs/${filename}`;
       }
       if (url?.startsWith("https://happywedz.com/uploads/photography/")) {
         url = url.replace(
           "https://happywedz.com",
           "https://happywedzbackend.happywedz.com"
         );
+        // Extract filename and create fallback URL for blogs folder
+        const filename = url.split('/').pop();
+        fallbackUrl = `https://happywedzbackend.happywedz.com/uploads/blogs/${filename}`;
+      }
+      if (url?.startsWith("https://happywedz.com/uploads/blogs/")) {
+        url = url.replace(
+          "https://happywedz.com",
+          "https://happywedzbackend.happywedz.com"
+        );
       }
 
-      return { ...img, url };
+      return { ...img, url, fallbackUrl };
     })
     .filter((img) => {
       const matchesCategory =
@@ -64,8 +75,14 @@ const GridImages = ({ category, searchQuery, photos }) => {
                   className="card-img-top"
                   loading="lazy"
                   onError={(e) => {
-                    e.target.src =
-                      "https://via.placeholder.com/300x200?text=No+Image";
+                    // If photography image fails and fallback URL exists, try blogs folder
+                    if (img.fallbackUrl && e.target.src !== img.fallbackUrl) {
+                      e.target.src = img.fallbackUrl;
+                    } else {
+                      // If fallback also fails or doesn't exist, show placeholder
+                      e.target.src =
+                        "https://via.placeholder.com/300x200?text=No+Image";
+                    }
                   }}
                 />
                 <div className="card-body p-2">
