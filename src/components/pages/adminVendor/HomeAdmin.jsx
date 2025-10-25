@@ -155,43 +155,26 @@ const HomeAdmin = () => {
   const statsData = {
     leads: {
       title: "Total Leads",
-      value: loadingLeads ? "..." : leadCount,
+      value: leadCount,
       change: "+12%",
       trend: "up",
       // daily_avg: 4.7,
       icon: <FiUsers size={24} />,
     },
-    // impressions: {
-    //   title: "Impressions",
-    //   value: loadingStats ? "..." : stats.impressions.toLocaleString(),
-    //   change: "+8.5%",
-    //   trend: "up",
-    //   // daily_avg: "827",
-    //   icon: <FiEye size={24} />,
-    // },
-    // profile_views: {
-    //   title: "Profile Views",
-    //   value: loadingStats ? "..." : stats.profileViews.toLocaleString(),
-    //   change: "+5.2%",
-    //   trend: "up",
-    //   // daily_avg: "40",
-    //   icon: <FiBarChart2 size={24} />,
-    // },
-    profile_views: {
-      title: "Profile Views",
-      value: loadingStats ? "..." : stats.profileViews.toLocaleString(),
-      change: "+5.2%",
+    impressions: {
+      title: "Impressions",
+      value: stats.impressions.toLocaleString(),
+      change: "+8.5%",
       trend: "up",
-      icon: <FiBarChart2 size={24} />,
+      // daily_avg: "827",
     },
 
-    conversion: {
-      title: "Phone number views",
-      // value: "6.8%",
-      change: "+1.2%",
+    profile_views: {
+      title: "Profile Views",
+      value: stats.profileViews.toLocaleString(),
+      change: "+5.2%",
       trend: "up",
-      // daily_avg: "0.23%",
-      icon: <FiPercent size={24} />,
+      icon: <FiEye size={24} />,
     },
   };
 
@@ -438,9 +421,9 @@ const HomeAdmin = () => {
                     {data.icon}
                   </div>
                 </div>
-                <p className="text-muted mb-0 mt-3">
+                {/* <p className="text-muted mb-0 mt-3">
                   <small>Daily avg: {data.daily_avg}</small>
-                </p>
+                </p> */}
               </Card.Body>
             </Card>
           );
@@ -468,9 +451,7 @@ const HomeAdmin = () => {
           <Card className="h-100">
             <Card.Body>
               <div className="d-flex justify-content-between align-items-center mb-4">
-                <Card.Title className="mb-0">
-                  Leads & Impressions Overview
-                </Card.Title>
+                <Card.Title className="mb-0">Leads Overview</Card.Title>
                 <div className="d-flex gap-2">
                   <Button variant="outline-secondary" size="sm">
                     Leads

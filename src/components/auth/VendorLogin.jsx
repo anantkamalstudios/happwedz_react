@@ -164,7 +164,7 @@ const VendorLogin = () => {
               />
               <Link
                 className="text-decoration-none wedding-link"
-                to="/user-forgot-password"
+                to="/vendor-forgot-password"
               >
                 Forgot Password?
               </Link>

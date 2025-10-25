@@ -27,6 +27,9 @@ const CustomerRegister = lazy(() =>
 const VendorLogin = lazy(() => import("./components/auth/VendorLogin"));
 const VendorRegister = lazy(() => import("./components/auth/VendorRegister"));
 const ForgotPassword = lazy(() => import("./components/auth/ForgotPassword"));
+const VendorForgotPassword = lazy(() =>
+  import("./components/auth/VendorForgotPassword")
+);
 
 const MainSection = lazy(() => import("./components/pages/MainSection"));
 const SubSection = lazy(() => import("./components/pages/SubSection"));
@@ -209,6 +212,10 @@ function App() {
                 path="/user-forgot-password"
                 element={<ForgotPassword />}
               />
+              <Route
+                path="/vendor-forgot-password"
+                element={<VendorForgotPassword />}
+              />
               {/* Blog */}
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:blogId" element={<Blog />} />
@@ -363,13 +370,8 @@ function App() {
                 }
               />
 
-              <Route
-                path="/about-us"
-                element={<AboutUs />}
-              />
+              <Route path="/about-us" element={<AboutUs />} />
             </Route>
-
-
 
             {/*  Matrimonial Routes  */}
             <Route element={<MatrimonialLayout />}>
