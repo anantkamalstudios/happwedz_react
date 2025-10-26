@@ -765,7 +765,6 @@ const Detailed = () => {
                 {/* Move Request button above pricing */}
 
                 <div className="pricing mb-4">
-                  {/* CONDITIONAL PRICING DISPLAY */}
                   {isVenue ? (
                     <>
                       <h4 className="price-title fw-bold">

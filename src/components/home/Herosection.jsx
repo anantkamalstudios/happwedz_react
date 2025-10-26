@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import herosection from "../../assets/Hero_2.jpg";
 import { categories, locations, popularSearches } from "../../data/herosection";
 import { useVendorType } from "../../hooks/useVendorType";
@@ -44,35 +45,41 @@ const RotatingWordHeadline = () => {
 
 const Herosection = () => {
   const { vendorTypes, loading } = useVendorType();
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [selectedCity, setSelectedCity] = useState("");
+  const [cities, setCities] = useState([]);
+  const [loadingCities, setLoadingCities] = useState(false);
   const navigate = useNavigate();
-  // useEffect(() => {
-  //   const fetchCategories = async () => {
-  //     try {
-  //       const response = await fetch(
-  //         "https://happywedz.com/api/vendor-types/with-subcategories/all"
-  //       );
-  //       const data = await response.json();
-  //       setCategoriesApi(Array.isArray(data) ? data : []);
-  //       if (Array.isArray(data) && data.length > 0) {
-  //         setSelectedCategory(data[0].name);
-  //       }
-  //     } catch (error) {
-  //       setCategoriesApi([]);
-  //     }
-  //   };
-  //   fetchCategories();
-  // }, []);
+  useEffect(() => {
+    const fetchCities = async () => {
+      setLoadingCities(true);
+      try {
+        const response = await axios.post(
+          "https://countriesnow.space/api/v0.1/countries/cities",
+          { country: "India" }
+        );
+        if (response.data && response.data.data) {
+          const sortedCities = response.data.data.sort((a, b) =>
+            a.localeCompare(b)
+          );
+          setCities(sortedCities);
+          setSelectedCity("Pune");
+        }
+      } catch (error) {
+        setCities(["Pune"]);
+        setSelectedCity("Pune");
+      } finally {
+        setLoadingCities(false);
+      }
+    };
+    fetchCities();
+  }, []);
 
   useEffect(() => {
-    if (
-      !selectedCategory &&
-      Array.isArray(vendorTypes) &&
-      vendorTypes.length > 0
-    ) {
+    if (Array.isArray(vendorTypes) && vendorTypes.length > 0) {
       setSelectedCategory(vendorTypes[0].name);
     }
-  }, [vendorTypes, selectedCategory]);
+  }, [vendorTypes]);
 
   return (
     <section
@@ -103,7 +110,11 @@ const Herosection = () => {
               className="search-form"
               onSubmit={(e) => {
                 e.preventDefault();
-                if (selectedCategory) {
+                if (selectedCategory === "All Categories") {
+                  // Navigate to /vendors without any query parameters
+                  navigate("/vendors");
+                } else if (selectedCategory) {
+                  // Navigate with vendorType and city parameters
                   const formattedCategory = selectedCategory
                     .toLowerCase()
                     .split(" ")
@@ -111,13 +122,17 @@ const Herosection = () => {
                     .join(" ");
 
                   const encodedCategory = encodeURIComponent(formattedCategory);
-                  navigate(`/vendors/all?vendorType=${encodedCategory}`);
+                  const cityParam = selectedCity
+                    ? `&city=${encodeURIComponent(selectedCity)}`
+                    : "";
+                  navigate(
+                    `/vendors/all?vendorType=${encodedCategory}${cityParam}`
+                  );
                 }
               }}
             >
-
               <Row className="g-3">
-                <Col xs={12} md={10}>
+                <Col xs={12} md={5}>
                   <Form.Select
                     aria-label="Select Category"
                     className="form-control-lg"
@@ -125,6 +140,7 @@ const Herosection = () => {
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
                   >
+                    <option value="All Categories">All Categories</option>
                     {Array.isArray(vendorTypes) && vendorTypes.length > 0 ? (
                       vendorTypes.map((c) => (
                         <option key={c.id} value={c.name}>
@@ -134,6 +150,31 @@ const Herosection = () => {
                     ) : (
                       <option value="" disabled>
                         {loading ? "Loading..." : "No categories found"}
+                      </option>
+                    )}
+                  </Form.Select>
+                </Col>
+                <Col xs={12} md={5}>
+                  <Form.Select
+                    aria-label="Select City"
+                    className="form-control-lg"
+                    style={{ fontSize: "14px", padding: "0.5rem 0.75rem" }}
+                    value={selectedCity}
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                  >
+                    {loadingCities ? (
+                      <option value="" disabled>
+                        Loading cities...
+                      </option>
+                    ) : cities.length > 0 ? (
+                      cities.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>
+                        No cities found
                       </option>
                     )}
                   </Form.Select>

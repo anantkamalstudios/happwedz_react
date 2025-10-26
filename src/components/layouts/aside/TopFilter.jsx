@@ -30,7 +30,12 @@ const TopFilter = ({
     const selectedCount = getActiveCount(group);
 
     return (
-      <Dropdown key={group} className="main-filter-dropdown filter-dropdown">
+      <Dropdown
+        key={group}
+        className="main-filter-dropdown filter-dropdown"
+        drop="down"
+        autoClose="outside"
+      >
         <Dropdown.Toggle
           bsPrefix="custom-toggle"
           variant="outline-secondary"
@@ -51,6 +56,7 @@ const TopFilter = ({
         </Dropdown.Toggle>
 
         <Dropdown.Menu
+          flip={false}
           className="main-filter-dropdown-menu filter-dropdown-menu fs-20"
           style={{
             maxHeight: "300px",
@@ -92,7 +98,15 @@ const TopFilter = ({
     activeFilters && Object.keys(activeFilters).length > 0;
 
   return (
-    <div className="aside-filters-container bg-white border-bottom py-3 mb-4">
+    <div
+      className="aside-filters-container bg-white border-bottom py-3 mb-4"
+      style={{
+        position: "sticky",
+        top: "0",
+        zIndex: 100,
+        backgroundColor: "white",
+      }}
+    >
       <div className="container-fluid">
         <div className="d-flex flex-wrap gap-3 align-items-center justify-content-between flex-md-nowrap flex-wrap">
           {/* Filters Dropdowns */}
