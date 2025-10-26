@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import InfiniteScroll from "react-infinite-scroll-component";
 import VendorsSearch from "../layouts/vendors/VendorsSearch";
 import VenuesSearch from "../layouts/venus/VenuesSearch";
 import NotFound from "./NotFound";
@@ -27,8 +28,7 @@ import VenueInfoSection from "../layouts/Main/VenueInfoSection";
 import GridView from "../layouts/Main/GridView";
 import LoadingState from "../LoadingState";
 import EmptyState from "../EmptyState";
-import useApiData from "../../hooks/useApiData";
-import DynamicAside from "../layouts/aside/DynamicAside";
+import useInfiniteScroll from "../../hooks/useInfiniteScroll";
 import usePhotography from "../../hooks/usePhotography";
 
 const MainSection = () => {
@@ -40,11 +40,12 @@ const MainSection = () => {
   const [view, setView] = useState("images");
   const [photos, setPhotos] = useState([]);
 
-  const { data, loading, error, pagination, nextPage, prevPage, goToPage } = useApiData(
+  const { data, loading, error, hasMore, loadMore } = useInfiniteScroll(
     "venues",
     null,
     selectedCity,
-    "Venues"
+    "Venues",
+    9
   );
   const { fetchAllPhotos, fetchPhotosByType, allPhotos, photosByType } =
     usePhotography();
@@ -98,104 +99,33 @@ const MainSection = () => {
         )}
         {data.length > 0 && (
           <div className="container-fluid">
-            {loading && (
-              <div className="alert alert-info my-4 text-center">
-                <div
-                  className="spinner-border spinner-border-sm me-2"
-                  role="status"
-                >
-                  <span className="visually-hidden">Loading...</span>
+            <InfiniteScroll
+              dataLength={data.length}
+              next={loadMore}
+              hasMore={hasMore}
+              loader={
+                <div className="text-center my-4">
+                  <div className="scroll-down-loader mx-auto"></div>
+                  <p className="text-muted mt-2 small fw-medium">Scroll Down to Load More Venues</p>
                 </div>
-                Updating data...
-              </div>
-            )}
-            <GridView
-              subVenuesData={data}
-              section="venues"
-              handleShow={handleShow}
-            />
+              }
 
-            {pagination?.totalPages > 1 && (
-              <div className="d-flex justify-content-center align-items-center my-4 gap-3">
-                <button
-                  className="d-flex align-items-center justify-content-center shadow-sm"
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "50%",
-                    backgroundColor: pagination.page <= 1 ? "#f8d7da" : "#e91e63",
-                    color: pagination.page <= 1 ? "#ccc" : "#fff",
-                    border: "none",
-                    transition: "0.3s ease",
-                    cursor: pagination.page <= 1 ? "not-allowed" : "pointer",
-                  }}
-                  disabled={pagination.page <= 1 || loading}
-                  onClick={() => prevPage()}
-                >
-                  <span className="fw-bold">‹</span>
-                </button>
-
-                <div className="d-flex align-items-center gap-2">
-                  {Array.from({ length: pagination.totalPages }, (_, index) => index + 1)
-                    .filter((page) => {
-                      const total = pagination.totalPages;
-                      const current = pagination.page;
-                      return (
-                        page === 1 ||
-                        page === total ||
-                        (page >= current - 2 && page <= current + 2)
-                      );
-                    })
-                    .map((page, idx, arr) => (
-                      <React.Fragment key={page}>
-                        {idx > 0 && page - arr[idx - 1] > 1 && (
-                          <span className="text-secondary">...</span>
-                        )}
-                        <button
-                          className="btn fw-medium"
-                          style={{
-                            borderRadius: "8px",
-                            fontSize: "14px",
-                            padding: "5px 10px",
-                            backgroundColor:
-                              pagination.page === page ? "#f8f8f8" : "transparent",
-                            color: "#e91e63",
-                            border:
-                              pagination.page === page
-                                ? "1px solid #e91e63"
-                                : "1px solid transparent",
-                            transition: "0.2s ease",
-                          }}
-                          onClick={() => goToPage(page)}
-                        >
-                          {page}
-                        </button>
-                      </React.Fragment>
-                    ))}
+              endMessage={
+                <div className="text-center my-5">
+                  <p className="text-muted fw-medium">
+                    You've seen all available venues!
+                  </p>
                 </div>
-
-                <button
-                  className="d-flex align-items-center justify-content-center shadow-sm"
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "50%",
-                    backgroundColor:
-                      pagination.page >= pagination.totalPages ? "#f8d7da" : "#e91e63",
-                    color:
-                      pagination.page >= pagination.totalPages ? "#ccc" : "#fff",
-                    border: "none",
-                    transition: "0.3s ease",
-                    cursor:
-                      pagination.page >= pagination.totalPages ? "not-allowed" : "pointer",
-                  }}
-                  disabled={pagination.page >= pagination.totalPages || loading}
-                  onClick={() => nextPage()}
-                >
-                  <span className="fw-bold">›</span>
-                </button>
-              </div>
-            )}
+              }
+              scrollThreshold={0.7}
+              style={{ overflow: "visible" }}
+            >
+              <GridView
+                subVenuesData={data}
+                section="venues"
+                handleShow={handleShow}
+              />
+            </InfiniteScroll>
             <PricingModal
               show={show}
               handleClose={handleClose}

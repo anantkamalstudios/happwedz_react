@@ -4,6 +4,7 @@ import { Autoplay, Navigation } from "swiper/modules";
 import { useNavigate } from "react-router-dom";
 import "swiper/css";
 import useRegions from "../../../hooks/useRegions";
+import ShimmerRegion from "../../ui/ShimmerRegion";
 
 const MainByRegion = ({ type }) => {
   const navigate = useNavigate();
@@ -20,7 +21,12 @@ const MainByRegion = ({ type }) => {
     }
   };
 
-  if (loading) return <p>Loading regions...</p>;
+  if (loading) return <ShimmerRegion />;
+  if (error) return <p>Error loading regions: {error.message}</p>;
+  if (!regions || regions.length === 0) {
+    console.log("No regions found");
+    return null;
+  }
 
   return (
     <div className="container">

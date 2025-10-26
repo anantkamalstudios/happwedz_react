@@ -16,6 +16,8 @@ import UpComingTask from "../wedding/UpcomingTask";
 import EInvites from "./EInviteCard";
 
 const Wedding = () => {
+  console.log("[Wedding Component] Mounting/Rendering");
+
   const [budget, setBudget] = useState({
     total: 0,
     spent: 0,
@@ -129,35 +131,13 @@ const Wedding = () => {
     };
 
     fetchUserData();
-  }, [token]); // Re-run the effect if the token changes
+  }, [token]);
 
-  // Fetch dashboard stats (budget, guests, tasks)
   useEffect(() => {
     if (!token || !userId) return;
 
     const fetchDashboardData = async () => {
       try {
-        // Fetch Budget Summary
-        // const budgetRes = await fetch(
-        //   // This should be user-specific
-        //   `https://happywedz.com/api/expense/summary/${userId}`,
-        //   {
-        //     headers: { Authorization: `Bearer ${token}` },
-        //   }
-        // );
-        // const budgetData = await budgetRes.json();
-        // if (budgetData.success) {
-        //   const total = parseFloat(budgetData.data.totalEstimated) || 0;
-        //   const spent = parseFloat(budgetData.data.totalPaid) || 0;
-        //   setBudget({
-        //     total: total,
-        //     spent: spent,
-        //     remaining: total - spent,
-        //   });
-        // }
-
-        // Fetch Guest Summary
-        // This should fetch guests for the current user
         const guestsRes = await fetch(
           `https://happywedz.com/api/guestlist/${userId}`,
           {
@@ -422,11 +402,11 @@ const Wedding = () => {
                 height: "100%",
               }}
             >
-              <h3>Add Guest</h3>
+              <h3 className="text-center fw-bold mt-4 dark-pink-text">Add Guest</h3>
               <div
                 style={{
                   display: "flex",
-                  gap: "0.5rem",
+                  gap: "0.4rem",
                   flexDirection: "column",
                   justifyContent: "center",
                   alignItems: "center",
@@ -479,9 +459,9 @@ const Wedding = () => {
               }}
             >
               <div className="text-center my-auto">
-                <h3 className="fw-bold text-dark mb-4">Wedding Budget</h3>
+                <h3 className="fw-bold dark-pink-text mb-4">Wedding Budget</h3>
                 <div className="mb-3">
-                  <h1 className="display-5 fw-bold text-primary mb-1">
+                  <h1 className="display-5 fw-bold primary-text mb-1">
                     ₹{(budget.total / 100000).toFixed(1)}L
                   </h1>
                   <div className="text-muted">Total Budget</div>
@@ -585,213 +565,6 @@ const Wedding = () => {
             </div>
           </div>
         </section>
-
-        {/* 
-        <div className="row my-5">
-          <div className="col-12">
-            <h5 className="">Find & Book Your Wedding Vendors</h5>
-            <div className="row">
-              {displayedCategories.map((category, index) => (
-                <div
-                  key={index}
-                  className="col-lg-4 col-md-6 mb-3"
-                  onClick={() => {
-                    window.location.href = `/vendors/${toSlug(category.title)}`;
-                  }}
-                  style={{ cursor: "pointer" }}
-                >
-                  <div className="vendor-card">
-                    <div className="vendor-icon">{category.icon}</div>
-                    <div className="vendor-content">
-                      <h5 className="vendor-title">{category.title}</h5>
-                      <p className="vendor-subtitle">{category.subtitle}</p>
-                      <span className="vendor-count">
-                        {category.count} available
-                      </span>
-                    </div>
-                    <div className="vendor-action">
-                      <Link
-                        to={`/vendors/${toSlug(category.title)}`}
-                        className="btn-explore"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Explore
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {vendorCategories.length > 6 && (
-              <div className="show-more-container text-center mt-3">
-                <button
-                  className="show-more-btn btn btn-primary"
-                  onClick={toggleShowAll}
-                >
-                  {showAll ? "Show Less" : "Show More"}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="row">
-          <div className="col-lg-6 mb-4">
-            <div className="dashboard-card">
-              <div className="card-header d-flex justify-content-between align-items-center">
-                <h4 className="card-title">
-                  <Clock size={20} className="me-2" />
-                  Upcoming Tasks
-                </h4>
-                <span className="task-progress">
-                  {taskStats.completed}/{taskStats.total} completed
-                </span>
-              </div>
-              <div className="progress-bar-container mb-4">
-                <div className="progress-bar">
-                  <div
-                    className="progress-fill"
-                    style={{
-                      width: `${
-                        taskStats.total > 0
-                          ? (taskStats.completed / taskStats.total) * 100
-                          : 0
-                      }%`,
-                    }}
-                  ></div>
-                </div>
-                <span className="progress-text">
-                  {Math.round(
-                    taskStats.total > 0
-                      ? (taskStats.completed / taskStats.total) * 100
-                      : 0
-                  )}
-                  % complete
-                </span>
-              </div>
-              <div className="tasks-list">
-                <div className="task-item">
-                  <div className="task-content">
-                    <div className="task-name">No tasks found.</div>
-                  </div>
-                </div>
-                <button className="add-task-btn">
-                  <Plus size={16} /> Add new task
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-lg-6">
-            <div className="dashboard-card mb-4">
-              <div className="card-header d-flex justify-content-between align-items-center">
-                <h4 className="card-title">
-                  <Users size={20} className="me-2" />
-                  Guest List
-                </h4>
-                <button className="btn-small">Manage</button>
-              </div>
-              <div className="guest-stats row">
-                <div className="col-6 col-sm-3">
-                  <div className="guest-stat">
-                    <div className="stat-number">{guestStats.total}</div>
-                    <div className="stat-label">Invited</div>
-                  </div>
-                </div>
-                <div className="col-6 col-sm-3">
-                  <div className="guest-stat">
-                    <div className="stat-number">{guestStats.attending}</div>
-                    <div className="stat-label">Responded</div>
-                  </div>
-                </div>
-                <div className="col-6 col-sm-3">
-                  <div className="guest-stat">
-                    <div className="stat-number text-success">
-                      {guestStats.attending}
-                    </div>
-                    <div className="stat-label">Attending</div>
-                  </div>
-                </div>
-                <div className="col-6 col-sm-3">
-                  <div className="guest-stat">
-                    <div className="stat-number text-muted">
-                      {guestStats.total - guestStats.attending}
-                    </div>
-                    <div className="stat-label">Declined</div>
-                  </div>
-                </div>
-              </div>
-              <div className="guest-actions mt-2">
-                <button className="btn-action">Send Invitations</button>
-                <button className="btn-action-outline">
-                  View Seating Chart
-                </button>
-              </div>
-            </div>
-
-            <div className="dashboard-card">
-              <div className="card-header d-flex justify-content-between align-items-center">
-                <h4 className="card-title">
-                  <DollarSign size={20} className="me-2" />
-                  Wedding Budget
-                </h4>
-                <button className="btn-small">Edit</button>
-              </div>
-              <div className="budget-overview">
-                <div className="budget-total">
-                  <div className="budget-amount">
-                    ₹{(budget.total / 100000).toFixed(1)}L
-                  </div>
-                  <div className="budget-label">Total Budget</div>
-                </div>
-                <div className="budget-breakdown">
-                  <div className="budget-item">
-                    <span className="budget-spent">
-                      ₹{(budget.spent / 100000).toFixed(1)}L spent
-                    </span>
-                    <span className="budget-remaining">
-                      ₹{(budget.remaining / 100000).toFixed(1)}L remaining
-                    </span>
-                  </div>
-                </div>
-                <div className="budget-progress">
-                  <div className="budget-bar">
-                    <div
-                      className="budget-fill"
-                      style={{
-                        width: `${
-                          budget.total > 0
-                            ? (budget.spent / budget.total) * 100
-                            : 0
-                        }%`,
-                      }}
-                    ></div>
-                  </div>
-                  <span className="budget-percentage">
-                    {Math.round(
-                      budget.total > 0 ? (budget.spent / budget.total) * 100 : 0
-                    )}
-                    % used
-                  </span>
-                </div>
-              </div>
-              <div className="budget-categories mt-2">
-                <div className="category-item">
-                  <span>Venue & Catering</span>
-                  <span>₹180k</span>
-                </div>
-                <div className="category-item">
-                  <span>Photography</span>
-                  <span>₹50k</span>
-                </div>
-                <div className="category-item">
-                  <span>Decoration & Flowers</span>
-                  <span>₹45k</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div> */}
       </div>
     </div>
   );

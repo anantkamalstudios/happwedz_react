@@ -24,7 +24,7 @@ const cityImages = {
   Indore:
     "https://cdn1.weddingwire.in/assets/img/listing-city/in-indore-10010657.webp",
   Surat:
-    "https://cdn1.weddingwire.in/assets/img/listing-city/in-surat-10010612.webp",
+    "https://plus.unsplash.com/premium_photo-1733259731733-4c31d908bc98?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8c3VyYXQlMjBjaXR5fGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=500",
   Patna:
     "https://cdn1.weddingwire.in/assets/img/listing-city/in-patna-10010185.webp",
 };

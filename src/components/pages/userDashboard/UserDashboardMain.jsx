@@ -1,55 +1,4 @@
-// import React from "react";
-// import UserDashboardNavbar from "../../layouts/UserDashboardNavbar";
-// import { useParams } from "react-router-dom";
-// import MyWedding from "./myWedding/MyWedding";
-// import Vendors from "./vendors/Vendors";
-// import Budget from "./budget/Budget";
-// import Check from "./checklist/Check";
-// import Guests from "./guests/Guests";
-// import WishList from "./wishlist/WishList";
-// import Booking from "./booking/Booking";
-// import Messages from "./messages/Messages";
-// import RealWeddingForm from "./realWeddingForm/RealWeddingForm";
-
-// const UserDashboardMain = () => {
-//   const { slug } = useParams();
-
-//   const renderContent = () => {
-//     switch (slug) {
-//       case "my-wedding":
-//         return <MyWedding />;
-//       case "checklist":
-//         return <Check />;
-//       case "vendor":
-//         return <Vendors />;
-//       case "guest-list":
-//         return <Guests />;
-//       case "budget":
-//         return <Budget />;
-//       case "wishlist":
-//         return <WishList />;
-//       case "booking":
-//         return <Booking />;
-//       case "message":
-//         return <Messages />;
-//       case "real-wedding":
-//         return <RealWeddingForm />;
-//       default:
-//         return <MyWedding />;
-//     }
-//   };
-
-//   return (
-//     <div>
-//       <UserDashboardNavbar />
-//       {renderContent()}
-//     </div>
-//   );
-// };
-
-// export default UserDashboardMain;
-
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
@@ -67,40 +16,27 @@ import UserProfile from "./userProfile/UserProfile";
 
 const UserDashboardMain = () => {
   const { slug } = useParams();
-
   const { user, token } = useSelector((state) => state.auth);
+  const currentSlug = slug || "my-wedding";
 
-  const renderContent = () => {
-    switch (slug) {
-      case "my-wedding":
-        return <Wedding user={user} token={token} />;
-      case "checklist":
-        return <Check user={user} token={token} />;
-      case "vendor":
-        return <Vendors user={user} token={token} />;
-      case "guest-list":
-        return <Guests user={user} token={token} />;
-      case "budget":
-        return <Budget user={user} token={token} />;
-      case "wishlist":
-        return <WishList user={user} token={token} />;
-      case "user-profile":
-        return <UserProfile user={user} token={token} />;
-      case "booking":
-        return <Booking user={user} token={token} />;
-      case "message":
-        return <Messages user={user} token={token} />;
-      case "real-wedding":
-        return <RealWeddingForm user={user} token={token} />;
-      default:
-        return <Wedding user={user} token={token} />;
-    }
-  };
+  useEffect(() => {
+    console.log("[UserDashboardMain] Slug changed to:", currentSlug);
+    window.scrollTo(0, 0);
+  }, [currentSlug]);
 
   return (
     <div>
       <UserDashboardNavbar user={user} />
-      {renderContent()}
+      {currentSlug === "my-wedding" && <Wedding user={user} token={token} />}
+      {currentSlug === "checklist" && <Check user={user} token={token} />}
+      {currentSlug === "vendor" && <Vendors user={user} token={token} />}
+      {currentSlug === "guest-list" && <Guests user={user} token={token} />}
+      {currentSlug === "budget" && <Budget user={user} token={token} />}
+      {currentSlug === "wishlist" && <WishList user={user} token={token} />}
+      {currentSlug === "user-profile" && <UserProfile user={user} token={token} />}
+      {currentSlug === "booking" && <Booking user={user} token={token} />}
+      {currentSlug === "message" && <Messages user={user} token={token} />}
+      {currentSlug === "real-wedding" && <RealWeddingForm user={user} token={token} />}
     </div>
   );
 };

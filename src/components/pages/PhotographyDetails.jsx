@@ -36,7 +36,7 @@ const PhotographyDetails = () => {
     }, [photo?.photography_category_id]);
 
     const normalizeImageUrl = (url) => {
-        if (!url) return "https://via.placeholder.com/800x600?text=Image+Not+Available";
+        if (!url) return "./images/noimage.jpeg";
         if (url.startsWith("http")) {
             return url.replace("http://happywedz.com/", IMAGE_BASE_URL);
         }
@@ -45,9 +45,11 @@ const PhotographyDetails = () => {
 
     const getFallbackImageUrl = (url) => {
         if (!url) return null;
+        // Handle both full URLs and relative paths
         if (url.includes("/uploads/photography/")) {
             return url.replace("/uploads/photography/", "/uploads/blogs/");
         }
+        // If it's already a blogs URL or doesn't contain photography path, return null
         return null;
     };
 
@@ -141,7 +143,7 @@ const PhotographyDetails = () => {
                                                 e.target.src = fallbackUrl;
                                             } else {
                                                 e.target.onerror = null;
-                                                e.target.src = "https://via.placeholder.com/800x600?text=Image+Not+Available";
+                                                e.target.src = "./images/noimage.jpeg";
                                             }
                                         }}
                                     />
@@ -176,7 +178,7 @@ const PhotographyDetails = () => {
                                                                 e.target.src = fallbackUrl;
                                                             } else {
                                                                 e.target.onerror = null;
-                                                                e.target.src = "https://via.placeholder.com/100x100?text=N/A";
+                                                                e.target.src = "./images/noimage.jpeg";
                                                             }
                                                         }}
                                                     />
@@ -250,7 +252,7 @@ const PhotographyDetails = () => {
                                                                     e.target.src = fallbackUrl;
                                                                 } else {
                                                                     e.target.onerror = null;
-                                                                    e.target.src = "https://via.placeholder.com/80x80?text=N/A";
+                                                                    e.target.src = "./images/noimage.jpeg";
                                                                 }
                                                             }}
                                                         />
@@ -455,7 +457,7 @@ const PhotographyDetails = () => {
                         <div className="mt-5">
                             <div className="d-flex justify-content-between align-items-center mb-4">
                                 <h4 className="fw-bold">More from this Collection</h4>
-                                <Link to="/photography" className="btn btn-outline-pink btn-sm">
+                                <Link to="/photography" className="btn btn-outline-pink btn-sm col-1">
                                     View All
                                 </Link>
                             </div>
@@ -488,7 +490,7 @@ const PhotographyDetails = () => {
                                                                 e.target.src = fallbackUrl;
                                                             } else {
                                                                 e.target.onerror = null;
-                                                                e.target.src = "https://via.placeholder.com/300x200?text=N/A";
+                                                                e.target.src = "./images/noimage.jpeg";
                                                             }
                                                         }}
                                                     />
@@ -527,6 +529,15 @@ const PhotographyDetails = () => {
                         alt={photo.title}
                         className="lightbox-image"
                         onClick={(e) => e.stopPropagation()}
+                        onError={(e) => {
+                            const fallbackUrl = getFallbackImageUrl(e.target.src);
+                            if (fallbackUrl && e.target.src !== fallbackUrl) {
+                                e.target.src = fallbackUrl;
+                            } else {
+                                e.target.onerror = null;
+                                e.target.src = "./images/noimage.jpeg";
+                            }
+                        }}
                     />
 
                     {/* Navigation Arrows */}

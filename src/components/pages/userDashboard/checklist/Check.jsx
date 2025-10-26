@@ -1202,6 +1202,8 @@ import Swal from "sweetalert2";
 const BASE_URL = "https://happywedz.com/api/new-checklist";
 const CATEGORY_API = "https://happywedz.com/api/vendor-types/with-subcategories/all";
 const Check = () => {
+  console.log("[Check Component] Mounting/Rendering");
+  
   const user = useSelector((state) => state.auth.user);
   const token = useSelector((state) => state.auth.token);
   const userId = user?.id || user?.user_id || user?._id;

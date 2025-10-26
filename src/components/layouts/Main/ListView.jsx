@@ -20,7 +20,6 @@ const ListView = ({ subVenuesData, handleShow }) => {
   const [filter, setFilter] = useState("all");
   const [hoveredImages, setHoveredImages] = useState({});
 
-  // Check if a vendor is already in the wishlist
   const isFavorite = (vendorId) =>
     wishlist.some((w) => w.vendorId === vendorId || w.vendor?._id === vendorId);
 
@@ -62,10 +61,14 @@ const ListView = ({ subVenuesData, handleShow }) => {
               <Row className="g-0">
                 <Col md={4} className="position-relative">
                   <Card.Img
-                    src={hoveredImages[venue.id] || venue.image}
+                    src={hoveredImages[venue.id] || venue.image || "/images/imageNotFound.jpg"}
                     alt={venue.name}
                     className="img-fluid rounded-5 object-fit-cover"
                     style={{ height: "200px", width: "100%" }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/images/imageNotFound.jpg";
+                    }}
                   />
 
                   <button
@@ -93,7 +96,7 @@ const ListView = ({ subVenuesData, handleShow }) => {
                       {venue.gallery.slice(0, 3).map((thumb, i) => (
                         <img
                           key={i}
-                          src={thumb}
+                          src={thumb || "/images/imageNotFound.jpg"}
                           alt="thumb"
                           className="rounded-2 me-2 object-fit-cover"
                           style={{
@@ -103,6 +106,10 @@ const ListView = ({ subVenuesData, handleShow }) => {
                           }}
                           onMouseEnter={() => handleThumbEnter(venue.id, thumb)}
                           onMouseLeave={() => handleThumbLeave(venue.id)}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/images/imageNotFound.jpg";
+                          }}
                         />
                       ))}
                     </div>

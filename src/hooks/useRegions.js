@@ -11,13 +11,17 @@ const useRegions = (vendorType = null) => {
     const fetchVendors = async () => {
       try {
         const baseUrl = "https://happywedz.com/api/vendor-services/";
-        const url = vendorType
-          ? `${baseUrl}?vendorType=${encodeURIComponent(vendorType)}`
-          : baseUrl;
 
-        const { data } = await axios.get(url);
+        // First, get all unique cities from the initial data
+        const initialUrl = vendorType
+          ? `${baseUrl}?vendorType=${encodeURIComponent(vendorType)}&limit=100`
+          : `${baseUrl}?limit=100`;
 
-        const cityMap = {};
+        const { data } = await axios.get(initialUrl);
+        const items = data.data || [];
+
+        // Collect unique cities
+        const uniqueCities = new Set();
         items.forEach((item) => {
           let city = null;
           if (item?.attributes?.city) {
@@ -29,24 +33,62 @@ const useRegions = (vendorType = null) => {
           }
           if (!city) return;
 
-          const matchedKey = Object.keys(cityImages).find(
-            (k) => k.toLowerCase() === city.toLowerCase()
-          );
-          if (!matchedKey) return;
+          const matchedKey = Object.keys(cityImages).find((k) => {
+            const cityLower = city.toLowerCase();
+            const keyLower = k.toLowerCase();
+            return cityLower.includes(keyLower) || keyLower.includes(cityLower);
+          });
 
-          if (!cityMap[matchedKey]) {
-            cityMap[matchedKey] = {
-              id: Object.keys(cityMap).length + 1,
-              name: matchedKey,
-              venueCount: 0,
-              image: cityImages[matchedKey],
-            };
+          if (matchedKey) {
+            uniqueCities.add(matchedKey);
           }
-          cityMap[matchedKey].venueCount += 1;
         });
 
-        setRegions(Object.values(cityMap));
+        // Now fetch the total count for each city
+        const cityMap = {};
+        const cityCountPromises = Array.from(uniqueCities).map(
+          async (cityName) => {
+            try {
+              const cityUrl = vendorType
+                ? `${baseUrl}?vendorType=${encodeURIComponent(
+                    vendorType
+                  )}&city=${encodeURIComponent(cityName)}&limit=1`
+                : `${baseUrl}?city=${encodeURIComponent(cityName)}&limit=1`;
+
+              const response = await axios.get(cityUrl);
+              const totalCount = response.data?.pagination?.total || 0;
+
+              return {
+                name: cityName,
+                count: totalCount,
+              };
+            } catch (err) {
+              console.error(`Error fetching count for ${cityName}:`, err);
+              return {
+                name: cityName,
+                count: 0,
+              };
+            }
+          }
+        );
+
+        const cityCounts = await Promise.all(cityCountPromises);
+
+        cityCounts.forEach((cityData, index) => {
+          cityMap[cityData.name] = {
+            id: index + 1,
+            name: cityData.name,
+            venueCount: cityData.count,
+            image: cityImages[cityData.name],
+          };
+          // console.log(`✅ ${cityData.name}: ${cityData.count} venues`);
+        });
+
+        const finalRegions = Object.values(cityMap);
+        // console.log("Final Regions:", finalRegions);
+        setRegions(finalRegions);
       } catch (err) {
+        console.error("Error fetching vendors:", err);
         setError(err);
       } finally {
         setLoading(false);

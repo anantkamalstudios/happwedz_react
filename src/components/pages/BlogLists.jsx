@@ -18,6 +18,8 @@ const BlogLists = ({ onPostClick }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedVendor, setSelectedVendor] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedCity, setSelectedCity] = useState("");
+  const [imageErrors, setImageErrors] = useState({});
   const blogsPerPage = 6;
 
   useEffect(() => {
@@ -68,7 +70,7 @@ const BlogLists = ({ onPostClick }) => {
       !selectedDate ||
       (blog.postDate &&
         new Date(blog.postDate).toDateString() ===
-          new Date(selectedDate).toDateString());
+        new Date(selectedDate).toDateString());
 
     return titleMatch && vendorMatch && dateMatch;
   });
@@ -88,40 +90,55 @@ const BlogLists = ({ onPostClick }) => {
     });
   };
 
-  const getImageUrl = (imageData) => {
+  const getImageUrl = (imageData, useFallback = false) => {
     const baseUrl = "https://happywedzbackend.happywedz.com/";
-    const replacePrefix = (url) => {
+    const replacePrefix = (url, shouldFallback) => {
       if (typeof url === "string") {
-        // Replace old domain with new base URL
         url = url.replace(/^https:\/\/happywedz\.com:4000\/?/, baseUrl);
         // Replace 'blogs' with 'photography' in the path
         url = url.replace(/\/uploads\/blogs\//g, "/uploads/blogs/");
+        if (!shouldFallback) {
+          url = url.replace(/\/uploads\/blogs\//g, "/uploads/photography/");
+        }
         return url;
       }
       return url;
     };
 
-    if (!imageData) return "https://via.placeholder.com/800x400";
+    if (!imageData) return "./images/noimage.jpeg";
 
     if (typeof imageData === "string") {
       if (imageData.startsWith("http")) {
-        return replacePrefix(imageData);
+        return replacePrefix(imageData, useFallback);
       }
-      // Replace 'blogs' with 'photography' for relative paths
-      const path = imageData.replace(/\/uploads\/blogs\//g, "/uploads/photography/");
+      let path = imageData;
+      if (!useFallback) {
+        path = imageData.replace(/\/uploads\/blogs\//g, "/uploads/photography/");
+      }
       return baseUrl + path;
     }
 
     if (Array.isArray(imageData) && imageData.length > 0) {
       if (imageData[0].startsWith("http")) {
-        return replacePrefix(imageData[0]);
+        return replacePrefix(imageData[0], useFallback);
       }
-      // Replace 'blogs' with 'photography' for relative paths
-      const path = imageData[0].replace(/\/uploads\/blogs\//g, "/uploads/photography/");
+      let path = imageData[0];
+      if (!useFallback) {
+        path = imageData[0].replace(/\/uploads\/blogs\//g, "/uploads/photography/");
+      }
       return baseUrl + path;
     }
 
-    return "https://via.placeholder.com/800x400";
+    return "./images/noimage.jpeg";
+  };
+
+  const handleImageError = (e, imageKey, imageData) => {
+    if (!imageErrors[imageKey]) {
+      setImageErrors(prev => ({ ...prev, [imageKey]: true }));
+      e.target.src = getImageUrl(imageData, true);
+    } else {
+      e.target.src = "./images/noimage.jpeg";
+    }
   };
 
   const createSlug = (title) => {
@@ -199,8 +216,9 @@ const BlogLists = ({ onPostClick }) => {
                         <div className="row g-0" style={{ height: "100%" }}>
                           <div className="col-6">
                             <img
-                              src={getImageUrl(blog.image[0])}
+                              src={getImageUrl(blog.image[0], imageErrors[`${blog.id}-0`])}
                               alt={blog.title}
+                              onError={(e) => handleImageError(e, `${blog.id}-0`, blog.image[0])}
                               style={{
                                 width: "100%",
                                 height: "240px",
@@ -210,8 +228,9 @@ const BlogLists = ({ onPostClick }) => {
                           </div>
                           <div className="col-6">
                             <img
-                              src={getImageUrl(blog.image[1])}
+                              src={getImageUrl(blog.image[1], imageErrors[`${blog.id}-1`])}
                               alt={blog.title}
+                              onError={(e) => handleImageError(e, `${blog.id}-1`, blog.image[1])}
                               style={{
                                 width: "100%",
                                 height: "240px",
@@ -222,9 +241,10 @@ const BlogLists = ({ onPostClick }) => {
                         </div>
                       ) : (
                         <img
-                          src={getImageUrl(blog.image)}
+                          src={getImageUrl(blog.image, imageErrors[`${blog.id}-main`])}
                           className="card-img-top"
                           alt={blog.title}
+                          onError={(e) => handleImageError(e, `${blog.id}-main`, blog.image)}
                           style={{
                             width: "100%",
                             height: "240px",
@@ -303,9 +323,8 @@ const BlogLists = ({ onPostClick }) => {
               <nav className="mt-5">
                 <ul className="pagination justify-content-center">
                   <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === 1 ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -320,9 +339,8 @@ const BlogLists = ({ onPostClick }) => {
                   {[...Array(totalPages)].map((_, idx) => (
                     <li
                       key={idx}
-                      className={`page-item ${
-                        currentPage === idx + 1 ? "active" : ""
-                      }`}
+                      className={`page-item ${currentPage === idx + 1 ? "active" : ""
+                        }`}
                     >
                       <button
                         className="page-link"
@@ -339,9 +357,8 @@ const BlogLists = ({ onPostClick }) => {
                     </li>
                   ))}
                   <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"

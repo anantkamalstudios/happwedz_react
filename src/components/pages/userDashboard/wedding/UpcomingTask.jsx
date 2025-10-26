@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { BsPlusLg } from "react-icons/bs";
+import { GoChecklist } from "react-icons/go";
 import { useSelector } from "react-redux";
 import axios from "axios";
 
@@ -94,9 +95,9 @@ const UpComingTask = () => {
   if (!loading && tasks.length === 0 && Object.keys(completedTasks).length === 0) {
     return (
       <div style={{ padding: "2rem", textAlign: "center" }}>
-        <h1 style={{ marginBottom: "1.5rem" }}>Start Your Planning</h1>
+        <h1 className="mb-3 fw-bold dark-pink-text">Start Your Planning</h1>
         <div className="bg-light p-4 p-md-5 rounded-4 d-flex flex-column align-items-center">
-          <i className="fa-solid fa-list-check fs-1 text-primary mb-3"></i>
+          <GoChecklist size={50} />
           <h4 className="fw-bold text-dark my-2">
             Your Wedding Checklist is Empty
           </h4>

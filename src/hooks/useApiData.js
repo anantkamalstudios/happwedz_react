@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 
 const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
 
@@ -22,6 +22,9 @@ const useApiData = (
   });
   const abortRef = useRef(null);
   const cacheRef = useRef(new Map());
+
+  // Memoize filters to prevent infinite loops
+  const memoizedFilters = useMemo(() => filters, [JSON.stringify(filters)]);
 
   const fetchData = useCallback(
     async (page = initialPage, limit = initialLimit) => {
@@ -62,12 +65,13 @@ const useApiData = (
         params.append("limit", limit.toString());
 
         // Add filters if present
-        if (filters && Object.keys(filters).length > 0) {
-          params.append("filters", JSON.stringify(filters));
+        if (memoizedFilters && Object.keys(memoizedFilters).length > 0) {
+          params.append("filters", JSON.stringify(memoizedFilters));
         }
 
         // const apiUrl = `http://localhost:4000/vendor-services?${params.toString()}`;
         const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
+
         // Serve from cache if available
         const cacheKey = apiUrl;
         if (cacheRef.current.has(cacheKey)) {
@@ -145,7 +149,15 @@ const useApiData = (
         setLoading(false);
       }
     },
-    [section, slug, city, vendorType, initialPage, initialLimit, filters]
+    [
+      section,
+      slug,
+      city,
+      vendorType,
+      initialPage,
+      initialLimit,
+      memoizedFilters,
+    ]
   );
 
   const refetch = useCallback(() => {
