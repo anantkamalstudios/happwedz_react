@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import { IMAGE_BASE_URL } from "../../../config/constants";
 import usePhotography from "../../../hooks/usePhotography";
+import { MyContext } from "../../../context/useContext";
 
 const TopSlider = ({ onCategorySelect, onPhotosFetched }) => {
   const {
@@ -17,6 +18,8 @@ const TopSlider = ({ onCategorySelect, onPhotosFetched }) => {
   } = usePhotography();
 
   const [categories, setCategories] = useState([]);
+  const { setSelectedCategory, setSelectedCategoryName } =
+    useContext(MyContext);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -32,7 +35,6 @@ const TopSlider = ({ onCategorySelect, onPhotosFetched }) => {
   }, [types]);
 
   const handleCategoryClick = async (category) => {
-    // Pass both id and name to parent
     onCategorySelect?.(category.id || "all", category.name || "All");
 
     if (category.name === "all") {
