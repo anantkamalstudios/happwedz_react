@@ -84,12 +84,12 @@ const Footer = () => {
                 <Link to="/vendors">Search By City</Link>
               </li>
               <li>
-                <Link to="" disable={true}>
+                <Link to="#" disable={true}>
                   Top Rated Vendors
                 </Link>
               </li>
               <li>
-                <Link to="" disable={true}>
+                <Link to="#" disable={true}>
                   Destination Wedding
                 </Link>
               </li>
@@ -172,7 +172,7 @@ const Footer = () => {
                 <Link to="/about-us">About HappyWedz</Link>
               </li>
               <li>
-                <Link to="" disable={true}>
+                <Link to="#" disable={true}>
                   Careers
                 </Link>
               </li>
@@ -180,7 +180,7 @@ const Footer = () => {
                 <Link to="/contact-us">Contact Us</Link>
               </li>
               <li>
-                <Link to="" disable={true}>
+                <Link to="#" disable={true}>
                   Site Map
                 </Link>
               </li>
