@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -29,7 +29,7 @@ import GridView from "../layouts/Main/GridView";
 import LoadingState from "../LoadingState";
 import EmptyState from "../EmptyState";
 import useInfiniteScroll from "../../hooks/useInfiniteScroll";
-import usePhotography from "../../hooks/usePhotography";
+import { MyContext } from "../../context/useContext";
 
 const MainSection = () => {
   const { section } = useParams();
@@ -47,32 +47,15 @@ const MainSection = () => {
     "Venues",
     9
   );
-  const { fetchAllPhotos, fetchPhotosByType, allPhotos, photosByType } =
-    usePhotography();
-
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedCategoryName, setSelectedCategoryName] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [displayPhotos, setDisplayPhotos] = useState([]);
-
-  useEffect(() => {
-    const loadPhotos = async () => {
-      if (selectedCategory === "all") {
-        await fetchAllPhotos();
-      } else {
-        await fetchPhotosByType(selectedCategory);
-      }
-    };
-    loadPhotos();
-  }, [selectedCategory]);
-
-  useEffect(() => {
-    if (selectedCategory === "all") {
-      setDisplayPhotos(allPhotos || []);
-    } else {
-      setDisplayPhotos(photosByType || []);
-    }
-  }, [allPhotos, photosByType, selectedCategory]);
+  const {
+    selectedCategory,
+    setSelectedCategory,
+    selectedCategoryName,
+    setSelectedCategoryName,
+    displayPhotos, // Use displayPhotos from context
+    loading: photosLoading,
+  } = useContext(MyContext);
 
   useEffect(() => {
     setSelectedCity(reduxLocation);
@@ -167,7 +150,7 @@ const MainSection = () => {
           onSearchChange={setSearchQuery}
         />
 
-        {loading ? (
+        {photosLoading ? (
           <p className="text-center my-5">Loading photos...</p>
         ) : (
           <GridImages

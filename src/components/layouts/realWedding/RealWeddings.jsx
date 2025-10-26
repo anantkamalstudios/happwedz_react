@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { FaMapMarkerAlt, FaSearch } from "react-icons/fa";
 import { BsExclamationTriangle } from "react-icons/bs";
@@ -9,6 +9,21 @@ const RealWeddings = ({ onPostClick }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const filterRef = useRef(null);
+  const [city, setCity] = useState([]);
+  const [selectedCity, setSelectedCity] = useState("All Cities");
+  const [selectedCulture, setSelectedCulture] = useState("All Cultures");
+  const [selectedTheme, setSelectedTheme] = useState("All Themes");
+  const themes = [
+    "Destination",
+    "Grand & Luxurious",
+    "Pocket Friendly Stunners",
+    "Intimate & Minimalist",
+    "Modern & Stylish",
+    "International",
+    "Others",
+  ];
+  const cultures = ["Maharastrian", "Sindhi", "Tamil", "Christian"];
 
   const itemsPerPage = 6;
 
@@ -35,11 +50,68 @@ const RealWeddings = ({ onPostClick }) => {
     fetchWeddings();
   }, []);
 
-  const filteredWeddings = weddings.filter(
-    (wedding) =>
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await axios.post(
+          "https://countriesnow.space/api/v0.1/countries/cities",
+          { country: "India" }
+        );
+        if (response.data && response.data.data) {
+          const sortedCities = response.data.data.sort((a, b) =>
+            a.localeCompare(b)
+          );
+          setCity(sortedCities);
+        }
+      } catch (error) {
+      } finally {
+      }
+    };
+    fetchCities();
+  }, []);
+
+  const scrollToFilters = () => {
+    if (filterRef.current) {
+      filterRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const filteredWeddings = weddings.filter((wedding) => {
+    const matchesSearch =
       wedding.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      wedding.city?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      wedding.city?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const city = selectedCity === "All Cities" || wedding.city === selectedCity;
+
+    const culture =
+      selectedCulture === "All Cultures" || wedding.culture === selectedCulture;
+
+    const theme = (() => {
+      if (selectedTheme === "All Themes") return true;
+      const wt = wedding.themes;
+      if (!wt) return false;
+      if (Array.isArray(wt)) return wt.includes(selectedTheme);
+      try {
+        return String(wt).toLowerCase() === String(selectedTheme).toLowerCase();
+      } catch (e) {
+        return false;
+      }
+    })();
+
+    return matchesSearch && city && culture && theme;
+  });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCity, selectedCulture, selectedTheme]);
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setSelectedCity("All Cities");
+    setSelectedCulture("All Cultures");
+    setSelectedTheme("All Themes");
+    setCurrentPage(1);
+  };
 
   // Pagination logic
   const indexOfLast = currentPage * itemsPerPage;
@@ -135,36 +207,161 @@ const RealWeddings = ({ onPostClick }) => {
         </div>
       </section>
 
-      <section className="d-flex justify-content-end align-items-center p-4 w-100">
-        <div className="w-50">
-          <div className="d-flex w-100">
+      <section
+        ref={filterRef}
+        className="d-flex justify-content-end align-items-center w-100"
+        style={{
+          padding: "0 30px",
+        }}
+      >
+        <div
+          className="d-flex justify-content-between align-items-center w-100"
+          style={{
+            display: "flex",
+            gap: "20px",
+            backgroundColor: "#ffffff",
+            borderBottom: "1px solid #e5e5e5",
+            alignItems: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              flex: 1,
+              height: "60px",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <select
+              value={selectedCity}
+              onChange={(e) => {
+                setSelectedCity(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="form-select w-100"
+              style={{
+                backgroundColor: "#f5f5f5",
+                border: "1px solid #e0e0e0",
+                color: "#333",
+                fontSize: "15px",
+                padding: "12px 16px",
+                height: "100%",
+                borderRadius: "0px",
+              }}
+              onClick={scrollToFilters}
+            >
+              <option value={"All Cities"} key={"All Cities"}>
+                All Cities
+              </option>
+              {city.map((c) => (
+                <option value={c} key={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div
+            style={{
+              flex: 1,
+              height: "60px",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <select
+              value={selectedCulture}
+              onChange={(e) => {
+                setSelectedCulture(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="form-select w-100"
+              style={{
+                backgroundColor: "#f5f5f5",
+                border: "1px solid #e0e0e0",
+                color: "#333",
+                fontSize: "15px",
+                padding: "12px 16px",
+                height: "100%",
+                borderRadius: "0px",
+              }}
+              onClick={scrollToFilters}
+            >
+              <option value={"All Cultures"} key={"All Cultures"}>
+                All Cultures
+              </option>
+              {cultures.map((cul) => (
+                <option value={cul} key={cul}>
+                  {cul}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div
+            style={{
+              flex: 1,
+              height: "60px",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <select
+              value={selectedTheme}
+              onChange={(e) => {
+                setSelectedTheme(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="form-select w-100"
+              style={{
+                backgroundColor: "#f5f5f5",
+                border: "1px solid #e0e0e0",
+                color: "#333",
+                fontSize: "15px",
+                padding: "12px 16px",
+                height: "100%",
+                borderRadius: "0px",
+              }}
+              onClick={scrollToFilters}
+            >
+              <option value={"All Themes"} key={"All Themes"}>
+                All Themes
+              </option>
+              {themes.map((the) => (
+                <option value={the} key={the}>
+                  {the}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div
+            style={{
+              flex: 2,
+              height: "60px",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
             <input
               type="text"
-              className="form-control"
+              className="form-control w-100"
               placeholder="Search by names and location..."
+              style={{
+                backgroundColor: "#fff",
+                border: "1px solid #e0e0e0",
+                color: "#666",
+                fontSize: "15px",
+                padding: "12px 16px",
+                height: "100%",
+                borderRadius: "0px",
+              }}
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              style={{
-                flex: "0 0 60%",
-                borderTopRightRadius: 0,
-                borderBottomRightRadius: 0,
-              }}
+              onClick={scrollToFilters}
             />
-            <button
-              className="btn btn-primary"
-              style={{
-                flex: "0 0 25%",
-                borderTopLeftRadius: 0,
-                borderBottomLeftRadius: 0,
-                borderTopRightRadius: "50px",
-                borderBottomRightRadius: "50px",
-              }}
-            >
-              <FaSearch />
-            </button>
           </div>
         </div>
       </section>
@@ -212,9 +409,17 @@ const RealWeddings = ({ onPostClick }) => {
                 <h5 className="text-secondary fw-semibold mb-2">
                   No Weddings Found
                 </h5>
-                <p className="text-muted">
-                  Try adjusting your filters or check back later.
+                <p className="text-muted mb-3">
+                  No items match the selected filters.
                 </p>
+                <div className="d-flex gap-2">
+                  <button
+                    className="btn btn-outline-secondary"
+                    onClick={clearFilters}
+                  >
+                    Clear filters
+                  </button>
+                </div>
               </div>
             ) : (
               currentWeddings.map((w) => <WeddingCard key={w.id} wedding={w} />)

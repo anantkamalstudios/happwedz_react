@@ -1,7 +1,35 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import React from "react";
+import { useContext } from "react";
+import { MyContext } from "../../context/useContext";
 
 const Footer = () => {
+  const navigate = useNavigate();
+  const {
+    selectedCategory,
+    setSelectedCategory,
+    selectedCategoryName,
+    setSelectedCategoryName,
+    types,
+  } = useContext(MyContext);
+
+  const findCategoryIdByName = (categoryName) => {
+    if (!types || !Array.isArray(types)) return null;
+    const category = types.find(
+      (type) => type.name?.toLowerCase() === categoryName.toLowerCase()
+    );
+    return category ? category.id : null;
+  };
+
+  const handleCategoryClick = (categoryName) => {
+    const categoryId = findCategoryIdByName(categoryName);
+    if (categoryId) {
+      setSelectedCategory(categoryId);
+      setSelectedCategoryName(categoryName);
+      navigate("/photography");
+    }
+  };
+
   return (
     <footer
       className="footer position-relative pt-0"
@@ -56,10 +84,14 @@ const Footer = () => {
                 <Link to="/vendors">Search By City</Link>
               </li>
               <li>
-                <Link to="/top-rated">Top Rated Vendors</Link>
+                <Link to="" disable={true}>
+                  Top Rated Vendors
+                </Link>
               </li>
               <li>
-                <Link to="/destination-wedding">Destination Wedding</Link>
+                <Link to="" disable={true}>
+                  Destination Wedding
+                </Link>
               </li>
             </ul>
           </div>
@@ -77,31 +109,58 @@ const Footer = () => {
                 <Link to="/real-wedding">Real Wedding</Link>
               </li>
               <li>
-                <Link to="#submit-wedding">Submit Your Wedding</Link>
+                <Link to="/user-dashboard/real-wedding">
+                  Submit Your Wedding
+                </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link to="#photo-gallery">Photo Gallery</Link>
-              </li>
+              </li> */}
             </ul>
           </div>
 
           <div className="col-6 col-md-3">
             <h6 className="footer-title">Bridal & Groom Fashion</h6>
-            <ul className="footer-list">
+            <ul className="footer-list" style={{ color: "GrayText" }}>
               <li>
-                <Link to="#bridal-wear">Bridal Wear</Link>
+                <a
+                  onClick={() => handleCategoryClick("Wedding Card Designs")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Wedding Card Designs
+                </a>
               </li>
               <li>
-                <Link to="#jewellery">Wedding Jewellery</Link>
+                <a
+                  onClick={() => handleCategoryClick("Outfit")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Outfit
+                </a>
               </li>
               <li>
-                <Link to="#makeup-hair">Bridal Makeup &amp; Hair</Link>
+                <a
+                  onClick={() => handleCategoryClick("Bridal Makeup & Hair")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Bridal Makeup &amp; Hair
+                </a>
               </li>
               <li>
-                <Link to="#groom-wear">Groom Wear</Link>
+                <animateTransform
+                  onClick={() => handleCategoryClick("Groom Wear")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Groom Wear
+                </animateTransform>
               </li>
               <li>
-                <Link to="#accessories">Wedding Accessories</Link>
+                <a
+                  onClick={() => handleCategoryClick("Jewellery & Accessories")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Jewellery & Accessories
+                </a>
               </li>
             </ul>
           </div>
@@ -113,13 +172,17 @@ const Footer = () => {
                 <Link to="/about-us">About HappyWedz</Link>
               </li>
               <li>
-                <Link to="#careers">Careers</Link>
+                <Link to="" disable={true}>
+                  Careers
+                </Link>
               </li>
               <li>
-                <Link to="contact-us">Contact Us</Link>
+                <Link to="/contact-us">Contact Us</Link>
               </li>
               <li>
-                <Link to="#sitemap">Site Map</Link>
+                <Link to="" disable={true}>
+                  Site Map
+                </Link>
               </li>
 
               <li>
