@@ -47,21 +47,20 @@ const Footer = () => {
             <h6 className="footer-title">Plan Your Wedding</h6>
             <ul className="footer-list">
               <li>
-                <a href="#start-planning">Start Planning</a>
+                <Link to="/user-dashboard/my-wedding">Start Planning</Link>
               </li>
               <li>
-                <a href="#vendor-search">Search By Vendor</a>
+                <Link to="/vendors">Search By Vendor</Link>
               </li>
               <li>
-                <a href="#city-search">Search By City</a>
+                <Link to="/vendors">Search By City</Link>
               </li>
               <li>
-                <a href="#top-rated">Top Rated Vendors</a>
+                <Link to="/top-rated">Top Rated Vendors</Link>
               </li>
               <li>
-                <a href="#destination">Destination Wedding</a>
+                <Link to="/destination-wedding">Destination Wedding</Link>
               </li>
-              {/* <li><a href="#ideas">Wedding Ideas</a></li> */}
             </ul>
           </div>
 
@@ -69,19 +68,19 @@ const Footer = () => {
             <h6 className="footer-title">Inspiration & Ideas</h6>
             <ul className="footer-list">
               <li>
-                <a href="#wedding-blog">Wedding Blog</a>
+                <Link to="/blog">Wedding Blog</Link>
               </li>
               <li>
-                <a href="#inspo-gallery">Wedding Inspiration Gallery</a>
+                <Link to="/photography">Wedding Inspiration Gallery</Link>
               </li>
               <li>
-                <a href="#real-wedding">Real Wedding</a>
+                <Link to="/real-wedding">Real Wedding</Link>
               </li>
               <li>
-                <a href="#submit-wedding">Submit Your Wedding</a>
+                <Link to="#submit-wedding">Submit Your Wedding</Link>
               </li>
               <li>
-                <a href="#photo-gallery">Photo Gallery</a>
+                <Link to="#photo-gallery">Photo Gallery</Link>
               </li>
             </ul>
           </div>
@@ -90,21 +89,20 @@ const Footer = () => {
             <h6 className="footer-title">Bridal & Groom Fashion</h6>
             <ul className="footer-list">
               <li>
-                <a href="#bridal-wear">Bridal Wear</a>
+                <Link to="#bridal-wear">Bridal Wear</Link>
               </li>
               <li>
-                <a href="#jewellery">Wedding Jewellery</a>
+                <Link to="#jewellery">Wedding Jewellery</Link>
               </li>
               <li>
-                <a href="#makeup-hair">Bridal Makeup &amp; Hair</a>
+                <Link to="#makeup-hair">Bridal Makeup &amp; Hair</Link>
               </li>
               <li>
-                <a href="#groom-wear">Groom Wear</a>
+                <Link to="#groom-wear">Groom Wear</Link>
               </li>
               <li>
-                <a href="#accessories">Wedding Accessories</a>
+                <Link to="#accessories">Wedding Accessories</Link>
               </li>
-              {/* <li><a href="#mehendi">Mehendi Designs</a></li> */}
             </ul>
           </div>
 
@@ -115,18 +113,17 @@ const Footer = () => {
                 <Link to="/about-us">About HappyWedz</Link>
               </li>
               <li>
-                <a href="#careers">Careers</a>
-
+                <Link to="#careers">Careers</Link>
               </li>
               <li>
                 <Link to="contact-us">Contact Us</Link>
               </li>
               <li>
-                <a href="#sitemap">Site Map</a>
+                <Link to="#sitemap">Site Map</Link>
               </li>
 
               <li>
-                <a href="#invitation-maker">Wedding Invitation Maker</a>
+                <Link to="/einvites">Wedding Invitation Maker</Link>
               </li>
             </ul>
           </div>

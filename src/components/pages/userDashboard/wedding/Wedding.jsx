@@ -475,7 +475,6 @@ const Wedding = () => {
                 gridColumnStart: 3,
                 gridRowStart: 4,
                 height: "100%",
-                borderRadius: "16px",
                 background: "#fff",
               }}
             >
