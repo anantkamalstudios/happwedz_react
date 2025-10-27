@@ -341,7 +341,6 @@ function Faq({ formData, setFormData, onSave }) {
   }, [vendor?.vendor_type_id]);
 
   useEffect(() => {
-    // When answers change, update the parent formData
     setFormData((prev) => ({ ...prev, faqs: answers }));
   }, [answers, setFormData]);
 

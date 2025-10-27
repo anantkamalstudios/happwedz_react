@@ -49,10 +49,7 @@ const Header = () => {
   const isLoggedIn = isUserLoggedIn || isVendorLoggedIn;
 
   const toSlug = (text) =>
-    text
-      ?.toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9\-]/g, "") || "";
+    text?.replace(/\s+/g, "-").replace(/[^A-Za-z0-9\-]/g, "") || "";
 
   const location = window.location.pathname;
   useEffect(() => {
@@ -65,7 +62,7 @@ const Header = () => {
         const bsCollapse =
           window.bootstrap.Collapse.getOrCreateInstance(collapse);
         bsCollapse.hide();
-      } catch { }
+      } catch {}
     }
   }, [location]);
 
@@ -271,7 +268,7 @@ const Header = () => {
 
             {/* Bottom */}
             <div className="col-12 py-2">
-              <div className="container" style={{maxWidth:"1400px"}}>
+              <div className="container" style={{ maxWidth: "1400px" }}>
                 <div className="d-flex w-100 justify-content-center">
                   <div className="col-lg-12 d-flex flex-column flex-lg-row align-items-center justify-content-between flex-nowrap">
                     <div className="text-center d-none d-lg-block">
@@ -321,12 +318,12 @@ const Header = () => {
                                           transition: "color 0.2s ease-in-out",
                                         }}
                                         onMouseEnter={(e) =>
-                                        (e.currentTarget.style.color =
-                                          "#e91e63")
+                                          (e.currentTarget.style.color =
+                                            "#e91e63")
                                         }
                                         onMouseLeave={(e) =>
-                                        (e.currentTarget.style.color =
-                                          "#212529")
+                                          (e.currentTarget.style.color =
+                                            "#212529")
                                         }
                                       >
                                         <span
@@ -374,12 +371,12 @@ const Header = () => {
                                           transition: "all 0.2s ease-in-out",
                                         }}
                                         onMouseEnter={(e) =>
-                                        (e.currentTarget.style.boxShadow =
-                                          "0 4px 12px rgba(0,0,0,0.08)")
+                                          (e.currentTarget.style.boxShadow =
+                                            "0 4px 12px rgba(0,0,0,0.08)")
                                         }
                                         onMouseLeave={(e) =>
-                                        (e.currentTarget.style.boxShadow =
-                                          "0 2px 4px rgba(0,0,0,0.04)")
+                                          (e.currentTarget.style.boxShadow =
+                                            "0 2px 4px rgba(0,0,0,0.04)")
                                         }
                                       >
                                         <Link
@@ -444,14 +441,14 @@ const Header = () => {
                                     <div className="d-flex flex-column flex-wrap gap-2">
                                       <Link
                                         to="/venues"
-                                        className="primary-text px-3 py-2 small me-2 d-flex align-items-center justify-content-between"
+                                        className="primary-text py-2 small me-2 d-flex align-items-center justify-content-between"
                                       >
                                         Wedding Venues <FaArrowRightLong />
                                       </Link>
 
                                       <Link
                                         to="/venues"
-                                        className="primary-text px-3 py-2 small me-2 d-flex align-items-center justify-content-between"
+                                        className="primary-text  py-2 small me-2 d-flex align-items-center justify-content-between"
                                       >
                                         Popular Locations <FaArrowRightLong />
                                       </Link>
@@ -459,7 +456,7 @@ const Header = () => {
                                       {!isLoggedIn && (
                                         <Link
                                           to="/vendor-login"
-                                          className="primary-text px-3 py-2 small me-2 d-flex align-items-center justify-content-between"
+                                          className="primary-text  py-2 small me-2 d-flex align-items-center justify-content-between"
                                         >
                                           Are You Vendor <FaArrowRightLong />
                                         </Link>
@@ -476,41 +473,42 @@ const Header = () => {
                                 <div className="row">
                                   {(venueSubcategories.length > 0
                                     ? [
-                                      ...venueSubcategories.map(
-                                        (s) => s.name
-                                      ),
-                                      "View All Venues",
-                                    ]
+                                        ...venueSubcategories.map(
+                                          (s) => s.name
+                                        ),
+                                        "View All Venues",
+                                      ]
                                     : [
-                                      "Banquet Halls",
-                                      "Marriage Garden / Lawns",
-                                      "Wedding Resorts",
-                                      "Small Function / Party Halls",
-                                      "Destination Wedding Venues",
-                                      "Kalyana Mandapams",
-                                      "4 Star & Above Wedding Hotels",
-                                      "Venue Concierge Services",
-                                      "View All Venues",
-                                    ]
+                                        "Banquet Halls",
+                                        "Marriage Garden / Lawns",
+                                        "Wedding Resorts",
+                                        "Small Function / Party Halls",
+                                        "Destination Wedding Venues",
+                                        "Kalyana Mandapams",
+                                        "4 Star & Above Wedding Hotels",
+                                        "Venue Concierge Services",
+                                        "View All Venues",
+                                      ]
                                   ).map((item, i) => {
                                     const isShowMore =
                                       item === "View All Venues";
                                     const path = isShowMore
                                       ? "/venues"
                                       : `/venues/${item
-                                        .toLowerCase()
-                                        .replace(/\s+/g, "-")
-                                        .replace(/[^a-z0-9\-]/g, "")}`;
+                                          .toLowerCase()
+                                          .replace(/\s+/g, "-")
+                                          .replace(/[^a-z0-9\-]/g, "")}`;
                                     return (
                                       <div className="col-12 mb-2" key={i}>
                                         <Link
                                           to={path}
-                                          className={`dropdown-link d-flex align-items-center ${isShowMore
-                                            ? "primary-text fw-bold text-decoration-underline"
-                                            : ""
-                                            }`}
+                                          className={`dropdown-link d-flex align-items-center ${
+                                            isShowMore
+                                              ? "primary-text fw-bold text-decoration-underline"
+                                              : ""
+                                          }`}
                                         >
-                                          <i className="bi bi-check-circle me-2 text-primary"></i>
+                                          <i className="bi bi-check-circle text-primary"></i>
                                           <span className="small">{item}</span>
                                         </Link>
                                       </div>
@@ -966,6 +964,96 @@ const Header = () => {
                           >
                             Real Wedding
                           </Link>
+
+                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                            <div className="container">
+                              <div className="row">
+                                <div className="col-12 col-md-4">
+                                  <div className="fw-bold primary-text text-uppercase">
+                                    By City
+                                  </div>
+                                  <ul className="list-unstyled mb-0">
+                                    <li className="dropdown-link small d-block">
+                                      Mumbai
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Bangalore
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Pune
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Kolkata
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Jaipur
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Others
+                                    </li>
+                                  </ul>
+                                </div>
+
+                                <div className="col-12 col-md-4">
+                                  <h6 className="primary-text fw-bold">
+                                    By Culture
+                                  </h6>
+                                  <ul className="list-unstyled mb-0">
+                                    <li className="dropdown-link small d-block">
+                                      Maharashtrian
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Punjabi / Sikh
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Bengali
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Gujarati
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Marwari
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Telugu
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Others
+                                    </li>
+                                  </ul>
+                                </div>
+
+                                <div className="col-12 col-md-4">
+                                  <h6 className="primary-text fw-bold">
+                                    By Theme
+                                  </h6>
+                                  <ul className="list-unstyled mb-0">
+                                    <li className="dropdown-link small d-block">
+                                      Destination
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Grand & Luxurious
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Pocket Friendly Stunners
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Intimate & Minimalist
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Modern & Stylish
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      International
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Others
+                                    </li>
+                                  </ul>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </li>
 

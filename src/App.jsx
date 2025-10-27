@@ -61,9 +61,7 @@ const CancellationPolicy = lazy(() =>
   import("./components/pages/CancellationPolicy")
 );
 const CardEditorPage = lazy(() => import("./components/CardEditorPage"));
-const PhotographyDetailsPage = lazy(() =>
-  import("./components/layouts/photography/PhotographyDetailsPage")
-);
+
 const PhotographyDetails = lazy(() =>
   import("./components/pages/PhotographyDetails")
 );
@@ -201,7 +199,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route
                 path="/photos/details/:slug"
-                element={<PhotographyDetailsPage />}
+                element={<PhotographyDetails />}
               />
               <Route
                 path="/photography/details/:id"

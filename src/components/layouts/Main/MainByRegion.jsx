@@ -27,12 +27,13 @@ const MainByRegion = ({ type }) => {
     console.log("No regions found");
     return null;
   }
+  console.log(type);
 
   return (
     <div className="container">
       <div className="venue-region-section px-4 my-5">
         <h3 className="fw-bold mb-0 text-dark mb-5">
-          {type === "venues" ? "Venues" : "Vendors"} by region
+          {type === "Venues" ? "Venues" : "Vendors"} By Region
         </h3>
 
         <Swiper
