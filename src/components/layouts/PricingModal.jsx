@@ -357,10 +357,10 @@ const PricingModal = ({ show, handleClose, vendorId }) => {
         throw new Error(result.message || "Something went wrong.");
       }
       Swal.fire({
-        icon:"Success",
-        text:"Request sent successfully!",
-        timer: 1500
-      })
+        icon: "Success",
+        text: "Request sent successfully!",
+        timer: 1500,
+      });
       handleClose();
     } catch (err) {
       setError(err.message);
@@ -375,19 +375,19 @@ const PricingModal = ({ show, handleClose, vendorId }) => {
       <Modal show={show} onHide={handleClose} size="lg" centered>
         <Modal.Header closeButton>
           <div className="d-flex align-items-center w-100">
-            {vendorDetails?.image && (
+            {/* {vendorDetails?.image && (
               <Image
                 src={`https://happywedzbackend.happywedz.com${vendorDetails.image}`}
                 rounded
                 style={{ width: "60px", height: "60px", objectFit: "cover" }}
                 className="me-3"
               />
-            )}
+            )} */}
             <div className="d-flex flex-column">
               <h5 className="mb-1">Request Pricing</h5>
-              <h6 className="mb-1 text-muted fw-normal">
-                {vendorDetails?.business_name || "Loading..."}
-              </h6>
+              {/* <h6 className="mb-1 text-muted fw-normal">
+                {vendorDetails?.businessName || "Loading..."}
+              </h6> */}
               <p className="mb-0 text-muted" style={{ fontSize: "12px" }}>
                 Please provide your details below to request pricing from this
                 vendor.
