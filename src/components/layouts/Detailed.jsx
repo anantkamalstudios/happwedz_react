@@ -192,8 +192,9 @@ const Detailed = () => {
       }
 
       // Offerings
-      if (attributes.Offerings) {
-        const services = attributes.Offerings.split(",")
+      if (attributes.offerings) {
+        const services = attributes.offerings
+          .split(",")
           .map((s) => s.trim())
           .filter((s) => s);
         if (services.length > 0) {
@@ -516,7 +517,9 @@ const Detailed = () => {
 
             <div className="venue-description mb-5">
               <h3 className="details-section-title fw-bold">
-                About {venueData.attributes?.vendor_name || "This Vendor"}
+                About{" "}
+                {venueData.attributes?.vendor_name ||
+                  venueData.attributes?.Name}
               </h3>
               {venueData.attributes?.about_us ? (
                 <div
@@ -579,7 +582,7 @@ const Detailed = () => {
             </div>
 
             {/* FaqQuestionAnswer Detailed */}
-            {/* <div className="my-4 border p-3 rounded">
+            <div className="my-4 border p-3 rounded">
               <h1 className="my-4">Frequently Asked Questions</h1>
               {faqList.length > 0 ? (
                 faqList.map((ques, index) => {
@@ -625,7 +628,7 @@ const Detailed = () => {
                   No FAQ information available for this vendor.
                 </p>
               )}
-            </div> */}
+            </div>
 
             <div className="py-5">
               <ReviewSection vendor={activeVendor} />
@@ -724,7 +727,9 @@ const Detailed = () => {
                 <div className="mb-3">
                   <div className="d-flex">
                     <h2 className="fw-bold fs-30">
-                      {venueData?.attributes?.vendor_name || "Vendor Name"}
+                      {venueData?.attributes?.vendor_name ||
+                        venueData?.attributes?.Name ||
+                        "Vendor Name"}
                     </h2>
                   </div>
                   <div className="d-flex align-items-center my-2">
@@ -765,7 +770,6 @@ const Detailed = () => {
                 {/* Move Request button above pricing */}
 
                 <div className="pricing mb-4">
-                  {/* CONDITIONAL PRICING DISPLAY */}
                   {isVenue ? (
                     <>
                       <h4 className="price-title fw-bold">

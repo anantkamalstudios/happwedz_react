@@ -61,6 +61,9 @@ const API_BASE_URL = "https://happywedz.com";
 
 const HomeAdmin = () => {
   const [dateFilter, setDateFilter] = useState("this_month");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
+  const [customApplyToggle, setCustomApplyToggle] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [activeTab, setActiveTab] = useState("leads");
   const [sortConfig, setSortConfig] = useState({
@@ -82,7 +85,57 @@ const HomeAdmin = () => {
       setLoadingLeads(false);
       return;
     }
+    // compute start and end dates based on dateFilter
+    const computeRange = () => {
+      const now = new Date();
+      let start = null;
+      let end = null;
 
+      if (dateFilter === "this_week") {
+        // start of current week (Monday)
+        const day = now.getDay();
+        const diff = day === 0 ? 6 : day - 1; // days since Monday
+        start = new Date(now);
+        start.setDate(now.getDate() - diff);
+        start.setHours(0, 0, 0, 0);
+        end = new Date(now);
+        end.setHours(23, 59, 59, 999);
+      } else if (dateFilter === "this_month") {
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        start.setHours(0, 0, 0, 0);
+        end = new Date(now);
+        end.setHours(23, 59, 59, 999);
+      } else if (dateFilter === "last_month") {
+        const firstOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastMonthEnd = new Date(firstOfThisMonth.getTime() - 1);
+        start = new Date(
+          lastMonthEnd.getFullYear(),
+          lastMonthEnd.getMonth(),
+          1
+        );
+        start.setHours(0, 0, 0, 0);
+        end = new Date(
+          lastMonthEnd.getFullYear(),
+          lastMonthEnd.getMonth(),
+          lastMonthEnd.getDate()
+        );
+        end.setHours(23, 59, 59, 999);
+      } else if (dateFilter === "custom" && customStart && customEnd) {
+        start = new Date(customStart);
+        start.setHours(0, 0, 0, 0);
+        end = new Date(customEnd);
+        end.setHours(23, 59, 59, 999);
+      } else {
+        // default to last 30 days
+        end = new Date();
+        end.setHours(23, 59, 59, 999);
+        start = new Date();
+        start.setDate(end.getDate() - 29);
+        start.setHours(0, 0, 0, 0);
+      }
+
+      return { start, end };
+    };
     const fetchDashboardData = async () => {
       try {
         setLoadingLeads(true);
@@ -101,31 +154,43 @@ const HomeAdmin = () => {
         const data = await response.json();
         const leads = data?.requests || [];
 
-        // 1. Set total lead count
-        setLeadCount(data?.count ?? leads.length);
+        // compute date range from filter
+        const { start, end } = computeRange();
 
-        // 2. Process leads for the chart
-        const leadsByDate = leads.reduce((acc, lead) => {
+        // filter leads within range
+        const leadsInRange = leads.filter((lead) => {
+          if (!lead.createdAt) return false;
+          const t = new Date(lead.createdAt).getTime();
+          return t >= start.getTime() && t <= end.getTime();
+        });
+
+        // 1. Set total lead count for the selected range
+        setLeadCount(leadsInRange.length);
+
+        // build labels per day between start and end
+        const labels = [];
+        const dayMs = 24 * 60 * 60 * 1000;
+        const maxDays = 90;
+        const days = Math.min(
+          Math.ceil((end.getTime() - start.getTime()) / dayMs) + 1,
+          maxDays
+        );
+        for (let i = 0; i < days; i++) {
+          const d = new Date(start.getTime() + i * dayMs);
+          labels.push(d.toISOString().split("T")[0]);
+        }
+
+        const leadsByDate = leadsInRange.reduce((acc, lead) => {
           const date = new Date(lead.createdAt).toISOString().split("T")[0];
           acc[date] = (acc[date] || 0) + 1;
           return acc;
         }, {});
 
-        // Create labels for the last 30 days
-        const labels = [];
-        for (let i = 29; i >= 0; i--) {
-          labels.push(
-            new Date(Date.now() - i * 24 * 60 * 60 * 1000)
-              .toISOString()
-              .split("T")[0]
-          );
-        }
-
         const leadChartValues = labels.map((label) => leadsByDate[label] || 0);
 
         // 3. Update stats state with new chart data
         setStats((prev) => ({
-          ...prev, // Keep existing impressions/views if they come from another API
+          ...prev,
           chartData: {
             labels: labels.map((d) =>
               new Date(d).toLocaleDateString("en-US", {
@@ -134,7 +199,7 @@ const HomeAdmin = () => {
               })
             ),
             leads: leadChartValues,
-            impressions: prev.chartData.impressions, // Preserve impressions data
+            impressions: prev.chartData.impressions,
           },
         }));
       } catch (err) {
@@ -149,7 +214,7 @@ const HomeAdmin = () => {
     // You can keep the separate fetchStats call if it provides different data like impressions.
     // For this example, I've integrated leads data processing into one call.
     // fetchStats();
-  }, [vendorToken]);
+  }, [vendorToken, dateFilter, customStart, customEnd, customApplyToggle]);
 
   // Stats data
   const statsData = {
@@ -393,9 +458,41 @@ const HomeAdmin = () => {
               </Dropdown.Menu>
             </Dropdown>
 
-            <Button variant="primary">
+            {dateFilter === "custom" && (
+              <div className="d-flex align-items-center gap-2">
+                <Form.Control
+                  type="date"
+                  value={customStart}
+                  onChange={(e) => setCustomStart(e.target.value)}
+                />
+                <Form.Control
+                  type="date"
+                  value={customEnd}
+                  onChange={(e) => setCustomEnd(e.target.value)}
+                />
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    if (!customStart || !customEnd) {
+                      // basic validation
+                      alert("Please select both start and end dates.");
+                      return;
+                    }
+                    if (new Date(customStart) > new Date(customEnd)) {
+                      alert("Start date must be before or equal to end date.");
+                      return;
+                    }
+                    setCustomApplyToggle((t) => !t);
+                  }}
+                >
+                  Apply
+                </Button>
+              </div>
+            )}
+
+            {/* <Button variant="primary">
               <FiDownload className="me-1" /> Export
-            </Button>
+            </Button> */}
           </div>
         </div>
       </div>

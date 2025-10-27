@@ -75,7 +75,7 @@ const MainSection = () => {
     return (
       <>
         <MainSearch />
-        <MainByRegion type="venues" />
+        <MainByRegion type="Venues" />
         {loading && data.length === 0 && <LoadingState title="Venues" />}
         {!loading && data.length === 0 && (
           <EmptyState section="venues" title="Venues" />
@@ -89,10 +89,11 @@ const MainSection = () => {
               loader={
                 <div className="text-center my-4">
                   <div className="scroll-down-loader mx-auto"></div>
-                  <p className="text-muted mt-2 small fw-medium">Scroll Down to Load More Venues</p>
+                  <p className="text-muted mt-2 small fw-medium">
+                    Scroll Down to Load More Venues
+                  </p>
                 </div>
               }
-
               endMessage={
                 <div className="text-center my-5">
                   <p className="text-muted fw-medium">

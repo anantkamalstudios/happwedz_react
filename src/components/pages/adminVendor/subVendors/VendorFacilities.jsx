@@ -107,6 +107,56 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
               <option value="own_alcohol">Own Alcohol</option>
             </select>
           </div>
+          <div className="col-md-6 mb-3">
+            <label className="form-label fw-semibold">Decor Policy</label>
+            <input
+              type="text"
+              className="form-control"
+              value={formData.decorPolicy || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  decorPolicy: e.target.value,
+                }))
+              }
+              placeholder="e.g. Allowed, Not Allowed"
+            />
+          </div>
+          <div className="col-md-6 mb-3">
+            <label className="form-label fw-semibold">
+              HappyWedz Since
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              value={formData.happywedz_since || formData.HappyWedz || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  happywedz_since: e.target.value,
+                  HappyWedz: e.target.value,
+                }))
+              }
+              placeholder="e.g. 2020"
+            />
+          </div>
+          <div className="col-12 mb-3">
+            <label className="form-label fw-semibold">
+              Area / Capacity Details (e.g., Lawn 200 Seating | 50 Floating)
+            </label>
+            <textarea
+              className="form-control"
+              rows="3"
+              value={formData.area || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  area: e.target.value,
+                }))
+              }
+              placeholder="e.g. Lawn 200 Seating | 50 Floating, Indoor 100 Seating | 20 Floating"
+            />
+          </div>
         </div>
         <button className="btn btn-primary mt-2" onClick={handleSave}>
           Save Facilities Details

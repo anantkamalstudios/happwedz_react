@@ -7,6 +7,7 @@ const API_BASE_URL = "https://happywedz.com";
 
 export default function VendorLeadsPage() {
   const [rows, setRows] = useState([]);
+  const [exporting, setExporting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -78,6 +79,91 @@ export default function VendorLeadsPage() {
     setShowModal(true);
   };
 
+  const exportToCSV = () => {
+    if (!rows || rows.length === 0) {
+      addToast("No leads to export", "error");
+      return;
+    }
+    setExporting(true);
+    try {
+      const headers = [
+        "firstName",
+        "lastName",
+        "email",
+        "phone",
+        "eventDate",
+        "message",
+      ];
+      const csvRows = [headers.join(",")];
+      for (const r of rows) {
+        const vals = headers.map((h) => {
+          const v = r[h] ?? "";
+          // Escape quotes and wrap in quotes if necessary
+          const s = String(v).replace(/"/g, '""');
+          return s.includes(",") || s.includes("\n") ? `"${s}"` : s;
+        });
+        csvRows.push(vals.join(","));
+      }
+      const csvString = csvRows.join("\r\n");
+      const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+      a.href = url;
+      a.download = `leads-${ts}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      addToast(`Exported ${rows.length} leads as CSV`, "success");
+    } catch (err) {
+      console.error("CSV export error:", err);
+      addToast(`Export failed: ${err?.message || err}`, "error");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const exportToExcel = async () => {
+    if (!rows || rows.length === 0) {
+      addToast("No leads to export", "error");
+      return;
+    }
+    setExporting(true);
+    try {
+      const XLSX = await import("xlsx");
+      const headers = [
+        "First Name",
+        "Last Name",
+        "Email",
+        "Phone",
+        "Event Date",
+        "Message",
+      ];
+      // map rows to objects with readable headers
+      const data = rows.map((r) => ({
+        [headers[0]]: r.firstName || "",
+        [headers[1]]: r.lastName || "",
+        [headers[2]]: r.email || "",
+        [headers[3]]: r.phone || "",
+        [headers[4]]: r.eventDate || "",
+        [headers[5]]: r.message || "",
+      }));
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Leads");
+      const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+      // writeFile will trigger a download in browser
+      XLSX.writeFile(wb, `leads-${ts}.xlsx`);
+      addToast(`Exported ${rows.length} leads as Excel`, "success");
+    } catch (err) {
+      console.error("Excel export error:", err);
+      addToast(`Excel export failed: ${err?.message || err}`, "error");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const closeModal = () => {
     setShowModal(false);
     setActiveRow(null);
@@ -136,8 +222,8 @@ export default function VendorLeadsPage() {
         text: `Error: ${err.message}`,
         confirmButtonText: "OK",
         confirmButtonColor: "#ed1173",
-        timer:"3000"
-      })
+        timer: "3000",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -145,6 +231,27 @@ export default function VendorLeadsPage() {
 
   return (
     <div className="container my-5">
+      <div className="d-flex align-items-center mb-3 gap-2">
+        <button
+          type="button"
+          className="btn btn-outline-primary"
+          onClick={exportToCSV}
+          disabled={exporting || rows.length === 0}
+        >
+          {exporting ? "Exporting..." : "Export CSV"}
+        </button>
+
+        <button
+          type="button"
+          className="btn btn-outline-success"
+          onClick={exportToExcel}
+          disabled={exporting || rows.length === 0}
+        >
+          {exporting ? "Exporting..." : "Export Excel"}
+        </button>
+
+        <div className="text-muted small">Export current leads</div>
+      </div>
       <div className="table-responsive shadow-sm bg-white rounded">
         <table className="table align-middle mb-0">
           <thead>
@@ -308,138 +415,3 @@ export default function VendorLeadsPage() {
     </div>
   );
 }
-
-// import React, { useState, useEffect } from "react";
-// import { useSelector } from "react-redux";
-
-// const API_BASE_URL = "https://happywedz.com";
-
-// export default function VendorLeadsPage() {
-//   const [rows, setRows] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-//   const [showModal, setShowModal] = useState(false);
-//   const [activeRow, setActiveRow] = useState(null);
-//   const [submitting, setSubmitting] = useState(false);
-//   const [formData, setFormData] = useState({
-//     price: "",
-//     service: "",
-//     date: "",
-//     message: "",
-//   });
-
-//   const { token: vendorToken, vendor } = useSelector(
-//     (state) => state.vendorAuth
-//   );
-
-//   useEffect(() => {
-//     if (!vendorToken) {
-//       setError("Authentication token not found. Please log in.");
-//       setLoading(false);
-//       setRows([]);
-//       return;
-//     }
-
-//     const fetchLeads = async () => {
-//       try {
-//         setLoading(true);
-//         setError(null);
-
-//         const response = await fetch(
-//           `${API_BASE_URL}/api/request-pricing/all`,
-//           {
-//             headers: { Authorization: `Bearer ${vendorToken}` },
-//           }
-//         );
-
-//         if (!response.ok) throw new Error("Failed to fetch leads.");
-
-//         const data = await response.json();
-
-//         let allLeads = [];
-//         if (Array.isArray(data.requests)) allLeads = data.requests;
-//         else if (Array.isArray(data.leads)) allLeads = data.leads;
-//         else if (Array.isArray(data.data)) allLeads = data.data;
-//         else if (Array.isArray(data)) allLeads = data;
-
-//         // ✅ filter only this vendor’s leads
-//         const filtered = vendor?.id
-//           ? allLeads.filter((lead) => lead.vendorId === vendor.id)
-//           : allLeads;
-
-//         setRows(filtered);
-//       } catch (err) {
-//         setError(err.message);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-//     fetchLeads();
-//   }, [vendorToken, vendor]);
-
-//   // --- modal stuff same as before ---
-
-//   return (
-//     <div className="container my-5">
-//       <h3 className="mb-4">My Leads</h3>
-//       <div className="table-responsive shadow-sm bg-white rounded">
-//         <table className="table align-middle mb-0">
-//           <thead>
-//             <tr>
-//               <th>Name</th>
-//               <th>Email</th>
-//               <th>Phone</th>
-//               <th>Event Date</th>
-//               <th>Message</th>
-//               <th></th>
-//             </tr>
-//           </thead>
-//           <tbody>
-//             {loading && (
-//               <tr>
-//                 <td colSpan="6" className="text-center py-4">
-//                   <div className="spinner-border text-primary" />
-//                 </td>
-//               </tr>
-//             )}
-//             {error && (
-//               <tr>
-//                 <td colSpan="6" className="text-center text-danger py-4">
-//                   {error}
-//                 </td>
-//               </tr>
-//             )}
-//             {!loading &&
-//               !error &&
-//               rows.map((row) => (
-//                 <tr key={row.id}>
-//                   <td>
-//                     {row.firstName} {row.lastName}
-//                   </td>
-//                   <td>{row.email}</td>
-//                   <td>{row.phone}</td>
-//                   <td>{new Date(row.eventDate).toLocaleDateString()}</td>
-//                   <td className="text-wrap">{row.message}</td>
-//                   <td className="text-end">
-//                     <button
-//                       className="btn btn-pink"
-//                       onClick={() => setShowModal(true)}
-//                     >
-//                       Send quotation
-//                     </button>
-//                   </td>
-//                 </tr>
-//               ))}
-//             {!loading && !error && rows.length === 0 && (
-//               <tr>
-//                 <td colSpan="6" className="text-center text-muted py-4">
-//                   No leads for your vendor account.
-//                 </td>
-//               </tr>
-//             )}
-//           </tbody>
-//         </table>
-//       </div>
-//     </div>
-//   );
-// }

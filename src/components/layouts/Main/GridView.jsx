@@ -27,7 +27,10 @@ const GridView = ({ subVenuesData, handleShow }) => {
           subVenuesData.map((venue) => (
             <Col key={venue.id} xs={12} sm={6} lg={4} className="mb-4">
               <Card className="border-0 main-grid-cards rounded-4 overflow-hidden p-2 h-100">
-                <div className="position-relative" style={{ height: "240px", backgroundColor: "#f5f5f5" }}>
+                <div
+                  className="position-relative"
+                  style={{ height: "240px", backgroundColor: "#f5f5f5" }}
+                >
                   <Card.Img
                     key={`${venue.id}-${venue.image}`}
                     variant="top"
@@ -137,22 +140,40 @@ const GridView = ({ subVenuesData, handleShow }) => {
                     <div className="d-flex justify-content-between align-items-center mb-3">
                       {venue.vegPrice || venue.nonVegPrice ? (
                         <>
-                          {(venue.vegPrice !== null && venue.vegPrice !== undefined) && (
-                            <div className="d-flex flex-column">
-                              <span className="text-muted" style={{ fontSize: "12px" }}>Veg</span>
-                              <span className="fw-bold text-dark" style={{ fontSize: "16px" }}>
-                                ₹ {String(venue.vegPrice)}
-                              </span>
-                            </div>
-                          )}
-                          {(venue.nonVegPrice !== null && venue.nonVegPrice !== undefined) && (
-                            <div className="d-flex flex-column text-end">
-                              <span className="text-muted" style={{ fontSize: "12px" }}>Non-Veg</span>
-                              <span className="fw-bold text-dark" style={{ fontSize: "16px" }}>
-                                ₹ {String(venue.nonVegPrice)}
-                              </span>
-                            </div>
-                          )}
+                          {venue.vegPrice !== null &&
+                            venue.vegPrice !== undefined && (
+                              <div className="d-flex flex-column">
+                                <span
+                                  className="text-muted"
+                                  style={{ fontSize: "12px" }}
+                                >
+                                  Veg
+                                </span>
+                                <span
+                                  className="fw-bold text-dark"
+                                  style={{ fontSize: "16px" }}
+                                >
+                                  ₹ {String(venue.vegPrice)}
+                                </span>
+                              </div>
+                            )}
+                          {venue.nonVegPrice !== null &&
+                            venue.nonVegPrice !== undefined && (
+                              <div className="d-flex flex-column text-end">
+                                <span
+                                  className="text-muted"
+                                  style={{ fontSize: "12px" }}
+                                >
+                                  Non-Veg
+                                </span>
+                                <span
+                                  className="fw-bold text-dark"
+                                  style={{ fontSize: "16px" }}
+                                >
+                                  ₹ {String(venue.nonVegPrice)}
+                                </span>
+                              </div>
+                            )}
                         </>
                       ) : (
                         <div>
@@ -160,7 +181,9 @@ const GridView = ({ subVenuesData, handleShow }) => {
                             className="fw-bold text-dark"
                             style={{ fontSize: "16px" }}
                           >
-                            {venue.starting_price ? `₹ ${String(venue.starting_price)}` : "Contact for pricing"}
+                            {venue.starting_price
+                              ? `${String(venue.starting_price)}`
+                              : "Contact for pricing"}
                           </span>
                         </div>
                       )}
@@ -183,7 +206,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                       </span>
 
                       {/* 🌟 ONLY show Rooms if the value is truthy (i.e., not 0, null, or undefined) 🌟 */}
-                      {(venue.rooms !== null && venue.rooms !== undefined) && (
+                      {venue.rooms !== null && venue.rooms !== undefined && (
                         <span
                           className="badge px-3 py-2"
                           style={{

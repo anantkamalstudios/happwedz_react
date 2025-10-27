@@ -110,7 +110,7 @@ const LocationModalWithAPI = () => {
         show={show}
         onHide={() => setShow(false)}
         size="xl"
-        centered 
+        centered
         backdrop={true}
         keyboard={true}
       >
@@ -140,7 +140,7 @@ const LocationModalWithAPI = () => {
           <div
             style={{
               padding: "1rem",
-              maxHeight: "700px",
+              maxHeight: "400px",
               overflowY: "auto",
               overflowX: "hidden",
             }}
@@ -154,12 +154,12 @@ const LocationModalWithAPI = () => {
                 {filterCities.map((city) => (
                   <div
                     key={city}
-                    className="p-2 text-center"
+                    className="p-2 text-start"
                     style={{ minWidth: "150px" }}
                   >
                     <a
                       href="#"
-                      className="text-dark d-block py-2 text-decoration-none small border rounded"
+                      className="text-dark d-block text-decoration-none small"
                       onClick={() => handleCityClick(city)}
                     >
                       {city}
