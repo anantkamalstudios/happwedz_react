@@ -45,7 +45,9 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
   const openWhatsAppShare = () => {
     const targetPhone = normalizePhoneForWhatsApp(userPhone);
     const message = `Hey! Check out my e-invite: ${shareUrl}`;
-    const base = targetPhone ? `https://wa.me/${targetPhone}` : "https://wa.me/";
+    const base = targetPhone
+      ? `https://wa.me/${targetPhone}`
+      : "https://wa.me/";
     const url = `${base}?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
   };
@@ -56,9 +58,9 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
       .then(() => {
         // alert("Link copied to clipboard!");
         Swal.fire({
-          text:"Link copied to clipboard!",
-          timer:1500
-        })
+          text: "Link copied to clipboard!",
+          timer: 1500,
+        });
       })
       .catch((err) => {
         console.error("Failed to copy: ", err);
@@ -97,23 +99,27 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
   const buildCleanPayload = () => {
     const editableFields = Array.isArray(editedCard.editableFields)
       ? editedCard.editableFields.map((field) => ({
-        id: field.id,
-        label: field.label,
-        defaultText: field.defaultText ?? "",
-        color: field.color ?? "#000000",
-        fontFamily: field.fontFamily ?? "Arial",
-        fontSize: Number.isFinite(field.fontSize) ? field.fontSize : 16,
-        x: Math.round(field.x ?? 0),
-        y: Math.round(field.y ?? 0),
-      }))
+          id: field.id,
+          label: field.label,
+          defaultText: field.defaultText ?? "",
+          color: field.color ?? "#000000",
+          fontFamily: field.fontFamily ?? "Arial",
+          fontSize: Number.isFinite(field.fontSize) ? field.fontSize : 16,
+          x: Math.round(field.x ?? 0),
+          y: Math.round(field.y ?? 0),
+        }))
       : [];
 
     return {
       id: editedCard.id || editedCard._id,
       name: editedCard.name,
       cardType: editedCard.cardType,
-      backgroundUrl: stripDomain(editedCard.backgroundUrl || editedCard.background_url),
-      thumbnailUrl: stripDomain(editedCard.thumbnailUrl || editedCard.thumbnail_url),
+      backgroundUrl: stripDomain(
+        editedCard.backgroundUrl || editedCard.background_url
+      ),
+      thumbnailUrl: stripDomain(
+        editedCard.thumbnailUrl || editedCard.thumbnail_url
+      ),
       // Server expects a JSON string for editableFields
       editableFields: JSON.stringify(editableFields),
     };
@@ -130,16 +136,16 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
     } finally {
       setIsPublishing(false);
     }
-  }
+  };
 
   const handleSaveDraft = () => {
     const cleanedCard = buildCleanPayload();
     onSaveDraft?.(cleanedCard);
   };
 
-
   const selectedField = useMemo(
-    () => editedCard.editableFields?.find((f) => f.id === selectedFieldId) || null,
+    () =>
+      editedCard.editableFields?.find((f) => f.id === selectedFieldId) || null,
     [editedCard, selectedFieldId]
   );
 
@@ -223,7 +229,9 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
     pushHistory(JSON.parse(JSON.stringify(editedCard)));
     setEditedCard((prev) => ({
       ...prev,
-      editableFields: prev.editableFields.filter((f) => f.id !== selectedField.id),
+      editableFields: prev.editableFields.filter(
+        (f) => f.id !== selectedField.id
+      ),
     }));
     setSelectedFieldId(null);
     setShowSizePanel(false);
@@ -246,7 +254,7 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
     setShowFontSizeValue(true);
     clearTimeout(hideValueTimeout);
     hideValueTimeout = setTimeout(() => setShowFontSizeValue(false), 1000);
-  }
+  };
 
   return (
     <div className="einvite-editor py-4" onMouseUp={endDrag}>
@@ -257,15 +265,16 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
             <div
               className="einvite-canvas-wrapper mx-auto"
               style={{
-                width: "100%",
-                maxWidth: "500px",
+                width: "414px",
+                maxWidth: "414px",
               }}
             >
               <div
                 ref={canvasRef}
                 className="einvite-canvas-container position-relative border rounded shadow-sm"
                 style={{
-                  width: "100%",
+                  width: "414px",
+                  height: "659.288px",
                   backgroundColor: "#ffffff",
                   overflow: "hidden",
                 }}
@@ -277,9 +286,11 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                   <img
                     src={bgUrl}
                     alt="Card Background"
-                    className="w-100 h-auto d-block"
+                    className="d-block"
                     style={{
-                      objectFit: "contain",
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
                       display: "block",
                     }}
                     onError={(e) =>
@@ -290,7 +301,15 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                     }
                   />
                 ) : (
-                  <div className="text-center text-muted p-5" style={{ minHeight: "400px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div
+                    className="text-center text-muted p-5"
+                    style={{
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
                     No background image found
                   </div>
                 )}
@@ -304,7 +323,7 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                     }}
                     onMouseDown={(e) => {
                       if (isPreview || isPublished) return; // disable drag in preview/published view
-                      beginDrag(e, field)
+                      beginDrag(e, field);
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -319,34 +338,51 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                       fontSize: `${field.fontSize}px`,
                       cursor: isPreview || isPublished ? "default" : "move",
                       userSelect: "none",
-                      border: !isPreview && !isPublished && selectedFieldId === field.id ? "2px dashed #d91d6e" : "none",
-                      padding: !isPreview && !isPublished && selectedFieldId === field.id ? "4px 8px" : 0,
-                      background: !isPreview && !isPublished && selectedFieldId === field.id ? "rgba(217, 29, 110, 0.08)" : "transparent",
+                      border:
+                        !isPreview &&
+                        !isPublished &&
+                        selectedFieldId === field.id
+                          ? "2px dashed #d91d6e"
+                          : "none",
+                      padding:
+                        !isPreview &&
+                        !isPublished &&
+                        selectedFieldId === field.id
+                          ? "4px 8px"
+                          : 0,
+                      background:
+                        !isPreview &&
+                        !isPublished &&
+                        selectedFieldId === field.id
+                          ? "rgba(217, 29, 110, 0.08)"
+                          : "transparent",
                       borderRadius: "4px",
                       transition: "all 0.2s ease",
                       whiteSpace: "nowrap",
                     }}
                   >
                     {field.defaultText}
-                    {!isPreview && !isPublished && selectedFieldId === field.id && (
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-light position-absolute"
-                        style={{
-                          right: -15,
-                          top: -20,
-                          padding: "5px 5px",
-                          borderRadius: "50%",
-                          boxShadow: "0 2px 6px rgba(0,0,0,0.15)"
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete();
-                        }}
-                      >
-                        <MdDeleteOutline size={20} color="#000" />
-                      </button>
-                    )}
+                    {!isPreview &&
+                      !isPublished &&
+                      selectedFieldId === field.id && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-light position-absolute"
+                          style={{
+                            right: -15,
+                            top: -20,
+                            padding: "5px 5px",
+                            borderRadius: "50%",
+                            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete();
+                          }}
+                        >
+                          <MdDeleteOutline size={20} color="#000" />
+                        </button>
+                      )}
                   </div>
                 ))}
               </div>
@@ -354,7 +390,10 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
 
             {/* Bottom customizables */}
             {!isPreview && !isPublished && (
-              <div className="einvite-card-editor">
+              <div
+                className="einvite-card-editor mt-3"
+                style={{ width: "414px", margin: "0 auto" }}
+              >
                 {showSizePanel && selectedField && (
                   <div className="size-panel">
                     <div className="size-panel-header">
@@ -379,7 +418,9 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                         max="120"
                         value={selectedField.fontSize}
                         onChange={handleFontSizeChange}
-                        onMouseDown={() => pushHistory(JSON.parse(JSON.stringify(editedCard)))}
+                        onMouseDown={() =>
+                          pushHistory(JSON.parse(JSON.stringify(editedCard)))
+                        }
                       />
 
                       {/* {showFontSizeValue && (
@@ -389,8 +430,7 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                   </div>
                 )}
 
-
-                <div className="editor-toolbar">
+                <div className="editor-toolbar d-flex justify-content-center align-items-center gap-2 flex-wrap">
                   <button
                     type="button"
                     className="toolbar-btn"
@@ -450,7 +490,10 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
 
             {/* Preview toolbar */}
             {isPreview && !isPublished && (
-              <div className="mt-3 d-flex justify-content-end gap-2">
+              <div
+                className="mt-3 d-flex justify-content-center gap-2"
+                style={{ width: "414px", margin: "0 auto" }}
+              >
                 <button
                   type="button"
                   className="btn btn-outline-secondary me-2 fs-12"
@@ -475,7 +518,9 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                   {/* Card 1 - Share Only Free */}
                   <div className="col-12">
                     <div className="border rounded-4 shadow-sm p-4 bg-white">
-                      <h5 className="fw-bold mb-3">Share Only — <span className="primary-text">Free</span></h5>
+                      <h5 className="fw-bold mb-3">
+                        Share Only — <span className="primary-text">Free</span>
+                      </h5>
 
                       <div className="d-flex align-items-center mb-3">
                         <div className="d-flex align-items-center flex-wrap">
@@ -504,7 +549,10 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                         <li>Guests RSVP, map location & comment</li>
                         <li>No Downloadable Digital Invite</li>
                       </ul>
-                      <button className="btn btn-success d-flex align-items-center" onClick={openWhatsAppShare}>
+                      <button
+                        className="btn btn-success d-flex align-items-center"
+                        onClick={openWhatsAppShare}
+                      >
                         <FaWhatsapp className="me-2" /> Share on WhatsApp
                       </button>
                     </div>
@@ -513,11 +561,19 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                   {/* Card 2 - Share + Download */}
                   <div className="col-12">
                     <div className="border rounded-4 shadow-sm p-4 bg-white">
-                      <h5 className="fw-bold mb-3 ">Share + Download — <span className="primary-text">₹249 only</span></h5>
+                      <h5 className="fw-bold mb-3 ">
+                        Share + Download —{" "}
+                        <span className="primary-text">₹249 only</span>
+                      </h5>
 
                       <div className="d-flex align-items-center mb-3">
-                        <span className="text-primary small me-2"
-                          style={{ cursor: "pointer" }} onClick={handleCopy}>{shareUrl}</span>
+                        <span
+                          className="text-primary small me-2"
+                          style={{ cursor: "pointer" }}
+                          onClick={handleCopy}
+                        >
+                          {shareUrl}
+                        </span>
                         <FaCopy
                           role="button"
                           className="text-primary"
@@ -546,12 +602,25 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
 
       {/* Edit Modal */}
       {showEditModal && selectedField && (
-        <div className="modal fade show d-block" tabIndex="-1" role="dialog" onClick={() => setShowEditModal(false)}>
-          <div className="modal-dialog" role="document" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          role="dialog"
+          onClick={() => setShowEditModal(false)}
+        >
+          <div
+            className="modal-dialog"
+            role="document"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Edit Text</h5>
-                <button type="button" className="btn-close" onClick={() => setShowEditModal(false)}></button>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowEditModal(false)}
+                ></button>
               </div>
               <div className="modal-body">
                 <div className="mb-3">
@@ -560,8 +629,12 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                     type="text"
                     className="form-control"
                     value={selectedField.defaultText}
-                    onChange={(e) => handleFieldChange(selectedField.id, e.target.value)}
-                    onFocus={() => pushHistory(JSON.parse(JSON.stringify(editedCard)))}
+                    onChange={(e) =>
+                      handleFieldChange(selectedField.id, e.target.value)
+                    }
+                    onFocus={() =>
+                      pushHistory(JSON.parse(JSON.stringify(editedCard)))
+                    }
                   />
                 </div>
                 <div className="mb-3">
@@ -570,15 +643,29 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                     type="color"
                     className="form-control form-control-color"
                     value={selectedField.color}
-                    onChange={(e) => handleStyleChange(selectedField.id, "color", e.target.value)}
+                    onChange={(e) =>
+                      handleStyleChange(
+                        selectedField.id,
+                        "color",
+                        e.target.value
+                      )
+                    }
                   />
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowEditModal(false)}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowEditModal(false)}
+                >
                   Close
                 </button>
-                <button type="button" className="btn btn-primary" onClick={() => setShowEditModal(false)}>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => setShowEditModal(false)}
+                >
                   Save
                 </button>
               </div>
@@ -589,22 +676,43 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
 
       {/* Publish Confirm Modal */}
       {showPublishConfirm && (
-        <div className="modal fade show d-block" tabIndex="-1" role="dialog" onClick={() => !isPublishing && setShowPublishConfirm(false)}>
-          <div className="modal-dialog" role="document" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          role="dialog"
+          onClick={() => !isPublishing && setShowPublishConfirm(false)}
+        >
+          <div
+            className="modal-dialog"
+            role="document"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Confirm Publish</h5>
-                <button type="button" className="btn-close" onClick={() => !isPublishing && setShowPublishConfirm(false)}></button>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => !isPublishing && setShowPublishConfirm(false)}
+                ></button>
               </div>
-              <div className="modal-body">
-                Are you sure to publish card?
-              </div>
+              <div className="modal-body">Are you sure to publish card?</div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" disabled={isPublishing} onClick={() => setShowPublishConfirm(false)}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  disabled={isPublishing}
+                  onClick={() => setShowPublishConfirm(false)}
+                >
                   Dismiss
                 </button>
-                <button type="button" className="btn btn-primary" disabled={isPublishing} onClick={handleSave}>
-                  {isPublishing ? 'Publishing...' : 'Publish'}
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  disabled={isPublishing}
+                  onClick={handleSave}
+                >
+                  {isPublishing ? "Publishing..." : "Publish"}
                 </button>
               </div>
             </div>
