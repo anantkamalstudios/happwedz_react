@@ -266,6 +266,17 @@ const CustomerRegister = () => {
                     type="button"
                     className="position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent"
                     onClick={togglePasswordVisibility}
+                    style={{
+                      zIndex: 9999,
+                      pointerEvents: "auto",
+                      background: "transparent",
+                      border: "none",
+                      padding: 0,
+                      marginRight:"10px"
+                    }}
+                    aria-label={
+                      passwordVisible ? "Hide password" : "Show password"
+                    }
                   >
                     <i
                       className={`bi ${

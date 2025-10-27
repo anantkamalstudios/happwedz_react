@@ -1,5 +1,5 @@
 import { IMAGE_BASE_URL } from "../../../config/constants.js";
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { FaQuestion, FaRegBuilding } from "react-icons/fa";
 import {
@@ -65,6 +65,7 @@ import { GoGift } from "react-icons/go";
 import VendorMenus from "./subVendors/VendorMenus";
 import vendorServicesApi from "../../../services/api/vendorServicesApi";
 import { name } from "dayjs/locale/en.js";
+import Swal from "sweetalert2";
 
 const Storefront = () => {
   const [active, setActive] = useState("business");
@@ -75,7 +76,7 @@ const Storefront = () => {
   const [videoDrafts, setVideoDrafts] = useState([]);
   const [vendorTypeName, setVendorTypeName] = useState("");
 
-  const fetchServiceData = async () => {
+  const fetchServiceData = useCallback(async () => {
     if (vendor?.id && token) {
       try {
         // Clear localStorage for new vendor to prevent data leakage
@@ -115,49 +116,63 @@ const Storefront = () => {
             : serviceData;
           if (actualData) {
             if (actualData.media) {
-              const { gallery = [], videos = [] } = actualData.media;
-              // Normalize gallery: objects and string URLs, prefix relative paths
+              // Support both new flat-array media responses and legacy { gallery, videos } shape
+              let gallery = [];
+              let videos = [];
+
+              if (Array.isArray(actualData.media)) {
+                // media: ["/uploads/x.jpg", "https://.../y.png"]
+                gallery = actualData.media.map((item) =>
+                  typeof item === "string"
+                    ? item
+                    : item.url || item.path || null
+                );
+              } else if (
+                actualData.media &&
+                typeof actualData.media === "object"
+              ) {
+                // legacy shape: { gallery: [...], videos: [...] }
+                gallery = Array.isArray(actualData.media.gallery)
+                  ? actualData.media.gallery.map((g) =>
+                      typeof g === "string" ? g : g.url || g.path || null
+                    )
+                  : [];
+                videos = Array.isArray(actualData.media.videos)
+                  ? actualData.media.videos.map((v) =>
+                      typeof v === "string" ? v : v.url || v.path || null
+                    )
+                  : [];
+              }
+
+              // Normalize gallery and videos: prefix relative paths and build draft objects
               const photoDraftsData = Array.isArray(gallery)
                 ? gallery.map((item, index) => {
-                    let preview = "";
-                    if (typeof item === "string") {
-                      preview = item;
-                    } else {
-                      preview = item.url || item.path || "";
-                    }
-                    // Prefix relative paths
-                    if (preview.startsWith("/uploads/")) {
+                    let preview = item || "";
+                    if (preview && preview.startsWith("/uploads/"))
                       preview = IMAGE_BASE_URL + preview;
-                    }
                     return {
-                      id:
-                        typeof item === "string"
-                          ? `photo_${index}`
-                          : item.id || `photo_${index}`,
-                      title: typeof item === "string" ? "" : item.title || "",
                       preview,
                       file: null,
                     };
                   })
                 : [];
-              setPhotoDrafts(photoDraftsData);
+              setPhotoDrafts(photoDraftsData.filter((p) => p.preview));
 
               const videoDraftsData = Array.isArray(videos)
                 ? videos.map((item, index) => {
-                    let preview = item.url || item.path || "";
-                    if (preview.startsWith("/uploads/")) {
+                    let preview = item || "";
+                    if (preview && preview.startsWith("/uploads/"))
                       preview = IMAGE_BASE_URL + preview;
-                    }
                     return {
-                      id: item.id || `video_${index}`,
-                      title: item.title || "",
-                      type: item.type || "video",
+                      id: `video_${index}`,
+                      title: "",
+                      type: "video",
                       preview,
                       file: null,
                     };
                   })
                 : [];
-              setVideoDrafts(videoDraftsData);
+              setVideoDrafts(videoDraftsData.filter((v) => v.preview));
             }
             if (actualData && actualData.attributes) {
               setFormData((prev) => ({
@@ -202,6 +217,7 @@ const Storefront = () => {
                   min: "",
                   max: "",
                 },
+                PriceRange: actualData.attributes.PriceRange || "",
                 priceUnit: actualData.attributes.price_unit || "",
                 currency: actualData.attributes.currency || "INR",
                 capacity: actualData.attributes.capacity || {
@@ -215,12 +231,9 @@ const Storefront = () => {
                 cancellationPolicy:
                   actualData.attributes.cancellation_policy || "",
                 refundPolicy: actualData.attributes.refund_policy || "",
-                paymentTerms: actualData.attributes.payment_terms
-                  ? {
-                      advancePercent:
-                        actualData.attributes.payment_terms.advance,
-                    }
-                  : {},
+
+                paymentTerms: actualData.attributes.payment_terms || "",
+
                 tnc: actualData.attributes.tnc || "",
 
                 isFeatureAvailable: actualData.attributes.is_feature_available,
@@ -237,6 +250,27 @@ const Storefront = () => {
                 ctaUrl: actualData.attributes.cta_url || "",
                 ctaPhone: actualData.attributes.cta_phone || "",
                 autoReply: actualData.attributes.auto_reply || "",
+
+                // New attributes from Detailed.jsx
+                veg_price: actualData.attributes.veg_price || "",
+                non_veg_price: actualData.attributes.non_veg_price || "",
+                photo_package_price:
+                  actualData.attributes.photo_package_price || "",
+                photo_video_package_price:
+                  actualData.attributes.photo_video_package_price || "",
+                happywedz_since:
+                  actualData.attributes.happywedz_since ||
+                  actualData.attributes.HappyWedz ||
+                  "",
+                HappyWedz:
+                  actualData.attributes.HappyWedz ||
+                  actualData.attributes.happywedz_since ||
+                  "",
+                travel_info: actualData.attributes.travel_info || "",
+                offerings: actualData.attributes.offerings || "",
+                delivery_time: actualData.attributes.delivery_time || "",
+                decorPolicy: actualData.attributes.decor_policy || "",
+                area: actualData.attributes.area || "",
 
                 attributes: {
                   ...prev.attributes,
@@ -255,11 +289,11 @@ const Storefront = () => {
         console.error("Failed to fetch vendor service data:", error);
       }
     }
-  };
+  }, [vendor?.id, vendor?.vendor_type_id, token]);
 
   useEffect(() => {
     fetchServiceData();
-  }, [vendor, token]);
+  }, [fetchServiceData]);
 
   const handleSave = async () => {
     localStorage.setItem("vendorFormData", JSON.stringify(formData));
@@ -268,11 +302,6 @@ const Storefront = () => {
         const fd = buildFormData();
         await vendorServicesApi.createOrUpdateService(fd, token, formData.id);
       } catch (e) {
-        // alert(
-        //   `Failed to update. ${
-        //     typeof e === "string" ? e : e?.message || "Unknown error"
-        //   }`
-        // );
         Swal.fire({
           icon: "error",
           title: "Oops...",
@@ -281,7 +310,7 @@ const Storefront = () => {
           }`,
           timer: "3000",
           confirmButtonText: "OK",
-          confirmButtonColor:"#C31162"
+          confirmButtonColor: "#C31162",
         });
       }
     }
@@ -295,11 +324,7 @@ const Storefront = () => {
 
   // Persist lightweight drafts (no File blobs) whenever they change
   useEffect(() => {
-    const meta = photoDrafts.map(({ id, title, preview }) => ({
-      id,
-      title,
-      preview,
-    }));
+    const meta = photoDrafts.map(({ preview }) => ({ preview }));
     localStorage.setItem("photoDraftsMeta", JSON.stringify(meta));
   }, [photoDrafts]);
 
@@ -316,8 +341,11 @@ const Storefront = () => {
   const buildAttributes = () => {
     const attrs = {
       tnc: formData.tnc,
-      name:
-        formData.attributes?.name || formData.attributes?.businessName || "",
+      Name:
+        formData.attributes?.Name ||
+        formData.attributes?.businessName ||
+        formData.attributes?.vendor_name ||
+        "",
       slug: formData.attributes?.slug || "",
       tags: formData.tags || [],
       deals: formData.deals || [],
@@ -354,9 +382,10 @@ const Storefront = () => {
       price_unit: formData.priceUnit || "",
       car_parking: formData.carParking || "",
       deco_policy: formData.decoPolicy || "",
-      description: formData.attributes?.description || "",
+      about_us: formData.attributes?.about_us || "",
       is_featured: !!formData.isFeatured,
       price_range: formData.priceRange || { min: "", max: "" },
+      PriceRange: formData.PriceRange || "",
       primary_cta: formData.primaryCTA || "enquire",
       sort_weight: formData.sortWeight
         ? Number(formData.sortWeight)
@@ -369,14 +398,9 @@ const Storefront = () => {
         ? Number(formData.capacity?.min)
         : undefined,
       timing_close: formData.timing?.close || "",
-      payment_terms: formData.paymentTerms
-        ? {
-            advance: formData.paymentTerms.advancePercent
-              ? `${formData.paymentTerms.advancePercent}%`
-              : undefined,
-            balance: undefined,
-          }
-        : undefined,
+
+      payment_terms: formData.payment_terms || "",
+
       refund_policy: formData.refundPolicy || "",
       reviews_count: formData.reviewsCount
         ? Number(formData.reviewsCount)
@@ -405,6 +429,24 @@ const Storefront = () => {
       within_24hr_available:
         (formData.within24HrAvailable || "No").toString().toLowerCase() ===
         "yes",
+      // New attributes from Detailed.jsx
+      vendor_name:
+        formData.attributes?.vendor_name ||
+        formData.attributes?.Name ||
+        formData.attributes?.businessName ||
+        "",
+      vendor_type: formData.vendorTypeName || vendorTypeName || "",
+      veg_price: formData.veg_price || "",
+      non_veg_price: formData.non_veg_price || "",
+      photo_package_price: formData.photo_package_price || "",
+      photo_video_package_price: formData.photo_video_package_price || "",
+      happywedz_since: formData.happywedz_since || formData.HappyWedz || "",
+      HappyWedz: formData.HappyWedz || formData.happywedz_since || "",
+      travel_info: formData.travel_info || "",
+      offerings: formData.offerings || "",
+      delivery_time: formData.delivery_time || "",
+      decor_policy: formData.decorPolicy || "",
+      area: formData.area || "",
       // Always include menus if present in attributes
       ...(Array.isArray(formData.attributes?.menus)
         ? { menus: formData.attributes.menus }
@@ -419,21 +461,29 @@ const Storefront = () => {
   };
 
   const buildMedia = () => {
-    // Build media metadata from current drafts if available, fallback to formData
     const gallery = Array.isArray(photoDrafts)
-      ? photoDrafts.map((p) => ({
-          id: p.id,
-          title: p.title || "",
-          type: "image",
-        }))
-      : formData.media?.gallery || formData.gallery || [];
+      ? photoDrafts
+          .map((p) => {
+            const preview = p.preview || p.url || p.path || "";
+            return preview || null;
+          })
+          .filter(Boolean)
+      : Array.isArray(formData.media?.gallery)
+      ? formData.media.gallery
+          .map((g) => (typeof g === "string" ? g : g.url || g.path || null))
+          .filter(Boolean)
+      : Array.isArray(formData.gallery)
+      ? formData.gallery.filter((g) => typeof g === "string")
+      : [];
 
     const videos = Array.isArray(videoDrafts)
-      ? videoDrafts.map((v) => ({
-          id: v.id,
-          title: v.title || "",
-          type: v.type || "video",
-        }))
+      ? videoDrafts
+          .map((v) => v.preview || v.url || v.path || null)
+          .filter(Boolean)
+      : Array.isArray(formData.media?.videos)
+      ? formData.media.videos
+          .map((v) => (typeof v === "string" ? v : v.url || v.path || null))
+          .filter(Boolean)
       : [];
 
     const media = {
@@ -441,7 +491,31 @@ const Storefront = () => {
       videos,
       coverImage: formData.media?.coverImage || formData.coverImage || "",
     };
+
     return media;
+  };
+
+  // Build a flat media array (strings) suitable for sending as `media: [...]`
+  const buildMediaArray = () => {
+    const m = buildMedia();
+    const normalizeUrl = (u) => {
+      if (!u || typeof u !== "string") return null;
+      // ignore local blob/object URLs (these are client-side previews and should not be sent)
+      if (u.startsWith("blob:") || u.startsWith("data:")) return null;
+      // prefix relative uploads
+      if (u.startsWith("/uploads/")) return IMAGE_BASE_URL + u;
+      return u;
+    };
+
+    const gallery = Array.isArray(m.gallery)
+      ? m.gallery.map(normalizeUrl).filter(Boolean)
+      : [];
+    const videos = Array.isArray(m.videos)
+      ? m.videos.map(normalizeUrl).filter(Boolean)
+      : [];
+
+    // prefer images first, then videos (both as URL strings)
+    return [...gallery, ...videos];
   };
 
   const buildFormData = () => {
@@ -453,9 +527,20 @@ const Storefront = () => {
     if (formData.status) fd.append("status", formData.status);
 
     const attrs = buildAttributes();
-    const media = buildMedia();
+    // Ensure attributes do not accidentally include a media key
+    if (attrs && Object.prototype.hasOwnProperty.call(attrs, "media")) {
+      delete attrs.media;
+    }
+
+    const mediaArray = buildMediaArray();
+    // Ensure mediaArray is a plain array of strings (no blob/data URLs or objects)
+    const safeMedia = Array.isArray(mediaArray)
+      ? mediaArray.filter((u) => typeof u === "string" && u.trim())
+      : [];
+
     fd.append("attributes", JSON.stringify(attrs));
-    fd.append("media", JSON.stringify(media));
+    // Send `media` as a flat array of URL strings as requested by the frontend contract
+    fd.append("media", JSON.stringify(safeMedia));
 
     // Append media files so backend can store actual uploads
     if (Array.isArray(photoDrafts)) {
@@ -498,21 +583,45 @@ const Storefront = () => {
       localStorage.setItem("vendorFormData", JSON.stringify(formData));
       // If API returns media URLs, hydrate previews and clear File blobs
       if (created?.media) {
-        const { gallery = [], videos = [] } = created.media;
-        if (Array.isArray(gallery) && gallery.length) {
+        // Normalize created.media into an array of URLs
+        let normalized = [];
+        if (Array.isArray(created.media)) {
+          normalized = created.media.filter((x) => typeof x === "string");
+        } else if (
+          created.media.gallery &&
+          Array.isArray(created.media.gallery)
+        ) {
+          normalized = created.media.gallery.map((g) =>
+            typeof g === "string" ? g : g.url || g.path || null
+          );
+          // also include videos returned under created.media.videos if any
+          if (created.media.videos && Array.isArray(created.media.videos)) {
+            normalized.push(
+              ...created.media.videos.map((v) =>
+                typeof v === "string" ? v : v.url || v.path || null
+              )
+            );
+          }
+          normalized = normalized.filter(Boolean);
+        } else if (created.media && typeof created.media === "object") {
+          // fallback: try to extract any string URLs from the object
+          const vals = Object.values(created.media).flat();
+          normalized = vals.filter((v) => typeof v === "string");
+        }
+
+        // Hydrate previews for photos and videos from normalized array (strings)
+        if (normalized.length) {
           setPhotoDrafts((prev) =>
             prev.map((p, i) => ({
               ...p,
-              preview: gallery[i]?.url || gallery[i]?.path || p.preview,
+              preview: normalized[i] || p.preview,
               file: null,
             }))
           );
-        }
-        if (Array.isArray(videos) && videos.length) {
           setVideoDrafts((prev) =>
             prev.map((v, i) => ({
               ...v,
-              preview: videos[i]?.url || videos[i]?.path || v.preview,
+              preview: normalized[prev.length + i] || v.preview,
               file: null,
             }))
           );
@@ -531,9 +640,9 @@ const Storefront = () => {
         text: `Failed to submit. ${
           typeof e === "string" ? e : e?.message || "Unknown error"
         }`,
-        timer:"3000",
+        timer: "3000",
         confirmButtonText: "OK",
-        confirmButtonColor:"#C31162"
+        confirmButtonColor: "#C31162",
       });
     }
   };
@@ -663,6 +772,29 @@ const Storefront = () => {
             images={photoDrafts}
             onImagesChange={setPhotoDrafts}
             onShowSuccess={showSuccessModal}
+            onSave={(media) => {
+              // media: array of File or preview/url strings
+              const drafts = (media || []).map((m, index) => {
+                if (m instanceof File) {
+                  return {
+                    file: m,
+                    preview: URL.createObjectURL(m),
+                  };
+                }
+                if (typeof m === "string") {
+                  let preview = m;
+                  if (preview.startsWith("/uploads/"))
+                    preview = IMAGE_BASE_URL + preview;
+                  return { preview, file: null };
+                }
+                // fallback for objects
+                return {
+                  preview: m.preview || m.url || "",
+                  file: m.file || null,
+                };
+              });
+              setPhotoDrafts(drafts.filter((d) => d.preview));
+            }}
           />
         );
       case "videos":

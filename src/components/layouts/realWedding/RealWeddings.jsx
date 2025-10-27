@@ -81,7 +81,9 @@ const RealWeddings = ({ onPostClick }) => {
       wedding.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       wedding.city?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const city = selectedCity === "All Cities" || wedding.city === selectedCity;
+    const city =
+      selectedCity === "All Cities" ||
+      wedding.city.toLowerCase() === selectedCity.toLowerCase();
 
     const culture =
       selectedCulture === "All Cultures" || wedding.culture === selectedCulture;
@@ -369,9 +371,24 @@ const RealWeddings = ({ onPostClick }) => {
       {/* Gallery Section */}
       <section className="gallery-section py-5">
         <div className="container">
-          <p className="mb-4">
-            Showing {filteredWeddings.length} results in All Cities
-          </p>
+          <div className="d-flex justify-content-between align-items-center m-2">
+            <p className="mb-4">
+              Showing {filteredWeddings.length} results in All Cities
+            </p>
+            <div className="d-flex gap-2">
+              {(searchTerm !== "" ||
+                selectedCity !== "All Cities" ||
+                selectedCulture !== "All Cultures" ||
+                selectedTheme !== "All Themes") && (
+                <button
+                  className="btn btn-outline-secondary px-4"
+                  onClick={clearFilters}
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
+          </div>
           <div className="row justify-content-center">
             {loading ? (
               <div className="col-12 text-center py-5">
@@ -412,14 +429,6 @@ const RealWeddings = ({ onPostClick }) => {
                 <p className="text-muted mb-3">
                   No items match the selected filters.
                 </p>
-                <div className="d-flex gap-2">
-                  <button
-                    className="btn btn-outline-secondary"
-                    onClick={clearFilters}
-                  >
-                    Clear filters
-                  </button>
-                </div>
               </div>
             ) : (
               currentWeddings.map((w) => <WeddingCard key={w.id} wedding={w} />)

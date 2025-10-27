@@ -44,13 +44,22 @@ const CustomerLogin = () => {
         role: "user",
         provider: "google",
         firebaseUid: result.user.uid,
-        captchaToken: "test-captcha-token"
+        captchaToken: "test-captcha-token",
       };
 
       const registerResponse = await userApi.register(registerData);
 
-      if (registerResponse.success && registerResponse.user && registerResponse.token) {
-        dispatch(loginUser({ user: registerResponse.user, token: registerResponse.token }));
+      if (
+        registerResponse.success &&
+        registerResponse.user &&
+        registerResponse.token
+      ) {
+        dispatch(
+          loginUser({
+            user: registerResponse.user,
+            token: registerResponse.token,
+          })
+        );
         toast.success("Account created and login successful!");
         navigate(from, { replace: true });
         return;
@@ -60,11 +69,17 @@ const CustomerLogin = () => {
         const loginResponse = await userApi.login({
           email: result.user.email,
           password: "firebase-user",
-          captchaToken: "test-captcha-token"
+          captchaToken: "test-captcha-token",
         });
 
-        if (loginResponse.success && loginResponse.user && loginResponse.token) {
-          dispatch(loginUser({ user: loginResponse.user, token: loginResponse.token }));
+        if (
+          loginResponse.success &&
+          loginResponse.user &&
+          loginResponse.token
+        ) {
+          dispatch(
+            loginUser({ user: loginResponse.user, token: loginResponse.token })
+          );
           toast.success("Login successful!");
           navigate(from, { replace: true });
           return;
@@ -76,13 +91,12 @@ const CustomerLogin = () => {
         name: result.user.displayName,
         email: result.user.email,
         photoURL: result.user.photoURL,
-        provider: "google"
+        provider: "google",
       };
 
       dispatch(loginUser({ user: fallbackUser, token: firebaseToken }));
       toast.warning("Login successful! (Note: Some features may be limited)");
       navigate(from, { replace: true });
-
     } catch (error) {
       toast.error("Google login failed: " + error.message);
     } finally {
@@ -104,7 +118,7 @@ const CustomerLogin = () => {
       const payload = {
         email,
         password,
-        captchaToken: "test-captcha-token"
+        captchaToken: "test-captcha-token",
       };
 
       const response = await userApi.login(payload);
@@ -116,9 +130,17 @@ const CustomerLogin = () => {
       } else {
         const msg = response.message || "Login failed";
 
-        if (msg.toLowerCase().includes("invalid") || msg.toLowerCase().includes("wrong")) {
-          toast.error("Invalid credentials. Please check your email and password.");
-        } else if (msg.toLowerCase().includes("already exists") || msg.toLowerCase().includes("email already")) {
+        if (
+          msg.toLowerCase().includes("invalid") ||
+          msg.toLowerCase().includes("wrong")
+        ) {
+          toast.error(
+            "Invalid credentials. Please check your email and password."
+          );
+        } else if (
+          msg.toLowerCase().includes("already exists") ||
+          msg.toLowerCase().includes("email already")
+        ) {
           toast.error("Email already exists. Please use a different email.");
         } else {
           toast.error(msg);
@@ -199,8 +221,11 @@ const CustomerLogin = () => {
                   top: "50%",
                   cursor: "pointer",
                   color: "#6c757d",
-                  zIndex: 2,
+                  zIndex: 9999,
+                  pointerEvents: "auto",
                 }}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                role="button"
               >
                 {showPassword ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
               </span>

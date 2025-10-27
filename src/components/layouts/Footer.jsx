@@ -78,20 +78,30 @@ const Footer = () => {
                 <Link to="/user-dashboard/my-wedding">Start Planning</Link>
               </li>
               <li>
-                <Link to="/vendors">Search By Vendor</Link>
-              </li>
-              <li>
-                <Link to="/vendors">Search By City</Link>
-              </li>
-              <li>
-                <Link to="#" disable={true}>
-                  Top Rated Vendors
+                <Link
+                  to="/vendors"
+                  onClick={() => {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                >
+                  Search By Vendor
                 </Link>
               </li>
               <li>
-                <Link to="#" disable={true}>
-                  Destination Wedding
+                <Link
+                  to="/vendors"
+                  onClick={() => {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                >
+                  Search By City
                 </Link>
+              </li>
+              <li>
+                <Link to="/top-rated">Top Rated Vendors</Link>
+              </li>
+              <li>
+                <Link to="destination-wedding">Destination Wedding</Link>
               </li>
             </ul>
           </div>
@@ -172,17 +182,13 @@ const Footer = () => {
                 <Link to="/about-us">About HappyWedz</Link>
               </li>
               <li>
-                <Link to="#" disable={true}>
-                  Careers
-                </Link>
+                <Link to="/careers">Careers</Link>
               </li>
               <li>
                 <Link to="/contact-us">Contact Us</Link>
               </li>
               <li>
-                <Link to="#" disable={true}>
-                  Site Map
-                </Link>
+                <Link to="/sitemap">Site Map</Link>
               </li>
 
               <li>
@@ -236,20 +242,20 @@ const Footer = () => {
 
               <a
                 href="https://twitter.com"
-                aria-label="Twitter"
+                aria-label="Twitter (X)"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="social-btn"
               >
                 <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 1200 1227"
                   width="20"
                   height="20"
-                  viewBox="0 0 24 24"
                   fill="currentColor"
                   aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path d="M23.954 4.569a10 10 0 0 1-2.825.775 4.958 4.958 0 0 0 2.163-2.723 9.9 9.9 0 0 1-3.127 1.195 4.92 4.92 0 0 0-8.384 4.482A13.97 13.97 0 0 1 1.671 3.149 4.822 4.822 0 0 0 1.05 5.624a4.92 4.92 0 0 0 2.188 4.1 4.902 4.902 0 0 1-2.229-.616v.06a4.923 4.923 0 0 0 3.946 4.827 4.996 4.996 0 0 1-2.224.084 4.937 4.937 0 0 0 4.604 3.417 9.867 9.867 0 0 1-6.102 2.105c-.396 0-.788-.023-1.175-.068a13.945 13.945 0 0 0 7.548 2.212c9.057 0 14.01-7.496 14.01-13.986 0-.21-.005-.423-.015-.634a9.936 9.936 0 0 0 2.457-2.548z" />
+                  <path d="M714.163 519.284L1160.89 0H1055.8L667.137 450.887L360.017 0H0L466.92 681.821L0 1226.55H105.08L518.72 751.869L840.882 1226.55H1200L714.163 519.284ZM567.17 689.73L523.16 627.913L143.04 80.73H310.4L621.477 532.57L665.487 594.387L1067.04 1150.63H899.68L567.17 689.73Z" />
                 </svg>
               </a>
 

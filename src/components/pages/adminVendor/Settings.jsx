@@ -23,7 +23,7 @@ import {
 } from "react-icons/fi";
 
 const Settings = () => {
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState("notifications");
   const [showSuccess, setShowSuccess] = useState(false);
   const { vendor } = useSelector((state) => state.vendorAuth || {});
 
@@ -65,7 +65,7 @@ const Settings = () => {
             <Card className="settings-card">
               <Card.Body className="p-0">
                 <Nav className="flex-column settings-nav p-3">
-                  <Nav.Item>
+                  {/* <Nav.Item>
                     <Nav.Link
                       active={activeTab === "profile"}
                       onClick={() => setActiveTab("profile")}
@@ -73,7 +73,7 @@ const Settings = () => {
                       <FiUser className="me-2" />
                       Profile Settings
                     </Nav.Link>
-                  </Nav.Item>
+                  </Nav.Item> */}
                   <Nav.Item>
                     <Nav.Link
                       active={activeTab === "notifications"}

@@ -291,6 +291,7 @@ export default function LoginPopup({ isOpen, onClose }) {
                     className="custom-input"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    style={{ paddingRight: "48px" }}
                   />
                   <button
                     type="button"
@@ -305,7 +306,12 @@ export default function LoginPopup({ isOpen, onClose }) {
                       cursor: "pointer",
                       fontWeight: "600",
                       color: "#555",
+                      zIndex: 9999,
+                      pointerEvents: "auto",
                     }}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                   >
                     {!showPassword ? (
                       <FaRegEyeSlash />

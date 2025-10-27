@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import vendorsAuthApi, {
   vendorsApi,
 } from "../../../../services/api/vendorAuthApi";
+import { setVendor } from "../../../../redux/vendorAuthSlice";
 
 const BusinessDetails = ({ formData, setFormData }) => {
   const [showPasswordFields, setShowPasswordFields] = React.useState(false);
@@ -16,6 +17,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
   const [validationErrors, setValidationErrors] = React.useState({});
 
   const { vendor, token } = useSelector((state) => state.vendorAuth || {});
+  const dispatch = useDispatch();
   // Pre-fill data from Redux when the component loads
   useEffect(() => {
     if (vendor) {
@@ -123,19 +125,42 @@ const BusinessDetails = ({ formData, setFormData }) => {
 
       if (vendor?.id) {
         // Update existing vendor
+        let updatedVendor;
         // If profileImageFile is present, use FormData
         if (profileImageFile) {
           const formDataObj = new FormData();
           Object.entries(payload).forEach(([key, value]) => {
             formDataObj.append(key, value);
           });
-          await vendorsApi.updateVendor(vendor.id, formDataObj);
+          updatedVendor = await vendorsApi.updateVendor(vendor.id, formDataObj);
         } else {
-          await vendorsApi.updateVendor(vendor.id, payload);
+          updatedVendor = await vendorsApi.updateVendor(vendor.id, payload);
+        }
+
+        // Update Redux store with the updated vendor data
+        if (updatedVendor) {
+          // Merge updated data with existing vendor data
+          const mergedVendor = {
+            ...vendor,
+            ...updatedVendor,
+            ...payload,
+          };
+          dispatch(setVendor(mergedVendor));
+        } else {
+          // If API doesn't return updated data, merge from payload
+          const mergedVendor = {
+            ...vendor,
+            ...payload,
+          };
+          dispatch(setVendor(mergedVendor));
         }
       } else {
         // Register new vendor
-        await vendorsAuthApi.register(payload);
+        const newVendor = await vendorsAuthApi.register(payload);
+        // Update Redux store with new vendor data
+        if (newVendor) {
+          dispatch(setVendor(newVendor));
+        }
       }
       setSuccess("Business details saved.");
     } catch (e) {

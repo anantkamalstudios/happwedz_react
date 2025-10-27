@@ -25,11 +25,11 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
         vendor_type_id: vendor.vendor_type_id,
         attributes: {
           ...prev.attributes,
-          name: prev.attributes?.name || vendor.businessName || "",
+          Name: prev.attributes?.Name || vendor.businessName || "",
           slug: prev.attributes?.slug || "",
           tagline: prev.attributes?.tagline || "",
           subtitle: prev.attributes?.subtitle || "",
-          description: prev.attributes?.description || "",
+          about_us: prev.attributes?.about_us || "",
         },
         status: prev.status || vendor.status || "draft",
       }));
@@ -147,10 +147,10 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
           <div className="col-12 mb-3">
             <label className="form-label fw-semibold">Description</label>
             <SummernoteEditor
-              value={formData.attributes?.description || ""}
+              value={formData.attributes?.about_us || ""}
               onChange={(val) =>
                 handleAttributeChange({
-                  target: { name: "description", value: val },
+                  target: { name: "about_us", value: val },
                 })
               }
             />

@@ -46,7 +46,6 @@ const VendorLogin = () => {
 
       navigate("/vendor-dashboard/vendor-home", { replace: true });
     } catch (err) {
-      // Show only the error message from server, not status code
       const serverMsg =
         err.response?.data?.message ||
         err.message ||
@@ -145,30 +144,34 @@ const VendorLogin = () => {
                     <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
                   </svg>
                 </span>
-                <Form.Control
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="p-3"
-                />
-                <span
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{
-                    position: "absolute",
-                    right: "15px",
-                    top: "25%",
-                    cursor: "pointer",
-                    color: "#6c757d",
-                    zIndex: 2,
-                  }}
-                >
-                  {showPassword ? (
-                    <FaEye size={20} />
-                  ) : (
-                    <FaEyeSlash size={20} />
-                  )}
-                </span>
+                <div style={{ position: "relative", flex: "1 1 auto" }}>
+                  <Form.Control
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="p-3 w-100"
+                  />
+                  <span
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{
+                      position: "absolute",
+                      right: "15px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      cursor: "pointer",
+                      color: "#6c757d",
+                      zIndex: "99",
+                      pointerEvents: "auto",
+                    }}
+                  >
+                    {showPassword ? (
+                      <FaEye size={20} />
+                    ) : (
+                      <FaEyeSlash size={20} />
+                    )}
+                  </span>
+                </div>
               </div>
             </Form.Group>
 
