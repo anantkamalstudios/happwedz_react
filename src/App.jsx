@@ -18,6 +18,11 @@ import VendorLeadsPage from "./components/pages/adminVendor/VendorLeadsPage";
 import RecommandedPage from "./components/home/RecommandedPage";
 import ReviewsPage from "./components/pages/WriteReviewPage";
 import AboutUs from "./components/layouts/AboutUs";
+import DestinationWedding from "./components/pages/DestinationWedding";
+import SiteMap from "./components/pages/SiteMap";
+import TopRatedVendors from "./components/pages/TopRatedVendors";
+import CareersPage from "./components/pages/CareersPage";
+import DestinationWeddingDetailPage from "./components/pages/DestinationWeddingDetailPage";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
@@ -233,6 +238,17 @@ function App() {
               {/* Static Pages */}
               <Route path="/terms" element={<TermsCondition />} />
               <Route path="/cancellation" element={<CancellationPolicy />} />
+              <Route
+                path="/destination-wedding"
+                element={<DestinationWedding />}
+              />
+              <Route
+                path="/destination-wedding/:name"
+                element={<DestinationWeddingDetailPage />}
+              />
+              <Route path="/sitemap" element={<SiteMap />} />
+              <Route path="/top-rated" element={<TopRatedVendors />}  />
+              <Route path="/careers" element={<CareersPage />}  />
               {/* Try Flow */}
               <Route path="/try" element={<TryLanding />} />
               <Route

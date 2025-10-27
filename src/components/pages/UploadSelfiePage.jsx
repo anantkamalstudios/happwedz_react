@@ -311,6 +311,7 @@ const UploadSelfiePage = () => {
                   cursor: "pointer",
                   zIndex: 10,
                 }}
+                onClick={() => navigate(-1)}
               >
                 <FaTimes size={18} />
               </div>
