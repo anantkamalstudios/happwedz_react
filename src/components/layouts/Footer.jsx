@@ -1,7 +1,35 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import React from "react";
+import { useContext } from "react";
+import { MyContext } from "../../context/useContext";
 
 const Footer = () => {
+  const navigate = useNavigate();
+  const {
+    selectedCategory,
+    setSelectedCategory,
+    selectedCategoryName,
+    setSelectedCategoryName,
+    types,
+  } = useContext(MyContext);
+
+  const findCategoryIdByName = (categoryName) => {
+    if (!types || !Array.isArray(types)) return null;
+    const category = types.find(
+      (type) => type.name?.toLowerCase() === categoryName.toLowerCase()
+    );
+    return category ? category.id : null;
+  };
+
+  const handleCategoryClick = (categoryName) => {
+    const categoryId = findCategoryIdByName(categoryName);
+    if (categoryId) {
+      setSelectedCategory(categoryId);
+      setSelectedCategoryName(categoryName);
+      navigate("/photography");
+    }
+  };
+
   return (
     <footer
       className="footer position-relative pt-0"
@@ -47,21 +75,24 @@ const Footer = () => {
             <h6 className="footer-title">Plan Your Wedding</h6>
             <ul className="footer-list">
               <li>
-                <a href="#start-planning">Start Planning</a>
+                <Link to="/user-dashboard/my-wedding">Start Planning</Link>
               </li>
               <li>
-                <a href="#vendor-search">Search By Vendor</a>
+                <Link to="/vendors">Search By Vendor</Link>
               </li>
               <li>
-                <a href="#city-search">Search By City</a>
+                <Link to="/vendors">Search By City</Link>
               </li>
               <li>
-                <a href="#top-rated">Top Rated Vendors</a>
+                <Link to="#" disable={true}>
+                  Top Rated Vendors
+                </Link>
               </li>
               <li>
-                <a href="#destination">Destination Wedding</a>
+                <Link to="#" disable={true}>
+                  Destination Wedding
+                </Link>
               </li>
-              {/* <li><a href="#ideas">Wedding Ideas</a></li> */}
             </ul>
           </div>
 
@@ -69,42 +100,68 @@ const Footer = () => {
             <h6 className="footer-title">Inspiration & Ideas</h6>
             <ul className="footer-list">
               <li>
-                <a href="#wedding-blog">Wedding Blog</a>
+                <Link to="/blog">Wedding Blog</Link>
               </li>
               <li>
-                <a href="#inspo-gallery">Wedding Inspiration Gallery</a>
+                <Link to="/photography">Wedding Inspiration Gallery</Link>
               </li>
               <li>
-                <a href="#real-wedding">Real Wedding</a>
+                <Link to="/real-wedding">Real Wedding</Link>
               </li>
               <li>
-                <a href="#submit-wedding">Submit Your Wedding</a>
+                <Link to="/user-dashboard/real-wedding">
+                  Submit Your Wedding
+                </Link>
               </li>
-              <li>
-                <a href="#photo-gallery">Photo Gallery</a>
-              </li>
+              {/* <li>
+                <Link to="#photo-gallery">Photo Gallery</Link>
+              </li> */}
             </ul>
           </div>
 
           <div className="col-6 col-md-3">
             <h6 className="footer-title">Bridal & Groom Fashion</h6>
-            <ul className="footer-list">
+            <ul className="footer-list" style={{ color: "GrayText" }}>
               <li>
-                <a href="#bridal-wear">Bridal Wear</a>
+                <a
+                  onClick={() => handleCategoryClick("Wedding Card Designs")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Wedding Card Designs
+                </a>
               </li>
               <li>
-                <a href="#jewellery">Wedding Jewellery</a>
+                <a
+                  onClick={() => handleCategoryClick("Outfit")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Outfit
+                </a>
               </li>
               <li>
-                <a href="#makeup-hair">Bridal Makeup &amp; Hair</a>
+                <a
+                  onClick={() => handleCategoryClick("Bridal Makeup & Hair")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Bridal Makeup &amp; Hair
+                </a>
               </li>
               <li>
-                <a href="#groom-wear">Groom Wear</a>
+                <animateTransform
+                  onClick={() => handleCategoryClick("Groom Wear")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Groom Wear
+                </animateTransform>
               </li>
               <li>
-                <a href="#accessories">Wedding Accessories</a>
+                <a
+                  onClick={() => handleCategoryClick("Jewellery & Accessories")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Jewellery & Accessories
+                </a>
               </li>
-              {/* <li><a href="#mehendi">Mehendi Designs</a></li> */}
             </ul>
           </div>
 
@@ -115,18 +172,21 @@ const Footer = () => {
                 <Link to="/about-us">About HappyWedz</Link>
               </li>
               <li>
-                <a href="#careers">Careers</a>
+                <Link to="#" disable={true}>
+                  Careers
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact-us">Contact Us</Link>
+              </li>
+              <li>
+                <Link to="#" disable={true}>
+                  Site Map
+                </Link>
+              </li>
 
-              </li>
               <li>
-                <Link to="contact-us">Contact Us</Link>
-              </li>
-              <li>
-                <a href="#sitemap">Site Map</a>
-              </li>
-
-              <li>
-                <a href="#invitation-maker">Wedding Invitation Maker</a>
+                <Link to="/einvites">Wedding Invitation Maker</Link>
               </li>
             </ul>
           </div>

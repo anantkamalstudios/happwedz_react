@@ -27,7 +27,7 @@ const initialState = {
 
 const UserProfile = ({ user, token }) => {
   const userId = user?.id ?? user?._id ?? user?.user_id;
-
+  
   const [formData, setFormData] = useState(initialState);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);

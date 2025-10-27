@@ -15,6 +15,10 @@ import { addFavorite, removeFavorite } from "../../redux/favoriteSlice";
 import FavouriteListPopup from "./FavoritesProduct";
 import { AiFillHeart } from "react-icons/ai";
 import { AiOutlineHeart } from "react-icons/ai";
+import {
+  ReactCompareSlider,
+  ReactCompareSliderImage,
+} from "react-compare-slider";
 
 const SLIDER_CATEGORIES = [
   "foundation",
@@ -459,7 +463,7 @@ const FiltersPage = () => {
   return (
     <div
       // className="filters-container my-5"
-      style={{ margin: "15px auto 0 auto", maxWidth: 500 }}
+      style={{ margin: "15px auto 0 auto", maxWidth: 380 }}
     >
       <div
         className="preview-area"
@@ -477,7 +481,7 @@ const FiltersPage = () => {
           <div
             className="image-wrapper"
             style={{
-              maxHeight: "520px",
+              // maxHeight: "520px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -511,9 +515,7 @@ const FiltersPage = () => {
               />
             </div>
             <div
-              className={`d-flex gap-20 ${
-                activeBtn === "Complete Look" ? "w-50" : "w-25"
-              } justify-content-between`}
+              className="d-flex gap-20 justify-content-between"
               style={{
                 position: "absolute",
                 top: 10,
@@ -524,6 +526,7 @@ const FiltersPage = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                width: activeBtn === "Complete Look" ? "55%" : "33%",
               }}
             >
               {activeBtn === "Complete Look" && (
@@ -846,7 +849,10 @@ const FiltersPage = () => {
                 </div>
               )}
 
-              <div
+              <div style={{
+                display:"flex",
+                justifyContent:"space-between"
+              }}
                 onClick={() => {
                   setShowPopup(true);
                 }}
@@ -943,13 +949,55 @@ const FiltersPage = () => {
               }}
             >
               {isCompareMode && originalImageUrl && compareImageUrl ? (
-                <ReactCompareImage
-                  leftImage={originalImageUrl}
-                  rightImage={compareImageUrl}
-                  sliderLineColor="#ed1173"
-                  sliderLineWidth={3}
-                  handleSize={40}
-                />
+                // <ReactCompareImage
+                //   leftImage={originalImageUrl}
+                //   rightImage={compareImageUrl}
+                //   sliderLineColor="#ed1173"
+                //   sliderLineWidth={3}
+                //   handleSize={40}
+                // />
+                <div
+                  className="compare-container"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    maxWidth: "100%",
+                    borderRadius: "12px",
+                    overflow: "hidden",
+                    margin: "0",
+                  }}
+                >
+                  <ReactCompareSlider
+                    itemOne={
+                      <ReactCompareSliderImage
+                        src={originalImageUrl}
+                        alt="Image one"
+                        style={{
+                          height: "100%",
+                          width: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                    }
+                    itemTwo={
+                      <ReactCompareSliderImage
+                        src={compareImageUrl}
+                        alt="Image two"
+                        style={{
+                          height: "100%",
+                          width: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                    }
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  />
+                </div>
               ) : (
                 <div
                   style={{
@@ -1325,7 +1373,7 @@ const FiltersPage = () => {
                       whiteSpace: "nowrap",
                       width: "100%",
                       display: "block",
-                      marginBottom: "8px",
+                      // marginBottom: "80px",
                       scrollbarWidth: "thin",
                       scrollbarColor: "#ed1173 #f1f1f1",
                       padding: "0 10px",
@@ -1380,7 +1428,8 @@ const FiltersPage = () => {
                                   ) && (
                                     <button
                                       type="button"
-                                      className={`d-flex flex-column align-items-center px-2 py-2 border-0 border-end bg-white position-relative ${
+                                      // removed py-2 class from below
+                                      className={`d-flex flex-column align-items-center px-2 border-0 border-end bg-white position-relative ${
                                         expandedCatIdx === idx
                                           ? "border-primary"
                                           : ""
@@ -1495,7 +1544,7 @@ const FiltersPage = () => {
                                                   fontWeight: 500,
                                                 }}
                                               >
-                                                {p.product_name.slice(0,10)}...
+                                                {p.product_name.slice(0, 10)}...
                                               </p>
                                             </button>
                                             {expandedProductId === p.id && (
@@ -1621,7 +1670,7 @@ const FiltersPage = () => {
                   style={{
                     textAlign: "center",
                     marginTop: "0px",
-                    height: "150px",
+                    // height: "150px",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
@@ -1630,8 +1679,8 @@ const FiltersPage = () => {
                 >
                   <div
                     style={{
-                      width: "80px",
-                      height: "80px",
+                      width: "55px",
+                      height: "55px",
                       backgroundColor: "black",
                       position: "relative",
                       borderRadius: "4px",
@@ -1652,7 +1701,8 @@ const FiltersPage = () => {
                     style={{
                       color: "black",
                       fontWeight: "500",
-                      marginTop: "8px",
+                      marginTop: "5px",
+                      fontSize:"12px"
                     }}
                   >
                     Before/After
@@ -1703,7 +1753,7 @@ const FiltersPage = () => {
                               alt=""
                               style={{
                                 width: 80,
-                                height: 80,
+                                height: 60,
                                 objectFit: "cover",
                                 borderRadius: 4,
                                 display: "block",
@@ -1785,12 +1835,13 @@ const FiltersPage = () => {
                 height: "100%",
                 background: activeBtn === button ? "#C31162" : "none",
                 color: activeBtn === button ? "#fff" : "#C31162",
-                padding: "8px clamp(0.8rem, 2vw, 2.2rem)",
+                padding: "4px clamp(0.6rem, 2vw, 2rem)",
                 border: "none",
                 borderRadius: "10px",
                 fontWeight: "400",
                 cursor: "pointer",
                 transition: "all 0.3s ease",
+                fontSize: "clamp(8px, 1.5vw, 12px)",
               }}
               onClick={() => {
                 setActiveBtn(button);
