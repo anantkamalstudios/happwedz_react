@@ -2,17 +2,23 @@ import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setLocation } from "../../../redux/locationSlice";
 import "swiper/css";
 import useRegions from "../../../hooks/useRegions";
 import ShimmerRegion from "../../ui/ShimmerRegion";
 
 const MainByRegion = ({ type }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { regions, loading, error } = useRegions(
     type === "venues" ? "venues" : null
   );
 
   const handleRegionClick = (regionName) => {
+    // Set location in Redux
+    dispatch(setLocation(regionName));
+    
     const cityParam = `city=${encodeURIComponent(regionName)}`;
     if (type === "venues") {
       navigate(`/venues/all?vendorType=venues&${cityParam}`);

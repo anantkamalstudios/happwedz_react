@@ -5,6 +5,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { setLocation, clearLocation } from "../../redux/locationSlice";
 import { useNavigate } from "react-router-dom";
 import { IoCloseCircleOutline } from "react-icons/io5";
+import { CiCircleChevDown } from "react-icons/ci";
+import { RxCrossCircled } from "react-icons/rx";
+import { IoMdArrowDropdown } from "react-icons/io";
 
 const LocationModalWithAPI = () => {
   const [show, setShow] = useState(false);
@@ -18,6 +21,58 @@ const LocationModalWithAPI = () => {
   const [cities, setCities] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("India");
 
+  // Static city data structure matching your image
+  const staticCityData = {
+    topCities: [
+      "All Cities",
+      "Delhi NCR",
+      "Mumbai",
+      "Bangalore",
+      "Chennai",
+      "Pune",
+      "Lucknow",
+      "Jaipur",
+      "Kolkata",
+      "Hyderabad",
+    ],
+    popularCities: [
+      "Gurgaon",
+      "Goa",
+      "Udaipur",
+      "Jim Corbett",
+      "Indore",
+      "Agra",
+      "Kanpur",
+      "Ahmedabad",
+      "Navi Mumbai",
+      "Kochi",
+    ],
+    otherCities: [
+      "Nagpur",
+      "Dehradun",
+      "Thane",
+      "Surat",
+      "Vadodara",
+      "Raipur",
+      "Mysore",
+      "Hubli",
+      "Dhitara",
+      "Toranagallu",
+    ],
+    states: [
+      "Kerala",
+      "Rajasthan",
+      "Himachal Pradesh",
+      "Maharashtra",
+    ],
+    internationalCities: [
+      "Dubai",
+      "Thailand",
+      "Bali",
+      "Abu Dhabi",
+    ],
+  };
+
   // Fetch countries
   useEffect(() => {
     axios.get("https://restcountries.com/v3.1/all?fields=name").then((res) => {
@@ -29,7 +84,13 @@ const LocationModalWithAPI = () => {
     });
   }, []);
 
+  // Fetch cities from API when searching
   useEffect(() => {
+    if (!searchTerm.trim()) {
+      setCities([]);
+      return;
+    }
+
     if (!selectedCountry) return;
 
     axios
@@ -44,15 +105,18 @@ const LocationModalWithAPI = () => {
         }
       })
       .catch(() => setCities([]));
-  }, [selectedCountry]);
+  }, [selectedCountry, searchTerm]);
 
-  const filterCities = cities.filter((city) =>
-    city.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filterCities = searchTerm.trim()
+    ? cities.filter((city) =>
+      city.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    : [];
 
   const handleCityClick = (city) => {
     dispatch(setLocation(city));
     setShow(false);
+    setSearchTerm("");
 
     setTimeout(() => {
       navigate(`/vendors/all?city=${encodeURIComponent(city)}`);
@@ -64,59 +128,64 @@ const LocationModalWithAPI = () => {
     dispatch(clearLocation());
   };
 
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleModalClose = () => {
+    setShow(false);
+    setSearchTerm("");
+  };
+
   return (
     <>
       <div style={{ position: "relative", display: "inline-block" }}>
         <Button
           variant="outline-light"
-          className="border-danger rounded-0 text-dark pe-5"
+          className="border-danger rounded-0 text-dark d-flex align-items-center justify-content-between px-3"
           onClick={() => setShow(true)}
-          style={{ minWidth: 160 }}
+          style={{
+            minWidth: 180,
+            height: 40,
+            backgroundColor: "#fff",
+          }}
         >
+          <span className="d-flex align-items-center gap-2">
+            {selectedLocation ? (
+              <span className="fw-medium">{selectedLocation}</span>
+            ) : (
+              <span className="text-dark">Select Location</span>
+            )}
+          </span>
+
           {selectedLocation ? (
-            <span>{selectedLocation}</span>
+            <RxCrossCircled
+              size={20}
+              color="#d00"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClearLocation(e);
+              }}
+              style={{ cursor: "pointer" }}
+            />
           ) : (
-            <span>Select Location</span>
+            <IoMdArrowDropdown size={25} color="#000" />
           )}
         </Button>
-        {selectedLocation && (
-          <button
-            type="button"
-            aria-label="Clear location"
-            onClick={handleClearLocation}
-            style={{
-              position: "absolute",
-              background: "none",
-              top: 5,
-              right: 6,
-              border: "none",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              zIndex: 2,
-              padding: 1,
-            }}
-          >
-            <span style={{ fontSize: 16, color: "#d00", fontWeight: "bold" }}>
-              <IoCloseCircleOutline size={20} color="red" />
-            </span>
-          </button>
-        )}
       </div>
 
       <Modal
         show={show}
-        onHide={() => setShow(false)}
+        onHide={handleModalClose}
         size="xl"
-        centered
+        className="location-model-modal-dialog-centered"
         backdrop={true}
         keyboard={true}
+        style={{ top: "2rem" }}
       >
         <Modal.Body>
           <Form.Select
-            className="mb-3"
+            className="mb-3 d-none"
             value={selectedCountry}
             onChange={(e) => setSelectedCountry(e.target.value)}
           >
@@ -128,12 +197,11 @@ const LocationModalWithAPI = () => {
             ))}
           </Form.Select>
 
-          {/* City Search */}
           <Form.Control
             type="text"
-            placeholder="Search city..."
+            placeholder="Search City, State..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
             className="mb-4 p-3"
           />
 
@@ -141,32 +209,135 @@ const LocationModalWithAPI = () => {
             style={{
               padding: "1rem",
               maxHeight: "400px",
-              overflowY: "auto",
+              overflowY: "hidden",
               overflowX: "hidden",
             }}
           >
-            {filterCities.length === 0 ? (
-              <div className="text-center text-muted py-3">
-                No cities found.
-              </div>
-            ) : (
-              <div className="d-flex flex-wrap justify-content-center">
-                {filterCities.map((city) => (
-                  <div
-                    key={city}
-                    className="p-2 text-start"
-                    style={{ minWidth: "150px" }}
-                  >
-                    <a
-                      href="#"
-                      className="text-dark d-block text-decoration-none small"
-                      onClick={() => handleCityClick(city)}
+            {/* Show API results when searching */}
+            {searchTerm.trim() ? (
+              filterCities.length === 0 ? (
+                <div className="text-center text-muted py-3">
+                  No cities found.
+                </div>
+              ) : (
+                <div className="d-flex flex-wrap justify-content-center">
+                  {filterCities.map((city) => (
+                    <div
+                      key={city}
+                      className="p-2 text-start"
+                      style={{ minWidth: "150px" }}
                     >
-                      {city}
-                    </a>
-                  </div>
-                ))}
-              </div>
+                      <a
+                        href="#"
+                        className="text-dark d-block text-decoration-none small"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleCityClick(city);
+                        }}
+                      >
+                        {city}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              )
+            ) : (
+              /* Show static data when not searching */
+              <Row>
+                {/* Top Cities */}
+                <Col md={3} className="mb-4">
+                  <h6 className="primary-text fw-bold mb-3">Top Cities</h6>
+                  {staticCityData.topCities.map((city) => (
+                    <div key={city} className="mb-2">
+                      <a
+                        href="#"
+                        className="text-dark text-decoration-none d-block"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleCityClick(city);
+                        }}
+                      >
+                        {city}
+                      </a>
+                    </div>
+                  ))}
+                </Col>
+
+                {/* Popular Cities */}
+                <Col md={3} className="mb-4">
+                  <h6 className="primary-text fw-bold mb-3">Popular Cities</h6>
+                  {staticCityData.popularCities.map((city) => (
+                    <div key={city} className="mb-2">
+                      <a
+                        href="#"
+                        className="text-dark text-decoration-none d-block"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleCityClick(city);
+                        }}
+                      >
+                        {city}
+                      </a>
+                    </div>
+                  ))}
+                </Col>
+
+                {/* Other Cities */}
+                <Col md={3} className="mb-4">
+                  <h6 className="primary-text fw-bold mb-3">Other Cities</h6>
+                  {staticCityData.otherCities.map((city) => (
+                    <div key={city} className="mb-2">
+                      <a
+                        href="#"
+                        className="text-dark text-decoration-none d-block"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleCityClick(city);
+                        }}
+                      >
+                        {city}
+                      </a>
+                    </div>
+                  ))}
+                </Col>
+
+                {/* States & International */}
+                <Col md={3} className="mb-4">
+                  <h6 className="primary-text fw-bold mb-3">States</h6>
+                  {staticCityData.states.map((state) => (
+                    <div key={state} className="mb-2">
+                      <a
+                        href="#"
+                        className="text-dark text-decoration-none d-block"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleCityClick(state);
+                        }}
+                      >
+                        {state}
+                      </a>
+                    </div>
+                  ))}
+
+                  <h6 className="primary-text fw-bold mb-3 mt-4">
+                    International Cities
+                  </h6>
+                  {staticCityData.internationalCities.map((city) => (
+                    <div key={city} className="mb-2">
+                      <a
+                        href="#"
+                        className="text-dark text-decoration-none d-block"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleCityClick(city);
+                        }}
+                      >
+                        {city}
+                      </a>
+                    </div>
+                  ))}
+                </Col>
+              </Row>
             )}
           </div>
         </Modal.Body>

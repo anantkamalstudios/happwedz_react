@@ -10,7 +10,7 @@ const MetroCities = () => {
       .replace(/^Wedding Venues\s*/i, "")
       .trim()
       .toLowerCase();
-    navigate(`/venues/wedding-venues?city=${encodeURIComponent(city)}`);
+    navigate(`/venues/?city=${encodeURIComponent(city)}`);
   };
 
   return (

@@ -53,7 +53,7 @@ const MainSection = () => {
     setSelectedCategory,
     selectedCategoryName,
     setSelectedCategoryName,
-    displayPhotos, // Use displayPhotos from context
+    displayPhotos,
     loading: photosLoading,
   } = useContext(MyContext);
 
@@ -75,7 +75,7 @@ const MainSection = () => {
     return (
       <>
         <MainSearch />
-        <MainByRegion type="Venues" />
+        {!reduxLocation && <MainByRegion type="Venues" />}
         {loading && data.length === 0 && <LoadingState title="Venues" />}
         {!loading && data.length === 0 && (
           <EmptyState section="venues" title="Venues" />
@@ -126,7 +126,7 @@ const MainSection = () => {
     return (
       <>
         <MainSearch title="Wedding Vendor" />
-        <MainByRegion type="vendors" />
+        {!reduxLocation && <MainByRegion type="vendors" />}
         <AllCategories />
         {/* <FindMain /> */}
         <FaqsSection />
@@ -195,7 +195,7 @@ const MainSection = () => {
     return (
       <>
         <MainSearch title="Two Soul" />
-        <MainByRegion />
+        {!reduxLocation && <MainByRegion />}
         <GroomeSlider />
         <MainPhotages />
         <BrideSlider />
@@ -207,7 +207,7 @@ const MainSection = () => {
     return (
       <>
         <MainSearch title="latest Real Weddings" />
-        <MainByRegion />
+        {!reduxLocation && <MainByRegion />}
         <FindMain />
         <MainHeroSection loc={"Panjab"} />
         <MainHeroSection loc={"Karela "} />

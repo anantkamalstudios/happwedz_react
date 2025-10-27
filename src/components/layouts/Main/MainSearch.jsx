@@ -37,8 +37,29 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
       }
       return formattedVendorType;
     }
+
+    if (slug && slug.toLowerCase() === "all" && city) {
+      const pathSegments = location.pathname
+        .split("/")
+        .filter((segment) => segment);
+      if (pathSegments.length >= 2) {
+        const category = pathSegments[0];
+        const formattedCategory = category
+          .split(" ")
+          .map(
+            (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          )
+          .join(" ");
+        return `${formattedCategory} in ${city}`;
+      }
+    }
+
+    if (city && !vendorType && !slug) {
+      return `Wedding Services in ${city}`;
+    }
+
     return title || "Plan your perfect day";
-  }, [vendorType, city, title]);
+  }, [vendorType, city, title, slug, location.pathname]);
 
   const placeholders = useMemo(() => {
     const section = (title || "").toLowerCase();
@@ -126,7 +147,6 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
         searchQuery
       )}&limit=10`;
 
-      // Add city parameter if present in URL
       if (city) {
         apiUrl += `&city=${encodeURIComponent(city)}`;
       }
@@ -136,7 +156,6 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
       } else if (vendorType) {
         apiUrl += `&vendorType=${encodeURIComponent(vendorType)}`;
       } else if (slug && slug.toLowerCase() !== "all") {
-        // Only add subCategory if we have a specific slug (not "all")
         const subCategory = slug
           .replace(/-{2,}/g, " / ")
           .replace(/-/g, " ")

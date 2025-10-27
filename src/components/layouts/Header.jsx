@@ -5,6 +5,7 @@ import { RiMenuFill } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/authSlice";
 import { vendorLogout } from "../../redux/vendorAuthSlice";
+import { setLocation } from "../../redux/locationSlice";
 import { FaArrowRightLong } from "react-icons/fa6";
 import {
   FaRing,
@@ -62,7 +63,7 @@ const Header = () => {
         const bsCollapse =
           window.bootstrap.Collapse.getOrCreateInstance(collapse);
         bsCollapse.hide();
-      } catch {}
+      } catch { }
     }
   }, [location]);
 
@@ -134,12 +135,17 @@ const Header = () => {
   }, []);
 
   const [vendorCategories, setVendorCategories] = useState([]);
+  const [einviteCategories, setEinviteCategories] = useState([
+    { cardType: "wedding_einvite", title: "Wedding E-Invitations", icon: "bi-heart" },
+    { cardType: "video", title: "Video Invitations", icon: "bi-play-circle" },
+    { cardType: "save_the_date", title: "Save the Date", icon: "bi-calendar-heart" },
+  ]);
+
   useEffect(() => {
     const fetchVendorCategories = async () => {
       try {
         const response = await fetch(
           "https://happywedz.com/api/vendor-types/with-subcategories/all"
-          // "http://localhost:4000/vendor-types/with-subcategories/all"
         );
         const data = await response.json();
         setVendorCategories(Array.isArray(data) ? data : []);
@@ -318,12 +324,12 @@ const Header = () => {
                                           transition: "color 0.2s ease-in-out",
                                         }}
                                         onMouseEnter={(e) =>
-                                          (e.currentTarget.style.color =
-                                            "#e91e63")
+                                        (e.currentTarget.style.color =
+                                          "#e91e63")
                                         }
                                         onMouseLeave={(e) =>
-                                          (e.currentTarget.style.color =
-                                            "#212529")
+                                        (e.currentTarget.style.color =
+                                          "#212529")
                                         }
                                       >
                                         <span
@@ -371,12 +377,12 @@ const Header = () => {
                                           transition: "all 0.2s ease-in-out",
                                         }}
                                         onMouseEnter={(e) =>
-                                          (e.currentTarget.style.boxShadow =
-                                            "0 4px 12px rgba(0,0,0,0.08)")
+                                        (e.currentTarget.style.boxShadow =
+                                          "0 4px 12px rgba(0,0,0,0.08)")
                                         }
                                         onMouseLeave={(e) =>
-                                          (e.currentTarget.style.boxShadow =
-                                            "0 2px 4px rgba(0,0,0,0.04)")
+                                        (e.currentTarget.style.boxShadow =
+                                          "0 2px 4px rgba(0,0,0,0.04)")
                                         }
                                       >
                                         <Link
@@ -466,50 +472,91 @@ const Header = () => {
                                 </div>
                               </div>
 
-                              <div className="col-md-8 p-4">
+                              <div className="col-md-5 p-4">
                                 <h6 className="fw-bold primary-text text-uppercase mb-3">
                                   By Type
                                 </h6>
                                 <div className="row">
                                   {(venueSubcategories.length > 0
                                     ? [
-                                        ...venueSubcategories.map(
-                                          (s) => s.name
-                                        ),
-                                        "View All Venues",
-                                      ]
+                                      ...venueSubcategories.map(
+                                        (s) => s.name
+                                      ),
+                                      "View All Venues",
+                                    ]
                                     : [
-                                        "Banquet Halls",
-                                        "Marriage Garden / Lawns",
-                                        "Wedding Resorts",
-                                        "Small Function / Party Halls",
-                                        "Destination Wedding Venues",
-                                        "Kalyana Mandapams",
-                                        "4 Star & Above Wedding Hotels",
-                                        "Venue Concierge Services",
-                                        "View All Venues",
-                                      ]
+                                      "Banquet Halls",
+                                      "Marriage Garden / Lawns",
+                                      "Wedding Resorts",
+                                      "Small Function / Party Halls",
+                                      "Destination Wedding Venues",
+                                      "Kalyana Mandapams",
+                                      "4 Star & Above Wedding Hotels",
+                                      "Venue Concierge Services",
+                                      "View All Venues",
+                                    ]
                                   ).map((item, i) => {
                                     const isShowMore =
                                       item === "View All Venues";
                                     const path = isShowMore
                                       ? "/venues"
                                       : `/venues/${item
-                                          .toLowerCase()
-                                          .replace(/\s+/g, "-")
-                                          .replace(/[^a-z0-9\-]/g, "")}`;
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "-")
+                                        .replace(/[^a-z0-9\-]/g, "")}`;
                                     return (
                                       <div className="col-12 mb-2" key={i}>
                                         <Link
                                           to={path}
-                                          className={`dropdown-link d-flex align-items-center ${
-                                            isShowMore
-                                              ? "primary-text fw-bold text-decoration-underline"
-                                              : ""
-                                          }`}
+                                          className={`dropdown-link d-flex align-items-center ${isShowMore
+                                            ? "primary-text fw-bold text-decoration-underline"
+                                            : ""
+                                            }`}
                                         >
                                           <i className="bi bi-check-circle text-primary"></i>
                                           <span className="small">{item}</span>
+                                        </Link>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              <div className="col-md-3 p-4">
+                                <h6 className="fw-bold primary-text text-uppercase mb-3">
+                                  By City
+                                </h6>
+                                <div className="row">
+                                  {[
+                                    "Mumbai",
+                                    "Bangalore",
+                                    "Pune",
+                                    "Kolkata",
+                                    "Jaipur",
+                                    "Lucknow",
+                                    "Hyderabad",
+                                    "More",
+                                  ].map((city, i) => {
+                                    const isMore = city === "More";
+                                    const path = isMore
+                                      ? "/venues"
+                                      : `/venues?city=${encodeURIComponent(city)}`;
+                                    return (
+                                      <div className="col-12 mb-2" key={i}>
+                                        <Link
+                                          to={path}
+                                          onClick={() => {
+                                            if (!isMore) {
+                                              dispatch(setLocation(city));
+                                            }
+                                          }}
+                                          className={`dropdown-link d-flex align-items-center ${isMore
+                                            ? "primary-text fw-bold text-decoration-underline"
+                                            : ""
+                                            }`}
+                                        >
+                                          <i className="bi bi-geo-alt text-primary"></i>
+                                          <span className="small">{city}</span>
                                         </Link>
                                       </div>
                                     );
@@ -576,7 +623,6 @@ const Header = () => {
                         </div>
                       </li>
 
-                      {/* photo Dropdown */}
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
@@ -633,297 +679,47 @@ const Header = () => {
                         </div>
                       </li>
 
-                      {/* Real Weddings Dropdown */}
-                      {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          <Link
-                            className="nav-link dropdown-toggle text-white"
-                            to="/real-wedding"
-                            state={{ title: "real-wedding" }}
-                            id="rwDropdown"
-                            role="button"
-                          >
-                            Real Weddings
-                          </Link>
-
-                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
-                            <div className="container">
-                              <div className="row mt-5"> 
-                                <div className="col-6 col-md-3">
-                                  <h6 className="fw-semibold text-secondary mb-3">
-                                    By City
-                                  </h6>
-                                  <ul className="list-unstyled">
-                                    {[
-                                      "Mumbai",
-                                      "Bangalore",
-                                      "Pune",
-                                      "Kolkata",
-                                      "Jaipur",
-                                      "Others",
-                                    ].map((city, i) => (
-                                      <li key={i}>
-                                        <Link
-                                          to={`/real-wedding/${toSlug(city)}`}
-                                          state={{ title: city }}
-                                          className="dropdown-link small d-block mb-2"
-                                        >
-                                          <i className="bi bi-geo-alt me-2 text-muted"></i>{" "}
-                                          {city}
-                                        </Link>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div> 
-                                <div className="col-6 col-md-3">
-                                  <h6 className="fw-semibold text-secondary mb-3">
-                                    By Culture
-                                  </h6>
-                                  <ul className="list-unstyled">
-                                    {[
-                                      "Maharashtrian",
-                                      "Punjabi / Sikh",
-                                      "Bengali",
-                                      "Gujarati",
-                                      "Marwari",
-                                      "Telugu",
-                                      "Others",
-                                    ].map((culture, i) => (
-                                      <li key={i}>
-                                        <Link
-                                          to={`/by-culture/${toSlug(culture)}`}
-                                          state={{ title: culture }}
-                                          className="dropdown-link small d-block mb-2"
-                                        >
-                                          <i className="bi bi-flower1 me-2 text-muted"></i>{" "}
-                                          {culture}
-                                        </Link>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                                
-                                <div className="col-6 col-md-3">
-                                  <h6 className="fw-semibold text-secondary mb-3">
-                                    By Theme
-                                  </h6>
-                                  <ul className="list-unstyled">
-                                    {[
-                                      "Destination",
-                                      "Grand & Luxurious",
-                                      "Pocket Friendly Stunners",
-                                      "Intimate & Minimalist",
-                                      "Modern & Stylish",
-                                      "International",
-                                      "Others",
-                                    ].map((theme, i) => (
-                                      <li key={i}>
-                                        <Link
-                                          to={`/by-theme/${toSlug(theme)}`}
-                                          state={{ title: theme }}
-                                          className="dropdown-link small d-block mb-2"
-                                        >
-                                          <i className="bi bi-star me-2 text-muted"></i>{" "}
-                                          {theme}
-                                        </Link>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-
-
-                                <div className="col-12 col-md-3">
-                                  <h6 className="fw-semibold text-secondary mb-3">
-                                    Latest Real Weddings
-                                  </h6>
-                                  <div className="d-flex flex-column gap-3">
-                                    {[
-                                      {
-                                        name: "Sanya and Yuvraj",
-                                        image:
-                                          "https://image.wedmegood.com/resized/250X/uploads/images/d1e7005c97ba4762ac1e93bdbeb4e0d3realwedding/IMG_0263.jpeg?crop=229,404,1626,914",
-                                      },
-                                      {
-                                        name: "Sanya and Yuvraj (Udaipur)",
-                                        image:
-                                          "https://image.wedmegood.com/resized/250X/uploads/images/d1e7005c97ba4762ac1e93bdbeb4e0d3realwedding/IMG_0263.jpeg?crop=229,404,1626,914",
-                                      },
-                                    ].map((wedding, i) => (
-                                      <div
-                                        key={i}
-                                        className="d-flex align-items-center"
-                                      >
-                                        <Link
-                                          to={`/latest-real-weddings/${toSlug(
-                                            wedding.name
-                                          )}`}
-                                          state={{ title: wedding.name }}
-                                          className="dropdown-link small d-block mb-2"
-                                        >
-                                          <img
-                                            src={wedding.image}
-                                            alt={wedding.name}
-                                            className="me-3 rounded-3"
-                                            style={{
-                                              width: "60px",
-                                              height: "60px",
-                                              objectFit: "cover",
-                                            }}
-                                          />
-                                          <span className="small text-muted">
-                                            {wedding.name}
-                                          </span>
-                                        </Link>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </li> */}
-
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            // className="nav-link dropdown-toggle text-white"
-                            className="nav-link text-white fs-18"
+                            className="nav-link dropdown-toggle text-white fs-18"
                             to="/einvites"
                             state={{ title: "E-Invites" }}
-                            id="photoDropdown"
+                            id="einvitesDropdown"
                             role="button"
                           >
                             E-Invites
                           </Link>
 
-                          {/* <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
-                            <div className="container">
-                              <div className="row g-4">
-                                <div className="col-6 col-md-3">
-                                  <h6 className="fw-semibold text-secondary mb-3">
-                                    Wedding Invitation Maker
-                                  </h6>
-                                  <ul className="list-unstyled">
-                                    <li>
-                                      <Link
-                                        to="/e-invite-wedding-card-designs"
-                                        state={{
-                                          title: "Wedding Card Designs",
-                                        }}
-                                        className="dropdown-link small d-block mb-2"
-                                      >
-                                        <i className="bi bi-chevron-right me-2 text-muted"></i>
-                                        Wedding Card Designs
-                                      </Link>
-                                    </li>
-                                    <li>
-                                      <Link
-                                        to="/e-invite-invitation-video-templates"
-                                        state={{
-                                          title: "Invitation Video Templates",
-                                        }}
-                                        className="dropdown-link small d-block mb-2"
-                                      >
-                                        <i className="bi bi-chevron-right me-2 text-muted"></i>
-                                        Invitation Video Templates
-                                      </Link>
-                                    </li>
-                                    <li>
-                                      <Link
-                                        to="/e-invite/save-the-date-templates"
-                                        state={{
-                                          title: "Save the Date Templates",
-                                        }}
-                                        className="dropdown-link small d-block mb-2"
-                                      >
-                                        <i className="bi bi-chevron-right me-2 text-muted"></i>
-                                        Save the Date Templates
-                                      </Link>
-                                    </li>
-                                  </ul>
-                                </div>
-                              </div>
-                            </div>
-                          </div> */}
-                        </div>
-                      </li>
-
-                      {/* photo Dropdown */}
-                      {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper"> 
-                          <Link
-                            className="nav-link dropdown-toggle text-white"
-                            to="#"
-                            state={{ title: "two-soul" }}
-                            id="photoDropdown"
-                            role="button"
-                          >
-                            Two Soul
-                          </Link>
-
                           <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
                             <div className="container">
                               <div className="row g-4">
-                                {[
-                                  {
-                                    title: "Bride",
-                                    items: [
-                                      "Mehndi Artists",
-                                      "Bridal Makeup Artists",
-                                      "Makeup Salon",
-                                      "Bridal Jewellery",
-                                      "Bridal Lehenga",
-                                      "Trousseau Packing",
-                                    ],
-                                  },
-                                  {
-                                    title: "Couples",
-                                    items: ["Sherwani", "Promotions", "More"],
-                                  },
-                                ].map((section, i) => (
-                                  <div className="col-6 col-md-3" key={i}>
-                                    <h6 className="fw-bold primary-text text-uppercase mb-2">
-                                      {section.title}
-                                    </h6>
-                                    <ul className="list-unstyled">
-                                      {section.items.map((item, idx) => (
-                                        <li key={idx}>
-                                          <Link
-                                            to={`/two-soul/${toSlug(item)}`}
-                                            state={{ title: item }}
-                                            className="dropdown-link small d-block mb-2"
-                                          >
-                                            <i className="bi bi-chevron-right me-2 text-muted"></i>
-                                            {item}
-                                          </Link>
-                                        </li>
-                                      ))}
-                                    </ul>
+                                <div className="col-md-12">
+                                  <h6 className="fw-semibold mb-3 primary-text text-uppercase">
+                                    E-Invitation Categories
+                                  </h6>
+                                  <div className="row">
+                                    {einviteCategories.map((sub, j) => (
+                                      <li
+                                        key={sub.id || j}
+                                        className="mb-1"
+                                      >
+                                        <Link
+                                          to={`/einvites/category/${sub.cardType}`}
+                                          className="dropdown-link small d-block"
+                                        >
+                                          {formatName(sub.title)}
+                                        </Link>
+                                      </li>
+                                    ))}
                                   </div>
-                                ))}
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </li> */}
+                      </li>
 
-                      {/* Matrimonial Dropdown */}
-                      {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          <Link
-                            className="nav-link text-white"
-                            to="/matrimonial"
-                            state={{ title: "Matrimonial" }}
-                            id="photoDropdown"
-                            role="button"
-                          >
-                            Matrimonial
-                          </Link>
-                        </div>
-                      </li> */}
-
-                      {/* Genie Dropdown */}
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
@@ -938,7 +734,6 @@ const Header = () => {
                         </div>
                       </li>
 
-                      {/* blog Dropdown */}
                       <li className="nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link

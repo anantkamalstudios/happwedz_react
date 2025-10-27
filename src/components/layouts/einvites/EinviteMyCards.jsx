@@ -8,7 +8,7 @@ const EinviteMyCards = () => {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  console.log("c", cards);
   useEffect(() => {
     fetchUserCards();
   }, []);
@@ -16,7 +16,6 @@ const EinviteMyCards = () => {
   const fetchUserCards = async () => {
     try {
       setLoading(true);
-      // For now, we'll use getAllEinvites since we don't have user-specific endpoint
       const data = await einviteApi.getAllEinvites();
       setCards(data);
     } catch (err) {
@@ -34,7 +33,6 @@ const EinviteMyCards = () => {
         setCards(cards.filter((card) => card.id !== cardId));
       } catch (err) {
         console.error("Error deleting card:", err);
-        // alert('Failed to delete card');
         Swal.fire({
           text: "Failed to delete card",
           timer: 1500,

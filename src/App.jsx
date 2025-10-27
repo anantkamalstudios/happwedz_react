@@ -183,7 +183,6 @@ function App() {
       <LoaderProvider>
         <ToastProvider>
           <Routes>
-            {/* Template routes without MainLayout - full screen */}
             <Route path="/preview/:id" element={<TemplatePreviewPage />} />
             <Route path="/customize/:id" element={<TemplateCustomizePage />} />
             <Route
@@ -208,9 +207,7 @@ function App() {
               <Route path="/:section" element={<MainSection />} />
               <Route path="/:section/:slug" element={<SubSection />} />
               <Route path="/details/:section/:id" element={<Detailed />} />
-              {/* Recommandation */}
               <Route path="/ai-recommandation" element={<RecommandPage />} />
-              {/* Auth Pages */}
               <Route path="/customer-login" element={<CustomerLogin />} />
               <Route path="/customer-register" element={<CustomerRegister />} />
               <Route path="/contact-us" element={<ContactUs />} />
@@ -224,14 +221,11 @@ function App() {
                 path="/vendor-forgot-password"
                 element={<VendorForgotPassword />}
               />
-              {/* Blog */}
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:blogId" element={<Blog />} />
               <Route path="/blog-details" element={<BlogDetails />} />
-              {/* Static Pages */}
               <Route path="/terms" element={<TermsCondition />} />
               <Route path="/cancellation" element={<CancellationPolicy />} />
-              {/* Try Flow */}
               <Route path="/try" element={<TryLanding />} />
               <Route
                 path="/try/bride"
@@ -295,7 +289,6 @@ function App() {
                 element={<VideoEditorPage />}
               />
               <Route path="/video-demo" element={<VideoEditorDemo />} />
-              {/* E-Invite Routes */}
               <Route path="/einvites" element={<EinviteHomePage />} />
               <Route
                 path="/einvites/category/:category"
@@ -336,7 +329,6 @@ function App() {
                 path="/my-wedding-websites"
                 element={<MyWeddingWebsites />}
               />
-              {/*  User Protected Routes  */}
               <Route
                 path="/user-dashboard"
                 element={
@@ -353,7 +345,6 @@ function App() {
                   </UserPrivateRoute>
                 }
               />
-              {/*  Vendor Protected Routes  */}
               <Route
                 path="/vendor-dashboard"
                 element={
@@ -381,11 +372,9 @@ function App() {
 
               <Route path="/about-us" element={<AboutUs />} />
 
-              {/*  Fallback  */}
               <Route path="*" element={<NotFound />} />
             </Route>
 
-            {/*  Matrimonial Routes  */}
             <Route element={<MatrimonialLayout />}>
               <Route path="/matrimonial" element={<MatrimonialMain />} />
               <Route

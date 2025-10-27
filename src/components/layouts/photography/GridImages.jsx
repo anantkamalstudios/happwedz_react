@@ -75,11 +75,9 @@ const GridImages = ({ category, searchQuery, photos }) => {
                   className="card-img-top"
                   loading="lazy"
                   onError={(e) => {
-                    // If photography image fails and fallback URL exists, try blogs folder
                     if (img.fallbackUrl && e.target.src !== img.fallbackUrl) {
                       e.target.src = img.fallbackUrl;
                     } else {
-                      // If fallback also fails or doesn't exist, show placeholder
                       e.target.src =
                         "https://via.placeholder.com/300x200?text=No+Image";
                     }

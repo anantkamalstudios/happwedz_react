@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { MdExpandMore, MdExpandLess } from "react-icons/md";
 import axios from "axios";
 import herosection from "../../assets/Hero_2.jpg";
 import { categories, locations, popularSearches } from "../../data/herosection";
@@ -45,11 +47,43 @@ const RotatingWordHeadline = () => {
 
 const Herosection = () => {
   const { vendorTypes, loading } = useVendorType();
+  const reduxLocation = useSelector((state) => state.location.selectedLocation);
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedCity, setSelectedCity] = useState("");
   const [cities, setCities] = useState([]);
   const [loadingCities, setLoadingCities] = useState(false);
+  const [vendorCategories, setVendorCategories] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
   const navigate = useNavigate();
+
+  const toSlug = (text) =>
+    text?.replace(/\s+/g, "-").replace(/[^A-Za-z0-9\-]/g, "") || "";
+
+  const formatName = (name) => name.replace(/\band\b/gi, "&");
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDropdown]);
+
   useEffect(() => {
     const fetchCities = async () => {
       setLoadingCities(true);
@@ -76,10 +110,20 @@ const Herosection = () => {
   }, []);
 
   useEffect(() => {
-    if (Array.isArray(vendorTypes) && vendorTypes.length > 0) {
-      setSelectedCategory(vendorTypes[0].name);
-    }
-  }, [vendorTypes]);
+    const fetchVendorCategories = async () => {
+      try {
+        const response = await fetch(
+          "https://happywedz.com/api/vendor-types/with-subcategories/all"
+        );
+        const data = await response.json();
+        setVendorCategories(Array.isArray(data) ? data : []);
+      } catch (error) {
+        setVendorCategories([]);
+        console.error("Error fetching vendor categories:", error);
+      }
+    };
+    fetchVendorCategories();
+  }, []);
 
   return (
     <section
@@ -106,90 +150,193 @@ const Herosection = () => {
 
         <Row className="justify-content-center mt-4">
           <Col xs={12} md={10}>
-            <Form
-              className="search-form"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (selectedCategory === "All Categories") {
-                  // Navigate to /vendors without any query parameters
-                  navigate("/vendors");
-                } else if (selectedCategory) {
-                  // Navigate with vendorType and city parameters
-                  const formattedCategory = selectedCategory
-                    .toLowerCase()
-                    .split(" ")
-                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(" ");
+            {reduxLocation ? (
+              <div className="position-relative">
+                <button
+                  ref={buttonRef}
+                  className="btn-light w-100 fw-semibold d-flex justify-content-between align-items-center"
+                  type="button"
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  style={{
+                    fontSize: "16px",
+                    padding: "1rem 2rem",
+                    backgroundColor: "white",
+                    border: "2px solid #e83581",
+                    color: "#e83581",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <span className="text-start">
+                    Find Vendors in {reduxLocation}
+                  </span>
+                  {showDropdown ? (
+                    <MdExpandLess size={24} />
+                  ) : (
+                    <MdExpandMore size={24} />
+                  )}
+                </button>
 
-                  const encodedCategory = encodeURIComponent(formattedCategory);
-                  const cityParam = selectedCity
-                    ? `&city=${encodeURIComponent(selectedCity)}`
-                    : "";
-                  navigate(
-                    `/vendors/all?vendorType=${encodedCategory}${cityParam}`
-                  );
-                }
-              }}
-            >
-              <Row className="g-3">
-                <Col xs={12} md={5}>
-                  <Form.Select
-                    aria-label="Select Category"
-                    className="form-control-lg"
-                    style={{ fontSize: "14px", padding: "0.5rem 0.75rem" }}
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
+                {showDropdown && (
+                  <div
+                    ref={dropdownRef}
+                    className="vendor-dropdown-menu"
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 8px)",
+                      left: 0,
+                      right: 0,
+                      backgroundColor: "white",
+                      borderRadius: "12px",
+                      boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
+                      maxHeight: "500px",
+                      overflowY: "auto",
+                      zIndex: 1000,
+                      animation: "slideDown 0.3s ease-out",
+                    }}
                   >
-                    <option value="All Categories">All Categories</option>
-                    {Array.isArray(vendorTypes) && vendorTypes.length > 0 ? (
-                      vendorTypes.map((c) => (
-                        <option key={c.id} value={c.name}>
-                          {c.name}
+                    <div
+                      style={{
+                        padding: "1.5rem",
+                        columnCount: 4,
+                        columnGap: "1.5rem",
+                      }}
+                      className="dropdown-grid"
+                    >
+                      {vendorCategories.length > 0 &&
+                        vendorCategories.map((cat, i) => (
+                          <div
+                            key={cat.id || i}
+                            className="vendor-category-card"
+                            style={{
+                              breakInside: "avoid",
+                              marginBottom: "1.5rem",
+                            }}
+                          >
+                            <div
+                              className="fw-bold text-uppercase mb-2"
+                              style={{
+                                color: "#e83581",
+                                fontSize: "14px",
+                              }}
+                            >
+                              {cat.name}
+                            </div>
+                            {Array.isArray(cat.subcategories) &&
+                              cat.subcategories.length > 0 && (
+                                <ul
+                                  className="list-unstyled"
+                                  style={{ margin: 0 }}
+                                >
+                                  {cat.subcategories.map((sub, j) => (
+                                    <li key={sub.id || j} className="mb-1">
+                                      <Link
+                                        to={`/vendors/${toSlug(sub.name)}`}
+                                        className="dropdown-link small d-block"
+                                        style={{
+                                          fontSize: "13px",
+                                          color: "#333",
+                                          textDecoration: "none",
+                                          padding: "4px 0",
+                                          transition: "color 0.2s",
+                                        }}
+                                        onClick={() => setShowDropdown(false)}
+                                      >
+                                        {formatName(sub.name)}
+                                      </Link>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Form
+                className="search-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (selectedCategory === "All Categories") {
+                    navigate("/vendors");
+                  } else if (selectedCategory) {
+                    const formattedCategory = selectedCategory
+                      .toLowerCase()
+                      .split(" ")
+                      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                      .join(" ");
+
+                    const encodedCategory = encodeURIComponent(formattedCategory);
+                    const cityParam = selectedCity
+                      ? `&city=${encodeURIComponent(selectedCity)}`
+                      : "";
+                    navigate(
+                      `/vendors/all?vendorType=${encodedCategory}${cityParam}`
+                    );
+                  }
+                }}
+              >
+                <Row className="g-3">
+                  <Col xs={12} md={5}>
+                    <Form.Select
+                      aria-label="Select Category"
+                      className="form-control-lg"
+                      style={{ fontSize: "14px", padding: "0.5rem 0.75rem" }}
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                    >
+                      <option value="All Categories">All Categories</option>
+                      {Array.isArray(vendorTypes) && vendorTypes.length > 0 ? (
+                        vendorTypes.map((c) => (
+                          <option key={c.id} value={c.name}>
+                            {c.name}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="" disabled>
+                          {loading ? "Loading..." : "No categories found"}
                         </option>
-                      ))
-                    ) : (
-                      <option value="" disabled>
-                        {loading ? "Loading..." : "No categories found"}
-                      </option>
-                    )}
-                  </Form.Select>
-                </Col>
-                <Col xs={12} md={5}>
-                  <Form.Select
-                    aria-label="Select City"
-                    className="form-control-lg"
-                    style={{ fontSize: "14px", padding: "0.5rem 0.75rem" }}
-                    value={selectedCity}
-                    onChange={(e) => setSelectedCity(e.target.value)}
-                  >
-                    {loadingCities ? (
-                      <option value="" disabled>
-                        Loading cities...
-                      </option>
-                    ) : cities.length > 0 ? (
-                      cities.map((city) => (
-                        <option key={city} value={city}>
-                          {city}
+                      )}
+                    </Form.Select>
+                  </Col>
+                  <Col xs={12} md={5}>
+                    <Form.Select
+                      aria-label="Select City"
+                      className="form-control-lg"
+                      style={{ fontSize: "14px", padding: "0.5rem 0.75rem" }}
+                      value={selectedCity}
+                      onChange={(e) => setSelectedCity(e.target.value)}
+                    >
+                      {loadingCities ? (
+                        <option value="" disabled>
+                          Loading cities...
                         </option>
-                      ))
-                    ) : (
-                      <option value="" disabled>
-                        No cities found
-                      </option>
-                    )}
-                  </Form.Select>
-                </Col>
-                <Col xs={12} md={2} className="d-grid">
-                  <Button
-                    variant="none"
-                    className="btn-primary fw-semibold fs-12"
-                    type="submit"
-                  >
-                    FIND VENDOR
-                  </Button>
-                </Col>
-              </Row>
-            </Form>
+                      ) : cities.length > 0 ? (
+                        cities.map((city) => (
+                          <option key={city} value={city}>
+                            {city}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="" disabled>
+                          No cities found
+                        </option>
+                      )}
+                    </Form.Select>
+                  </Col>
+                  <Col xs={12} md={2} className="d-grid">
+                    <Button
+                      variant="none"
+                      className="btn-primary fw-semibold fs-12"
+                      type="submit"
+                    >
+                      FIND VENDOR
+                    </Button>
+                  </Col>
+                </Row>
+              </Form>
+            )}
           </Col>
         </Row>
 
@@ -236,6 +383,68 @@ const Herosection = () => {
         .popular-searches a:hover {
           text-decoration: underline;
         }
+        
+        /* Dropdown animation */
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+         
+        
+        .vendor-dropdown-menu::-webkit-scrollbar {
+          width: 8px;
+        }
+        
+        .vendor-dropdown-menu::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 10px;
+        }
+        
+        .vendor-dropdown-menu::-webkit-scrollbar-thumb {
+          background: #e83581;
+          border-radius: 10px;
+        }
+        
+        .vendor-dropdown-menu::-webkit-scrollbar-thumb:hover {
+          background: #d91d6e;
+        }
+        
+        .dropdown-link:hover {
+          color: #e83581 !important;
+          padding-left: 4px;
+        }
+        
+        /* Responsive grid */
+        @media (max-width: 1200px) {
+          .dropdown-grid {
+            column-count: 3 !important;
+          }
+        }
+        
+        @media (max-width: 768px) {
+          .dropdown-grid {
+            column-count: 2 !important;
+          }
+          .vendor-dropdown-menu {
+            max-height: 400px !important;
+          }
+        }
+        
+        @media (max-width: 576px) {
+          .dropdown-grid {
+            column-count: 1 !important;
+          }
+          .vendor-dropdown-menu {
+            max-height: 350px !important;
+          }
+        }
+        
         @media (max-width: 991px) {
           .hero-search {
             padding-top: 80px;

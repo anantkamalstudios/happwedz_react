@@ -18924,3 +18924,8 @@ input:checked + .slider:before {
   height: 100% !important;
   object-fit: cover !important;
 }
+
+.location-model-modal-dialog-centered {
+  display: flex;
+  align-items: center;
+}

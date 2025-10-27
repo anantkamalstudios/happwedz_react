@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import { getImageUrl, handleImageError } from "../../../utils/imageUtils";
 import { MdDeleteOutline } from "react-icons/md";
 import { IoIosClose } from "react-icons/io";
@@ -21,13 +21,111 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Refs for boundary detection
   const canvasRef = useRef(null);
   const textElementRefs = useRef({});
 
+  // Font preloading effect
+  useEffect(() => {
+    if (editedCard.editableFields && editedCard.editableFields.length > 0) {
+      const uniqueFonts = [
+        ...new Set(
+          editedCard.editableFields
+            .map((field) => field.fontFamily)
+            .filter(Boolean)
+        ),
+      ];
+
+      uniqueFonts.forEach((fontFamily) => {
+        // Create a link element to preload the font
+        const link = document.createElement("link");
+        link.rel = "preload";
+        link.as = "font";
+        link.type = "font/woff2";
+        link.crossOrigin = "anonymous";
+
+        // Try to load from Google Fonts
+        const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(
+          fontFamily
+        )}:wght@400;500;600;700&display=swap`;
+
+        // Check if font is already loaded
+        if (!document.querySelector(`link[href*="${fontFamily}"]`)) {
+          const fontLink = document.createElement("link");
+          fontLink.rel = "stylesheet";
+          fontLink.href = fontUrl;
+          document.head.appendChild(fontLink);
+        }
+      });
+    }
+  }, [editedCard.editableFields]);
+
+  // Animation timeout effect - stop animations after 2 seconds
+  useEffect(() => {
+    if (isInitialLoad) {
+      const timer = setTimeout(() => {
+        setIsInitialLoad(false);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isInitialLoad]);
+
   const pushHistory = (state) => {
     setHistory((prev) => [...prev, state]);
+  };
+
+  // Get animation style based on field index
+  const getAnimationStyle = (index) => {
+    if (!isInitialLoad) return {};
+
+    const animations = [
+      {
+        animation: "slideInFromLeft 0.8s ease-out forwards",
+        transform: "translateX(-100px)",
+        opacity: 0,
+      },
+      {
+        animation: "slideInFromRight 0.8s ease-out forwards",
+        transform: "translateX(100px)",
+        opacity: 0,
+      },
+      {
+        animation: "slideInFromTop 0.8s ease-out forwards",
+        transform: "translateY(-50px)",
+        opacity: 0,
+      },
+      {
+        animation: "slideInFromBottom 0.8s ease-out forwards",
+        transform: "translateY(50px)",
+        opacity: 0,
+      },
+      {
+        animation: "fadeInScale 0.8s ease-out forwards",
+        transform: "scale(0.8)",
+        opacity: 0,
+      },
+      {
+        animation: "typewriter 1.2s ease-out forwards",
+        transform: "translateX(0)",
+        opacity: 0,
+      },
+      {
+        animation: "bounceIn 0.8s ease-out forwards",
+        transform: "scale(0.3)",
+        opacity: 0,
+      },
+    ];
+
+    const animationIndex = index % animations.length;
+    const selectedAnimation = animations[animationIndex];
+
+    return {
+      ...selectedAnimation,
+      animationDelay: `${index * 0.1}s`,
+    };
   };
 
   const shareUrl = `${window.location.origin}/einvites/view/${card.id}`;
@@ -257,7 +355,91 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
   };
 
   return (
-    <div className="einvite-editor py-4" onMouseUp={endDrag}>
+    <div
+      className={`einvite-editor py-4 ${!isInitialLoad ? "no-animations" : ""}`}
+      onMouseUp={endDrag}
+    >
+      <style>
+        {`
+          .einvite-editor [style*="font-family"] {
+            font-display: swap !important;
+          }
+          
+          /* Animation keyframes */
+          @keyframes slideInFromLeft {
+            to {
+              transform: translateX(0);
+              opacity: 1;
+            }
+          }
+          
+          @keyframes slideInFromRight {
+            to {
+              transform: translateX(0);
+              opacity: 1;
+            }
+          }
+          
+          @keyframes slideInFromTop {
+            to {
+              transform: translateY(0);
+              opacity: 1;
+            }
+          }
+          
+          @keyframes slideInFromBottom {
+            to {
+              transform: translateY(0);
+              opacity: 1;
+            }
+          }
+          
+          @keyframes fadeInScale {
+            to {
+              transform: scale(1);
+              opacity: 1;
+            }
+          }
+          
+          @keyframes typewriter {
+            0% {
+              width: 0;
+              opacity: 0;
+            }
+            50% {
+              opacity: 1;
+            }
+            100% {
+              width: auto;
+              opacity: 1;
+            }
+          }
+          
+          @keyframes bounceIn {
+            0% {
+              transform: scale(0.3);
+              opacity: 0;
+            }
+            50% {
+              transform: scale(1.05);
+              opacity: 1;
+            }
+            70% {
+              transform: scale(0.9);
+            }
+            100% {
+              transform: scale(1);
+              opacity: 1;
+            }
+          }
+          
+          /* Disable animations after initial load */
+          .einvite-editor.no-animations * {
+            animation: none !important;
+            transition: none !important;
+          }
+        `}
+      </style>
       <div className="container-fluid">
         <div className="row justify-content-center">
           {/* Canvas Section */}
@@ -288,10 +470,12 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                     alt="Card Background"
                     className="d-block"
                     style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: "block",
+                      width: "414px",
+                      height: "659.288px",
+                      // backgroundImage: `url(${bgUrl})`,
+                      backgroundPosition: "center center",
+                      backgroundRepeat: "no-repeat",
+                      backgroundSize: "cover",
                     }}
                     onError={(e) =>
                       handleImageError(
@@ -315,76 +499,82 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                 )}
 
                 {/* Editable Text Fields */}
-                {editedCard.editableFields?.map((field) => (
-                  <div
-                    key={field.id}
-                    ref={(el) => {
-                      if (el) textElementRefs.current[field.id] = el;
-                    }}
-                    onMouseDown={(e) => {
-                      if (isPreview || isPublished) return; // disable drag in preview/published view
-                      beginDrag(e, field);
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedFieldId(field.id);
-                    }}
-                    style={{
-                      position: "absolute",
-                      left: field.x,
-                      top: field.y,
-                      color: field.color,
-                      fontFamily: field.fontFamily,
-                      fontSize: `${field.fontSize}px`,
-                      cursor: isPreview || isPublished ? "default" : "move",
-                      userSelect: "none",
-                      border:
-                        !isPreview &&
-                        !isPublished &&
-                        selectedFieldId === field.id
-                          ? "2px dashed #d91d6e"
+                {editedCard.editableFields?.map((field, index) => {
+                  const animationStyle = getAnimationStyle(index);
+                  return (
+                    <div
+                      key={field.id}
+                      ref={(el) => {
+                        if (el) textElementRefs.current[field.id] = el;
+                      }}
+                      onMouseDown={(e) => {
+                        if (isPreview || isPublished) return;
+                        beginDrag(e, field);
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedFieldId(field.id);
+                      }}
+                      style={{
+                        position: "absolute",
+                        left: field.x,
+                        top: field.y,
+                        color: field.color,
+                        fontFamily: `"${field.fontFamily}", Arial, sans-serif`,
+                        fontSize: `${field.fontSize}px`,
+                        cursor: isPreview || isPublished ? "default" : "move",
+                        userSelect: "none",
+                        border:
+                          !isPreview &&
+                          !isPublished &&
+                          selectedFieldId === field.id
+                            ? "2px dashed #d91d6e"
+                            : "none",
+                        padding:
+                          !isPreview &&
+                          !isPublished &&
+                          selectedFieldId === field.id
+                            ? "4px 8px"
+                            : 0,
+                        background:
+                          !isPreview &&
+                          !isPublished &&
+                          selectedFieldId === field.id
+                            ? "rgba(217, 29, 110, 0.08)"
+                            : "transparent",
+                        borderRadius: "4px",
+                        transition: !isInitialLoad
+                          ? "border 0.2s ease, padding 0.2s ease, background 0.2s ease"
                           : "none",
-                      padding:
-                        !isPreview &&
+                        whiteSpace: "nowrap",
+                        ...animationStyle,
+                      }}
+                    >
+                      {field.defaultText}
+                      {!isPreview &&
                         !isPublished &&
-                        selectedFieldId === field.id
-                          ? "4px 8px"
-                          : 0,
-                      background:
-                        !isPreview &&
-                        !isPublished &&
-                        selectedFieldId === field.id
-                          ? "rgba(217, 29, 110, 0.08)"
-                          : "transparent",
-                      borderRadius: "4px",
-                      transition: "all 0.2s ease",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {field.defaultText}
-                    {!isPreview &&
-                      !isPublished &&
-                      selectedFieldId === field.id && (
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-light position-absolute"
-                          style={{
-                            right: -15,
-                            top: -20,
-                            padding: "5px 5px",
-                            borderRadius: "50%",
-                            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete();
-                          }}
-                        >
-                          <MdDeleteOutline size={20} color="#000" />
-                        </button>
-                      )}
-                  </div>
-                ))}
+                        selectedFieldId === field.id && (
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-light position-absolute"
+                            style={{
+                              right: -15,
+                              top: -20,
+                              padding: "5px 5px",
+                              borderRadius: "50%",
+                              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete();
+                            }}
+                          >
+                            <MdDeleteOutline size={20} color="#000" />
+                          </button>
+                        )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
