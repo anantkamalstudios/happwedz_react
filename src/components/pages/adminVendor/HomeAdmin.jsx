@@ -78,7 +78,18 @@ const HomeAdmin = () => {
     chartData: { labels: [], leads: [], impressions: [] },
   });
   const [loadingStats, setLoadingStats] = useState(true);
-  const { token: vendorToken } = useSelector((state) => state.vendorAuth || {});
+  const [storefrontCompletion, setStorefrontCompletion] = useState(0);
+  const { token: vendorToken, vendor } = useSelector(
+    (state) => state.vendorAuth || {}
+  );
+
+  // Load storefront completion percentage from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("storefrontCompletion");
+    if (stored) {
+      setStorefrontCompletion(parseInt(stored, 10));
+    }
+  }, []);
 
   useEffect(() => {
     if (!vendorToken) {
@@ -202,6 +213,23 @@ const HomeAdmin = () => {
             impressions: prev.chartData.impressions,
           },
         }));
+
+        // 4. Fetch profile views for the vendor (if vendor id available)
+        if (vendor?.id) {
+          try {
+            const pvRes = await fetch(
+              `${API_BASE_URL}/api/vendor/profile-views/${vendor.id}`,
+              { headers: { Authorization: `Bearer ${vendorToken}` } }
+            );
+            if (pvRes && pvRes.ok) {
+              const pvData = await pvRes.json();
+              const pvCount = pvData?.vendor?.profileViews ?? 0;
+              setStats((prev) => ({ ...prev, profileViews: pvCount }));
+            }
+          } catch (pvErr) {
+            console.error("Failed to fetch profile views:", pvErr);
+          }
+        }
       } catch (err) {
         console.error("Error fetching leads count:", err);
         setLeadCount(0); // Set to 0 on error
@@ -214,7 +242,14 @@ const HomeAdmin = () => {
     // You can keep the separate fetchStats call if it provides different data like impressions.
     // For this example, I've integrated leads data processing into one call.
     // fetchStats();
-  }, [vendorToken, dateFilter, customStart, customEnd, customApplyToggle]);
+  }, [
+    vendorToken,
+    vendor?.id,
+    dateFilter,
+    customStart,
+    customEnd,
+    customApplyToggle,
+  ]);
 
   // Stats data
   const statsData = {
@@ -308,7 +343,7 @@ const HomeAdmin = () => {
   ];
 
   // Sort leads
-  const sortedLeads = [...leads].sort((a, b) => {
+  const _sortedLeads = [...leads].sort((a, b) => {
     if (sortConfig.direction === "asc") {
       return a[sortConfig.key] > b[sortConfig.key] ? 1 : -1;
     } else {
@@ -317,7 +352,7 @@ const HomeAdmin = () => {
   });
 
   // Request sort
-  const requestSort = (key) => {
+  const _requestSort = (key) => {
     let direction = "asc";
     if (sortConfig.key === key && sortConfig.direction === "asc") {
       direction = "desc";
@@ -350,7 +385,7 @@ const HomeAdmin = () => {
     ],
   };
 
-  const sourcesChartData = {
+  const _sourcesChartData = {
     labels: ["HappyWedz", "Website", "Google", "Social Media", "Referrals"],
     datasets: [
       {
@@ -407,7 +442,7 @@ const HomeAdmin = () => {
     },
   };
 
-  const sourcesChartOptions = {
+  const _sourcesChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {

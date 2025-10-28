@@ -8,43 +8,26 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { IoStorefrontOutline } from "react-icons/io5";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-const Navbar = () => {
+const Navbar = ({ storefrontCompletion }) => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("home");
+  const [storedCompletion, setStoredCompletion] = useState(0);
 
-  // const tabs = [
-  //   {
-  //     id: "home",
-  //     slug: "vendor-home",
-  //     label: "Home",
-  //     icon: <PiOfficeChairLight size={40} />,
-  //   },
-  //   {
-  //     id: "storefront",
-  //     slug: "vendor-store-front",
-  //     label: "Storefront",
-  //     icon: <IoStorefrontOutline size={40} />,
-  //   },
-  //   {
-  //     id: "enquiries",
-  //     slug: "vendor-enquiries",
-  //     label: "Enquiries",
-  //     icon: <GoMail size={40} />,
-  //   },
-  //   {
-  //     id: "reviews",
-  //     slug: "vendor-reviews",
-  //     label: "Reviews",
-  //     icon: <FaRegStar size={20} />,
-  //   },
-  //   {
-  //     id: "settings",
-  //     slug: "vendor-setting",
-  //     label: "Settings",
-  //     icon: <IoSettingsOutline size={40} />,
-  //   },
-  // ];
+  // Load completion percentage from localStorage when component mounts
+  useEffect(() => {
+    const stored = localStorage.getItem("storefrontCompletion");
+    if (stored) {
+      setStoredCompletion(parseInt(stored, 10));
+    }
+  }, []);
+
+  // Update stored completion when prop changes
+  useEffect(() => {
+    if (storefrontCompletion !== undefined) {
+      setStoredCompletion(storefrontCompletion);
+    }
+  }, [storefrontCompletion]);
 
   const tabs = [
     {
@@ -124,23 +107,97 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Right side: Go Premium */}
-          <div className="d-flex align-items-center gap-2 bg-light px-3 rounded-3">
-            <span
+          {/* Right side: Go Premium + small storefront completion (label above bar) */}
+          <div
+            className="d-flex align-items-center gap-2 bg-light px-3 rounded-3"
+            style={{ paddingTop: 8, paddingBottom: 8 }}
+          >
+            <div
               style={{
-                color: "#2c3e50",
-                fontWeight: "600",
-                fontSize: "18px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                gap: 6,
               }}
             >
-              Grow Your Business ·
-            </span>
-            <Link
-              // to="/vendor-dashboard/upgrade/vendor-plan"
-              className="btn upgrade-btn border-0 p-0"
-            >
-              Upgrade Now
-            </Link>
+              <div style={{ display: "flex", alignItems: "center", gap: 30 }}>
+                {/* Compact progress bar */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  <span
+                    style={{
+                      color: "#2c3e50",
+                      fontWeight: "600",
+                      fontSize: "14px",
+                      whiteSpace: "nowrap",
+                      marginBottom: 2,
+                    }}
+                  >
+                    Storefront Setup Progress
+                  </span>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    <div
+                      style={{
+                        width: 120,
+                        height: 8,
+                        background: "#e9ecef",
+                        borderRadius: 6,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${
+                            storefrontCompletion !== undefined
+                              ? storefrontCompletion
+                              : storedCompletion
+                          }%`,
+                          height: "100%",
+                          background: "#f12d85",
+                          transition: "width 250ms ease",
+                        }}
+                      />
+                    </div>
+                    <span
+                      style={{
+                        fontWeight: 700,
+                        fontSize: 13,
+                        color: "#2c3e50",
+                        minWidth: 36,
+                        textAlign: "right",
+                      }}
+                    >
+                      {storefrontCompletion !== undefined
+                        ? storefrontCompletion
+                        : storedCompletion}
+                      %
+                    </span>
+                  </div>
+                </div>
+                {/* <span
+                  style={{
+                    color: "#2c3e50",
+                    fontWeight: "600",
+                    fontSize: "14px",
+                    whiteSpace: "nowrap",
+                    marginBottom: 2,
+                  }}
+                >
+                  Grow Your Business
+                </span>
+                <Link className="btn upgrade-btn border-0 p-0">
+                  Upgrade Now
+                </Link> */}
+              </div>
+            </div>
           </div>
         </div>
       </div>

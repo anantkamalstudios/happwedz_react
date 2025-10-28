@@ -67,7 +67,7 @@ import vendorServicesApi from "../../../services/api/vendorServicesApi";
 import { name } from "dayjs/locale/en.js";
 import Swal from "sweetalert2";
 
-const Storefront = () => {
+const Storefront = ({ setCompletion }) => {
   const [active, setActive] = useState("business");
   const [showModal, setShowModal] = useState(false);
   const { token, vendor } = useSelector((state) => state.vendorAuth || {});
@@ -233,6 +233,7 @@ const Storefront = () => {
                 refundPolicy: actualData.attributes.refund_policy || "",
 
                 paymentTerms: actualData.attributes.payment_terms || "",
+                parking: actualData.attributes.parking || "",
 
                 tnc: actualData.attributes.tnc || "",
 
@@ -380,7 +381,7 @@ const Storefront = () => {
       dj_policy: formData.djPolicy || "",
       auto_reply: formData.autoReply || "",
       price_unit: formData.priceUnit || "",
-      car_parking: formData.carParking || "",
+      parking: formData.parking || "",
       deco_policy: formData.decoPolicy || "",
       about_us: formData.attributes?.about_us || "",
       is_featured: !!formData.isFeatured,
@@ -651,6 +652,75 @@ const Storefront = () => {
   const allowedMenuTypes = ["venues", "caterers"];
   const normalizedVendorTypeName = (vendorTypeName || "").trim().toLowerCase();
 
+  // Calculate completion percentage
+  const calculateCompletion = useCallback(() => {
+    const sections = [
+      { id: "business", fields: ["attributes.Name", "attributes.about_us"] },
+      {
+        id: "vendor-basic",
+        fields: ["attributes.vendor_name", "attributes.tagline"],
+      },
+      { id: "faq", fields: ["attributes.faq"] },
+      {
+        id: "vendor-contact",
+        fields: ["contact.contactName", "contact.phone", "contact.email"],
+      },
+      {
+        id: "vendor-location",
+        fields: ["location.city", "location.state", "location.addressLine1"],
+      },
+      { id: "photos", fields: ["photoDrafts"] },
+      { id: "videos", fields: ["videoDrafts"] },
+      {
+        id: "vendor-pricing",
+        fields: ["startingPrice", "priceRange.min", "priceRange.max"],
+      },
+      { id: "vendor-facilities", fields: ["capacity.min", "capacity.max"] },
+      { id: "promotions", fields: ["deals"] },
+      {
+        id: "vendor-policies",
+        fields: ["tnc", "cancellationPolicy", "refundPolicy"],
+      },
+      { id: "vendor-availability", fields: ["timing.open", "timing.close"] },
+      { id: "vendor-marketing", fields: ["primaryCTA"] },
+    ];
+
+    if (allowedMenuTypes.includes(normalizedVendorTypeName)) {
+      sections.push({ id: "vendor-menus", fields: ["attributes.menus"] });
+    }
+
+    let completed = 0;
+    sections.forEach((section) => {
+      const hasData = section.fields.some((field) => {
+        if (field === "photoDrafts") return photoDrafts.length > 0;
+        if (field === "videoDrafts") return videoDrafts.length > 0;
+        const keys = field.split(".");
+        let value = formData;
+        for (const key of keys) {
+          value = value?.[key];
+        }
+        return value && value !== "" && value !== null && value !== undefined;
+      });
+      if (hasData) completed++;
+    });
+
+    const percentage = Math.round((completed / sections.length) * 100);
+    return percentage;
+  }, [
+    formData,
+    photoDrafts,
+    videoDrafts,
+    normalizedVendorTypeName,
+    allowedMenuTypes,
+  ]);
+
+  useEffect(() => {
+    const percentage = calculateCompletion();
+    if (setCompletion) setCompletion(percentage);
+    // Also save to localStorage so it persists across navigation
+    localStorage.setItem("storefrontCompletion", percentage.toString());
+  }, [calculateCompletion, setCompletion]);
+
   const menuItems = [
     {
       id: "business",
@@ -774,7 +844,7 @@ const Storefront = () => {
             onShowSuccess={showSuccessModal}
             onSave={(media) => {
               // media: array of File or preview/url strings
-              const drafts = (media || []).map((m, index) => {
+              const drafts = (media || []).map((m) => {
                 if (m instanceof File) {
                   return {
                     file: m,
@@ -887,8 +957,37 @@ const Storefront = () => {
     }
   };
 
+  const completionPercentage = calculateCompletion();
+
   return (
     <div className="container py-3 store-front-navbar">
+      {/* Progress Bar */}
+      {/* <div className="mb-4">
+        <div className="d-flex justify-content-between align-items-center mb-2">
+          <h5 className="mb-0">Storefront Setup Progress</h5>
+          <span
+            className="badge"
+            style={{ backgroundColor: "#f12d85ff", color: "#fff" }}
+          >
+            {completionPercentage}% Complete
+          </span>
+        </div>
+
+        <div className="progress" style={{ height: "15px" }}>
+          <div
+            className="progress-bar"
+            role="progressbar"
+            style={{
+              width: `${completionPercentage}%`,
+              backgroundColor: "#f12d85ff",
+            }}
+            aria-valuenow={completionPercentage}
+            aria-valuemin="0"
+            aria-valuemax="100"
+          ></div>
+        </div>
+      </div> */}
+
       <div className="row">
         <div className="col-md-3 border-end">
           <Nav className="flex-column custom-sidebar">
