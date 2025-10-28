@@ -269,8 +269,8 @@ body {
   display: block;
   visibility: visible;
   opacity: 1;
-  top: 90%;
-  max-height: 60vh;
+  top: 100%;
+  max-height: fit-content;
   overflow-y: auto;
 }
 
@@ -278,7 +278,8 @@ body {
   display: none;
   position: absolute;
   top: 100%;
-  left: 0;
+  left: 50%;
+  transform: translateX(20%);
   background: #fff;
   z-index: 999;
   width: 100%;

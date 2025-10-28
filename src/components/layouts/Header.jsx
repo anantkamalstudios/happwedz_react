@@ -63,7 +63,7 @@ const Header = () => {
         const bsCollapse =
           window.bootstrap.Collapse.getOrCreateInstance(collapse);
         bsCollapse.hide();
-      } catch { }
+      } catch {}
     }
   }, [location]);
 
@@ -136,9 +136,17 @@ const Header = () => {
 
   const [vendorCategories, setVendorCategories] = useState([]);
   const [einviteCategories, setEinviteCategories] = useState([
-    { cardType: "wedding_einvite", title: "Wedding E-Invitations", icon: "bi-heart" },
+    {
+      cardType: "wedding_einvite",
+      title: "Wedding E-Invitations",
+      icon: "bi-heart",
+    },
     { cardType: "video", title: "Video Invitations", icon: "bi-play-circle" },
-    { cardType: "save_the_date", title: "Save the Date", icon: "bi-calendar-heart" },
+    {
+      cardType: "save_the_date",
+      title: "Save the Date",
+      icon: "bi-calendar-heart",
+    },
   ]);
 
   useEffect(() => {
@@ -273,7 +281,7 @@ const Header = () => {
             </div>
 
             {/* Bottom */}
-            <div className="col-12 py-2">
+            <div className="col-12 py-0">
               <div className="container" style={{ maxWidth: "1400px" }}>
                 <div className="d-flex w-100 justify-content-center">
                   <div className="col-lg-12 d-flex flex-column flex-lg-row align-items-center justify-content-between flex-nowrap">
@@ -288,13 +296,13 @@ const Header = () => {
                       </Link>
                     </div>
                     <ul className="navbar-nav d-flex flex-wrap justify-content-center gap-2">
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <button className="nav-link dropdown-toggle text-white fs-18">
                             Planning Tools
                           </button>
 
-                          <div className="dropdown-menu mega-dropdown w-100 border-0 mt-0 p-4 rounded-4 shadow-sm bg-white">
+                          <div className="dropdown-menu mega-dropdown w-75 border-0 mt-0 p-4 rounded-0 shadow-sm bg-white">
                             <div className="container">
                               <div className="row g-4">
                                 {/* LEFT SECTION */}
@@ -324,12 +332,12 @@ const Header = () => {
                                           transition: "color 0.2s ease-in-out",
                                         }}
                                         onMouseEnter={(e) =>
-                                        (e.currentTarget.style.color =
-                                          "#e91e63")
+                                          (e.currentTarget.style.color =
+                                            "#e91e63")
                                         }
                                         onMouseLeave={(e) =>
-                                        (e.currentTarget.style.color =
-                                          "#212529")
+                                          (e.currentTarget.style.color =
+                                            "#212529")
                                         }
                                       >
                                         <span
@@ -377,12 +385,12 @@ const Header = () => {
                                           transition: "all 0.2s ease-in-out",
                                         }}
                                         onMouseEnter={(e) =>
-                                        (e.currentTarget.style.boxShadow =
-                                          "0 4px 12px rgba(0,0,0,0.08)")
+                                          (e.currentTarget.style.boxShadow =
+                                            "0 4px 12px rgba(0,0,0,0.08)")
                                         }
                                         onMouseLeave={(e) =>
-                                        (e.currentTarget.style.boxShadow =
-                                          "0 2px 4px rgba(0,0,0,0.04)")
+                                          (e.currentTarget.style.boxShadow =
+                                            "0 2px 4px rgba(0,0,0,0.04)")
                                         }
                                       >
                                         <Link
@@ -426,7 +434,7 @@ const Header = () => {
                         </div>
                       </li>
 
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                         <Link
                           // to={targetURL}
                           to="/venues"
@@ -435,7 +443,7 @@ const Header = () => {
                           Venues
                         </Link>
 
-                        <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 rounded-4">
+                        <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 rounded-0">
                           <div className="container-fluid">
                             <div className="row g-4">
                               <div className="col-md-4 d-none d-md-block">
@@ -479,39 +487,40 @@ const Header = () => {
                                 <div className="row">
                                   {(venueSubcategories.length > 0
                                     ? [
-                                      ...venueSubcategories.map(
-                                        (s) => s.name
-                                      ),
-                                      "View All Venues",
-                                    ]
+                                        ...venueSubcategories.map(
+                                          (s) => s.name
+                                        ),
+                                        "View All Venues",
+                                      ]
                                     : [
-                                      "Banquet Halls",
-                                      "Marriage Garden / Lawns",
-                                      "Wedding Resorts",
-                                      "Small Function / Party Halls",
-                                      "Destination Wedding Venues",
-                                      "Kalyana Mandapams",
-                                      "4 Star & Above Wedding Hotels",
-                                      "Venue Concierge Services",
-                                      "View All Venues",
-                                    ]
+                                        "Banquet Halls",
+                                        "Marriage Garden / Lawns",
+                                        "Wedding Resorts",
+                                        "Small Function / Party Halls",
+                                        "Destination Wedding Venues",
+                                        "Kalyana Mandapams",
+                                        "4 Star & Above Wedding Hotels",
+                                        "Venue Concierge Services",
+                                        "View All Venues",
+                                      ]
                                   ).map((item, i) => {
                                     const isShowMore =
                                       item === "View All Venues";
                                     const path = isShowMore
                                       ? "/venues"
                                       : `/venues/${item
-                                        .toLowerCase()
-                                        .replace(/\s+/g, "-")
-                                        .replace(/[^a-z0-9\-]/g, "")}`;
+                                          .toLowerCase()
+                                          .replace(/\s+/g, "-")
+                                          .replace(/[^a-z0-9\-]/g, "")}`;
                                     return (
                                       <div className="col-12 mb-2" key={i}>
                                         <Link
                                           to={path}
-                                          className={`dropdown-link d-flex align-items-center ${isShowMore
-                                            ? "primary-text fw-bold text-decoration-underline"
-                                            : ""
-                                            }`}
+                                          className={`dropdown-link d-flex align-items-center ${
+                                            isShowMore
+                                              ? "primary-text fw-bold text-decoration-underline"
+                                              : ""
+                                          }`}
                                         >
                                           <i className="bi bi-check-circle text-primary"></i>
                                           <span className="small">{item}</span>
@@ -540,7 +549,9 @@ const Header = () => {
                                     const isMore = city === "More";
                                     const path = isMore
                                       ? "/venues"
-                                      : `/venues?city=${encodeURIComponent(city)}`;
+                                      : `/venues?city=${encodeURIComponent(
+                                          city
+                                        )}`;
                                     return (
                                       <div className="col-12 mb-2" key={i}>
                                         <Link
@@ -550,10 +561,11 @@ const Header = () => {
                                               dispatch(setLocation(city));
                                             }
                                           }}
-                                          className={`dropdown-link d-flex align-items-center ${isMore
-                                            ? "primary-text fw-bold text-decoration-underline"
-                                            : ""
-                                            }`}
+                                          className={`dropdown-link d-flex align-items-center ${
+                                            isMore
+                                              ? "primary-text fw-bold text-decoration-underline"
+                                              : ""
+                                          }`}
                                         >
                                           <i className="bi bi-geo-alt text-primary"></i>
                                           <span className="small">{city}</span>
@@ -569,7 +581,7 @@ const Header = () => {
                       </li>
 
                       {/* Vendors Dropdown */}
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
                             to="/vendors"
@@ -577,7 +589,7 @@ const Header = () => {
                           >
                             Vendors
                           </Link>
-                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                          <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0">
                             <div className="container">
                               <div
                                 style={{
@@ -623,7 +635,7 @@ const Header = () => {
                         </div>
                       </li>
 
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
                             className="nav-link dropdown-toggle text-white fs-18"
@@ -633,7 +645,7 @@ const Header = () => {
                           >
                             Photography
                           </Link>
-                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                          <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0">
                             <div className="container">
                               <div
                                 style={{
@@ -679,7 +691,7 @@ const Header = () => {
                         </div>
                       </li>
 
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
                             className="nav-link dropdown-toggle text-white fs-18"
@@ -691,7 +703,7 @@ const Header = () => {
                             E-Invites
                           </Link>
 
-                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                          <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0">
                             <div className="container">
                               <div className="row g-4">
                                 <div className="col-md-12">
@@ -700,10 +712,7 @@ const Header = () => {
                                   </h6>
                                   <div className="row">
                                     {einviteCategories.map((sub, j) => (
-                                      <li
-                                        key={sub.id || j}
-                                        className="mb-1"
-                                      >
+                                      <li key={sub.id || j} className="mb-1">
                                         <Link
                                           to={`/einvites/category/${sub.cardType}`}
                                           className="dropdown-link small d-block"
@@ -720,7 +729,7 @@ const Header = () => {
                         </div>
                       </li>
 
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
                             className="nav-link text-white fs-18"
@@ -734,7 +743,7 @@ const Header = () => {
                         </div>
                       </li>
 
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
                             className="nav-link text-white fs-18"
@@ -748,7 +757,7 @@ const Header = () => {
                         </div>
                       </li>
 
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
                             className="nav-link text-white fs-18"
@@ -760,7 +769,7 @@ const Header = () => {
                             Real Wedding
                           </Link>
 
-                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                          <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0">
                             <div className="container">
                               <div className="row">
                                 <div className="col-12 col-md-4">
@@ -898,7 +907,7 @@ const Header = () => {
 
                       {/* Login Dropdown */}
                       {isUserLoggedIn ? (
-                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <Link
                               to="/user-dashboard"
@@ -909,7 +918,7 @@ const Header = () => {
                           </div>
                         </li>
                       ) : isVendorLoggedIn ? (
-                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <Link
                               to="/vendor-dashboard"
@@ -920,7 +929,7 @@ const Header = () => {
                           </div>
                         </li>
                       ) : (
-                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <Link
                               to="/customer-login"
@@ -933,7 +942,7 @@ const Header = () => {
                       )}
 
                       {isLoggedIn && (
-                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <button
                               onClick={handleLogout}
