@@ -199,7 +199,7 @@ const TryLanding = () => {
                       role="button"
                       onClick={() => {
                         localStorage.removeItem("userInfo");
-                        navigate("/try/groome");
+                        navigate("/try/groom");
                         dispatch(setRoleType({ role: "groom" }));
                         const userInfo = { role: "groom" };
                         localStorage.setItem(

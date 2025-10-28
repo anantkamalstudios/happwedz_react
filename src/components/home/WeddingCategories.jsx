@@ -124,8 +124,34 @@ const WeddingCategories = ({ onSelect }) => {
 
                     {remaining > 0 && (
                       <span className="text-decoration-underline primary-text px-3 py-2 fs-12 text-end">
-                        +{remaining} more
+                        {!isExpanded ? `+${remaining} More` : "Hide"}
                       </span>
+                    )}
+
+                    {isExpanded && (
+                      <div className="wcg-subcats mt-3">
+                        <div className="d-flex flex-wrap justify-content-start gap-2">
+                          {cat.items.map((it, idx) => (
+                            <div key={idx} className="">
+                              <Link
+                                to={
+                                  cat.title.toLowerCase() === "venues"
+                                    ? `/venues/${it
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "-")}`
+                                    : `/vendor/${it
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "-")}`
+                                }
+                                className="badge rounded-0 primary-light-bg text-dark fs-12 px-3 py-2"
+                                style={{textDecoration:"none"}}
+                              >
+                                {it}
+                              </Link>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
 
@@ -145,7 +171,7 @@ const WeddingCategories = ({ onSelect }) => {
                       Explore {cat.title}
                     </button>
                   </div>
-
+                  {/* 
                   {isExpanded && (
                     <div className="wcg-subcats mt-3">
                       <div className="row g-2">
@@ -169,7 +195,7 @@ const WeddingCategories = ({ onSelect }) => {
                         ))}
                       </div>
                     </div>
-                  )}
+                  )} */}
                 </div>
               </div>
             </div>

@@ -253,7 +253,7 @@ function App() {
                 }
               />
               <Route
-                path="/try/groome"
+                path="/try/groom"
                 element={
                   <UserPrivateRoute>
                     <GroomeMakeupChoose />

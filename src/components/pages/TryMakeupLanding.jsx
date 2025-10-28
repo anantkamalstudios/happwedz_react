@@ -161,6 +161,8 @@ const TryMakeupLanding = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(true);
 
+  const role = JSON.parse(localStorage.getItem("userInfo"))?.role;
+
   const handleClose = () => {
     setOpen(false);
     navigate(-1);

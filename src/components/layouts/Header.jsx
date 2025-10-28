@@ -30,6 +30,58 @@ const Header = () => {
   const [selectedCity, setSelectedCity] = useState(reduxLocation);
   const navigate = useNavigate();
   const formatName = (name) => name.replace(/\band\b/gi, "&");
+  const weddingCategories = [
+    "South Indian wedding",
+    "Real Brides Reveal",
+    "Bridal Buys",
+    "Real Wedding",
+    "Mehendi Ideas",
+    "Indian Wedding Ideas",
+  ];
+  const weddingTopics = [
+    "Bridal Makeup",
+    "Honeymoon Travel",
+    "Wedding Songs and Videos",
+    "Bridal Hairstyles",
+    "Wedding Decor Ideas",
+    "Bridal Style Advice",
+    "Wedding Gifts and Favors",
+    "Budget Weddings",
+    "More",
+  ];
+
+  const weddingIdeas = [
+    "Wedding Songs",
+    "Best Bridal Entry Songs",
+    "Chandni Chowk Lehengas",
+    "Best Bridal Hairstyles",
+    "Bridal Mehendi Designs",
+    "Best Groom Entry Songs",
+    "Wittiest Wedding Hashtags",
+    "2025 Marriage Dates",
+    "Latest Sabyasachi Lehengas",
+    "Bridal Blouse Designs",
+  ];
+
+  const byCity = ["Mumbai", "Bangalore", "Pune", "Kolkata", "Jaipur", "Others"];
+  const byCulture = [
+    "Maharashtrian",
+    "Punjabi / Sikh",
+    "Bengali",
+    "Gujarati",
+    "Marwari",
+    "Telugu",
+    "Others",
+  ];
+  const byTheme = [
+    "Destination",
+    "Grand & Luxurious",
+    "Pocket Friendly Stunners",
+    "Intimate & Minimalist",
+    "Modern & Stylish",
+    "International",
+    "Others",
+  ];
 
   const handleLogout = () => {
     if (isVendorLoggedIn) {
@@ -63,7 +115,7 @@ const Header = () => {
         const bsCollapse =
           window.bootstrap.Collapse.getOrCreateInstance(collapse);
         bsCollapse.hide();
-      } catch { }
+      } catch {}
     }
   }, [location]);
 
@@ -136,9 +188,17 @@ const Header = () => {
 
   const [vendorCategories, setVendorCategories] = useState([]);
   const [einviteCategories, setEinviteCategories] = useState([
-    { cardType: "wedding_einvite", title: "Wedding E-Invitations", icon: "bi-heart" },
+    {
+      cardType: "wedding_einvite",
+      title: "Wedding E-Invitations",
+      icon: "bi-heart",
+    },
     { cardType: "video", title: "Video Invitations", icon: "bi-play-circle" },
-    { cardType: "save_the_date", title: "Save the Date", icon: "bi-calendar-heart" },
+    {
+      cardType: "save_the_date",
+      title: "Save the Date",
+      icon: "bi-calendar-heart",
+    },
   ]);
 
   useEffect(() => {
@@ -206,7 +266,7 @@ const Header = () => {
         </div>
 
         <div className="collapse navbar-collapse w-100" id="mainNav">
-          <div className="row w-100">
+          <div className="row w-100" style={{ margin: 0, padding: 0 }}>
             <div className="col-12 bg-white p-2">
               <div className="container w-100 p-0">
                 <div className="row align-items-center gy-2">
@@ -273,7 +333,7 @@ const Header = () => {
             </div>
 
             {/* Bottom */}
-            <div className="col-12 py-2">
+            <div className="col-12 py-0">
               <div className="container" style={{ maxWidth: "1400px" }}>
                 <div className="d-flex w-100 justify-content-center">
                   <div className="col-lg-12 d-flex flex-column flex-lg-row align-items-center justify-content-between flex-nowrap">
@@ -288,13 +348,13 @@ const Header = () => {
                       </Link>
                     </div>
                     <ul className="navbar-nav d-flex flex-wrap justify-content-center gap-2">
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <button className="nav-link dropdown-toggle text-white fs-18">
                             Planning Tools
                           </button>
 
-                          <div className="dropdown-menu mega-dropdown w-100 border-0 mt-0 p-4 rounded-4 shadow-sm bg-white">
+                          <div className="dropdown-menu mega-dropdown w-75 border-0 mt-0 p-4 rounded-0 shadow-sm bg-white">
                             <div className="container">
                               <div className="row g-4">
                                 {/* LEFT SECTION */}
@@ -324,12 +384,12 @@ const Header = () => {
                                           transition: "color 0.2s ease-in-out",
                                         }}
                                         onMouseEnter={(e) =>
-                                        (e.currentTarget.style.color =
-                                          "#e91e63")
+                                          (e.currentTarget.style.color =
+                                            "#e91e63")
                                         }
                                         onMouseLeave={(e) =>
-                                        (e.currentTarget.style.color =
-                                          "#212529")
+                                          (e.currentTarget.style.color =
+                                            "#212529")
                                         }
                                       >
                                         <span
@@ -377,12 +437,12 @@ const Header = () => {
                                           transition: "all 0.2s ease-in-out",
                                         }}
                                         onMouseEnter={(e) =>
-                                        (e.currentTarget.style.boxShadow =
-                                          "0 4px 12px rgba(0,0,0,0.08)")
+                                          (e.currentTarget.style.boxShadow =
+                                            "0 4px 12px rgba(0,0,0,0.08)")
                                         }
                                         onMouseLeave={(e) =>
-                                        (e.currentTarget.style.boxShadow =
-                                          "0 2px 4px rgba(0,0,0,0.04)")
+                                          (e.currentTarget.style.boxShadow =
+                                            "0 2px 4px rgba(0,0,0,0.04)")
                                         }
                                       >
                                         <Link
@@ -426,7 +486,7 @@ const Header = () => {
                         </div>
                       </li>
 
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                         <Link
                           // to={targetURL}
                           to="/venues"
@@ -435,7 +495,7 @@ const Header = () => {
                           Venues
                         </Link>
 
-                        <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 rounded-4">
+                        <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 rounded-0">
                           <div className="container-fluid">
                             <div className="row g-4">
                               <div className="col-md-4 d-none d-md-block">
@@ -479,39 +539,40 @@ const Header = () => {
                                 <div className="row">
                                   {(venueSubcategories.length > 0
                                     ? [
-                                      ...venueSubcategories.map(
-                                        (s) => s.name
-                                      ),
-                                      "View All Venues",
-                                    ]
+                                        ...venueSubcategories.map(
+                                          (s) => s.name
+                                        ),
+                                        "View All Venues",
+                                      ]
                                     : [
-                                      "Banquet Halls",
-                                      "Marriage Garden / Lawns",
-                                      "Wedding Resorts",
-                                      "Small Function / Party Halls",
-                                      "Destination Wedding Venues",
-                                      "Kalyana Mandapams",
-                                      "4 Star & Above Wedding Hotels",
-                                      "Venue Concierge Services",
-                                      "View All Venues",
-                                    ]
+                                        "Banquet Halls",
+                                        "Marriage Garden / Lawns",
+                                        "Wedding Resorts",
+                                        "Small Function / Party Halls",
+                                        "Destination Wedding Venues",
+                                        "Kalyana Mandapams",
+                                        "4 Star & Above Wedding Hotels",
+                                        "Venue Concierge Services",
+                                        "View All Venues",
+                                      ]
                                   ).map((item, i) => {
                                     const isShowMore =
                                       item === "View All Venues";
                                     const path = isShowMore
                                       ? "/venues"
                                       : `/venues/${item
-                                        .toLowerCase()
-                                        .replace(/\s+/g, "-")
-                                        .replace(/[^a-z0-9\-]/g, "")}`;
+                                          .toLowerCase()
+                                          .replace(/\s+/g, "-")
+                                          .replace(/[^a-z0-9\-]/g, "")}`;
                                     return (
                                       <div className="col-12 mb-2" key={i}>
                                         <Link
                                           to={path}
-                                          className={`dropdown-link d-flex align-items-center ${isShowMore
-                                            ? "primary-text fw-bold text-decoration-underline"
-                                            : ""
-                                            }`}
+                                          className={`dropdown-link d-flex align-items-center ${
+                                            isShowMore
+                                              ? "primary-text fw-bold text-decoration-underline"
+                                              : ""
+                                          }`}
                                         >
                                           <i className="bi bi-check-circle text-primary"></i>
                                           <span className="small">{item}</span>
@@ -540,7 +601,9 @@ const Header = () => {
                                     const isMore = city === "More";
                                     const path = isMore
                                       ? "/venues"
-                                      : `/venues?city=${encodeURIComponent(city)}`;
+                                      : `/venues?city=${encodeURIComponent(
+                                          city
+                                        )}`;
                                     return (
                                       <div className="col-12 mb-2" key={i}>
                                         <Link
@@ -550,10 +613,11 @@ const Header = () => {
                                               dispatch(setLocation(city));
                                             }
                                           }}
-                                          className={`dropdown-link d-flex align-items-center ${isMore
-                                            ? "primary-text fw-bold text-decoration-underline"
-                                            : ""
-                                            }`}
+                                          className={`dropdown-link d-flex align-items-center ${
+                                            isMore
+                                              ? "primary-text fw-bold text-decoration-underline"
+                                              : ""
+                                          }`}
                                         >
                                           <i className="bi bi-geo-alt text-primary"></i>
                                           <span className="small">{city}</span>
@@ -569,7 +633,7 @@ const Header = () => {
                       </li>
 
                       {/* Vendors Dropdown */}
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
                             to="/vendors"
@@ -577,7 +641,7 @@ const Header = () => {
                           >
                             Vendors
                           </Link>
-                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                          <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0">
                             <div className="container">
                               <div
                                 style={{
@@ -623,7 +687,7 @@ const Header = () => {
                         </div>
                       </li>
 
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
                             className="nav-link dropdown-toggle text-white fs-18"
@@ -633,7 +697,7 @@ const Header = () => {
                           >
                             Photography
                           </Link>
-                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                          <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0">
                             <div className="container">
                               <div
                                 style={{
@@ -679,7 +743,7 @@ const Header = () => {
                         </div>
                       </li>
 
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
                             className="nav-link dropdown-toggle text-white fs-18"
@@ -691,7 +755,7 @@ const Header = () => {
                             E-Invites
                           </Link>
 
-                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                          <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0">
                             <div className="container">
                               <div className="row g-4">
                                 <div className="col-md-12">
@@ -700,10 +764,7 @@ const Header = () => {
                                   </h6>
                                   <div className="row">
                                     {einviteCategories.map((sub, j) => (
-                                      <li
-                                        key={sub.id || j}
-                                        className="mb-1"
-                                      >
+                                      <li key={sub.id || j} className="mb-1">
                                         <Link
                                           to={`/einvites/category/${sub.cardType}`}
                                           className="dropdown-link small d-block"
@@ -720,7 +781,96 @@ const Header = () => {
                         </div>
                       </li>
 
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper">
+                          <Link
+                            className="nav-link dropdown-toggle text-white fs-18"
+                            to="/blog"
+                            state={{ title: "Blog" }}
+                            id="blog"
+                            role="button"
+                          >
+                            Blog
+                          </Link>
+
+                          <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0">
+                            <div className="container">
+                              <div className="row">
+                                <div className="col-12 col-md-4">
+                                  <div className="fw-bold primary-text text-uppercase">
+                                    Browse by Category
+                                  </div>
+                                  <ul className="list-unstyled mb-0">
+                                    {weddingTopics.map((topic, index) => (
+                                      <li
+                                        key={index}
+                                        className="dropdown-link small d-block"
+                                      >
+                                        <Link
+                                          to="/blog"
+                                          style={{
+                                            textDecoration: " none",
+                                            color: "#212529",
+                                          }}
+                                        >
+                                          {topic}
+                                        </Link>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+
+                                <div className="col-12 col-md-4">
+                                  <h6 className="primary-text fw-bold">
+                                    Popular Sections
+                                  </h6>
+                                  <ul className="list-unstyled mb-0">
+                                    {weddingCategories.map(
+                                      (category, index) => (
+                                        <li
+                                          key={index}
+                                          className="dropdown-link small d-block"
+                                        >
+                                          <Link
+                                            to="/blog"
+                                            style={{
+                                              textDecoration: " none",
+                                              color: "#212529",
+                                            }}
+                                          >
+                                            {category}
+                                          </Link>
+                                        </li>
+                                      )
+                                    )}
+                                  </ul>
+                                </div>
+
+                                <div className="col-12 col-md-4">
+                                  <h6 className="primary-text fw-bold">
+                                    Most Searched Blogs
+                                  </h6>
+                                  <ul className="list-unstyled mb-0">
+                                    {weddingIdeas.map((idea, index) => (
+                                      <Link
+                                        to="/blog"
+                                        style={{
+                                          textDecoration: " none",
+                                          color: "#212529",
+                                        }}
+                                      >
+                                        {idea}
+                                      </Link>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+
+                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
                             className="nav-link text-white fs-18"
@@ -734,24 +884,10 @@ const Header = () => {
                         </div>
                       </li>
 
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            className="nav-link text-white fs-18"
-                            to="/blog"
-                            state={{ title: "Blog" }}
-                            id="blog"
-                            role="button"
-                          >
-                            Blog
-                          </Link>
-                        </div>
-                      </li>
-
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          <Link
-                            className="nav-link text-white fs-18"
+                            className="nav-link dropdown-toggle text-white fs-18"
                             to="/real-wedding"
                             state={{ title: "Real Wedding" }}
                             id="real-wedding"
@@ -760,7 +896,7 @@ const Header = () => {
                             Real Wedding
                           </Link>
 
-                          <div className="dropdown-menu mega-dropdown w-100 shadow border-0 mt-0 p-4 rounded-4">
+                          <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0">
                             <div className="container">
                               <div className="row">
                                 <div className="col-12 col-md-4">
@@ -768,24 +904,22 @@ const Header = () => {
                                     By City
                                   </div>
                                   <ul className="list-unstyled mb-0">
-                                    <li className="dropdown-link small d-block">
-                                      Mumbai
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Bangalore
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Pune
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Kolkata
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Jaipur
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Others
-                                    </li>
+                                    {byCity.map((city, index) => (
+                                      <li
+                                        key={index}
+                                        className="dropdown-link small d-block"
+                                      >
+                                        <Link
+                                          to="/real-wedding"
+                                          style={{
+                                            textDecoration: " none",
+                                            color: "#212529",
+                                          }}
+                                        >
+                                          {city}
+                                        </Link>
+                                      </li>
+                                    ))}
                                   </ul>
                                 </div>
 
@@ -794,27 +928,22 @@ const Header = () => {
                                     By Culture
                                   </h6>
                                   <ul className="list-unstyled mb-0">
-                                    <li className="dropdown-link small d-block">
-                                      Maharashtrian
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Punjabi / Sikh
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Bengali
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Gujarati
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Marwari
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Telugu
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Others
-                                    </li>
+                                    {byCulture.map((culture, index) => (
+                                      <li
+                                        key={index}
+                                        className="dropdown-link small d-block"
+                                      >
+                                        <Link
+                                          to="/real-wedding"
+                                          style={{
+                                            textDecoration: " none",
+                                            color: "#212529",
+                                          }}
+                                        >
+                                          {culture}
+                                        </Link>
+                                      </li>
+                                    ))}
                                   </ul>
                                 </div>
 
@@ -823,27 +952,22 @@ const Header = () => {
                                     By Theme
                                   </h6>
                                   <ul className="list-unstyled mb-0">
-                                    <li className="dropdown-link small d-block">
-                                      Destination
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Grand & Luxurious
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Pocket Friendly Stunners
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Intimate & Minimalist
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Modern & Stylish
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      International
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Others
-                                    </li>
+                                    {byTheme.map((theme, index) => (
+                                      <li
+                                        key={index}
+                                        className="dropdown-link small d-block"
+                                      >
+                                        <Link
+                                          to="/real-wedding"
+                                          style={{
+                                            textDecoration: " none",
+                                            color: "#212529",
+                                          }}
+                                        >
+                                          {theme}
+                                        </Link>
+                                      </li>
+                                    ))}
                                   </ul>
                                 </div>
                               </div>
@@ -898,7 +1022,7 @@ const Header = () => {
 
                       {/* Login Dropdown */}
                       {isUserLoggedIn ? (
-                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <Link
                               to="/user-dashboard"
@@ -909,7 +1033,7 @@ const Header = () => {
                           </div>
                         </li>
                       ) : isVendorLoggedIn ? (
-                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <Link
                               to="/vendor-dashboard"
@@ -920,7 +1044,7 @@ const Header = () => {
                           </div>
                         </li>
                       ) : (
-                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <Link
                               to="/customer-login"
@@ -933,7 +1057,7 @@ const Header = () => {
                       )}
 
                       {isLoggedIn && (
-                        <li className="nav-item dropdown mega-dropdown-wrapper position-static">
+                        <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">
                             <button
                               onClick={handleLogout}
