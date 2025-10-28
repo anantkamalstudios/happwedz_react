@@ -231,10 +231,10 @@ export default function VendorLeadsPage() {
 
   return (
     <div className="container my-5">
-      <div className="d-flex align-items-center mb-3 gap-2">
+      <div className="d-flex align-items-center mb-3 gap-2 justify-content-end">
         <button
           type="button"
-          className="btn btn-outline-primary"
+          className="btn btn-outline-primary col-2"
           onClick={exportToCSV}
           disabled={exporting || rows.length === 0}
         >
@@ -243,14 +243,12 @@ export default function VendorLeadsPage() {
 
         <button
           type="button"
-          className="btn btn-outline-success"
+          className="btn btn-outline-success col-2"
           onClick={exportToExcel}
           disabled={exporting || rows.length === 0}
         >
           {exporting ? "Exporting..." : "Export Excel"}
         </button>
-
-        <div className="text-muted small">Export current leads</div>
       </div>
       <div className="table-responsive shadow-sm bg-white rounded">
         <table className="table align-middle mb-0">
@@ -294,7 +292,7 @@ export default function VendorLeadsPage() {
                   </td>
                   <td className="text-end">
                     <button
-                      className="btn btn-pink"
+                      className="btn btn-pink text-white"
                       onClick={() => openModal(row)}
                     >
                       Send quotation

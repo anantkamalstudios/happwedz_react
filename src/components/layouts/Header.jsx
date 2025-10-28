@@ -30,6 +30,58 @@ const Header = () => {
   const [selectedCity, setSelectedCity] = useState(reduxLocation);
   const navigate = useNavigate();
   const formatName = (name) => name.replace(/\band\b/gi, "&");
+  const weddingCategories = [
+    "South Indian wedding",
+    "Real Brides Reveal",
+    "Bridal Buys",
+    "Real Wedding",
+    "Mehendi Ideas",
+    "Indian Wedding Ideas",
+  ];
+  const weddingTopics = [
+    "Bridal Makeup",
+    "Honeymoon Travel",
+    "Wedding Songs and Videos",
+    "Bridal Hairstyles",
+    "Wedding Decor Ideas",
+    "Bridal Style Advice",
+    "Wedding Gifts and Favors",
+    "Budget Weddings",
+    "More",
+  ];
+
+  const weddingIdeas = [
+    "Wedding Songs",
+    "Best Bridal Entry Songs",
+    "Chandni Chowk Lehengas",
+    "Best Bridal Hairstyles",
+    "Bridal Mehendi Designs",
+    "Best Groom Entry Songs",
+    "Wittiest Wedding Hashtags",
+    "2025 Marriage Dates",
+    "Latest Sabyasachi Lehengas",
+    "Bridal Blouse Designs",
+  ];
+
+  const byCity = ["Mumbai", "Bangalore", "Pune", "Kolkata", "Jaipur", "Others"];
+  const byCulture = [
+    "Maharashtrian",
+    "Punjabi / Sikh",
+    "Bengali",
+    "Gujarati",
+    "Marwari",
+    "Telugu",
+    "Others",
+  ];
+  const byTheme = [
+    "Destination",
+    "Grand & Luxurious",
+    "Pocket Friendly Stunners",
+    "Intimate & Minimalist",
+    "Modern & Stylish",
+    "International",
+    "Others",
+  ];
 
   const handleLogout = () => {
     if (isVendorLoggedIn) {
@@ -749,33 +801,22 @@ const Header = () => {
                                     Browse by Category
                                   </div>
                                   <ul className="list-unstyled mb-0">
-                                    <li className="dropdown-link small d-block">
-                                      Bridal Makeup
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Honeymoon Travel
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Wedding Songs and Videos
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Bridal Hairstyles
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Wedding Decor Ideas
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Bridal Style Advice
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Wedding Gifts and Favors
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Budget Weddings
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      More
-                                    </li>
+                                    {weddingTopics.map((topic, index) => (
+                                      <li
+                                        key={index}
+                                        className="dropdown-link small d-block"
+                                      >
+                                        <Link
+                                          to="/blog"
+                                          style={{
+                                            textDecoration: " none",
+                                            color: "#212529",
+                                          }}
+                                        >
+                                          {topic}
+                                        </Link>
+                                      </li>
+                                    ))}
                                   </ul>
                                 </div>
 
@@ -784,24 +825,24 @@ const Header = () => {
                                     Popular Sections
                                   </h6>
                                   <ul className="list-unstyled mb-0">
-                                    <li className="dropdown-link small d-block">
-                                      South Indian wedding
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Real Brides Reveal
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Bridal Buys
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Real Wedding
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Mehendi Ideas
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Indian Wedding Ideas
-                                    </li>
+                                    {weddingCategories.map(
+                                      (category, index) => (
+                                        <li
+                                          key={index}
+                                          className="dropdown-link small d-block"
+                                        >
+                                          <Link
+                                            to="/blog"
+                                            style={{
+                                              textDecoration: " none",
+                                              color: "#212529",
+                                            }}
+                                          >
+                                            {category}
+                                          </Link>
+                                        </li>
+                                      )
+                                    )}
                                   </ul>
                                 </div>
 
@@ -810,36 +851,17 @@ const Header = () => {
                                     Most Searched Blogs
                                   </h6>
                                   <ul className="list-unstyled mb-0">
-                                    <li className="dropdown-link small d-block">
-                                      Wedding Songs
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Best Bridal Entry Songs
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Chandni Chowk Lehengas
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Best Bridal Hairstyles
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Bridal Mehendi Designs
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Best Groom Entry Songs
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Wittiest Wedding Hashtags
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      2025 Marriage Dates
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Latest Sabyasachi Lehengas
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Bridal Blouse Designs
-                                    </li>
+                                    {weddingIdeas.map((idea, index) => (
+                                      <Link
+                                        to="/blog"
+                                        style={{
+                                          textDecoration: " none",
+                                          color: "#212529",
+                                        }}
+                                      >
+                                        {idea}
+                                      </Link>
+                                    ))}
                                   </ul>
                                 </div>
                               </div>
@@ -882,24 +904,22 @@ const Header = () => {
                                     By City
                                   </div>
                                   <ul className="list-unstyled mb-0">
-                                    <li className="dropdown-link small d-block">
-                                      Mumbai
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Bangalore
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Pune
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Kolkata
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Jaipur
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Others
-                                    </li>
+                                    {byCity.map((city, index) => (
+                                      <li
+                                        key={index}
+                                        className="dropdown-link small d-block"
+                                      >
+                                        <Link
+                                          to="/real-wedding"
+                                          style={{
+                                            textDecoration: " none",
+                                            color: "#212529",
+                                          }}
+                                        >
+                                          {city}
+                                        </Link>
+                                      </li>
+                                    ))}
                                   </ul>
                                 </div>
 
@@ -908,27 +928,22 @@ const Header = () => {
                                     By Culture
                                   </h6>
                                   <ul className="list-unstyled mb-0">
-                                    <li className="dropdown-link small d-block">
-                                      Maharashtrian
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Punjabi / Sikh
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Bengali
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Gujarati
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Marwari
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Telugu
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Others
-                                    </li>
+                                    {byCulture.map((culture, index) => (
+                                      <li
+                                        key={index}
+                                        className="dropdown-link small d-block"
+                                      >
+                                        <Link
+                                          to="/real-wedding"
+                                          style={{
+                                            textDecoration: " none",
+                                            color: "#212529",
+                                          }}
+                                        >
+                                          {culture}
+                                        </Link>
+                                      </li>
+                                    ))}
                                   </ul>
                                 </div>
 
@@ -937,27 +952,22 @@ const Header = () => {
                                     By Theme
                                   </h6>
                                   <ul className="list-unstyled mb-0">
-                                    <li className="dropdown-link small d-block">
-                                      Destination
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Grand & Luxurious
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Pocket Friendly Stunners
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Intimate & Minimalist
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Modern & Stylish
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      International
-                                    </li>
-                                    <li className="dropdown-link small d-block">
-                                      Others
-                                    </li>
+                                    {byTheme.map((theme, index) => (
+                                      <li
+                                        key={index}
+                                        className="dropdown-link small d-block"
+                                      >
+                                        <Link
+                                          to="/real-wedding"
+                                          style={{
+                                            textDecoration: " none",
+                                            color: "#212529",
+                                          }}
+                                        >
+                                          {theme}
+                                        </Link>
+                                      </li>
+                                    ))}
                                   </ul>
                                 </div>
                               </div>

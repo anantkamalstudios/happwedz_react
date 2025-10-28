@@ -90,8 +90,6 @@
 
 // export default VendorPolicies;
 
-
-
 import React from "react";
 
 const VendorPolicies = ({ formData, setFormData, onSave }) => {
@@ -110,12 +108,16 @@ const VendorPolicies = ({ formData, setFormData, onSave }) => {
         <div className="row">
           {/* Cancellation Policy */}
           <div className="col-12 mb-3">
-            <label className="form-label fw-semibold">Cancellation Policy</label>
+            <label className="form-label fw-semibold">
+              Cancellation Policy
+            </label>
             <textarea
               className="form-control"
               rows="3"
               value={formData.cancellationPolicy || ""}
-              onChange={(e) => handleInputChange("cancellationPolicy", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("cancellationPolicy", e.target.value)
+              }
               placeholder="Enter cancellation policy"
             />
           </div>
@@ -127,7 +129,9 @@ const VendorPolicies = ({ formData, setFormData, onSave }) => {
               className="form-control"
               rows="3"
               value={formData.refundPolicy || ""}
-              onChange={(e) => handleInputChange("refundPolicy", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("refundPolicy", e.target.value)
+              }
               placeholder="Enter refund policy"
             />
           </div>
@@ -139,7 +143,9 @@ const VendorPolicies = ({ formData, setFormData, onSave }) => {
               type="text"
               className="form-control"
               value={formData.payment_terms || ""}
-              onChange={(e) => handleInputChange("payment_terms", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("payment_terms", e.target.value)
+              }
               placeholder="e.g. Takes 50% Advance"
             />
           </div>

@@ -88,15 +88,15 @@ const UploadSelfiePage = () => {
     ],
   };
 
-  const validateFace = async (imageDataUrl) => {
-    const img = new window.Image();
-    img.src = imageDataUrl;
-    await new Promise((r) => (img.onload = r));
-    const detection = await faceapi
-      .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
-      .withFaceLandmarks();
-    return !!detection;
-  };
+  // const validateFace = async (imageDataUrl) => {
+  //   const img = new window.Image();
+  //   img.src = imageDataUrl;
+  //   await new Promise((r) => (img.onload = r));
+  //   const detection = await faceapi
+  //     .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
+  //     .withFaceLandmarks();
+  //   return !!detection;
+  // };
 
   const handleFile = async (e) => {
     setUploading(true);
@@ -118,18 +118,18 @@ const UploadSelfiePage = () => {
     }
     const reader = new FileReader();
     reader.onload = async (ev) => {
-      const dataUrl = ev.target.result;
-      const ok = await validateFace(dataUrl);
-      if (!ok) {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "No face detected. Please choose a clear frontal photo.",
-        });
-        setUploading(false);
-        if (fileRef.current) fileRef.current.value = "";
-        return;
-      }
+      // const dataUrl = ev.target.result;
+      // const ok = await validateFace(dataUrl);
+      // if (!ok) {
+      //   Swal.fire({
+      //     icon: "error",
+      //     title: "Oops...",
+      //     text: "No face detected. Please choose a clear frontal photo.",
+      //   });
+      //   setUploading(false);
+      //   if (fileRef.current) fileRef.current.value = "";
+      //   return;
+      // }
       try {
         controllerRef.current = new AbortController();
         const res = await beautyApi.uploadImage(
@@ -143,11 +143,16 @@ const UploadSelfiePage = () => {
         setUploading(false);
         navigate("/try/filters");
       } catch (err) {
-        console.error(err);
+        let errorMsg = "File too large. Max 1MB allowed."; // default message
+        if (err?.response?.data?.error) {
+          errorMsg = err.response.data.error;
+        } else if (err?.message) {
+          errorMsg = err.message;
+        }
         Swal.fire({
           icon: "error",
           title: "Oops...",
-          text: "Upload failed. Please try again.",
+          text: "Image Upload failed",
         });
       } finally {
         setUploading(false);
@@ -201,19 +206,19 @@ const UploadSelfiePage = () => {
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
-    const ok = await validateFace(dataUrl);
-    if (!ok) {
-      // alert("No face detected. Please look straight.");
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "No face detected. Please look straight.",
-        confirmButtonText: "OK",
-        confirmButtonColor: "#ed1173",
-      });
+    // const ok = await validateFace(dataUrl);
+    // if (!ok) {
+    //   // alert("No face detected. Please look straight.");
+    //   Swal.fire({
+    //     icon: "error",
+    //     title: "Oops...",
+    //     text: "No face detected. Please look straight.",
+    //     confirmButtonText: "OK",
+    //     confirmButtonColor: "#ed1173",
+    //   });
 
-      return;
-    }
+    //   return;
+    // }
     // Convert dataURL to Blob for upload
     const blob = await (await fetch(dataUrl)).blob();
     const file = new File([blob], "selfie.jpg", { type: "image/jpeg" });
@@ -228,7 +233,7 @@ const UploadSelfiePage = () => {
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: "Upload failed.",
+        text: e.message || "Upload failed. Please try again.",
         timer: "3000",
         confirmButtonText: "OK",
         confirmButtonColor: "#ed1173",

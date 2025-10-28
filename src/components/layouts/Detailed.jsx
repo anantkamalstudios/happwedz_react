@@ -27,6 +27,7 @@ import { GrFormNextLink } from "react-icons/gr";
 import ReviewSection from "../pages/ReviewSection";
 import { FaqQuestions } from "../pages/adminVendor/subVendors/FaqData";
 import axios from "axios";
+const API_BASE_URL = "https://happywedz.com";
 import Swal from "sweetalert2";
 
 // Helper function to capitalize the first letter of each word
@@ -40,6 +41,7 @@ const Detailed = () => {
   const dispatch = useDispatch();
   const { token } = useSelector((state) => state.auth);
   const [venueData, setVenueData] = useState(null);
+  const [profileViews, setProfileViews] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mainImage, setMainImage] = useState("");
@@ -129,13 +131,20 @@ const Detailed = () => {
       }
 
       // --- Parking ---
-      if (
-        attributes.about_us &&
-        attributes.about_us.includes("Sufficient Parking available")
-      ) {
+      // if (
+      //   attributes.about_us &&
+      //   attributes.about_us.includes("Sufficient Parking available")
+      // ) {
+      //   amenities.push({
+      //     icon: <FaParking />,
+      //     name: "Sufficient Car Parking Available",
+      //   });
+      // }
+
+      if (attributes.parking) {
         amenities.push({
           icon: <FaParking />,
-          name: "Sufficient Car Parking Available",
+          name: `Parking: ${attributes.parking}`,
         });
       }
 
@@ -219,18 +228,18 @@ const Detailed = () => {
   };
 
   const [rating, setRating] = useState(0);
-  const [hover, setHover] = useState(0);
+  const [_hover, _setHover] = useState(0);
   const [experience, setExperience] = useState("");
   const [spent, setSpent] = useState("");
-  const [reviews, setReviews] = useState([]);
+  const [_reviews, _setReviews] = useState([]);
 
-  const handleImageUpload = (e) => {
+  const _handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     const filePreviews = files.map((file) => URL.createObjectURL(file));
     setImages((prev) => [...prev, ...filePreviews]);
   };
 
-  const handleSubmit = () => {
+  const _handleSubmit = () => {
     if (!rating || !experience) {
       Swal.fire({
         title: "",
@@ -250,7 +259,7 @@ const Detailed = () => {
       date: new Date().toLocaleDateString(),
     };
 
-    setReviews((prev) => [newReview, ...prev]);
+    _setReviews((prev) => [newReview, ...prev]);
     // Reset form
     setRating(0);
     setExperience("");
@@ -353,6 +362,46 @@ const Detailed = () => {
         const data = await vendorServicesApi.getVendorServiceById(id);
         setVenueData(data);
 
+        // Increment profile view count for this vendor (fire-and-forget)
+        (async () => {
+          try {
+            if (data?.vendor_id) {
+              const sessionKey = `vendor_viewed_${data.vendor_id}`;
+              // Avoid double increments in the same browser session (also handles StrictMode double-mount)
+              if (!sessionStorage.getItem(sessionKey)) {
+                const incRes = await axios.post(
+                  `${API_BASE_URL}/api/vendor/increment-view/${data.vendor_id}`
+                );
+                // mark as viewed for this session immediately to prevent duplicate calls
+                try {
+                  sessionStorage.setItem(sessionKey, Date.now().toString());
+                } catch {
+                  /* ignore storage errors */
+                }
+                // If API returns updated vendor/profileViews, hydrate local state
+                if (incRes?.data?.vendor?.profileViews !== undefined) {
+                  setVenueData((prev) => ({
+                    ...prev,
+                    vendor: {
+                      ...(prev?.vendor || {}),
+                      profileViews: incRes.data.vendor.profileViews,
+                    },
+                  }));
+                  setProfileViews(incRes.data.vendor.profileViews);
+                }
+              } else {
+                // already counted this session — skip increment
+                console.debug(
+                  `skip increment-view for vendor ${data.vendor_id} (already viewed this session)`
+                );
+              }
+            }
+          } catch (incErr) {
+            // fail quietly but log for debugging
+            console.debug("increment-view failed:", incErr?.message || incErr);
+          }
+        })();
+
         // Handle images from new API structure
         if (data.media && Array.isArray(data.media) && data.media.length > 0) {
           // New structure: media is already an array of full URLs
@@ -385,7 +434,58 @@ const Detailed = () => {
     fetchVenueData();
   }, [id]);
 
-  const [faqList, setFaqList] = useState([]);
+  // Fetch latest profile views (used to reflect increments from other users)
+  const fetchProfileViews = async (vendorId) => {
+    try {
+      const res = await axios.get(
+        `${API_BASE_URL}/api/vendor/profile-views/${vendorId}`
+      );
+      const count = res?.data?.vendor?.profileViews ?? null;
+      if (count !== null) {
+        setProfileViews(count);
+        setVenueData((prev) => ({
+          ...prev,
+          vendor: {
+            ...(prev?.vendor || {}),
+            profileViews: count,
+          },
+        }));
+      }
+    } catch (err) {
+      // ignore silently
+      console.debug("fetchProfileViews failed:", err?.message || err);
+    }
+  };
+
+  // Periodically refresh profile views and when page becomes visible again
+  useEffect(() => {
+    let intervalId;
+    const tryStart = () => {
+      const vid = venueData?.vendor_id || venueData?.vendor?.id;
+      if (vid) {
+        // initial fetch
+        fetchProfileViews(vid);
+        // start polling every 30s
+        intervalId = setInterval(() => fetchProfileViews(vid), 30000);
+      }
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        const vid = venueData?.vendor_id || venueData?.vendor?.id;
+        if (vid) fetchProfileViews(vid);
+      }
+    };
+
+    tryStart();
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [venueData]);
+
+  const [_faqList, _setFaqList] = useState([]);
 
   useEffect(() => {
     const fetchFaqData = async () => {
@@ -416,7 +516,7 @@ const Detailed = () => {
             ...q,
             ans: answerMap.get(q.id) || "",
           }));
-          setFaqList(mergedFaqs);
+          _setFaqList(mergedFaqs);
         }
       } catch (error) {
         console.error("Error fetching FAQ answers:", error);
@@ -480,7 +580,7 @@ const Detailed = () => {
   }
 
   // Helper function to handle database array values
-  function parseDbValue(value) {
+  function _parseDbValue(value) {
     if (
       typeof value === "string" &&
       value.startsWith("{") &&
@@ -673,7 +773,7 @@ const Detailed = () => {
             </div>
 
             {/* FaqQuestionAnswer Detailed */}
-            <div className="my-4 border p-3 rounded">
+            {/* <div className="my-4 border p-3 rounded">
               <h1 className="my-4">Frequently Asked Questions</h1>
               {faqList.length > 0 ? (
                 faqList.map((ques, index) => {
@@ -719,7 +819,7 @@ const Detailed = () => {
                   No FAQ information available for this vendor.
                 </p>
               )}
-            </div>
+            </div> */}
 
             <div className="py-5">
               <ReviewSection vendor={activeVendor} />
@@ -837,6 +937,13 @@ const Detailed = () => {
                         ({venueData.attributes?.review_count || 0} reviews)
                       </span>
                     </div>
+                    {/* Profile views display (updates when other users view) */}
+                    {/* <div style={{ textAlign: "right" }}>
+                      <div className="text-muted small">
+                        Profile views:{" "}
+                        {profileViews ?? venueData?.vendor?.profileViews ?? 0}
+                      </div>
+                    </div> */}
                   </div>
                 </div>
 

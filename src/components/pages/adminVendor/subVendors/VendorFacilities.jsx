@@ -23,7 +23,7 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
       <div className="p-3 border rounded bg-white">
         <h6 className="mb-3 fw-bold">Facilities & Features</h6>
         <div className="row">
-          <div className="col-md-6 mb-3">
+          {/* <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">Minimum Capacity</label>
             <input
               type="number"
@@ -34,8 +34,8 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
               }
               placeholder="Minimum capacity"
             />
-          </div>
-          <div className="col-md-6 mb-3">
+          </div> */}
+          {/* <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">Maximum Capacity</label>
             <input
               type="number"
@@ -46,7 +46,7 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
               }
               placeholder="Maximum capacity"
             />
-          </div>
+          </div> */}
           <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">Number of Rooms</label>
             <input
@@ -64,9 +64,9 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
             <input
               type="text"
               className="form-control"
-              value={formData.carParking || ""}
+              value={formData.parking || ""}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, carParking: e.target.value }))
+                setFormData((prev) => ({ ...prev, parking: e.target.value }))
               }
               placeholder="Car parking details"
             />
@@ -108,6 +108,21 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
             </select>
           </div>
           <div className="col-md-6 mb-3">
+            <label className="form-label fw-semibold">Catering Policy</label>
+            <input
+              type="text"
+              className="form-control"
+              value={formData.cateringPolicy || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  cateringPolicy: e.target.value,
+                }))
+              }
+              placeholder="e.g. Allowed, Not Allowed, Own Catering"
+            />
+          </div>
+          <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">Decor Policy</label>
             <input
               type="text"
@@ -123,9 +138,7 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
             />
           </div>
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">
-              HappyWedz Since
-            </label>
+            <label className="form-label fw-semibold">HappyWedz Since</label>
             <input
               type="text"
               className="form-control"

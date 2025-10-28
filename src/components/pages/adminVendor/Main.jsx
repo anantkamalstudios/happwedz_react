@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Navbar from "../../layouts/vendors/Navbar";
 import HomeAdmin from "./HomeAdmin";
 import Storefront from "./Storefront";
@@ -13,13 +13,17 @@ import Reviews from "./subVendors/Reviews";
 
 const Main = () => {
   const { slug } = useParams();
+  const [storefrontCompletion, setStorefrontCompletion] = useState(() => {
+    const stored = localStorage.getItem("storefrontCompletion");
+    return stored ? parseInt(stored, 10) : 0;
+  });
 
   const renderContent = () => {
     switch (slug) {
       case "vendor-home":
         return <HomeAdmin />;
       case "vendor-store-front":
-        return <Storefront />;
+        return <Storefront setCompletion={setStorefrontCompletion} />;
       case "vendor-reviews":
         return <ReviewsPage />;
       case "vendor-setting":
@@ -33,7 +37,7 @@ const Main = () => {
 
   return (
     <div>
-      <Navbar />
+      <Navbar storefrontCompletion={storefrontCompletion} />
       {renderContent()}
     </div>
   );

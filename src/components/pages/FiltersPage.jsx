@@ -53,7 +53,7 @@ const DEFAULT_INTENSITIES = {
   contactlenses: 0.2,
 };
 
-const DEBOUNCE_DELAY = 400;
+const DEBOUNCE_DELAY = 250;
 
 const FiltersPage = () => {
   const navigate = useNavigate();
@@ -72,6 +72,12 @@ const FiltersPage = () => {
   const dispatch = useDispatch();
   const [likedProduct, setLikedProduct] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
+
+  // Control concurrent apply requests and effect suppression
+  const applyAbortRef = useRef(null);
+  const applySeqRef = useRef(0);
+  const suppressNextEffectRef = useRef(false);
+  const lastPayloadRef = useRef("");
 
   const [showProductDetails, setShowProductDetails] = useState(true);
 
@@ -194,99 +200,9 @@ const FiltersPage = () => {
     setAppliedProducts(newAppliedProducts);
     setShowProductDetails(true); // Show product details when new product is applied
 
-    // Build payload with all applied products
-    const payload = {
-      image_id: Number(uploadedId),
-      product_ids: Object.values(newAppliedProducts).map((p) => p.productId),
-    };
-
-    Object.values(newAppliedProducts).forEach((product) => {
-      const { productId: pid, colorHex: hex, categoryName } = product;
-      const intensityValue =
-        intensities[categoryName] ?? DEFAULT_INTENSITIES[categoryName] ?? 0.6;
-
-      switch (categoryName) {
-        case "foundation":
-          payload.foundation_color = hex;
-          payload.foundation_intensity = intensityValue;
-          break;
-        case "concealer":
-          payload.concealer_color = hex;
-          payload.concealer_intensity = intensityValue;
-          break;
-        case "blush":
-          payload.blush_color = hex;
-          payload.blush_intensity = intensityValue;
-          payload.blush_radius = 60;
-          break;
-        case "contour":
-          payload.contour_color = hex;
-          payload.contour_intensity = intensityValue;
-          break;
-        case "eyeshadow":
-          payload.eyeshadow_color = hex;
-          payload.eyeshadow_intensity = intensityValue;
-          payload.eyeshadow_thickness = 25;
-          break;
-        case "lipstick":
-          payload.lipstick_color = hex;
-          payload.lipstick_intensity = intensityValue;
-          break;
-        case "bindi":
-          payload.bindi_color = hex;
-          payload.bindi_size = intensityValue;
-          break;
-        case "kajal":
-          payload.kajal_color = hex;
-          payload.kajal_intensity = intensityValue;
-          break;
-        case "mascara":
-          payload.mascara_color = hex;
-          payload.mascara_intensity = intensityValue;
-          break;
-        case "eyeliner":
-          payload.eyeliner_color = hex;
-          payload.eyeliner_intensity = intensityValue;
-          break;
-        // default:
-        //   payload.lipstick_color = hex;
-        //   payload.lipstick_intensity = intensityValue;
-        //   break;
-      }
-    });
-
-    try {
-      setIsApplying(true);
-      const res = await beautyApi.applyMakeup(payload);
-
-      // Extract processed image URL from response
-      const processedUrl = res?.url || res?.data?.url || res?.image_url;
-      const processedId =
-        res?.processed_image_id || res?.data?.processed_image_id;
-
-      if (processedUrl) {
-        if (import.meta.env.DEV && processedUrl.includes("www.happywedz.com")) {
-          const imageId = processedUrl.split("/").pop();
-          const base = import.meta.env.VITE_API_BASE_URL || "/api";
-          setPreviewUrl(`${base}/images/${imageId}`);
-        } else {
-          setPreviewUrl(processedUrl);
-        }
-      } else if (processedId) {
-        const base = import.meta.env.VITE_API_BASE_URL || "/api";
-        const fallbackUrl = `${base}/images/${processedId}`;
-        setPreviewUrl(fallbackUrl);
-      }
-    } catch (e) {
-      console.error("applyMakeup failed:", e?.message || e, payload);
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "Failed to apply filter.",
-      });
-    } finally {
-      setIsApplying(false);
-    }
+    // Immediately apply with suppression to avoid duplicate debounced call
+    suppressNextEffectRef.current = true;
+    await applyAllProducts(newAppliedProducts);
   };
 
   const handleRemoveProduct = (categoryName) => {
@@ -383,9 +299,29 @@ const FiltersPage = () => {
       }
     });
 
+    // Skip if payload is identical to the last successfully sent one
+    const payloadKey = JSON.stringify(payload);
+    if (payloadKey === lastPayloadRef.current) {
+      return;
+    }
+
+    // Abort any previous in-flight request and track sequence
+    if (applyAbortRef.current) {
+      try { applyAbortRef.current.abort(); } catch {}
+    }
+    const controller = new AbortController();
+    applyAbortRef.current = controller;
+    const mySeq = ++applySeqRef.current;
+
     try {
       setIsApplying(true);
-      const res = await beautyApi.applyMakeup(payload);
+      const res = await beautyApi.applyMakeup(payload, controller.signal);
+
+      // Ignore stale responses
+      if (mySeq !== applySeqRef.current) return;
+
+      // Mark this payload as the last applied to prevent duplicate requests
+      lastPayloadRef.current = payloadKey;
 
       const processedUrl = res?.url || res?.data?.url || res?.image_url;
       const processedId =
@@ -405,6 +341,8 @@ const FiltersPage = () => {
         setPreviewUrl(fallbackUrl);
       }
     } catch (e) {
+      // Ignore abort errors
+      if (e?.name === "AbortError") return;
       console.error("applyMakeup failed:", e?.message || e, payload);
       Swal.fire({
         icon: "error",
@@ -412,7 +350,10 @@ const FiltersPage = () => {
         text: "Failed to apply filter.",
       });
     } finally {
-      setIsApplying(false);
+      // Only clear applying if this is the latest request
+      if (mySeq === applySeqRef.current) {
+        setIsApplying(false);
+      }
     }
   };
 
@@ -421,6 +362,11 @@ const FiltersPage = () => {
   // Re-apply makeup when intensity changes for any applied product
   useEffect(() => {
     if (Object.keys(appliedProducts).length > 0) {
+      if (suppressNextEffectRef.current) {
+        // Skip this effect cycle when we already applied immediately
+        suppressNextEffectRef.current = false;
+        return;
+      }
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
       debounceTimer.current = setTimeout(() => {
@@ -431,6 +377,15 @@ const FiltersPage = () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
     };
   }, [intensities, appliedProducts]);
+
+  // Cleanup in-flight apply on unmount
+  useEffect(() => {
+    return () => {
+      if (applyAbortRef.current) {
+        try { applyAbortRef.current.abort(); } catch {}
+      }
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -846,10 +801,11 @@ const FiltersPage = () => {
                 </div>
               )}
 
-              <div style={{
-                display:"flex",
-                justifyContent:"space-between"
-              }}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
                 onClick={() => {
                   setShowPopup(true);
                 }}
@@ -1033,112 +989,114 @@ const FiltersPage = () => {
                             width: "80%",
                             position: "relative",
                             padding: "clamp(6px, 2vw, 12px)",
+                            borderRadius: "8px",
                           }}
                         >
+                          {/* Close button */}
+                          <button
+                            onClick={() => setShowProductDetails(false)}
+                            style={{
+                              position: "absolute",
+                              top: "-5px",
+                              right: "-2px",
+                              width: "clamp(28px, 5vw, 32px)",
+                              height: "clamp(28px, 5vw, 32px)",
+                              fontWeight: "900",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              background: "transparent",
+                              cursor: "pointer",
+                              color: "white",
+                              border: "none",
+                            }}
+                          >
+                            <svg
+                              style={{
+                                width: "clamp(12px, 3vw, 16px)",
+                                height: "clamp(12px, 3vw, 16px)",
+                              }}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+
+                          {/* Main Content Row */}
                           <div
                             style={{
                               display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
+                              alignItems: "flex-start",
                               gap: "clamp(8px, 2vw, 12px)",
                             }}
                           >
-                            <button
-                              onClick={() => setShowProductDetails(false)}
-                              style={{
-                                position: "absolute",
-                                top: "-5px",
-                                right: "-2px",
-                                width: "clamp(28px, 5vw, 32px)",
-                                height: "clamp(28px, 5vw, 32px)",
-                                fontWeight: "900",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                background: "transparent",
-                                cursor: "pointer",
-                                color: "white",
-                                border: "none",
-                              }}
-                            >
-                              <svg
-                                style={{
-                                  width: "clamp(12px, 3vw, 16px)",
-                                  height: "clamp(12px, 3vw, 16px)",
-                                }}
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M6 18L18 6M6 6l12 12"
-                                />
-                              </svg>
-                            </button>
-                            {/* Left: Product image + info */}
+                            {/* Left: Product Image */}
                             <div
                               style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "clamp(8px, 2vw, 12px)",
+                                width: "clamp(50px, 15vw, 60px)",
+                                height: "clamp(50px, 15vw, 60px)",
+                                position: "relative",
+                                backgroundColor: "white",
+                                borderRadius: "8px",
+                                overflow: "hidden",
+                                flexShrink: 0,
+                                boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
                               }}
                             >
-                              {/* Product Image */}
-                              <div
-                                style={{ position: "relative", flexShrink: 0 }}
+                              <img
+                                src={likedProduct?.product_real_image}
+                                alt="product"
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover",
+                                }}
+                              />
+                              {/* Heart Icon */}
+                              <button
+                                onClick={handleClick}
+                                style={{
+                                  position: "absolute",
+                                  top: "0px",
+                                  right: "0px",
+                                  width: "clamp(20px, 4vw, 24px)",
+                                  height: "clamp(20px, 4vw, 24px)",
+                                  borderRadius: "50%",
+                                  border: "none",
+                                  backgroundColor: "rgba(255,255,255,0.8)",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  cursor: "pointer",
+                                  padding: 0,
+                                }}
                               >
-                                <div
-                                  style={{
-                                    width: "clamp(40px, 15vw, 50px)",
-                                    height: "clamp(40px, 15vw, 50px)",
-                                    position: "relative",
-                                    backgroundColor: "white",
-                                    borderRadius: "8px",
-                                    overflow: "hidden",
-                                    boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-                                  }}
-                                >
-                                  <img
-                                    src={likedProduct?.product_real_image}
-                                    alt="product"
-                                    style={{
-                                      width: "100%",
-                                      height: "100%",
-                                      objectFit: "cover",
-                                    }}
-                                  />
-                                  {/* Heart Icon */}
-                                  <button
-                                    onClick={handleClick}
-                                    style={{
-                                      position: "absolute",
-                                      top: "0px",
-                                      right: "0px",
-                                      width: "clamp(20px, 4vw, 24px)",
-                                      height: "clamp(20px, 4vw, 24px)",
-                                      borderRadius: "50%",
-                                      border: "none",
-                                      backgroundColor: "rgba(255,255,255,0.8)",
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "center",
-                                      cursor: "pointer",
-                                      padding: 0,
-                                    }}
-                                  >
-                                    {isFavorited ? (
-                                      <AiFillHeart color="red" size={16} />
-                                    ) : (
-                                      <AiOutlineHeart color="#ccc" size={16} />
-                                    )}
-                                  </button>
-                                </div>
-                              </div>
+                                {isFavorited ? (
+                                  <AiFillHeart color="red" size={16} />
+                                ) : (
+                                  <AiOutlineHeart color="#ccc" size={16} />
+                                )}
+                              </button>
+                            </div>
 
-                              <div style={{ minWidth: 0 }}>
+                            {/* Right: Text and Button */}
+                            <div
+                              style={{
+                                flex: 1,
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              {/* Description */}
+                              <div>
                                 <h3
                                   style={{
                                     color: "white",
@@ -1163,54 +1121,45 @@ const FiltersPage = () => {
                                 >
                                   {likedProduct?.product_name}
                                 </p>
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                    marginTop: "4px",
-                                  }}
-                                >
-                                  <p
-                                    style={{
-                                      color: "white",
-                                      fontWeight: 700,
-                                      fontSize: "clamp(12px, 2.5vw, 14px)",
-                                      margin: 0,
-                                    }}
-                                  >
-                                    {likedProduct?.price}
-                                  </p>
-                                </div>
                               </div>
-                            </div>
 
-                            {/* Right: Buttons */}
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "clamp(4px, 1vw, 8px)",
-                                flexShrink: 0,
-                              }}
-                            >
-                              <button
+                              {/* Bottom Row: Price + Button */}
+                              <div
                                 style={{
-                                  backgroundColor: "white",
-                                  color: "#db2777",
-                                  padding:
-                                    "clamp(6px, 1.5vw, 8px) clamp(10px, 2vw, 14px)",
-                                  borderRadius: "8px",
-                                  fontSize: "clamp(10px, 2vw, 12px)",
-                                  fontWeight: "600",
-                                  border: "none",
-                                  cursor: "pointer",
-                                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                                  whiteSpace: "nowrap",
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  marginTop: "6px",
                                 }}
                               >
-                                VISIT SITE
-                              </button>
+                                <p
+                                  style={{
+                                    color: "white",
+                                    fontWeight: 700,
+                                    fontSize: "clamp(12px, 2.5vw, 14px)",
+                                    margin: 0,
+                                  }}
+                                >
+                                  {likedProduct?.price}
+                                </p>
+                                <button
+                                  style={{
+                                    backgroundColor: "white",
+                                    color: "#db2777",
+                                    padding:
+                                      "clamp(6px, 1.5vw, 8px) clamp(10px, 2vw, 14px)",
+                                    borderRadius: "8px",
+                                    fontSize: "clamp(10px, 2vw, 12px)",
+                                    fontWeight: "600",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  VISIT SITE
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -1239,7 +1188,7 @@ const FiltersPage = () => {
                   style={{
                     position: "absolute",
                     top: "50%",
-                    right: "clamp(-110px, -10vw, -90px)",
+                    right: "clamp(-90px, -10vw, -80px)",
                     transform: "translateY(-50%) rotate(-90deg)",
                     zIndex: 20,
                     display: "flex",
@@ -1699,7 +1648,7 @@ const FiltersPage = () => {
                       color: "black",
                       fontWeight: "500",
                       marginTop: "5px",
-                      fontSize:"12px"
+                      fontSize: "12px",
                     }}
                   >
                     Before/After
@@ -1722,11 +1671,13 @@ const FiltersPage = () => {
                   <div
                     className="applied-products-section mb-2"
                     style={{
-                      height: 110,
+                      height: 120,
                       overflowX: "auto",
                       overflowY: "hidden",
                       whiteSpace: "nowrap",
-                      scrollbarWidth: "none",
+                      width: "100%",
+                      scrollbarWidth: "thin",
+                      scrollbarColor: "#ed1173 #f1f1f1",
                     }}
                   >
                     <div
