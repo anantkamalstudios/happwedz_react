@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Row, Col, Card, Container, Button, Badge } from "react-bootstrap";
 import { FaStar, FaHeart, FaRegHeart } from "react-icons/fa";
 import { BsLightningCharge } from "react-icons/bs";
@@ -6,34 +6,81 @@ import { LuUsers } from "react-icons/lu";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  addToWishlist,
-  removeFromWishlist,
-} from "../../../redux/wishlistSlice";
 import { IoLocationOutline } from "react-icons/io5";
 import { TbView360Number } from "react-icons/tb";
+import { toggleWishlist } from "../../../redux/authSlice";
 
 const ListView = ({ subVenuesData, handleShow }) => {
   const dispatch = useDispatch();
-  const { items: wishlist } = useSelector((state) => state.wishlist);
-  const { user } = useSelector((state) => state.auth);
+  const { token } = useSelector((state) => state.auth);
   const [filter, setFilter] = useState("all");
   const [hoveredImages, setHoveredImages] = useState({});
+  const [favorites, setFavorites] = useState({});
+  const [wishlistIds, setWishlistIds] = useState(new Set());
 
-  const isFavorite = (vendorId) =>
-    wishlist.some((w) => w.vendorId === vendorId || w.vendor?._id === vendorId);
-
-  const handleWishlistToggle = (vendor) => {
-    if (!user?.id) {
-      console.error("User not logged in. Cannot modify wishlist.");
+  useEffect(() => {
+    if (!token) {
+      setFavorites({});
+      setWishlistIds(new Set());
       return;
     }
 
-    if (isFavorite(vendor.id)) {
-      dispatch(removeFromWishlist(vendor.id));
-    } else {
-      dispatch(addToWishlist({ userId: user.id, vendor }));
+    const fetchWishlist = async () => {
+      try {
+        const res = await fetch(`https://happywedz.com/api/wishlist`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+
+        if (data.success && data.data && data.data.length > 0) {
+          const ids = new Set(data.data.map((item) => item.vendor_services_id));
+          setWishlistIds(ids);
+          const favoritesObj = {};
+          ids.forEach((id) => {
+            favoritesObj[id] = true;
+          });
+          setFavorites(favoritesObj);
+        } else {
+          setWishlistIds(new Set());
+          setFavorites({});
+        }
+      } catch (error) {
+        console.error("Error fetching wishlist:", error);
+        setWishlistIds(new Set());
+        setFavorites({});
+      }
+    };
+
+    fetchWishlist();
+  }, [token, subVenuesData]);
+
+  const isFavorite = (vendorId) => {
+    return favorites[vendorId] === true || wishlistIds.has(vendorId);
+  };
+
+  const handleWishlistToggle = (venue, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
     }
+
+    const wasFavorite = isFavorite(venue.id);
+    setFavorites((prev) => ({
+      ...prev,
+      [venue.id]: !wasFavorite,
+    }));
+
+    setWishlistIds((prev) => {
+      const newSet = new Set(prev);
+      if (wasFavorite) {
+        newSet.delete(venue.id);
+      } else {
+        newSet.add(venue.id);
+      }
+      return newSet;
+    });
+
+    dispatch(toggleWishlist(venue));
   };
 
   const handleThumbEnter = (venueId, thumbUrl) => {
@@ -61,7 +108,11 @@ const ListView = ({ subVenuesData, handleShow }) => {
               <Row className="g-0">
                 <Col md={4} className="position-relative">
                   <Card.Img
-                    src={hoveredImages[venue.id] || venue.image || "/images/imageNotFound.jpg"}
+                    src={
+                      hoveredImages[venue.id] ||
+                      venue.image ||
+                      "/images/imageNotFound.jpg"
+                    }
                     alt={venue.name}
                     className="img-fluid rounded-5 object-fit-cover"
                     style={{ height: "200px", width: "100%" }}
@@ -82,7 +133,7 @@ const ListView = ({ subVenuesData, handleShow }) => {
 
                   <button
                     className="btn btn-light rounded-circle position-absolute top-0 end-0 m-2"
-                    onClick={() => handleWishlistToggle(venue)}
+                    onClick={(e) => handleWishlistToggle(venue, e)}
                   >
                     {isFavorite(venue.id) ? (
                       <FaHeart className="text-danger" />
