@@ -257,7 +257,7 @@ body {
 }
 
 .dropdown-menu {
-  z-index: 1000;
+  z-index: 0;
 }
 
 .mega-dropdown-wrapper {
@@ -270,6 +270,7 @@ body {
   visibility: visible;
   opacity: 1;
   top: 100%;
+  max-height: "fit-content";
   max-height: fit-content;
   overflow-y: auto;
 }
@@ -277,12 +278,13 @@ body {
 .mega-dropdown {
   display: none;
   position: absolute;
+  top: 90%;
   top: 100%;
   left: 50%;
   transform: translateX(20%);
   background: #fff;
   z-index: 999;
-  width: 100%;
+  width: 75%;
   padding: 1rem;
   opacity: 0;
   visibility: hidden;
