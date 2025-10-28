@@ -286,27 +286,28 @@ export const einviteApi = {
   getPublicEinviteInstance: async (id) => {
     try {
       // Try fetching as instance first
-      let response = await fetch(`${API_BASE_URL}/einvites/cards/instances/${id}`);
-      
+      let response = await fetch(
+        `${API_BASE_URL}/einvites/cards/instances/${id}`
+      );
+
       if (!response.ok) {
-        // If that fails, try fetching as card
-        console.log("Trying alternate endpoint...");
         response = await fetch(`${API_BASE_URL}/einvites/cards/${id}`);
       }
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error("API Error:", {
           status: response.status,
           statusText: response.statusText,
           url: response.url,
-          body: errorText
+          body: errorText,
         });
-        throw new Error(`Failed to fetch e-invite: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch e-invite: ${response.status} ${response.statusText}`
+        );
       }
-      
+
       const result = await response.json();
-      console.log("API Response:", result);
       return result;
     } catch (error) {
       console.error("Error fetching public e-invite instance:", error);

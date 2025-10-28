@@ -66,7 +66,6 @@ const citiesData = {
     "Wedding Venues Darjeeling",
     "Wedding Venues Howrah",
     "Wedding Venues Paschim Bardhaman",
-    "Wedding Venues South 24 Parganas",
   ],
   Uttarakhand: [
     "Wedding Venues Dehradun",

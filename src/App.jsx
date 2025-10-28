@@ -2,7 +2,7 @@ import React, { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import MainLayout from "./components/layouts/MainLayout";
 import MatrimonialLayout from "./components/layouts/MatrimonialLayout";
-import ShimmerLoader from "./components/ui/ShimmerLoader";
+import Loader from "./components/ui/Loader";
 import "./App.css";
 
 import NotFound from "./components/pages/NotFound";
@@ -184,8 +184,8 @@ function App() {
   }, [location.pathname]);
 
   return (
-    <Suspense fallback={<ShimmerLoader />}>
-      <LoaderProvider>
+    <LoaderProvider>
+      <Suspense fallback={<Loader />}>
         <ToastProvider>
           <Routes>
             <Route path="/preview/:id" element={<TemplatePreviewPage />} />
@@ -413,8 +413,8 @@ function App() {
             <Route path="/ai-recommandation" element={<RecommandPage />} />
           </Routes>
         </ToastProvider>
-      </LoaderProvider>
-    </Suspense>
+      </Suspense>
+    </LoaderProvider>
   );
 }
 

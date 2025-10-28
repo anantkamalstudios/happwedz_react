@@ -97,8 +97,7 @@ const FiltersPage = () => {
   }, [uploadedId]);
 
   const [previewUrl, setPreviewUrl] = React.useState(uploadedPreview);
-
-  console.log(likedProduct);
+ 
 
   React.useEffect(() => {
     setPreviewUrl(uploadedPreview);
@@ -108,8 +107,7 @@ const FiltersPage = () => {
     const fetchProducts = async () => {
       setIsLoading(true);
       try {
-        const response = await beautyApi.getFilteredProducts("MAKEUP");
-        console.log(response);
+        const response = await beautyApi.getFilteredProducts("MAKEUP"); 
 
         const items = Array.isArray(response)
           ? response
@@ -454,8 +452,7 @@ const FiltersPage = () => {
           url: previewUrl,
         });
         setShowShareMenu(false);
-      } catch (err) {
-        console.log(err);
+      } catch (err) { 
       }
     }
   };

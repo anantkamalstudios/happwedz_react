@@ -8,7 +8,6 @@ const EinviteMyCards = () => {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  console.log("c", cards);
   useEffect(() => {
     fetchUserCards();
   }, []);

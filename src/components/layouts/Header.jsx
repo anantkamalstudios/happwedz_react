@@ -214,7 +214,7 @@ const Header = () => {
         </div>
 
         <div className="collapse navbar-collapse w-100" id="mainNav">
-          <div className="row w-100">
+          <div className="row w-100" style={{ margin: 0, padding: 0 }}>
             <div className="col-12 bg-white p-2">
               <div className="container w-100 p-0">
                 <div className="row align-items-center gy-2">
@@ -732,6 +732,125 @@ const Header = () => {
                       <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
+                            className="nav-link dropdown-toggle text-white fs-18"
+                            to="/blog"
+                            state={{ title: "Blog" }}
+                            id="blog"
+                            role="button"
+                          >
+                            Blog
+                          </Link>
+
+                          <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0">
+                            <div className="container">
+                              <div className="row">
+                                <div className="col-12 col-md-4">
+                                  <div className="fw-bold primary-text text-uppercase">
+                                    Browse by Category
+                                  </div>
+                                  <ul className="list-unstyled mb-0">
+                                    <li className="dropdown-link small d-block">
+                                      Bridal Makeup
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Honeymoon Travel
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Wedding Songs and Videos
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Bridal Hairstyles
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Wedding Decor Ideas
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Bridal Style Advice
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Wedding Gifts and Favors
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Budget Weddings
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      More
+                                    </li>
+                                  </ul>
+                                </div>
+
+                                <div className="col-12 col-md-4">
+                                  <h6 className="primary-text fw-bold">
+                                    Popular Sections
+                                  </h6>
+                                  <ul className="list-unstyled mb-0">
+                                    <li className="dropdown-link small d-block">
+                                      South Indian wedding
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Real Brides Reveal
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Bridal Buys
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Real Wedding
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Mehendi Ideas
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Indian Wedding Ideas
+                                    </li>
+                                  </ul>
+                                </div>
+
+                                <div className="col-12 col-md-4">
+                                  <h6 className="primary-text fw-bold">
+                                    Most Searched Blogs
+                                  </h6>
+                                  <ul className="list-unstyled mb-0">
+                                    <li className="dropdown-link small d-block">
+                                      Wedding Songs
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Best Bridal Entry Songs
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Chandni Chowk Lehengas
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Best Bridal Hairstyles
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Bridal Mehendi Designs
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Best Groom Entry Songs
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Wittiest Wedding Hashtags
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      2025 Marriage Dates
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Latest Sabyasachi Lehengas
+                                    </li>
+                                    <li className="dropdown-link small d-block">
+                                      Bridal Blouse Designs
+                                    </li>
+                                  </ul>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+
+                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
+                        <div className="dropdown-wrapper">
+                          <Link
                             className="nav-link text-white fs-18"
                             to="/genie"
                             state={{ title: "Genie" }}
@@ -746,21 +865,7 @@ const Header = () => {
                       <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                         <div className="dropdown-wrapper">
                           <Link
-                            className="nav-link text-white fs-18"
-                            to="/blog"
-                            state={{ title: "Blog" }}
-                            id="blog"
-                            role="button"
-                          >
-                            Blog
-                          </Link>
-                        </div>
-                      </li>
-
-                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          <Link
-                            className="nav-link text-white fs-18"
+                            className="nav-link dropdown-toggle text-white fs-18"
                             to="/real-wedding"
                             state={{ title: "Real Wedding" }}
                             id="real-wedding"
@@ -861,51 +966,6 @@ const Header = () => {
                         </div>
                       </li>
 
-                      {/* Login Dropdown */}
-                      {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          <Link
-                            className="nav-link text-white"
-                            to="/customer-login"
-                            state={{ title: "Login" }}
-                            id="photoDropdown"
-                            role="button"
-                          >
-                            Login
-                          </Link>
-                        </div>
-                      </li>
- 
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          <Link
-                            className="nav-link text-white"
-                            to="/customer-register"
-                            state={{ title: "Signup" }}
-                            id="photoDropdown"
-                            role="button"
-                          >
-                            Sign-up
-                          </Link>
-                        </div>
-                      </li> */}
-
-                      {/* Vendor Dashboard */}
-                      {/* <li className="nav-Vendor Dashboard mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          <Link
-                            className="nav-link text-white"
-                            to="/customer-register"
-                            state={{ title: "vendor dashboard" }}
-                            id="photoDropdown"
-                            role="button"
-                          >
-                            Sign
-                          </Link>
-                        </div>
-                      </li> */}
-
-                      {/* Login Dropdown */}
                       {isUserLoggedIn ? (
                         <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">

@@ -21,7 +21,6 @@ const Contactus = () => {
   };
 
   const handleSubmit = () => {
-    console.log("Form submitted:", formData);
     Swal.fire({
       icon: "success",
       text: "Form submitted successfully!",

@@ -120,16 +120,13 @@ const MatrimonialRegistration = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateStep(step)) {
-      // console.log("Form submitted:", formData);
-      // Submit to backend
-      // alert("Registration successful!");
       Swal.fire({
-        icon:"success",
-        text:"Registration successfull",
-        timer:"3000",
-        confirmeButtonText:"OK",
-        confirmButtonColor:"#C31162"
-      })
+        icon: "success",
+        text: "Registration successfull",
+        timer: "3000",
+        confirmeButtonText: "OK",
+        confirmButtonColor: "#C31162",
+      });
     }
   };
 

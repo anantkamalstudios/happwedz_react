@@ -265,8 +265,7 @@ const ProfileImageSelector = () => {
       try {
         setIsLoadingProducts(true);
         const response = await beautyApi.getFilteredProducts("Makeup");
-        const items = response?.data || response?.products || response || [];
-        // console.log("ITEMS", items);
+        const items = response?.data || response?.products || response || []; 
         // Group into expected categories using API fields
         const grouped = {
           lipstick: [],
