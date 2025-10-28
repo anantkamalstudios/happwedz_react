@@ -1,23 +1,82 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Row, Col, Card, Container } from "react-bootstrap";
 import { FaStar, FaHeart, FaRegHeart } from "react-icons/fa";
 import { TbView360Number } from "react-icons/tb";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { toggleWishlist } from "../../../redux/authSlice";
 
 const GridView = ({ subVenuesData, handleShow }) => {
   const [favorites, setFavorites] = useState({});
+  const [wishlistIds, setWishlistIds] = useState(new Set());
   const dispatch = useDispatch();
+  const { token } = useSelector((state) => state.auth);
+
+  // Fetch wishlist on component mount to initialize favorites
+  useEffect(() => {
+    if (!token) {
+      setFavorites({});
+      setWishlistIds(new Set());
+      return;
+    }
+
+    const fetchWishlist = async () => {
+      try {
+        const res = await fetch(`https://happywedz.com/api/wishlist`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+
+        if (data.success && data.data && data.data.length > 0) {
+          const ids = new Set(data.data.map((item) => item.vendor_services_id));
+          setWishlistIds(ids);
+          // Initialize favorites state from fetched wishlist
+          const favoritesObj = {};
+          ids.forEach((id) => {
+            favoritesObj[id] = true;
+          });
+          setFavorites(favoritesObj);
+        } else {
+          setWishlistIds(new Set());
+          setFavorites({});
+        }
+      } catch (error) {
+        console.error("Error fetching wishlist:", error);
+        setWishlistIds(new Set());
+        setFavorites({});
+      }
+    };
+
+    fetchWishlist();
+  }, [token, subVenuesData]);
+
+  const isFavorite = (vendorId) => {
+    return favorites[vendorId] === true || wishlistIds.has(vendorId);
+  };
 
   const toggleFavorite = (venue, e) => {
     e.preventDefault();
     e.stopPropagation();
-    dispatch(toggleWishlist(venue));
+
+    // Optimistically update UI
+    const wasFavorite = isFavorite(venue.id);
     setFavorites((prev) => ({
       ...prev,
-      [venue.id]: !prev[venue.id],
+      [venue.id]: !wasFavorite,
     }));
+
+    // Update wishlistIds set
+    setWishlistIds((prev) => {
+      const newSet = new Set(prev);
+      if (wasFavorite) {
+        newSet.delete(venue.id);
+      } else {
+        newSet.add(venue.id);
+      }
+      return newSet;
+    });
+
+    dispatch(toggleWishlist(venue));
   };
 
   return (
@@ -83,7 +142,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                     }}
                     onClick={(e) => toggleFavorite(venue, e)}
                   >
-                    {favorites[venue.id] ? (
+                    {isFavorite(venue.id) ? (
                       <FaHeart className="text-danger" size={18} />
                     ) : (
                       <FaRegHeart className="text-dark" size={18} />

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setLocation } from "../../redux/locationSlice";
 import { MdExpandMore, MdExpandLess } from "react-icons/md";
 import axios from "axios";
 import herosection from "../../assets/Hero_2.jpg";
@@ -48,6 +49,7 @@ const RotatingWordHeadline = () => {
 const Herosection = () => {
   const { vendorTypes, loading } = useVendorType();
   const reduxLocation = useSelector((state) => state.location.selectedLocation);
+  const dispatch = useDispatch();
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedCity, setSelectedCity] = useState("");
   const [cities, setCities] = useState([]);
@@ -258,16 +260,24 @@ const Herosection = () => {
                 className="search-form"
                 onSubmit={(e) => {
                   e.preventDefault();
+                  // Dispatch the selected city to Redux if a city is selected
+                  if (selectedCity) {
+                    dispatch(setLocation(selectedCity));
+                  }
+
                   if (selectedCategory === "All Categories") {
                     navigate("/vendors");
                   } else if (selectedCategory) {
                     const formattedCategory = selectedCategory
                       .toLowerCase()
                       .split(" ")
-                      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                      .map(
+                        (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                      )
                       .join(" ");
 
-                    const encodedCategory = encodeURIComponent(formattedCategory);
+                    const encodedCategory =
+                      encodeURIComponent(formattedCategory);
                     const cityParam = selectedCity
                       ? `&city=${encodeURIComponent(selectedCity)}`
                       : "";
