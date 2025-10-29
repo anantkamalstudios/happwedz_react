@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Container,
   Row,
@@ -10,6 +11,7 @@ import {
   Spinner,
   Alert,
 } from "react-bootstrap";
+import { setCredentials } from "../../../../redux/authSlice";
 
 const initialState = {
   id: "",
@@ -26,8 +28,12 @@ const initialState = {
 };
 
 const UserProfile = ({ user, token }) => {
-  const userId = user?.id ?? user?._id ?? user?.user_id;
-  
+  const auth = useSelector((state) => state.auth);
+  const effectiveUser = auth?.user || user || {};
+  const effectiveToken = auth?.token || token || "";
+  const userId =
+    effectiveUser?.id ?? effectiveUser?._id ?? effectiveUser?.user_id;
+
   const [formData, setFormData] = useState(initialState);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -39,43 +45,61 @@ const UserProfile = ({ user, token }) => {
     newPassword: "",
     confirmPassword: "",
   });
+  const [initialValues, setInitialValues] = useState(null);
 
-  // Prefill from Redux so UI shows instantly before fetch completes
+  // Initialize form data and initialValues from Redux state
   useEffect(() => {
-    if (!user) return;
-    setFormData((prev) => ({
-      ...prev,
-      id: prev.id || userId || "",
-      name: prev.name || user.name || "",
-      email: prev.email || user.email || "",
-      phone: prev.phone || user.phone || "",
-      country: prev.country || user.country || "",
-      city: prev.city || user.city || "",
-      weddingVenue: prev.weddingVenue || user.weddingVenue || "",
-      weddingDate:
-        prev.weddingDate ||
-        (user.weddingDate ? String(user.weddingDate).slice(0, 10) : ""),
-      profileImage: prev.profileImage || user.profileImage || "",
-      coverImage: prev.coverImage || user.coverImage || "",
-    }));
-  }, [userId, user]);
+    if (!effectiveUser || !userId) return;
+
+    const userData = {
+      id: userId || "",
+      name: effectiveUser.name || "",
+      email: effectiveUser.email || "",
+      phone: effectiveUser.phone || "",
+      role: effectiveUser.role || "user",
+      weddingVenue: effectiveUser.weddingVenue || "",
+      country: effectiveUser.country || "",
+      city: effectiveUser.city || "",
+      weddingDate: effectiveUser.weddingDate
+        ? String(effectiveUser.weddingDate).slice(0, 10)
+        : "",
+      profileImage: effectiveUser.profileImage || "",
+      coverImage: effectiveUser.coverImage || "",
+    };
+
+    setFormData(userData);
+
+    // Set initial values once from Redux (for "Previous:" display)
+    setInitialValues({
+      name: effectiveUser.name || "",
+      email: effectiveUser.email || "",
+      phone: effectiveUser.phone || "",
+      weddingVenue: effectiveUser.weddingVenue || "",
+      country: effectiveUser.country || "",
+      city: effectiveUser.city || "",
+      weddingDate: effectiveUser.weddingDate
+        ? String(effectiveUser.weddingDate).slice(0, 10)
+        : "",
+    });
+  }, [userId]);
 
   const profilePreview = useMemo(() => {
     return formData.profileImage && typeof formData.profileImage !== "string"
       ? URL.createObjectURL(formData.profileImage)
       : typeof formData.profileImage === "string"
-        ? formData.profileImage
-        : "";
+      ? formData.profileImage
+      : "";
   }, [formData.profileImage]);
 
   const coverPreview = useMemo(() => {
     return formData.coverImage && typeof formData.coverImage !== "string"
       ? URL.createObjectURL(formData.coverImage)
       : typeof formData.coverImage === "string"
-        ? formData.coverImage
-        : "";
+      ? formData.coverImage
+      : "";
   }, [formData.coverImage]);
 
+  // Fetch user data from API (optional refresh)
   useEffect(() => {
     let didCancel = false;
     const fetchUser = async () => {
@@ -86,7 +110,9 @@ const UserProfile = ({ user, token }) => {
         const res = await fetch(`https://happywedz.com/api/user/${userId}`, {
           headers: {
             "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...(effectiveToken
+              ? { Authorization: `Bearer ${effectiveToken}` }
+              : {}),
           },
         });
         if (!res.ok) throw new Error("Failed to fetch user profile");
@@ -94,19 +120,23 @@ const UserProfile = ({ user, token }) => {
 
         if (didCancel) return;
 
+        // Only update formData with API response, preserve existing values if API returns null
         setFormData((prev) => ({
           ...prev,
           id: data?.id ?? userId,
-          name: data?.name ?? "",
-          email: data?.email ?? "",
-          phone: data?.phone ?? "",
-          weddingVenue: data?.weddingVenue ?? "",
-          country: data?.country ?? "",
-          city: data?.city ?? "",
-          weddingDate: data?.weddingDate ? data.weddingDate.slice(0, 10) : "",
-          profileImage: data?.profileImage ?? "",
-          coverImage: data?.coverImage ?? "",
+          name: data?.name ?? prev.name,
+          email: data?.email ?? prev.email,
+          phone: data?.phone ?? prev.phone,
+          weddingVenue: data?.weddingVenue ?? prev.weddingVenue,
+          country: data?.country ?? prev.country,
+          city: data?.city ?? prev.city,
+          weddingDate: data?.weddingDate
+            ? data.weddingDate.slice(0, 10)
+            : prev.weddingDate,
+          profileImage: data?.profileImage ?? prev.profileImage,
+          coverImage: data?.coverImage ?? prev.coverImage,
         }));
+        // Don't touch initialValues - it's already set from Redux in the first useEffect
       } catch (e) {
         if (!didCancel) setError(e.message || "Something went wrong");
       } finally {
@@ -118,7 +148,7 @@ const UserProfile = ({ user, token }) => {
     return () => {
       didCancel = true;
     };
-  }, [userId, token]);
+  }, [userId, effectiveToken]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -137,13 +167,14 @@ const UserProfile = ({ user, token }) => {
     setPasswordFields((prev) => ({ ...prev, [name]: value }));
   };
 
+  const dispatch = useDispatch();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     setError("");
     setSuccess("");
     try {
-      // Validate password change if toggled
       if (showChangePassword) {
         if (!passwordFields.currentPassword) {
           throw new Error("Current password is required to change password.");
@@ -159,41 +190,104 @@ const UserProfile = ({ user, token }) => {
         }
       }
 
-      const body = new FormData();
-      body.append("id", formData.id || "");
-      body.append("name", formData.name || "");
-      body.append("email", formData.email || "");
-      if (showChangePassword && passwordFields.newPassword) {
-        body.append("password", passwordFields.newPassword);
-      }
-      body.append("phone", formData.phone || "");
-      body.append("role", formData.role || "user");
-      body.append("weddingVenue", formData.weddingVenue || "");
-      body.append("country", formData.country || "");
-      body.append("city", formData.city || "");
-      body.append("weddingDate", formData.weddingDate || "");
-      if (formData.profileImage)
-        body.append("profileImage", formData.profileImage);
-      if (formData.coverImage) body.append("coverImage", formData.coverImage);
-
-      if (showChangePassword) {
-        body.append("currentPassword", passwordFields.currentPassword);
-      }
-
-      const res = await axios.put(
-        `https://happywedz.com/api/user/${userId}`,
-        body,
-        {
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-        }
+      const hasFiles = Boolean(
+        (formData.profileImage && typeof formData.profileImage !== "string") ||
+          (formData.coverImage && typeof formData.coverImage !== "string")
       );
+      const isPasswordChange = Boolean(
+        showChangePassword && passwordFields.newPassword
+      );
+
+      let res;
+      if (hasFiles || isPasswordChange) {
+        const body = new FormData();
+        body.append("id", formData.id || "");
+        body.append("name", formData.name || "");
+        body.append("email", formData.email || "");
+        if (isPasswordChange)
+          body.append("password", passwordFields.newPassword);
+        body.append("phone", formData.phone || "");
+        body.append("role", formData.role || "user");
+        body.append("weddingVenue", formData.weddingVenue || "");
+        body.append("country", formData.country || "");
+        body.append("city", formData.city || "");
+        body.append("weddingDate", formData.weddingDate || "");
+        if (formData.profileImage && typeof formData.profileImage !== "string")
+          body.append("profileImage", formData.profileImage);
+        if (formData.coverImage && typeof formData.coverImage !== "string")
+          body.append("coverImage", formData.coverImage);
+        if (isPasswordChange)
+          body.append("currentPassword", passwordFields.currentPassword);
+
+        res = await axios.put(
+          `https://happywedz.com/api/user/${userId}`,
+          body,
+          {
+            headers: {
+              ...(effectiveToken
+                ? { Authorization: `Bearer ${effectiveToken}` }
+                : {}),
+            },
+          }
+        );
+      } else {
+        const jsonBody = {
+          id: formData.id || "",
+          name: formData.name || "",
+          email: formData.email || "",
+          phone: formData.phone || "",
+          role: formData.role || "user",
+          weddingVenue: formData.weddingVenue || "",
+          country: formData.country || "",
+          city: formData.city || "",
+          weddingDate: formData.weddingDate || "",
+        };
+        res = await axios.put(
+          `https://happywedz.com/api/user/${userId}`,
+          jsonBody,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              ...(effectiveToken
+                ? { Authorization: `Bearer ${effectiveToken}` }
+                : {}),
+            },
+          }
+        );
+      }
 
       if (!res || res.status < 200 || res.status >= 300) {
         throw new Error("Failed to save profile");
       }
+      const updatedUser = res?.data?.user;
+      if (updatedUser) {
+        dispatch(setCredentials({ user: updatedUser, token: effectiveToken }));
+        setFormData((prev) => ({
+          ...prev,
+          name: updatedUser.name || prev.name,
+          email: updatedUser.email || prev.email,
+          phone: updatedUser.phone || prev.phone,
+          weddingVenue: updatedUser.weddingVenue || prev.weddingVenue,
+          country: updatedUser.country || prev.country,
+          city: updatedUser.city || prev.city,
+          weddingDate: updatedUser.weddingDate
+            ? String(updatedUser.weddingDate).slice(0, 10)
+            : prev.weddingDate,
+          profileImage: updatedUser.profileImage || prev.profileImage,
+          coverImage: updatedUser.coverImage || prev.coverImage,
+        }));
+      }
       setSuccess("Profile saved successfully.");
+
+      // Reset password fields after successful save
+      if (showChangePassword) {
+        setPasswordFields({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+        setShowChangePassword(false);
+      }
     } catch (e) {
       setError(
         e?.response?.data?.message || e.message || "Failed to save profile"
@@ -213,8 +307,9 @@ const UserProfile = ({ user, token }) => {
                 height: "180px",
                 background:
                   coverPreview || formData.coverImage
-                    ? `url(${coverPreview || formData.coverImage
-                    }) center/cover no-repeat`
+                    ? `url(${
+                        coverPreview || formData.coverImage
+                      }) center/cover no-repeat`
                     : "linear-gradient(135deg, #fdf2f8 0%, #e9d5ff 100%)",
                 borderTopLeftRadius: "0.375rem",
                 borderTopRightRadius: "0.375rem",
@@ -252,10 +347,10 @@ const UserProfile = ({ user, token }) => {
                   <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
                     <div>
                       <h5 className="mb-1">
-                        {formData.name || user?.name || "Your Name"}
+                        {formData.name || effectiveUser?.name || "Your Name"}
                       </h5>
                       <div className="text-muted small">
-                        {formData.email || user?.email || "your@email"}
+                        {formData.email || effectiveUser?.email || "your@email"}
                       </div>
                     </div>
                     <div className="d-flex gap-2">
@@ -314,6 +409,11 @@ const UserProfile = ({ user, token }) => {
                         placeholder="Enter your full name"
                         required
                       />
+                      {initialValues?.name ? (
+                        <div className="form-text">
+                          Previous: {initialValues.name}
+                        </div>
+                      ) : null}
                     </Form.Group>
                   </Col>
                   <Col md={6}>
@@ -327,6 +427,11 @@ const UserProfile = ({ user, token }) => {
                         placeholder="name@example.com"
                         required
                       />
+                      {initialValues?.email ? (
+                        <div className="form-text">
+                          Previous: {initialValues.email}
+                        </div>
+                      ) : null}
                     </Form.Group>
                   </Col>
 
@@ -340,6 +445,11 @@ const UserProfile = ({ user, token }) => {
                         onChange={handleChange}
                         placeholder="Enter phone number"
                       />
+                      {initialValues?.phone ? (
+                        <div className="form-text">
+                          Previous: {initialValues.phone}
+                        </div>
+                      ) : null}
                     </Form.Group>
                   </Col>
                   <Col md={6}>
@@ -351,6 +461,11 @@ const UserProfile = ({ user, token }) => {
                         value={formData.weddingDate}
                         onChange={handleChange}
                       />
+                      {initialValues?.weddingDate ? (
+                        <div className="form-text">
+                          Previous: {initialValues.weddingDate}
+                        </div>
+                      ) : null}
                     </Form.Group>
                   </Col>
 
@@ -364,6 +479,11 @@ const UserProfile = ({ user, token }) => {
                         onChange={handleChange}
                         placeholder="Country"
                       />
+                      {initialValues?.country ? (
+                        <div className="form-text">
+                          Previous: {initialValues.country}
+                        </div>
+                      ) : null}
                     </Form.Group>
                   </Col>
                   <Col md={3}>
@@ -376,6 +496,11 @@ const UserProfile = ({ user, token }) => {
                         onChange={handleChange}
                         placeholder="City"
                       />
+                      {initialValues?.city ? (
+                        <div className="form-text">
+                          Previous: {initialValues.city}
+                        </div>
+                      ) : null}
                     </Form.Group>
                   </Col>
                   <Col md={3}>
@@ -388,6 +513,11 @@ const UserProfile = ({ user, token }) => {
                         onChange={handleChange}
                         placeholder="Venue"
                       />
+                      {initialValues?.weddingVenue ? (
+                        <div className="form-text">
+                          Previous: {initialValues.weddingVenue}
+                        </div>
+                      ) : null}
                     </Form.Group>
                   </Col>
                   <Col xs={12} className="mt-2">

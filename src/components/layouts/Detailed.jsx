@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Container, Row, Col, Button, Modal } from "react-bootstrap";
 import { FaLocationDot } from "react-icons/fa6";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
@@ -10,6 +10,7 @@ import "swiper/css";
 import "swiper/css/autoplay";
 import vendorServicesApi from "../../services/api/vendorServicesApi";
 import PricingModal from "./PricingModal";
+import BusinessClaimForm from "../pages/BusinessClaimForm";
 
 import {
   FaStar,
@@ -51,6 +52,7 @@ const Detailed = () => {
   const [images, setImages] = useState([]);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [selectedVendorId, setSelectedVendorId] = useState(null);
+  const [showClaimForm, setShowClaimForm] = useState(false);
 
   const handleShowPricingModal = (vendorId) => {
     setSelectedVendorId(vendorId);
@@ -362,23 +364,17 @@ const Detailed = () => {
         const data = await vendorServicesApi.getVendorServiceById(id);
         setVenueData(data);
 
-        // Increment profile view count for this vendor (fire-and-forget)
         (async () => {
           try {
             if (data?.vendor_id) {
               const sessionKey = `vendor_viewed_${data.vendor_id}`;
-              // Avoid double increments in the same browser session (also handles StrictMode double-mount)
               if (!sessionStorage.getItem(sessionKey)) {
                 const incRes = await axios.post(
                   `${API_BASE_URL}/api/vendor/increment-view/${data.vendor_id}`
                 );
-                // mark as viewed for this session immediately to prevent duplicate calls
                 try {
                   sessionStorage.setItem(sessionKey, Date.now().toString());
-                } catch {
-                  /* ignore storage errors */
-                }
-                // If API returns updated vendor/profileViews, hydrate local state
+                } catch {}
                 if (incRes?.data?.vendor?.profileViews !== undefined) {
                   setVenueData((prev) => ({
                     ...prev,
@@ -937,13 +933,6 @@ const Detailed = () => {
                         ({venueData.attributes?.review_count || 0} reviews)
                       </span>
                     </div>
-                    {/* Profile views display (updates when other users view) */}
-                    {/* <div style={{ textAlign: "right" }}>
-                      <div className="text-muted small">
-                        Profile views:{" "}
-                        {profileViews ?? venueData?.vendor?.profileViews ?? 0}
-                      </div>
-                    </div> */}
                   </div>
                 </div>
 
@@ -964,8 +953,6 @@ const Detailed = () => {
                     </span>
                   )}
                 </div>
-
-                {/* Move Request button above pricing */}
 
                 <div className="pricing mb-4">
                   {isVenue ? (
@@ -1056,14 +1043,23 @@ const Detailed = () => {
                   )}
                 </div>
 
-                {/* End moved button */}
+                <div>
+                  <button
+                    className="btn btn-primary w-100 py-2 fs-5 mt-2 rounded-4"
+                    onClick={() => setShowClaimForm(true)}
+                  >
+                    Claim Your Buisness
+                  </button>
+                </div>
               </div>
 
-              <div className="action-buttons border-top pt-3 mb-3">
+              <hr />
+
+              <div className="action-buttons mb-3">
                 <div className="margin-b-50 d-flex h-center cursor-pointer">
                   <div style={{ width: "100%" }}>
                     <button
-                      className="btn btn-primary w-100 py-2 fs-5"
+                      className="btn btn-primary w-100 py-2 fs-5 rounded-4"
                       onClick={() =>
                         handleShowPricingModal(venueData.vendor_id)
                       }
@@ -1169,6 +1165,19 @@ const Detailed = () => {
         handleClose={() => setShowPricingModal(false)}
         vendorId={selectedVendorId}
       />
+
+      <Modal
+        show={showClaimForm}
+        onHide={() => setShowClaimForm(false)}
+        size="xl"
+        centered
+        scrollable
+        backdrop="static"
+      >
+        <Modal.Body>
+          <BusinessClaimForm />
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

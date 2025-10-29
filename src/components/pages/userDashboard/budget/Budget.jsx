@@ -1,11 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
-import {
-  FaEdit,
-  FaTrash,
-  FaPlus,
-  FaChevronDown,
-  FaChevronRight,
-} from "react-icons/fa";
+import React, { useState } from "react";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import {
   PieChart,
   Pie,
@@ -14,160 +8,30 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { useSelector } from "react-redux";
 import Swal from "sweetalert2";
 import { FcOk } from "react-icons/fc";
 import { MdCancel } from "react-icons/md";
-import { FaBookOpenReader, FaCheck, FaMinus } from "react-icons/fa6";
+import { FaBookOpenReader, FaCheck, FaMinus, FaPlus } from "react-icons/fa6";
+import useBudget from "../../../../hooks/useBudget";
 
 const Budget = () => {
-  const [budget, setBudget] = useState({
-    estimated: 0,
-    categories: [],
-  });
+  const {
+    loading,
+    error,
+    estimated,
+    categories,
+    selectedCategoryId,
+    totalSpent,
+    totalFinalCost,
+    remainingBudget,
+    setSelectedCategoryId,
+    addBudget,
+    updateBudget,
+    deleteBudget,
+    isAuthenticated,
+    estimatedTotal,
+  } = useBudget();
 
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [isEditingBudget, setIsEditingBudget] = useState(false);
-  const [newBudgetAmount, setNewBudgetAmount] = useState(budget.estimated);
-  const [newExpense, setNewExpense] = useState({ name: "", estimated: 0 });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const { user, token } = useSelector((state) => state.auth);
-
-  useEffect(() => {
-    const fetchBudgetCategories = async () => {
-      try {
-        const response = await fetch(
-          "https://happywedz.com/api/vendor-types/with-subcategories/all"
-        );
-        const data = await response.json();
-        const categoriesFromApi = data.map((cat) => ({
-          id: cat.id,
-          name: cat.name,
-          amount: 0, // Default amount
-          subcategories:
-            cat.subcategories?.map((sub) => ({
-              id: sub.id,
-              name: sub.name, // This will be overwritten by user data if available
-              estimated: 0,
-              final: 0,
-              paid: 0,
-            })) || [],
-        }));
-        setBudget((prev) => ({ ...prev, categories: categoriesFromApi }));
-      } catch (error) {
-        console.error("Error fetching budget categories:", error);
-        setError("Could not load budget categories. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBudgetCategories();
-  }, []);
-
-  useEffect(() => {
-    // Don't fetch user budget until categories and user are loaded
-    if (budget.categories.length === 0 || !user?.id) {
-      return;
-    }
-
-    const fetchUserBudget = async () => {
-      try {
-        const response = await fetch(
-          `https://happywedz.com/api/budgets/user/${user.id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const result = await response.json();
-
-        if (result.success && result.data.length > 0) {
-          const userBudgetData = result.data;
-          const userEstimatedBudget = userBudgetData[0]?.user_estimated_budget;
-
-          setBudget((prev) => {
-            // Update estimated budget if available from user data
-            const newEstimated =
-              userEstimatedBudget !== undefined
-                ? userEstimatedBudget
-                : prev.estimated;
-            setNewBudgetAmount(newEstimated); // Sync the edit input
-
-            const categoriesWithData = prev.categories.map((category) => {
-              const matchingBudgets = userBudgetData.filter(
-                (b) => b.vendor_type_id === category.id
-              );
-
-              if (matchingBudgets.length > 0) {
-                const newSubcategories = matchingBudgets
-                  .map((b) => ({
-                    id: b.id,
-                    name: b.name || `Expense #${b.id}`, // Use the name from the API
-                    estimated: b.estimated_budget || 0,
-                    final: b.final_cost || 0,
-                    paid: b.paid_amount || 0,
-                  }))
-                  .filter(Boolean);
-
-                return { ...category, subcategories: newSubcategories };
-              }
-              return category;
-            });
-            return { ...prev, categories: categoriesWithData };
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching user budget:", error);
-        setError("Could not load your saved budget. Please try again later.");
-      }
-    };
-
-    fetchUserBudget();
-  }, [budget.categories.length, user?.id, token]); // Rerun when categories or user are populated
-
-  // Recalculate totals whenever budget or categories change
-  const { totalSpent, remainingBudget, totalFinalCost } = useMemo(() => {
-    const spent = budget.categories.reduce(
-      (total, category) =>
-        total +
-        category.subcategories.reduce(
-          (catTotal, expense) => catTotal + expense.paid,
-          0
-        ),
-      0
-    );
-    const final = budget.categories.reduce(
-      (total, category) =>
-        total +
-        category.subcategories.reduce(
-          (catTotal, expense) => catTotal + expense.final,
-          0
-        ),
-      0
-    );
-    const remaining = budget.estimated - spent;
-
-    if (remaining < 0) {
-      Swal.fire({
-        icon: "warning",
-        title: "Budget Exceeded",
-        text: "You have spent more than your estimated budget. Please adjust your budget or expenses.",
-        confirmButtonColor: "#c2185b",
-      });
-    }
-
-    return {
-      totalSpent: spent,
-      remainingBudget: remaining,
-      totalFinalCost: final,
-    };
-  }, [budget]);
-
-  // Colors for pie chart
   const COLORS = [
     "#0088FE",
     "#00C49F",
@@ -179,15 +43,13 @@ const Budget = () => {
     "#F687B3",
   ];
 
-  // Prepare data for pie chart
   const getPieChartData = () => {
-    return budget.categories.map((category) => ({
+    return categories.map((category) => ({
       name: category.name,
       value: category.amount,
     }));
   };
 
-  // Format currency for Indian Rupees
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -196,237 +58,83 @@ const Budget = () => {
     }).format(amount);
   };
 
-  // Toggle category expansion
   const toggleCategory = (categoryId) => {
-    if (selectedCategory === categoryId) {
-      setSelectedCategory(null);
+    if (selectedCategoryId === categoryId) {
+      setSelectedCategoryId(null);
     } else {
-      setSelectedCategory(categoryId);
+      setSelectedCategoryId(categoryId);
     }
   };
 
-  // Update budget amount
-  const handleBudgetUpdate = async () => {
-    const newAmount = Number(newBudgetAmount);
-    // Here you would make an API call to save the new budget
-    // For now, we'll just update the state.
-    try {
-      // Example API call (replace with your actual API endpoint)
-      await fetch(`https://happywedz.com/api/user-budget/${user.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ estimated: newAmount }),
-      });
+  const [newSubcategoryId, setNewSubcategoryId] = useState("");
+  const [newEstimated, setNewEstimated] = useState("");
+  const [newFinal, setNewFinal] = useState("");
+  const [newPaid, setNewPaid] = useState("");
 
-      setBudget({ ...budget, estimated: newAmount });
-      setIsEditingBudget(false);
-      Swal.fire({
-        icon: "success",
-        title: "Budget Updated!",
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    } catch (err) {
-      console.error("Failed to update budget:", err);
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "Failed to update your budget. Please try again.",
-      });
+  const handleAddExpense = async () => {
+    if (!isAuthenticated) {
+      Swal.fire("Sign in required", "Please log in to add expenses.", "info");
+      return;
+    }
+    const vendorTypeId = selectedCategoryId;
+    const vendorSubcategoryId = Number(newSubcategoryId);
+    const estimatedBudget = Number(newEstimated || 0);
+    const finalCost = Number(newFinal || 0);
+    const paidAmount = Number(newPaid || 0);
+
+    if (!vendorTypeId || !vendorSubcategoryId || estimatedBudget <= 0) {
+      Swal.fire(
+        "Validation",
+        "Select subcategory and enter estimated amount.",
+        "warning"
+      );
+      return;
+    }
+
+    const created = await addBudget({
+      vendorTypeId,
+      vendorSubcategoryId,
+      estimatedBudget,
+      finalCost,
+      paidAmount,
+    });
+    if (created) {
+      setNewSubcategoryId("");
+      setNewEstimated("");
+      setNewFinal("");
+      setNewPaid("");
+    } else {
+      Swal.fire("Error", "Failed to add expense. Please try again.", "error");
     }
   };
 
-  // Add new expense to category
-  const addExpense = async (categoryId, categoryName) => {
-    if (!user?.id) return; // Do not proceed if there is no user
-    if (!newExpense.name || newExpense.estimated <= 0) return;
-
-    const payload = {
-      user_id: user.id,
-      vendor_type_id: categoryId,
-      name: newExpense.name, // Sending the name to the backend
-      estimated_budget: Number(newExpense.estimated),
-      final_cost: 0,
-      paid_amount: 0,
-    };
-
-    try {
-      // API call to save the new expense
-      const response = await fetch(`https://happywedz.com/api/budgets/user`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to add expense");
-      }
-
-      const result = await response.json();
-
-      if (result.success) {
-        const newExpenseFromServer = result.data;
-        const updatedCategories = budget.categories.map((category) => {
-          if (category.id === categoryId) {
-            const newSubcategory = {
-              id: newExpenseFromServer.id, // Use the ID from the server response
-              name: newExpense.name, // Keep the name from the form
-              estimated: newExpenseFromServer.estimated_budget,
-              final: newExpenseFromServer.final_cost,
-              paid: newExpenseFromServer.paid_amount,
-            };
-            return {
-              ...category,
-              subcategories: [...category.subcategories, newSubcategory],
-              amount: category.amount + newSubcategory.estimated,
-            };
-          }
-          return category;
-        });
-
-        setBudget((prev) => ({
-          ...prev,
-          categories: updatedCategories,
-        }));
-        setNewExpense({ name: "", estimated: 0 }); // Reset form
-      } else {
-        console.error("Failed to add expense:", result.message);
-        Swal.fire("Error", "Failed to save your new expense.", "error");
-      }
-    } catch (error) {
-      console.error("Error adding expense:", error);
-      Swal.fire("Error", "An error occurred while saving.", "error");
-    }
-  };
-
-  // Update expense field
   const updateExpense = async (categoryId, expenseId, field, value) => {
-    // Find the specific expense to create the payload
-    let expenseToUpdate;
-    budget.categories.forEach((cat) => {
-      if (cat.id === categoryId) {
-        expenseToUpdate = cat.subcategories.find((exp) => exp.id === expenseId);
-      }
-    });
+    const category = categories.find((c) => c.id === categoryId);
+    if (!category) return;
+    const row = (category.budgets || []).find((r) => r.id === expenseId);
+    if (!row) return;
 
-    if (!expenseToUpdate) return;
-
-    // Optimistically update the UI
-    const updatedCategories = budget.categories.map((category) => {
-      if (category.id === categoryId) {
-        const updatedSubcategories = category.subcategories.map((expense) => {
-          if (expense.id === expenseId) {
-            return { ...expense, [field]: Number(value) };
-          }
-          return expense;
-        });
-
-        // Recalculate category amount
-        const newAmount = updatedSubcategories.reduce(
-          (sum, exp) => sum + exp.estimated,
-          0
-        );
-
-        return {
-          ...category,
-          subcategories: updatedSubcategories,
-          amount: newAmount,
-        };
-      }
-      return category;
-    });
-
-    setBudget({
-      ...budget,
-      categories: updatedCategories,
-    });
-
-    // Now, make the API call to persist the change
-    const payload = {
-      ...expenseToUpdate,
-      [field]: Number(value), // Update the specific field
+    const next = {
+      id: row.id,
+      vendorTypeId: categoryId,
+      vendorSubcategoryId: row.vendor_subcategory_id,
+      estimated: field === "estimated" ? Number(value) : row.estimated,
+      final: field === "final" ? Number(value) : row.final,
+      paid: field === "paid" ? Number(value) : row.paid,
     };
-
-    try {
-      const response = await fetch(
-        `https://happywedz.com/api/budgets/${expenseId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        }
+    const ok = await updateBudget(next);
+    if (!ok) {
+      Swal.fire(
+        "Error",
+        "Failed to update expense. Please try again.",
+        "error"
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to update expense. Please try again.");
-      }
-      // Optionally show a success message or handle the response
-    } catch (err) {
-      console.error("Update expense error:", err);
-      // Optionally revert the state change if the API call fails
-      Swal.fire("Error", err.message, "error");
     }
   };
 
-  // Delete expense
   const deleteExpense = async (categoryId, expenseId) => {
-    const originalCategories = budget.categories;
-
-    // Optimistically update UI
-    const updatedCategories = budget.categories.map((category) => {
-      if (category.id === categoryId) {
-        const expenseToDelete = category.subcategories.find(
-          (exp) => exp.id === expenseId
-        );
-        const filteredSubcategories = category.subcategories.filter(
-          (exp) => exp.id !== expenseId
-        );
-
-        return {
-          ...category,
-          subcategories: filteredSubcategories,
-          amount: category.amount - (expenseToDelete?.estimated || 0),
-        };
-      }
-      return category;
-    });
-
-    setBudget({
-      ...budget,
-      categories: updatedCategories,
-    });
-
-    // API call to delete the expense
-    try {
-      const response = await fetch(
-        `https://happywedz.com/api/budgets/${expenseId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to delete expense.");
-      }
-      // Success! No need to do anything as UI is already updated.
-    } catch (err) {
-      console.error("Delete expense error:", err);
-      // If API call fails, revert the UI change
-      setBudget((prev) => ({ ...prev, categories: originalCategories }));
-      Swal.fire("Error", err.message, "error");
-    }
+    const ok = await deleteBudget({ id: expenseId, vendorTypeId: categoryId });
+    if (!ok) Swal.fire("Error", "Failed to delete expense.", "error");
   };
 
   if (loading) {
@@ -447,45 +155,9 @@ const Budget = () => {
         <div className="wb-budget-summary">
           <div className="wb-budget-card">
             <div className="wb-budget-label">ESTIMATED BUDGET</div>
-            {isEditingBudget ? (
-              <div className="wb-budget-edit row">
-                <div className="col-6">
-                  <input
-                    type="number"
-                    value={newBudgetAmount}
-                    onChange={(e) => setNewBudgetAmount(e.target.value)}
-                    className="wb-input"
-                  />
-                </div>
-                <div className="col-6 d-flex justify-content-between">
-                  <button
-                    className="wb-button wb-save-button rounded-1"
-                    onClick={handleBudgetUpdate}
-                  >
-                    <FaCheck size={10} />
-                  </button>
-                  <button
-                    className="wb-button wb-cancel-button rounded-1"
-                    onClick={() => {
-                      setIsEditingBudget(false);
-                      setNewBudgetAmount(budget.estimated);
-                    }}
-                  >
-                    <MdCancel size={10} />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="wb-budget-amount">
-                {formatCurrency(budget.estimated)}
-                <button
-                  className="wb-edit-button"
-                  onClick={() => setIsEditingBudget(true)}
-                >
-                  <FaEdit />
-                </button>
-              </div>
-            )}
+            <div className="wb-budget-amount">
+              {formatCurrency(estimatedTotal)}
+            </div>
           </div>
 
           <div className="wb-budget-card">
@@ -516,19 +188,17 @@ const Budget = () => {
       <div className="wb-categories-container">
         <div className="wb-categories-list">
           <h2 className="wb-section-title">Categories</h2>
-          {budget.categories.map((category) => (
+          {categories.map((category) => (
             <div key={category.id} className="wb-category-item">
               <div
                 className="wb-category-header"
                 onClick={() => toggleCategory(category.id)}
               >
                 <div className="wb-category-name">
-                  {selectedCategory === category.id ? (
+                  {selectedCategoryId === category.id ? (
                     <FaBookOpenReader className="wb-category-icon" />
                   ) : (
-                    // <FaChevronDown className="wb-category-icon" />
                     <FaMinus className="wb-category-icon" />
-                    // <FaChevronRight className="wb-category-icon" />
                   )}
                   {category.name}
                 </div>
@@ -536,87 +206,20 @@ const Budget = () => {
                   {formatCurrency(category.amount)}
                 </div>
               </div>
-
-              {/* {selectedCategory === category.id && (
-                <div className="wb-subcategories-list">
-                  {category.subcategories.map((expense) => (
-                    <div key={expense.id} className="wb-subcategory-item">
-                      <div className="wb-subcategory-name">{expense.name}</div>
-                      <div className="wb-subcategory-details">
-                        <input
-                          type="number"
-                          value={expense.estimated}
-                          onChange={(e) =>
-                            updateExpense(
-                              category.id,
-                              expense.id,
-                              "estimated",
-                              e.target.value
-                            )
-                          }
-                          className="wb-input wb-small-input"
-                        />
-                        <span className="wb-currency">₹</span>
-                      </div>
-                      <button
-                        className="wb-delete-button"
-                        onClick={() => deleteExpense(category.id, expense.id)}
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                  ))}
-
-                  <div className="wb-add-expense">
-                    <input
-                      type="text"
-                      placeholder="New expense name"
-                      value={newExpense.name}
-                      onChange={(e) =>
-                        setNewExpense({ ...newExpense, name: e.target.value })
-                      }
-                      className="wb-input"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Amount"
-                      value={newExpense.estimated || ""}
-                      onChange={(e) =>
-                        setNewExpense({
-                          ...newExpense,
-                          estimated: e.target.value,
-                        })
-                      }
-                      className="wb-input wb-amount-input"
-                    />
-                    <span className="wb-currency">₹</span>
-                    <button
-                      className="wb-button wb-add-button"
-                      onClick={() => addExpense(category.id, category.name)}
-                    >
-                      <FaPlus /> Add
-                    </button>
-                  </div>
-                </div>
-              )} */}
             </div>
           ))}
         </div>
 
         <div className="wb-expense-details">
-          {selectedCategory ? (
+          {selectedCategoryId ? (
             <>
               <div className="wb-category-summary">
                 <h3 className="wb-category-title">
-                  {
-                    budget.categories.find((c) => c.id === selectedCategory)
-                      ?.name
-                  }
+                  {categories.find((c) => c.id === selectedCategoryId)?.name}
                 </h3>
                 <div className="wb-category-total">
                   {formatCurrency(
-                    budget.categories.find((c) => c.id === selectedCategory)
-                      ?.amount
+                    categories.find((c) => c.id === selectedCategoryId)?.amount
                   )}
                 </div>
               </div>
@@ -632,9 +235,9 @@ const Budget = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {budget.categories
-                    .find((c) => c.id === selectedCategory)
-                    ?.subcategories.map((expense) => (
+                  {categories
+                    .find((c) => c.id === selectedCategoryId)
+                    ?.budgets.map((expense) => (
                       <tr key={expense.id}>
                         <td>{expense.name}</td>
                         <td>
@@ -645,7 +248,7 @@ const Budget = () => {
                               value={expense.estimated}
                               onChange={(e) =>
                                 updateExpense(
-                                  selectedCategory,
+                                  selectedCategoryId,
                                   expense.id,
                                   "estimated",
                                   e.target.value
@@ -663,7 +266,7 @@ const Budget = () => {
                               value={expense.final}
                               onChange={(e) =>
                                 updateExpense(
-                                  selectedCategory,
+                                  selectedCategoryId,
                                   expense.id,
                                   "final",
                                   e.target.value
@@ -681,7 +284,7 @@ const Budget = () => {
                               value={expense.paid}
                               onChange={(e) =>
                                 updateExpense(
-                                  selectedCategory,
+                                  selectedCategoryId,
                                   expense.id,
                                   "paid",
                                   e.target.value
@@ -695,7 +298,7 @@ const Budget = () => {
                           <button
                             className="wb-delete-button"
                             onClick={() =>
-                              deleteExpense(selectedCategory, expense.id)
+                              deleteExpense(selectedCategoryId, expense.id)
                             }
                           >
                             <FaTrash />
@@ -703,6 +306,66 @@ const Budget = () => {
                         </td>
                       </tr>
                     ))}
+                  {/* Add new expense row */}
+                  <tr>
+                    <td>
+                      <select
+                        className="wb-input"
+                        value={newSubcategoryId}
+                        onChange={(e) => setNewSubcategoryId(e.target.value)}
+                      >
+                        <option value="">Select subcategory</option>
+                        {categories
+                          .find((c) => c.id === selectedCategoryId)
+                          ?.subcategories.map((sub) => (
+                            <option key={sub.id} value={sub.id}>
+                              {sub.name}
+                            </option>
+                          ))}
+                      </select>
+                    </td>
+                    <td>
+                      <div className="wb-currency-input">
+                        <span>₹</span>
+                        <input
+                          type="number"
+                          value={newEstimated}
+                          onChange={(e) => setNewEstimated(e.target.value)}
+                          className="wb-input wb-table-input"
+                        />
+                      </div>
+                    </td>
+                    <td>
+                      <div className="wb-currency-input">
+                        <span>₹</span>
+                        <input
+                          type="number"
+                          value={newFinal}
+                          onChange={(e) => setNewFinal(e.target.value)}
+                          className="wb-input wb-table-input"
+                        />
+                      </div>
+                    </td>
+                    <td>
+                      <div className="wb-currency-input">
+                        <span>₹</span>
+                        <input
+                          type="number"
+                          value={newPaid}
+                          onChange={(e) => setNewPaid(e.target.value)}
+                          className="wb-input wb-table-input"
+                        />
+                      </div>
+                    </td>
+                    <td>
+                      <button
+                        className="wb-button wb-add-button"
+                        onClick={handleAddExpense}
+                      >
+                        <FaPlus />
+                      </button>
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </>
@@ -728,7 +391,7 @@ const Budget = () => {
                           `${name}: ${(percent * 100).toFixed(0)}%`
                         }
                       >
-                        {budget.categories.map((entry, index) => (
+                        {categories.map((entry, index) => (
                           <Cell
                             key={`cell-${index}`}
                             fill={COLORS[index % COLORS.length]}

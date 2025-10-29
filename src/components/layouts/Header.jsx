@@ -762,9 +762,12 @@ const Header = () => {
                                   <h6 className="fw-semibold mb-3 primary-text text-uppercase">
                                     E-Invitation Categories
                                   </h6>
-                                  <div className="row">
+                                  <ul className="list-unstyled col">
                                     {einviteCategories.map((sub, j) => (
-                                      <li key={sub.id || j} className="mb-1">
+                                      <li
+                                        key={sub.id || j}
+                                        className="col-12 col-md-4 mb-1"
+                                      >
                                         <Link
                                           to={`/einvites/category/${sub.cardType}`}
                                           className="dropdown-link small d-block"
@@ -773,7 +776,7 @@ const Header = () => {
                                         </Link>
                                       </li>
                                     ))}
-                                  </div>
+                                  </ul>
                                 </div>
                               </div>
                             </div>
@@ -852,15 +855,20 @@ const Header = () => {
                                   </h6>
                                   <ul className="list-unstyled mb-0">
                                     {weddingIdeas.map((idea, index) => (
-                                      <Link
-                                        to="/blog"
-                                        style={{
-                                          textDecoration: " none",
-                                          color: "#212529",
-                                        }}
+                                      <li
+                                        key={index}
+                                        className="dropdown-link small d-block"
                                       >
-                                        {idea}
-                                      </Link>
+                                        <Link
+                                          to="/blog"
+                                          style={{
+                                            textDecoration: " none",
+                                            color: "#212529",
+                                          }}
+                                        >
+                                          {idea}
+                                        </Link>
+                                      </li>
                                     ))}
                                   </ul>
                                 </div>
