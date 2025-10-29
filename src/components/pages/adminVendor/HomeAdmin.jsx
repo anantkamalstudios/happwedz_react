@@ -75,7 +75,7 @@ const HomeAdmin = () => {
   const [stats, setStats] = useState({
     impressions: 0,
     profileViews: 0,
-    chartData: { labels: [], leads: [], impressions: [] },
+    chartData: { labels: [], leads: [], impressions: [], profileViews: [] },
   });
   const [loadingStats, setLoadingStats] = useState(true);
   const [storefrontCompletion, setStorefrontCompletion] = useState(0);
@@ -211,6 +211,7 @@ const HomeAdmin = () => {
             ),
             leads: leadChartValues,
             impressions: prev.chartData.impressions,
+            profileViews: prev.chartData.profileViews || [],
           },
         }));
 
@@ -224,7 +225,15 @@ const HomeAdmin = () => {
             if (pvRes && pvRes.ok) {
               const pvData = await pvRes.json();
               const pvCount = pvData?.vendor?.profileViews ?? 0;
-              setStats((prev) => ({ ...prev, profileViews: pvCount }));
+              // set profileViews and populate a flat timeseries matching chart labels
+              setStats((prev) => ({
+                ...prev,
+                profileViews: pvCount,
+                chartData: {
+                  ...prev.chartData,
+                  profileViews: labels.map(() => pvCount),
+                },
+              }));
             }
           } catch (pvErr) {
             console.error("Failed to fetch profile views:", pvErr);

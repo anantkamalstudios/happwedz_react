@@ -125,17 +125,6 @@ const Detailed = () => {
         });
       }
 
-      // --- Parking ---
-      // if (
-      //   attributes.about_us &&
-      //   attributes.about_us.includes("Sufficient Parking available")
-      // ) {
-      //   amenities.push({
-      //     icon: <FaParking />,
-      //     name: "Sufficient Car Parking Available",
-      //   });
-      // }
-
       if (attributes.parking) {
         amenities.push({
           icon: <FaParking />,
@@ -345,55 +334,55 @@ const Detailed = () => {
   }, [id]);
 
   // Fetch latest profile views (used to reflect increments from other users)
-  const fetchProfileViews = async (vendorId) => {
-    try {
-      const res = await axios.get(
-        `${API_BASE_URL}/api/vendor/profile-views/${vendorId}`
-      );
-      const count = res?.data?.vendor?.profileViews ?? null;
-      if (count !== null) {
-        setProfileViews(count);
-        setVenueData((prev) => ({
-          ...prev,
-          vendor: {
-            ...(prev?.vendor || {}),
-            profileViews: count,
-          },
-        }));
-      }
-    } catch (err) {
-      // ignore silently
-      console.debug("fetchProfileViews failed:", err?.message || err);
-    }
-  };
+  // const fetchProfileViews = async (vendorId) => {
+  //   try {
+  //     const res = await axios.get(
+  //       `${API_BASE_URL}/api/vendor/profile-views/${vendorId}`
+  //     );
+  //     const count = res?.data?.vendor?.profileViews ?? null;
+  //     if (count !== null) {
+  //       setProfileViews(count);
+  //       setVenueData((prev) => ({
+  //         ...prev,
+  //         vendor: {
+  //           ...(prev?.vendor || {}),
+  //           profileViews: count,
+  //         },
+  //       }));
+  //     }
+  //   } catch (err) {
+  //     // ignore silently
+  //     console.debug("fetchProfileViews failed:", err?.message || err);
+  //   }
+  // };
 
   // Periodically refresh profile views and when page becomes visible again
-  useEffect(() => {
-    let intervalId;
-    const tryStart = () => {
-      const vid = venueData?.vendor_id || venueData?.vendor?.id;
-      if (vid) {
-        // initial fetch
-        fetchProfileViews(vid);
-        // start polling every 30s
-        intervalId = setInterval(() => fetchProfileViews(vid), 30000);
-      }
-    };
+  // useEffect(() => {
+  //   let intervalId;
+  //   const tryStart = () => {
+  //     const vid = venueData?.vendor_id || venueData?.vendor?.id;
+  //     if (vid) {
+  //       // initial fetch
+  //       fetchProfileViews(vid);
+  //       // start polling every 30s
+  //       intervalId = setInterval(() => fetchProfileViews(vid), 30000);
+  //     }
+  //   };
 
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible") {
-        const vid = venueData?.vendor_id || venueData?.vendor?.id;
-        if (vid) fetchProfileViews(vid);
-      }
-    };
+  //   const handleVisibility = () => {
+  //     if (document.visibilityState === "visible") {
+  //       const vid = venueData?.vendor_id || venueData?.vendor?.id;
+  //       if (vid) fetchProfileViews(vid);
+  //     }
+  //   };
 
-    tryStart();
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
-  }, [venueData]);
+  //   tryStart();
+  //   document.addEventListener("visibilitychange", handleVisibility);
+  //   return () => {
+  //     if (intervalId) clearInterval(intervalId);
+  //     document.removeEventListener("visibilitychange", handleVisibility);
+  //   };
+  // }, [venueData]);
 
   const [_faqList, _setFaqList] = useState([]);
 

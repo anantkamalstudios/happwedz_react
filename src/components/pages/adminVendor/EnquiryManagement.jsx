@@ -239,11 +239,6 @@ const EnquiryManagement = () => {
                   Manage your wedding enquiries efficiently
                 </p>
               </div>
-              <div className="d-flex gap-2">
-                <button className="btn btn-outline-primary btn-sm">
-                  <BarChart3 size={16} className="me-1" /> Analytics
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -524,8 +519,8 @@ const EnquiryManagement = () => {
                     ) : (
                       <div
                         style={{
-                          maxHeight: "calc(100vh - 300px)",
-                          overflowY: "none",
+                          maxHeight: "calc(100vh - 50px)",
+                          overflowY: "auto",
                         }}
                       >
                         {leads.map((lead) => (
@@ -554,7 +549,7 @@ const EnquiryManagement = () => {
                                   : "scale(1)",
                             }}
                           >
-                            <div className="card-body p-3">
+                            <div className="card-body p-3 ">
                               <div className="d-flex justify-content-between align-items-start mb-2">
                                 <div className="d-flex align-items-center gap-2">
                                   <div
@@ -686,22 +681,18 @@ const EnquiryManagement = () => {
                                 </div>
                               </div>
                             </div>
-                            <button
+                            {/* <button
                               className="btn btn-outline-secondary btn-sm rounded-pill"
                               onClick={() =>
                                 handleAction(
                                   selectedLead,
-                                  selectedLead.isArchived
-                                    ? "unarchive"
-                                    : "archive"
+                                  selectedLead.isArchived ? "" : "archive"
                                 )
                               }
                             >
                               <Archive size={14} className="me-1" />
-                              {selectedLead.isArchived
-                                ? "Unarchive"
-                                : "Archive"}
-                            </button>
+                              {selectedLead.isArchived ? "" : "Archive"}
+                            </button> */}
                           </div>
 
                           {/* Meta Info Cards */}
