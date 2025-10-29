@@ -4,6 +4,8 @@ import { FaLocationDot } from "react-icons/fa6";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import { useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleWishlist } from "../../redux/authSlice";
 import "swiper/css";
 import "swiper/css/autoplay";
 import vendorServicesApi from "../../services/api/vendorServicesApi";
@@ -36,13 +38,16 @@ const capitalizeWords = (str) => {
 
 const Detailed = () => {
   const { id } = useParams();
+  const dispatch = useDispatch();
+  const { token } = useSelector((state) => state.auth);
   const [venueData, setVenueData] = useState(null);
   const [profileViews, setProfileViews] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mainImage, setMainImage] = useState("");
   const [hoveredIndex, setHoveredIndex] = useState(null);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [favorites, setFavorites] = useState({});
+  const [wishlistIds, setWishlistIds] = useState(new Set());
   const [images, setImages] = useState([]);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [selectedVendorId, setSelectedVendorId] = useState(null);
@@ -251,6 +256,92 @@ const Detailed = () => {
     setImages([]);
   };
 
+  // Fetch wishlist on component mount to initialize favorites
+  useEffect(() => {
+    if (!token || !id) {
+      setFavorites({});
+      setWishlistIds(new Set());
+      return;
+    }
+
+    const fetchWishlist = async () => {
+      try {
+        const res = await fetch(`https://happywedz.com/api/wishlist`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+
+        if (data.success && data.data && data.data.length > 0) {
+          const ids = new Set(data.data.map((item) => item.vendor_services_id));
+          setWishlistIds(ids);
+          // Initialize favorites state from fetched wishlist
+          const favoritesObj = {};
+          ids.forEach((itemId) => {
+            favoritesObj[itemId] = true;
+          });
+          setFavorites(favoritesObj);
+        } else {
+          setWishlistIds(new Set());
+          setFavorites({});
+        }
+      } catch (error) {
+        console.error("Error fetching wishlist:", error);
+        setWishlistIds(new Set());
+        setFavorites({});
+      }
+    };
+
+    fetchWishlist();
+  }, [token, id]);
+
+  const isFavorite = (vendorId) => {
+    if (!vendorId) return false;
+    const vendorIdStr = String(vendorId);
+    const vendorIdNum = parseInt(vendorId);
+    return (
+      favorites[vendorIdStr] === true ||
+      favorites[vendorIdNum] === true ||
+      wishlistIds.has(vendorIdStr) ||
+      wishlistIds.has(vendorIdNum)
+    );
+  };
+
+  const handleFavoriteToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!venueData || !id) return;
+
+    const vendorService = {
+      id: parseInt(id),
+      vendor_services_id: parseInt(id),
+    };
+
+    const wasFavorite = isFavorite(id);
+
+    // Optimistically update UI
+    setFavorites((prev) => ({
+      ...prev,
+      [id]: !wasFavorite,
+    }));
+
+    // Update wishlistIds set
+    setWishlistIds((prev) => {
+      const newSet = new Set(prev);
+      if (wasFavorite) {
+        newSet.delete(id);
+        newSet.delete(parseInt(id));
+      } else {
+        newSet.add(id);
+        newSet.add(parseInt(id));
+      }
+      return newSet;
+    });
+
+    // Dispatch toggleWishlist action
+    dispatch(toggleWishlist(vendorService));
+  };
+
   useEffect(() => {
     const fetchVenueData = async () => {
       if (!id) return;
@@ -259,7 +350,6 @@ const Detailed = () => {
         setLoading(true);
         const data = await vendorServicesApi.getVendorServiceById(id);
         setVenueData(data);
-        console.log("Vendor data attributes:", data.attributes);
 
         // Increment profile view count for this vendor (fire-and-forget)
         (async () => {
@@ -547,11 +637,8 @@ const Detailed = () => {
                   <p className="text-muted">No image available</p>
                 </div>
               )}
-              <button
-                className="favorite-btn"
-                onClick={() => setIsFavorite(!isFavorite)}
-              >
-                {isFavorite ? (
+              <button className="favorite-btn" onClick={handleFavoriteToggle}>
+                {isFavorite(id) ? (
                   <FaHeart className="text-danger" />
                 ) : (
                   <FaRegHeart />
@@ -595,6 +682,10 @@ const Detailed = () => {
                             cursor: "pointer",
                             height: "100px",
                             objectFit: "cover",
+                          }}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/images/imageNotFound.jpg";
                           }}
                         />
                       </div>

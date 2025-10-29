@@ -20,7 +20,6 @@ const UserDashboardMain = () => {
   const currentSlug = slug || "my-wedding";
 
   useEffect(() => {
-    console.log("[UserDashboardMain] Slug changed to:", currentSlug);
     window.scrollTo(0, 0);
   }, [currentSlug]);
 
@@ -33,10 +32,14 @@ const UserDashboardMain = () => {
       {currentSlug === "guest-list" && <Guests user={user} token={token} />}
       {currentSlug === "budget" && <Budget user={user} token={token} />}
       {currentSlug === "wishlist" && <WishList user={user} token={token} />}
-      {currentSlug === "user-profile" && <UserProfile user={user} token={token} />}
+      {currentSlug === "user-profile" && (
+        <UserProfile user={user} token={token} />
+      )}
       {currentSlug === "booking" && <Booking user={user} token={token} />}
       {currentSlug === "message" && <Messages user={user} token={token} />}
-      {currentSlug === "real-wedding" && <RealWeddingForm user={user} token={token} />}
+      {currentSlug === "real-wedding" && (
+        <RealWeddingForm user={user} token={token} />
+      )}
     </div>
   );
 };

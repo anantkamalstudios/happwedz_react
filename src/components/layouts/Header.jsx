@@ -976,51 +976,6 @@ const Header = () => {
                         </div>
                       </li>
 
-                      {/* Login Dropdown */}
-                      {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          <Link
-                            className="nav-link text-white"
-                            to="/customer-login"
-                            state={{ title: "Login" }}
-                            id="photoDropdown"
-                            role="button"
-                          >
-                            Login
-                          </Link>
-                        </div>
-                      </li>
- 
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          <Link
-                            className="nav-link text-white"
-                            to="/customer-register"
-                            state={{ title: "Signup" }}
-                            id="photoDropdown"
-                            role="button"
-                          >
-                            Sign-up
-                          </Link>
-                        </div>
-                      </li> */}
-
-                      {/* Vendor Dashboard */}
-                      {/* <li className="nav-Vendor Dashboard mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          <Link
-                            className="nav-link text-white"
-                            to="/customer-register"
-                            state={{ title: "vendor dashboard" }}
-                            id="photoDropdown"
-                            role="button"
-                          >
-                            Sign
-                          </Link>
-                        </div>
-                      </li> */}
-
-                      {/* Login Dropdown */}
                       {isUserLoggedIn ? (
                         <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">

@@ -9,13 +9,14 @@ const UpComingTask = () => {
   const [tasks, setTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState({});
   const [loading, setLoading] = useState(true);
+  const [animatingTasks, setAnimatingTasks] = useState({});
+  const [removingTasks, setRemovingTasks] = useState({});
 
   const token = useSelector((state) => state.auth.token);
   const user = useSelector((state) => state.auth.user);
   const userId = user?.id || user?.user_id || user?._id;
-  const [refresh, setRefresh] = useState(false); // To trigger refetch
+  const [refresh, setRefresh] = useState(false);
 
-  // Fetch real checklist tasks
   useEffect(() => {
     if (!userId || !token) {
       setLoading(false);
@@ -32,7 +33,6 @@ const UpComingTask = () => {
           }
         );
         const allTasks = res.data?.data || [];
-        // Filter for pending tasks and set initial completed state
         const pending = allTasks.filter((task) => task.status === "pending");
         setTasks(pending);
 
@@ -57,10 +57,34 @@ const UpComingTask = () => {
   const handleCheckboxChange = async (event) => {
     const { name: taskId, checked } = event.target;
 
-    if (!checked) return; // Only handle completion, not un-checking
+    if (!checked) return;
 
-    // Optimistically remove from UI
-    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== parseInt(taskId)));
+    const taskIdNum = parseInt(taskId);
+
+    // Start tick animation
+    setAnimatingTasks((prev) => ({ ...prev, [taskIdNum]: true }));
+
+    // After tick animation (500ms), start swipe-out animation
+    setTimeout(() => {
+      setRemovingTasks((prev) => ({ ...prev, [taskIdNum]: true }));
+
+      // After swipe-out animation (600ms), remove from UI
+      setTimeout(() => {
+        setTasks((prevTasks) =>
+          prevTasks.filter((task) => task.id !== taskIdNum)
+        );
+        setAnimatingTasks((prev) => {
+          const newState = { ...prev };
+          delete newState[taskIdNum];
+          return newState;
+        });
+        setRemovingTasks((prev) => {
+          const newState = { ...prev };
+          delete newState[taskIdNum];
+          return newState;
+        });
+      }, 600);
+    }, 500);
 
     try {
       const newStatus = "completed";
@@ -71,11 +95,9 @@ const UpComingTask = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      // Trigger a full refetch to ensure data consistency
       setRefresh((prev) => !prev);
     } catch (error) {
       console.error("Failed to update task status:", error);
-      // If the API call fails, trigger a refetch to revert the optimistic update
       setRefresh((prev) => !prev);
     }
   };
@@ -91,8 +113,11 @@ const UpComingTask = () => {
     );
   }
 
-  // UI for when no checklist is found
-  if (!loading && tasks.length === 0 && Object.keys(completedTasks).length === 0) {
+  if (
+    !loading &&
+    tasks.length === 0 &&
+    Object.keys(completedTasks).length === 0
+  ) {
     return (
       <div style={{ padding: "2rem", textAlign: "center" }}>
         <h1 className="mb-3 fw-bold dark-pink-text">Start Your Planning</h1>
@@ -104,7 +129,10 @@ const UpComingTask = () => {
           <p className="text-muted mb-4">
             Create a personalized checklist to stay organized and on track.
           </p>
-          <Link to="/user-dashboard/checklist" className="btn btn-primary rounded-3 px-4">
+          <Link
+            to="/user-dashboard/checklist"
+            className="btn btn-primary rounded-3 px-4"
+          >
             <BsPlusLg className="me-2" /> Create Your Checklist
           </Link>
         </div>
@@ -116,26 +144,37 @@ const UpComingTask = () => {
     <div style={{ padding: "2rem" }}>
       <h1 style={{ marginBottom: "1.5rem" }}>Upcoming tasks</h1>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {/* Show only the first 3 tasks */}
         {tasks.slice(0, 3).map((task, index) => (
           <div
             key={task.id || index}
+            className={`task-item ${
+              animatingTasks[task.id] ? "task-checking" : ""
+            } ${removingTasks[task.id] ? "task-removing" : ""}`}
             style={{
               display: "flex",
               justifyContent: "flex-start",
               padding: "10px",
               boxShadow:
                 "rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px",
+              position: "relative",
+              overflow: "hidden",
             }}
           >
-            <input
-              type="checkbox"
-              name={`${task.id}`}
-              onChange={handleCheckboxChange}
-              checked={false} // Checkboxes for pending tasks are always unchecked
-              style={{ height: "20px", width: "20px" }}
-            />
-            <div style={{ marginLeft: "10px" }}>
+            <div className="checkbox-wrapper">
+              <input
+                type="checkbox"
+                name={`${task.id}`}
+                onChange={handleCheckboxChange}
+                checked={animatingTasks[task.id] || false}
+                className="task-checkbox"
+                id={`task-${task.id}`}
+              />
+              <label
+                htmlFor={`task-${task.id}`}
+                className="checkbox-label"
+              ></label>
+            </div>
+            <div style={{ marginLeft: "10px", flex: 1 }}>
               <p className="mb-1">{task.text}</p>
               <p className="text-muted" style={{ fontSize: "12px" }}>
                 Tap to open Search

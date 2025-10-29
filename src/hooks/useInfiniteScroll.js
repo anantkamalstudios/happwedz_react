@@ -159,9 +159,6 @@ const useInfiniteScroll = (
 
       // Check if page already loaded
       if (loadedPagesRef.current.has(pageNum)) {
-        console.log(
-          `[useInfiniteScroll] Page ${pageNum} already loaded, skipping`
-        );
         return;
       }
 
@@ -225,7 +222,6 @@ const useInfiniteScroll = (
         const controller = new AbortController();
         abortRef.current = controller;
 
-        console.log(`[useInfiniteScroll] Fetching page ${pageNum}:`, apiUrl);
         const timeoutId = setTimeout(() => controller.abort(), 20000);
         const response = await fetch(apiUrl, { signal: controller.signal });
         clearTimeout(timeoutId);

@@ -82,7 +82,6 @@ const useApiData = (
           return;
         }
 
-        // Abort any previous request
         if (abortRef.current) {
           abortRef.current.abort();
         }
@@ -140,9 +139,8 @@ const useApiData = (
         }
       } catch (err) {
         if (err.name === "AbortError") {
-          return; // silently ignore aborts
+          return;
         }
-        console.error(`❌ Error loading ${section} data:`, err);
         setError(`Failed to load ${section} data from API: ${err.message}`);
         setData([]);
       } finally {

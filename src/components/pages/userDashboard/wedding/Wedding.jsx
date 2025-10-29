@@ -15,8 +15,7 @@ import VenueVendorComponent from "./VenueVendorComponent";
 import UpComingTask from "../wedding/UpcomingTask";
 import EInvites from "./EInviteCard";
 
-const Wedding = () => {
-  console.log("[Wedding Component] Mounting/Rendering");
+const Wedding = () => { 
 
   const [budget, setBudget] = useState({
     total: 0,
@@ -63,7 +62,6 @@ const Wedding = () => {
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9\-]/g, "") || "";
 
-  // Fetch categories from API
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -86,7 +84,6 @@ const Wedding = () => {
     fetchCategories();
   }, []);
 
-  // Fetch user data on component mount
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -402,7 +399,9 @@ const Wedding = () => {
                 height: "100%",
               }}
             >
-              <h3 className="text-center fw-bold mt-4 dark-pink-text">Add Guest</h3>
+              <h3 className="text-center fw-bold mt-4 dark-pink-text">
+                Add Guest
+              </h3>
               <div
                 style={{
                   display: "flex",
@@ -467,34 +466,44 @@ const Wedding = () => {
                   <div className="text-muted">Total Budget</div>
                 </div>
                 <div className="d-flex justify-content-center gap-4 small text-muted mb-4">
-                  <span>
-                    Spent: ₹{(budget.spent / 100000).toFixed(1)}L
-                  </span>
+                  <span>Spent: ₹{(budget.spent / 100000).toFixed(1)}L</span>
                   <span>
                     Remaining: ₹{(budget.remaining / 100000).toFixed(1)}L
                   </span>
                 </div>
-                <div className="progress mx-auto mb-2" style={{ height: "8px", maxWidth: "200px" }}>
+                <div
+                  className="progress mx-auto mb-2"
+                  style={{ height: "8px", maxWidth: "200px" }}
+                >
                   <div
                     className="progress-bar bg-primary"
                     role="progressbar"
                     style={{
-                      width: `${budget.total > 0
-                        ? (budget.spent / budget.total) * 100
-                        : 0
-                        }%`,
+                      width: `${
+                        budget.total > 0
+                          ? (budget.spent / budget.total) * 100
+                          : 0
+                      }%`,
                     }}
-                    aria-valuenow={budget.total > 0 ? (budget.spent / budget.total) * 100 : 0}
+                    aria-valuenow={
+                      budget.total > 0 ? (budget.spent / budget.total) * 100 : 0
+                    }
                     aria-valuemin="0"
                     aria-valuemax="100"
                   />
                 </div>
                 <small className="text-muted">
-                  {Math.round(budget.total > 0 ? (budget.spent / budget.total) * 100 : 0)}% used
+                  {Math.round(
+                    budget.total > 0 ? (budget.spent / budget.total) * 100 : 0
+                  )}
+                  % used
                 </small>
               </div>
               <div className="text-center mt-auto">
-                <Link to="/user-dashboard/budget" className="btn btn-primary rounded-pill px-4 py-2">
+                <Link
+                  to="/user-dashboard/budget"
+                  className="btn btn-primary rounded-pill px-4 py-2"
+                >
                   + Add Budget
                 </Link>
               </div>

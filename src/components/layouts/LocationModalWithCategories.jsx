@@ -4,8 +4,6 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setLocation, clearLocation } from "../../redux/locationSlice";
 import { useNavigate } from "react-router-dom";
-import { IoCloseCircleOutline } from "react-icons/io5";
-import { CiCircleChevDown } from "react-icons/ci";
 import { RxCrossCircled } from "react-icons/rx";
 import { IoMdArrowDropdown } from "react-icons/io";
 
@@ -21,7 +19,6 @@ const LocationModalWithAPI = () => {
   const [cities, setCities] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("India");
 
-  // Static city data structure matching your image
   const staticCityData = {
     topCities: [
       "All Cities",
@@ -59,21 +56,10 @@ const LocationModalWithAPI = () => {
       "Dhitara",
       "Toranagallu",
     ],
-    states: [
-      "Kerala",
-      "Rajasthan",
-      "Himachal Pradesh",
-      "Maharashtra",
-    ],
-    internationalCities: [
-      "Dubai",
-      "Thailand",
-      "Bali",
-      "Abu Dhabi",
-    ],
+    states: ["Kerala", "Rajasthan", "Himachal Pradesh", "Maharashtra"],
+    internationalCities: ["Dubai", "Thailand", "Bali", "Abu Dhabi"],
   };
 
-  // Fetch countries
   useEffect(() => {
     axios.get("https://restcountries.com/v3.1/all?fields=name").then((res) => {
       const sorted = res.data
@@ -84,7 +70,6 @@ const LocationModalWithAPI = () => {
     });
   }, []);
 
-  // Fetch cities from API when searching
   useEffect(() => {
     if (!searchTerm.trim()) {
       setCities([]);
@@ -109,17 +94,25 @@ const LocationModalWithAPI = () => {
 
   const filterCities = searchTerm.trim()
     ? cities.filter((city) =>
-      city.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+        city.toLowerCase().includes(searchTerm.toLowerCase())
+      )
     : [];
 
   const handleCityClick = (city) => {
-    dispatch(setLocation(city));
+    if (city === "All Cities") {
+      dispatch(clearLocation());
+    } else {
+      dispatch(setLocation(city));
+    }
     setShow(false);
     setSearchTerm("");
 
     setTimeout(() => {
-      navigate(`/vendors/all?city=${encodeURIComponent(city)}`);
+      navigate(
+        `/vendors/all${
+          city !== "All Cities" ? `?city=${encodeURIComponent(city)}` : ""
+        }`
+      );
     }, 300);
   };
 

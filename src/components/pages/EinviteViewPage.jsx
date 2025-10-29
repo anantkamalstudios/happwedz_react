@@ -51,12 +51,9 @@ const EinviteViewPage = () => {
       try {
         setLoading(true);
         setError(null);
-        console.log("Fetching e-invite with ID:", id);
 
         const response = await einviteApi.getPublicEinviteInstance(id);
-        console.log("Received response:", response);
-
-        // Handle different response structures
+ 
         let data = null;
         if (response.success && response.data) {
           data = response.data;
@@ -68,15 +65,12 @@ const EinviteViewPage = () => {
           data = response;
         }
 
-        if (data && (data.id || data._id)) {
-          console.log("Setting card data:", data);
+        if (data && (data.id || data._id)) { 
           setCardData(data);
-        } else {
-          console.error("Invalid data structure:", data);
+        } else { 
           setError("E-invite not found or invalid data format");
         }
-      } catch (err) {
-        console.error("Error fetching e-invite:", err);
+      } catch (err) { 
         setError(`Failed to load e-invite: ${err.message}`);
       } finally {
         setLoading(false);

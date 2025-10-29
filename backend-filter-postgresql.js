@@ -1,20 +1,8 @@
-/**
- * PostgreSQL/Sequelize Filter Implementation for HappyWedz
- * 
- * This handles ALL filter types from filtersConfig.js
- * Works with your current payload format
- */
-
-const { Op } = require('sequelize');
-const express = require('express');
+const { Op } = require("sequelize");
+const express = require("express");
 const router = express.Router();
 
-/**
- * GET /api/vendor-services
- * 
- * Handles filtering for all vendor types with PostgreSQL/Sequelize
- */
-router.get('/vendor-services', async (req, res) => {
+router.get("/vendor-services", async (req, res) => {
   try {
     const {
       vendorType,
@@ -22,29 +10,17 @@ router.get('/vendor-services', async (req, res) => {
       city,
       page = 1,
       limit = 9,
-      filters // JSON string: {"home Function Decor":["30,000-50,000"],"rating":["rated <4","rated 4+"]}
+      filters,
     } = req.query;
 
-    console.log('📊 Incoming request:', {
-      vendorType,
-      subCategory,
-      city,
-      page,
-      limit,
-      filters
-    });
-
-    // Parse filters
     let parsedFilters = {};
     if (filters) {
       try {
         parsedFilters = JSON.parse(filters);
-        console.log('✅ Parsed filters:', parsedFilters);
       } catch (e) {
-        console.error('❌ Failed to parse filters:', e);
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: 'Invalid filters format' 
+          error: "Invalid filters format",
         });
       }
     }
@@ -55,24 +31,27 @@ router.get('/vendor-services', async (req, res) => {
 
     // Basic filters
     if (vendorType) {
-      whereClause['$vendor.vendorType.name$'] = vendorType;
+      whereClause["$vendor.vendorType.name$"] = vendorType;
     }
-    if (subCategory && subCategory.toLowerCase() !== 'all') {
-      whereClause['$subcategory.name$'] = subCategory;
+    if (subCategory && subCategory.toLowerCase() !== "all") {
+      whereClause["$subcategory.name$"] = subCategory;
     }
-    if (city && city !== 'all') {
-      whereClause['$vendor.city$'] = city;
+    if (city && city !== "all") {
+      whereClause["$vendor.city$"] = city;
     }
 
     // Apply dynamic filters based on filter type
-    const filterConditions = buildFilterConditions(parsedFilters, subCategory || vendorType);
+    const filterConditions = buildFilterConditions(
+      parsedFilters,
+      subCategory || vendorType
+    );
 
     // Merge filter conditions
     if (filterConditions.length > 0) {
       whereClause[Op.and] = filterConditions;
     }
 
-    console.log('🔍 Final WHERE clause:', JSON.stringify(whereClause, null, 2));
+    console.log("🔍 Final WHERE clause:", JSON.stringify(whereClause, null, 2));
 
     // Calculate pagination
     const offset = (parseInt(page) - 1) * parseInt(limit);
@@ -83,32 +62,32 @@ router.get('/vendor-services', async (req, res) => {
       include: [
         {
           model: Vendor,
-          as: 'vendor',
+          as: "vendor",
           include: [
             {
               model: VendorType,
-              as: 'vendorType'
-            }
-          ]
+              as: "vendorType",
+            },
+          ],
         },
         {
           model: Subcategory,
-          as: 'subcategory',
+          as: "subcategory",
           include: [
             {
               model: VendorType,
-              as: 'vendorType'
-            }
-          ]
-        }
+              as: "vendorType",
+            },
+          ],
+        },
       ],
       offset,
       limit: parseInt(limit),
       order: [
-        [{ model: 'attributes', as: 'rating' }, 'DESC'],
-        [{ model: 'attributes', as: 'review_count' }, 'DESC']
+        [{ model: "attributes", as: "rating" }, "DESC"],
+        [{ model: "attributes", as: "review_count" }, "DESC"],
       ],
-      distinct: true
+      distinct: true,
     });
 
     console.log(`✅ Found ${count} results`);
@@ -121,17 +100,16 @@ router.get('/vendor-services', async (req, res) => {
         page: parseInt(page),
         limit: parseInt(limit),
         total: count,
-        totalPages: Math.ceil(count / parseInt(limit))
+        totalPages: Math.ceil(count / parseInt(limit)),
       },
-      appliedFilters: parsedFilters
+      appliedFilters: parsedFilters,
     });
-
   } catch (error) {
-    console.error('❌ Error in vendor-services endpoint:', error);
+    console.error("❌ Error in vendor-services endpoint:", error);
     res.status(500).json({
       success: false,
       error: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
     });
   }
 });
@@ -151,7 +129,11 @@ function buildFilterConditions(filters, categoryKey) {
   for (const [filterKey, filterValues] of Object.entries(filters)) {
     if (!filterValues || filterValues.length === 0) continue;
 
-    const filterCondition = buildSingleFilterCondition(filterKey, filterValues, categoryKey);
+    const filterCondition = buildSingleFilterCondition(
+      filterKey,
+      filterValues,
+      categoryKey
+    );
     if (filterCondition) {
       conditions.push(filterCondition);
     }
@@ -167,370 +149,374 @@ function buildSingleFilterCondition(filterKey, filterValues, categoryKey) {
   const lowerKey = filterKey.toLowerCase();
 
   // RATING FILTERS
-  if (lowerKey === 'rating') {
+  if (lowerKey === "rating") {
     return buildRatingCondition(filterValues);
   }
 
   // REVIEW COUNT FILTERS
-  if (lowerKey === 'review count' || lowerKey === 'reviewcount') {
+  if (lowerKey === "review count" || lowerKey === "reviewcount") {
     return buildReviewCountCondition(filterValues);
   }
 
   // PRICE FILTERS (Multiple types)
-  if (lowerKey.includes('price') || lowerKey === 'prices') {
+  if (lowerKey.includes("price") || lowerKey === "prices") {
     return buildPriceCondition(filterKey, filterValues, categoryKey);
   }
 
   // LOCALITY FILTER
-  if (lowerKey === 'locality') {
+  if (lowerKey === "locality") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.locality': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.locality": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // NO OF DAYS FILTER
-  if (lowerKey === 'no of days') {
+  if (lowerKey === "no of days") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.no_of_days': value
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.no_of_days": value,
+      })),
     };
   }
 
   // SERVICES FILTER
-  if (lowerKey === 'services') {
+  if (lowerKey === "services") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.services': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.services": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // SPECIALTY FILTER
-  if (lowerKey === 'specialty' || lowerKey === 'speciality') {
+  if (lowerKey === "specialty" || lowerKey === "speciality") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.specialty': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.specialty": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // TRAVELS TO VENUE FILTER
-  if (lowerKey === 'travels to venue') {
-    const travelsValue = filterValues.includes('travels to venue');
+  if (lowerKey === "travels to venue") {
+    const travelsValue = filterValues.includes("travels to venue");
     return {
-      'attributes.travels_to_venue': travelsValue
+      "attributes.travels_to_venue": travelsValue,
     };
   }
 
   // VENUE TYPE FILTER
-  if (lowerKey === 'venue type') {
+  if (lowerKey === "venue type") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.venue_type': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.venue_type": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // CAPACITY FILTER
-  if (lowerKey === 'capacity') {
+  if (lowerKey === "capacity") {
     return buildCapacityCondition(filterValues);
   }
 
   // CUISINES FILTER
-  if (lowerKey === 'cuisines') {
+  if (lowerKey === "cuisines") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.cuisines': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.cuisines": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // JEWELRY TYPE FILTER
-  if (lowerKey === 'jewelry type' || lowerKey === 'jewellery type' || lowerKey === 'type') {
+  if (
+    lowerKey === "jewelry type" ||
+    lowerKey === "jewellery type" ||
+    lowerKey === "type"
+  ) {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.type': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.type": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // RENTAL AVAILABLE FILTER
-  if (lowerKey === 'rental available') {
-    const rentalValue = filterValues.includes('yes');
+  if (lowerKey === "rental available") {
+    const rentalValue = filterValues.includes("yes");
     return {
-      'attributes.rental_available': rentalValue
+      "attributes.rental_available": rentalValue,
     };
   }
 
   // FLAVORS FILTER
-  if (lowerKey === 'flavors') {
+  if (lowerKey === "flavors") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.flavors': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.flavors": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // TIERS FILTER
-  if (lowerKey === 'tiers') {
+  if (lowerKey === "tiers") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.tiers': value
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.tiers": value,
+      })),
     };
   }
 
   // EGG LESS AVAILABLE FILTER
-  if (lowerKey === 'egg less available') {
-    const egglessValue = filterValues.includes('yes');
+  if (lowerKey === "egg less available") {
+    const egglessValue = filterValues.includes("yes");
     return {
-      'attributes.eggless_available': egglessValue
+      "attributes.eggless_available": egglessValue,
     };
   }
 
   // INVITATION TYPE FILTER
-  if (lowerKey === 'invitation type') {
+  if (lowerKey === "invitation type") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.invitation_type': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.invitation_type": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // DELIVERY TIME FILTER
-  if (lowerKey === 'delivery time') {
+  if (lowerKey === "delivery time") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.delivery_time': value
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.delivery_time": value,
+      })),
     };
   }
 
   // MIN ORDER QUANTITY FILTER
-  if (lowerKey === 'min order quantity') {
+  if (lowerKey === "min order quantity") {
     return buildMinOrderQuantityCondition(filterValues);
   }
 
   // STORE TYPE FILTER
-  if (lowerKey === 'store type') {
+  if (lowerKey === "store type") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.store_type': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.store_type": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // WEAR TYPE FILTER
-  if (lowerKey === 'wear type') {
+  if (lowerKey === "wear type") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.wear_type': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.wear_type": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // OUTFIT TYPE FILTER
-  if (lowerKey === 'outfit type') {
+  if (lowerKey === "outfit type") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.outfit_type': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.outfit_type": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // DANCE STYLE FILTER
-  if (lowerKey === 'dance style') {
+  if (lowerKey === "dance style") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.dance_style': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.dance_style": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // GROUP SIZE FILTER
-  if (lowerKey === 'group size') {
+  if (lowerKey === "group size") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.group_size': value
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.group_size": value,
+      })),
     };
   }
 
   // GIFT TYPE FILTER
-  if (lowerKey === 'gift type') {
+  if (lowerKey === "gift type") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.gift_type': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.gift_type": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // DESTINATIONS FILTER
-  if (lowerKey === 'destinations') {
+  if (lowerKey === "destinations") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.destinations': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.destinations": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // BUDGET FILTER (for honeymoon)
-  if (lowerKey === 'budget') {
+  if (lowerKey === "budget") {
     return buildBudgetCondition(filterValues);
   }
 
   // DURATION FILTER
-  if (lowerKey === 'duration') {
+  if (lowerKey === "duration") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.duration': value
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.duration": value,
+      })),
     };
   }
 
   // EVENTS FILTER
-  if (lowerKey === 'events') {
+  if (lowerKey === "events") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.events': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.events": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // TRAVEL PREFERENCES FILTER
-  if (lowerKey === 'travel preferences') {
+  if (lowerKey === "travel preferences") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.travel_preferences': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.travel_preferences": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // EXPERIENCE FILTER
-  if (lowerKey === 'experience') {
+  if (lowerKey === "experience") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.experience': value
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.experience": value,
+      })),
     };
   }
 
   // LANGUAGES FILTER
-  if (lowerKey === 'languages') {
+  if (lowerKey === "languages") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.languages': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.languages": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // CULTURE FILTER
-  if (lowerKey === 'culture') {
+  if (lowerKey === "culture") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.culture': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.culture": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // PRICING FILTER (for pandits, etc.)
-  if (lowerKey === 'pricing') {
+  if (lowerKey === "pricing") {
     return buildPricingCondition(filterValues);
   }
 
   // ACCESSORIES FILTER
-  if (lowerKey === 'accessories') {
+  if (lowerKey === "accessories") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.accessories': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.accessories": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // SPACE AVAILABLE FILTER
-  if (lowerKey === 'space available') {
+  if (lowerKey === "space available") {
     return {
-      [Op.or]: filterValues.map(value => ({
-        'attributes.space_available': { [Op.iLike]: `%${value}%` }
-      }))
+      [Op.or]: filterValues.map((value) => ({
+        "attributes.space_available": { [Op.iLike]: `%${value}%` },
+      })),
     };
   }
 
   // AWARD FILTER
-  if (lowerKey === 'award') {
+  if (lowerKey === "award") {
     return {
-      'attributes.award': { [Op.ne]: null }
+      "attributes.award": { [Op.ne]: null },
     };
   }
 
   // STARTING PRICE FILTER
-  if (lowerKey === 'starting price') {
+  if (lowerKey === "starting price") {
     return buildStartingPriceCondition(filterValues);
   }
 
   // DESIGN COST FILTER
-  if (lowerKey === 'design cost') {
+  if (lowerKey === "design cost") {
     // Usually "on request", so just check if it exists
     return {
-      'attributes.design_cost': { [Op.ne]: null }
+      "attributes.design_cost": { [Op.ne]: null },
     };
   }
 
   // PHYSICAL INVITE PRICE FILTER
-  if (lowerKey === 'physical invite price') {
+  if (lowerKey === "physical invite price") {
     return buildPhysicalInvitePriceCondition(filterValues);
   }
 
   // MAX CAPACITY FILTER
-  if (lowerKey === 'max capacity') {
+  if (lowerKey === "max capacity") {
     return buildMaxCapacityCondition(filterValues);
   }
 
   // MIN CAPACITY FILTER
-  if (lowerKey === 'min capacity') {
+  if (lowerKey === "min capacity") {
     return buildMinCapacityCondition(filterValues);
   }
 
   // PACKAGE PRICE FILTER
-  if (lowerKey.includes('package price')) {
+  if (lowerKey.includes("package price")) {
     return buildPackagePriceCondition(filterKey, filterValues);
   }
 
   // HOME FUNCTION DECOR FILTER
-  if (lowerKey === 'home function decor') {
+  if (lowerKey === "home function decor") {
     return buildHomeDecorPriceCondition(filterValues);
   }
 
   // DECOR PRICE FILTER
-  if (lowerKey === 'decor price') {
+  if (lowerKey === "decor price") {
     return buildDecorPriceCondition(filterValues);
   }
 
   // BRIDAL PRICE FILTER (for mehandi)
-  if (lowerKey === 'bridal price') {
+  if (lowerKey === "bridal price") {
     return buildBridalPriceCondition(filterValues);
   }
 
   // PRICE PER KG FILTER
-  if (lowerKey === 'price per kg') {
+  if (lowerKey === "price per kg") {
     return buildPricePerKgCondition(filterValues);
   }
 
   // PRICING FOR 200 GUESTS FILTER
-  if (lowerKey === 'pricing for 200 guests') {
+  if (lowerKey === "pricing for 200 guests") {
     return buildPricingFor200GuestsCondition(filterValues);
   }
 
   // Default: Try to match as generic attribute
   return {
-    [Op.or]: filterValues.map(value => ({
-      [`attributes.${filterKey.toLowerCase().replace(/\s+/g, '_')}`]: { 
-        [Op.iLike]: `%${value}%` 
-      }
-    }))
+    [Op.or]: filterValues.map((value) => ({
+      [`attributes.${filterKey.toLowerCase().replace(/\s+/g, "_")}`]: {
+        [Op.iLike]: `%${value}%`,
+      },
+    })),
   };
 }
 
@@ -538,14 +524,18 @@ function buildSingleFilterCondition(filterKey, filterValues, categoryKey) {
  * Build RATING filter condition
  */
 function buildRatingCondition(values) {
-  const conditions = values.map(value => {
-    if (value === 'all ratings') return null;
-    if (value === 'rated <4') return { 'attributes.rating': { [Op.lt]: 4 } };
-    if (value === 'rated 4+') return { 'attributes.rating': { [Op.gte]: 4 } };
-    if (value === 'rated 4.5+') return { 'attributes.rating': { [Op.gte]: 4.5 } };
-    if (value === 'rated 4.8+') return { 'attributes.rating': { [Op.gte]: 4.8 } };
-    return null;
-  }).filter(Boolean);
+  const conditions = values
+    .map((value) => {
+      if (value === "all ratings") return null;
+      if (value === "rated <4") return { "attributes.rating": { [Op.lt]: 4 } };
+      if (value === "rated 4+") return { "attributes.rating": { [Op.gte]: 4 } };
+      if (value === "rated 4.5+")
+        return { "attributes.rating": { [Op.gte]: 4.5 } };
+      if (value === "rated 4.8+")
+        return { "attributes.rating": { [Op.gte]: 4.8 } };
+      return null;
+    })
+    .filter(Boolean);
 
   return conditions.length > 0 ? { [Op.or]: conditions } : null;
 }
@@ -554,21 +544,31 @@ function buildRatingCondition(values) {
  * Build REVIEW COUNT filter condition
  */
 function buildReviewCountCondition(values) {
-  const conditions = values.map(value => {
-    if (value === '<5 reviews') return { 'attributes.review_count': { [Op.lt]: 5 } };
-    if (value === '5+ reviews') return { 'attributes.review_count': { [Op.gte]: 5 } };
-    if (value === '15+ reviews') return { 'attributes.review_count': { [Op.gte]: 15 } };
-    if (value === '30+ reviews') return { 'attributes.review_count': { [Op.gte]: 30 } };
-    if (value === 'under 50 reviews') return { 'attributes.review_count': { [Op.lt]: 50 } };
-    if (value === '50 - 100 reviews') return { 
-      'attributes.review_count': { [Op.between]: [50, 100] } 
-    };
-    if (value === '100 - 500 reviews') return { 
-      'attributes.review_count': { [Op.between]: [100, 500] } 
-    };
-    if (value === '500+ reviews') return { 'attributes.review_count': { [Op.gte]: 500 } };
-    return null;
-  }).filter(Boolean);
+  const conditions = values
+    .map((value) => {
+      if (value === "<5 reviews")
+        return { "attributes.review_count": { [Op.lt]: 5 } };
+      if (value === "5+ reviews")
+        return { "attributes.review_count": { [Op.gte]: 5 } };
+      if (value === "15+ reviews")
+        return { "attributes.review_count": { [Op.gte]: 15 } };
+      if (value === "30+ reviews")
+        return { "attributes.review_count": { [Op.gte]: 30 } };
+      if (value === "under 50 reviews")
+        return { "attributes.review_count": { [Op.lt]: 50 } };
+      if (value === "50 - 100 reviews")
+        return {
+          "attributes.review_count": { [Op.between]: [50, 100] },
+        };
+      if (value === "100 - 500 reviews")
+        return {
+          "attributes.review_count": { [Op.between]: [100, 500] },
+        };
+      if (value === "500+ reviews")
+        return { "attributes.review_count": { [Op.gte]: 500 } };
+      return null;
+    })
+    .filter(Boolean);
 
   return conditions.length > 0 ? { [Op.or]: conditions } : null;
 }
@@ -578,22 +578,24 @@ function buildReviewCountCondition(values) {
  */
 function buildPriceCondition(filterKey, values, categoryKey) {
   const lowerKey = filterKey.toLowerCase();
-  let fieldName = 'starting_price';
+  let fieldName = "starting_price";
 
   // Determine the correct field name based on filter key
-  if (lowerKey.includes('bridal makeup')) {
-    fieldName = 'bridal_makeup_price';
-  } else if (lowerKey.includes('engagement')) {
-    fieldName = 'engagement_price';
-  } else if (lowerKey.includes('per plate')) {
-    fieldName = 'price_per_plate';
-  } else if (lowerKey === 'prices') {
-    fieldName = 'starting_price';
+  if (lowerKey.includes("bridal makeup")) {
+    fieldName = "bridal_makeup_price";
+  } else if (lowerKey.includes("engagement")) {
+    fieldName = "engagement_price";
+  } else if (lowerKey.includes("per plate")) {
+    fieldName = "price_per_plate";
+  } else if (lowerKey === "prices") {
+    fieldName = "starting_price";
   }
 
-  const conditions = values.map(range => {
-    return parsePriceRange(range, fieldName);
-  }).filter(Boolean);
+  const conditions = values
+    .map((range) => {
+      return parsePriceRange(range, fieldName);
+    })
+    .filter(Boolean);
 
   return conditions.length > 0 ? { [Op.or]: conditions } : null;
 }
@@ -601,36 +603,38 @@ function buildPriceCondition(filterKey, values, categoryKey) {
 /**
  * Parse price range string and return condition
  */
-function parsePriceRange(range, fieldName = 'starting_price') {
+function parsePriceRange(range, fieldName = "starting_price") {
   // Remove commas and parse
-  const cleanRange = range.replace(/,/g, '');
+  const cleanRange = range.replace(/,/g, "");
 
   // Handle "less than" ranges
-  if (cleanRange.startsWith('<') || cleanRange.startsWith('under')) {
-    const value = parseInt(cleanRange.replace(/[^0-9]/g, ''));
+  if (cleanRange.startsWith("<") || cleanRange.startsWith("under")) {
+    const value = parseInt(cleanRange.replace(/[^0-9]/g, ""));
     return { [`attributes.${fieldName}`]: { [Op.lte]: value } };
   }
 
   // Handle "greater than" ranges with +
-  if (cleanRange.includes('+')) {
-    const value = parseInt(cleanRange.replace(/[^0-9]/g, ''));
+  if (cleanRange.includes("+")) {
+    const value = parseInt(cleanRange.replace(/[^0-9]/g, ""));
     return { [`attributes.${fieldName}`]: { [Op.gte]: value } };
   }
 
   // Handle range with dash
-  if (cleanRange.includes('-')) {
-    const parts = cleanRange.split('-').map(p => parseInt(p.replace(/[^0-9]/g, '')));
+  if (cleanRange.includes("-")) {
+    const parts = cleanRange
+      .split("-")
+      .map((p) => parseInt(p.replace(/[^0-9]/g, "")));
     if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-      return { 
-        [`attributes.${fieldName}`]: { 
-          [Op.between]: [parts[0], parts[1]] 
-        } 
+      return {
+        [`attributes.${fieldName}`]: {
+          [Op.between]: [parts[0], parts[1]],
+        },
       };
     }
   }
 
   // Handle single value
-  const value = parseInt(cleanRange.replace(/[^0-9]/g, ''));
+  const value = parseInt(cleanRange.replace(/[^0-9]/g, ""));
   if (!isNaN(value)) {
     return { [`attributes.${fieldName}`]: { [Op.lte]: value } };
   }
@@ -642,18 +646,26 @@ function parsePriceRange(range, fieldName = 'starting_price') {
  * Build CAPACITY filter condition
  */
 function buildCapacityCondition(values) {
-  const conditions = values.map(range => {
-    if (range === '<100') return { 'attributes.capacity': { [Op.lt]: 100 } };
-    if (range === '100-200') return { 'attributes.capacity': { [Op.between]: [100, 200] } };
-    if (range === '200-500') return { 'attributes.capacity': { [Op.between]: [200, 500] } };
-    if (range === '500-1000') return { 'attributes.capacity': { [Op.between]: [500, 1000] } };
-    if (range === '1000+') return { 'attributes.capacity': { [Op.gte]: 1000 } };
-    if (range === '<100') return { 'attributes.capacity': { [Op.lt]: 100 } };
-    if (range === '100-300') return { 'attributes.capacity': { [Op.between]: [100, 300] } };
-    if (range === '300-500') return { 'attributes.capacity': { [Op.between]: [300, 500] } };
-    if (range === '500+') return { 'attributes.capacity': { [Op.gte]: 500 } };
-    return null;
-  }).filter(Boolean);
+  const conditions = values
+    .map((range) => {
+      if (range === "<100") return { "attributes.capacity": { [Op.lt]: 100 } };
+      if (range === "100-200")
+        return { "attributes.capacity": { [Op.between]: [100, 200] } };
+      if (range === "200-500")
+        return { "attributes.capacity": { [Op.between]: [200, 500] } };
+      if (range === "500-1000")
+        return { "attributes.capacity": { [Op.between]: [500, 1000] } };
+      if (range === "1000+")
+        return { "attributes.capacity": { [Op.gte]: 1000 } };
+      if (range === "<100") return { "attributes.capacity": { [Op.lt]: 100 } };
+      if (range === "100-300")
+        return { "attributes.capacity": { [Op.between]: [100, 300] } };
+      if (range === "300-500")
+        return { "attributes.capacity": { [Op.between]: [300, 500] } };
+      if (range === "500+") return { "attributes.capacity": { [Op.gte]: 500 } };
+      return null;
+    })
+    .filter(Boolean);
 
   return conditions.length > 0 ? { [Op.or]: conditions } : null;
 }
@@ -662,9 +674,11 @@ function buildCapacityCondition(values) {
  * Build HOME FUNCTION DECOR price condition
  */
 function buildHomeDecorPriceCondition(values) {
-  const conditions = values.map(range => {
-    return parsePriceRange(range, 'home_function_decor_price');
-  }).filter(Boolean);
+  const conditions = values
+    .map((range) => {
+      return parsePriceRange(range, "home_function_decor_price");
+    })
+    .filter(Boolean);
 
   return conditions.length > 0 ? { [Op.or]: conditions } : null;
 }
@@ -673,9 +687,11 @@ function buildHomeDecorPriceCondition(values) {
  * Build DECOR PRICE condition
  */
 function buildDecorPriceCondition(values) {
-  const conditions = values.map(range => {
-    return parsePriceRange(range, 'decor_price');
-  }).filter(Boolean);
+  const conditions = values
+    .map((range) => {
+      return parsePriceRange(range, "decor_price");
+    })
+    .filter(Boolean);
 
   return conditions.length > 0 ? { [Op.or]: conditions } : null;
 }
@@ -684,9 +700,11 @@ function buildDecorPriceCondition(values) {
  * Build BRIDAL PRICE condition (for mehandi)
  */
 function buildBridalPriceCondition(values) {
-  const conditions = values.map(range => {
-    return parsePriceRange(range, 'bridal_price');
-  }).filter(Boolean);
+  const conditions = values
+    .map((range) => {
+      return parsePriceRange(range, "bridal_price");
+    })
+    .filter(Boolean);
 
   return conditions.length > 0 ? { [Op.or]: conditions } : null;
 }
@@ -695,10 +713,12 @@ function buildBridalPriceCondition(values) {
  * Build PACKAGE PRICE condition
  */
 function buildPackagePriceCondition(filterKey, values) {
-  const fieldName = filterKey.toLowerCase().replace(/\s+/g, '_');
-  const conditions = values.map(range => {
-    return parsePriceRange(range, fieldName);
-  }).filter(Boolean);
+  const fieldName = filterKey.toLowerCase().replace(/\s+/g, "_");
+  const conditions = values
+    .map((range) => {
+      return parsePriceRange(range, fieldName);
+    })
+    .filter(Boolean);
 
   return conditions.length > 0 ? { [Op.or]: conditions } : null;
 }
@@ -707,9 +727,11 @@ function buildPackagePriceCondition(filterKey, values) {
  * Build BUDGET condition (for honeymoon)
  */
 function buildBudgetCondition(values) {
-  const conditions = values.map(range => {
-    return parsePriceRange(range, 'budget');
-  }).filter(Boolean);
+  const conditions = values
+    .map((range) => {
+      return parsePriceRange(range, "budget");
+    })
+    .filter(Boolean);
 
   return conditions.length > 0 ? { [Op.or]: conditions } : null;
 }
@@ -718,9 +740,11 @@ function buildBudgetCondition(values) {
  * Build PRICING condition (for pandits)
  */
 function buildPricingCondition(values) {
-  const conditions = values.map(range => {
-    return parsePriceRange(range, 'pricing');
-  }).filter(Boolean);
+  const conditions = values
+    .map((range) => {
+      return parsePriceRange(range, "pricing");
+    })
+    .filter(Boolean);
 
   return conditions.length > 0 ? { [Op.or]: conditions } : null;
 }
@@ -729,9 +753,11 @@ function buildPricingCondition(values) {
  * Build STARTING PRICE condition
  */
 function buildStartingPriceCondition(values) {
-  const conditions = values.map(range => {
-    return parsePriceRange(range, 'starting_price');
-  }).filter(Boolean);
+  const conditions = values
+    .map((range) => {
+      return parsePriceRange(range, "starting_price");
+    })
+    .filter(Boolean);
 
   return conditions.length > 0 ? { [Op.or]: conditions } : null;
 }
@@ -740,9 +766,11 @@ function buildStartingPriceCondition(values) {
  * Build PHYSICAL INVITE PRICE condition
  */
 function buildPhysicalInvitePriceCondition(values) {
-  const conditions = values.map(range => {
-    return parsePriceRange(range, 'physical_invite_price');
-  }).filter(Boolean);
+  const conditions = values
+    .map((range) => {
+      return parsePriceRange(range, "physical_invite_price");
+    })
+    .filter(Boolean);
 
   return conditions.length > 0 ? { [Op.or]: conditions } : null;
 }
@@ -751,9 +779,11 @@ function buildPhysicalInvitePriceCondition(values) {
  * Build PRICE PER KG condition
  */
 function buildPricePerKgCondition(values) {
-  const conditions = values.map(range => {
-    return parsePriceRange(range, 'price_per_kg');
-  }).filter(Boolean);
+  const conditions = values
+    .map((range) => {
+      return parsePriceRange(range, "price_per_kg");
+    })
+    .filter(Boolean);
 
   return conditions.length > 0 ? { [Op.or]: conditions } : null;
 }
@@ -762,9 +792,11 @@ function buildPricePerKgCondition(values) {
  * Build PRICING FOR 200 GUESTS condition
  */
 function buildPricingFor200GuestsCondition(values) {
-  const conditions = values.map(range => {
-    return parsePriceRange(range, 'pricing_for_200_guests');
-  }).filter(Boolean);
+  const conditions = values
+    .map((range) => {
+      return parsePriceRange(range, "pricing_for_200_guests");
+    })
+    .filter(Boolean);
 
   return conditions.length > 0 ? { [Op.or]: conditions } : null;
 }
@@ -773,13 +805,19 @@ function buildPricingFor200GuestsCondition(values) {
  * Build MAX CAPACITY condition
  */
 function buildMaxCapacityCondition(values) {
-  const conditions = values.map(range => {
-    if (range === '<100') return { 'attributes.max_capacity': { [Op.lt]: 100 } };
-    if (range === '100-500') return { 'attributes.max_capacity': { [Op.between]: [100, 500] } };
-    if (range === '500-1000') return { 'attributes.max_capacity': { [Op.between]: [500, 1000] } };
-    if (range === '1000+') return { 'attributes.max_capacity': { [Op.gte]: 1000 } };
-    return null;
-  }).filter(Boolean);
+  const conditions = values
+    .map((range) => {
+      if (range === "<100")
+        return { "attributes.max_capacity": { [Op.lt]: 100 } };
+      if (range === "100-500")
+        return { "attributes.max_capacity": { [Op.between]: [100, 500] } };
+      if (range === "500-1000")
+        return { "attributes.max_capacity": { [Op.between]: [500, 1000] } };
+      if (range === "1000+")
+        return { "attributes.max_capacity": { [Op.gte]: 1000 } };
+      return null;
+    })
+    .filter(Boolean);
 
   return conditions.length > 0 ? { [Op.or]: conditions } : null;
 }
@@ -788,14 +826,21 @@ function buildMaxCapacityCondition(values) {
  * Build MIN CAPACITY condition
  */
 function buildMinCapacityCondition(values) {
-  const conditions = values.map(range => {
-    if (range === '<30') return { 'attributes.min_capacity': { [Op.lt]: 30 } };
-    if (range === '<50') return { 'attributes.min_capacity': { [Op.lt]: 50 } };
-    if (range === '<70') return { 'attributes.min_capacity': { [Op.lt]: 70 } };
-    if (range === '<100') return { 'attributes.min_capacity': { [Op.lt]: 100 } };
-    if (range === '<200') return { 'attributes.min_capacity': { [Op.lt]: 200 } };
-    return null;
-  }).filter(Boolean);
+  const conditions = values
+    .map((range) => {
+      if (range === "<30")
+        return { "attributes.min_capacity": { [Op.lt]: 30 } };
+      if (range === "<50")
+        return { "attributes.min_capacity": { [Op.lt]: 50 } };
+      if (range === "<70")
+        return { "attributes.min_capacity": { [Op.lt]: 70 } };
+      if (range === "<100")
+        return { "attributes.min_capacity": { [Op.lt]: 100 } };
+      if (range === "<200")
+        return { "attributes.min_capacity": { [Op.lt]: 200 } };
+      return null;
+    })
+    .filter(Boolean);
 
   return conditions.length > 0 ? { [Op.or]: conditions } : null;
 }
@@ -804,14 +849,23 @@ function buildMinCapacityCondition(values) {
  * Build MIN ORDER QUANTITY condition
  */
 function buildMinOrderQuantityCondition(values) {
-  const conditions = values.map(range => {
-    if (range === '<30') return { 'attributes.min_order_quantity': { [Op.lt]: 30 } };
-    if (range === '30-50') return { 'attributes.min_order_quantity': { [Op.between]: [30, 50] } };
-    if (range === '50-100') return { 'attributes.min_order_quantity': { [Op.between]: [50, 100] } };
-    if (range === '100-150') return { 'attributes.min_order_quantity': { [Op.between]: [100, 150] } };
-    if (range === '150+') return { 'attributes.min_order_quantity': { [Op.gte]: 150 } };
-    return null;
-  }).filter(Boolean);
+  const conditions = values
+    .map((range) => {
+      if (range === "<30")
+        return { "attributes.min_order_quantity": { [Op.lt]: 30 } };
+      if (range === "30-50")
+        return { "attributes.min_order_quantity": { [Op.between]: [30, 50] } };
+      if (range === "50-100")
+        return { "attributes.min_order_quantity": { [Op.between]: [50, 100] } };
+      if (range === "100-150")
+        return {
+          "attributes.min_order_quantity": { [Op.between]: [100, 150] },
+        };
+      if (range === "150+")
+        return { "attributes.min_order_quantity": { [Op.gte]: 150 } };
+      return null;
+    })
+    .filter(Boolean);
 
   return conditions.length > 0 ? { [Op.or]: conditions } : null;
 }

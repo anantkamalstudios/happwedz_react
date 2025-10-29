@@ -1,278 +1,3 @@
-// import React from "react";
-// import { Row, Col, Card } from "react-bootstrap";
-// import { CiBookmarkCheck } from "react-icons/ci";
-// import { FaCheckSquare } from "react-icons/fa";
-
-// const bookings = {
-//   venues: [
-//     {
-//       id: 1,
-//       title: "Fort Jadhavgadh, Pune",
-//       price: "₹ 50000",
-//       date: "20/09/2025",
-//       address: "Banquet Halls, Marriage Garden Saswad, Pune",
-//       image:
-//         "https://media.istockphoto.com/id/2168707889/photo/indian-couple-holding-hand-close-up-in-wedding-ceremony.jpg?s=612x612&w=0&k=20&c=5UYeZvhXO3vu3lWcuNlnzKvn0mMEfLGH77Yk27wWa3w=",
-//     },
-//     {
-//       id: 2,
-//       title: "Blue Lagoon Resort, Nashik",
-//       price: "₹ 60000",
-//       date: "25/09/2025",
-//       address: "Trimbak Road, Nashik",
-//       image:
-//         "https://media.istockphoto.com/id/2168707889/photo/indian-couple-holding-hand-close-up-in-wedding-ceremony.jpg?s=612x612&w=0&k=20&c=5UYeZvhXO3vu3lWcuNlnzKvn0mMEfLGH77Yk27wWa3w=",
-//     },
-//     {
-//       id: 3,
-//       title: "Royal Palace, Mumbai",
-//       price: "₹ 80000",
-//       date: "28/09/2025",
-//       address: "Bandra, Mumbai",
-//       image:
-//         "https://media.istockphoto.com/id/2168707889/photo/indian-couple-holding-hand-close-up-in-wedding-ceremony.jpg?s=612x612&w=0&k=20&c=5UYeZvhXO3vu3lWcuNlnzKvn0mMEfLGH77Yk27wWa3w=",
-//     },
-//   ],
-//   vendors: [
-//     {
-//       id: 1,
-//       title: "Fort Jadhavgadh, Pune",
-//       price: "₹ 50000",
-//       date: "20/09/2025",
-//       address: "Banquet Halls, Marriage Garden Saswad, Pune",
-//       image:
-//         "https://media.istockphoto.com/id/2168707889/photo/indian-couple-holding-hand-close-up-in-wedding-ceremony.jpg?s=612x612&w=0&k=20&c=5UYeZvhXO3vu3lWcuNlnzKvn0mMEfLGH77Yk27wWa3w=",
-//     },
-//     {
-//       id: 2,
-//       title: "Blue Lagoon Resort, Nashik",
-//       price: "₹ 60000",
-//       date: "25/09/2025",
-//       address: "Trimbak Road, Nashik",
-//       image:
-//         "https://media.istockphoto.com/id/2168707889/photo/indian-couple-holding-hand-close-up-in-wedding-ceremony.jpg?s=612x612&w=0&k=20&c=5UYeZvhXO3vu3lWcuNlnzKvn0mMEfLGH77Yk27wWa3w=",
-//     },
-//     {
-//       id: 3,
-//       title: "Royal Palace, Mumbai",
-//       price: "₹ 80000",
-//       date: "28/09/2025",
-//       address: "Bandra, Mumbai",
-//       image:
-//         "https://media.istockphoto.com/id/2168707889/photo/indian-couple-holding-hand-close-up-in-wedding-ceremony.jpg?s=612x612&w=0&k=20&c=5UYeZvhXO3vu3lWcuNlnzKvn0mMEfLGH77Yk27wWa3w=",
-//     },
-//   ],
-// };
-
-// const Booking = () => {
-//   return (
-//     <div className="container my-5">
-//       {Object.keys(bookings).map((category) => (
-//         <div key={category} className="mb-5">
-//           <div className="d-flex justify-content-between align-items-center mb-3">
-//             <h4 className="fw-bold text-capitalize mb-0">{category}</h4>
-//             <a href="#" className="text-danger fw-bold small">
-//               View All
-//             </a>
-//           </div>
-//           <Row>
-//             {bookings[category].map((item) => (
-//               <Col md={4} className="mb-4" key={item.id}>
-//                 <Card className="shadow-sm border-0 h-100">
-//                   <Card.Img
-//                     variant="top"
-//                     src={item.image}
-//                     alt={item.title}
-//                     style={{ height: "200px", objectFit: "cover" }}
-//                   />
-//                   <Card.Body>
-//                     <h5 className="fw-bold">{item.title}</h5>
-//                     <p className="mb-1">
-//                       <span className="fw-bold">Price </span> {item.price}
-//                     </p>
-//                     <p className="mb-1 text-muted">
-//                       <span className="fw-bold text-dark">Booking date </span>
-//                       {item.date}
-//                     </p>
-//                     <p className="mb-3 text-muted">
-//                       <span className="fw-bold text-dark">Address </span>
-//                       {item.address}
-//                     </p>
-//                     <div className="d-flex justify-content-between align-items-center mt-3">
-//                       <div className="text-danger fw-bold d-flex align-items-center">
-//                         <CiBookmarkCheck className="me-2" /> Service Booked
-//                       </div>
-//                       <a href="#" className="text-danger fw-bold small">
-//                         View All
-//                       </a>
-//                     </div>
-//                   </Card.Body>
-//                 </Card>
-//               </Col>
-//             ))}
-//           </Row>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// };
-
-// export default Booking;
-// import React, { useEffect, useState } from "react";
-// import { Card, Row, Col, Dropdown, Spinner } from "react-bootstrap";
-// import { CiBookmarkCheck } from "react-icons/ci";
-// import { FaUser, FaEnvelope, FaPhone, FaCalendarAlt } from "react-icons/fa";
-// import axios from "axios";
-
-// const Quotations = () => {
-//   const [quotations, setQuotations] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     const fetchQuotations = async () => {
-//       try {
-//         const response = await axios.get(
-//           "https://happywedz.com/api/request-pricing/user/quotations"
-//         );
-//         if (response.data.success) {
-//           setQuotations(response.data.quotations);
-//         }
-//       } catch (error) {
-//         console.error("Error fetching quotations:", error);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-//     fetchQuotations();
-//   }, []);
-
-//   return (
-//     <div className="container my-5">
-//       <div className="d-flex justify-content-between align-items-center mb-4">
-//         <h4 className="fw-bold mb-0">My Quotations</h4>
-//         <a href="#" className="text-danger fw-bold small">
-//           View All
-//         </a>
-//       </div>
-
-//       {loading ? (
-//         <div className="text-center py-5">
-//           <Spinner animation="border" variant="danger" />
-//         </div>
-//       ) : quotations.length === 0 ? (
-//         <div className="text-center text-muted py-5">
-//           No quotations found.
-//         </div>
-//       ) : (
-//         <Row>
-//           {quotations.map((item) => (
-//             <Col md={6} lg={4} key={item.id} className="mb-4">
-//               <Card className="shadow-sm border-0 h-100">
-//                 <Card.Img
-//                   variant="top"
-//                   src={
-//                     item.vendor?.profileImage ||
-//                     "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-//                   }
-//                   alt={item.vendor?.businessName || "Vendor"}
-//                   style={{ height: "200px", objectFit: "cover" }}
-//                 />
-//                 <Card.Body>
-//                   <h5 className="fw-bold text-danger mb-2">
-//                     {item.vendor?.businessName || "Unknown Vendor"}
-//                   </h5>
-
-//                   <p className="mb-1 text-muted">
-//                     <FaUser className="me-2 text-danger" />
-//                     {item.firstName} {item.lastName}
-//                   </p>
-//                   <p className="mb-1 text-muted">
-//                     <FaEnvelope className="me-2 text-danger" />
-//                     {item.email}
-//                   </p>
-//                   <p className="mb-1 text-muted">
-//                     <FaPhone className="me-2 text-danger" />
-//                     {item.phone}
-//                   </p>
-//                   <p className="mb-1 text-muted">
-//                     <FaCalendarAlt className="me-2 text-danger" />
-//                     Event Date:{" "}
-//                     <span className="fw-bold text-dark">{item.eventDate}</span>
-//                   </p>
-
-//                   <div className="border-top my-3"></div>
-
-//                   <p className="mb-1">
-//                     <span className="fw-bold">Quote Price:</span>{" "}
-//                     {item.quote?.price
-//                       ? `₹ ${item.quote.price}`
-//                       : "Not provided"}
-//                   </p>
-//                   <p className="mb-1">
-//                     <span className="fw-bold">Quote Message:</span>{" "}
-//                     {item.quote?.message || "N/A"}
-//                   </p>
-//                   <p className="mb-1">
-//                     <span className="fw-bold">Valid Till:</span>{" "}
-//                     {item.quote?.validTill || "N/A"}
-//                   </p>
-
-//                   <div className="border-top my-3"></div>
-
-//                   <p className="mb-1">
-//                     <span className="fw-bold">Plan Type:</span>{" "}
-//                     <span className="text-capitalize">{item.planType}</span>
-//                   </p>
-//                   <p className="mb-1">
-//                     <span className="fw-bold">Status:</span>{" "}
-//                     <span
-//                       className={`text-${
-//                         item.status === "replied"
-//                           ? "success"
-//                           : item.status === "pending"
-//                           ? "warning"
-//                           : "secondary"
-//                       } fw-bold text-capitalize`}
-//                     >
-//                       {item.status}
-//                     </span>
-//                   </p>
-//                   <p className="mb-1">
-//                     <span className="fw-bold">Payment:</span>{" "}
-//                     <span className="text-capitalize">{item.paymentStatus}</span>
-//                   </p>
-
-//                   <div className="d-flex justify-content-between align-items-center mt-4">
-//                     <div className="text-danger fw-bold d-flex align-items-center">
-//                       <CiBookmarkCheck className="me-2" /> Quotation Sent
-//                     </div>
-
-//                     <Dropdown>
-//                       <Dropdown.Toggle
-//                         variant="outline-danger"
-//                         size="sm"
-//                         id={`dropdown-${item.id}`}
-//                       >
-//                         Action
-//                       </Dropdown.Toggle>
-//                       <Dropdown.Menu>
-//                         <Dropdown.Item href="#">Booked</Dropdown.Item>
-//                         <Dropdown.Item href="#">Pending</Dropdown.Item>
-//                         <Dropdown.Item href="#">Discussed</Dropdown.Item>
-//                       </Dropdown.Menu>
-//                     </Dropdown>
-//                   </div>
-//                 </Card.Body>
-//               </Card>
-//             </Col>
-//           ))}
-//         </Row>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default Quotations;
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -283,15 +8,18 @@ import {
   FaPhone,
   FaCalendarAlt,
   FaMapMarkerAlt,
+  FaCheckCircle,
+  FaClock,
+  FaTimesCircle,
 } from "react-icons/fa";
 import { CiBookmarkCheck } from "react-icons/ci";
 
 const Booking = () => {
-  const { token, user } = useSelector((state) => state.auth); // 👈 get from Redux
+  const { token, user } = useSelector((state) => state.auth);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState("all");
 
-  // 🧩 Fetch Quotations using token
   useEffect(() => {
     const fetchBookings = async () => {
       if (!token) {
@@ -319,306 +47,227 @@ const Booking = () => {
     fetchBookings();
   }, [token]);
 
-  // 🧠 Handle Action change
   const handleActionChange = (id, newStatus) => {
     setBookings((prev) =>
-      prev.map((b) =>
-        b.id === id ? { ...b, localStatus: newStatus } : b
-      )
+      prev.map((b) => (b.id === id ? { ...b, localStatus: newStatus } : b))
     );
   };
 
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case "replied":
+        return <FaCheckCircle />;
+      case "pending":
+        return <FaClock />;
+      default:
+        return <FaTimesCircle />;
+    }
+  };
+
+  const filteredBookings =
+    filterStatus === "all"
+      ? bookings
+      : bookings.filter((b) => b.status === filterStatus);
+
   return (
-    <div className="container my-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h4 className="fw-bold mb-0 text-danger">My Bookings</h4>
-        <a href="#" className="text-danger fw-bold small">
-          View All
-        </a>
+    <div className="user-booking-container">
+      <div className="user-booking-header">
+        <div className="user-booking-header-content">
+          <div className="user-booking-title-section">
+            <h1 className="user-booking-main-title">My Bookings</h1>
+            <p className="user-booking-subtitle">
+              Manage and track all your service bookings
+            </p>
+          </div>
+
+          <div className="user-booking-filter-section">
+            <div className="user-booking-filter-tabs">
+              <button
+                className={`user-booking-filter-tab ${
+                  filterStatus === "all" ? "active" : ""
+                }`}
+                onClick={() => setFilterStatus("all")}
+              >
+                All ({bookings.length})
+              </button>
+              <button
+                className={`user-booking-filter-tab ${
+                  filterStatus === "replied" ? "active" : ""
+                }`}
+                onClick={() => setFilterStatus("replied")}
+              >
+                Replied ({bookings.filter((b) => b.status === "replied").length}
+                )
+              </button>
+              <button
+                className={`user-booking-filter-tab ${
+                  filterStatus === "pending" ? "active" : ""
+                }`}
+                onClick={() => setFilterStatus("pending")}
+              >
+                Pending ({bookings.filter((b) => b.status === "pending").length}
+                )
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {loading ? (
-        <div className="text-center py-5">
-          <Spinner animation="border" variant="danger" />
+        <div className="user-booking-loading">
+          <Spinner animation="border" className="user-booking-spinner" />
+          <p className="user-booking-loading-text">Loading your bookings...</p>
         </div>
-      ) : bookings.length === 0 ? (
-        <div className="text-center text-muted py-5">
-          No bookings found.
+      ) : filteredBookings.length === 0 ? (
+        <div className="user-booking-empty">
+          <div className="user-booking-empty-icon">
+            <CiBookmarkCheck />
+          </div>
+          <h3 className="user-booking-empty-title">No Bookings Found</h3>
+          <p className="user-booking-empty-text">
+            {filterStatus === "all"
+              ? "You haven't made any bookings yet. Start exploring services!"
+              : `No ${filterStatus} bookings at the moment.`}
+          </p>
         </div>
       ) : (
-        <Row>
-          {bookings.map((item) => (
-            <Col md={6} lg={4} key={item.id} className="mb-4">
-              <Card className="shadow border-0 h-100 rounded-4 overflow-hidden">
-                <div className="position-relative">
-                  <Card.Img
-                    variant="top"
-                    src={
-                      item.vendor?.profileImage ||
-                      "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                    }
-                    alt={item.vendor?.businessName}
-                    style={{ height: "220px", objectFit: "cover" }}
-                  />
-                  <Badge
-                    bg={
-                      item.status === "replied"
-                        ? "success"
-                        : item.status === "pending"
-                        ? "warning"
-                        : "secondary"
-                    }
-                    className="position-absolute top-0 end-0 m-3 px-3 py-2 rounded-pill"
-                  >
-                    {item.status}
-                  </Badge>
-                </div>
-
-                <Card.Body>
-                  <h5 className="fw-bold text-danger mb-2">
-                    {item.vendor?.businessName || "Unknown Vendor"}
-                  </h5>
-                  <p className="text-muted small mb-3">
-                    <FaMapMarkerAlt className="me-2 text-danger" />
-                    {item.vendor?.city || "Unknown"}, {item.vendor?.state}
-                  </p>
-
-                  <div className="p-3 bg-light rounded mb-3">
-                    <p className="mb-1">
-                      <FaUser className="me-2 text-danger" />
-                      {item.firstName} {item.lastName}
-                    </p>
-                    <p className="mb-1">
-                      <FaEnvelope className="me-2 text-danger" />
-                      {item.email}
-                    </p>
-                    <p className="mb-1">
-                      <FaPhone className="me-2 text-danger" />
-                      {item.phone}
-                    </p>
-                    <p className="mb-0">
-                      <FaCalendarAlt className="me-2 text-danger" />
-                      Event Date:{" "}
-                      <span className="fw-bold">{item.eventDate}</span>
-                    </p>
+        <div className="user-booking-grid-container">
+          <Row className="g-4">
+            {filteredBookings.map((item) => (
+              <Col md={6} xl={4} key={item.id}>
+                <Card className="user-booking-card">
+                  <div className="user-booking-card-image-wrapper">
+                    <img
+                      src={
+                        item.vendor?.profileImage || "/images/imageNotFound.jpg"
+                      }
+                      alt={item.vendor?.businessName}
+                      className="user-booking-card-image"
+                    />
+                    <div className="user-booking-image-overlay"></div>
+                    <Badge
+                      bg="none"
+                      className={`user-booking-status-badge user-booking-status-${item.status}`}
+                    >
+                      {getStatusIcon(item.status)}
+                      <span className="ms-1">{item.status}</span>
+                    </Badge>
                   </div>
 
-                  <div className="bg-white rounded border p-3 mb-3">
-                    <p className="mb-1">
-                      <span className="fw-bold">Quote Price:</span>{" "}
-                      {item.quote?.price
-                        ? `₹ ${item.quote.price}`
-                        : "Not provided"}
-                    </p>
-                    <p className="mb-1">
-                      <span className="fw-bold">Message:</span>{" "}
-                      {item.quote?.message || "No message"}
-                    </p>
-                    <p className="mb-0">
-                      <span className="fw-bold">Valid Till:</span>{" "}
-                      {item.quote?.validTill || "N/A"}
-                    </p>
-                  </div>
-
-                  <div className="d-flex justify-content-between align-items-center">
-                    <div className="text-danger fw-bold d-flex align-items-center">
-                      <CiBookmarkCheck className="me-2" /> Service Booked
+                  <Card.Body className="user-booking-card-body">
+                    <div className="user-booking-vendor-section">
+                      <h3 className="user-booking-vendor-name">
+                        {item.vendor?.businessName || "Unknown Vendor"}
+                      </h3>
+                      <p className="user-booking-vendor-location">
+                        <FaMapMarkerAlt />
+                        <span>
+                          {item.vendor?.city || "Unknown"}, {item.vendor?.state}
+                        </span>
+                      </p>
                     </div>
 
-                    <Dropdown onSelect={(key) => handleActionChange(item.id, key)}>
-                      <Dropdown.Toggle
-                        variant="outline-danger"
-                        size="sm"
-                        className="rounded-pill"
+                    <div className="user-booking-info-section">
+                      <h4 className="user-booking-section-title">
+                        Booking Details
+                      </h4>
+                      <div className="user-booking-info-grid">
+                        <div className="user-booking-info-item">
+                          <FaUser className="user-booking-info-icon" />
+                          <span className="user-booking-info-text">
+                            {item.firstName} {item.lastName}
+                          </span>
+                        </div>
+                        <div className="user-booking-info-item">
+                          <FaEnvelope className="user-booking-info-icon" />
+                          <span className="user-booking-info-text">
+                            {item.email}
+                          </span>
+                        </div>
+                        <div className="user-booking-info-item">
+                          <FaPhone className="user-booking-info-icon" />
+                          <span className="user-booking-info-text">
+                            {item.phone}
+                          </span>
+                        </div>
+                        <div className="user-booking-info-item">
+                          <FaCalendarAlt className="user-booking-info-icon" />
+                          <span className="user-booking-info-text">
+                            <strong>{item.eventDate}</strong>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="user-booking-quote-section">
+                      <h4 className="user-booking-section-title">
+                        Quotation Details
+                      </h4>
+                      <div className="user-booking-quote-card">
+                        <div className="user-booking-quote-item">
+                          <span className="user-booking-quote-label">
+                            Quote Price
+                          </span>
+                          <span className="user-booking-quote-value user-booking-quote-price">
+                            {item.quote?.price
+                              ? `₹ ${item.quote.price}`
+                              : "Not provided"}
+                          </span>
+                        </div>
+                        <div className="user-booking-quote-item">
+                          <span className="user-booking-quote-label">
+                            Valid Till
+                          </span>
+                          <span className="user-booking-quote-value">
+                            {item.quote?.validTill || "N/A"}
+                          </span>
+                        </div>
+                        {item.quote?.message && (
+                          <div className="user-booking-quote-message">
+                            <span className="user-booking-quote-label">
+                              Message
+                            </span>
+                            <p className="user-booking-quote-message-text">
+                              {item.quote.message}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="user-booking-actions">
+                      <div className="user-booking-service-badge">
+                        <CiBookmarkCheck />
+                        <span>Service Booked</span>
+                      </div>
+                      <Dropdown
+                        onSelect={(key) => handleActionChange(item.id, key)}
                       >
-                        {item.localStatus || "Action"}
-                      </Dropdown.Toggle>
-                      <Dropdown.Menu>
-                        <Dropdown.Item eventKey="Booked">Booked</Dropdown.Item>
-                        <Dropdown.Item eventKey="Pending">Pending</Dropdown.Item>
-                        <Dropdown.Item eventKey="Discussed">
-                          Discussed
-                        </Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))}
-        </Row>
+                        <Dropdown.Toggle className="user-booking-action-dropdown text-white">
+                          {item.localStatus || "Update Status"}
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu className="user-booking-dropdown-menu">
+                          <Dropdown.Item eventKey="Booked">
+                            Booked
+                          </Dropdown.Item>
+                          <Dropdown.Item eventKey="Pending">
+                            Pending
+                          </Dropdown.Item>
+                          <Dropdown.Item eventKey="Discussed">
+                            Discussed
+                          </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </div>
       )}
     </div>
   );
 };
 
 export default Booking;
-// import React, { useEffect, useState } from "react";
-// import { useSelector } from "react-redux";
-// import axios from "axios";
-// import { Row, Col, Card, Spinner, Dropdown, Badge } from "react-bootstrap";
-
-// const Booking = () => {
-//   const { token, user } = useSelector((state) => state.auth);
-//   const [bookings, setBookings] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   // Fetch quotations using token
-//   useEffect(() => {
-//     const fetchBookings = async () => {
-//       if (!token) {
-//         window.location.href = "/customer-login";
-//         return;
-//       }
-
-//       try {
-//         const res = await axios.get(
-//           "https://happywedz.com/api/request-pricing/user/quotations",
-//           {
-//             headers: { Authorization: `Bearer ${token}` },
-//           }
-//         );
-
-//         if (res.data.success) {
-//           setBookings(res.data.quotations);
-//         }
-//       } catch (err) {
-//         console.error("Error fetching bookings:", err);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-//     fetchBookings();
-//   }, [token]);
-
-//   // Local dropdown action
-//   const handleActionChange = (id, newStatus) => {
-//     setBookings((prev) =>
-//       prev.map((b) =>
-//         b.id === id ? { ...b, localStatus: newStatus } : b
-//       )
-//     );
-//   };
-
-//   return (
-//     <div className="container my-5">
-//       <div className="d-flex justify-content-between align-items-center mb-4">
-//         <h4 className="fw-bold mb-0 text-danger">My Service Quotations</h4>
-//         <a href="#" className="text-danger fw-bold small">
-//           View All
-//         </a>
-//       </div>
-
-//       {loading ? (
-//         <div className="text-center py-5">
-//           <Spinner animation="border" variant="danger" />
-//         </div>
-//       ) : bookings.length === 0 ? (
-//         <div className="text-center text-muted py-5">No bookings found.</div>
-//       ) : (
-//         <Row>
-//           {bookings.map((item) => (
-//             <Col md={6} lg={4} key={item.id} className="mb-4">
-//               <Card className="shadow-sm border-0 h-100 rounded-4 p-3">
-//                 <div className="d-flex justify-content-between align-items-center mb-3">
-//                   <h5 className="fw-bold text-danger mb-0">
-//                     {item.vendor?.businessName || "Unknown Vendor"}
-//                   </h5>
-//                   <Badge
-//                     bg={
-//                       item.status === "replied"
-//                         ? "success"
-//                         : item.status === "pending"
-//                         ? "warning"
-//                         : "secondary"
-//                     }
-//                     className="text-uppercase"
-//                   >
-//                     {item.status}
-//                   </Badge>
-//                 </div>
-
-//                 <div className="border-bottom pb-2 mb-3">
-//                   <p className="mb-1">
-//                     <strong>City:</strong> {item.vendor?.city || "N/A"}
-//                   </p>
-//                   <p className="mb-1">
-//                     <strong>State:</strong> {item.vendor?.state || "N/A"}
-//                   </p>
-//                   <p className="mb-1">
-//                     <strong>Vendor Email:</strong> {item.vendor?.email || "N/A"}
-//                   </p>
-//                   <p className="mb-1">
-//                     <strong>Vendor Phone:</strong> {item.vendor?.phone || "N/A"}
-//                   </p>
-//                 </div>
-
-//                 <div className="border-bottom pb-2 mb-3">
-//                   <p className="mb-1">
-//                     <strong>Customer:</strong> {item.firstName} {item.lastName}
-//                   </p>
-//                   <p className="mb-1">
-//                     <strong>Email:</strong> {item.email}
-//                   </p>
-//                   <p className="mb-1">
-//                     <strong>Phone:</strong> {item.phone}
-//                   </p>
-//                   <p className="mb-1">
-//                     <strong>Event Date:</strong> {item.eventDate}
-//                   </p>
-//                 </div>
-
-//                 <div className="border-bottom pb-2 mb-3">
-//                   <p className="mb-1">
-//                     <strong>Quote Price:</strong>{" "}
-//                     {item.quote?.price
-//                       ? `₹ ${item.quote.price}`
-//                       : "Not provided"}
-//                   </p>
-//                   <p className="mb-1">
-//                     <strong>Quote Message:</strong>{" "}
-//                     {item.quote?.message || "No message"}
-//                   </p>
-//                   <p className="mb-1">
-//                     <strong>Valid Till:</strong> {item.quote?.validTill || "N/A"}
-//                   </p>
-//                   <p className="mb-1">
-//                     <strong>Payment Status:</strong> {item.paymentStatus}
-//                   </p>
-//                   <p className="mb-1">
-//                     <strong>Plan Type:</strong>{" "}
-//                     {item.planType?.toUpperCase() || "Free"}
-//                   </p>
-//                 </div>
-
-//                 <div className="d-flex justify-content-between align-items-center mt-3">
-//                   <span className="fw-bold text-secondary">
-//                     {item.localStatus || "Service Status"}
-//                   </span>
-//                   <Dropdown onSelect={(key) => handleActionChange(item.id, key)}>
-//                     <Dropdown.Toggle
-//                       variant="outline-danger"
-//                       size="sm"
-//                       className="rounded-pill"
-//                     >
-//                       {item.localStatus || "Action"}
-//                     </Dropdown.Toggle>
-//                     <Dropdown.Menu>
-//                       <Dropdown.Item eventKey="Booked">Booked</Dropdown.Item>
-//                       <Dropdown.Item eventKey="Pending">Pending</Dropdown.Item>
-//                       <Dropdown.Item eventKey="Discussed">
-//                         Discussed
-//                       </Dropdown.Item>
-//                     </Dropdown.Menu>
-//                   </Dropdown>
-//                 </div>
-//               </Card>
-//             </Col>
-//           ))}
-//         </Row>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default Booking;
