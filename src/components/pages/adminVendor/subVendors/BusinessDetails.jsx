@@ -134,7 +134,8 @@ const BusinessDetails = ({ formData, setFormData }) => {
           });
           updatedVendor = await vendorsApi.updateVendor(vendor.id, formDataObj);
         } else {
-          updatedVendor = await vendorsApi.updateVendor(vendor.id, payload);
+          // updatedVendor = await vendorsApi.updateVendor(vendor.id, payload);
+          updatedVendor = await vendorsAuthApi.register(payload);
         }
 
         // Update Redux store with the updated vendor data
