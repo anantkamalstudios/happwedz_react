@@ -8430,7 +8430,7 @@ input:checked + .slider:before {
   margin-bottom: 1.25rem;
   font-size: 0.95rem;
   letter-spacing: 0.08em;
-  color: #2c3e50;
+  color: #fff;
   position: relative;
 }
 
@@ -8441,7 +8441,7 @@ input:checked + .slider:before {
   left: 0;
   width: 30px;
   height: 2px;
-  background: linear-gradient(90deg, #e83581, #ff6b9d);
+  background: #fff;
   border-radius: 1px;
 }
 
@@ -8457,7 +8457,7 @@ input:checked + .slider:before {
 }
 
 .footer-list a {
-  color: #5a6c7d;
+  color: #fff;
   text-decoration: none;
   transition: all 0.3s ease;
   font-size: 0.95rem;
@@ -8474,12 +8474,12 @@ input:checked + .slider:before {
   transform: translateY(-50%);
   width: 0;
   height: 1px;
-  background: linear-gradient(90deg, #e83581, #ff6b9d);
+  background: #fff;
   transition: width 0.3s ease;
 }
 
 .footer-list a:hover {
-  color: #e83581;
+  color: #fff;
   padding-left: 8px;
 }
 

@@ -23,6 +23,31 @@ const UploadSelfiePage = () => {
   const { role, type } = userInfo;
   const controllerRef = useRef(null);
 
+  const getErrorMessage = (err) => {
+    try {
+      // Case 1: axios-style -> { response: { data: { error } } }
+      if (err?.response?.data?.error) return err.response.data.error;
+
+      // Case 2: our API throws: Error("HTTP 400: {...}")
+      if (typeof err?.message === "string") {
+        // Try to parse the JSON part
+        const jsonMatch = err.message.match(/{.*}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed.error) return parsed.error;
+        }
+        // fallback to raw message
+        return err.message;
+      }
+
+      // Case 3: plain object or fallback
+      if (typeof err === "string") return err;
+      return "Upload failed. Please try again.";
+    } catch {
+      return "Upload failed. Please try again.";
+    }
+  };
+
   let image;
   switch (role) {
     case "bride":
@@ -143,16 +168,13 @@ const UploadSelfiePage = () => {
         setUploading(false);
         navigate("/try/filters");
       } catch (err) {
-        let errorMsg = "File too large. Max 1MB allowed."; // default message
-        if (err?.response?.data?.error) {
-          errorMsg = err.response.data.error;
-        } else if (err?.message) {
-          errorMsg = err.message;
-        }
+        const error = getErrorMessage(err);
+        console.error("Upload error:", error);
         Swal.fire({
           icon: "error",
-          title: "Oops...",
-          text: "Image Upload failed",
+          title: "Upload failed",
+          text: error,
+          confirmButtonColor: "#ed1173",
         });
       } finally {
         setUploading(false);
@@ -230,12 +252,13 @@ const UploadSelfiePage = () => {
       setShowGuide(false);
       navigate("/try/filters");
     } catch (e) {
-      console.error(e);
+      console.error("Camera upload error:", e);
+      const msg = getErrorMessage(e);
       Swal.fire({
         icon: "error",
-        title: "Oops...",
-        text: e.message || "Upload failed. Please try again.",
-        timer: "3000",
+        title: "Upload failed",
+        text: msg,
+        timer: 3000,
         confirmButtonText: "OK",
         confirmButtonColor: "#ed1173",
       });
@@ -397,9 +420,9 @@ const UploadSelfiePage = () => {
             aria-modal="true"
             style={{ overflow: "hidden" }}
           >
-            <div className="modal-dialog modal-dialog-centered">
-              <div className="modal-content">
-                <div className="modal-header">
+            <div className="modal-dialog modal-dialog-centered rounded-0">
+              <div className="modal-content rounded-0 relative">
+                <div className="modal-header border-0 position-relative">
                   <div className="d-flex flex-column">
                     <h4 className="modal-title text-danger fw-bold">
                       Photo Instruction
@@ -410,12 +433,21 @@ const UploadSelfiePage = () => {
                   </div>
                   <button
                     type="button"
-                    className="btn-close"
+                    className="position-absolute"
                     onClick={() => {
                       setShowGuide(false);
                       handleCancelUpload();
                     }}
-                  ></button>
+                    style={{
+                      color: "#C31162",
+                      top: 10,
+                      right: 10,
+                      border: "none",
+                      background: "transparent",
+                    }}
+                  >
+                    <IoClose size={30} />
+                  </button>
                 </div>
                 <div className="modal-body">
                   <ul className="list-unstyled mb-4">
@@ -429,8 +461,8 @@ const UploadSelfiePage = () => {
                               width: 70,
                               height: 70,
                               objectFit: "contain",
-                              border: "1px solid #ddd",
-                              borderRadius: "10px",
+                              // border: "1px solid #ddd",
+                              // borderRadius: "10px",
                               padding: 4,
                               marginRight: 12,
                             }}

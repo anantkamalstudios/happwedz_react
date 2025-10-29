@@ -168,7 +168,6 @@ const FiltersPage = () => {
 
   const handleSelectProduct = (productId) => {
     setExpandedProductId((prev) => (prev === productId ? null : productId));
-    // Find the selected product and set as likedProduct
     const selectedProduct = categories[expandedCatIdx]?.products?.find(
       (p) => p.id === productId
     );
@@ -200,9 +199,8 @@ const FiltersPage = () => {
       },
     };
     setAppliedProducts(newAppliedProducts);
-    setShowProductDetails(true); // Show product details when new product is applied
+    setShowProductDetails(true);
 
-    // Immediately apply with suppression to avoid duplicate debounced call
     suppressNextEffectRef.current = true;
     await applyAllProducts(newAppliedProducts);
   };
@@ -212,11 +210,9 @@ const FiltersPage = () => {
     delete newAppliedProducts[categoryName];
     setAppliedProducts(newAppliedProducts);
 
-    // If no products left, reset to original image
     if (Object.keys(newAppliedProducts).length === 0) {
       setPreviewUrl(uploadedPreview);
     } else {
-      // Re-apply remaining products
       applyAllProducts(newAppliedProducts);
     }
   };
@@ -262,9 +258,9 @@ const FiltersPage = () => {
           payload.eyeshadow_thickness = 25;
           break;
         case "contactlenses":
-          payload.lens_color = hex;
-          payload.lens_intensity = 0.2;
-          payload.lens_radius_scale = 1.3;
+          payload.contactlenses_color = hex;
+          payload.contactlenses_intensity = 0.2;
+          payload.contactlenses_radius_scale = 1.3;
           break;
         case "foundation":
           payload.foundation_color = hex;
@@ -294,22 +290,22 @@ const FiltersPage = () => {
           payload.eyeliner_color = hex;
           payload.eyeliner_intensity = intensityValue;
           break;
-        // default:
-        //   payload.lipstick_color = hex;
-        //   payload.lipstick_intensity = intensityValue;
-        //   break;
+        default:
+          // payload.lipstick_color = hex;
+          // payload.lipstick_intensity = intensityValue;
+          break;
       }
     });
 
-    // Skip if payload is identical to the last successfully sent one
     const payloadKey = JSON.stringify(payload);
     if (payloadKey === lastPayloadRef.current) {
       return;
     }
 
-    // Abort any previous in-flight request and track sequence
     if (applyAbortRef.current) {
-      try { applyAbortRef.current.abort(); } catch {}
+      try {
+        applyAbortRef.current.abort();
+      } catch {}
     }
     const controller = new AbortController();
     applyAbortRef.current = controller;
@@ -343,8 +339,8 @@ const FiltersPage = () => {
         setPreviewUrl(fallbackUrl);
       }
     } catch (e) {
-      // Ignore abort errors
       if (e?.name === "AbortError") return;
+      
       console.error("applyMakeup failed:", e?.message || e, payload);
       Swal.fire({
         icon: "error",
@@ -352,7 +348,6 @@ const FiltersPage = () => {
         text: "Failed to apply filter.",
       });
     } finally {
-      // Only clear applying if this is the latest request
       if (mySeq === applySeqRef.current) {
         setIsApplying(false);
       }
@@ -384,7 +379,9 @@ const FiltersPage = () => {
   useEffect(() => {
     return () => {
       if (applyAbortRef.current) {
-        try { applyAbortRef.current.abort(); } catch {}
+        try {
+          applyAbortRef.current.abort();
+        } catch {}
       }
     };
   }, []);
@@ -456,7 +453,7 @@ const FiltersPage = () => {
                 justifyContent: "center",
               }}
               title="Home"
-              onClick={() => navigate("/try")}
+              onClick={() => navigate("/try", { replace: true })}
             >
               <FaHome
                 // className="primary-text"
@@ -870,7 +867,8 @@ const FiltersPage = () => {
                     sessionStorage.removeItem("finalLookFilters");
                     setPreviewUrl(null);
                     setAppliedProducts({});
-                    navigate("/try/upload");
+                    // navigate("/try/upload");
+                    navigate("/try/upload", { replace: true });
 
                     Swal.fire({
                       title: "Deleted!",

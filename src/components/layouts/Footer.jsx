@@ -34,9 +34,8 @@ const Footer = () => {
     <footer
       className="footer position-relative pt-0"
       style={{
-        background:
-          "linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f1f3f4 100%)",
-        color: "#222",
+        background: "#C31162",
+        color: "#fff",
         position: "relative",
         overflow: "hidden",
       }}
@@ -70,8 +69,33 @@ const Footer = () => {
       />
 
       <div className="container" style={{ position: "relative", zIndex: 1 }}>
-        <div className="row gy-4">
-          <div className="col-6 col-md-3">
+        <div
+          className="d-flex flex-wrap justify-content-between"
+          style={{ rowGap: "2rem" }}
+        >
+          {/* === LOGO COLUMN === */}
+          <div style={{ flex: "1 1 20%" }}>
+            <Link
+              to="/"
+              style={{
+                display: "inline-block",
+                textDecoration: "none",
+              }}
+            >
+              <img
+                src="/images/logo.webp"
+                alt="HappyWedz Logo"
+                style={{
+                  width: "150px",
+                  height: "auto",
+                  objectFit: "contain",
+                }}
+              />
+            </Link>
+          </div>
+
+          {/* === PLAN YOUR WEDDING === */}
+          <div style={{ flex: "1 1 20%", color: "#fff" }}>
             <h6 className="footer-title">Plan Your Wedding</h6>
             <ul className="footer-list">
               <li>
@@ -80,9 +104,9 @@ const Footer = () => {
               <li>
                 <Link
                   to="/vendors"
-                  onClick={() => {
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
+                  onClick={() =>
+                    window.scrollTo({ top: 0, behavior: "smooth" })
+                  }
                 >
                   Search By Vendor
                 </Link>
@@ -90,9 +114,9 @@ const Footer = () => {
               <li>
                 <Link
                   to="/vendors"
-                  onClick={() => {
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
+                  onClick={() =>
+                    window.scrollTo({ top: 0, behavior: "smooth" })
+                  }
                 >
                   Search By City
                 </Link>
@@ -101,12 +125,13 @@ const Footer = () => {
                 <Link to="/top-rated">Top Rated Vendors</Link>
               </li>
               <li>
-                <Link to="destination-wedding">Destination Wedding</Link>
+                <Link to="/destination-wedding">Destination Wedding</Link>
               </li>
             </ul>
           </div>
 
-          <div className="col-6 col-md-3">
+          {/* === INSPIRATION & IDEAS === */}
+          <div style={{ flex: "1 1 20%" }}>
             <h6 className="footer-title">Inspiration & Ideas</h6>
             <ul className="footer-list">
               <li>
@@ -123,15 +148,13 @@ const Footer = () => {
                   Submit Your Wedding
                 </Link>
               </li>
-              {/* <li>
-                <Link to="#photo-gallery">Photo Gallery</Link>
-              </li> */}
             </ul>
           </div>
 
-          <div className="col-6 col-md-3">
+          {/* === BRIDAL & GROOM FASHION === */}
+          <div style={{ flex: "1 1 20%" }}>
             <h6 className="footer-title">Bridal & Groom Fashion</h6>
-            <ul className="footer-list" style={{ color: "GrayText" }}>
+            <ul className="footer-list" style={{ color: "#fff" }}>
               <li>
                 <a
                   onClick={() => handleCategoryClick("Wedding Card Designs")}
@@ -157,12 +180,12 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <animateTransform
+                <a
                   onClick={() => handleCategoryClick("Groom Wear")}
                   style={{ cursor: "pointer" }}
                 >
                   Groom Wear
-                </animateTransform>
+                </a>
               </li>
               <li>
                 <a
@@ -175,7 +198,8 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div className="col-6 col-md-3">
+          {/* === COMPANY === */}
+          <div style={{ flex: "1 1 20%" }}>
             <h6 className="footer-title">Company</h6>
             <ul className="footer-list">
               <li>
@@ -190,7 +214,6 @@ const Footer = () => {
               <li>
                 <Link to="/sitemap">Site Map</Link>
               </li>
-
               <li>
                 <Link to="/einvites">Wedding Invitation Maker</Link>
               </li>
@@ -228,7 +251,10 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="social-btn"
               >
-                <i className="fa-brands fa-facebook-f"></i>
+                <i
+                  className="fa-brands fa-facebook-f"
+                  style={{ color: "#C31162" }}
+                ></i>
               </a>
               <a
                 href="https://instagram.com"
@@ -237,7 +263,10 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="social-btn"
               >
-                <i className="fa-brands fa-instagram"></i>
+                <i
+                  className="fa-brands fa-instagram"
+                  style={{ color: "#C31162" }}
+                ></i>
               </a>
 
               <a
@@ -246,6 +275,7 @@ const Footer = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="social-btn"
+                style={{ color: "#C31162" }}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -265,6 +295,7 @@ const Footer = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="social-btn"
+                style={{ color: "#C31162" }}
               >
                 <svg
                   width="20"
@@ -284,7 +315,7 @@ const Footer = () => {
         <hr className="my-4 opacity-50" />
 
         <div className="text-center small  ">
-          <p className="">
+          <p style={{ color: "#fff" }}>
             &copy; {new Date().getFullYear()} HappWedz Studios. All rights
             reserved.
           </p>

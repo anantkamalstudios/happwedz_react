@@ -29,11 +29,11 @@ const Home = () => {
         logo={logo}
         img={image}
         heading="Design Studio"
-        subHeading="Personalize & Send Invites Instantly"
+        subHeading="Try Virtual Makeup & Grooming Looks for Your Big Day"
         link="/try"
-        title="Create Stunning Digital Wedding Invitations That Wow"
-        subtitle="Design beautiful e-invites using our easy-to-use editor. Customize templates, add your personal touch, and send invites digitally to your guests in minutes."
-        btnName="Get Started"
+        title="Create Your Look !"
+        subtitle="Experience How You'll Look in Your Wedding Day with AI-Powered Virtual Makeover."
+        btnName="Try Virtual Look"
       />
       <PlanningToolsCTA />
       <MansoryImageSection />
@@ -41,10 +41,10 @@ const Home = () => {
       <CtaPanel
         logo={logo}
         img={einviteImage}
-        heading="Digital Wedding Invitations"
-        subHeading="Customize & Share in Moments"
-        title="Make a Statement with Stylish Online Wedding Invites"
-        subtitle="Design beautiful e-invites using our easy-to-use editor. Customize templates, add your personal touch, and send invites digitally to your guests in minutes."
+        heading="E-INVITES"
+        subHeading="Create Stunning Digital Wedding Invitations That Wow"
+        title="Design Beautiful E-Invites with Our Easy-to-Use Editor !" 
+        subtitle="Discover curated options that fit your style, budget and location. Search and compare instantly."
         link="/einvites"
         btnName="Create Your E-Invite"
       />
