@@ -187,8 +187,7 @@ const UploadSelfiePage = () => {
 
   const handleCancelUpload = () => {
     if (controllerRef.current) {
-      controllerRef.current.abort();
-      console.log("Upload aborted by user");
+      controllerRef.current.abort(); 
       return;
     }
   };

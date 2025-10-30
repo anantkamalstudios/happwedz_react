@@ -102,7 +102,6 @@ const FiltersPage = () => {
       setIsLoading(true);
       try {
         const response = await beautyApi.getFilteredProducts("MAKEUP");
-        console.log(response);
 
         const items = Array.isArray(response)
           ? response
@@ -519,9 +518,7 @@ const FiltersPage = () => {
           url: previewUrl,
         });
         setShowShareMenu(false);
-      } catch (err) {
-        console.log(err);
-      }
+      } catch (err) {}
     }
   };
 

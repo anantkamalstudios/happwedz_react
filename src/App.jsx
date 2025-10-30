@@ -2,7 +2,7 @@ import React, { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import MainLayout from "./components/layouts/MainLayout";
 import MatrimonialLayout from "./components/layouts/MatrimonialLayout";
-import ShimmerLoader from "./components/ui/ShimmerLoader";
+import Loader from "./components/ui/Loader";
 import "./App.css";
 
 import NotFound from "./components/pages/NotFound";
@@ -23,6 +23,7 @@ import SiteMap from "./components/pages/SiteMap";
 import TopRatedVendors from "./components/pages/TopRatedVendors";
 import CareersPage from "./components/pages/CareersPage";
 import DestinationWeddingDetailPage from "./components/pages/DestinationWeddingDetailPage";
+import BusinessClaimForm from "./components/pages/BusinessClaimForm";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
@@ -188,8 +189,8 @@ function App() {
   }, [location.pathname]);
 
   return (
-    <Suspense fallback={<ShimmerLoader />}>
-      <LoaderProvider>
+    <LoaderProvider>
+      <Suspense fallback={<Loader />}>
         <ToastProvider>
           <Routes>
             <Route path="/preview/:id" element={<TemplatePreviewPage />} />
@@ -229,6 +230,10 @@ function App() {
               <Route
                 path="/vendor-forgot-password"
                 element={<VendorForgotPassword />}
+              />
+              <Route
+                path="/claim-your-buisness"
+                element={<BusinessClaimForm />}
               />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:blogId" element={<Blog />} />
@@ -417,8 +422,8 @@ function App() {
             <Route path="/ai-recommandation" element={<RecommandPage />} />
           </Routes>
         </ToastProvider>
-      </LoaderProvider>
-    </Suspense>
+      </Suspense>
+    </LoaderProvider>
   );
 }
 

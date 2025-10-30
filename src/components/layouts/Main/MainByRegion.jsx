@@ -18,7 +18,7 @@ const MainByRegion = ({ type }) => {
   const handleRegionClick = (regionName) => {
     // Set location in Redux
     dispatch(setLocation(regionName));
-    
+
     const cityParam = `city=${encodeURIComponent(regionName)}`;
     if (type === "venues") {
       navigate(`/venues/all?vendorType=venues&${cityParam}`);
@@ -30,10 +30,8 @@ const MainByRegion = ({ type }) => {
   if (loading) return <ShimmerRegion />;
   if (error) return <p>Error loading regions: {error.message}</p>;
   if (!regions || regions.length === 0) {
-    console.log("No regions found");
     return null;
   }
-  console.log(type);
 
   return (
     <div className="container">

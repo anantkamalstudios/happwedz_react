@@ -278,7 +278,7 @@ function DestinationCard({ destination, navigate }) {
       <p
         style={{
           fontSize: "14px",
-          color: "#666",
+          color: "#000",
           lineHeight: "1.6",
           marginBottom: "20px",
         }}
@@ -305,7 +305,7 @@ function DestinationCard({ destination, navigate }) {
           >
             •
           </span>
-          <span style={{ fontSize: "13px", color: "#666", lineHeight: "1.5" }}>
+          <span style={{ fontSize: "13px", color: "#000", lineHeight: "1.5" }}>
             Average cost of destination weddings in {destination.name} is:{" "}
             {destination.cost}
           </span>
@@ -330,7 +330,7 @@ function DestinationCard({ destination, navigate }) {
               •
             </span>
             <span
-              style={{ fontSize: "13px", color: "#666", lineHeight: "1.5" }}
+              style={{ fontSize: "13px", color: "#000", lineHeight: "1.5" }}
             >
               {destination.type}
             </span>
@@ -356,7 +356,7 @@ function DestinationCard({ destination, navigate }) {
               •
             </span>
             <span
-              style={{ fontSize: "13px", color: "#666", lineHeight: "1.5" }}
+              style={{ fontSize: "13px", color: "#000", lineHeight: "1.5" }}
             >
               Best season: {destination.season}
             </span>
@@ -405,8 +405,7 @@ function DestinationCard({ destination, navigate }) {
           cursor: "pointer",
           transition: "all 0.3s ease",
         }}
-        onClick={() => {
-          console.log("helo world");
+        onClick={() => { 
           navigate(`/destination-wedding/${destination.name.toLowerCase()}`);
         }}
       >

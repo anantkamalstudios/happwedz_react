@@ -1,21 +1,25 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import citiesData from "../../data/citiesData";
+import { useDispatch } from "react-redux";
+import { setLocation } from "../../redux/locationSlice";
 
 const MetroCities = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleCityClick = (cityLabel) => {
     const city = cityLabel
       .replace(/^Wedding Venues\s*/i, "")
       .trim()
       .toLowerCase();
+    dispatch(setLocation(city));
     navigate(`/venues/?city=${encodeURIComponent(city)}`);
   };
 
   return (
     <div className="container my-5">
-      <h3 className="mb-4 text-center">Wedding Vendors By Location</h3>
+      <h3 className="mb-4 text-center">Wedding Venues By Location</h3>
 
       <div className="mt-5 metro-cities-container">
         {Object.entries(citiesData).map(([state, venues]) => (

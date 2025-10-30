@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Container, Row, Col, Button, Modal } from "react-bootstrap";
 import { FaLocationDot } from "react-icons/fa6";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import { useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleWishlist } from "../../redux/authSlice";
 import "swiper/css";
 import "swiper/css/autoplay";
 import vendorServicesApi from "../../services/api/vendorServicesApi";
 import PricingModal from "./PricingModal";
+import BusinessClaimForm from "../pages/BusinessClaimForm";
 
 import {
   FaStar,
@@ -25,6 +28,7 @@ import { GrFormNextLink } from "react-icons/gr";
 import ReviewSection from "../pages/ReviewSection";
 import { FaqQuestions } from "../pages/adminVendor/subVendors/FaqData";
 import axios from "axios";
+const API_BASE_URL = "https://happywedz.com";
 import Swal from "sweetalert2";
 
 // Helper function to capitalize the first letter of each word
@@ -35,15 +39,20 @@ const capitalizeWords = (str) => {
 
 const Detailed = () => {
   const { id } = useParams();
+  const dispatch = useDispatch();
+  const { token } = useSelector((state) => state.auth);
   const [venueData, setVenueData] = useState(null);
+  const [profileViews, setProfileViews] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mainImage, setMainImage] = useState("");
   const [hoveredIndex, setHoveredIndex] = useState(null);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [favorites, setFavorites] = useState({});
+  const [wishlistIds, setWishlistIds] = useState(new Set());
   const [images, setImages] = useState([]);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [selectedVendorId, setSelectedVendorId] = useState(null);
+  const [showClaimForm, setShowClaimForm] = useState(false);
 
   const handleShowPricingModal = (vendorId) => {
     setSelectedVendorId(vendorId);
@@ -123,14 +132,10 @@ const Detailed = () => {
         });
       }
 
-      // --- Parking ---
-      if (
-        attributes.about_us &&
-        attributes.about_us.includes("Sufficient Parking available")
-      ) {
+      if (attributes.parking) {
         amenities.push({
           icon: <FaParking />,
-          name: "Sufficient Car Parking Available",
+          name: `Parking: ${attributes.parking}`,
         });
       }
 
@@ -214,18 +219,18 @@ const Detailed = () => {
   };
 
   const [rating, setRating] = useState(0);
-  const [hover, setHover] = useState(0);
+  const [_hover, _setHover] = useState(0);
   const [experience, setExperience] = useState("");
   const [spent, setSpent] = useState("");
-  const [reviews, setReviews] = useState([]);
+  const [_reviews, _setReviews] = useState([]);
 
-  const handleImageUpload = (e) => {
+  const _handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     const filePreviews = files.map((file) => URL.createObjectURL(file));
     setImages((prev) => [...prev, ...filePreviews]);
   };
 
-  const handleSubmit = () => {
+  const _handleSubmit = () => {
     if (!rating || !experience) {
       Swal.fire({
         title: "",
@@ -245,12 +250,98 @@ const Detailed = () => {
       date: new Date().toLocaleDateString(),
     };
 
-    setReviews((prev) => [newReview, ...prev]);
+    _setReviews((prev) => [newReview, ...prev]);
     // Reset form
     setRating(0);
     setExperience("");
     setSpent("");
     setImages([]);
+  };
+
+  // Fetch wishlist on component mount to initialize favorites
+  useEffect(() => {
+    if (!token || !id) {
+      setFavorites({});
+      setWishlistIds(new Set());
+      return;
+    }
+
+    const fetchWishlist = async () => {
+      try {
+        const res = await fetch(`https://happywedz.com/api/wishlist`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+
+        if (data.success && data.data && data.data.length > 0) {
+          const ids = new Set(data.data.map((item) => item.vendor_services_id));
+          setWishlistIds(ids);
+          // Initialize favorites state from fetched wishlist
+          const favoritesObj = {};
+          ids.forEach((itemId) => {
+            favoritesObj[itemId] = true;
+          });
+          setFavorites(favoritesObj);
+        } else {
+          setWishlistIds(new Set());
+          setFavorites({});
+        }
+      } catch (error) {
+        console.error("Error fetching wishlist:", error);
+        setWishlistIds(new Set());
+        setFavorites({});
+      }
+    };
+
+    fetchWishlist();
+  }, [token, id]);
+
+  const isFavorite = (vendorId) => {
+    if (!vendorId) return false;
+    const vendorIdStr = String(vendorId);
+    const vendorIdNum = parseInt(vendorId);
+    return (
+      favorites[vendorIdStr] === true ||
+      favorites[vendorIdNum] === true ||
+      wishlistIds.has(vendorIdStr) ||
+      wishlistIds.has(vendorIdNum)
+    );
+  };
+
+  const handleFavoriteToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!venueData || !id) return;
+
+    const vendorService = {
+      id: parseInt(id),
+      vendor_services_id: parseInt(id),
+    };
+
+    const wasFavorite = isFavorite(id);
+
+    // Optimistically update UI
+    setFavorites((prev) => ({
+      ...prev,
+      [id]: !wasFavorite,
+    }));
+
+    // Update wishlistIds set
+    setWishlistIds((prev) => {
+      const newSet = new Set(prev);
+      if (wasFavorite) {
+        newSet.delete(id);
+        newSet.delete(parseInt(id));
+      } else {
+        newSet.add(id);
+        newSet.add(parseInt(id));
+      }
+      return newSet;
+    });
+
+    // Dispatch toggleWishlist action
+    dispatch(toggleWishlist(vendorService));
   };
 
   useEffect(() => {
@@ -261,7 +352,40 @@ const Detailed = () => {
         setLoading(true);
         const data = await vendorServicesApi.getVendorServiceById(id);
         setVenueData(data);
-        console.log("Vendor data attributes:", data.attributes);
+
+        (async () => {
+          try {
+            if (data?.vendor_id) {
+              const sessionKey = `vendor_viewed_${data.vendor_id}`;
+              if (!sessionStorage.getItem(sessionKey)) {
+                const incRes = await axios.post(
+                  `${API_BASE_URL}/api/vendor/increment-view/${data.vendor_id}`
+                );
+                try {
+                  sessionStorage.setItem(sessionKey, Date.now().toString());
+                } catch {}
+                if (incRes?.data?.vendor?.profileViews !== undefined) {
+                  setVenueData((prev) => ({
+                    ...prev,
+                    vendor: {
+                      ...(prev?.vendor || {}),
+                      profileViews: incRes.data.vendor.profileViews,
+                    },
+                  }));
+                  setProfileViews(incRes.data.vendor.profileViews);
+                }
+              } else {
+                // already counted this session — skip increment
+                console.debug(
+                  `skip increment-view for vendor ${data.vendor_id} (already viewed this session)`
+                );
+              }
+            }
+          } catch (incErr) {
+            // fail quietly but log for debugging
+            console.debug("increment-view failed:", incErr?.message || incErr);
+          }
+        })();
 
         // Handle images from new API structure
         if (data.media && Array.isArray(data.media) && data.media.length > 0) {
@@ -295,7 +419,58 @@ const Detailed = () => {
     fetchVenueData();
   }, [id]);
 
-  const [faqList, setFaqList] = useState([]);
+  // Fetch latest profile views (used to reflect increments from other users)
+  // const fetchProfileViews = async (vendorId) => {
+  //   try {
+  //     const res = await axios.get(
+  //       `${API_BASE_URL}/api/vendor/profile-views/${vendorId}`
+  //     );
+  //     const count = res?.data?.vendor?.profileViews ?? null;
+  //     if (count !== null) {
+  //       setProfileViews(count);
+  //       setVenueData((prev) => ({
+  //         ...prev,
+  //         vendor: {
+  //           ...(prev?.vendor || {}),
+  //           profileViews: count,
+  //         },
+  //       }));
+  //     }
+  //   } catch (err) {
+  //     // ignore silently
+  //     console.debug("fetchProfileViews failed:", err?.message || err);
+  //   }
+  // };
+
+  // Periodically refresh profile views and when page becomes visible again
+  // useEffect(() => {
+  //   let intervalId;
+  //   const tryStart = () => {
+  //     const vid = venueData?.vendor_id || venueData?.vendor?.id;
+  //     if (vid) {
+  //       // initial fetch
+  //       fetchProfileViews(vid);
+  //       // start polling every 30s
+  //       intervalId = setInterval(() => fetchProfileViews(vid), 30000);
+  //     }
+  //   };
+
+  //   const handleVisibility = () => {
+  //     if (document.visibilityState === "visible") {
+  //       const vid = venueData?.vendor_id || venueData?.vendor?.id;
+  //       if (vid) fetchProfileViews(vid);
+  //     }
+  //   };
+
+  //   tryStart();
+  //   document.addEventListener("visibilitychange", handleVisibility);
+  //   return () => {
+  //     if (intervalId) clearInterval(intervalId);
+  //     document.removeEventListener("visibilitychange", handleVisibility);
+  //   };
+  // }, [venueData]);
+
+  const [_faqList, _setFaqList] = useState([]);
 
   useEffect(() => {
     const fetchFaqData = async () => {
@@ -326,7 +501,7 @@ const Detailed = () => {
             ...q,
             ans: answerMap.get(q.id) || "",
           }));
-          setFaqList(mergedFaqs);
+          _setFaqList(mergedFaqs);
         }
       } catch (error) {
         console.error("Error fetching FAQ answers:", error);
@@ -390,7 +565,7 @@ const Detailed = () => {
   }
 
   // Helper function to handle database array values
-  function parseDbValue(value) {
+  function _parseDbValue(value) {
     if (
       typeof value === "string" &&
       value.startsWith("{") &&
@@ -458,11 +633,8 @@ const Detailed = () => {
                   <p className="text-muted">No image available</p>
                 </div>
               )}
-              <button
-                className="favorite-btn"
-                onClick={() => setIsFavorite(!isFavorite)}
-              >
-                {isFavorite ? (
+              <button className="favorite-btn" onClick={handleFavoriteToggle}>
+                {isFavorite(id) ? (
                   <FaHeart className="text-danger" />
                 ) : (
                   <FaRegHeart />
@@ -506,6 +678,10 @@ const Detailed = () => {
                             cursor: "pointer",
                             height: "100px",
                             objectFit: "cover",
+                          }}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/images/imageNotFound.jpg";
                           }}
                         />
                       </div>
@@ -582,7 +758,7 @@ const Detailed = () => {
             </div>
 
             {/* FaqQuestionAnswer Detailed */}
-            <div className="my-4 border p-3 rounded">
+            {/* <div className="my-4 border p-3 rounded">
               <h1 className="my-4">Frequently Asked Questions</h1>
               {faqList.length > 0 ? (
                 faqList.map((ques, index) => {
@@ -628,7 +804,7 @@ const Detailed = () => {
                   No FAQ information available for this vendor.
                 </p>
               )}
-            </div>
+            </div> */}
 
             <div className="py-5">
               <ReviewSection vendor={activeVendor} />
@@ -767,8 +943,6 @@ const Detailed = () => {
                   )}
                 </div>
 
-                {/* Move Request button above pricing */}
-
                 <div className="pricing mb-4">
                   {isVenue ? (
                     <>
@@ -858,14 +1032,23 @@ const Detailed = () => {
                   )}
                 </div>
 
-                {/* End moved button */}
+                <div>
+                  <button
+                    className="btn btn-primary w-100 py-2 fs-5 mt-2 rounded-4"
+                    onClick={() => setShowClaimForm(true)}
+                  >
+                    Claim Your Buisness
+                  </button>
+                </div>
               </div>
 
-              <div className="action-buttons border-top pt-3 mb-3">
+              <hr />
+
+              <div className="action-buttons mb-3">
                 <div className="margin-b-50 d-flex h-center cursor-pointer">
                   <div style={{ width: "100%" }}>
                     <button
-                      className="btn btn-primary w-100 py-2 fs-5"
+                      className="btn btn-primary w-100 py-2 fs-5 rounded-4"
                       onClick={() =>
                         handleShowPricingModal(venueData.vendor_id)
                       }
@@ -971,6 +1154,19 @@ const Detailed = () => {
         handleClose={() => setShowPricingModal(false)}
         vendorId={selectedVendorId}
       />
+
+      <Modal
+        show={showClaimForm}
+        onHide={() => setShowClaimForm(false)}
+        size="xl"
+        centered
+        scrollable
+        backdrop="static"
+      >
+        <Modal.Body>
+          <BusinessClaimForm />
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

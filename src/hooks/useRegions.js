@@ -81,11 +81,9 @@ const useRegions = (vendorType = null) => {
             venueCount: cityData.count,
             image: cityImages[cityData.name],
           };
-          // console.log(`✅ ${cityData.name}: ${cityData.count} venues`);
         });
 
         const finalRegions = Object.values(cityMap);
-        // console.log("Final Regions:", finalRegions);
         setRegions(finalRegions);
       } catch (err) {
         console.error("Error fetching vendors:", err);

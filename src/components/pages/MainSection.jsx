@@ -136,8 +136,15 @@ const MainSection = () => {
 
   if (section === "photography") {
     return (
-      <>
-        <MainSearch title="Photography" />
+      <div className="container">
+        {/* <MainSearch title="Photography" /> */}
+        <h1 className="mt-5 fw-bold primary-text">
+          Explore Stunning Wedding Photos.
+        </h1>
+        <p>
+          Discover the latest trends, creative ideas, and timeless inspiration
+          for your perfect wedding day.
+        </p>
         <TopSlider
           onCategorySelect={(id, name) => {
             setSelectedCategory(id);
@@ -160,7 +167,7 @@ const MainSection = () => {
             searchQuery={searchQuery}
           />
         )}
-      </>
+      </div>
     );
   }
 

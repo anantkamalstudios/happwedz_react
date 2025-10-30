@@ -8,8 +8,7 @@ const EinviteCardItem = ({
   showActions = true,
   onCardClickEdit = false,
   fixedImageHeight,
-}) => {
-  console.log(card);
+}) => { 
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
 

@@ -10,14 +10,19 @@ export default function ReviewRequestForm() {
   const [recipients, setRecipients] = useState([]);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState(`Hi [Name],
+
+  const [message, setMessage] = useState(() => {
+    const name = vendor?.businessName || "our team";
+    return `Hi [Name],
 
 It was a pleasure to be part of your event! If you have a few moments, could you provide a review of our services on happywedz?
 
 Thank you in advance for your feedback. We greatly appreciate your help!
 
 Best,
-shree venues`);
+${name}`;
+  });
+
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);

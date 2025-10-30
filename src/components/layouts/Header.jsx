@@ -763,9 +763,12 @@ const Header = () => {
                                   <h6 className="fw-semibold mb-3 primary-text text-uppercase">
                                     E-Invitation Categories
                                   </h6>
-                                  <div className="row">
+                                  <ul className="list-unstyled col">
                                     {einviteCategories.map((sub, j) => (
-                                      <li key={sub.id || j} className="mb-1">
+                                      <li
+                                        key={sub.id || j}
+                                        className="col-12 col-md-4 mb-1"
+                                      >
                                         <Link
                                           to={`/einvites/category/${sub.cardType}`}
                                           className="dropdown-link small d-block"
@@ -774,7 +777,7 @@ const Header = () => {
                                         </Link>
                                       </li>
                                     ))}
-                                  </div>
+                                  </ul>
                                 </div>
                               </div>
                             </div>
@@ -853,15 +856,20 @@ const Header = () => {
                                   </h6>
                                   <ul className="list-unstyled mb-0">
                                     {weddingIdeas.map((idea, index) => (
-                                      <Link
-                                        to="/blog"
-                                        style={{
-                                          textDecoration: " none",
-                                          color: "#212529",
-                                        }}
+                                      <li
+                                        key={index}
+                                        className="dropdown-link small d-block"
                                       >
-                                        {idea}
-                                      </Link>
+                                        <Link
+                                          to="/blog"
+                                          style={{
+                                            textDecoration: " none",
+                                            color: "#212529",
+                                          }}
+                                        >
+                                          {idea}
+                                        </Link>
+                                      </li>
                                     ))}
                                   </ul>
                                 </div>
@@ -977,51 +985,6 @@ const Header = () => {
                         </div>
                       </li>
 
-                      {/* Login Dropdown */}
-                      {/* <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          <Link
-                            className="nav-link text-white"
-                            to="/customer-login"
-                            state={{ title: "Login" }}
-                            id="photoDropdown"
-                            role="button"
-                          >
-                            Login
-                          </Link>
-                        </div>
-                      </li>
- 
-                      <li className="nav-item dropdown mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          <Link
-                            className="nav-link text-white"
-                            to="/customer-register"
-                            state={{ title: "Signup" }}
-                            id="photoDropdown"
-                            role="button"
-                          >
-                            Sign-up
-                          </Link>
-                        </div>
-                      </li> */}
-
-                      {/* Vendor Dashboard */}
-                      {/* <li className="nav-Vendor Dashboard mega-dropdown-wrapper position-static">
-                        <div className="dropdown-wrapper">
-                          <Link
-                            className="nav-link text-white"
-                            to="/customer-register"
-                            state={{ title: "vendor dashboard" }}
-                            id="photoDropdown"
-                            role="button"
-                          >
-                            Sign
-                          </Link>
-                        </div>
-                      </li> */}
-
-                      {/* Login Dropdown */}
                       {isUserLoggedIn ? (
                         <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
                           <div className="dropdown-wrapper">

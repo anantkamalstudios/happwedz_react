@@ -14,6 +14,7 @@ import usePhotography from "../../hooks/usePhotography";
 import EmptyState from "../EmptyState";
 import LoadingState from "../LoadingState";
 import ErrorState from "../ErrorState";
+import Loader from "../ui/Loader";
 const toTitleCase = (str) =>
   str.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
@@ -33,7 +34,6 @@ const SubSection = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [activeFilters, setActiveFilters] = useState({});
 
-  // Photography hook
   const {
     typesWithCategories,
     photosByCategory,
@@ -65,7 +65,6 @@ const SubSection = () => {
     activeFilters
   );
 
-  // Modal handlers
   const handleClose = () => {
     setShow(false);
     setSelectedId(null);
@@ -92,7 +91,6 @@ const SubSection = () => {
     setActiveFilters(filters);
   };
 
-  // Sync selectedCity with URL query first, then Redux location state
   useEffect(() => {
     if (cityFromQuery && cityFromQuery !== "all") {
       setSelectedCity(cityFromQuery);
@@ -106,7 +104,6 @@ const SubSection = () => {
       return [];
     }
 
-    // Return empty array if no data, don't use fallback dummy data
     if (error || !apiData || apiData.length === 0) {
       return [];
     }
@@ -114,12 +111,10 @@ const SubSection = () => {
     return apiData;
   }, [section, apiData, error]);
 
-  // Fetch photography data when in photography section
   useEffect(() => {
     if (section === "photography") {
       fetchTypesWithCategories();
       if (slug) {
-        // Find the category ID from typesWithCategories based on slug
         const findCategoryBySlug = () => {
           for (const type of typesWithCategories) {
             if (Array.isArray(type.categories)) {
@@ -183,13 +178,8 @@ const SubSection = () => {
     );
   }
 
-  // Show error state only if no fallback data available
-  if (error && (!dataToSend || dataToSend.length === 0)) {
-  }
-
-  // Show loading state only when loading and no data
   if (loading && dataToSend.length === 0) {
-    return <LoadingState title={title} />;
+    return <Loader />;
   }
 
   return (
@@ -210,7 +200,6 @@ const SubSection = () => {
         </div>
       )}
 
-      {/* Main content */}
       {dataToSend.length === 0 ? (
         <EmptyState section={section} title={title} />
       ) : (

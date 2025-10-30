@@ -1,5 +1,4 @@
 import React from "react";
-import "./ShimmerLoader.css";
 
 const ShimmerLoader = () => {
   return (
