@@ -23,6 +23,7 @@ import SiteMap from "./components/pages/SiteMap";
 import TopRatedVendors from "./components/pages/TopRatedVendors";
 import CareersPage from "./components/pages/CareersPage";
 import DestinationWeddingDetailPage from "./components/pages/DestinationWeddingDetailPage";
+import BusinessClaimForm from "./components/pages/BusinessClaimForm";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
@@ -225,6 +226,10 @@ function App() {
               <Route
                 path="/vendor-forgot-password"
                 element={<VendorForgotPassword />}
+              />
+              <Route
+                path="/claim-your-buisness"
+                element={<BusinessClaimForm />}
               />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:blogId" element={<Blog />} />

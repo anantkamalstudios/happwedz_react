@@ -157,12 +157,12 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <animateTransform
+                <a
                   onClick={() => handleCategoryClick("Groom Wear")}
                   style={{ cursor: "pointer" }}
                 >
                   Groom Wear
-                </animateTransform>
+                </a>
               </li>
               <li>
                 <a

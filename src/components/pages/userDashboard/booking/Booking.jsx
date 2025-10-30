@@ -243,7 +243,7 @@ const Booking = () => {
                       <Dropdown
                         onSelect={(key) => handleActionChange(item.id, key)}
                       >
-                        <Dropdown.Toggle className="user-booking-action-dropdown text-white">
+                        <Dropdown.Toggle className="user-booking-action-dropdown">
                           {item.localStatus || "Update Status"}
                         </Dropdown.Toggle>
                         <Dropdown.Menu className="user-booking-dropdown-menu">
