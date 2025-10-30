@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import { IoClose } from "react-icons/io5";
 import { FaHome, FaTimes } from "react-icons/fa";
 import { useSelector } from "react-redux";
+import { getErrorMessage } from "./Services";
 
 const UploadSelfiePage = () => {
   const navigate = useNavigate();
@@ -23,23 +24,23 @@ const UploadSelfiePage = () => {
   const { role, type } = userInfo;
   const controllerRef = useRef(null);
 
-  const getErrorMessage = (err) => {
-    try {
-      if (err?.response?.data?.error) return err.response.data.error;
-      if (typeof err?.message === "string") {
-        const jsonMatch = err.message.match(/{.*}/);
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
-          if (parsed.error) return parsed.error;
-        }
-        return err.message;
-      }
-      if (typeof err === "string") return err;
-      return "Upload failed. Please try again.";
-    } catch {
-      return "Upload failed. Please try again.";
-    }
-  };
+  // const getErrorMessage = (err) => {
+  //   try {
+  //     if (err?.response?.data?.error) return err.response.data.error;
+  //     if (typeof err?.message === "string") {
+  //       const jsonMatch = err.message.match(/{.*}/);
+  //       if (jsonMatch) {
+  //         const parsed = JSON.parse(jsonMatch[0]);
+  //         if (parsed.error) return parsed.error;
+  //       }
+  //       return err.message;
+  //     }
+  //     if (typeof err === "string") return err;
+  //     return "Upload failed. Please try again.";
+  //   } catch {
+  //     return "Upload failed. Please try again.";
+  //   }
+  // };
 
   let image;
   switch (role) {
@@ -157,6 +158,15 @@ const UploadSelfiePage = () => {
       //   return;
       // }
       try {
+        if (type === "outfit") {
+          setShowGuide(false);
+          setUploading(true);
+          const localUrl = URL.createObjectURL(file);
+          sessionStorage.setItem("try_uploaded_outfit_image_url", localUrl);
+          setUploading(false);
+          navigate("/try/outfit-filters");
+          return;
+        }
         controllerRef.current = new AbortController();
         const res = await beautyApi.uploadImage(
           file,
@@ -167,14 +177,17 @@ const UploadSelfiePage = () => {
         sessionStorage.setItem("try_uploaded_image_id", imageId);
         setShowGuide(false);
         setUploading(false);
-        navigate("/try/filters");
+        navigate(type === "outfit" ? "/try/outfit-filters" : "/try/filters");
       } catch (err) {
-        const error = getErrorMessage(err);
-        console.error("Upload error:", error);
+        console.log(err);
+
+        const { message, status } = getErrorMessage(err);
         Swal.fire({
           icon: "error",
           title: "Upload failed",
-          text: error,
+          text: status === 500 ? "Server Error" : message,
+          timer: 3000,
+          confirmButtonText: "OK",
           confirmButtonColor: "#ed1173",
         });
       } finally {
@@ -187,7 +200,7 @@ const UploadSelfiePage = () => {
 
   const handleCancelUpload = () => {
     if (controllerRef.current) {
-      controllerRef.current.abort(); 
+      controllerRef.current.abort();
       return;
     }
   };
@@ -246,11 +259,16 @@ const UploadSelfiePage = () => {
     const blob = await (await fetch(dataUrl)).blob();
     const file = new File([blob], "selfie.jpg", { type: "image/jpeg" });
     try {
+      if (type === "outfit") {
+        setShowGuide(false);
+        navigate("/try/outfit-filters");
+        return;
+      }
       const res = await beautyApi.uploadImage(file, "ORIGINAL");
       const imageId = res?.data?.id || res?.id || res?.image_id;
       sessionStorage.setItem("try_uploaded_image_id", imageId);
       setShowGuide(false);
-      navigate("/try/filters");
+      navigate(type === "outfit" ? "/try/outfit-filters" : "/try/filters");
     } catch (e) {
       console.error("Camera upload error:", e);
       const msg = getErrorMessage(e);
@@ -474,21 +492,39 @@ const UploadSelfiePage = () => {
                     ))}
                   </ul>
 
-                  <div className="d-grid">
-                    <button
-                      className="btn w-100"
-                      onClick={triggerModalUpload}
-                      disabled={uploading}
-                      style={{
-                        background:
-                          "linear-gradient(to right, #E83580, #821E48)",
-                        color: "#fff",
-                        padding: "10px 0",
-                      }}
-                    >
-                      {uploading ? "Uploading..." : "Upload Photo"}
-                    </button>
-                  </div>
+                  {type === "makeup" && (
+                    <div className="d-grid">
+                      <button
+                        className="btn w-100"
+                        onClick={triggerModalUpload}
+                        disabled={uploading}
+                        style={{
+                          background:
+                            "linear-gradient(to right, #E83580, #821E48)",
+                          color: "#fff",
+                          padding: "10px 0",
+                        }}
+                      >
+                        {uploading ? "Uploading..." : "Upload Photo"}
+                      </button>
+                    </div>
+                  )}
+                  {type === "outfit" && (
+                    <div className="d-grid">
+                      <button
+                        className="btn w-100"
+                        onClick={() => navigate("/try/outfit-filters")}
+                        style={{
+                          background:
+                            "linear-gradient(to right, #E83580, #821E48)",
+                          color: "#fff",
+                          padding: "10px 0",
+                        }}
+                      >
+                        Continue
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

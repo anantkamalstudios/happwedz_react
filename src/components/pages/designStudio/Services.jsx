@@ -23,8 +23,8 @@ export const DEFAULT_INTENSITIES = {
   concealer: 0.9,
   blush: 0.2,
   contour: 0.3,
-  kajal: 1.0,
-  eyeshadow: 0.4,
+  kajal: 0.7,
+  eyeshadow: 1.0,
   lipstick: 0.8,
   bindi: 6,
   mascara: 0.8,
@@ -42,4 +42,38 @@ export const Loader = () => {
       <ClipLoader size={60} color="#ed1173" />
     </div>
   );
+};
+
+export const getErrorMessage = (err) => {
+  try {
+    let message = "Upload failed. Please try again.";
+    let status = err?.response?.status || null;
+
+    // Case 1: Backend JSON error message
+    if (err?.response?.data?.error) {
+      message = err.response.data.error;
+    }
+    // Case 2: Error message string contains JSON
+    else if (typeof err?.message === "string") {
+      const jsonMatch = err.message.match(/{.*}/);
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed.error) message = parsed.error;
+        } catch {
+          message = err.message;
+        }
+      } else {
+        message = err.message;
+      }
+    }
+    // Case 3: Direct string error
+    else if (typeof err === "string") {
+      message = err;
+    }
+
+    return { message, status };
+  } catch {
+    return { message: "Upload failed. Please try again.", status: null };
+  }
 };

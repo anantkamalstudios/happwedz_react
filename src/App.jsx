@@ -140,6 +140,11 @@ const UploadSelfiePage = lazy(() =>
 const FiltersPage = lazy(() =>
   import("./components/pages/designStudio/FiltersPage")
 );
+
+const OutfitFilterPage = lazy(() =>
+  import("./components/pages/designStudio/OutfitFilterPage")
+);
+
 const ContactUs = lazy(() => import("./components/pages/Contactus"));
 
 const FinalLookPage = lazy(() => import("./components/pages/FinalLookPage"));
@@ -282,6 +287,14 @@ function App() {
                 element={
                   <UserPrivateRoute>
                     <FiltersPage />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/try/outfit-filters"
+                element={
+                  <UserPrivateRoute>
+                    <OutfitFilterPage />
                   </UserPrivateRoute>
                 }
               />
