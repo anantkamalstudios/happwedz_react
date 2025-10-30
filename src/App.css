@@ -8398,8 +8398,6 @@ input:checked + .slider:before {
 
 /* Footer */
 .footer {
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f1f3f4 100%);
-  color: #2c3e50;
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1), 0 -2px 8px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
   position: relative;
@@ -16552,7 +16550,7 @@ input:checked + .slider:before {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .preview-img {

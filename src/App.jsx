@@ -101,7 +101,9 @@ const EinviteViewPage = lazy(() =>
   import("./components/pages/EinviteViewPage")
 );
 const OurCards = lazy(() => import("./components/pages/OurCards"));
-const TryLanding = lazy(() => import("./components/pages/TryLanding"));
+const TryLanding = lazy(() =>
+  import("./components/pages/designStudio/TryLanding")
+);
 const ChooseTemplate = lazy(() => import("./components/pages/ChooseTemplate"));
 const TemplatePreviewPage = lazy(() =>
   import("./components/pages/TemplatePreviewPage")
@@ -123,18 +125,20 @@ const MyWeddingWebsites = lazy(() =>
 );
 
 const BrideMakeupChoose = lazy(() =>
-  import("./components/pages/BrideMakeupChoose")
+  import("./components/pages/designStudio/BrideMakeupChoose")
 );
 const GroomeMakeupChoose = lazy(() =>
-  import("./components/pages/GroomeMakeupChoose")
+  import("./components/pages/designStudio/GroomeMakeupChoose")
 );
 const TryMakeupLanding = lazy(() =>
-  import("./components/pages/TryMakeupLanding")
+  import("./components/pages/designStudio/TryMakeupLanding")
 );
 const UploadSelfiePage = lazy(() =>
-  import("./components/pages/UploadSelfiePage")
+  import("./components/pages/designStudio/UploadSelfiePage")
 );
-const FiltersPage = lazy(() => import("./components/pages/FiltersPage"));
+const FiltersPage = lazy(() =>
+  import("./components/pages/designStudio/FiltersPage")
+);
 const ContactUs = lazy(() => import("./components/pages/Contactus"));
 
 const FinalLookPage = lazy(() => import("./components/pages/FinalLookPage"));

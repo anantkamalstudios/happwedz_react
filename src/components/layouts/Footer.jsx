@@ -32,10 +32,8 @@ const Footer = () => {
 
   return (
     <footer
-      className="footer position-relative pt-0"
+      className="footer position-relative pt-0 primary-bg text-white"
       style={{
-        background: "#C31162",
-        color: "#fff",
         position: "relative",
         overflow: "hidden",
       }}
