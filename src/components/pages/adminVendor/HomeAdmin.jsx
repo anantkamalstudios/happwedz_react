@@ -32,6 +32,7 @@ import {
   FiUsers,
   FiTrendingUp,
   FiPercent,
+  FiHeart,
 } from "react-icons/fi";
 import { Bar, Line } from "react-chartjs-2";
 import {
@@ -75,7 +76,14 @@ const HomeAdmin = () => {
   const [stats, setStats] = useState({
     impressions: 0,
     profileViews: 0,
-    chartData: { labels: [], leads: [], impressions: [], profileViews: [] },
+    wishlistCount: 0,
+    chartData: {
+      labels: [],
+      leads: [],
+      impressions: [],
+      profileViews: [],
+      wishlist: [],
+    },
   });
   const [loadingStats, setLoadingStats] = useState(true);
   const [storefrontCompletion, setStorefrontCompletion] = useState(0);
@@ -215,8 +223,41 @@ const HomeAdmin = () => {
           },
         }));
 
-        // 4. Fetch profile views for the vendor (if vendor id available)
+        // 4. Fetch profile views and wishlist stats for the vendor (if vendor id available)
         if (vendor?.id) {
+          // helper to build per-day series from event lists
+          const buildSeriesFromEvents = (events, dateKeys, labels) => {
+            const map = {};
+            if (!Array.isArray(events)) return labels.map(() => 0);
+            for (const ev of events) {
+              // if event is aggregated already
+              if (ev && (ev.date || ev.day) && typeof ev.count === "number") {
+                const d = new Date(ev.date || ev.day)
+                  .toISOString()
+                  .split("T")[0];
+                map[d] = (map[d] || 0) + ev.count;
+                continue;
+              }
+
+              // otherwise find a date-like field
+              let found = null;
+              for (const k of dateKeys) {
+                if (ev && ev[k]) {
+                  const parsed = new Date(ev[k]);
+                  if (!isNaN(parsed)) {
+                    found = parsed.toISOString().split("T")[0];
+                    break;
+                  }
+                }
+              }
+              if (found) {
+                map[found] = (map[found] || 0) + 1;
+              }
+            }
+            return labels.map((lbl) => map[lbl] || 0);
+          };
+
+          // Profile views
           try {
             const pvRes = await fetch(
               `${API_BASE_URL}/api/vendor/profile-views/${vendor.id}`,
@@ -225,18 +266,69 @@ const HomeAdmin = () => {
             if (pvRes && pvRes.ok) {
               const pvData = await pvRes.json();
               const pvCount = pvData?.vendor?.profileViews ?? 0;
-              // set profileViews and populate a flat timeseries matching chart labels
+
+              // try to build a timeseries if API returned event list
+              // possible places: pvData.data (array), pvData.events, pvData.views
+              const candidateEvents =
+                pvData?.data || pvData?.events || pvData?.views || null;
+              let pvSeries = null;
+              if (
+                candidateEvents &&
+                Array.isArray(candidateEvents) &&
+                candidateEvents.length > 0
+              ) {
+                pvSeries = buildSeriesFromEvents(
+                  candidateEvents,
+                  ["date", "createdAt", "addedAt", "timestamp", "time"],
+                  labels.map((d) => new Date(d).toISOString().split("T")[0])
+                );
+              }
+
               setStats((prev) => ({
                 ...prev,
                 profileViews: pvCount,
                 chartData: {
                   ...prev.chartData,
-                  profileViews: labels.map(() => pvCount),
+                  profileViews: pvSeries || labels.map(() => pvCount),
                 },
               }));
             }
           } catch (pvErr) {
             console.error("Failed to fetch profile views:", pvErr);
+          }
+
+          // Wishlist stats (returns wishlistCount in data[0].wishlistCount)
+          try {
+            const wlRes = await fetch(
+              `${API_BASE_URL}/api/wishlist/vendor/stats/${vendor.id}`,
+              { headers: { Authorization: `Bearer ${vendorToken}` } }
+            );
+            if (wlRes && wlRes.ok) {
+              const wlData = await wlRes.json();
+              const wlCount = wlData?.data?.[0]?.wishlistCount ?? 0;
+
+              // If API returned users list with addedAt timestamps, build per-day series
+              const users = wlData?.data?.[0]?.users || null;
+              let wlSeries = null;
+              if (users && Array.isArray(users) && users.length > 0) {
+                wlSeries = buildSeriesFromEvents(
+                  users,
+                  ["addedAt", "createdAt", "date"],
+                  labels.map((d) => new Date(d).toISOString().split("T")[0])
+                );
+              }
+
+              setStats((prev) => ({
+                ...prev,
+                wishlistCount: wlCount,
+                chartData: {
+                  ...prev.chartData,
+                  wishlist: wlSeries || labels.map(() => wlCount),
+                },
+              }));
+            }
+          } catch (wlErr) {
+            console.error("Failed to fetch wishlist stats:", wlErr);
           }
         }
       } catch (err) {
@@ -248,9 +340,6 @@ const HomeAdmin = () => {
     };
 
     fetchDashboardData();
-    // You can keep the separate fetchStats call if it provides different data like impressions.
-    // For this example, I've integrated leads data processing into one call.
-    // fetchStats();
   }, [
     vendorToken,
     vendor?.id,
@@ -270,13 +359,6 @@ const HomeAdmin = () => {
       // daily_avg: 4.7,
       icon: <FiUsers size={24} />,
     },
-    impressions: {
-      title: "Impressions",
-      value: stats.impressions.toLocaleString(),
-      change: "+8.5%",
-      trend: "up",
-      // daily_avg: "827",
-    },
 
     profile_views: {
       title: "Profile Views",
@@ -285,88 +367,13 @@ const HomeAdmin = () => {
       trend: "up",
       icon: <FiEye size={24} />,
     },
-  };
-
-  // Leads data
-  const leads = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      date: "Today, 10:30 AM",
-      service: "Wedding Photography",
-      status: "New",
-      source: "Website",
-      priority: "High",
-      contacted: false,
+    wishlist: {
+      title: "impressions",
+      value: stats.wishlistCount?.toLocaleString?.() ?? 0,
+      change: "+0%",
+      trend: "up",
+      icon: <FiStar size={24} />,
     },
-    {
-      id: 2,
-      name: "Michael & Lisa",
-      date: "Yesterday, 3:45 PM",
-      service: "Full Wedding Package",
-      status: "Contacted",
-      source: "HappyWedz",
-      priority: "Medium",
-      contacted: true,
-    },
-    {
-      id: 3,
-      name: "Robert Chen",
-      date: "Oct 12, 2023",
-      service: "Videography",
-      status: "Follow Up",
-      source: "Website",
-      priority: "High",
-      contacted: true,
-    },
-    {
-      id: 4,
-      name: "Jennifer Lopez",
-      date: "Oct 11, 2023",
-      service: "Bridal Makeup",
-      status: "New",
-      source: "HappyWedz",
-      priority: "Low",
-      contacted: false,
-    },
-    {
-      id: 5,
-      name: "David Wilson",
-      date: "Oct 10, 2023",
-      service: "Wedding Photography",
-      status: "Converted",
-      source: "Google",
-      priority: "High",
-      contacted: true,
-    },
-    {
-      id: 6,
-      name: "Amanda Smith",
-      date: "Oct 9, 2023",
-      service: "Full Wedding Package",
-      status: "Lost",
-      source: "HappyWedz",
-      priority: "Medium",
-      contacted: true,
-    },
-  ];
-
-  // Sort leads
-  const _sortedLeads = [...leads].sort((a, b) => {
-    if (sortConfig.direction === "asc") {
-      return a[sortConfig.key] > b[sortConfig.key] ? 1 : -1;
-    } else {
-      return a[sortConfig.key] < b[sortConfig.key] ? 1 : -1;
-    }
-  });
-
-  // Request sort
-  const _requestSort = (key) => {
-    let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
-    setSortConfig({ key, direction });
   };
 
   // Chart data
@@ -382,13 +389,23 @@ const HomeAdmin = () => {
         fill: true,
         yAxisID: "y",
       },
+
       {
-        label: "Impressions",
-        data: stats.chartData.impressions,
-        borderColor: "#e67e22",
-        backgroundColor: "rgba(230, 126, 34, 0.2)",
+        label: "impressions",
+        data: stats.chartData.wishlist,
+        borderColor: "#34495e",
+        backgroundColor: "rgba(52, 73, 94, 0.12)",
         tension: 0.3,
-        yAxisID: "y1",
+        yAxisID: "y3",
+        fill: true,
+      },
+      {
+        label: "Profile Views",
+        data: stats.chartData.profileViews,
+        borderColor: "#27ae60",
+        backgroundColor: "rgba(39, 174, 96, 0.12)",
+        tension: 0.3,
+        yAxisID: "y2",
         fill: true,
       },
     ],
@@ -448,6 +465,20 @@ const HomeAdmin = () => {
           text: "Impressions",
         },
       },
+      y2: {
+        type: "linear",
+        display: true,
+        position: "right",
+        grid: { drawOnChartArea: false },
+        title: { display: true, text: "Profile Views" },
+      },
+      y3: {
+        type: "linear",
+        display: false,
+        position: "right",
+        grid: { drawOnChartArea: false },
+        title: { display: true, text: "Wishlist" },
+      },
     },
   };
 
@@ -466,7 +497,9 @@ const HomeAdmin = () => {
       <div className="page-header mb-4">
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center align-items-start gap-3">
           <div>
-            <h2 className="page-title">Leads Dashboard</h2>
+            <h2 className="page-title">
+              Leads, Impressions & Profile Views Dashboard
+            </h2>
             <p className="text-muted mb-0">
               Track your business growth and engagement
             </p>
@@ -592,7 +625,9 @@ const HomeAdmin = () => {
           <Card className="h-100">
             <Card.Body>
               <div className="d-flex justify-content-between align-items-center mb-4">
-                <Card.Title className="mb-0">Leads Overview</Card.Title>
+                <Card.Title className="mb-0">
+                  Leads,Impression,ProfileViwes Overview
+                </Card.Title>
                 <div className="d-flex gap-2">
                   <Button variant="outline-secondary" size="sm">
                     Leads

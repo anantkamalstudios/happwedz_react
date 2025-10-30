@@ -961,33 +961,6 @@ const Storefront = ({ setCompletion }) => {
 
   return (
     <div className="container py-3 store-front-navbar">
-      {/* Progress Bar */}
-      {/* <div className="mb-4">
-        <div className="d-flex justify-content-between align-items-center mb-2">
-          <h5 className="mb-0">Storefront Setup Progress</h5>
-          <span
-            className="badge"
-            style={{ backgroundColor: "#f12d85ff", color: "#fff" }}
-          >
-            {completionPercentage}% Complete
-          </span>
-        </div>
-
-        <div className="progress" style={{ height: "15px" }}>
-          <div
-            className="progress-bar"
-            role="progressbar"
-            style={{
-              width: `${completionPercentage}%`,
-              backgroundColor: "#f12d85ff",
-            }}
-            aria-valuenow={completionPercentage}
-            aria-valuemin="0"
-            aria-valuemax="100"
-          ></div>
-        </div>
-      </div> */}
-
       <div className="row">
         <div className="col-md-3 border-end">
           <Nav className="flex-column custom-sidebar">
