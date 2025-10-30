@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { loginUser } from "../../redux/authSlice";
-import { auth, provider, signInWithPopup } from "../../firebase";
+import { loginUser } from "../../../redux/authSlice";
+import { auth, provider, signInWithPopup } from "../../../firebase";
 import { toast, ToastContainer } from "react-toastify";
-import userApi from "../../services/api/userApi";
+import userApi from "../../../services/api/userApi";
 import "react-toastify/dist/ReactToastify.css";
 import { IoClose } from "react-icons/io5";
 import { FaRegEyeSlash } from "react-icons/fa";

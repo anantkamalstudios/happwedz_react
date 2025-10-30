@@ -19,40 +19,69 @@ const tabs = [
     slug: "my-wedding",
     label: "My Wedding",
     icon: <FaRing />,
+    img: "/images/userDashboard/mywedding-img.jpg",
   },
   {
     id: "checklist",
     slug: "checklist",
     label: "Checklist",
     icon: <FaClipboardList />,
+    img: "/images/userDashboard/checklist-img.jpg",
   },
-  { id: "vendors", slug: "vendor", label: "Vendor", icon: <FaStore /> },
+  {
+    id: "vendors",
+    slug: "vendor",
+    label: "Vendor",
+    icon: <FaStore />,
+    img: "/images/userDashboard/vendor-img.jpg",
+  },
   {
     id: "guest-list",
     slug: "guest-list",
     label: "Guest list",
     icon: <FaUsers />,
+    img: "/images/userDashboard/guestlist-img.jpg",
   },
-  { id: "budget", slug: "budget", label: "Budget", icon: <FaPiggyBank /> },
-  { id: "wishlist", slug: "wishlist", label: "Wishlist", icon: <FaHeart /> },
-  { id: "booking", slug: "booking", label: "Booking", icon: <FaShoppingCart /> },
+  {
+    id: "budget",
+    slug: "budget",
+    label: "Budget",
+    icon: <FaPiggyBank />,
+    img: "/images/userDashboard/budget-img.jpg",
+  },
+  {
+    id: "wishlist",
+    slug: "wishlist",
+    label: "Wishlist",
+    icon: <FaHeart />,
+    img: "/images/userDashboard/wishlist-img.jpg",
+  },
+  {
+    id: "booking",
+    slug: "booking",
+    label: "Booking",
+    icon: <FaShoppingCart />,
+    img: "/images/userDashboard/booking-img.jpg",
+  },
   {
     id: "message",
     slug: "message",
     label: "Message",
     icon: <FaEnvelopeOpenText />,
+    img: "/images/userDashboard/message-img.jpg",
   },
   {
     id: "real-wedding",
     slug: "real-wedding",
     label: "Real wedding",
     icon: <FaUserFriends />,
+    img: "/images/userDashboard/real-wedding-img.jpg",
   },
   {
     id: "user-profile",
     slug: "user-profile",
     label: "Profile",
-    icon: <FaUser />,
+    img: "/images/userDashboard/user-img.png",
   },
 ];
 
@@ -107,7 +136,12 @@ const UserDashboardNavbar = () => {
                 fontSize: "24px",
               }}
             >
-              {tab.icon}
+              {/* {tab.icon} */}
+              <img
+                src={tab.img}
+                alt=""
+                style={{ height: "100%", width: "100%", objectFit: "cover" }}
+              />
             </div>
             <span
               className="mt-2"

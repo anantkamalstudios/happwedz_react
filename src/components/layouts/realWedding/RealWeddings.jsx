@@ -172,8 +172,7 @@ const RealWeddings = ({ onPostClick }) => {
       <section
         className="hero-section text-center text-white d-flex align-items-center"
         style={{
-          backgroundImage:
-            "url('https://plus.unsplash.com/premium_photo-1682092632793-c7d75b23718e?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
+          backgroundImage: "url('/images/real_wedding_hero.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           minHeight: "350px",
@@ -184,7 +183,7 @@ const RealWeddings = ({ onPostClick }) => {
           style={{
             position: "absolute",
             inset: 0,
-            backgroundColor: "rgba(253, 7, 130, 0.4)",
+            backgroundColor: "rgba(253, 7, 130, 0.2)",
           }}
         />
         <div className="container position-relative">

@@ -3,7 +3,7 @@ import { FaBolt, FaPalette, FaMobileAlt } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import LoginPopup from "./DesignStudio.LoginPopup";
-import { setRoleType } from "../../redux/roleSlice";
+import { setRoleType } from "../../../redux/roleSlice";
 
 const TryLanding = () => {
   const [showModal, setShowModal] = useState(false);

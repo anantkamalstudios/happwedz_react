@@ -273,8 +273,9 @@ const Header = () => {
                   {/* Left: Tagline */}
                   <div className="col-12 col-sm-4 col-lg-4 d-flex align-items-center justify-content-center justify-content-sm-start">
                     <a
-                      className="nav-link text-dark fw-semibold top-header-heading"
+                      className="nav-link fw-bold top-header-heading"
                       href="#"
+                      style={{color:"#C31162"}}
                     >
                       India's Favourite Wedding Planning Platform
                     </a>

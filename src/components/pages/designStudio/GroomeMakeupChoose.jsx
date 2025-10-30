@@ -1,7 +1,7 @@
 import React from "react";
 import { useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import { setRoleType } from "../../redux/roleSlice";
+import { setRoleType } from "../../../redux/roleSlice";
 
 const SectionCard = ({ title, subtitle, image, onTry, comingSoon }) => {
   return (
@@ -14,7 +14,7 @@ const SectionCard = ({ title, subtitle, image, onTry, comingSoon }) => {
       <img
         src={image}
         alt={title}
-        className="w-100"
+        className="w-100 h-100"
         style={{
           objectFit: "cover",
           filter: comingSoon ? "brightness(0.6)" : "brightness(1)",
@@ -68,16 +68,17 @@ const SectionCard = ({ title, subtitle, image, onTry, comingSoon }) => {
   );
 };
 
-const BrideMakeupChoose = () => {
+const GroomeMakeupChoose = () => {
   const navigate = useNavigate();
+
   const dispatch = useDispatch();
 
   return (
     <div className="">
       <SectionCard
         title="Makeup"
-        subtitle="Instantly Try On Makeup Looks And Find Your Perfect Shades."
-        image="/images/try/makeup1.png"
+        subtitle="Explore stunning groome makeup looks curated by professionals."
+        image="/images/try/groomMakeup.png"
         onTry={() => {
           navigate("/try/makeup");
           dispatch(setRoleType({ type: "makeup" }));
@@ -89,8 +90,8 @@ const BrideMakeupChoose = () => {
 
       <SectionCard
         title="Jewellery"
-        subtitle="Instantly Try On Jewellery Looks And Find Your Perfect Piece."
-        image="/images/try/jewellaryImage.png"
+        subtitle="Try elegant jewellery pieces that complement your groome style."
+        image="/images/try/groomJewellary.png"
         onTry={() => {
           navigate("/try/makeup");
           dispatch(setRoleType({ type: "jewellary" }));
@@ -103,8 +104,8 @@ const BrideMakeupChoose = () => {
 
       <SectionCard
         title="Outfit"
-        subtitle="Instantly Try On Outfits And Find Your Perfect Look."
-        image="/images/try/BrideOutfitImage.png"
+        subtitle="Visualize outfits to complete your perfect groome look."
+        image="/images/try/groomOutfit.png"
         onTry={() => {
           navigate("/try/makeup");
           dispatch(setRoleType({ type: "outfit" }));
@@ -118,4 +119,4 @@ const BrideMakeupChoose = () => {
   );
 };
 
-export default BrideMakeupChoose;
+export default GroomeMakeupChoose;

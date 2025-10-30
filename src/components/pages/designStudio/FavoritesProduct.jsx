@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { removeFavorite } from "../../redux/favoriteSlice";
+import { removeFavorite } from "../../../redux/favoriteSlice";
 import { IoClose } from "react-icons/io5";
 
 export default function FavouriteListPopup({ setShowPopup }) {
   const dispatch = useDispatch();
   const favorites = useSelector((store) => store.favorites?.favorites) || [];
   const [showEmailPopUp, setShowEmailPopUp] = useState(false);
-  const[email, setEmail] = useState("");
+  const [email, setEmail] = useState("");
 
   return (
     <div
@@ -217,7 +217,7 @@ export default function FavouriteListPopup({ setShowPopup }) {
           </button>
         </div>
       </div>
-      {favorites.length > 0 &&showEmailPopUp && (
+      {favorites.length > 0 && showEmailPopUp && (
         <div
           onClick={() => setShowEmailPopUp(false)} // closes when clicking outside
           style={{
