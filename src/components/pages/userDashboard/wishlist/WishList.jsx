@@ -272,11 +272,14 @@ const Wishlist = () => {
                     <h5 className="wishlist-title">{vendor.businessName}</h5>
                     <p className="wishlist-location">
                       <i className="bi bi-geo-alt me-1"></i>
-                      {vendor.city}
+                      {vendor.city.length > 30
+                        ? `${vendor.city.substring(0, 30)}...`
+                        : vendor.city}
                     </p>
 
                     <button
-                      className="btn btn-primary w-100 rounded-3 py-2 mt-3"
+                      className="btn btn-primary w-100 rounded-3 py-2"
+                      style={{ marginTop: "auto" }}
                       onClick={() => handleShowModal(vendor.vendor_services_id)}
                     >
                       <PiChatCircleDotsLight className="me-2" size={18} />

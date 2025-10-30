@@ -234,9 +234,9 @@ const Guests = () => {
     Swal.fire({
       icon: "info",
       text: `Sending ${type} message`,
-      timer:"3000",
-      confirmButtonText:"OK",
-      confirmButtonColor:"#C31162"
+      timer: "3000",
+      confirmButtonText: "OK",
+      confirmButtonColor: "#C31162"
     });
     setShowMessageOptions(false);
   };
@@ -498,16 +498,47 @@ const Guests = () => {
             </button>
             <button
               className="wgl-button wgl-button-save"
-              onClick={() => {
-                // alert(`Group "${newGuestForm.group}" created`);
-                Swal.fire({
-                  icon: "info",
-                  text: `Group "${newGuestForm.group}" created`,
-                  timer:"3000",
-                  confirmButtonText:"OK",
-                  confirmButtonColor:"#C31162"
-                });
-                setShowAddGroupForm(false);
+              onClick={async () => {
+                if (!newGuestForm.group.trim()) {
+                  Swal.fire({
+                    icon: "error",
+                    text: "Please enter a group name",
+                    confirmButtonColor: "#C31162"
+                  });
+                  return;
+                }
+
+                try {
+                  const userIdToSend = isNaN(userId) ? userId : parseInt(userId, 10);
+
+                  const res = await axiosInstance.post(
+                    "https://happywedz.com/api/guestlist",
+                    {
+                      name: newGuestForm.group,
+                      userId: userIdToSend
+                    }
+                  );
+
+                  if (res.data?.success) {
+                    Swal.fire({
+                      icon: "success",
+                      text: `Group "${newGuestForm.group}" created successfully`,
+                      timer: 3000,
+                      confirmButtonText: "OK",
+                      confirmButtonColor: "#C31162"
+                    });
+                    setShowAddGroupForm(false);
+                    setNewGuestForm(initialGuestFormState);
+                    setRefresh((prev) => !prev);
+                  }
+                } catch (err) {
+                  console.error("Create Group Error:", err);
+                  Swal.fire({
+                    icon: "error",
+                    text: err.response?.data?.message || "Failed to create group",
+                    confirmButtonColor: "#C31162"
+                  });
+                }
               }}
             >
               Create Group

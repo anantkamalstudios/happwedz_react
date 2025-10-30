@@ -4,6 +4,7 @@ import { CiSearch } from "react-icons/ci";
 import { FaSearch, FaStar } from "react-icons/fa";
 import { Link, useParams, useLocation } from "react-router-dom";
 import axios from "axios";
+import { useSelector } from "react-redux";
 
 const MainSearch = ({ title = "Find what you need", onSearch }) => {
   const { slug } = useParams();
@@ -20,8 +21,49 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
 
   const searchParams = new URLSearchParams(location.search);
   const vendorType = searchParams.get("vendorType");
-  const city = searchParams.get("city");
+
+  const reduxLocation = useSelector((state) => state.location.selectedLocation);
+  const cityParam = searchParams.get("city");
+  const city = cityParam || reduxLocation || null;
   const isVenuePage = location.pathname.includes("/venues");
+
+  // const dynamicTitle = useMemo(() => {
+  //   if (vendorType) {
+  //     const formattedVendorType = vendorType
+  //       .split(" ")
+  //       .map(
+  //         (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+  //       )
+  //       .join(" ");
+
+  //     if (city) {
+  //       return `${formattedVendorType} in ${city}`;
+  //     }
+  //     return formattedVendorType;
+  //   }
+
+  //   if (slug && slug.toLowerCase() === "all" && city) {
+  //     const pathSegments = location.pathname
+  //       .split("/")
+  //       .filter((segment) => segment);
+  //     if (pathSegments.length >= 2) {
+  //       const category = pathSegments[0];
+  //       const formattedCategory = category
+  //         .split(" ")
+  //         .map(
+  //           (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+  //         )
+  //         .join(" ");
+  //       return `${formattedCategory} in ${city}`;
+  //     }
+  //   }
+
+  //   if (city && !vendorType && !slug) {
+  //     return `Wedding Services in ${city}`;
+  //   }
+
+  //   return title || "Plan your perfect day";
+  // }, [vendorType, city, title, slug, location.pathname]);
 
   const dynamicTitle = useMemo(() => {
     if (vendorType) {
@@ -36,6 +78,21 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
         return `${formattedVendorType} in ${city}`;
       }
       return formattedVendorType;
+    }
+
+    if (slug && slug.toLowerCase() !== "all") {
+      const formattedSlug = slug
+        .replace(/-/g, " ")
+        .split(" ")
+        .map(
+          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        )
+        .join(" ");
+
+      if (city) {
+        return `${formattedSlug} in ${city}`;
+      }
+      return formattedSlug;
     }
 
     if (slug && slug.toLowerCase() === "all" && city) {
@@ -66,13 +123,16 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
     let keywordPh = "";
     let subtitle = "";
 
-    if (vendorType && city) {
-      const formattedVendorType = vendorType.toLowerCase();
+    // Get vendor type from either query param or slug
+    const effectiveVendorType = vendorType || (slug && slug !== "all" ? slug.replace(/-/g, " ") : null);
+
+    if (effectiveVendorType && city) {
+      const formattedVendorType = effectiveVendorType.toLowerCase();
       const formattedCity =
         city.charAt(0).toUpperCase() + city.slice(1).toLowerCase();
 
       switch (true) {
-        case formattedVendorType.includes("venue"):
+        case formattedVendorType.includes("venue") || formattedVendorType.includes("resort"):
           keywordPh = "Banquet halls, resorts, lawns";
           subtitle = `Discover the perfect wedding venues in ${formattedCity} for your special day`;
           break;
@@ -88,13 +148,13 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
           keywordPh = "Caterers, food services";
           subtitle = `Delicious wedding catering options in ${formattedCity} for your guests`;
           break;
-        case formattedVendorType.includes("decoration"):
+        case formattedVendorType.includes("decoration") || formattedVendorType.includes("decorator"):
           keywordPh = "Decorators, wedding themes";
           subtitle = `Beautiful wedding decorations in ${formattedCity} to make your day magical`;
           break;
         default:
           keywordPh = "Find Best Options";
-          subtitle = `Discover the best ${vendorType.toLowerCase()} services in ${formattedCity}`;
+          subtitle = `Discover the best ${effectiveVendorType.toLowerCase()} services in ${formattedCity}`;
       }
     } else {
       switch (true) {

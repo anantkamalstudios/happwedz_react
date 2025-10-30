@@ -23,7 +23,6 @@ const useApiData = (
   const abortRef = useRef(null);
   const cacheRef = useRef(new Map());
 
-  // Memoize filters to prevent infinite loops
   const memoizedFilters = useMemo(() => filters, [JSON.stringify(filters)]);
 
   const fetchData = useCallback(
@@ -60,19 +59,15 @@ const useApiData = (
           params.append("subCategory", subCategory);
         }
 
-        // Add pagination parameters
         params.append("page", page.toString());
         params.append("limit", limit.toString());
 
-        // Add filters if present
         if (memoizedFilters && Object.keys(memoizedFilters).length > 0) {
           params.append("filters", JSON.stringify(memoizedFilters));
         }
 
-        // const apiUrl = `http://localhost:4000/vendor-services?${params.toString()}`;
         const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
 
-        // Serve from cache if available
         const cacheKey = apiUrl;
         if (cacheRef.current.has(cacheKey)) {
           const cached = cacheRef.current.get(cacheKey);
@@ -215,7 +210,6 @@ const transformApiData = (items) => {
     const subcategory = item.subcategory || {};
     const attributes = item.attributes || {};
 
-    // Resolve gallery from media or pipe-separated Portfolio in attributes
     const portfolioUrls = attributes.Portfolio
       ? attributes.Portfolio.split("|")
           .map((url) => url.trim())
@@ -224,7 +218,6 @@ const transformApiData = (items) => {
     const gallery = media.length > 0 ? media : portfolioUrls;
     const firstImage = gallery.length > 0 ? gallery[0] : null;
 
-    // Vendor type detection for pricing display
     const vendorTypeName =
       attributes.vendor_type ||
       vendor?.vendorType?.name ||
@@ -232,7 +225,6 @@ const transformApiData = (items) => {
       "";
     const isVenue = vendorTypeName.toLowerCase().includes("venue");
 
-    // Normalize pricing from attributes
     const photoPackage =
       attributes.photo_package_price ||
       attributes.PhotoPackage_Price ||
@@ -247,7 +239,6 @@ const transformApiData = (items) => {
       attributes.PhotoVideo_Price ||
       attributes.PhotoVideoPackage;
 
-    // Fallback prices as numbers/strings
     const priceOrZero = (v) => (v === null || v === undefined ? 0 : v);
 
     const rawRooms =
@@ -285,7 +276,6 @@ const transformApiData = (items) => {
       gallery,
       videos: [],
 
-      // Pricing for card grids
       vegPrice: isVenue
         ? attributes.veg_price || attributes.VegPrice || null
         : null,
@@ -300,14 +290,12 @@ const transformApiData = (items) => {
           null
         : null,
 
-      // Location
       address: attributes.address || attributes.Address || "",
       area: attributes.area || "",
       city: attributes.city || vendor.city || "",
       location: attributes.city || vendor.city || "",
       rooms: roomsParsed,
 
-      // Ratings
       rating: attributes.rating || 0,
       review_count:
         attributes.review_count ||
@@ -318,7 +306,6 @@ const transformApiData = (items) => {
         parseInt(attributes.review?.toString?.() || "0", 10) ||
         0,
 
-      // Extra
       vendor_type: vendorTypeName,
       subcategory_name: subcategory?.name || "",
 

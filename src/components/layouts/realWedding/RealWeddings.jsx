@@ -77,6 +77,9 @@ const RealWeddings = ({ onPostClick }) => {
   };
 
   const filteredWeddings = weddings.filter((wedding) => {
+    // Only show weddings with status "publish"
+    const isPublished = wedding.status === "publish";
+
     const matchesSearch =
       wedding.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       wedding.city?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -100,7 +103,7 @@ const RealWeddings = ({ onPostClick }) => {
       }
     })();
 
-    return matchesSearch && city && culture && theme;
+    return isPublished && matchesSearch && city && culture && theme;
   });
 
   useEffect(() => {
@@ -189,23 +192,7 @@ const RealWeddings = ({ onPostClick }) => {
           <p className="lead mb-4">
             Because every love story deserves to be shared.
           </p>
-          {/* <div className="d-flex justify-content-center">
-            <div className="input-group" style={{ maxWidth: "500px" }}>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Search by names and location..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
-              />
-              <button className="btn btn-primary">
-                <FaSearch />
-              </button>
-            </div>
-          </div> */}
+
         </div>
       </section>
 
@@ -380,13 +367,13 @@ const RealWeddings = ({ onPostClick }) => {
                 selectedCity !== "All Cities" ||
                 selectedCulture !== "All Cultures" ||
                 selectedTheme !== "All Themes") && (
-                <button
-                  className="btn btn-outline-secondary px-4"
-                  onClick={clearFilters}
-                >
-                  Clear filters
-                </button>
-              )}
+                  <button
+                    className="btn btn-outline-secondary px-4"
+                    onClick={clearFilters}
+                  >
+                    Clear filters
+                  </button>
+                )}
             </div>
           </div>
           <div className="row justify-content-center">
@@ -479,9 +466,8 @@ const RealWeddings = ({ onPostClick }) => {
                           </li>
                         )}
                         <li
-                          className={`page-item ${
-                            currentPage === page ? "active" : ""
-                          }`}
+                          className={`page-item ${currentPage === page ? "active" : ""
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -502,9 +488,8 @@ const RealWeddings = ({ onPostClick }) => {
 
                 {/* Next Button */}
                 <li
-                  className={`page-item ${
-                    currentPage === totalPages ? "disabled" : ""
-                  }`}
+                  className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                    }`}
                 >
                   <button
                     className="page-link"

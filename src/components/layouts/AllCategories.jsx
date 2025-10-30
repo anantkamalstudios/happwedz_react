@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import axios from "axios";
 
 const API_BASE_URL = "https://happywedz.com";
@@ -11,6 +12,7 @@ const AllCategories = ({ onSelect }) => {
   const [error, setError] = useState(null);
   const [expandedIndex, setExpandedIndex] = useState(-1);
   const navigate = useNavigate();
+  const reduxLocation = useSelector((state) => state.location.selectedLocation);
 
   const toggleExpand = (i) => setExpandedIndex((prev) => (prev === i ? -1 : i));
 
@@ -136,7 +138,8 @@ const AllCategories = ({ onSelect }) => {
                         if (onSelect) onSelect(cat);
                         if (cat.title) {
                           const encoded = encodeURIComponent(cat.title);
-                          navigate(`/vendors/all?vendorType=${encoded}`);
+                          const cityParam = reduxLocation ? `&city=${encodeURIComponent(reduxLocation)}` : '';
+                          navigate(`/vendors/all?vendorType=${encoded}${cityParam}`);
                         }
                       }}
                     >
@@ -153,11 +156,11 @@ const AllCategories = ({ onSelect }) => {
                               to={
                                 cat.title.toLowerCase() === "venues"
                                   ? `/venues/${it
-                                      .toLowerCase()
-                                      .replace(/\s+/g, "-")}`
+                                    .toLowerCase()
+                                    .replace(/\s+/g, "-")}${reduxLocation ? `?city=${encodeURIComponent(reduxLocation)}` : ''}`
                                   : `/vendor/${it
-                                      .toLowerCase()
-                                      .replace(/\s+/g, "-")}`
+                                    .toLowerCase()
+                                    .replace(/\s+/g, "-")}${reduxLocation ? `?city=${encodeURIComponent(reduxLocation)}` : ''}`
                               }
                               className="badge rounded-0 primary-light-bg text-dark fs-14"
                             >

@@ -115,7 +115,7 @@ const Header = () => {
         const bsCollapse =
           window.bootstrap.Collapse.getOrCreateInstance(collapse);
         bsCollapse.hide();
-      } catch {}
+      } catch { }
     }
   }, [location]);
 
@@ -384,12 +384,12 @@ const Header = () => {
                                           transition: "color 0.2s ease-in-out",
                                         }}
                                         onMouseEnter={(e) =>
-                                          (e.currentTarget.style.color =
-                                            "#e91e63")
+                                        (e.currentTarget.style.color =
+                                          "#e91e63")
                                         }
                                         onMouseLeave={(e) =>
-                                          (e.currentTarget.style.color =
-                                            "#212529")
+                                        (e.currentTarget.style.color =
+                                          "#212529")
                                         }
                                       >
                                         <span
@@ -437,12 +437,12 @@ const Header = () => {
                                           transition: "all 0.2s ease-in-out",
                                         }}
                                         onMouseEnter={(e) =>
-                                          (e.currentTarget.style.boxShadow =
-                                            "0 4px 12px rgba(0,0,0,0.08)")
+                                        (e.currentTarget.style.boxShadow =
+                                          "0 4px 12px rgba(0,0,0,0.08)")
                                         }
                                         onMouseLeave={(e) =>
-                                          (e.currentTarget.style.boxShadow =
-                                            "0 2px 4px rgba(0,0,0,0.04)")
+                                        (e.currentTarget.style.boxShadow =
+                                          "0 2px 4px rgba(0,0,0,0.04)")
                                         }
                                       >
                                         <Link
@@ -539,40 +539,39 @@ const Header = () => {
                                 <div className="row">
                                   {(venueSubcategories.length > 0
                                     ? [
-                                        ...venueSubcategories.map(
-                                          (s) => s.name
-                                        ),
-                                        "View All Venues",
-                                      ]
+                                      ...venueSubcategories.map(
+                                        (s) => s.name
+                                      ),
+                                      "View All Venues",
+                                    ]
                                     : [
-                                        "Banquet Halls",
-                                        "Marriage Garden / Lawns",
-                                        "Wedding Resorts",
-                                        "Small Function / Party Halls",
-                                        "Destination Wedding Venues",
-                                        "Kalyana Mandapams",
-                                        "4 Star & Above Wedding Hotels",
-                                        "Venue Concierge Services",
-                                        "View All Venues",
-                                      ]
+                                      "Banquet Halls",
+                                      "Marriage Garden / Lawns",
+                                      "Wedding Resorts",
+                                      "Small Function / Party Halls",
+                                      "Destination Wedding Venues",
+                                      "Kalyana Mandapams",
+                                      "4 Star & Above Wedding Hotels",
+                                      "Venue Concierge Services",
+                                      "View All Venues",
+                                    ]
                                   ).map((item, i) => {
                                     const isShowMore =
                                       item === "View All Venues";
                                     const path = isShowMore
                                       ? "/venues"
                                       : `/venues/${item
-                                          .toLowerCase()
-                                          .replace(/\s+/g, "-")
-                                          .replace(/[^a-z0-9\-]/g, "")}`;
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "-")
+                                        .replace(/[^a-z0-9\-]/g, "")}`;
                                     return (
                                       <div className="col-12 mb-2" key={i}>
                                         <Link
                                           to={path}
-                                          className={`dropdown-link d-flex align-items-center ${
-                                            isShowMore
+                                          className={`dropdown-link d-flex align-items-center ${isShowMore
                                               ? "primary-text fw-bold text-decoration-underline"
                                               : ""
-                                          }`}
+                                            }`}
                                         >
                                           <i className="bi bi-check-circle text-primary"></i>
                                           <span className="small">{item}</span>
@@ -602,8 +601,8 @@ const Header = () => {
                                     const path = isMore
                                       ? "/venues"
                                       : `/venues?city=${encodeURIComponent(
-                                          city
-                                        )}`;
+                                        city
+                                      )}`;
                                     return (
                                       <div className="col-12 mb-2" key={i}>
                                         <Link
@@ -613,11 +612,10 @@ const Header = () => {
                                               dispatch(setLocation(city));
                                             }
                                           }}
-                                          className={`dropdown-link d-flex align-items-center ${
-                                            isMore
+                                          className={`dropdown-link d-flex align-items-center ${isMore
                                               ? "primary-text fw-bold text-decoration-underline"
                                               : ""
-                                          }`}
+                                            }`}
                                         >
                                           <i className="bi bi-geo-alt text-primary"></i>
                                           <span className="small">{city}</span>
@@ -670,7 +668,7 @@ const Header = () => {
                                                 <Link
                                                   to={`/vendors/${toSlug(
                                                     sub.name
-                                                  )}`}
+                                                  )}${reduxLocation ? `?city=${encodeURIComponent(reduxLocation)}` : ''}`}
                                                   className="dropdown-link small d-block"
                                                 >
                                                   {formatName(sub.name)}
@@ -1024,7 +1022,7 @@ const Header = () => {
                           <div className="dropdown-wrapper">
                             <button
                               onClick={handleLogout}
-                              className="nav-link text-white btn btn-link fs-18"
+                              className="nav-link text-white btn fs-18"
                               style={{ textDecoration: "none" }}
                             >
                               Logout
