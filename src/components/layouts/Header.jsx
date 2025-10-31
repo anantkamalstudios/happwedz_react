@@ -28,6 +28,7 @@ const Header = () => {
   const reduxLocation = useSelector((state) => state.location.selectedLocation);
   const [activeTab, setActiveTab] = useState("");
   const [selectedCity, setSelectedCity] = useState(reduxLocation);
+  const [openMenu, setOpenMenu] = useState(null);
   const navigate = useNavigate();
   const formatName = (name) => name.replace(/\band\b/gi, "&");
   const weddingCategories = [
@@ -124,41 +125,56 @@ const Header = () => {
       id: "wedding",
       slug: "my-wedding",
       label: "My Wedding",
-      icon: <FaRing />,
+      icon: <FaRing style={{ color: "#fff" }} />,
     },
     {
       id: "checklist",
       slug: "checklist",
       label: "Checklist",
-      icon: <FaClipboardList />,
+      icon: <FaClipboardList style={{ color: "#fff" }} />,
     },
-    { id: "vendors", slug: "vendor", label: "Vendor", icon: <FaStore /> },
+    {
+      id: "vendors",
+      slug: "vendor",
+      label: "Vendor",
+      icon: <FaStore style={{ color: "#fff" }} />,
+    },
     {
       id: "guest-list",
       slug: "guest-list",
       label: "Guest list",
-      icon: <FaUsers />,
+      icon: <FaUsers style={{ color: "#fff" }} />,
     },
-    { id: "budget", slug: "budget", label: "Budget", icon: <FaPiggyBank /> },
-    { id: "wishlist", slug: "wishlist", label: "Wishlist", icon: <FaHeart /> },
+    {
+      id: "budget",
+      slug: "budget",
+      label: "Budget",
+      icon: <FaPiggyBank style={{ color: "#fff" }} />,
+    },
+    {
+      id: "wishlist",
+      slug: "wishlist",
+      label: "Wishlist",
+      icon: <FaHeart style={{ color: "#fff" }} />,
+    },
     // { id: "booking", slug: "booking", label: "Booking", icon: <FaShoppingCart /> },
     {
       id: "message",
       slug: "message",
       label: "Message",
-      icon: <FaEnvelopeOpenText />,
+      icon: <FaEnvelopeOpenText style={{ color: "#fff" }} />,
     },
     {
       id: "real-wedding",
       slug: "real-wedding",
       label: "Real wedding",
-      icon: <FaUserFriends />,
+      icon: <FaUserFriends style={{ color: "#fff" }} />,
     },
     {
       id: "user-profile",
       slug: "user-profile",
       label: "Profile",
-      icon: <FaUser />,
+      icon: <FaUser style={{ color: "#fff" }} />,
     },
   ];
 
@@ -275,7 +291,7 @@ const Header = () => {
                     <a
                       className="nav-link fw-bold top-header-heading"
                       href="#"
-                      style={{color:"#C31162"}}
+                      style={{ color: "#C31162" }}
                     >
                       India's Favourite Wedding Planning Platform
                     </a>
@@ -349,13 +365,27 @@ const Header = () => {
                       </Link>
                     </div>
                     <ul className="navbar-nav d-flex flex-wrap justify-content-center gap-2">
-                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li
+                        className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
+                        onMouseEnter={() => setOpenMenu("planning")}
+                        onMouseLeave={() => setOpenMenu(null)}
+                      >
                         <div className="dropdown-wrapper">
-                          <button className="nav-link dropdown-toggle text-white fs-18">
+                          <button
+                            className="nav-link dropdown-toggle text-white fs-18"
+                            onClick={() => setOpenMenu(null)}
+                          >
                             Planning Tools
                           </button>
 
-                          <div className="dropdown-menu mega-dropdown w-75 border-0 mt-0 p-4 rounded-0 shadow-sm bg-white">
+                          <div
+                            className="dropdown-menu mega-dropdown w-75 border-0 mt-0 p-4 rounded-0 shadow-sm bg-white"
+                            style={{
+                              display:
+                                openMenu === "planning" ? "block" : "none",
+                            }}
+                            onClick={() => setOpenMenu(null)}
+                          >
                             <div className="container">
                               <div className="row g-4">
                                 {/* LEFT SECTION */}
@@ -401,6 +431,10 @@ const Header = () => {
                                             display: "inline-flex",
                                             alignItems: "center",
                                             justifyContent: "center",
+                                            width: "40px",
+                                            height: "40px",
+                                            borderRadius: "50%",
+                                            backgroundColor: "#C31162",
                                           }}
                                         >
                                           {tab.icon}
@@ -487,16 +521,27 @@ const Header = () => {
                         </div>
                       </li>
 
-                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li
+                        className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
+                        onMouseEnter={() => setOpenMenu("venues")}
+                        onMouseLeave={() => setOpenMenu(null)}
+                      >
                         <Link
                           // to={targetURL}
                           to="/venues"
                           className="nav-link dropdown-toggle text-white fs-18"
+                          onClick={() => setOpenMenu(null)}
                         >
                           Venues
                         </Link>
 
-                        <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 rounded-0">
+                        <div
+                          className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 rounded-0"
+                          style={{
+                            display: openMenu === "venues" ? "block" : "none",
+                          }}
+                          onClick={() => setOpenMenu(null)}
+                        >
                           <div className="container-fluid">
                             <div className="row g-4">
                               <div className="col-md-4 d-none d-md-block">
@@ -632,15 +677,27 @@ const Header = () => {
                       </li>
 
                       {/* Vendors Dropdown */}
-                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li
+                        className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
+                        onMouseEnter={() => setOpenMenu("vendors")}
+                        onMouseLeave={() => setOpenMenu(null)}
+                      >
                         <div className="dropdown-wrapper">
                           <Link
                             to="/vendors"
                             className="nav-link dropdown-toggle text-white fs-18"
+                            onClick={() => setOpenMenu(null)}
                           >
                             Vendors
                           </Link>
-                          <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0">
+                          <div
+                            className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0"
+                            style={{
+                              display:
+                                openMenu === "vendors" ? "block" : "none",
+                            }}
+                            onClick={() => setOpenMenu(null)}
+                          >
                             <div className="container">
                               <div
                                 style={{
@@ -686,17 +743,29 @@ const Header = () => {
                         </div>
                       </li>
 
-                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li
+                        className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
+                        onMouseEnter={() => setOpenMenu("photography")}
+                        onMouseLeave={() => setOpenMenu(null)}
+                      >
                         <div className="dropdown-wrapper">
                           <Link
                             className="nav-link dropdown-toggle text-white fs-18"
                             to="/photography"
                             id="photoDropdown"
                             role="button"
+                            onClick={() => setOpenMenu(null)}
                           >
                             Photography
                           </Link>
-                          <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0">
+                          <div
+                            className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0"
+                            style={{
+                              display:
+                                openMenu === "photography" ? "block" : "none",
+                            }}
+                            onClick={() => setOpenMenu(null)}
+                          >
                             <div className="container">
                               <div
                                 style={{
@@ -742,7 +811,11 @@ const Header = () => {
                         </div>
                       </li>
 
-                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li
+                        className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
+                        onMouseEnter={() => setOpenMenu("einvites")}
+                        onMouseLeave={() => setOpenMenu(null)}
+                      >
                         <div className="dropdown-wrapper">
                           <Link
                             className="nav-link dropdown-toggle text-white fs-18"
@@ -750,11 +823,19 @@ const Header = () => {
                             state={{ title: "E-Invites" }}
                             id="einvitesDropdown"
                             role="button"
+                            onClick={() => setOpenMenu(null)}
                           >
                             E-Invites
                           </Link>
 
-                          <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0">
+                          <div
+                            className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0"
+                            style={{
+                              display:
+                                openMenu === "einvites" ? "block" : "none",
+                            }}
+                            onClick={() => setOpenMenu(null)}
+                          >
                             <div className="container">
                               <div className="row g-4">
                                 <div className="col-md-12">
@@ -783,7 +864,11 @@ const Header = () => {
                         </div>
                       </li>
 
-                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li
+                        className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
+                        onMouseEnter={() => setOpenMenu("blog")}
+                        onMouseLeave={() => setOpenMenu(null)}
+                      >
                         <div className="dropdown-wrapper">
                           <Link
                             className="nav-link dropdown-toggle text-white fs-18"
@@ -791,11 +876,18 @@ const Header = () => {
                             state={{ title: "Blog" }}
                             id="blog"
                             role="button"
+                            onClick={() => setOpenMenu(null)}
                           >
                             Blog
                           </Link>
 
-                          <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0">
+                          <div
+                            className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0"
+                            style={{
+                              display: openMenu === "blog" ? "block" : "none",
+                            }}
+                            onClick={() => setOpenMenu(null)}
+                          >
                             <div className="container">
                               <div className="row">
                                 <div className="col-12 col-md-4">
@@ -891,7 +983,11 @@ const Header = () => {
                         </div>
                       </li>
 
-                      <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
+                      <li
+                        className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
+                        onMouseEnter={() => setOpenMenu("real-wedding")}
+                        onMouseLeave={() => setOpenMenu(null)}
+                      >
                         <div className="dropdown-wrapper">
                           <Link
                             className="nav-link dropdown-toggle text-white fs-18"
@@ -899,11 +995,19 @@ const Header = () => {
                             state={{ title: "Real Wedding" }}
                             id="real-wedding"
                             role="button"
+                            onClick={() => setOpenMenu(null)}
                           >
                             Real Wedding
                           </Link>
 
-                          <div className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0">
+                          <div
+                            className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0"
+                            style={{
+                              display:
+                                openMenu === "real-wedding" ? "block" : "none",
+                            }}
+                            onClick={() => setOpenMenu(null)}
+                          >
                             <div className="container">
                               <div className="row">
                                 <div className="col-12 col-md-4">

@@ -2290,7 +2290,7 @@
 //               maxWidth: "500px",
 //             }}
 //           >
-//             <FavouriteListPopup setShowPopup={setShowPopup} />
+//             <FavouriteListPopup setShowPopup={setShowPopup} appliedProductsObj={appliedProducts} />
 //           </div>
 //         </div>
 //       )}
@@ -2321,39 +2321,12 @@ import {
   ReactCompareSlider,
   ReactCompareSliderImage,
 } from "react-compare-slider";
-
-const SLIDER_CATEGORIES = [
-  "foundation",
-  "concealer",
-  "blush",
-  "contour",
-  "kajal",
-  "eyeshadow",
-  "lipstick",
-  "bindi",
-  "mascara",
-  "eyeliner",
-  // "mangtika",
-  "contactlenses",
-];
-
-const buttons = ["Shades", "Compare", "Complete Look"];
-
-// Default intensity values for each category
-const DEFAULT_INTENSITIES = {
-  foundation: 0.6,
-  concealer: 0.9,
-  blush: 0.2,
-  contour: 0.3,
-  kajal: 1.0,
-  eyeshadow: 0.4,
-  lipstick: 0.8,
-  bindi: 6,
-  mascara: 0.8,
-  eyeliner: 0.5,
-  // mangtika: 0.6,
-  contactlenses: 0.2,
-};
+import {
+  SLIDER_CATEGORIES,
+  buttons,
+  DEFAULT_INTENSITIES,
+  getErrorMessage,
+} from "./Services";
 
 const DEBOUNCE_DELAY = 250;
 
@@ -2406,8 +2379,6 @@ const FiltersPage = () => {
 
   const [previewUrl, setPreviewUrl] = React.useState(uploadedPreview);
 
-  console.log(likedProduct);
-
   React.useEffect(() => {
     setPreviewUrl(uploadedPreview);
   }, [uploadedPreview]);
@@ -2427,6 +2398,12 @@ const FiltersPage = () => {
         setCategories(items);
       } catch (e) {
         console.error("Failed to load products", e);
+        const { message, status } = getErrorMessage(e);
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: message || "Failed to load products.",
+        });
       } finally {
         setIsLoading(false);
       }
@@ -2492,12 +2469,26 @@ const FiltersPage = () => {
       categories[expandedCatIdx]?.product_detailed_category_name || ""
     ).toLowerCase();
 
+    const selected = categories[expandedCatIdx]?.products?.find(
+      (p) => p.id === productId
+    );
+
     const newAppliedProducts = {
       ...appliedProducts,
       [activeCategoryName]: {
         productId,
         colorHex,
         categoryName: activeCategoryName,
+        product_real_image:
+          selected?.product_real_image ||
+          selected?.image ||
+          selected?.thumbnail ||
+          "",
+        description:
+          // selected?.discription ||
+          // selected?.description ||
+          selected?.product_name,
+        price: selected?.price || "",
       },
     };
     setAppliedProducts(newAppliedProducts);
@@ -2557,7 +2548,7 @@ const FiltersPage = () => {
         case "eyeshadow":
           payload.eyeshadow_color = hex;
           payload.eyeshadow_intensity = intensityValue;
-          payload.eyeshadow_thickness = 25;
+          payload.eyeshadow_thickness = 30;
           break;
         case "contactlenses":
           payload.contactlenses_color = hex;
@@ -2616,11 +2607,8 @@ const FiltersPage = () => {
     try {
       setIsApplying(true);
       const res = await beautyApi.applyMakeup(payload, controller.signal);
-
-      // Ignore stale responses
       if (mySeq !== applySeqRef.current) return;
 
-      // Mark this payload as the last applied to prevent duplicate requests
       lastPayloadRef.current = payloadKey;
 
       const processedUrl = res?.url || res?.data?.url || res?.image_url;
@@ -2648,7 +2636,10 @@ const FiltersPage = () => {
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: message || "Failed to apply filter.",
+        text:
+          status === 500
+            ? "Internal Server Error"
+            : message || "Failed to apply filter.",
       });
     } finally {
       if (mySeq === applySeqRef.current) {
@@ -2677,6 +2668,16 @@ const FiltersPage = () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
     };
   }, [intensities, appliedProducts]);
+
+  // Persist the full applied products object for the popup (always up-to-date)
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        "finalLookFilters",
+        JSON.stringify(appliedProducts || {})
+      );
+    } catch {}
+  }, [appliedProducts]);
 
   // Cleanup in-flight apply on unmount
   useEffect(() => {
@@ -3137,6 +3138,31 @@ const FiltersPage = () => {
                   }).then((result) => {
                     if (result.isConfirmed) {
                       setPreviewUrl(uploadedPreview);
+
+                      try {
+                        sessionStorage.removeItem("finalLookImage");
+                        sessionStorage.removeItem("finalLookFilters");
+                      } catch {}
+                      try {
+                        setAppliedProducts && setAppliedProducts({});
+                      } catch {}
+                      try {
+                        setExpandedProductId && setExpandedProductId(null);
+                      } catch {}
+                      try {
+                        setExpandedCatIdx && setExpandedCatIdx(null);
+                      } catch {}
+                      try {
+                        setShowProductDetails && setShowProductDetails(false);
+                      } catch {}
+
+                      // Exit compare mode if active
+                      try {
+                        setIsCompareMode && setIsCompareMode(false);
+                      } catch {}
+                      try {
+                        setCompareImageUrl && setCompareImageUrl(null);
+                      } catch {}
                     }
                   });
                 }}
@@ -3716,7 +3742,7 @@ const FiltersPage = () => {
                                           style={{
                                             width: 10,
                                             height: 10,
-                                            backgroundColor: isApplied.colorHex,
+                                            // backgroundColor: isApplied.colorHex,
                                             border: "2px solid white",
                                             transform: "translate(50%, -50%)",
                                           }}
@@ -3965,14 +3991,16 @@ const FiltersPage = () => {
                 <div
                   style={{
                     marginTop: "10px",
+                    width: "100%",
                     display: "flex",
-                    flexWrap: "wrap",
+                    alignItems: "center",
                     gap: "12px",
-                    justifyContent: "start",
+                    justifyContent: "center",
+                    height: 100,
                   }}
                 >
                   {/* {Object.keys(appliedProducts).length > 0 && ( */}
-                  <div
+                  {/* <div
                     className="applied-products-section mb-2"
                     style={{
                       height: 120,
@@ -4021,18 +4049,62 @@ const FiltersPage = () => {
                             >
                               {categoryName}
                             </p>
-
-                            {/* <button
-                                type="button"
-                                className="btn-close btn-close-sm fs-10"
-                                onClick={() =>
-                                  handleRemoveProduct(categoryName)
-                                }
-                              /> */}
                           </div>
                         )
                       )}
                     </div>
+                  </div> */}
+                  <div>
+                    <button
+                      style={{
+                        background: "#C31162",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 8,
+                        padding: "8px 12px",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                      onClick={() => {
+                        try {
+                          const list = [];
+                          const allProducts = Array.isArray(categories)
+                            ? categories.flatMap((c) =>
+                                Array.isArray(c.products) ? c.products : []
+                              )
+                            : [];
+                          Object.values(appliedProducts || {}).forEach((p) => {
+                            const found = allProducts.find(
+                              (ap) => ap?.id === p?.productId
+                            );
+                            if (found) {
+                              list.push({
+                                id: found.id,
+                                product_real_image:
+                                  found.product_real_image ||
+                                  found.image ||
+                                  found.thumbnail ||
+                                  "",
+                                description:
+                                  found.discription ||
+                                  found.description ||
+                                  found.product_name ||
+                                  "",
+                                price: found.price || "",
+                              });
+                            }
+                          });
+                          sessionStorage.setItem(
+                            "finalLookAppliedList",
+                            JSON.stringify(list)
+                          );
+                        } catch {}
+                        setShowPopup(true);
+                      }}
+                    >
+                      View all products
+                    </button>
                   </div>
                   {/* )} */}
                 </div>
@@ -4262,13 +4334,17 @@ const FiltersPage = () => {
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              padding: "20px",
+              padding: "30px",
               borderRadius: "12px",
-              minWidth: "450px",
-              maxWidth: "500px",
+              minWidth: "500px",
+              maxWidth: "600px",
             }}
           >
-            <FavouriteListPopup setShowPopup={setShowPopup} />
+            {/* <FavouriteListPopup setShowPopup={setShowPopup} /> */}
+            <FavouriteListPopup
+              setShowPopup={setShowPopup}
+              appliedProductsObj={appliedProducts}
+            />
           </div>
         </div>
       )}

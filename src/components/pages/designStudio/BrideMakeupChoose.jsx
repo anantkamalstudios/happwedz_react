@@ -44,7 +44,7 @@ const SectionCard = ({ title, subtitle, image, onTry, comingSoon }) => {
         </div>
       </div>
 
-      {/* {comingSoon && (
+      {comingSoon && (
         <div
           className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
           style={{
@@ -63,7 +63,7 @@ const SectionCard = ({ title, subtitle, image, onTry, comingSoon }) => {
             Coming Soon
           </h1>
         </div>
-      )} */}
+      )}
     </div>
   );
 };

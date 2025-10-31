@@ -219,7 +219,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <hr className="my-4 opacity-50" />
+        <hr className="my-4 opacity-50" style={{ background: "#fff" }} />
 
         <div className="row gy-4">
           <div className="col-12 col-md-6">
@@ -310,7 +310,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <hr className="my-4 opacity-50" />
+        <hr className="my-4 opacity-50" style={{ background: "#fff" }} />
 
         <div className="text-center small  ">
           <p style={{ color: "#fff" }}>
