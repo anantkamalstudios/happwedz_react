@@ -3,12 +3,13 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Form, Button } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../../redux/authSlice";
-import { auth, provider, signInWithPopup } from "../../firebase";
+import { useGoogleLogin } from "@react-oauth/google";
 import { toast, ToastContainer } from "react-toastify";
 import { useLoader } from "../context/LoaderContext";
 import userApi from "../../services/api/userApi";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import axios from "axios";
 
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
@@ -24,85 +25,98 @@ const CustomerLogin = () => {
 
   const from = location.state?.from?.pathname || "/";
 
-  const handleGoogleLogin = async () => {
-    try {
-      showLoader();
-      const result = await signInWithPopup(auth, provider);
-      const firebaseToken = await result.user.getIdToken();
-
-      const registerData = {
-        name: result.user.displayName,
-        email: result.user.email,
-        password: "firebase-user",
-        phone: "0000000000",
-        weddingVenue: "TBD",
-        country: "India",
-        city: "Mumbai",
-        weddingDate: new Date().toISOString().split("T")[0],
-        profile_image: result.user.photoURL || "",
-        coverImage: "",
-        role: "user",
-        provider: "google",
-        firebaseUid: result.user.uid,
-        captchaToken: "test-captcha-token",
-      };
-
-      const registerResponse = await userApi.register(registerData);
-
-      if (
-        registerResponse.success &&
-        registerResponse.user &&
-        registerResponse.token
-      ) {
-        dispatch(
-          loginUser({
-            user: registerResponse.user,
-            token: registerResponse.token,
-          })
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        showLoader();
+        const userInfoResponse = await axios.get(
+          'https://www.googleapis.com/oauth2/v3/userinfo',
+          {
+            headers: {
+              Authorization: `Bearer ${tokenResponse.access_token}`,
+            },
+          }
         );
-        toast.success("Account created and login successful!");
-        navigate(from, { replace: true });
-        return;
-      }
 
-      if (registerResponse.message?.includes("already exists")) {
-        const loginResponse = await userApi.login({
-          email: result.user.email,
-          password: "firebase-user",
+        const googleUser = userInfoResponse.data;
+
+        const registerData = {
+          name: googleUser.name,
+          email: googleUser.email,
+          password: "google-oauth-user",
+          phone: "0000000000",
+          weddingVenue: "TBD",
+          country: "India",
+          city: "Mumbai",
+          weddingDate: new Date().toISOString().split("T")[0],
+          profile_image: googleUser.picture || "",
+          coverImage: "",
+          role: "user",
+          provider: "google",
           captchaToken: "test-captcha-token",
-        });
+        };
+
+        const registerResponse = await userApi.register(registerData);
 
         if (
-          loginResponse.success &&
-          loginResponse.user &&
-          loginResponse.token
+          registerResponse.success &&
+          registerResponse.user &&
+          registerResponse.token
         ) {
           dispatch(
-            loginUser({ user: loginResponse.user, token: loginResponse.token })
+            loginUser({
+              user: registerResponse.user,
+              token: registerResponse.token,
+            })
           );
-          toast.success("Login successful!");
+          toast.success("Account created and login successful!");
           navigate(from, { replace: true });
           return;
         }
+
+        if (registerResponse.message?.includes("already exists")) {
+          const loginResponse = await userApi.login({
+            email: googleUser.email,
+            password: "google-oauth-user",
+            captchaToken: "test-captcha-token",
+          });
+
+          if (
+            loginResponse.success &&
+            loginResponse.user &&
+            loginResponse.token
+          ) {
+            dispatch(
+              loginUser({ user: loginResponse.user, token: loginResponse.token })
+            );
+            toast.success("Login successful!");
+            navigate(from, { replace: true });
+            return;
+          }
+        }
+
+        const fallbackUser = {
+          id: googleUser.sub,
+          name: googleUser.name,
+          email: googleUser.email,
+          photoURL: googleUser.picture,
+          provider: "google",
+        };
+
+        dispatch(loginUser({ user: fallbackUser, token: tokenResponse.access_token }));
+        toast.warning("Login successful! (Note: Some features may be limited)");
+        navigate(from, { replace: true });
+      } catch (error) {
+        toast.error("Google login failed: " + error.message);
+      } finally {
+        hideLoader();
       }
-
-      const fallbackUser = {
-        id: result.user.uid,
-        name: result.user.displayName,
-        email: result.user.email,
-        photoURL: result.user.photoURL,
-        provider: "google",
-      };
-
-      dispatch(loginUser({ user: fallbackUser, token: firebaseToken }));
-      toast.warning("Login successful! (Note: Some features may be limited)");
-      navigate(from, { replace: true });
-    } catch (error) {
-      toast.error("Google login failed: " + error.message);
-    } finally {
-      hideLoader();
-    }
-  };
+    },
+    onError: (error) => {
+      console.error('Google Login Failed:', error);
+      toast.error("Google login failed. Please try again.");
+    },
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -260,7 +274,7 @@ const CustomerLogin = () => {
 
           <button
             className="btn btn-light btn-lg w-100 d-flex align-items-center justify-content-center shadow-sm border rounded-pill px-4 py-2 mt-5"
-            onClick={handleGoogleLogin}
+            onClick={() => googleLogin()}
           >
             <img
               src="https://img.icons8.com/color/48/000000/google-logo.png"

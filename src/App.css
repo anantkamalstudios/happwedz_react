@@ -19031,13 +19031,19 @@ input:checked + .slider:before {
 .wishlist-location {
   color: #6c757d;
   font-size: 0.95rem;
-  margin-bottom: 0;
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
+  min-height: 24px;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .wishlist-location i {
   font-size: 0.9rem;
+  flex-shrink: 0;
 }
 
 /* Contact Button */

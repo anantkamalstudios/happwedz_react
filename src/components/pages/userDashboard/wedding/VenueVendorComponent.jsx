@@ -437,7 +437,7 @@ const VenueSwiper = () => {
                     }}
                   />
                   <p
-                    className="mb-0"
+                    className="mb-0 text-muted small"
                     style={{
                       color: "#666",
                       fontSize: "13px",
@@ -448,11 +448,9 @@ const VenueSwiper = () => {
                       WebkitBoxOrient: "vertical",
                     }}
                   >
-                    <p className="text-muted small mb-1">
-                      <IoLocationOutline className="me-2" />
-                      {(venue.location || "").split(" ").slice(0, 10).join(" ")}
-                      {venue.location?.split(" ").length > 10 && "..."}
-                    </p>
+                    <IoLocationOutline className="me-2" />
+                    {(venue.location || "").split(" ").slice(0, 10).join(" ")}
+                    {venue.location?.split(" ").length > 10 && "..."}
                   </p>
                 </div>
               </div>

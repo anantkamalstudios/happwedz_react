@@ -15,7 +15,7 @@ import VenueVendorComponent from "./VenueVendorComponent";
 import UpComingTask from "../wedding/UpcomingTask";
 import EInvites from "./EInviteCard";
 
-const Wedding = () => { 
+const Wedding = () => {
 
   const [budget, setBudget] = useState({
     total: 0,
@@ -142,7 +142,7 @@ const Wedding = () => {
           }
         );
         const guestsData = await guestsRes.json();
-        if (guestsData.success) {
+        if (guestsData.success && guestsData.data && Array.isArray(guestsData.data)) {
           const totalGuests = guestsData.data.length;
           const attendingGuests = guestsData.data.filter(
             (g) => g.status === "Attending"
@@ -479,11 +479,10 @@ const Wedding = () => {
                     className="progress-bar bg-primary"
                     role="progressbar"
                     style={{
-                      width: `${
-                        budget.total > 0
+                      width: `${budget.total > 0
                           ? (budget.spent / budget.total) * 100
                           : 0
-                      }%`,
+                        }%`,
                     }}
                     aria-valuenow={
                       budget.total > 0 ? (budget.spent / budget.total) * 100 : 0

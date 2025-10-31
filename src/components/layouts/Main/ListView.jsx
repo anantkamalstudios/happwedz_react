@@ -198,13 +198,20 @@ const ListView = ({ subVenuesData, handleShow }) => {
                       </span>
                     </div>
 
-                    <p className="text-muted small mb-2">
-                      {(venue.description || "")
-                        .split(" ")
-                        .slice(0, 20)
-                        .join(" ")}
-                      ...
-                    </p>
+                    <div
+                      className="text-muted small mb-2"
+                      style={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: "vertical",
+                        lineHeight: "1.5"
+                      }}
+                      dangerouslySetInnerHTML={{
+                        __html: venue.description || ""
+                      }}
+                    />
                   </Link>
                   <div className="mt-auto text-end">
                     <Button

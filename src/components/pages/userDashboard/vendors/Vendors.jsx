@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { FaCheck, FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { Container, Row, Col } from "react-bootstrap";
+import axios from "axios";
 import randomColor from "randomcolor";
 
 const Vendors = () => {
   const navigate = useNavigate();
+  const { token } = useSelector((state) => state.auth);
   const [vendors, setVendors] = useState({
     booked: 0,
     total: 25,
@@ -14,6 +17,7 @@ const Vendors = () => {
   });
 
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -28,6 +32,37 @@ const Vendors = () => {
 
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      if (!token) {
+        console.warn("No token found");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await axios.get(
+          "https://happywedz.com/api/request-pricing/user/quotations",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (res.data.success) {
+          const bookedCount = res.data.quotations.length;
+          setVendors((prev) => ({
+            ...prev,
+            booked: bookedCount,
+          }));
+        }
+      } catch (err) {
+        console.error("Error fetching bookings:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBookings();
+  }, [token]);
 
   const handleFindClick = (categoryPath) => {
     navigate(categoryPath);

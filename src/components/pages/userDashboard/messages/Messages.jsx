@@ -1,15 +1,7 @@
-// Messages.jsx
 import React, { useState, useRef, useEffect } from "react";
-import {
-  FiSend,
-  FiPaperclip,
-  FiSmile,
-  FiClock,
-  FiChevronLeft,
-} from "react-icons/fi";
+import { FiSend, FiSmile, FiClock } from "react-icons/fi";
 import { FaUserCircle } from "react-icons/fa";
 
-// Vendors
 const vendors = [
   {
     id: "vendor1",
