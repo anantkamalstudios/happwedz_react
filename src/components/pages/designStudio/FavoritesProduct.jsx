@@ -1,13 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { removeFavorite } from "../../../redux/favoriteSlice";
 import { IoClose } from "react-icons/io5";
+import { AiFillHeart } from "react-icons/ai";
 
-export default function FavouriteListPopup({ setShowPopup }) {
+export default function FavouriteListPopup({
+  setShowPopup,
+  appliedProductsObj,
+}) {
   const dispatch = useDispatch();
   const favorites = useSelector((store) => store.favorites?.favorites) || [];
+  const [activeTab, setActiveTab] = useState("favourite"); // 'current' or 'favourite'
   const [showEmailPopUp, setShowEmailPopUp] = useState(false);
   const [email, setEmail] = useState("");
+
+  const appliedProducts = useMemo(() => {
+    if (appliedProductsObj && typeof appliedProductsObj === "object") {
+      return Object.values(appliedProductsObj);
+    }
+    try {
+      const raw = sessionStorage.getItem("finalLookFilters");
+      const parsed = raw ? JSON.parse(raw) : {};
+      return Object.values(parsed || {});
+    } catch (e) {
+      return [];
+    }
+  }, [appliedProductsObj]);
+
+  const currentData = activeTab === "current" ? appliedProducts : favorites;
+  const showEmailButton = activeTab === "favourite" && favorites.length > 0;
 
   return (
     <div
@@ -23,37 +44,78 @@ export default function FavouriteListPopup({ setShowPopup }) {
     >
       <div
         style={{
-          // background: "#fff",
+          background: "#fce4ec",
           width: "100%",
-          maxWidth: "500px",
+          maxWidth: "700px",
+          borderRadius: "12px",
           boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
           overflow: "hidden",
           position: "relative",
         }}
       >
-        {/* Header */}
+        {/* Header with Tabs */}
+        <div
+          style={{
+            background: "#d81b60",
+            padding: "12px 40px",
+            display: "flex",
+            gap: "12px",
+            alignItems: "center",
+            position: "relative",
+          }}
+        >
+          <button
+            onClick={() => setActiveTab("current")}
+            style={{
+              flex: 1,
+              background: activeTab === "current" ? "white" : "transparent",
+              color: activeTab === "current" ? "#d81b60" : "white",
+              border: "none",
+              borderRadius: "8px",
+              padding: "12px 15px",
+              fontSize: "12px",
+              fontWeight: "600",
+              cursor: "pointer",
+              textTransform: "uppercase",
+              transition: "all 0.2s ease",
+            }}
+          >
+            CURRENT APPLIED PRODUCT
+          </button>
+          <button
+            onClick={() => setActiveTab("favourite")}
+            style={{
+              flex: 1,
+              background: activeTab === "favourite" ? "white" : "transparent",
+              color: activeTab === "favourite" ? "#d81b60" : "white",
+              border: "none",
+              borderRadius: "8px",
+              padding: "12px 15px",
+              fontSize: "12px",
+              fontWeight: "600",
+              cursor: "pointer",
+              textTransform: "uppercase",
+              transition: "all 0.2s ease",
+            }}
+          >
+            FAVOURITE LIST
+          </button>
 
-        <div
-          style={{
-            background: "linear-gradient(135deg, #d91e6e 0%, #c91963 100%)",
-            color: "white",
-            padding: "20px",
-            textAlign: "center",
-            fontSize: "20px",
-            fontWeight: "600",
-          }}
-        >
-          Favourite List
-        </div>
-        <div
-          onClick={() => setShowPopup(false)}
-          style={{
-            position: "absolute",
-            top: 8,
-            right: 10,
-          }}
-        >
-          <IoClose color="#fff" size={30} />
+          {/* Close button */}
+          <div
+            onClick={() => setShowPopup(false)}
+            style={{
+              position: "absolute",
+              right: "5px",
+              top: "5px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <IoClose color="#fff" size={28} />
+          </div>
         </div>
 
         {/* Content */}
@@ -62,21 +124,24 @@ export default function FavouriteListPopup({ setShowPopup }) {
             padding: "20px",
             maxHeight: "450px",
             overflowY: "auto",
+            minHeight: "300px",
           }}
         >
-          {favorites.length === 0 ? (
+          {currentData.length === 0 ? (
             <div
               style={{
                 textAlign: "center",
                 color: "#666",
-                padding: "40px 20px",
+                padding: "60px 20px",
                 fontSize: "16px",
               }}
             >
-              No favorites yet. Start adding products to your favorites!
+              {activeTab === "current"
+                ? "No products applied yet."
+                : "No favorites yet. Start adding products to your favorites!"}
             </div>
           ) : (
-            favorites.map((item) => (
+            currentData.map((item) => (
               <div
                 key={item.id}
                 style={{
@@ -84,7 +149,7 @@ export default function FavouriteListPopup({ setShowPopup }) {
                   background: "#f8b4d4",
                   borderRadius: "12px",
                   marginBottom: "15px",
-                  padding: "10px",
+                  padding: "12px",
                   alignItems: "center",
                   position: "relative",
                 }}
@@ -96,49 +161,73 @@ export default function FavouriteListPopup({ setShowPopup }) {
                   }}
                   style={{
                     position: "absolute",
-                    top: "2px",
-                    right: "2px",
+                    top: "8px",
+                    right: "8px",
                     width: "24px",
                     height: "24px",
                     border: "none",
                     borderRadius: "50%",
                     background: "white",
-                    color: "#d91e6e",
+                    color: "#d81b60",
                     cursor: "pointer",
                     fontWeight: "bold",
+                    fontSize: "18px",
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
                     padding: 0,
+                    lineHeight: 1,
                   }}
                 >
                   ×
                 </button>
 
-                {/* Product Image */}
                 <div
                   style={{
-                    width: "64px",
-                    height: "64px",
+                    width: "clamp(50px, 15vw, 60px)",
+                    height: "clamp(50px, 15vw, 60px)",
+                    position: "relative",
+                    backgroundColor: "white",
                     borderRadius: "8px",
                     overflow: "hidden",
                     flexShrink: 0,
-                    marginRight: "15px",
-                    background: "#ffd9ec",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
                   }}
                 >
                   <img
-                    src={item.product_real_image}
-                    alt="Product"
+                    src={item?.product_real_image}
+                    alt="product"
                     style={{
                       width: "100%",
                       height: "100%",
                       objectFit: "cover",
                     }}
                   />
+                  {/* Heart Icon */}
+                  <button
+                    // onClick={handleClick}
+                    style={{
+                      position: "absolute",
+                      top: "0px",
+                      right: "0px",
+                      width: "clamp(20px, 4vw, 24px)",
+                      height: "clamp(20px, 4vw, 24px)",
+                      borderRadius: "50%",
+                      border: "none",
+                      backgroundColor: "rgba(255,255,255,0.8)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      padding: 0,
+                    }}
+                  >
+                    {/* {isFavorited ? ( */}
+                    <AiFillHeart color="red" size={16} />
+                    {/* ) : ( */}
+                    {/* <AiOutlineHeart color="#ccc" size={16} /> */}
+                    {/* )} */}
+                  </button>
                 </div>
 
                 {/* Right Side */}
@@ -148,10 +237,11 @@ export default function FavouriteListPopup({ setShowPopup }) {
                   {/* Details */}
                   <div
                     style={{
-                      fontSize: "14px",
+                      fontSize: "13px",
                       color: "#000",
-                      fontWeight: "600",
-                      marginBottom: "auto",
+                      fontWeight: "500",
+                      marginBottom: "12px",
+                      lineHeight: "1.3",
                     }}
                   >
                     {item.description}
@@ -163,12 +253,11 @@ export default function FavouriteListPopup({ setShowPopup }) {
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
-                      marginTop: "8px",
                     }}
                   >
                     <div
                       style={{
-                        fontSize: "14px",
+                        fontSize: "16px",
                         fontWeight: "700",
                         color: "#000",
                       }}
@@ -179,16 +268,17 @@ export default function FavouriteListPopup({ setShowPopup }) {
                     <button
                       style={{
                         background: "white",
-                        color: "#d91e6e",
+                        color: "#d81b60",
                         border: "none",
                         borderRadius: "8px",
-                        padding: "6px 12px",
-                        fontSize: "12px",
+                        padding: "8px 16px",
+                        fontSize: "13px",
                         fontWeight: "600",
                         cursor: "pointer",
+                        textTransform: "uppercase",
                       }}
                     >
-                      View Detail
+                      BUY NOW
                     </button>
                   </div>
                 </div>
@@ -197,29 +287,34 @@ export default function FavouriteListPopup({ setShowPopup }) {
           )}
         </div>
 
-        {/* Email Send Button */}
-        <div style={{ padding: "0 20px 20px 20px" }}>
-          <button
-            onClick={() => setShowEmailPopUp(true)}
-            className="btn w-100"
-            style={{
-              background: "linear-gradient(135deg, #d91e6e 0%, #c91963 100%)",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              padding: "15px",
-              fontSize: "16px",
-              fontWeight: "600",
-              cursor: "pointer",
-            }}
-          >
-            Email Send
-          </button>
-        </div>
+        {/* Email Button - Only show for Favourite List tab */}
+        {showEmailButton && (
+          <div style={{ padding: "0 20px 20px 20px" }}>
+            <button
+              onClick={() => setShowEmailPopUp(true)}
+              style={{
+                width: "100%",
+                background: "#d81b60",
+                color: "white",
+                border: "none",
+                borderRadius: "12px",
+                padding: "16px",
+                fontSize: "16px",
+                fontWeight: "600",
+                cursor: "pointer",
+                textTransform: "capitalize",
+              }}
+            >
+              Email Favourite
+            </button>
+          </div>
+        )}
       </div>
-      {favorites.length > 0 && showEmailPopUp && (
+
+      {/* Email Popup */}
+      {showEmailPopUp && (
         <div
-          onClick={() => setShowEmailPopUp(false)} // closes when clicking outside
+          onClick={() => setShowEmailPopUp(false)}
           style={{
             position: "fixed",
             top: 0,
@@ -235,7 +330,7 @@ export default function FavouriteListPopup({ setShowPopup }) {
           }}
         >
           <div
-            onClick={(e) => e.stopPropagation()} // prevents closing when clicking inside
+            onClick={(e) => e.stopPropagation()}
             style={{
               width: "100%",
               maxWidth: "400px",
@@ -251,7 +346,7 @@ export default function FavouriteListPopup({ setShowPopup }) {
             }}
           >
             <h3
-              style={{ color: "#C31162", marginBottom: 8, textAlign: "center" }}
+              style={{ color: "#d81b60", marginBottom: 8, textAlign: "center" }}
             >
               Enter your email
             </h3>
@@ -273,7 +368,7 @@ export default function FavouriteListPopup({ setShowPopup }) {
               style={{
                 width: "100%",
                 padding: "10px 0",
-                background: "#C31162",
+                background: "#d81b60",
                 color: "#fff",
                 fontWeight: 600,
                 border: "none",
