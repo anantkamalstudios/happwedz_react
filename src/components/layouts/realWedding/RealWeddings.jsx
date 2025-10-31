@@ -242,8 +242,8 @@ const RealWeddings = ({ onPostClick }) => {
               }}
               className="form-select w-100"
               style={{
-                backgroundColor: "#f5f5f5",
-                border: "1px solid #e0e0e0",
+                backgroundColor: "#fff",
+                border: "1px solid #C31162",
                 color: "#333",
                 fontSize: "15px",
                 padding: "12px 16px",
@@ -278,8 +278,8 @@ const RealWeddings = ({ onPostClick }) => {
               }}
               className="form-select w-100"
               style={{
-                backgroundColor: "#f5f5f5",
-                border: "1px solid #e0e0e0",
+                backgroundColor: "#fff",
+                border: "1px solid #C31162",
                 color: "#333",
                 fontSize: "15px",
                 padding: "12px 16px",
@@ -314,8 +314,8 @@ const RealWeddings = ({ onPostClick }) => {
               }}
               className="form-select w-100"
               style={{
-                backgroundColor: "#f5f5f5",
-                border: "1px solid #e0e0e0",
+                backgroundColor: "#fff",
+                border: "1px solid #C31162",
                 color: "#333",
                 fontSize: "15px",
                 padding: "12px 16px",
@@ -349,8 +349,8 @@ const RealWeddings = ({ onPostClick }) => {
               placeholder="Search by names and location..."
               style={{
                 backgroundColor: "#fff",
-                border: "1px solid #e0e0e0",
-                color: "#666",
+                border: "1px solid #C31162",
+                color: "#000",
                 fontSize: "15px",
                 padding: "12px 16px",
                 height: "100%",

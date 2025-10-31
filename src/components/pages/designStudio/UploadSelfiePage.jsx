@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 import { IoClose } from "react-icons/io5";
 import { FaHome, FaTimes } from "react-icons/fa";
 import { useSelector } from "react-redux";
-import { getErrorMessage } from "./Services";
+// import { getErrorMessage } from "./Services";
 
 const UploadSelfiePage = () => {
   const navigate = useNavigate();
@@ -24,23 +24,54 @@ const UploadSelfiePage = () => {
   const { role, type } = userInfo;
   const controllerRef = useRef(null);
 
-  // const getErrorMessage = (err) => {
-  //   try {
-  //     if (err?.response?.data?.error) return err.response.data.error;
-  //     if (typeof err?.message === "string") {
-  //       const jsonMatch = err.message.match(/{.*}/);
-  //       if (jsonMatch) {
-  //         const parsed = JSON.parse(jsonMatch[0]);
-  //         if (parsed.error) return parsed.error;
-  //       }
-  //       return err.message;
-  //     }
-  //     if (typeof err === "string") return err;
-  //     return "Upload failed. Please try again.";
-  //   } catch {
-  //     return "Upload failed. Please try again.";
-  //   }
-  // };
+  const getErrorMessage = (err) => {
+    try {
+      if (!err) return "Upload failed. Please try again.";
+
+      // Prefer Axios-style response payloads
+      const resp = err.response || err?.request?.response;
+      if (resp) {
+        const data =
+          typeof resp.data === "string"
+            ? (() => {
+                try {
+                  return JSON.parse(resp.data);
+                } catch {
+                  return null;
+                }
+              })()
+            : resp.data;
+        if (data?.error) return String(data.error);
+        if (data?.message) return String(data.message);
+        if (typeof resp.statusText === "string" && resp.statusText)
+          return resp.statusText;
+      }
+
+      // When the error text embeds JSON: e.g., "HTTP 400: { \"error\": \"...\" }"
+      if (typeof err.message === "string") {
+        const jsonMatch = err.message.match(/{[\s\S]*}/);
+        if (jsonMatch) {
+          try {
+            const parsed = JSON.parse(jsonMatch[0]);
+            if (parsed?.error) return String(parsed.error);
+            if (parsed?.message) return String(parsed.message);
+          } catch {}
+        }
+        // Strip leading prefixes like "HTTP 400:" and return the remainder if present
+        const colonIdx = err.message.indexOf(":");
+        if (colonIdx !== -1 && colonIdx + 1 < err.message.length) {
+          const after = err.message.slice(colonIdx + 1).trim();
+          if (after && !after.startsWith("{")) return after;
+        }
+        return err.message;
+      }
+
+      if (typeof err === "string") return err;
+      return "Upload failed. Please try again.";
+    } catch {
+      return "Upload failed. Please try again.";
+    }
+  };
 
   let image;
   switch (role) {
@@ -93,26 +124,46 @@ const UploadSelfiePage = () => {
       ],
       outfit: [
         {
-          src: "/images/try/transparentBackground.png",
-          text: "Upload Transparent Background",
+          src: "/images/try/fullBodyImage.png",
+          text: "Capture a full-body image showing the person from head to toe.",
+        },
+        {
+          src: "/images/try/standStraight.png",
+          text: "The person should stand staright in a natural, relaxed pose.",
+        },
+        {
+          src: "/images/try/lookStraight.png",
+          text: "The person should look staright at the camera with a calm expression.",
+        },
+        {
+          src: "/images/try/flaredDesign.png",
+          text: "The outfit should have a flared design (like a gown or dress with flow.)",
         },
       ],
     },
-    groom: [
-      {
-        src: "/images/try/straightFace.png",
-        text: "Look straight at the camera",
-      },
-      { src: "/images/try/hairBack.png", text: "Put hair back" },
-      { src: "/images/try/straightFace.png", text: "Remove glasses" },
-      { src: "/images/try/straightFace.png", text: "Plain background" },
-    ],
-    others: [
-      { src: "", text: "Face the camera" },
-      { src: "", text: "Avoid shadows" },
-      { src: "", text: "Remove accessories" },
-      { src: "", text: "Use plain background" },
-    ],
+    groom: {
+      makeup: [
+        {
+          src: "/images/try/straightFace.png",
+          text: "Look straight at the camera",
+        },
+        { src: "/images/try/hairBack.png", text: "Put hair back" },
+        { src: "/images/try/straightFace.png", text: "Remove glasses" },
+        { src: "/images/try/straightFace.png", text: "Plain background" },
+      ],
+      outfit: [],
+      jewellaery: [],
+    },
+    others: {
+      makeup: [
+        { src: "", text: "Face the camera" },
+        { src: "", text: "Avoid shadows" },
+        { src: "", text: "Remove accessories" },
+        { src: "", text: "Use plain background" },
+      ],
+      outfit: [],
+      jewellaery: [],
+    },
   };
 
   // const validateFace = async (imageDataUrl) => {
@@ -177,15 +228,14 @@ const UploadSelfiePage = () => {
         sessionStorage.setItem("try_uploaded_image_id", imageId);
         setShowGuide(false);
         setUploading(false);
-        navigate(type === "outfit" ? "/try/outfit-filters" : "/try/filters");
+        navigate("/try/filters");
       } catch (err) {
-        console.log(err);
+        const message = getErrorMessage(err);
 
-        const { message, status } = getErrorMessage(err);
         Swal.fire({
           icon: "error",
           title: "Upload failed",
-          text: status === 500 ? "Server Error" : message,
+          text: message || "Internal Server Error",
           timer: 3000,
           confirmButtonText: "OK",
           confirmButtonColor: "#ed1173",

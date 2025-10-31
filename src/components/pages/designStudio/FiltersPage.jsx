@@ -2321,39 +2321,12 @@ import {
   ReactCompareSlider,
   ReactCompareSliderImage,
 } from "react-compare-slider";
-
-const SLIDER_CATEGORIES = [
-  "foundation",
-  "concealer",
-  "blush",
-  "contour",
-  "kajal",
-  "eyeshadow",
-  "lipstick",
-  "bindi",
-  "mascara",
-  "eyeliner",
-  // "mangtika",
-  "contactlenses",
-];
-
-const buttons = ["Shades", "Compare", "Complete Look"];
-
-// Default intensity values for each category
-const DEFAULT_INTENSITIES = {
-  foundation: 0.6,
-  concealer: 0.9,
-  blush: 0.2,
-  contour: 0.3,
-  kajal: 1.0,
-  eyeshadow: 0.4,
-  lipstick: 0.8,
-  bindi: 6,
-  mascara: 0.8,
-  eyeliner: 0.5,
-  // mangtika: 0.6,
-  contactlenses: 0.2,
-};
+import {
+  SLIDER_CATEGORIES,
+  buttons,
+  DEFAULT_INTENSITIES,
+  getErrorMessage,
+} from "./Services";
 
 const DEBOUNCE_DELAY = 250;
 
@@ -2406,8 +2379,6 @@ const FiltersPage = () => {
 
   const [previewUrl, setPreviewUrl] = React.useState(uploadedPreview);
 
-  console.log(likedProduct);
-
   React.useEffect(() => {
     setPreviewUrl(uploadedPreview);
   }, [uploadedPreview]);
@@ -2427,6 +2398,12 @@ const FiltersPage = () => {
         setCategories(items);
       } catch (e) {
         console.error("Failed to load products", e);
+        const { message, status } = getErrorMessage(e);
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: message || "Failed to load products.",
+        });
       } finally {
         setIsLoading(false);
       }
@@ -2557,7 +2534,7 @@ const FiltersPage = () => {
         case "eyeshadow":
           payload.eyeshadow_color = hex;
           payload.eyeshadow_intensity = intensityValue;
-          payload.eyeshadow_thickness = 25;
+          payload.eyeshadow_thickness = 30;
           break;
         case "contactlenses":
           payload.contactlenses_color = hex;
@@ -2616,11 +2593,8 @@ const FiltersPage = () => {
     try {
       setIsApplying(true);
       const res = await beautyApi.applyMakeup(payload, controller.signal);
-
-      // Ignore stale responses
       if (mySeq !== applySeqRef.current) return;
 
-      // Mark this payload as the last applied to prevent duplicate requests
       lastPayloadRef.current = payloadKey;
 
       const processedUrl = res?.url || res?.data?.url || res?.image_url;
@@ -2648,7 +2622,10 @@ const FiltersPage = () => {
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: message || "Failed to apply filter.",
+        text:
+          status === 500
+            ? "Internal Server Error"
+            : message || "Failed to apply filter.",
       });
     } finally {
       if (mySeq === applySeqRef.current) {
@@ -3716,7 +3693,7 @@ const FiltersPage = () => {
                                           style={{
                                             width: 10,
                                             height: 10,
-                                            backgroundColor: isApplied.colorHex,
+                                            // backgroundColor: isApplied.colorHex,
                                             border: "2px solid white",
                                             transform: "translate(50%, -50%)",
                                           }}
