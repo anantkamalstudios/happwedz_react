@@ -133,6 +133,16 @@ const userApi = {
       return err.response?.data || { success: false, message: "Login failed" };
     }
   },
+  googleAuth: async (data) => {
+    try {
+      const res = await axios.post(`${API_BASE}/user/google-auth`, data);
+      return res.data;
+    } catch (err) {
+      return (
+        err.response?.data || { success: false, message: "Google auth failed" }
+      );
+    }
+  },
 };
 
 export default userApi;

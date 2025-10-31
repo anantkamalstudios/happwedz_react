@@ -821,12 +821,14 @@ const EnquiryManagement = () => {
                             ))}
                           </div>
                           <button
-                            className="btn btn-lg w-50 text-white fw-semibold "
+                            className="btn text-white fw-semibold"
                             style={{
                               background: "#e91e63",
                               border: "none",
-                              borderRadius: "12px",
-                              padding: "14px",
+                              borderRadius: "8px",
+                              padding: "8px 16px",
+                              fontSize: "14px",
+                              width: "35%",
                             }}
                             onClick={() => {
                               if (selectedLead) {

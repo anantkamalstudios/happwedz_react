@@ -21,6 +21,15 @@ export const vendorsAuthApi = {
     axios.post(`${API_BASE}/register`, payload).then((res) => res.data),
   login: (payload) =>
     axios.post(`${API_BASE}/login`, payload).then((res) => res.data),
+  changePassword: (payload, token) =>
+    axios
+      .post(`${API_BASE}/change-password`, payload, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => res.data),
 };
 
 export default vendorsAuthApi;
