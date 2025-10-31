@@ -8,17 +8,17 @@ const RealWeddings = () => {
   const images = [
     {
       id: 1,
-      url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=400&fit=crop",
+      url: "images/home/realWedding3.png",
       alt: "Wedding rings with pink roses",
     },
     {
       id: 2,
-      url: "https://images.pexels.com/photos/1444442/pexels-photo-1444442.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      url: "images/home/realWedding2.png",
       alt: "Bridal party in pink dresses",
     },
     {
       id: 3,
-      url: "https://images.pexels.com/photos/1023233/pexels-photo-1023233.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      url: "images/home/realWedding1.png",
       alt: "Elegant wedding table setting",
     },
     {
@@ -86,7 +86,8 @@ const RealWeddings = () => {
               <p className="text-muted fs-6 mb-4">Real Wedding Stories</p>
 
               {/* See More Button */}
-              <Link to="/real-wedding"
+              <Link
+                to="/real-wedding"
                 className="btn btn-link p-0 fw-bold text-decoration-none d-flex align-items-center align-self-start"
                 style={{ color: "#e91e63", fontSize: "1.1rem" }}
               >

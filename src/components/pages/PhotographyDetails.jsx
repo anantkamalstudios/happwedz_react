@@ -186,13 +186,13 @@ const PhotographyDetails = () => {
                           style={{ minWidth: "100px" }}
                         >
                           <img
-                            src={normalizeImageUrl(thumbnails[index] || img)}
+                            src={normalizeImageUrl(images[index] || img)}
                             alt={`Thumbnail ${index + 1}`}
                             className="rounded"
                             style={{
                               width: "100px",
                               height: "100px",
-                              objectFit: "cover",
+                              objectFit: "contain",
                               cursor: "pointer",
                               border:
                                 selectedImageIndex === index

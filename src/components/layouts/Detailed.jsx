@@ -1034,7 +1034,7 @@ const Detailed = () => {
                     className="btn btn-primary w-100 py-2 fs-5 mt-2 rounded-4"
                     onClick={() => setShowClaimForm(true)}
                   >
-                    Claim Your Buisness
+                    Claim Your Business
                   </button>
                 </div>
               </div>
