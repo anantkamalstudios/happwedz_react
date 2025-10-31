@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../../../redux/authSlice";
-import { auth, provider, signInWithPopup } from "../../../firebase";
 import { toast, ToastContainer } from "react-toastify";
 import userApi from "../../../services/api/userApi";
+import { useGoogleLogin } from "@react-oauth/google";
+import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import { IoClose } from "react-icons/io5";
 import { FaRegEyeSlash } from "react-icons/fa";
@@ -44,84 +45,96 @@ export default function LoginPopup({ isOpen, onClose }) {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      setLoading(true);
-      const result = await signInWithPopup(auth, provider);
-      const firebaseToken = await result.user.getIdToken();
-
-      const registerData = {
-        name: result.user.displayName,
-        email: result.user.email,
-        password: "firebase-user",
-        phone: "0000000000",
-        weddingVenue: "TBD",
-        country: "India",
-        city: "Mumbai",
-        weddingDate: new Date().toISOString().split("T")[0],
-        profile_image: result.user.photoURL || "",
-        coverImage: "",
-        role: "user",
-        provider: "google",
-        firebaseUid: result.user.uid,
-        captchaToken: "test-captcha-token",
-      };
-
-      const registerResponse = await userApi.register(registerData);
-
-      if (
-        registerResponse.success &&
-        registerResponse.user &&
-        registerResponse.token
-      ) {
-        dispatch(
-          loginUser({
-            user: registerResponse.user,
-            token: registerResponse.token,
-          })
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setLoading(true);
+        const userInfoResponse = await axios.get(
+          "https://www.googleapis.com/oauth2/v3/userinfo",
+          {
+            headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+          }
         );
-        toast.success("Account created and login successful!");
-        onClose();
-        return;
-      }
 
-      if (registerResponse.message?.includes("already exists")) {
-        const loginResponse = await userApi.login({
-          email: result.user.email,
-          password: "firebase-user",
+        const googleUser = userInfoResponse.data;
+
+        const registerData = {
+          name: googleUser.name,
+          email: googleUser.email,
+          password: "google-oauth-user",
+          phone: "0000000000",
+          weddingVenue: "TBD",
+          country: "India",
+          city: "Mumbai",
+          weddingDate: new Date().toISOString().split("T")[0],
+          profile_image: googleUser.picture || "",
+          coverImage: "",
+          role: "user",
+          provider: "google",
           captchaToken: "test-captcha-token",
-        });
+        };
+
+        const registerResponse = await userApi.register(registerData);
 
         if (
-          loginResponse.success &&
-          loginResponse.user &&
-          loginResponse.token
+          registerResponse.success &&
+          registerResponse.user &&
+          registerResponse.token
         ) {
           dispatch(
-            loginUser({ user: loginResponse.user, token: loginResponse.token })
+            loginUser({
+              user: registerResponse.user,
+              token: registerResponse.token,
+            })
           );
-          toast.success("Login successful!");
+          toast.success("Account created and login successful!");
           onClose();
           return;
         }
-      }
 
-      const fallbackUser = {
-        id: result.user.uid,
-        name: result.user.displayName,
-        email: result.user.email,
-        photoURL: result.user.photoURL,
-        provider: "google",
-      };
-      dispatch(loginUser({ user: fallbackUser, token: firebaseToken }));
-      toast.warning("Login successful! (Some features may be limited)");
-      onClose();
-    } catch (err) {
-      toast.error("Google login failed: " + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+        if (registerResponse.message?.includes("already exists")) {
+          const loginResponse = await userApi.login({
+            email: googleUser.email,
+            password: "google-oauth-user",
+            captchaToken: "test-captcha-token",
+          });
+
+          if (
+            loginResponse.success &&
+            loginResponse.user &&
+            loginResponse.token
+          ) {
+            dispatch(
+              loginUser({ user: loginResponse.user, token: loginResponse.token })
+            );
+            toast.success("Login successful!");
+            onClose();
+            return;
+          }
+        }
+
+        const fallbackUser = {
+          id: googleUser.sub,
+          name: googleUser.name,
+          email: googleUser.email,
+          photoURL: googleUser.picture,
+          provider: "google",
+        };
+        dispatch(
+          loginUser({ user: fallbackUser, token: tokenResponse.access_token })
+        );
+        toast.warning("Login successful! (Note: Some features may be limited)");
+        onClose();
+      } catch (error) {
+        toast.error("Google login failed: " + error.message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: (error) => {
+      toast.error("Google login failed. Please try again.");
+    },
+  });
 
   if (!isOpen) return null;
 
@@ -397,7 +410,7 @@ export default function LoginPopup({ isOpen, onClose }) {
               <button
                 type="button"
                 className="btn btn-outline-secondary w-100"
-                onClick={handleGoogleLogin}
+                onClick={() => googleLogin()}
                 style={{
                   padding: "12px",
                   fontSize: "15px",
