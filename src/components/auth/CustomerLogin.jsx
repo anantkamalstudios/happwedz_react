@@ -3,13 +3,13 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Form, Button } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../../redux/authSlice";
-import { useGoogleLogin } from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
 import { toast, ToastContainer } from "react-toastify";
 import { useLoader } from "../context/LoaderContext";
 import userApi from "../../services/api/userApi";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import axios from "axios";
+// axios removed: not used in auth-code flow
 
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
@@ -25,98 +25,40 @@ const CustomerLogin = () => {
 
   const from = location.state?.from?.pathname || "/";
 
-  const googleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        showLoader();
-        const userInfoResponse = await axios.get(
-          'https://www.googleapis.com/oauth2/v3/userinfo',
-          {
-            headers: {
-              Authorization: `Bearer ${tokenResponse.access_token}`,
-            },
-          }
-        );
-
-        const googleUser = userInfoResponse.data;
-
-        const registerData = {
-          name: googleUser.name,
-          email: googleUser.email,
-          password: "google-oauth-user",
-          phone: "0000000000",
-          weddingVenue: "TBD",
-          country: "India",
-          city: "Mumbai",
-          weddingDate: new Date().toISOString().split("T")[0],
-          profile_image: googleUser.picture || "",
-          coverImage: "",
-          role: "user",
-          provider: "google",
-          captchaToken: "test-captcha-token",
-        };
-
-        const registerResponse = await userApi.register(registerData);
-
-        if (
-          registerResponse.success &&
-          registerResponse.user &&
-          registerResponse.token
-        ) {
-          dispatch(
-            loginUser({
-              user: registerResponse.user,
-              token: registerResponse.token,
-            })
-          );
-          toast.success("Account created and login successful!");
-          navigate(from, { replace: true });
-          return;
-        }
-
-        if (registerResponse.message?.includes("already exists")) {
-          const loginResponse = await userApi.login({
-            email: googleUser.email,
-            password: "google-oauth-user",
-            captchaToken: "test-captcha-token",
-          });
-
-          if (
-            loginResponse.success &&
-            loginResponse.user &&
-            loginResponse.token
-          ) {
-            dispatch(
-              loginUser({ user: loginResponse.user, token: loginResponse.token })
-            );
-            toast.success("Login successful!");
-            navigate(from, { replace: true });
-            return;
-          }
-        }
-
-        const fallbackUser = {
-          id: googleUser.sub,
-          name: googleUser.name,
-          email: googleUser.email,
-          photoURL: googleUser.picture,
-          provider: "google",
-        };
-
-        dispatch(loginUser({ user: fallbackUser, token: tokenResponse.access_token }));
-        toast.warning("Login successful! (Note: Some features may be limited)");
-        navigate(from, { replace: true });
-      } catch (error) {
-        toast.error("Google login failed: " + error.message);
-      } finally {
-        hideLoader();
+  const handleGoogleCredential = async (credentialResponse) => {
+    try {
+      showLoader();
+      const tokenId = credentialResponse?.credential;
+      console.log("Google credential response:", credentialResponse);
+      if (!tokenId) {
+        toast.error("Google did not return an ID token (credential).");
+        return;
       }
-    },
-    onError: (error) => {
-      console.error('Google Login Failed:', error);
-      toast.error("Google login failed. Please try again.");
-    },
-  });
+
+      const authResponse = await userApi.googleAuth({ tokenId });
+      if (
+        authResponse &&
+        authResponse.success &&
+        authResponse.user &&
+        authResponse.token
+      ) {
+        dispatch(
+          loginUser({ user: authResponse.user, token: authResponse.token })
+        );
+        toast.success("Login successful!");
+        navigate(from, { replace: true });
+        return;
+      }
+
+      const msg = authResponse?.message || "Google login failed on server";
+      toast.error(msg);
+    } catch (err) {
+      console.error("Google credential error:", err);
+      toast.error("Google login failed: " + (err.message || ""));
+    } finally {
+      hideLoader();
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -160,7 +102,7 @@ const CustomerLogin = () => {
           toast.error(msg);
         }
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred. Please try again.");
     } finally {
       setLoading(false);
@@ -272,19 +214,15 @@ const CustomerLogin = () => {
             </Button>
           </Form>
 
-          <button
-            className="btn btn-light btn-lg w-100 d-flex align-items-center justify-content-center shadow-sm border rounded-pill px-4 py-2 mt-5"
-            onClick={() => googleLogin()}
-          >
-            <img
-              src="https://img.icons8.com/color/48/000000/google-logo.png"
-              alt="Google Logo"
-              className="me-2"
-              width="24"
-              height="24"
+          <div className="mt-4">
+            <GoogleLogin
+              onSuccess={handleGoogleCredential}
+              onError={() => {
+                console.error("Google Login Failed: onError");
+                toast.error("Google login failed. Please try again.");
+              }}
             />
-            <span className="flex-grow-1 text-center">Sign in with Google</span>
-          </button>
+          </div>
 
           <div className="mt-5 text-center">
             <p className="text-muted">

@@ -211,7 +211,6 @@ const QuotationModal = ({ show, onClose, lead, vendorToken }) => {
       // CRITICAL FIX: Sending 'services' as an array of strings
       const payload = {
         price: formData.price,
-        // Wrap the single service input into an array
         services: [formData.service.trim()],
         validTill: formData.date,
         message: formData.message,

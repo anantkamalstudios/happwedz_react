@@ -372,7 +372,7 @@ const HomeAdmin = () => {
       value: stats.wishlistCount?.toLocaleString?.() ?? 0,
       change: "+0%",
       trend: "up",
-      icon: <FiStar size={24} />,
+      icon: <FiHeart size={24} />,
     },
   };
 

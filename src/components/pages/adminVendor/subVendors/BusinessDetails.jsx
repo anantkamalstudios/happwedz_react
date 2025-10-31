@@ -13,7 +13,11 @@ const BusinessDetails = ({ formData, setFormData }) => {
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState("");
   const [success, setSuccess] = React.useState("");
+  const [changePwdLoading, setChangePwdLoading] = React.useState(false);
+  const [changePwdErrors, setChangePwdErrors] = React.useState({});
+  const [showPasswords, setShowPasswords] = React.useState(false);
   const [profileImageFile, setProfileImageFile] = React.useState(null);
+  const [profileImagePreview, setProfileImagePreview] = React.useState(null);
   const [validationErrors, setValidationErrors] = React.useState({});
 
   const { vendor, token } = useSelector((state) => state.vendorAuth || {});
@@ -62,6 +66,43 @@ const BusinessDetails = ({ formData, setFormData }) => {
   const handleProfileImage = (e) => {
     const file = e.target.files?.[0] || null;
     setProfileImageFile(file);
+  };
+
+  // Build preview URL when file changes, or use existing vendor image when available
+  React.useEffect(() => {
+    let objectUrl;
+    if (profileImageFile) {
+      objectUrl = URL.createObjectURL(profileImageFile);
+      setProfileImagePreview(objectUrl);
+    } else if (vendor) {
+      // try multiple possible vendor image fields
+      const candidate =
+        vendor.profileImage ||
+        vendor.profile_image ||
+        vendor.avatar ||
+        vendor.image ||
+        vendor.picture ||
+        null;
+      setProfileImagePreview(candidate || null);
+    } else {
+      setProfileImagePreview(null);
+    }
+
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [profileImageFile, vendor]);
+
+  const getPasswordStrength = (pwd) => {
+    if (!pwd) return null;
+    let score = 0;
+    if (pwd.length >= 8) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+    if (score <= 1) return "Weak";
+    if (score === 2 || score === 3) return "Medium";
+    return "Strong";
   };
 
   const buildRegisterPayload = () => {
@@ -130,12 +171,17 @@ const BusinessDetails = ({ formData, setFormData }) => {
         if (profileImageFile) {
           const formDataObj = new FormData();
           Object.entries(payload).forEach(([key, value]) => {
+            // skip null/undefined values when appending
+            if (value === null || value === undefined) return;
             formDataObj.append(key, value);
           });
+          // ensure file is appended under expected key
+          if (profileImageFile)
+            formDataObj.append("profileImage", profileImageFile);
           updatedVendor = await vendorsApi.updateVendor(vendor.id, formDataObj);
         } else {
-          // updatedVendor = await vendorsApi.updateVendor(vendor.id, payload);
-          updatedVendor = await vendorsAuthApi.register(payload);
+          // Update without file using the vendorsApi.updateVendor endpoint
+          updatedVendor = await vendorsApi.updateVendor(vendor.id, payload);
         }
 
         // Update Redux store with the updated vendor data
@@ -174,8 +220,159 @@ const BusinessDetails = ({ formData, setFormData }) => {
     }
   };
 
+  // Change password handler
+  const handleChangePassword = async () => {
+    setChangePwdErrors({});
+    setError("");
+    setSuccess("");
+
+    // Basic validation
+    const errs = {};
+    if (!currentPassword || `${currentPassword}`.trim() === "") {
+      errs.oldPassword = "Required";
+    }
+    if (!newPassword || `${newPassword}`.trim() === "") {
+      errs.newPassword = "Required";
+    }
+    if (newPassword !== confirmPassword) {
+      errs.confirmPassword = "Passwords do not match";
+    }
+    if (Object.keys(errs).length) {
+      setChangePwdErrors(errs);
+      return;
+    }
+
+    setChangePwdLoading(true);
+    try {
+      const payload = {
+        vendorId: vendor?.id,
+        oldPassword: currentPassword,
+        newPassword: newPassword,
+      };
+
+      const result = await vendorsAuthApi.changePassword(payload, token);
+      // vendorsAuthApi returns parsed data or throws on non-2xx
+      if (result) {
+        setSuccess(result.message || "Password changed successfully.");
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setShowPasswordFields(false);
+      }
+    } catch (e) {
+      const serverMsg = e?.response?.data?.message || e?.message;
+      setError(
+        typeof serverMsg === "string" ? serverMsg : "Failed to change password"
+      );
+    } finally {
+      setChangePwdLoading(false);
+    }
+  };
+
   return (
     <div className="">
+      {/* Change Password panel */}
+      <div className="p-3 border rounded mb-4 bg-white">
+        <h6 className="mb-3 fw-bold">Change Password</h6>
+        {!showPasswordFields ? (
+          <button
+            type="button"
+            className="btn btn-outline-secondary"
+            onClick={() => {
+              setShowPasswordFields(true);
+              setError("");
+              setSuccess("");
+            }}
+          >
+            Change Password
+          </button>
+        ) : (
+          <div>
+            <div className="mb-3">
+              <label className="form-label">Current Password</label>
+              <input
+                type={showPasswords ? "text" : "password"}
+                className="form-control"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+              />
+              {changePwdErrors.oldPassword && (
+                <div className="text-danger small">
+                  {changePwdErrors.oldPassword}
+                </div>
+              )}
+            </div>
+            <div className="mb-3">
+              <label className="form-label">New Password</label>
+              <input
+                type={showPasswords ? "text" : "password"}
+                className="form-control"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+              {changePwdErrors.newPassword && (
+                <div className="text-danger small">
+                  {changePwdErrors.newPassword}
+                </div>
+              )}
+              {newPassword ? (
+                <div className="small mt-1">
+                  Strength: <strong>{getPasswordStrength(newPassword)}</strong>
+                </div>
+              ) : null}
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Confirm New Password</label>
+              <input
+                type={showPasswords ? "text" : "password"}
+                className="form-control"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+              {changePwdErrors.confirmPassword && (
+                <div className="text-danger small">
+                  {changePwdErrors.confirmPassword}
+                </div>
+              )}
+            </div>
+            <div className="d-flex gap-2">
+              <div className="me-auto d-flex align-items-center">
+                <input
+                  id="showPasswords"
+                  type="checkbox"
+                  className="form-check-input me-2"
+                  checked={showPasswords}
+                  onChange={(e) => setShowPasswords(e.target.checked)}
+                />
+                <label htmlFor="showPasswords" className="form-check-label">
+                  Show passwords
+                </label>
+              </div>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleChangePassword}
+                disabled={changePwdLoading}
+              >
+                {changePwdLoading ? "Updating..." : "Update Password"}
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => {
+                  setShowPasswordFields(false);
+                  setCurrentPassword("");
+                  setNewPassword("");
+                  setConfirmPassword("");
+                  setChangePwdErrors({});
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
       {/* <div className="p-3 border rounded mb-4 bg-white">
         <h6 className="mb-3 fw-bold">Login Information</h6>
         <div className="mb-3">
@@ -270,15 +467,55 @@ const BusinessDetails = ({ formData, setFormData }) => {
       {/* Contact Details */}
       <div className="p-3 border rounded bg-white">
         <h6 className="mb-3 fw-bold">Bussiness Details</h6>
-        {/* <div className="mb-3">
+        <div className="mb-3">
           <label className="form-label">Profile Image</label>
-          <input
-            type="file"
-            accept="image/*"
-            className="form-control"
-            onChange={handleProfileImage}
-          />
-        </div> */}
+          <div className="d-flex align-items-center gap-3">
+            <div style={{ width: 96, height: 96, flex: "0 0 96px" }}>
+              {profileImagePreview ? (
+                <img
+                  src={profileImagePreview}
+                  alt="Profile preview"
+                  style={{
+                    width: "96px",
+                    height: "96px",
+                    objectFit: "cover",
+                    borderRadius: "50%",
+                    border: "1px solid #e5e7eb",
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: "96px",
+                    height: "96px",
+                    borderRadius: "50%",
+                    background: "#f3f4f6",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#6b7280",
+                    fontWeight: 600,
+                  }}
+                >
+                  {((vendor?.businessName || "")[0] || "U").toUpperCase()}
+                </div>
+              )}
+            </div>
+            <div style={{ flex: 1 }}>
+              <input
+                type="file"
+                accept="image/*"
+                className="form-control"
+                onChange={handleProfileImage}
+              />
+              {profileImageFile && (
+                <div className="small mt-2">
+                  Selected: {profileImageFile.name}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
         <div className="mb-3">
           <label className="form-label">Business Name *</label>
           <input

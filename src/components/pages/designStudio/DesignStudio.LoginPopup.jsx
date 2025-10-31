@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../../../redux/authSlice";
-import { auth, provider, signInWithPopup } from "../../../firebase";
+import { GoogleLogin } from "@react-oauth/google";
 import { toast, ToastContainer } from "react-toastify";
 import userApi from "../../../services/api/userApi";
 import "react-toastify/dist/ReactToastify.css";
@@ -44,80 +44,39 @@ export default function LoginPopup({ isOpen, onClose }) {
     }
   };
 
-  const handleGoogleLogin = async () => {
+  // Handler for Google Identity credential (id_token) flow
+  const handleGoogleCredential = async (credentialResponse) => {
     try {
       setLoading(true);
-      const result = await signInWithPopup(auth, provider);
-      const firebaseToken = await result.user.getIdToken();
+      const tokenId = credentialResponse?.credential;
+      console.log(
+        "DesignStudio Google credentialResponse:",
+        credentialResponse
+      );
+      if (!tokenId) {
+        toast.error("Google did not return an ID token (credential).");
+        return;
+      }
 
-      const registerData = {
-        name: result.user.displayName,
-        email: result.user.email,
-        password: "firebase-user",
-        phone: "0000000000",
-        weddingVenue: "TBD",
-        country: "India",
-        city: "Mumbai",
-        weddingDate: new Date().toISOString().split("T")[0],
-        profile_image: result.user.photoURL || "",
-        coverImage: "",
-        role: "user",
-        provider: "google",
-        firebaseUid: result.user.uid,
-        captchaToken: "test-captcha-token",
-      };
-
-      const registerResponse = await userApi.register(registerData);
-
+      const authResponse = await userApi.googleAuth({ tokenId });
       if (
-        registerResponse.success &&
-        registerResponse.user &&
-        registerResponse.token
+        authResponse &&
+        authResponse.success &&
+        authResponse.user &&
+        authResponse.token
       ) {
         dispatch(
-          loginUser({
-            user: registerResponse.user,
-            token: registerResponse.token,
-          })
+          loginUser({ user: authResponse.user, token: authResponse.token })
         );
-        toast.success("Account created and login successful!");
+        toast.success("Login successful!");
         onClose();
         return;
       }
 
-      if (registerResponse.message?.includes("already exists")) {
-        const loginResponse = await userApi.login({
-          email: result.user.email,
-          password: "firebase-user",
-          captchaToken: "test-captcha-token",
-        });
-
-        if (
-          loginResponse.success &&
-          loginResponse.user &&
-          loginResponse.token
-        ) {
-          dispatch(
-            loginUser({ user: loginResponse.user, token: loginResponse.token })
-          );
-          toast.success("Login successful!");
-          onClose();
-          return;
-        }
-      }
-
-      const fallbackUser = {
-        id: result.user.uid,
-        name: result.user.displayName,
-        email: result.user.email,
-        photoURL: result.user.photoURL,
-        provider: "google",
-      };
-      dispatch(loginUser({ user: fallbackUser, token: firebaseToken }));
-      toast.warning("Login successful! (Some features may be limited)");
-      onClose();
+      toast.error(authResponse?.message || "Google login failed on server");
     } catch (err) {
-      toast.error("Google login failed: " + err.message);
+      console.error("DesignStudio Google login error:", err);
+      toast.error("Google login failed: " + (err.message || ""));
     } finally {
       setLoading(false);
     }
@@ -394,28 +353,15 @@ export default function LoginPopup({ isOpen, onClose }) {
                 </span>
               </div>
 
-              <button
-                type="button"
-                className="btn btn-outline-secondary w-100"
-                onClick={handleGoogleLogin}
-                style={{
-                  padding: "12px",
-                  fontSize: "15px",
-                  borderRadius: "8px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "10px",
-                }}
-              >
-                <img
-                  src="https://img.icons8.com/color/48/000000/google-logo.png"
-                  alt="Google Logo"
-                  width="24"
-                  height="24"
+              <div style={{ textAlign: "center", marginTop: "0.5rem" }}>
+                <GoogleLogin
+                  onSuccess={handleGoogleCredential}
+                  onError={() => {
+                    console.error("Google Login Failed: onError");
+                    toast.error("Google login failed. Please try again.");
+                  }}
                 />
-                <span>Continue with Google</span>
-              </button>
+              </div>
             </div>
           </div>
         </div>
