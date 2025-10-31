@@ -6,7 +6,6 @@ import { useSelector } from "react-redux";
 import { setCredentials } from "../../redux/authSlice";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { RiEyeCloseLine, RiEyeFill } from "react-icons/ri";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const CustomerRegister = () => {
@@ -63,32 +62,130 @@ const CustomerRegister = () => {
       .catch(() => setCities([]));
   }, [formData.country]);
 
+  const validateField = (name, value) => {
+    let error = "";
+
+    switch (name) {
+      case "name":
+        const nameRegex = /^([A-Za-z]{3,16})([ ]{0,1})([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})$/;
+        if (!value.trim()) {
+          error = "Full name is required";
+        } else if (!nameRegex.test(value)) {
+          error = "Name must contain 3-16 letters per word, spaces allowed";
+        }
+        break;
+
+      case "email":
+        const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+        if (!value.trim()) {
+          error = "Email is required";
+        } else if (!emailRegex.test(value)) {
+          error = "Please enter a valid email address";
+        }
+        break;
+
+      case "password":
+        const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+        if (!value) {
+          error = "Password is required";
+        } else if (!passwordRegex.test(value)) {
+          error = "Password must be 8+ chars with uppercase, lowercase, and number";
+        }
+        break;
+
+      case "phone":
+        if (!value.trim()) {
+          error = "Phone number is required";
+        } else if (!/^\d{10}$/.test(value)) {
+          error = "Phone number must be exactly 10 digits";
+        }
+        break;
+
+      case "weddingVenue":
+        if (!value.trim()) {
+          error = "Wedding venue is required";
+        }
+        break;
+
+      case "country":
+        if (!value) {
+          error = "Country is required";
+        }
+        break;
+
+      case "city":
+        if (!value) {
+          error = "City is required";
+        }
+        break;
+
+      case "weddingDate":
+        if (!value) {
+          error = "Wedding date is required";
+        } else {
+          const dateVal = new Date(value);
+          const year = dateVal.getFullYear();
+          if (!/^\d{4}$/.test(String(year))) {
+            error = "Year must be 4 digits";
+          }
+        }
+        break;
+    }
+
+    return error;
+  };
+
   const validate = () => {
     const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Full name is required";
+
+    const nameRegex = /^([A-Za-z]{3,16})([ ]{0,1})([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})$/;
+    if (!formData.name.trim()) {
+      newErrors.name = "Full name is required";
+    } else if (!nameRegex.test(formData.name)) {
+      newErrors.name = "Name must contain 3-16 letters per word, spaces allowed";
+    }
+
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    } else if (!emailRegex.test(formData.email)) {
       newErrors.email = "Please enter a valid email address";
     }
-    if (formData.password.length < 6)
-      newErrors.password = "Password must be at least 6 characters";
-    if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
-    else if (!/^\d{10}$/.test(formData.phone))
+
+    const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (!passwordRegex.test(formData.password)) {
+      newErrors.password = "Password must be 8+ chars with uppercase, lowercase, and number";
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    } else if (!/^\d{10}$/.test(formData.phone)) {
       newErrors.phone = "Phone number must be exactly 10 digits";
-    if (!formData.weddingDate)
+    }
+
+    if (!formData.weddingDate) {
       newErrors.weddingDate = "Wedding date is required";
-    else {
+    } else {
       const dateVal = new Date(formData.weddingDate);
       const year = dateVal.getFullYear();
       if (!/^\d{4}$/.test(String(year))) {
         newErrors.weddingDate = "Year must be 4 digits";
       }
     }
-    if (!formData.city) newErrors.city = "City is required";
-    if (!formData.country) newErrors.country = "Country is required";
-    if (!formData.weddingVenue.trim())
+
+    if (!formData.city) {
+      newErrors.city = "City is required";
+    }
+
+    if (!formData.country) {
+      newErrors.country = "Country is required";
+    }
+
+    if (!formData.weddingVenue.trim()) {
       newErrors.weddingVenue = "Wedding venue is required";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -97,7 +194,11 @@ const CustomerRegister = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
+
+    const fieldError = validateField(name, value);
+    if (fieldError) {
+      setErrors((prev) => ({ ...prev, [name]: fieldError }));
+    } else {
       setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[name];
@@ -144,7 +245,6 @@ const CustomerRegister = () => {
           toast.success("Registration successful!");
           navigate("/");
         } else {
-          // Check for mobile or email already exists
           const msg = data.message || "Registration failed";
           if (
             msg.toLowerCase().includes("mobile") &&
@@ -178,7 +278,6 @@ const CustomerRegister = () => {
     <div className="container py-5" style={{ maxWidth: "1200px" }}>
       <ToastContainer position="top-center" autoClose={3000} />
       <div className="row g-0 shadow-lg rounded-4 overflow-hidden bg-white">
-        {/* Left Image */}
         <div
           className="col-lg-5 d-none d-lg-block position-relative"
           style={{
@@ -197,7 +296,6 @@ const CustomerRegister = () => {
           </div>
         </div>
 
-        {/* Right Form */}
         <div className="col-lg-7 p-5">
           <div className="text-center mb-5">
             <h2 className="fw-bold text-dark mb-2">Wedding Registration</h2>
@@ -208,15 +306,13 @@ const CustomerRegister = () => {
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="row g-3 mb-4">
-              {/* Name */}
               <div className="col-md-6">
                 <div className="form-floating">
                   <input
                     type="text"
                     name="name"
-                    className={`form-control ${
-                      errors.name ? "is-invalid" : ""
-                    }`}
+                    className={`form-control ${errors.name ? "is-invalid" : ""
+                      }`}
                     placeholder="Full Name"
                     value={formData.name}
                     onChange={handleChange}
@@ -228,15 +324,13 @@ const CustomerRegister = () => {
                 </div>
               </div>
 
-              {/* Email */}
               <div className="col-md-6">
                 <div className="form-floating">
                   <input
                     type="email"
                     name="email"
-                    className={`form-control ${
-                      errors.email ? "is-invalid" : ""
-                    }`}
+                    className={`form-control ${errors.email ? "is-invalid" : ""
+                      }`}
                     placeholder="Email"
                     value={formData.email}
                     onChange={handleChange}
@@ -248,15 +342,13 @@ const CustomerRegister = () => {
                 </div>
               </div>
 
-              {/* Password */}
               <div className="col-md-6">
-                <div className="form-floating">
+                <div className="form-floating position-relative">
                   <input
                     type={passwordVisible ? "text" : "password"}
                     name="password"
-                    className={`form-control ${
-                      errors.password ? "is-invalid" : ""
-                    }`}
+                    className={`form-control ${errors.password ? "is-invalid" : ""
+                      }`}
                     placeholder="Password"
                     value={formData.password}
                     onChange={handleChange}
@@ -268,21 +360,12 @@ const CustomerRegister = () => {
                     onClick={togglePasswordVisibility}
                     style={{
                       zIndex: 9999,
-                      pointerEvents: "auto",
-                      background: "transparent",
-                      border: "none",
-                      padding: 0,
-                      marginRight:"10px"
+                      marginRight: "10px",
                     }}
                     aria-label={
                       passwordVisible ? "Hide password" : "Show password"
                     }
                   >
-                    <i
-                      className={`bi ${
-                        passwordVisible ? "bi-eye-slash" : "bi-eye"
-                      }`}
-                    ></i>
                     {passwordVisible ? <FaEye /> : <FaEyeSlash />}
                   </button>
                   {errors.password && (
@@ -291,7 +374,6 @@ const CustomerRegister = () => {
                 </div>
               </div>
 
-              {/* Phone */}
               <style jsx>
                 {`
                   .input-number::-webkit-inner-spin-button,
@@ -299,7 +381,6 @@ const CustomerRegister = () => {
                     -webkit-appearance: none;
                     margin: 0;
                   }
-
                   .input-number {
                     -moz-appearance: textfield;
                   }
@@ -310,9 +391,8 @@ const CustomerRegister = () => {
                   <input
                     type="number"
                     name="phone"
-                    className={`input-number form-control ${
-                      errors.phone ? "is-invalid" : ""
-                    }`}
+                    className={`input-number form-control ${errors.phone ? "is-invalid" : ""
+                      }`}
                     placeholder="Phone"
                     value={formData.phone}
                     onChange={handleChange}
@@ -327,15 +407,13 @@ const CustomerRegister = () => {
                 </div>
               </div>
 
-              {/* Wedding Venue */}
               <div className="col-md-6">
                 <div className="form-floating">
                   <input
                     type="text"
                     name="weddingVenue"
-                    className={`form-control ${
-                      errors.weddingVenue ? "is-invalid" : ""
-                    }`}
+                    className={`form-control ${errors.weddingVenue ? "is-invalid" : ""
+                      }`}
                     placeholder="Wedding Venue"
                     value={formData.weddingVenue}
                     onChange={handleChange}
@@ -349,14 +427,12 @@ const CustomerRegister = () => {
                 </div>
               </div>
 
-              {/* Country */}
               <div className="col-md-6">
                 <div className="form-floating">
                   <select
                     name="country"
-                    className={`form-select ${
-                      errors.country ? "is-invalid" : ""
-                    }`}
+                    className={`form-select ${errors.country ? "is-invalid" : ""
+                      }`}
                     value={formData.country}
                     onChange={handleChange}
                   >
@@ -374,7 +450,6 @@ const CustomerRegister = () => {
                 </div>
               </div>
 
-              {/* City */}
               <div className="col-md-6">
                 <div className="form-floating">
                   <select
@@ -397,15 +472,13 @@ const CustomerRegister = () => {
                 </div>
               </div>
 
-              {/* Wedding Date */}
               <div className="col-md-6">
                 <div className="form-floating">
                   <input
                     type="date"
                     name="weddingDate"
-                    className={`form-control ${
-                      errors.weddingDate ? "is-invalid" : ""
-                    }`}
+                    className={`form-control ${errors.weddingDate ? "is-invalid" : ""
+                      }`}
                     value={formData.weddingDate}
                     onChange={handleChange}
                   />

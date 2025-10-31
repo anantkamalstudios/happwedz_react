@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { FiUpload, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const BusinessClaimForm = () => {
   const { user, userToken: token } = useSelector((state) => state.auth);
+  const location = useLocation();
+  const isOnClaimPage = location.pathname === "/claim-your-buisness";
 
   const [expandedSections, setExpandedSections] = useState({
     policyholder: true,
@@ -546,15 +548,19 @@ const BusinessClaimForm = () => {
               Submit
             </button>
 
-            <hr />
-            <Link
-              to="/claim-your-buisness"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="d-flex primary-text text-center justify-content-center text-decoration-none"
-            >
-              Open Claim Form Separately
-            </Link>
+            {!isOnClaimPage && (
+              <>
+                <hr />
+                <Link
+                  to="/claim-your-buisness"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="d-flex primary-text text-center justify-content-center text-decoration-none"
+                >
+                  Open Claim Form Separately
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

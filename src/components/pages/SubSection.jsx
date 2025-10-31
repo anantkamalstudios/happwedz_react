@@ -141,7 +141,7 @@ const SubSection = () => {
     }
   }, [section, slug, typesWithCategories.length]);
 
-  useEffect(() => {}, [
+  useEffect(() => { }, [
     section,
     slug,
     title,
@@ -191,16 +191,9 @@ const SubSection = () => {
         onCityChange={handleCityChange}
       />
 
-      {loading && dataToSend.length === 0 && (
-        <div className="alert alert-info my-4 text-center">
-          <div className="spinner-border spinner-border-sm me-2" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
-          Loading {title}...
-        </div>
-      )}
-
-      {dataToSend.length === 0 ? (
+      {loading && dataToSend.length === 0 ? (
+        <Loader />
+      ) : dataToSend.length === 0 ? (
         <EmptyState section={section} title={title} />
       ) : (
         <>

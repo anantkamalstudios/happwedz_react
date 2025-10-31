@@ -11,6 +11,11 @@ import {
   Spinner,
   Alert,
 } from "react-bootstrap";
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { TextField } from '@mui/material';
+import dayjs from 'dayjs';
 import { setCredentials } from "../../../../redux/authSlice";
 
 const initialState = {
@@ -47,7 +52,6 @@ const UserProfile = ({ user, token }) => {
   });
   const [initialValues, setInitialValues] = useState(null);
 
-  // Initialize form data and initialValues from Redux state
   useEffect(() => {
     if (!effectiveUser || !userId) return;
 
@@ -87,19 +91,18 @@ const UserProfile = ({ user, token }) => {
     return formData.profileImage && typeof formData.profileImage !== "string"
       ? URL.createObjectURL(formData.profileImage)
       : typeof formData.profileImage === "string"
-      ? formData.profileImage
-      : "";
+        ? formData.profileImage
+        : "";
   }, [formData.profileImage]);
 
   const coverPreview = useMemo(() => {
     return formData.coverImage && typeof formData.coverImage !== "string"
       ? URL.createObjectURL(formData.coverImage)
       : typeof formData.coverImage === "string"
-      ? formData.coverImage
-      : "";
+        ? formData.coverImage
+        : "";
   }, [formData.coverImage]);
 
-  // Fetch user data from API (optional refresh)
   useEffect(() => {
     let didCancel = false;
     const fetchUser = async () => {
@@ -155,6 +158,11 @@ const UserProfile = ({ user, token }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleDateChange = (newDate) => {
+    const formattedDate = newDate ? dayjs(newDate).format('YYYY-MM-DD') : '';
+    setFormData((prev) => ({ ...prev, weddingDate: formattedDate }));
+  };
+
   const handleImageChange = (e) => {
     const { name, files } = e.target;
     if (!files || files.length === 0) return;
@@ -166,6 +174,26 @@ const UserProfile = ({ user, token }) => {
     const { name, value } = e.target;
     setPasswordFields((prev) => ({ ...prev, [name]: value }));
   };
+
+  // Check if passwords match
+  const passwordsMatch = useMemo(() => {
+    if (!passwordFields.newPassword || !passwordFields.confirmPassword) {
+      return null; // Not yet filled
+    }
+    return passwordFields.newPassword === passwordFields.confirmPassword;
+  }, [passwordFields.newPassword, passwordFields.confirmPassword]);
+
+  // Check if password change form is valid
+  const isPasswordFormValid = useMemo(() => {
+    if (!showChangePassword) return true; // Not changing password
+    return (
+      passwordFields.currentPassword &&
+      passwordFields.newPassword &&
+      passwordFields.newPassword.length >= 8 &&
+      passwordFields.confirmPassword &&
+      passwordFields.newPassword === passwordFields.confirmPassword
+    );
+  }, [showChangePassword, passwordFields]);
 
   const dispatch = useDispatch();
 
@@ -192,32 +220,63 @@ const UserProfile = ({ user, token }) => {
 
       const hasFiles = Boolean(
         (formData.profileImage && typeof formData.profileImage !== "string") ||
-          (formData.coverImage && typeof formData.coverImage !== "string")
+        (formData.coverImage && typeof formData.coverImage !== "string")
       );
       const isPasswordChange = Boolean(
         showChangePassword && passwordFields.newPassword
       );
 
       let res;
-      if (hasFiles || isPasswordChange) {
+
+      // Handle password change separately
+      if (isPasswordChange) {
+        const passwordBody = {
+          oldPassword: passwordFields.currentPassword,
+          newPassword: passwordFields.newPassword,
+        };
+
+        const passwordRes = await axios.put(
+          `https://happywedz.com/api/user/${userId}/change-password`,
+          passwordBody,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              ...(effectiveToken
+                ? { Authorization: `Bearer ${effectiveToken}` }
+                : {}),
+            },
+          }
+        );
+
+        // Show server response message
+        const serverMessage = passwordRes.data?.message || "Password changed successfully!";
+        setSuccess(serverMessage);
+        setPasswordFields({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+        setShowChangePassword(false);
+      }
+
+      // Handle profile update
+      if (hasFiles) {
         const body = new FormData();
         body.append("id", formData.id || "");
         body.append("name", formData.name || "");
         body.append("email", formData.email || "");
-        if (isPasswordChange)
-          body.append("password", passwordFields.newPassword);
         body.append("phone", formData.phone || "");
         body.append("role", formData.role || "user");
         body.append("weddingVenue", formData.weddingVenue || "");
         body.append("country", formData.country || "");
         body.append("city", formData.city || "");
         body.append("weddingDate", formData.weddingDate || "");
+
+        // Only append new images if they are File objects
         if (formData.profileImage && typeof formData.profileImage !== "string")
           body.append("profileImage", formData.profileImage);
         if (formData.coverImage && typeof formData.coverImage !== "string")
           body.append("coverImage", formData.coverImage);
-        if (isPasswordChange)
-          body.append("currentPassword", passwordFields.currentPassword);
 
         res = await axios.put(
           `https://happywedz.com/api/user/${userId}`,
@@ -230,7 +289,8 @@ const UserProfile = ({ user, token }) => {
             },
           }
         );
-      } else {
+      } else if (!isPasswordChange) {
+        // Only update profile fields if not just changing password
         const jsonBody = {
           id: formData.id || "",
           name: formData.name || "",
@@ -242,6 +302,14 @@ const UserProfile = ({ user, token }) => {
           city: formData.city || "",
           weddingDate: formData.weddingDate || "",
         };
+
+        // Only include images if they have valid URLs (not empty strings)
+        if (formData.profileImage && typeof formData.profileImage === "string") {
+          jsonBody.profileImage = formData.profileImage;
+        }
+        if (formData.coverImage && typeof formData.coverImage === "string") {
+          jsonBody.coverImage = formData.coverImage;
+        }
         res = await axios.put(
           `https://happywedz.com/api/user/${userId}`,
           jsonBody,
@@ -256,38 +324,64 @@ const UserProfile = ({ user, token }) => {
         );
       }
 
-      if (!res || res.status < 200 || res.status >= 300) {
-        throw new Error("Failed to save profile");
-      }
-      const updatedUser = res?.data?.user;
-      if (updatedUser) {
-        dispatch(setCredentials({ user: updatedUser, token: effectiveToken }));
-        setFormData((prev) => ({
-          ...prev,
-          name: updatedUser.name || prev.name,
-          email: updatedUser.email || prev.email,
-          phone: updatedUser.phone || prev.phone,
-          weddingVenue: updatedUser.weddingVenue || prev.weddingVenue,
-          country: updatedUser.country || prev.country,
-          city: updatedUser.city || prev.city,
-          weddingDate: updatedUser.weddingDate
-            ? String(updatedUser.weddingDate).slice(0, 10)
-            : prev.weddingDate,
-          profileImage: updatedUser.profileImage || prev.profileImage,
-          coverImage: updatedUser.coverImage || prev.coverImage,
-        }));
-      }
-      setSuccess("Profile saved successfully.");
+      if (res) {
+        if (res.status < 200 || res.status >= 300) {
+          throw new Error("Failed to save profile");
+        }
 
-      // Reset password fields after successful save
-      if (showChangePassword) {
-        setPasswordFields({
-          currentPassword: "",
-          newPassword: "",
-          confirmPassword: "",
-        });
-        setShowChangePassword(false);
+        // Update Redux store with new user data if available
+        if (res.data?.user) {
+          const updatedUser = res.data.user;
+          dispatch({
+            type: "UPDATE_USER",
+            payload: {
+              ...effectiveUser,
+              name: updatedUser.name || effectiveUser.name,
+              email: updatedUser.email || effectiveUser.email,
+              phone: updatedUser.phone || effectiveUser.phone,
+              weddingVenue: updatedUser.weddingVenue || effectiveUser.weddingVenue,
+              country: updatedUser.country || effectiveUser.country,
+              city: updatedUser.city || effectiveUser.city,
+              weddingDate: updatedUser.weddingDate || effectiveUser.weddingDate,
+              profileImage: updatedUser.profileImage || effectiveUser.profileImage,
+              coverImage: updatedUser.coverImage || effectiveUser.coverImage,
+            },
+          });
+
+          // Update local form data with all fields from response
+          setFormData(prev => ({
+            ...prev,
+            name: updatedUser.name || prev.name,
+            email: updatedUser.email || prev.email,
+            phone: updatedUser.phone || prev.phone,
+            weddingVenue: updatedUser.weddingVenue || prev.weddingVenue,
+            country: updatedUser.country || prev.country,
+            city: updatedUser.city || prev.city,
+            weddingDate: updatedUser.weddingDate
+              ? String(updatedUser.weddingDate).slice(0, 10)
+              : prev.weddingDate,
+            profileImage: updatedUser.profileImage || prev.profileImage,
+            coverImage: updatedUser.coverImage || prev.coverImage,
+          }));
+
+          // Update initialValues to reflect the saved state
+          setInitialValues({
+            name: updatedUser.name || "",
+            email: updatedUser.email || "",
+            phone: updatedUser.phone || "",
+            weddingVenue: updatedUser.weddingVenue || "",
+            country: updatedUser.country || "",
+            city: updatedUser.city || "",
+            weddingDate: updatedUser.weddingDate
+              ? String(updatedUser.weddingDate).slice(0, 10)
+              : "",
+          });
+        }
+
+        setSuccess("Profile updated successfully!");
       }
+
+      setError("");
     } catch (e) {
       setError(
         e?.response?.data?.message || e.message || "Failed to save profile"
@@ -307,9 +401,8 @@ const UserProfile = ({ user, token }) => {
                 height: "180px",
                 background:
                   coverPreview || formData.coverImage
-                    ? `url(${
-                        coverPreview || formData.coverImage
-                      }) center/cover no-repeat`
+                    ? `url(${coverPreview || formData.coverImage
+                    }) center/cover no-repeat`
                     : "linear-gradient(135deg, #fdf2f8 0%, #e9d5ff 100%)",
                 borderTopLeftRadius: "0.375rem",
                 borderTopRightRadius: "0.375rem",
@@ -409,11 +502,6 @@ const UserProfile = ({ user, token }) => {
                         placeholder="Enter your full name"
                         required
                       />
-                      {initialValues?.name ? (
-                        <div className="form-text">
-                          Previous: {initialValues.name}
-                        </div>
-                      ) : null}
                     </Form.Group>
                   </Col>
                   <Col md={6}>
@@ -425,13 +513,8 @@ const UserProfile = ({ user, token }) => {
                         value={formData.email}
                         onChange={handleChange}
                         placeholder="name@example.com"
-                        required
+                        disabled
                       />
-                      {initialValues?.email ? (
-                        <div className="form-text">
-                          Previous: {initialValues.email}
-                        </div>
-                      ) : null}
                     </Form.Group>
                   </Col>
 
@@ -445,27 +528,24 @@ const UserProfile = ({ user, token }) => {
                         onChange={handleChange}
                         placeholder="Enter phone number"
                       />
-                      {initialValues?.phone ? (
-                        <div className="form-text">
-                          Previous: {initialValues.phone}
-                        </div>
-                      ) : null}
                     </Form.Group>
                   </Col>
                   <Col md={6}>
                     <Form.Group controlId="weddingDate">
                       <Form.Label>Wedding Date</Form.Label>
-                      <Form.Control
-                        type="date"
-                        name="weddingDate"
-                        value={formData.weddingDate}
-                        onChange={handleChange}
-                      />
-                      {initialValues?.weddingDate ? (
-                        <div className="form-text">
-                          Previous: {initialValues.weddingDate}
-                        </div>
-                      ) : null}
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                          value={formData.weddingDate ? dayjs(formData.weddingDate) : null}
+                          onChange={handleDateChange}
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              size: 'small',
+                              placeholder: 'Select wedding date',
+                            },
+                          }}
+                        />
+                      </LocalizationProvider>
                     </Form.Group>
                   </Col>
 
@@ -479,11 +559,7 @@ const UserProfile = ({ user, token }) => {
                         onChange={handleChange}
                         placeholder="Country"
                       />
-                      {initialValues?.country ? (
-                        <div className="form-text">
-                          Previous: {initialValues.country}
-                        </div>
-                      ) : null}
+
                     </Form.Group>
                   </Col>
                   <Col md={3}>
@@ -496,11 +572,6 @@ const UserProfile = ({ user, token }) => {
                         onChange={handleChange}
                         placeholder="City"
                       />
-                      {initialValues?.city ? (
-                        <div className="form-text">
-                          Previous: {initialValues.city}
-                        </div>
-                      ) : null}
                     </Form.Group>
                   </Col>
                   <Col md={3}>
@@ -513,11 +584,6 @@ const UserProfile = ({ user, token }) => {
                         onChange={handleChange}
                         placeholder="Venue"
                       />
-                      {initialValues?.weddingVenue ? (
-                        <div className="form-text">
-                          Previous: {initialValues.weddingVenue}
-                        </div>
-                      ) : null}
                     </Form.Group>
                   </Col>
                   <Col xs={12} className="mt-2">
@@ -533,7 +599,7 @@ const UserProfile = ({ user, token }) => {
                   </Col>
 
                   {showChangePassword ? (
-                    <>
+                    <div className="d-flex flex-column gap-3">
                       <Col md={4}>
                         <Form.Group controlId="currentPassword">
                           <Form.Label>Current Password</Form.Label>
@@ -555,7 +621,11 @@ const UserProfile = ({ user, token }) => {
                             value={passwordFields.newPassword}
                             onChange={handlePasswordFieldChange}
                             placeholder="New password (min 8 chars)"
+                            isInvalid={passwordFields.newPassword && passwordFields.newPassword.length < 8}
                           />
+                          <Form.Control.Feedback type="invalid">
+                            Password must be at least 8 characters
+                          </Form.Control.Feedback>
                         </Form.Group>
                       </Col>
                       <Col md={4}>
@@ -567,15 +637,27 @@ const UserProfile = ({ user, token }) => {
                             value={passwordFields.confirmPassword}
                             onChange={handlePasswordFieldChange}
                             placeholder="Confirm new password"
+                            isValid={passwordsMatch === true}
+                            isInvalid={passwordsMatch === false}
                           />
+                          {passwordsMatch === false && (
+                            <Form.Control.Feedback type="invalid">
+                              Passwords do not match
+                            </Form.Control.Feedback>
+                          )}
+                          {passwordsMatch === true && (
+                            <Form.Control.Feedback type="valid">
+                              Passwords match ✓
+                            </Form.Control.Feedback>
+                          )}
                         </Form.Group>
                       </Col>
-                    </>
+                    </div>
                   ) : null}
 
                   <Col
                     xs={12}
-                    className="d-flex justify-content-end gap-2 mt-2"
+                    className="d-flex justify-content-end gap-2 mt-4"
                   >
                     <Button
                       variant="outline-secondary"
@@ -587,7 +669,7 @@ const UserProfile = ({ user, token }) => {
                     <Button
                       variant="primary"
                       type="submit"
-                      disabled={submitting}
+                      disabled={submitting || !isPasswordFormValid}
                     >
                       {submitting ? (
                         <>

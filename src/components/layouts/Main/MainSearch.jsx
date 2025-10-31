@@ -27,44 +27,6 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
   const city = cityParam || reduxLocation || null;
   const isVenuePage = location.pathname.includes("/venues");
 
-  // const dynamicTitle = useMemo(() => {
-  //   if (vendorType) {
-  //     const formattedVendorType = vendorType
-  //       .split(" ")
-  //       .map(
-  //         (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-  //       )
-  //       .join(" ");
-
-  //     if (city) {
-  //       return `${formattedVendorType} in ${city}`;
-  //     }
-  //     return formattedVendorType;
-  //   }
-
-  //   if (slug && slug.toLowerCase() === "all" && city) {
-  //     const pathSegments = location.pathname
-  //       .split("/")
-  //       .filter((segment) => segment);
-  //     if (pathSegments.length >= 2) {
-  //       const category = pathSegments[0];
-  //       const formattedCategory = category
-  //         .split(" ")
-  //         .map(
-  //           (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-  //         )
-  //         .join(" ");
-  //       return `${formattedCategory} in ${city}`;
-  //     }
-  //   }
-
-  //   if (city && !vendorType && !slug) {
-  //     return `Wedding Services in ${city}`;
-  //   }
-
-  //   return title || "Plan your perfect day";
-  // }, [vendorType, city, title, slug, location.pathname]);
-
   const dynamicTitle = useMemo(() => {
     if (vendorType) {
       const formattedVendorType = vendorType
@@ -112,18 +74,20 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
     }
 
     if (city && !vendorType && !slug) {
-      return `Wedding Services in ${city}`;
+      if (isVenuePage) {
+        return `Wedding Venues in ${city}`;
+      }
+      return `Wedding Vendors in ${city}`;
     }
 
     return title || "Plan your perfect day";
-  }, [vendorType, city, title, slug, location.pathname]);
+  }, [vendorType, city, title, slug, location.pathname, isVenuePage]);
 
   const placeholders = useMemo(() => {
     const section = (title || "").toLowerCase();
     let keywordPh = "";
     let subtitle = "";
 
-    // Get vendor type from either query param or slug
     const effectiveVendorType = vendorType || (slug && slug !== "all" ? slug.replace(/-/g, " ") : null);
 
     if (effectiveVendorType && city) {
@@ -188,7 +152,7 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
 
     const placePh = "City or locality";
     return { keywordPh, placePh, subtitle };
-  }, [title, vendorType, city]);
+  }, [title, vendorType, city, slug]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

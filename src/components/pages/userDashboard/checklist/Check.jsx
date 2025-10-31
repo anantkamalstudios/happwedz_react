@@ -12,6 +12,10 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from 'dayjs';
 
 const BASE_URL = "https://happywedz.com/api/new-checklist";
 const CATEGORY_API =
@@ -27,8 +31,23 @@ const Check = () => {
   const [vendorSubId, setVendorSubId] = useState("");
   const [categories, setCategories] = useState([]);
   const [startDate, setStartDate] = useState("");
-  const [weddingDate, setWeddingDate] = useState("");
+  // Initialize wedding date from Redux user data
+  const [weddingDate, setWeddingDate] = useState(
+    user?.weddingDate ? String(user.weddingDate).slice(0, 10) : ""
+  );
   const [loading, setLoading] = useState(false);
+
+  // Handler for start date change
+  const handleStartDateChange = (newDate) => {
+    const formattedDate = newDate ? dayjs(newDate).format('YYYY-MM-DD') : '';
+    setStartDate(formattedDate);
+  };
+
+  // Handler for wedding date change
+  const handleWeddingDateChange = (newDate) => {
+    const formattedDate = newDate ? dayjs(newDate).format('YYYY-MM-DD') : '';
+    setWeddingDate(formattedDate);
+  };
   const [refresh, setRefresh] = useState(false);
   const [error, setError] = useState(null);
   const [daysLeft, setDaysLeft] = useState(null);
@@ -84,6 +103,14 @@ const Check = () => {
       console.error("Error fetching categories:", err);
     }
   };
+
+  // Sync wedding date from Redux when user data changes
+  useEffect(() => {
+    if (user?.weddingDate) {
+      const formattedDate = String(user.weddingDate).slice(0, 10);
+      setWeddingDate(formattedDate);
+    }
+  }, [user?.weddingDate]);
 
   useEffect(() => {
     if (weddingDate) {
@@ -759,26 +786,40 @@ const Check = () => {
                     <FaCalendarAlt size={14} />
                     Start Date
                   </label>
-                  <input
-                    type="date"
-                    className="form-control"
-                    value={startDate}
-                    disabled={checklists.length > 0 && !!startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                  />
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      value={startDate ? dayjs(startDate) : null}
+                      onChange={handleStartDateChange}
+                      disabled={checklists.length > 0 && !!startDate}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          size: 'small',
+                          placeholder: 'Select start date',
+                        },
+                      }}
+                    />
+                  </LocalizationProvider>
                 </div>
                 <div className="date-input-group">
                   <label>
                     <FaHeart size={14} />
                     Wedding Date
                   </label>
-                  <input
-                    type="date"
-                    className="form-control"
-                    value={weddingDate}
-                    disabled={checklists.length > 0 && !!weddingDate}
-                    onChange={(e) => setWeddingDate(e.target.value)}
-                  />
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      value={weddingDate ? dayjs(weddingDate) : null}
+                      onChange={handleWeddingDateChange}
+                      disabled={checklists.length > 0 && !!weddingDate}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          size: 'small',
+                          placeholder: 'Select wedding date',
+                        },
+                      }}
+                    />
+                  </LocalizationProvider>
                 </div>
 
                 {daysLeft !== null && (
@@ -788,8 +829,8 @@ const Check = () => {
                       {daysLeft > 0
                         ? "Days Until Wedding"
                         : daysLeft === 0
-                        ? "Wedding Day!"
-                        : "Days Since Wedding"}
+                          ? "Wedding Day!"
+                          : "Days Since Wedding"}
                     </span>
                   </div>
                 )}
@@ -896,7 +937,7 @@ const Check = () => {
                           className="btn btn-add-task w-100"
                           onClick={addChecklist}
                         >
-                          <FaPlus className="me-1" /> Add
+                          <FaPlus className="me-1" />
                         </button>
                       </div>
                     </div>
@@ -939,11 +980,10 @@ const Check = () => {
                               <tr key={item.id}>
                                 <td className="text-center">
                                   <div
-                                    className={`status-icon ${
-                                      item.status === "completed"
-                                        ? "completed"
-                                        : "pending"
-                                    }`}
+                                    className={`status-icon ${item.status === "completed"
+                                      ? "completed"
+                                      : "pending"
+                                      }`}
                                     onClick={() =>
                                       toggleStatus(item.id, item.status)
                                     }
@@ -1011,16 +1051,16 @@ const Check = () => {
                                 <td>
                                   <div className="d-flex gap-2 justify-content-center">
                                     <button
-                                      className="action-btn btn-edit"
+                                      className="btn p-2 w-25 border rounded-circle"
                                       onClick={() => handleEdit(item.id)}
                                     >
-                                      <FiEdit size={16} />
+                                      <FiEdit size={15} />
                                     </button>
                                     <button
-                                      className="action-btn btn-delete"
+                                      className="btn p-2 w-25 border rounded-circle"
                                       onClick={() => deleteChecklist(item.id)}
                                     >
-                                      <FiTrash size={16} />
+                                      <FiTrash size={15} />
                                     </button>
                                   </div>
                                 </td>
@@ -1036,9 +1076,8 @@ const Check = () => {
                             {Array.from({ length: totalPages }, (_, i) => (
                               <li
                                 key={i + 1}
-                                className={`page-item ${
-                                  currentPage === i + 1 ? "active" : ""
-                                }`}
+                                className={`page-item ${currentPage === i + 1 ? "active" : ""
+                                  }`}
                               >
                                 <button
                                   onClick={() => paginate(i + 1)}

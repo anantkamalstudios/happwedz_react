@@ -25,11 +25,9 @@ const Wedding = () => {
   const [guestStats, setGuestStats] = useState({ total: 0, attending: 0 });
   const [taskStats, setTaskStats] = useState({ total: 0, completed: 0 });
 
-  // User state will be populated from an API call
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  // State for the countdown timer
   const [countdown, setCountdown] = useState({
     days: 0,
     hours: 0,
@@ -39,11 +37,9 @@ const Wedding = () => {
   const [vendorCategories, setVendorCategories] = useState([]);
   const [showAll, setShowAll] = useState(false);
 
-  // Get the token at the top level of the component
   const token = useSelector((state) => state.auth.token);
   const userId = useSelector((state) => state.auth.user?.id);
 
-  // Predefined icons for categories
   const iconMapping = [
     <Camera size={24} />,
     <Utensils size={24} />,
@@ -107,7 +103,6 @@ const Wedding = () => {
 
         let userInfo = parseJwt(token);
 
-        // Replace with your actual user profile API endpoint
         const response = await fetch(
           "https://happywedz.com/api/user/" + userInfo.id,
           {
@@ -150,7 +145,6 @@ const Wedding = () => {
           setGuestStats({ total: totalGuests, attending: attendingGuests });
         }
 
-        // Fetch Task Summary
         const tasksRes = await fetch(
           `https://happywedz.com/api/new-checklist/newChecklist/user/${userId}`,
           {
@@ -176,14 +170,10 @@ const Wedding = () => {
     fetchDashboardData();
   }, [token, userId]);
 
-  // Countdown Timer Logic
   useEffect(() => {
-    // my setup just uncomment below line
     if (!user?.weddingDate) return;
 
     const weddingDate = new Date(user.weddingDate);
-    // const weddingDate = new Date(2025, 9, 2);
-    // My static code
 
     const MILLISECONDS_IN_SECOND = 1000;
     const SECONDS_IN_MINUTE = 60;
@@ -195,7 +185,6 @@ const Wedding = () => {
 
     const calculateCountdown = () => {
       const now = new Date(Date.now());
-      // const difference = weddingDate.getTime() - now.getTime();
       const difference = weddingDate - now;
 
       if (difference > 0) {
@@ -210,7 +199,6 @@ const Wedding = () => {
     };
     calculateCountdown();
 
-    // Update the countdown every minute. Updating every second is unnecessary if not displaying seconds.
     const interval = setInterval(calculateCountdown, 60000); // 60000ms = 1 minute
 
     return () => clearInterval(interval);
@@ -254,7 +242,6 @@ const Wedding = () => {
       <div className="container py-4">
         <div className="card rounded-4 p-2 shadow-sm border-0 mb-4 overflow-hidden">
           <div className="row g-0">
-            {/* Left Side Image */}
             <div className="col-md-4 position-relative">
               <img
                 src="/images/userDashboard/home-wedding-image.avif"
@@ -281,7 +268,6 @@ const Wedding = () => {
               </div>
             </div>
 
-            {/* Right Side Content */}
             <div className="col-md-8 p-4 d-flex flex-column justify-content-center">
               <h4 className="fw-bold mb-2 text-dark">
                 Welcome,{" "}
@@ -340,7 +326,6 @@ const Wedding = () => {
           </div>
         </section>
 
-        {/* CTA Panel */}
         <section className="col-lg-12">
           <CtaPanel
             logo={logo}
@@ -354,7 +339,6 @@ const Wedding = () => {
           />
         </section>
 
-        {/* Upcoming, Guest List, Budget, E-invites, Get the app */}
         <section>
           <div
             style={{
@@ -373,7 +357,6 @@ const Wedding = () => {
                 padding: "0 2rem",
               }}
             >
-              {/* Question part */}
               <UpComingTask />
             </div>
             <div
@@ -385,10 +368,8 @@ const Wedding = () => {
                 height: "100%",
               }}
             >
-              {/* E-invites */}
               <EInvites />
             </div>
-            {/* add guest */}
             <div
               className="shadow-lg"
               style={{
@@ -412,7 +393,6 @@ const Wedding = () => {
                   height: "80%",
                 }}
               >
-                {/* logo */}
                 <div
                   style={{
                     height: "60px",
@@ -445,7 +425,6 @@ const Wedding = () => {
                 </Link>
               </div>
             </div>
-            {/* budget */}
             <div
               className="shadow-lg d-flex flex-column p-4"
               style={{
@@ -480,8 +459,8 @@ const Wedding = () => {
                     role="progressbar"
                     style={{
                       width: `${budget.total > 0
-                          ? (budget.spent / budget.total) * 100
-                          : 0
+                        ? (budget.spent / budget.total) * 100
+                        : 0
                         }%`,
                     }}
                     aria-valuenow={
@@ -519,7 +498,6 @@ const Wedding = () => {
                 alignItems: "center",
               }}
             >
-              {/* Get Our App Section */}
               <div
                 className="text-center"
                 style={{

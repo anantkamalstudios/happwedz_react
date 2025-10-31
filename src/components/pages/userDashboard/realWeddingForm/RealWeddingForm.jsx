@@ -22,7 +22,6 @@ const RealWeddingForm = ({ user, token }) => {
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("India");
   const [formData, setFormData] = useState({
-    // Basic Info
     title: "",
     slug: "",
     weddingDate: "",
@@ -30,39 +29,31 @@ const RealWeddingForm = ({ user, token }) => {
     city: "",
     venues: [],
 
-    // Couple Info
     brideName: "",
     brideBio: "",
     groomName: "",
     groomBio: "",
 
-    // Wedding Story
     story: "",
 
-    // Events
     events: [],
 
-    // Vendors
     vendors: [],
 
-    // Gallery
     coverPhoto: null,
     highlightPhotos: [],
     allPhotos: [],
 
-    // Highlights
     themes: [],
     brideOutfit: "",
     groomOutfit: "",
     specialMoments: "",
 
-    // Credits
     photographer: "",
     makeup: "",
     decor: "",
     additionalCredits: [],
 
-    // Publish
     status: "draft",
     featured: false,
   });
@@ -74,8 +65,7 @@ const RealWeddingForm = ({ user, token }) => {
     "Events",
     "Vendors",
     "Gallery",
-    "Highlights",
-    "Credits & Publish",
+    "Highlights & Credits",
   ];
 
   const handleInputChange = (e) => {
@@ -125,12 +115,6 @@ const RealWeddingForm = ({ user, token }) => {
     }));
   };
 
-  const handleReplaceItem = (field, index, newValue) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: prev[field].map((item, i) => (i === index ? newValue : item)),
-    }));
-  };
 
   const handleFilesAdd = (field, files) => {
     setFormData((prev) => {
@@ -158,7 +142,6 @@ const RealWeddingForm = ({ user, token }) => {
         const res = await axios.get("https://happywedz.com/api/vendor-types");
         setVendorTypes(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
-        // do not block form if vendor types fail
         console.error("Failed to load vendor types", err);
       }
     };
@@ -174,14 +157,30 @@ const RealWeddingForm = ({ user, token }) => {
       }
     };
 
+    const loadDraft = () => {
+      try {
+        const savedDraft = localStorage.getItem('weddingFormDraft');
+        if (savedDraft) {
+          const draftData = JSON.parse(savedDraft);
+          setFormData(prev => ({ ...prev, ...draftData }));
+        }
+      } catch (err) {
+        console.error('Error loading draft:', err);
+      }
+    };
 
     loadVendorTypes();
     loadCountries();
+    loadDraft();
   }, []);
 
   const nextStep = () => {
+    console.log('Next clicked. Current step:', currentStep, 'Total steps:', steps.length);
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
+      console.log('Moving to step:', currentStep + 1);
+    } else {
+      console.log('Already on last step, cannot go next');
     }
   };
 
@@ -191,18 +190,55 @@ const RealWeddingForm = ({ user, token }) => {
     }
   };
 
+  const saveDraft = () => {
+    try {
+      const draftData = {
+        ...formData,
+        coverPhoto: null,
+        highlightPhotos: [],
+        allPhotos: [],
+      };
+      localStorage.setItem('weddingFormDraft', JSON.stringify(draftData));
+      Swal.fire({
+        icon: 'success',
+        title: 'Draft Saved',
+        text: 'Your progress has been saved!',
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      console.error('Error saving draft:', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to save draft',
+      });
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    console.log('Form submitted on step:', currentStep);
+
+    if (currentStep !== steps.length - 1) {
+      console.error('Form submitted on wrong step! Current:', currentStep, 'Expected:', steps.length - 1);
+      Swal.fire({
+        icon: 'warning',
+        title: 'Please Complete All Steps',
+        text: 'Please navigate through all steps before submitting.',
+      });
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     const data = new FormData();
 
-    // Append all fields from formData to FormData object
     Object.keys(formData).forEach((key) => {
       const value = formData[key];
       if (key === "highlightPhotos" || key === "allPhotos") {
-        // Append photos individually as files
         (value || []).forEach((file) => {
           if (file instanceof File) data.append(key, file);
         });
@@ -213,7 +249,6 @@ const RealWeddingForm = ({ user, token }) => {
         return;
       }
       if (Array.isArray(value)) {
-        // Send non-file arrays as single JSON strings (backend-friendly)
         data.append(key, JSON.stringify(value));
         return;
       }
@@ -222,7 +257,6 @@ const RealWeddingForm = ({ user, token }) => {
       }
     });
 
-    // Force status to pending on Submit for Approval
     data.set("status", "pending");
 
     try {
@@ -253,7 +287,6 @@ const RealWeddingForm = ({ user, token }) => {
     }
   };
 
-  // Render the appropriate step component
   const renderStep = () => {
     switch (currentStep) {
       case 0:
@@ -310,18 +343,11 @@ const RealWeddingForm = ({ user, token }) => {
         );
       case 6:
         return (
-          <HighlightsStep
+          <HighlightsAndCreditsStep
             formData={formData}
             handleInputChange={handleInputChange}
             handleArrayChange={handleArrayChange}
             handleRemoveItem={handleRemoveItem}
-          />
-        );
-      case 7:
-        return (
-          <CreditsPublishStep
-            formData={formData}
-            handleInputChange={handleInputChange}
           />
         );
       default:
@@ -362,17 +388,22 @@ const RealWeddingForm = ({ user, token }) => {
         </div>
         <form
           onSubmit={handleSubmit}
+          onKeyPress={(e) => {
+            if (e.key === "Enter" && e.target.type !== "submit") {
+              e.preventDefault();
+              return false;
+            }
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              // Prevent accidental submit when pressing Enter in inputs
               const tag = e.target.tagName.toLowerCase();
               const type = e.target.getAttribute("type");
-              const isSubmit = type === "submit";
-              if (
-                !isSubmit &&
-                (tag === "input" || tag === "textarea" || tag === "select")
-              ) {
+              const isSubmitButton = type === "submit";
+
+              if (!isSubmitButton && (tag === "input" || tag === "textarea" || tag === "select")) {
                 e.preventDefault();
+                e.stopPropagation();
+                return false;
               }
             }
           }}
@@ -398,7 +429,7 @@ const RealWeddingForm = ({ user, token }) => {
               )}
 
               <div style={{ display: "flex", gap: "1rem" }}>
-                <button type="button" className="btn-draft">
+                <button type="button" className="btn-draft" onClick={saveDraft}>
                   Save Draft
                 </button>
 
@@ -408,9 +439,13 @@ const RealWeddingForm = ({ user, token }) => {
                   </button>
                 ) : (
                   <button
-                    type="submit"
+                    type="button"
                     className="btn-next"
                     disabled={isLoading}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleSubmit(e);
+                    }}
                   >
                     {isLoading ? (
                       <span
@@ -432,7 +467,6 @@ const RealWeddingForm = ({ user, token }) => {
   );
 };
 
-// Step Components
 const BasicInfoStep = ({
   formData,
   handleInputChange,
@@ -654,7 +688,6 @@ const WeddingStoryStep = ({ formData, handleInputChange }) => {
   );
 };
 
-// Small controlled creator for Events
 const EventCreator = ({ onAdd }) => {
   const [local, setLocal] = useState({
     name: "",
@@ -744,7 +777,6 @@ const EventCreator = ({ onAdd }) => {
   );
 };
 
-// Small controlled creator for Vendors
 const VendorCreator = ({ vendorTypes = [], onAdd }) => {
   const [local, setLocal] = useState({ typeId: "", type: "", name: "" });
   useEffect(() => {
@@ -875,7 +907,7 @@ const VendorsStep = ({
               <div key={index} className="vendor-card mb-3 p-3 border rounded">
                 <div className="d-flex justify-content-between align-items-center mb-2">
                   <h5 className="mb-0">
-                    {vendor.category}: {vendor.name}
+                    {vendor.type}: {vendor.name}
                   </h5>
                   <button
                     type="button"
@@ -1090,7 +1122,7 @@ const GalleryStep = ({
   );
 };
 
-const HighlightsStep = ({
+const HighlightsAndCreditsStep = ({
   formData,
   handleInputChange,
   handleArrayChange,
@@ -1172,13 +1204,9 @@ const HighlightsStep = ({
           placeholder="Share the most memorable moments from your wedding..."
         ></textarea>
       </div>
-    </div>
-  );
-};
 
-const CreditsPublishStep = ({ formData, handleInputChange }) => {
-  return (
-    <div className="form-card">
+      <div className="form-divider" style={{ margin: '2rem 0', borderTop: '2px solid #e0e0e0' }}></div>
+
       <h2 className="form-section-title">
         <FiUser /> Credits & Publish
       </h2>
@@ -1221,7 +1249,7 @@ const CreditsPublishStep = ({ formData, handleInputChange }) => {
         </div>
       </div>
 
-      <div className="form-divider"></div>
+      <div className="form-divider" style={{ margin: '1.5rem 0' }}></div>
 
       <div className="form-group">
         <label className="form-label d-block">Featured Wedding</label>
@@ -1241,5 +1269,6 @@ const CreditsPublishStep = ({ formData, handleInputChange }) => {
     </div>
   );
 };
+
 
 export default RealWeddingForm;

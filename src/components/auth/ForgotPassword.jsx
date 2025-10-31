@@ -425,7 +425,7 @@ const ForgotPassword = () => {
                     <FiLoader className="weddingwire-auth-spinner" />
                     Sending...
                   </span>
-                ) : "Send Reset Link"}
+                ) : "Send Reset OTP"}
               </button>
             </form>
 

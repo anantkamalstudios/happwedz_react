@@ -6,11 +6,10 @@ import { loginVendor, setVendorCredentials } from "../../redux/vendorAuthSlice";
 import vendorsAuthApi from "../../services/api/vendorAuthApi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { RiEyeCloseLine, RiEyeFill } from "react-icons/ri";
-import { FaEyeSlash } from "react-icons/fa";
-import { FaEye } from "react-icons/fa6";
+import { FaEyeSlash, FaEye } from "react-icons/fa";
 
 const API_BASE = "https://happywedz.com/api";
+
 const VendorRegister = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,7 +26,7 @@ const VendorRegister = () => {
 
   const [errors, setErrors] = useState({
     brandName: "",
-    vendorType: "", // Changed businessName to brandName to match the form
+    vendorType: "",
     email: "",
     password: "",
     phone: "",
@@ -60,7 +59,6 @@ const VendorRegister = () => {
       .catch(() => setCities([]));
   }, [formData.country]);
 
-  // Fetch vendor types
   useEffect(() => {
     axios
       .get(`${API_BASE}/vendor-types`)
@@ -74,13 +72,77 @@ const VendorRegister = () => {
       .catch((err) => console.error("Error fetching vendor types:", err));
   }, []);
 
-  // Handle form field changes
+  const validateField = (name, value) => {
+    let error = "";
+
+    switch (name) {
+      case "brandName":
+        if (!value.trim()) {
+          error = "Brand Name is required";
+        } else if (value.trim().length < 3) {
+          error = "Brand Name must be at least 3 characters";
+        }
+        break;
+
+      case "email":
+        const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+        if (!value.trim()) {
+          error = "Email is required";
+        } else if (!emailRegex.test(value)) {
+          error = "Please enter a valid email address";
+        }
+        break;
+
+      case "password":
+        const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+        if (!value) {
+          error = "Password is required";
+        } else if (!passwordRegex.test(value)) {
+          error = "Password must be 8+ chars with uppercase, lowercase, and number";
+        }
+        break;
+
+      case "phone":
+        if (!value.trim()) {
+          error = "Phone number is required";
+        } else if (!/^\d{10}$/.test(value)) {
+          error = "Phone number must be exactly 10 digits";
+        }
+        break;
+
+      case "vendorType":
+        if (!value) {
+          error = "Vendor Type is required";
+        }
+        break;
+
+      case "city":
+        if (!value) {
+          error = "City is required";
+        }
+        break;
+    }
+
+    return error;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
     });
+
+    const fieldError = validateField(name, value);
+    if (fieldError) {
+      setErrors((prev) => ({ ...prev, [name]: fieldError }));
+    } else {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -88,85 +150,68 @@ const VendorRegister = () => {
 
     let formErrors = {};
 
-    if (!formData.brandName.trim()) {
-      formErrors.brandName = "Brand Name is required.";
-      toast.error("Brand Name is required.");
-    }
+    const brandNameError = validateField("brandName", formData.brandName);
+    if (brandNameError) formErrors.brandName = brandNameError;
 
-    if (!formData.vendorType) {
-      formErrors.vendorType = "Vendor Type is required.";
-      toast.error("Vendor Type is required.");
-    }
+    const vendorTypeError = validateField("vendorType", formData.vendorType);
+    if (vendorTypeError) formErrors.vendorType = vendorTypeError;
 
-    if (!formData.email.trim()) {
-      formErrors.email = "Email is required.";
-      toast.error("Email is required.");
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      formErrors.email = "Invalid email address.";
-      toast.error("Invalid email address.");
-    }
+    const emailError = validateField("email", formData.email);
+    if (emailError) formErrors.email = emailError;
 
-    if (!formData.phone?.trim()) {
-      formErrors.phone = "Phone number is required.";
-      toast.error("Phone number is required.");
-    } else if (!/^\d{10}$/.test(formData.phone)) {
-      formErrors.phone = "Phone number must be exactly 10 digits.";
-      toast.error("Phone number must be exactly 10 digits.");
-    }
+    const passwordError = validateField("password", formData.password);
+    if (passwordError) formErrors.password = passwordError;
 
-    if (!formData.password.trim()) {
-      formErrors.password = "Password is required.";
-      toast.error("Password is required.");
-    }
+    const phoneError = validateField("phone", formData.phone);
+    if (phoneError) formErrors.phone = phoneError;
 
-    if (!formData.city) {
-      formErrors.city = "City is required.";
-      toast.error("City is required.");
-    }
+    const cityError = validateField("city", formData.city);
+    if (cityError) formErrors.city = cityError;
 
     setErrors(formErrors);
 
-    if (Object.keys(formErrors).length === 0) {
-      setIsSubmitting(true);
-      try {
-        // Submit logic here
-        const payload = {
-          businessName: formData.brandName,
-          email: formData.email,
-          password: formData.password,
-          phone: formData.phone,
-          city: formData.city,
-          vendor_type_id: formData.vendorType, // Send vendor type ID
-        };
+    if (Object.keys(formErrors).length > 0) {
+      const firstError = Object.values(formErrors)[0];
+      toast.error(firstError);
+      return;
+    }
 
-        const data = await vendorsAuthApi.register(payload);
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        businessName: formData.brandName,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+        city: formData.city,
+        vendor_type_id: formData.vendorType,
+      };
 
-        // Some backends return token on register, others don't.
-        const token = data?.data?.token || data?.token;
-        const vendor = data?.data?.vendor ||
-          data?.vendor || {
-            businessName: formData.brandName,
-            email: formData.email,
-            phone: formData.phone,
-            city: formData.city,
-            vendor_type_id: formData.vendorType,
-          };
+      const data = await vendorsAuthApi.register(payload);
 
-        if (token && vendor) {
-          dispatch(loginVendor({ token, vendor }));
-          navigate("/vendor-dashboard/vendor-home", { replace: true });
-        } else {
-          // If no token (likely verify email flow), send to login
-          navigate("/vendor-login", { replace: true });
-        }
-      } catch (err) {
-        const serverMsg =
-          err.response?.data?.message ||
-          err.message ||
-          "Registration failed. Please try again.";
-        toast.error(serverMsg);
-        setIsSubmitting(false);
+      const token = data?.data?.token || data?.token;
+      const vendor = data?.data?.vendor ||
+        data?.vendor || {
+        businessName: formData.brandName,
+        email: formData.email,
+        phone: formData.phone,
+        city: formData.city,
+        vendor_type_id: formData.vendorType,
+      };
+
+      if (token && vendor) {
+        dispatch(loginVendor({ token, vendor }));
+        navigate("/vendor-dashboard/vendor-home", { replace: true });
+      } else {
+        navigate("/vendor-login", { replace: true });
       }
+    } catch (err) {
+      const serverMsg =
+        err.response?.data?.message ||
+        err.message ||
+        "Registration failed. Please try again.";
+      toast.error(serverMsg);
+      setIsSubmitting(false);
     }
   };
 
@@ -175,7 +220,6 @@ const VendorRegister = () => {
       <ToastContainer position="top-center" autoClose={3000} />
       <div className="container py-5" style={{ maxWidth: "1200px" }}>
         <div className="row g-0 shadow-lg rounded-4 overflow-hidden bg-white">
-          {/* Left Image */}
           <div
             className="col-lg-5 d-none d-lg-block position-relative"
             style={{
@@ -195,7 +239,6 @@ const VendorRegister = () => {
             </div>
           </div>
 
-          {/* Right Form */}
           <div className="col-lg-7 p-5">
             <div className="text-center mb-5">
               <h2 className="fw-bold text-dark mb-2">Vendor Registration</h2>
@@ -207,36 +250,32 @@ const VendorRegister = () => {
 
             <form onSubmit={handleSubmit} noValidate>
               <div className="row g-3 mb-4">
-                {/* Brand Name */}
                 <div className="col-md-6">
                   <div className="form-floating">
                     <input
                       type="text"
                       id="brandName"
                       name="brandName"
-                      className={`form-control fs-16 ${
-                        errors.brandName ? "is-invalid" : ""
-                      }`}
+                      className={`form-control fs-16 ${errors.brandName ? "is-invalid" : ""
+                        }`}
                       placeholder="Brand Name"
                       value={formData.brandName}
                       onChange={handleChange}
                       required
                     />
-                    <label for="brandName">Brand Name</label>
+                    <label htmlFor="brandName">Brand Name</label>
                     {errors.brandName && (
                       <div className="invalid-feedback">{errors.brandName}</div>
                     )}
                   </div>
                 </div>
 
-                {/* Vendor Type */}
                 <div className="col-md-6">
                   <div className="form-floating">
                     <select
                       name="vendorType"
-                      className={`form-select fs-16 ${
-                        errors.vendorType ? "is-invalid" : ""
-                      }`}
+                      className={`form-select fs-16 ${errors.vendorType ? "is-invalid" : ""
+                        }`}
                       value={formData.vendorType}
                       onChange={handleChange}
                       required
@@ -251,9 +290,6 @@ const VendorRegister = () => {
                           {type.name}
                         </option>
                       ))}
-                      {/* <option value="wedding-planner fs-16">
-                      Wedding Planner
-                    </option> */}
                     </select>
                     <label>Vendor Type</label>
                     {errors.vendorType && (
@@ -264,15 +300,13 @@ const VendorRegister = () => {
                   </div>
                 </div>
 
-                {/* Email + City */}
                 <div className="col-md-6">
                   <div className="form-floating">
                     <input
                       type="email"
                       name="email"
-                      className={`form-control fs-16 ${
-                        errors.email ? "is-invalid" : ""
-                      }`}
+                      className={`form-control fs-16 ${errors.email ? "is-invalid" : ""
+                        }`}
                       placeholder="Email"
                       value={formData.email}
                       onChange={handleChange}
@@ -288,9 +322,8 @@ const VendorRegister = () => {
                   <div className="form-floating">
                     <select
                       name="city"
-                      className={`form-select fs-16 ${
-                        errors.city ? "is-invalid" : ""
-                      }`}
+                      className={`form-select fs-16 ${errors.city ? "is-invalid" : ""
+                        }`}
                       value={formData.city}
                       onChange={handleChange}
                     >
@@ -315,9 +348,8 @@ const VendorRegister = () => {
                     <input
                       type={passwordVisible ? "text" : "password"}
                       name="password"
-                      className={`form-control fs-16 ${
-                        errors.password ? "is-invalid" : ""
-                      }`}
+                      className={`form-control fs-16 ${errors.password ? "is-invalid" : ""
+                        }`}
                       placeholder="Password"
                       value={formData.password}
                       onChange={handleChange}
@@ -330,21 +362,12 @@ const VendorRegister = () => {
                       onClick={togglePasswordVisibility}
                       style={{
                         zIndex: 9999,
-                        pointerEvents: "auto",
-                        background: "transparent",
-                        border: "none",
-                        padding: 0,
-                        marginRight:"10px"
+                        marginRight: "10px",
                       }}
                       aria-label={
                         passwordVisible ? "Hide password" : "Show password"
                       }
                     >
-                      <i
-                        className={`bi ${
-                          passwordVisible ? "bi-eye-slash" : "bi-eye"
-                        }`}
-                      ></i>
                       {passwordVisible ? <FaEye /> : <FaEyeSlash />}
                     </button>
                     {errors.password && (
@@ -353,8 +376,6 @@ const VendorRegister = () => {
                   </div>
                 </div>
 
-                {/* Phone */}
-
                 <style jsx>
                   {`
                     .input-number::-webkit-inner-spin-button,
@@ -362,7 +383,6 @@ const VendorRegister = () => {
                       -webkit-appearance: none;
                       margin: 0;
                     }
-
                     .input-number {
                       -moz-appearance: textfield;
                     }
@@ -374,9 +394,8 @@ const VendorRegister = () => {
                     <input
                       type="number"
                       name="phone"
-                      className={`input-number form-control fs-16 ${
-                        errors.phone ? "is-invalid" : ""
-                      }`}
+                      className={`input-number form-control fs-16 ${errors.phone ? "is-invalid" : ""
+                        }`}
                       placeholder="Phone"
                       value={formData.phone}
                       onChange={handleChange}

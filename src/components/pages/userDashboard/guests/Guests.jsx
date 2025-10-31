@@ -39,28 +39,26 @@ const Guests = () => {
 
   const [formError, setFormError] = useState("");
   const [refresh, setRefresh] = useState(false);
+  const [availableGroups, setAvailableGroups] = useState([]);
+  const [newGroupName, setNewGroupName] = useState("");
 
   const statusOptions = ["Attending", "Not Attending", "Pending"];
   const typeOptions = ["Adult", "Child"];
   const menuOptions = ["Veg", "NonVeg", "All"];
 
-  // Create an Axios instance to automatically include the authorization header
   const axiosInstance = React.useMemo(() => {
     if (!token) return null;
 
-    // Check if this is a Firebase token (starts with eyJ) or backend token
     const isFirebaseToken = token.startsWith("eyJ") && token.includes(".");
 
     return axios.create({
       headers: {
         Authorization: `Bearer ${token}`,
-        // Add additional headers for Firebase tokens if needed
         ...(isFirebaseToken && { "X-Firebase-Token": "true" }),
       },
     });
   }, [token]);
 
-  // Fetch guests
   const fetchGuests = useCallback(async () => {
     if (!axiosInstance || !userId) {
       setLoading(false);
@@ -68,7 +66,6 @@ const Guests = () => {
     }
     setLoading(true);
     try {
-      // Check if userId is a Firebase UID (string) or backend ID (number)
       const userIdToSend = isNaN(userId) ? userId : parseInt(userId, 10);
 
       const res = await axiosInstance.get(
@@ -91,6 +88,42 @@ const Guests = () => {
   useEffect(() => {
     fetchGuests();
   }, [refresh, fetchGuests]);
+
+  useEffect(() => {
+    const savedGroups = localStorage.getItem('guestGroups');
+    if (savedGroups) {
+      try {
+        const groups = JSON.parse(savedGroups);
+        setAvailableGroups(groups);
+      } catch (error) {
+        console.error('Error loading groups from localStorage:', error);
+        setAvailableGroups([]);
+      }
+    }
+  }, []);
+
+  // Save groups to localStorage whenever they change
+  const saveGroupToLocalStorage = (groupName) => {
+    if (!groupName.trim()) return;
+
+    const savedGroups = localStorage.getItem('guestGroups');
+    let groups = [];
+
+    if (savedGroups) {
+      try {
+        groups = JSON.parse(savedGroups);
+      } catch (error) {
+        console.error('Error parsing groups:', error);
+      }
+    }
+
+    // Add new group if it doesn't exist
+    if (!groups.includes(groupName)) {
+      groups.push(groupName);
+      localStorage.setItem('guestGroups', JSON.stringify(groups));
+      setAvailableGroups(groups);
+    }
+  };
 
   // Create a unique list of groups from the guests for the filter dropdown
   const uniqueGroups = [
@@ -414,13 +447,19 @@ const Guests = () => {
               </div>
               <div className="col-md-4">
                 <label className="form-label">Group</label>
-                <input
+                <select
                   name="group"
-                  className="form-control"
-                  placeholder="e.g., Bride's Family"
+                  className="form-select"
                   value={newGuestForm.group}
                   onChange={handleFormChange}
-                />
+                >
+                  <option value="Other">Other</option>
+                  {availableGroups.map((group) => (
+                    <option key={group} value={group}>
+                      {group}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="col-md-4">
                 <label className="form-label">Type</label>
@@ -483,11 +522,11 @@ const Guests = () => {
         <div className="wgl-add-form">
           <h3 className="wgl-form-title">Create New Group</h3>
           <input
-            name="group"
+            name="newGroupName"
             className="wgl-form-input"
             placeholder="Group Name"
-            value={newGuestForm.group}
-            onChange={handleFormChange}
+            value={newGroupName}
+            onChange={(e) => setNewGroupName(e.target.value)}
           />
           <div className="wgl-form-actions">
             <button
@@ -498,8 +537,8 @@ const Guests = () => {
             </button>
             <button
               className="wgl-button wgl-button-save"
-              onClick={async () => {
-                if (!newGuestForm.group.trim()) {
+              onClick={() => {
+                if (!newGroupName.trim()) {
                   Swal.fire({
                     icon: "error",
                     text: "Please enter a group name",
@@ -508,37 +547,19 @@ const Guests = () => {
                   return;
                 }
 
-                try {
-                  const userIdToSend = isNaN(userId) ? userId : parseInt(userId, 10);
+                // Save group to localStorage
+                saveGroupToLocalStorage(newGroupName);
 
-                  const res = await axiosInstance.post(
-                    "https://happywedz.com/api/guestlist",
-                    {
-                      name: newGuestForm.group,
-                      userId: userIdToSend
-                    }
-                  );
+                Swal.fire({
+                  icon: "success",
+                  text: `Group "${newGroupName}" created successfully`,
+                  timer: 3000,
+                  confirmButtonText: "OK",
+                  confirmButtonColor: "#C31162"
+                });
 
-                  if (res.data?.success) {
-                    Swal.fire({
-                      icon: "success",
-                      text: `Group "${newGuestForm.group}" created successfully`,
-                      timer: 3000,
-                      confirmButtonText: "OK",
-                      confirmButtonColor: "#C31162"
-                    });
-                    setShowAddGroupForm(false);
-                    setNewGuestForm(initialGuestFormState);
-                    setRefresh((prev) => !prev);
-                  }
-                } catch (err) {
-                  console.error("Create Group Error:", err);
-                  Swal.fire({
-                    icon: "error",
-                    text: err.response?.data?.message || "Failed to create group",
-                    confirmButtonColor: "#C31162"
-                  });
-                }
+                setShowAddGroupForm(false);
+                setNewGroupName("");
               }}
             >
               Create Group
@@ -560,7 +581,8 @@ const Guests = () => {
             }}
           >
             <option value="All">All Groups</option>
-            {uniqueGroups.slice(1).map((group) => (
+            <option value="Other">Other</option>
+            {availableGroups.map((group) => (
               <option key={group} value={group}>{group}</option>
             ))}
           </select>
