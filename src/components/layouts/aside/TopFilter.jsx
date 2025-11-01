@@ -4,6 +4,7 @@ import { Dropdown, Form } from "react-bootstrap";
 import { CiFilter } from "react-icons/ci";
 import { FaChevronDown } from "react-icons/fa";
 import { MdClear } from "react-icons/md";
+import { MdCheck } from "react-icons/md";
 import ViewSwitcher from "../Main/ViewSwitcher";
 
 const TopFilter = ({
@@ -11,10 +12,13 @@ const TopFilter = ({
   setView,
   filters,
   activeFilters,
+  appliedFilters = {},
   onToggleFilter,
   onClearFilters,
+  onApplyFilters,
   isFilterActive,
   getActiveCount,
+  hasPendingChanges = false,
 }) => {
   const handleCheckbox = (group, value) => {
     onToggleFilter(group, value);
@@ -116,16 +120,27 @@ const TopFilter = ({
             )}
           </div>
 
-          {/* Cancel Button and View Switcher */}
+          {/* Apply Filters, Clear All Button and View Switcher */}
           <div className="d-flex align-items-center gap-2 ms-auto mt-2 mt-md-0">
             {isAnyFilterSelected && (
-              <button
-                className="btn btn-outline-danger btn-sm d-flex align-items-center gap-1"
-                onClick={clearFilters}
-              >
-                <MdClear size={18} />
-                Clear All
-              </button>
+              <>
+                {hasPendingChanges && onApplyFilters && (
+                  <button
+                    className="btn btn-primary btn-sm d-flex align-items-center gap-1"
+                    onClick={onApplyFilters}
+                  >
+                    <MdCheck size={18} />
+                    Apply
+                  </button>
+                )}
+                <button
+                  className="btn btn-outline-danger btn-sm d-flex align-items-center gap-1"
+                  onClick={clearFilters}
+                >
+                  <MdClear size={18} />
+                  Clear
+                </button>
+              </>
             )}
             <ViewSwitcher view={view} setView={setView} />
           </div>

@@ -167,6 +167,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                           className="fw-semibold text-dark"
                           style={{ fontSize: "13px" }}
                         >
+                          {/* {venue.rating || "0.0"} */}
                           {venue.rating || "0.0"}
                         </span>
                         <span

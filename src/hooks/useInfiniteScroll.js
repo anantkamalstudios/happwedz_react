@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { extractPriceFilters } from "../utils/priceFilterUtils";
 
 const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
 
@@ -38,8 +39,8 @@ const useInfiniteScroll = (
 
       const portfolioUrls = attributes.Portfolio
         ? attributes.Portfolio.split("|")
-            .map((url) => url.trim())
-            .filter((url) => url)
+          .map((url) => url.trim())
+          .filter((url) => url)
         : [];
       const gallery = media.length > 0 ? media : portfolioUrls;
       const firstImage = gallery.length > 0 ? gallery[0] : null;
@@ -108,10 +109,10 @@ const useInfiniteScroll = (
           : null,
         starting_price: !isVenue
           ? photoPackage ||
-            photoVideoPackage ||
-            attributes.PriceRange ||
-            attributes.price ||
-            null
+          photoVideoPackage ||
+          attributes.PriceRange ||
+          attributes.price ||
+          null
           : null,
 
         address: attributes.address || attributes.Address || "",
@@ -168,12 +169,12 @@ const useInfiniteScroll = (
       try {
         const subCategory = slug
           ? slug
-              .replace(/-{2,}/g, " / ")
-              .replace(/-/g, " ")
-              .replace(/\s*\/\s*/g, " / ")
-              .replace(/\s{2,}/g, " ")
-              .replace(/\b\w/g, (l) => l.toUpperCase())
-              .trim()
+            .replace(/-{2,}/g, " / ")
+            .replace(/-/g, " ")
+            .replace(/\s*\/\s*/g, " / ")
+            .replace(/\s{2,}/g, " ")
+            .replace(/\b\w/g, (l) => l.toUpperCase())
+            .trim()
           : null;
 
         const params = new URLSearchParams();
@@ -191,8 +192,41 @@ const useInfiniteScroll = (
         params.append("page", pageNum.toString());
         params.append("limit", limit.toString());
 
-        if (filtersRef.current && Object.keys(filtersRef.current).length > 0) {
-          params.append("filters", JSON.stringify(filtersRef.current));
+        // Extract price filters and add as minPrice/maxPrice query params
+        const { minPrice, maxPrice } = extractPriceFilters(filtersRef.current);
+        if (minPrice !== null && minPrice !== undefined) {
+          params.append("minPrice", minPrice.toString());
+        }
+        if (maxPrice !== null && maxPrice !== undefined) {
+          params.append("maxPrice", maxPrice.toString());
+        }
+
+        // Add other filters as JSON (excluding price filters)
+        const nonPriceFilters = { ...filtersRef.current };
+        // Remove price-related keys from filters JSON
+        Object.keys(nonPriceFilters).forEach((key) => {
+          const lowerKey = key.toLowerCase();
+          if (
+            lowerKey.includes("price") ||
+            lowerKey === "prices" ||
+            lowerKey === "pricing" ||
+            lowerKey.includes("bridal price") ||
+            lowerKey.includes("package price") ||
+            lowerKey.includes("price per plate") ||
+            lowerKey.includes("price per kg") ||
+            lowerKey.includes("price range") ||
+            lowerKey.includes("starting price") ||
+            lowerKey.includes("decor price") ||
+            lowerKey.includes("home function decor") ||
+            lowerKey.includes("physical invite price") ||
+            lowerKey.includes("pricing for 200 guests")
+          ) {
+            delete nonPriceFilters[key];
+          }
+        });
+
+        if (nonPriceFilters && Object.keys(nonPriceFilters).length > 0) {
+          params.append("filters", JSON.stringify(nonPriceFilters));
         }
 
         const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
@@ -234,8 +268,8 @@ const useInfiniteScroll = (
         const itemsRaw = Array.isArray(result)
           ? result
           : Array.isArray(result.data)
-          ? result.data
-          : [];
+            ? result.data
+            : [];
 
         const transformed = transformApiData(itemsRaw);
 
@@ -310,11 +344,12 @@ const useInfiniteScroll = (
     loadedPagesRef.current.clear();
   }, []);
 
-  // Initial load
+  // Initial load - reset and fetch when section, slug, city, vendorType, or filters change
   useEffect(() => {
     reset();
     fetchData(1, initialLimit);
-  }, [section, slug, city, vendorType, reset, fetchData, initialLimit]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [section, slug, city, vendorType, JSON.stringify(filters)]);
 
   // Cleanup
   useEffect(() => {

@@ -37,7 +37,7 @@ const FILTER_CONFIG = {
   },
 
   "wedding-planners": {
-    prices: ["<2 lakhs", "2 lakhs-3 lakhs", "3 lakhs-5 lakhs", "5 lakhs+"],
+    prices: ["<200,000", "200,000-300,000", "300,000-500,000", "500,000+"],
     rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
     "review Count": ["<5 reviews", "5+ reviews", "15+ reviews", "30+ reviews"],
     award: ["users' choice awards winner"],
