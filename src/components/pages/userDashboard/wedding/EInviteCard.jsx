@@ -11,7 +11,7 @@ const EInviteCard = () => {
       {/* Image */}
       <div style={{ width: "100%", height: "350px", overflow: "hidden" }}>
         <img
-          src="https://images.unsplash.com/photo-1750836054429-4cfdf40b32f1?q=80&w=694&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          src="/images/userDashboard/eInvite-img.jpg"
           alt="E-Invite"
           style={{
             width: "100%",
@@ -54,11 +54,10 @@ const EInviteCard = () => {
 
         <Link to="/einvites">
           <button
-            className="btn fw-bold mt-4"
+            className="btn fw-bold mt-4 rounded-3"
             style={{
               backgroundColor: "#C31162",
               color: "#fff",
-              borderRadius: "25px",
               padding: "10px 30px",
             }}
           >

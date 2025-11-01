@@ -16060,7 +16060,7 @@ input:checked + .slider:before {
 .try-first-page-hero {
   position: relative;
   min-height: 90vh;
-  background-image: url("/images/try/trybgimage.png");
+  /* background-image: url("/images/try/trybgimage.png"); */
   background-size: cover;
   background-position: center;
   background-attachment: fixed;

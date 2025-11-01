@@ -180,7 +180,7 @@ const QuotationModal = ({ show, onClose, lead, vendorToken }) => {
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     price: "",
-    service: "", // Holds the single service string from the input
+    servicesIncluded: "", // Holds the single service string from the input
     date: "",
     message: "",
   });
@@ -211,7 +211,7 @@ const QuotationModal = ({ show, onClose, lead, vendorToken }) => {
       // CRITICAL FIX: Sending 'services' as an array of strings
       const payload = {
         price: formData.price,
-        services: [formData.service.trim()],
+        servicesIncluded: [formData.servicesIncluded.trim()],
         validTill: formData.date,
         message: formData.message,
         userId: lead.request.user?.id,
@@ -303,8 +303,8 @@ const QuotationModal = ({ show, onClose, lead, vendorToken }) => {
               <div className="mb-3">
                 <label className="form-label">Services</label>
                 <input
-                  name="service"
-                  value={formData.service}
+                  name="servicesIncluded"
+                  value={formData.servicesIncluded}
                   onChange={handleChange}
                   type="text"
                   className="form-control"

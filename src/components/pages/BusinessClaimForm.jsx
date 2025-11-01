@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { FiUpload, FiChevronDown, FiChevronUp } from "react-icons/fi";
+import { IoClose } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
 
-const BusinessClaimForm = () => {
+const BusinessClaimForm = ({ setShowClaimForm }) => {
   const { user, userToken: token } = useSelector((state) => state.auth);
   const location = useLocation();
   const isOnClaimPage = location.pathname === "/claim-your-buisness";
@@ -172,11 +173,18 @@ const BusinessClaimForm = () => {
   return (
     <>
       <div className="container">
-        <div className="claim-business-card">
+        <div className="claim-business-card position-relative">
           <h1 className="claim-business-title">Business Claim Form</h1>
           <p className="claim-business-subtitle">
             Please take a moment to fill out this form in complete detail.
           </p>
+
+          <div
+            style={{ position: "absolute", top: 10, right: 10 }}
+            onClick={() => setShowClaimForm(false)}
+          >
+            <IoClose size={30} style={{ color: "#000", cursor: "pointer" }} />
+          </div>
 
           <div>
             {/* Policyholder Information */}

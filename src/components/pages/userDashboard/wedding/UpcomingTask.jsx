@@ -131,7 +131,8 @@ const UpComingTask = () => {
           </p>
           <Link
             to="/user-dashboard/checklist"
-            className="btn btn-primary rounded-3 px-4"
+            className="btn rounded-3 px-4"
+            style={{ background: "#C31162", color: "#fff" }}
           >
             <BsPlusLg className="me-2" /> Create Your Checklist
           </Link>

@@ -141,7 +141,7 @@ const SubSection = () => {
     }
   }, [section, slug, typesWithCategories.length]);
 
-  useEffect(() => { }, [
+  useEffect(() => {}, [
     section,
     slug,
     title,

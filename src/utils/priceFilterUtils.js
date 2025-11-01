@@ -1,0 +1,166 @@
+export const parsePriceRange = (rangeString) => {
+    if (!rangeString || typeof rangeString !== "string") {
+        return null;
+    }
+
+    // Remove commas and convert to lowercase
+    const cleanRange = rangeString.replace(/,/g, "").trim().toLowerCase();
+
+    // Handle "less than" or "under" ranges
+    if (cleanRange.startsWith("<") || cleanRange.startsWith("under")) {
+        const value = parseInt(cleanRange.replace(/[^0-9]/g, ""));
+        if (!isNaN(value) && value > 0) {
+            return { min: null, max: value - 1 }; // max is exclusive, so subtract 1
+        }
+        return null;
+    }
+
+    // Handle "greater than" ranges with +
+    if (cleanRange.includes("+")) {
+        const value = parseInt(cleanRange.replace(/[^0-9]/g, ""));
+        if (!isNaN(value) && value > 0) {
+            return { min: value, max: null };
+        }
+        return null;
+    }
+
+    // Handle range with dash or hyphen
+    if (cleanRange.includes("-")) {
+        const parts = cleanRange.split("-").map((p) => {
+            // Handle cases like "1,00,000-2,00,000" or "1,20,000"
+            const cleaned = p.trim().replace(/[^0-9]/g, "");
+            return parseInt(cleaned);
+        });
+
+        if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+            // Ensure min <= max
+            const min = Math.min(parts[0], parts[1]);
+            const max = Math.max(parts[0], parts[1]);
+            return { min, max };
+        }
+
+        // Try to parse as single value if split didn't work well
+        const singleValue = parseInt(cleanRange.replace(/[^0-9]/g, ""));
+        if (!isNaN(singleValue) && singleValue > 0) {
+            return { min: null, max: singleValue };
+        }
+
+        return null;
+    }
+
+    // Handle single value (treated as max)
+    const value = parseInt(cleanRange.replace(/[^0-9]/g, ""));
+    if (!isNaN(value) && value > 0) {
+        return { min: null, max: value };
+    }
+
+    return null;
+};
+
+/**
+ * Extract price filters from activeFilters and calculate overall min/max
+ * @param {Object} activeFilters - Active filters object from useFilters hook
+ * @returns {Object} - { minPrice: number | null, maxPrice: number | null }
+ */
+export const extractPriceFilters = (activeFilters) => {
+    if (!activeFilters || typeof activeFilters !== "object") {
+        return { minPrice: null, maxPrice: null };
+    }
+
+    const priceRanges = [];
+
+    // Find all price-related filter keys
+    const priceKeys = Object.keys(activeFilters).filter((key) => {
+        const lowerKey = key.toLowerCase();
+        return (
+            lowerKey.includes("price") ||
+            lowerKey === "prices" ||
+            lowerKey === "pricing" ||
+            lowerKey.includes("bridal price") ||
+            lowerKey.includes("package price") ||
+            lowerKey.includes("price per plate") ||
+            lowerKey.includes("price per kg") ||
+            lowerKey.includes("price range") ||
+            lowerKey.includes("starting price") ||
+            lowerKey.includes("decor price") ||
+            lowerKey.includes("home function decor") ||
+            lowerKey.includes("physical invite price") ||
+            lowerKey.includes("pricing for 200 guests")
+        );
+    });
+
+    // Parse all price range values
+    priceKeys.forEach((key) => {
+        const values = activeFilters[key];
+        if (Array.isArray(values)) {
+            values.forEach((value) => {
+                const parsed = parsePriceRange(value);
+                if (parsed) {
+                    priceRanges.push(parsed);
+                }
+            });
+        }
+    });
+
+    if (priceRanges.length === 0) {
+        return { minPrice: null, maxPrice: null };
+    }
+
+    // Calculate overall min and max from all selected ranges
+    // When multiple ranges are selected, we use UNION logic (bounding box)
+    // that covers all selected ranges. This allows vendors matching any of the ranges.
+    let minPrice = null;
+    let maxPrice = null;
+
+    const validMins = priceRanges
+        .map((r) => r.min)
+        .filter((m) => m !== null && m !== undefined);
+    const validMaxs = priceRanges
+        .map((r) => r.max)
+        .filter((m) => m !== null && m !== undefined);
+
+    // For UNION: use the lowest min and highest max to cover all ranges
+    if (validMins.length > 0) {
+        // Use the lowest min (least restrictive lower bound to cover all ranges)
+        minPrice = Math.min(...validMins);
+    }
+
+    if (validMaxs.length > 0) {
+        // Use the highest max (least restrictive upper bound to cover all ranges)
+        maxPrice = Math.max(...validMaxs);
+    }
+
+    // Special case: if we have ranges with only max (e.g., "<40,000") and ranges with only min (e.g., "1,60,000+")
+    // We should include both, so minPrice can be 0 if we have any max-only ranges
+    const hasMaxOnlyRanges = priceRanges.some(
+        (r) => r.min === null && r.max !== null
+    );
+    const hasMinOnlyRanges = priceRanges.some(
+        (r) => r.min !== null && r.max === null
+    );
+
+    // If we have both max-only and min-only ranges, we want everything, so don't filter
+    if (
+        hasMaxOnlyRanges &&
+        hasMinOnlyRanges &&
+        validMins.length > 0 &&
+        validMaxs.length > 0
+    ) {
+        // Check if the ranges overlap
+        const lowestMax = Math.min(...validMaxs);
+        const highestMin = Math.max(...validMins);
+
+        // If they don't overlap (e.g., max=40000 and min=160000), return null to show all
+        if (lowestMax < highestMin) {
+            return { minPrice: null, maxPrice: null };
+        }
+    }
+
+    // If we have both min and max, ensure min <= max
+    if (minPrice !== null && maxPrice !== null && minPrice > maxPrice) {
+        // Invalid range, return null to skip price filtering
+        return { minPrice: null, maxPrice: null };
+    }
+
+    return { minPrice, maxPrice };
+};

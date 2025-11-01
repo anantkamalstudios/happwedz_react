@@ -1,18 +1,28 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { removeFavorite } from "../../../redux/favoriteSlice";
+import { addFavorite, removeFavorite } from "../../../redux/favoriteSlice";
 import { IoClose } from "react-icons/io5";
-import { AiFillHeart } from "react-icons/ai";
+import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 
 export default function FavouriteListPopup({
   setShowPopup,
   appliedProductsObj,
+  onRemoveApplied,
+  activeList,
 }) {
   const dispatch = useDispatch();
   const favorites = useSelector((store) => store.favorites?.favorites) || [];
-  const [activeTab, setActiveTab] = useState("favourite"); // 'current' or 'favourite'
+  const [activeTab, setActiveTab] = useState(
+    activeList === "Complete Look" ? "current" : "favourite"
+  );
   const [showEmailPopUp, setShowEmailPopUp] = useState(false);
   const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    if (activeList === "Complete Look") {
+      setActiveTab("current");
+    }
+  }, [activeList]);
 
   const appliedProducts = useMemo(() => {
     if (appliedProductsObj && typeof appliedProductsObj === "object") {
@@ -47,7 +57,6 @@ export default function FavouriteListPopup({
           background: "#fce4ec",
           width: "100%",
           maxWidth: "700px",
-          borderRadius: "12px",
           boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
           overflow: "hidden",
           position: "relative",
@@ -80,7 +89,7 @@ export default function FavouriteListPopup({
               transition: "all 0.2s ease",
             }}
           >
-            CURRENT APPLIED PRODUCT
+            CURRENT LOOK
           </button>
           <button
             onClick={() => setActiveTab("favourite")}
@@ -118,7 +127,6 @@ export default function FavouriteListPopup({
           </div>
         </div>
 
-        {/* Content */}
         <div
           style={{
             padding: "20px",
@@ -127,7 +135,7 @@ export default function FavouriteListPopup({
             minHeight: "300px",
           }}
         >
-          {currentData.length === 0 ? (
+          {activeList === "Complete Look" && currentData.length === 0 ? (
             <div
               style={{
                 textAlign: "center",
@@ -141,149 +149,184 @@ export default function FavouriteListPopup({
                 : "No favorites yet. Start adding products to your favorites!"}
             </div>
           ) : (
-            currentData.map((item) => (
-              <div
-                key={item.id}
-                style={{
-                  display: "flex",
-                  background: "#f8b4d4",
-                  borderRadius: "12px",
-                  marginBottom: "15px",
-                  padding: "12px",
-                  alignItems: "center",
-                  position: "relative",
-                }}
-              >
-                {/* Top-right cross button */}
-                <button
-                  onClick={() => {
-                    dispatch(removeFavorite(item.id));
-                  }}
-                  style={{
-                    position: "absolute",
-                    top: "8px",
-                    right: "8px",
-                    width: "24px",
-                    height: "24px",
-                    border: "none",
-                    borderRadius: "50%",
-                    background: "white",
-                    color: "#d81b60",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                    fontSize: "18px",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    padding: 0,
-                    lineHeight: 1,
-                  }}
-                >
-                  ×
-                </button>
-
+            currentData.map((item) => {
+              const isFavorited = favorites.some(
+                (fav) => fav.id === (item?.id ?? item?.productId)
+              );
+              return (
                 <div
+                  key={item.productId || item.id}
                   style={{
-                    width: "clamp(50px, 15vw, 60px)",
-                    height: "clamp(50px, 15vw, 60px)",
+                    display: "flex",
+                    background: "#f8b4d4",
+                    borderRadius: "12px",
+                    marginBottom: "15px",
+                    padding: "12px",
+                    alignItems: "center",
                     position: "relative",
-                    backgroundColor: "white",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                    flexShrink: 0,
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
                   }}
                 >
-                  <img
-                    src={item?.product_real_image}
-                    alt="product"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                  {/* Heart Icon */}
+                  {/* Top-right cross button */}
                   <button
-                    // onClick={handleClick}
+                    onClick={() => {
+                      if (activeTab === "current") {
+                        if (onRemoveApplied && item?.categoryName) {
+                          onRemoveApplied(item.categoryName);
+                        }
+                      } else {
+                        dispatch(removeFavorite(item.id));
+                      }
+                    }}
                     style={{
                       position: "absolute",
-                      top: "0px",
-                      right: "0px",
-                      width: "clamp(20px, 4vw, 24px)",
-                      height: "clamp(20px, 4vw, 24px)",
-                      borderRadius: "50%",
+                      top: "8px",
+                      right: "8px",
+                      width: "24px",
+                      height: "24px",
                       border: "none",
-                      backgroundColor: "rgba(255,255,255,0.8)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      borderRadius: "50%",
+                      background: "white",
+                      color: "#d81b60",
                       cursor: "pointer",
-                      padding: 0,
-                    }}
-                  >
-                    {/* {isFavorited ? ( */}
-                    <AiFillHeart color="red" size={16} />
-                    {/* ) : ( */}
-                    {/* <AiOutlineHeart color="#ccc" size={16} /> */}
-                    {/* )} */}
-                  </button>
-                </div>
-
-                {/* Right Side */}
-                <div
-                  style={{ flex: 1, display: "flex", flexDirection: "column" }}
-                >
-                  {/* Details */}
-                  <div
-                    style={{
-                      fontSize: "13px",
-                      color: "#000",
-                      fontWeight: "500",
-                      marginBottom: "12px",
-                      lineHeight: "1.3",
-                    }}
-                  >
-                    {item.description}
-                  </div>
-
-                  {/* Bottom row: price left, button right */}
-                  <div
-                    style={{
+                      fontWeight: "bold",
+                      fontSize: "18px",
                       display: "flex",
-                      justifyContent: "space-between",
+                      justifyContent: "center",
                       alignItems: "center",
+                      padding: 0,
+                      lineHeight: 1,
                     }}
                   >
-                    <div
-                      style={{
-                        fontSize: "16px",
-                        fontWeight: "700",
-                        color: "#000",
-                      }}
-                    >
-                      {item.price}
-                    </div>
+                    ×
+                  </button>
 
-                    <button
+                  <div
+                    style={{
+                      width: "clamp(50px, 15vw, 60px)",
+                      height: "clamp(50px, 15vw, 60px)",
+                      position: "relative",
+                      backgroundColor: "white",
+                      borderRadius: "8px",
+                      overflow: "hidden",
+                      flexShrink: 0,
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                    }}
+                  >
+                    <img
+                      src={item?.product_real_image}
+                      alt="product"
                       style={{
-                        background: "white",
-                        color: "#d81b60",
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                    {/* Heart Icon */}
+                    <button
+                      onClick={() => {
+                        const favId = item?.id ?? item?.productId;
+                        if (!favId) return;
+                        if (isFavorited) {
+                          dispatch(removeFavorite(favId));
+                        } else {
+                          const toAdd = item?.id
+                            ? {
+                                ...item,
+                                description: item.product_name,
+                              }
+                            : {
+                                id: item.productId,
+                                product_real_image: item.product_real_image,
+                                product_name: item.product_name,
+                                description: item.product_name,
+                                price: item.price,
+                              };
+                          dispatch(addFavorite(toAdd));
+                        }
+                      }}
+                      style={{
+                        position: "absolute",
+                        top: "0px",
+                        right: "0px",
+                        width: "clamp(20px, 4vw, 24px)",
+                        height: "clamp(20px, 4vw, 24px)",
+                        borderRadius: "50%",
                         border: "none",
-                        borderRadius: "8px",
-                        padding: "8px 16px",
-                        fontSize: "13px",
-                        fontWeight: "600",
+                        backgroundColor: "rgba(255,255,255,0.8)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                         cursor: "pointer",
-                        textTransform: "uppercase",
+                        padding: 0,
                       }}
                     >
-                      BUY NOW
+                      {isFavorited ? (
+                        <AiFillHeart color="red" size={16} />
+                      ) : (
+                        <AiOutlineHeart color="#ccc" size={16} />
+                      )}
                     </button>
                   </div>
+
+                  {/* Right Side */}
+                  <div
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    {/* Details */}
+                    <div
+                      style={{
+                        fontSize: "13px",
+                        color: "#000",
+                        fontWeight: "500",
+                        marginBottom: "12px",
+                        lineHeight: "1.3",
+                      }}
+                    >
+                      {item.product_name}
+                    </div>
+
+                    {/* Bottom row: price left, button right */}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "16px",
+                          fontWeight: "700",
+                          color: "#000",
+                        }}
+                      >
+                        {item.price}
+                      </div>
+
+                      <button
+                        style={{
+                          background: "white",
+                          color: "#d81b60",
+                          border: "none",
+                          borderRadius: "8px",
+                          padding: "8px 16px",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        BUY NOW
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import FILTER_CONFIG, { DEFAULT_FILTERS } from "../data/filtersConfig";
 
 // Backend-ready hook to retrieve filters dynamically per section/subcategory.
@@ -8,6 +8,7 @@ const useFilters = ({ section, slug }) => {
   const [activeFilters, setActiveFilters] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const preservedFiltersRef = useRef({});
 
   const key = useMemo(() => {
     if (section === "venues" && !slug) return "venues";
@@ -32,7 +33,13 @@ const useFilters = ({ section, slug }) => {
         // }
 
         const local = FILTER_CONFIG[key] || DEFAULT_FILTERS;
-        if (isMounted) setFilters(local);
+        if (isMounted) {
+          setFilters(local);
+          // Preserve existing activeFilters when config changes (don't clear user selections)
+          if (Object.keys(preservedFiltersRef.current).length > 0) {
+            setActiveFilters(preservedFiltersRef.current);
+          }
+        }
       } catch (e) {
         if (isMounted) {
           setError(e);
@@ -47,6 +54,13 @@ const useFilters = ({ section, slug }) => {
       isMounted = false;
     };
   }, [key, section, slug]);
+
+  // Preserve activeFilters in ref when they change
+  useEffect(() => {
+    if (Object.keys(activeFilters).length > 0) {
+      preservedFiltersRef.current = activeFilters;
+    }
+  }, [activeFilters]);
 
   // Toggle a filter value
   const toggleFilter = useCallback((group, value) => {
