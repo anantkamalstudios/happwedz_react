@@ -16,7 +16,6 @@ import UpComingTask from "../wedding/UpcomingTask";
 import EInvites from "./EInviteCard";
 
 const Wedding = () => {
-
   const [budget, setBudget] = useState({
     total: 0,
     spent: 0,
@@ -137,7 +136,11 @@ const Wedding = () => {
           }
         );
         const guestsData = await guestsRes.json();
-        if (guestsData.success && guestsData.data && Array.isArray(guestsData.data)) {
+        if (
+          guestsData.success &&
+          guestsData.data &&
+          Array.isArray(guestsData.data)
+        ) {
           const totalGuests = guestsData.data.length;
           const attendingGuests = guestsData.data.filter(
             (g) => g.status === "Attending"
@@ -458,10 +461,11 @@ const Wedding = () => {
                     className="progress-bar bg-primary"
                     role="progressbar"
                     style={{
-                      width: `${budget.total > 0
-                        ? (budget.spent / budget.total) * 100
-                        : 0
-                        }%`,
+                      width: `${
+                        budget.total > 0
+                          ? (budget.spent / budget.total) * 100
+                          : 0
+                      }%`,
                     }}
                     aria-valuenow={
                       budget.total > 0 ? (budget.spent / budget.total) * 100 : 0
@@ -480,7 +484,8 @@ const Wedding = () => {
               <div className="text-center mt-auto">
                 <Link
                   to="/user-dashboard/budget"
-                  className="btn btn-primary rounded-pill px-4 py-2"
+                  className="btn rounded-3 px-4 py-2"
+                  style={{ background: "#C31162", color: "#fff" }}
                 >
                   + Add Budget
                 </Link>

@@ -19,69 +19,69 @@ const tabs = [
     slug: "my-wedding",
     label: "My Wedding",
     icon: <FaRing />,
-    img: "/images/userDashboard/mywedding-img.jpg",
+    img: "/images/userDashboard/mywedding-img.svg",
   },
   {
     id: "checklist",
     slug: "checklist",
     label: "Checklist",
     icon: <FaClipboardList />,
-    img: "/images/userDashboard/checklist-img.jpg",
+    img: "/images/userDashboard/checklist-img.svg",
   },
   {
     id: "vendors",
     slug: "vendor",
     label: "Vendor",
     icon: <FaStore />,
-    img: "/images/userDashboard/vendor-img.jpg",
+    img: "/images/userDashboard/vendor-img.svg",
   },
   {
     id: "guest-list",
     slug: "guest-list",
     label: "Guest list",
     icon: <FaUsers />,
-    img: "/images/userDashboard/guestlist-img.jpg",
+    img: "/images/userDashboard/guestlist-img.svg",
   },
   {
     id: "budget",
     slug: "budget",
     label: "Budget",
     icon: <FaPiggyBank />,
-    img: "/images/userDashboard/budget-img.jpg",
+    img: "/images/userDashboard/budget-img.svg",
   },
   {
     id: "wishlist",
     slug: "wishlist",
     label: "Wishlist",
     icon: <FaHeart />,
-    img: "/images/userDashboard/wishlist-img.jpg",
+    img: "/images/userDashboard/wishlist-img.svg",
   },
   {
     id: "booking",
     slug: "booking",
     label: "Booking",
     icon: <FaShoppingCart />,
-    img: "/images/userDashboard/booking-img.jpg",
+    img: "/images/userDashboard/booking-img.svg",
   },
   {
     id: "message",
     slug: "message",
     label: "Message",
     icon: <FaEnvelopeOpenText />,
-    img: "/images/userDashboard/message-img.jpg",
+    img: "/images/userDashboard/message-img.svg",
   },
   {
     id: "real-wedding",
     slug: "real-wedding",
     label: "Real wedding",
     icon: <FaUserFriends />,
-    img: "/images/userDashboard/real-wedding-img.jpg",
+    img: "/images/userDashboard/real-wedding-img.svg",
   },
   {
     id: "user-profile",
     slug: "user-profile",
     label: "Profile",
-    img: "/images/userDashboard/user-img.png",
+    img: "/images/userDashboard/userProfile-img.svg",
   },
 ];
 
@@ -128,8 +128,8 @@ const UserDashboardNavbar = () => {
             <div
               className="d-flex align-items-center justify-content-center"
               style={{
-                width: "60px",
-                height: "60px",
+                width: "65px",
+                height: "65px",
                 borderRadius: "50%",
                 backgroundColor: "#ed1173",
                 color: "#fff",
@@ -140,7 +140,12 @@ const UserDashboardNavbar = () => {
               <img
                 src={tab.img}
                 alt=""
-                style={{ height: "100%", width: "100%", objectFit: "cover" }}
+                style={{
+                  height: "100%",
+                  width: "100%",
+                  objectFit: "contain",
+                  borderRadius: "50%",
+                }}
               />
             </div>
             <span

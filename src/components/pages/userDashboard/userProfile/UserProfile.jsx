@@ -11,11 +11,11 @@ import {
   Spinner,
   Alert,
 } from "react-bootstrap";
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { TextField } from '@mui/material';
-import dayjs from 'dayjs';
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { TextField } from "@mui/material";
+import dayjs from "dayjs";
 import { setCredentials } from "../../../../redux/authSlice";
 
 const initialState = {
@@ -91,16 +91,16 @@ const UserProfile = ({ user, token }) => {
     return formData.profileImage && typeof formData.profileImage !== "string"
       ? URL.createObjectURL(formData.profileImage)
       : typeof formData.profileImage === "string"
-        ? formData.profileImage
-        : "";
+      ? formData.profileImage
+      : "";
   }, [formData.profileImage]);
 
   const coverPreview = useMemo(() => {
     return formData.coverImage && typeof formData.coverImage !== "string"
       ? URL.createObjectURL(formData.coverImage)
       : typeof formData.coverImage === "string"
-        ? formData.coverImage
-        : "";
+      ? formData.coverImage
+      : "";
   }, [formData.coverImage]);
 
   useEffect(() => {
@@ -159,7 +159,7 @@ const UserProfile = ({ user, token }) => {
   };
 
   const handleDateChange = (newDate) => {
-    const formattedDate = newDate ? dayjs(newDate).format('YYYY-MM-DD') : '';
+    const formattedDate = newDate ? dayjs(newDate).format("YYYY-MM-DD") : "";
     setFormData((prev) => ({ ...prev, weddingDate: formattedDate }));
   };
 
@@ -220,7 +220,7 @@ const UserProfile = ({ user, token }) => {
 
       const hasFiles = Boolean(
         (formData.profileImage && typeof formData.profileImage !== "string") ||
-        (formData.coverImage && typeof formData.coverImage !== "string")
+          (formData.coverImage && typeof formData.coverImage !== "string")
       );
       const isPasswordChange = Boolean(
         showChangePassword && passwordFields.newPassword
@@ -249,7 +249,8 @@ const UserProfile = ({ user, token }) => {
         );
 
         // Show server response message
-        const serverMessage = passwordRes.data?.message || "Password changed successfully!";
+        const serverMessage =
+          passwordRes.data?.message || "Password changed successfully!";
         setSuccess(serverMessage);
         setPasswordFields({
           currentPassword: "",
@@ -304,7 +305,10 @@ const UserProfile = ({ user, token }) => {
         };
 
         // Only include images if they have valid URLs (not empty strings)
-        if (formData.profileImage && typeof formData.profileImage === "string") {
+        if (
+          formData.profileImage &&
+          typeof formData.profileImage === "string"
+        ) {
           jsonBody.profileImage = formData.profileImage;
         }
         if (formData.coverImage && typeof formData.coverImage === "string") {
@@ -339,17 +343,19 @@ const UserProfile = ({ user, token }) => {
               name: updatedUser.name || effectiveUser.name,
               email: updatedUser.email || effectiveUser.email,
               phone: updatedUser.phone || effectiveUser.phone,
-              weddingVenue: updatedUser.weddingVenue || effectiveUser.weddingVenue,
+              weddingVenue:
+                updatedUser.weddingVenue || effectiveUser.weddingVenue,
               country: updatedUser.country || effectiveUser.country,
               city: updatedUser.city || effectiveUser.city,
               weddingDate: updatedUser.weddingDate || effectiveUser.weddingDate,
-              profileImage: updatedUser.profileImage || effectiveUser.profileImage,
+              profileImage:
+                updatedUser.profileImage || effectiveUser.profileImage,
               coverImage: updatedUser.coverImage || effectiveUser.coverImage,
             },
           });
 
           // Update local form data with all fields from response
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
             name: updatedUser.name || prev.name,
             email: updatedUser.email || prev.email,
@@ -401,8 +407,9 @@ const UserProfile = ({ user, token }) => {
                 height: "180px",
                 background:
                   coverPreview || formData.coverImage
-                    ? `url(${coverPreview || formData.coverImage
-                    }) center/cover no-repeat`
+                    ? `url(${
+                        coverPreview || formData.coverImage
+                      }) center/cover no-repeat`
                     : "linear-gradient(135deg, #fdf2f8 0%, #e9d5ff 100%)",
                 borderTopLeftRadius: "0.375rem",
                 borderTopRightRadius: "0.375rem",
@@ -535,13 +542,17 @@ const UserProfile = ({ user, token }) => {
                       <Form.Label>Wedding Date</Form.Label>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                          value={formData.weddingDate ? dayjs(formData.weddingDate) : null}
+                          value={
+                            formData.weddingDate
+                              ? dayjs(formData.weddingDate)
+                              : null
+                          }
                           onChange={handleDateChange}
                           slotProps={{
                             textField: {
                               fullWidth: true,
-                              size: 'small',
-                              placeholder: 'Select wedding date',
+                              size: "small",
+                              placeholder: "Select wedding date",
                             },
                           }}
                         />
@@ -559,7 +570,6 @@ const UserProfile = ({ user, token }) => {
                         onChange={handleChange}
                         placeholder="Country"
                       />
-
                     </Form.Group>
                   </Col>
                   <Col md={3}>
@@ -621,7 +631,10 @@ const UserProfile = ({ user, token }) => {
                             value={passwordFields.newPassword}
                             onChange={handlePasswordFieldChange}
                             placeholder="New password (min 8 chars)"
-                            isInvalid={passwordFields.newPassword && passwordFields.newPassword.length < 8}
+                            isInvalid={
+                              passwordFields.newPassword &&
+                              passwordFields.newPassword.length < 8
+                            }
                           />
                           <Form.Control.Feedback type="invalid">
                             Password must be at least 8 characters

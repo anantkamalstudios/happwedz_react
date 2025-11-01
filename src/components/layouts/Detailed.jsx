@@ -363,7 +363,7 @@ const Detailed = () => {
                 );
                 try {
                   sessionStorage.setItem(sessionKey, Date.now().toString());
-                } catch { }
+                } catch {}
                 if (incRes?.data?.vendor?.profileViews !== undefined) {
                   setVenueData((prev) => ({
                     ...prev,
@@ -595,12 +595,12 @@ const Detailed = () => {
   // Clean up location display
   const displayLocation = isVenue
     ? venueData.attributes?.address ||
-    venueData.attributes?.city ||
-    "Location not specified"
+      venueData.attributes?.city ||
+      "Location not specified"
     : venueData.attributes?.address ||
-    venueData.attributes?.city ||
-    venueData.vendor?.city ||
-    "Location not specified";
+      venueData.attributes?.city ||
+      venueData.vendor?.city ||
+      "Location not specified";
 
   // Create activeVendor from API data
   const activeVendor = {
@@ -659,11 +659,13 @@ const Detailed = () => {
                   {images.map((img, idx) => (
                     <SwiperSlide key={idx}>
                       <div
-                        className={`thumbnail-item ${mainImage === img ? "active" : ""
-                          } ${hoveredIndex !== null && hoveredIndex !== idx
+                        className={`thumbnail-item ${
+                          mainImage === img ? "active" : ""
+                        } ${
+                          hoveredIndex !== null && hoveredIndex !== idx
                             ? "blurred"
                             : ""
-                          }`}
+                        }`}
                         onClick={() => setMainImage(img)}
                         onMouseEnter={() => setHoveredIndex(idx)}
                         onMouseLeave={() => setHoveredIndex(null)}
@@ -729,8 +731,9 @@ const Detailed = () => {
                       key={index}
                     >
                       <div
-                        className={`amenity-item d-flex align-items-center ${item.name.startsWith("-") ? "ms-4" : ""
-                          } my-2`}
+                        className={`amenity-item d-flex align-items-center ${
+                          item.name.startsWith("-") ? "ms-4" : ""
+                        } my-2`}
                       >
                         {item.icon && (
                           <div
@@ -949,8 +952,8 @@ const Detailed = () => {
                       <div className="price-value fs-4 fw-bold">
                         {venueData.attributes?.veg_price
                           ? `₹${parseInt(
-                            venueData.attributes.veg_price.replace(/,/g, "")
-                          ).toLocaleString()} onwards`
+                              venueData.attributes.veg_price.replace(/,/g, "")
+                            ).toLocaleString()} onwards`
                           : "Contact for pricing"}
                       </div>
                       <h4 className="price-title fw-bold mt-3">
@@ -959,11 +962,11 @@ const Detailed = () => {
                       <div className="price-value fs-4 fw-bold">
                         {venueData.attributes?.non_veg_price
                           ? `₹${parseInt(
-                            venueData.attributes.non_veg_price.replace(
-                              /,/g,
-                              ""
-                            )
-                          ).toLocaleString()} onwards`
+                              venueData.attributes.non_veg_price.replace(
+                                /,/g,
+                                ""
+                              )
+                            ).toLocaleString()} onwards`
                           : "Contact for pricing"}
                       </div>
                       <p className="price-note text-muted mt-2">
@@ -982,11 +985,11 @@ const Detailed = () => {
                         {venueData.attributes?.vendor_type === "Makeup"
                           ? "Makeup Package (Starting)"
                           : venueData.attributes?.vendor_type === "Photography"
-                            ? "Photography Package (Starting)"
-                            : venueData.attributes?.vendor_type ===
-                              "Music And Dance"
-                              ? "Pricing Range"
-                              : ""}
+                          ? "Photography Package (Starting)"
+                          : venueData.attributes?.vendor_type ===
+                            "Music And Dance"
+                          ? "Pricing Range"
+                          : ""}
                       </h4>
 
                       <div className="price-value fs-4 fw-bold">
@@ -996,13 +999,13 @@ const Detailed = () => {
                         {venueData.attributes?.PriceRange
                           ? venueData.attributes.PriceRange
                           : venueData.attributes.photo_package_price
-                            ? `₹${parseInt(
+                          ? `₹${parseInt(
                               venueData.attributes.photo_package_price.replace(
                                 /,/g,
                                 ""
                               )
                             ).toLocaleString()} onwards`
-                            : "Contact for pricing"}
+                          : "Contact for pricing"}
                       </div>
                       {venueData.attributes?.photo_video_package_price && (
                         <>
@@ -1161,7 +1164,7 @@ const Detailed = () => {
         backdrop={true}
       >
         <Modal.Body>
-          <BusinessClaimForm />
+          <BusinessClaimForm setShowClaimForm={setShowClaimForm} />
         </Modal.Body>
       </Modal>
     </div>

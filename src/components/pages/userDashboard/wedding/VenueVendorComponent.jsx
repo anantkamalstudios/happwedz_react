@@ -254,7 +254,8 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
 
         <div style={{ display: "flex", justifyContent: "end" }}>
           <button
-            className="btn btn-primary col-6"
+            className="btn col-6"
+            style={{ background: "#C31162", color: "#fff" }}
             disabled={isVendorBox ? !selectedSlug || loadingVendors : false}
             onClick={() => {
               if (isVendorBox) {

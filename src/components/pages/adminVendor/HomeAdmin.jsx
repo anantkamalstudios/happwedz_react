@@ -91,7 +91,6 @@ const HomeAdmin = () => {
     (state) => state.vendorAuth || {}
   );
 
-  // Load storefront completion percentage from localStorage
   useEffect(() => {
     const stored = localStorage.getItem("storefrontCompletion");
     if (stored) {
@@ -158,7 +157,7 @@ const HomeAdmin = () => {
     const fetchDashboardData = async () => {
       try {
         setLoadingLeads(true);
-        setLoadingStats(true); // We'll load stats and leads together
+        setLoadingStats(true);
 
         const response = await fetch(
           `${API_BASE_URL}/api/request-pricing/vendor/dashboard`,

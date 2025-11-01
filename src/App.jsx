@@ -24,6 +24,7 @@ import TopRatedVendors from "./components/pages/TopRatedVendors";
 import CareersPage from "./components/pages/CareersPage";
 import DestinationWeddingDetailPage from "./components/pages/DestinationWeddingDetailPage";
 import BusinessClaimForm from "./components/pages/BusinessClaimForm";
+import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
@@ -215,6 +216,7 @@ function App() {
                 path="/photos/details/:slug"
                 element={<PhotographyDetails />}
               />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route
                 path="/photography/details/:id"
                 element={<PhotographyDetails />}
