@@ -88,7 +88,8 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
     let keywordPh = "";
     let subtitle = "";
 
-    const effectiveVendorType = vendorType || (slug && slug !== "all" ? slug.replace(/-/g, " ") : null);
+    const effectiveVendorType =
+      vendorType || (slug && slug !== "all" ? slug.replace(/-/g, " ") : null);
 
     if (effectiveVendorType && city) {
       const formattedVendorType = effectiveVendorType.toLowerCase();
@@ -96,7 +97,8 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
         city.charAt(0).toUpperCase() + city.slice(1).toLowerCase();
 
       switch (true) {
-        case formattedVendorType.includes("venue") || formattedVendorType.includes("resort"):
+        case formattedVendorType.includes("venue") ||
+          formattedVendorType.includes("resort"):
           keywordPh = "Banquet halls, resorts, lawns";
           subtitle = `Discover the perfect wedding venues in ${formattedCity} for your special day`;
           break;
@@ -112,7 +114,8 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
           keywordPh = "Caterers, food services";
           subtitle = `Delicious wedding catering options in ${formattedCity} for your guests`;
           break;
-        case formattedVendorType.includes("decoration") || formattedVendorType.includes("decorator"):
+        case formattedVendorType.includes("decoration") ||
+          formattedVendorType.includes("decorator"):
           keywordPh = "Decorators, wedding themes";
           subtitle = `Beautiful wedding decorations in ${formattedCity} to make your day magical`;
           break;

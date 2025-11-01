@@ -86,10 +86,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
           subVenuesData.map((venue) => (
             <Col key={venue.id} xs={12} sm={6} lg={4} className="mb-4">
               <Card className="border-0 main-grid-cards rounded-4 overflow-hidden p-2 h-100">
-                <div
-                  className="position-relative"
-                  style={{ height: "240px", backgroundColor: "#f5f5f5" }}
-                >
+                <div className="position-relative" style={{ height: "240px" }}>
                   <Card.Img
                     key={`${venue.id}-${venue.image}`}
                     variant="top"

@@ -10,17 +10,21 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import LoaderProvider from "./components/context/LoaderContext";
+import { ThemeProvider } from "@mui/material/styles";
+import muiTheme from "./theme/muiTheme";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <GoogleOAuthProvider clientId="83829632051-pgn25ipst5lf3bv7pcihooha5o91pe9o.apps.googleusercontent.com">
-      <LoaderProvider>
-        <Provider store={store}>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </Provider>
-      </LoaderProvider>
-    </GoogleOAuthProvider>
+    <ThemeProvider theme={muiTheme}>
+      <GoogleOAuthProvider clientId="83829632051-pgn25ipst5lf3bv7pcihooha5o91pe9o.apps.googleusercontent.com">
+        <LoaderProvider>
+          <Provider store={store}>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </Provider>
+        </LoaderProvider>
+      </GoogleOAuthProvider>
+    </ThemeProvider>
   </StrictMode>
 );

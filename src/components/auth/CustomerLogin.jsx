@@ -214,7 +214,7 @@ const CustomerLogin = () => {
             </Button>
           </Form>
 
-          <div className="mt-4">
+          <div className="mt-4 justify-content-center align-items-center">
             <GoogleLogin
               onSuccess={handleGoogleCredential}
               onError={() => {

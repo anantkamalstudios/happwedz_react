@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import {
@@ -13,6 +13,11 @@ import {
   FiChevronRight,
   FiChevronLeft,
 } from "react-icons/fi";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
+import SummernoteEditor from "../../../ui/SummernoteEditor";
 
 const RealWeddingForm = ({ user, token }) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -20,6 +25,7 @@ const RealWeddingForm = ({ user, token }) => {
   const [error, setError] = useState(null);
   const [vendorTypes, setVendorTypes] = useState([]);
   const [countries, setCountries] = useState([]);
+  const [cultures, setCultures] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("India");
   const [formData, setFormData] = useState({
     title: "",
@@ -27,6 +33,7 @@ const RealWeddingForm = ({ user, token }) => {
     weddingDate: "",
     country: "India",
     city: "",
+    cultures: "",
     venues: [],
 
     brideName: "",
@@ -97,7 +104,7 @@ const RealWeddingForm = ({ user, token }) => {
     setFormData((prev) => ({
       ...prev,
       country: country,
-      city: ""
+      city: "",
     }));
   };
 
@@ -114,7 +121,6 @@ const RealWeddingForm = ({ user, token }) => {
       [field]: prev[field].filter((_, i) => i !== index),
     }));
   };
-
 
   const handleFilesAdd = (field, files) => {
     setFormData((prev) => {
@@ -148,7 +154,9 @@ const RealWeddingForm = ({ user, token }) => {
 
     const loadCountries = async () => {
       try {
-        const res = await axios.get("https://countriesnow.space/api/v0.1/countries/");
+        const res = await axios.get(
+          "https://countriesnow.space/api/v0.1/countries/"
+        );
         if (res.data && res.data.data) {
           setCountries(res.data.data);
         }
@@ -157,30 +165,53 @@ const RealWeddingForm = ({ user, token }) => {
       }
     };
 
-    const loadDraft = () => {
+    const loadCultures = async () => {
       try {
-        const savedDraft = localStorage.getItem('weddingFormDraft');
-        if (savedDraft) {
-          const draftData = JSON.parse(savedDraft);
-          setFormData(prev => ({ ...prev, ...draftData }));
+        const res = await axios.get(
+          "https://happywedz.com/api/real-wedding-culture/public"
+        );
+        if (res.data && res.data.cultures && Array.isArray(res.data.cultures)) {
+          setCultures(res.data.cultures);
+        } else if (Array.isArray(res.data)) {
+          setCultures(res.data);
+        } else {
+          setCultures([]);
         }
       } catch (err) {
-        console.error('Error loading draft:', err);
+        console.error("Failed to load cultures", err);
+      }
+    };
+
+    const loadDraft = () => {
+      try {
+        const savedDraft = localStorage.getItem("weddingFormDraft");
+        if (savedDraft) {
+          const draftData = JSON.parse(savedDraft);
+          setFormData((prev) => ({ ...prev, ...draftData }));
+        }
+      } catch (err) {
+        console.error("Error loading draft:", err);
       }
     };
 
     loadVendorTypes();
     loadCountries();
+    loadCultures();
     loadDraft();
   }, []);
 
   const nextStep = () => {
-    console.log('Next clicked. Current step:', currentStep, 'Total steps:', steps.length);
+    console.log(
+      "Next clicked. Current step:",
+      currentStep,
+      "Total steps:",
+      steps.length
+    );
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
-      console.log('Moving to step:', currentStep + 1);
+      console.log("Moving to step:", currentStep + 1);
     } else {
-      console.log('Already on last step, cannot go next');
+      console.log("Already on last step, cannot go next");
     }
   };
 
@@ -198,20 +229,20 @@ const RealWeddingForm = ({ user, token }) => {
         highlightPhotos: [],
         allPhotos: [],
       };
-      localStorage.setItem('weddingFormDraft', JSON.stringify(draftData));
+      localStorage.setItem("weddingFormDraft", JSON.stringify(draftData));
       Swal.fire({
-        icon: 'success',
-        title: 'Draft Saved',
-        text: 'Your progress has been saved!',
+        icon: "success",
+        title: "Draft Saved",
+        text: "Your progress has been saved!",
         timer: 2000,
         showConfirmButton: false,
       });
     } catch (err) {
-      console.error('Error saving draft:', err);
+      console.error("Error saving draft:", err);
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Failed to save draft',
+        icon: "error",
+        title: "Error",
+        text: "Failed to save draft",
       });
     }
   };
@@ -219,14 +250,19 @@ const RealWeddingForm = ({ user, token }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('Form submitted on step:', currentStep);
+    console.log("Form submitted on step:", currentStep);
 
     if (currentStep !== steps.length - 1) {
-      console.error('Form submitted on wrong step! Current:', currentStep, 'Expected:', steps.length - 1);
+      console.error(
+        "Form submitted on wrong step! Current:",
+        currentStep,
+        "Expected:",
+        steps.length - 1
+      );
       Swal.fire({
-        icon: 'warning',
-        title: 'Please Complete All Steps',
-        text: 'Please navigate through all steps before submitting.',
+        icon: "warning",
+        title: "Please Complete All Steps",
+        text: "Please navigate through all steps before submitting.",
       });
       return;
     }
@@ -279,7 +315,7 @@ const RealWeddingForm = ({ user, token }) => {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-        "An error occurred while submitting the form."
+          "An error occurred while submitting the form."
       );
       console.error("Submission error:", err);
     } finally {
@@ -299,6 +335,7 @@ const RealWeddingForm = ({ user, token }) => {
             handleCountryChange={handleCountryChange}
             countries={countries}
             selectedCountry={selectedCountry}
+            cultures={cultures}
           />
         );
       case 1:
@@ -360,6 +397,7 @@ const RealWeddingForm = ({ user, token }) => {
             handleCountryChange={handleCountryChange}
             countries={countries}
             selectedCountry={selectedCountry}
+            cultures={cultures}
           />
         );
     }
@@ -378,8 +416,9 @@ const RealWeddingForm = ({ user, token }) => {
           {steps.map((step, index) => (
             <div
               key={index}
-              className={`step ${index === currentStep ? "active" : ""} ${index < currentStep ? "completed" : ""
-                }`}
+              className={`step ${index === currentStep ? "active" : ""} ${
+                index < currentStep ? "completed" : ""
+              }`}
             >
               <div className="step-icon">{index + 1}</div>
               <span className="step-label">{step}</span>
@@ -400,7 +439,10 @@ const RealWeddingForm = ({ user, token }) => {
               const type = e.target.getAttribute("type");
               const isSubmitButton = type === "submit";
 
-              if (!isSubmitButton && (tag === "input" || tag === "textarea" || tag === "select")) {
+              if (
+                !isSubmitButton &&
+                (tag === "input" || tag === "textarea" || tag === "select")
+              ) {
                 e.preventDefault();
                 e.stopPropagation();
                 return false;
@@ -467,6 +509,233 @@ const RealWeddingForm = ({ user, token }) => {
   );
 };
 
+const VenueSearchInput = ({ onSelectVenue }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  const [loadingSearch, setLoadingSearch] = useState(false);
+  const searchRef = useRef(null);
+  const debounceTimer = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowResults(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, []);
+
+  const performSearch = async (query) => {
+    if (!query || query.length < 2) {
+      setSearchResults([]);
+      setShowResults(false);
+      return;
+    }
+    setLoadingSearch(true);
+    try {
+      const apiUrl = `https://happywedz.com/api/vendor-services?search=${encodeURIComponent(
+        query
+      )}&vendorType=Venues&limit=10`;
+
+      const response = await axios.get(apiUrl);
+      const results = response.data?.data || [];
+
+      console.log("Venue search results:", results);
+      console.log("Venue API URL:", apiUrl);
+
+      setSearchResults(results);
+      if (results.length > 0) {
+        setShowResults(true);
+      } else if (query.length >= 2) {
+        setShowResults(true);
+      }
+    } catch (error) {
+      console.error("Venue search error:", error);
+      setSearchResults([]);
+      setShowResults(false);
+    } finally {
+      setLoadingSearch(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    if (value.length >= 2 && searchResults.length > 0) {
+      setShowResults(true);
+    } else if (value.length < 2) {
+      setShowResults(false);
+      setSearchResults([]);
+    }
+
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      performSearch(value);
+    }, 500);
+  };
+
+  const handleSelectVenue = (venue) => {
+    const venueName =
+      venue.attributes?.vendor_name ||
+      venue.vendor?.businessName ||
+      venue.name ||
+      "";
+    if (venueName) {
+      onSelectVenue(venueName);
+      setSearchQuery("");
+      setShowResults(false);
+      setSearchResults([]);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (searchQuery.trim()) {
+        onSelectVenue(searchQuery.trim());
+        setSearchQuery("");
+        setShowResults(false);
+        setSearchResults([]);
+      }
+    }
+  };
+
+  return (
+    <div
+      className="form-group"
+      ref={searchRef}
+      style={{ position: "relative" }}
+    >
+      <input
+        type="text"
+        className="form-control"
+        value={searchQuery}
+        onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        onFocus={() => {
+          if (searchQuery.length >= 2 && searchResults.length > 0) {
+            setShowResults(true);
+          }
+        }}
+        placeholder="Search venues or type and press Enter"
+      />
+      {showResults && searchQuery.length >= 2 && (
+        <div
+          className="position-absolute bg-white shadow-lg rounded-3 mt-2"
+          style={{
+            top: "100%",
+            left: 0,
+            right: 0,
+            maxHeight: "300px",
+            overflowY: "auto",
+            zIndex: 1000,
+            border: "1px solid #e5e7eb",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+          }}
+        >
+          {loadingSearch ? (
+            <div className="p-4 text-center">
+              <div
+                className="spinner-border spinner-border-sm me-2"
+                role="status"
+              >
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              <span style={{ fontSize: "0.9rem" }}>Searching...</span>
+            </div>
+          ) : searchResults.length > 0 ? (
+            <div>
+              {searchResults.map((result) => (
+                <div
+                  key={result.id}
+                  onClick={() => handleSelectVenue(result)}
+                  className="d-flex align-items-center gap-3 p-3 border-bottom cursor-pointer"
+                  style={{
+                    cursor: "pointer",
+                    transition: "background 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#f9fafb";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "white";
+                  }}
+                >
+                  <div
+                    className="flex-shrink-0 overflow-hidden"
+                    style={{
+                      borderRadius: "8px",
+                      width: "50px",
+                      height: "50px",
+                    }}
+                  >
+                    <img
+                      src={
+                        result.attributes?.image_url ||
+                        result.media?.[0]?.url ||
+                        "/images/imageNotFound.jpg"
+                      }
+                      alt={result.attributes?.vendor_name || "Venue"}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/images/imageNotFound.jpg";
+                      }}
+                    />
+                  </div>
+                  <div className="flex-grow-1">
+                    <h6
+                      className="mb-1 fw-semibold"
+                      style={{
+                        fontSize: "0.9rem",
+                        color: "#1f2937",
+                      }}
+                    >
+                      {result.attributes?.vendor_name ||
+                        result.vendor?.businessName ||
+                        "Venue"}
+                    </h6>
+                    <p
+                      className="mb-0"
+                      style={{
+                        fontSize: "0.85rem",
+                        color: "#6b7280",
+                      }}
+                    >
+                      {result.attributes?.city ||
+                        result.vendor?.city ||
+                        "Location"}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-4 text-center">
+              <p
+                className="mb-0"
+                style={{ fontSize: "0.9rem", color: "#6b7280" }}
+              >
+                No venues found
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const BasicInfoStep = ({
   formData,
   handleInputChange,
@@ -475,6 +744,7 @@ const BasicInfoStep = ({
   handleCountryChange,
   countries,
   selectedCountry,
+  cultures,
 }) => {
   return (
     <div className="form-card">
@@ -523,13 +793,26 @@ const BasicInfoStep = ({
       <div className="form-row">
         <div className="form-group">
           <label className="form-label">Wedding Date</label>
-          <input
-            type="date"
-            className="form-control"
-            name="weddingDate"
-            value={formData.weddingDate}
-            onChange={handleInputChange}
-          />
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              value={formData.weddingDate ? dayjs(formData.weddingDate) : null}
+              onChange={(newValue) => {
+                const dateString = newValue
+                  ? dayjs(newValue).format("YYYY-MM-DD")
+                  : "";
+                handleInputChange({
+                  target: { name: "weddingDate", value: dateString },
+                });
+              }}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  size: "small",
+                  placeholder: "Select wedding date",
+                },
+              }}
+            />
+          </LocalizationProvider>
         </div>
 
         <div className="form-group">
@@ -565,21 +848,37 @@ const BasicInfoStep = ({
             Enter the city where your wedding took place
           </small>
         </div>
+
+        <div className="form-group">
+          <label className="form-label">Culture</label>
+          <select
+            className="form-control"
+            name="cultures"
+            value={formData.cultures}
+            onChange={handleInputChange}
+          >
+            <option value="">Select a culture</option>
+            {cultures.map((culture, index) => {
+              // Handle culture object with id and name properties
+              const cultureId = culture?.id || culture?.value || index;
+              const cultureName =
+                culture?.name || culture?.label || String(culture || "");
+              return (
+                <option key={cultureId} value={cultureName}>
+                  {cultureName}
+                </option>
+              );
+            })}
+          </select>
+        </div>
       </div>
 
       <div className="form-group">
         <label className="form-label">Venues</label>
-        <input
-          type="text"
-          className="form-control"
-          placeholder="Add a venue and press Enter"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              if (e.target.value.trim()) {
-                handleArrayChange("venues", e.target.value.trim());
-                e.target.value = "";
-              }
+        <VenueSearchInput
+          onSelectVenue={(venueName) => {
+            if (venueName && !formData.venues.includes(venueName)) {
+              handleArrayChange("venues", venueName);
             }
           }}
         />
@@ -597,7 +896,9 @@ const BasicInfoStep = ({
             </div>
           ))}
         </div>
-        <small className="text-muted">Press Enter to add venue</small>
+        <small className="text-muted">
+          Search venues or type and press Enter to add
+        </small>
       </div>
     </div>
   );
@@ -664,6 +965,13 @@ const CoupleInfoStep = ({ formData, handleInputChange }) => {
 };
 
 const WeddingStoryStep = ({ formData, handleInputChange }) => {
+  // Helper function to count words from HTML (strips HTML tags)
+  const countWords = (html) => {
+    if (!html) return 0;
+    const text = html.replace(/<[^>]*>/g, " ").trim();
+    return text.split(/\s+/).filter((word) => word.length > 0).length;
+  };
+
   return (
     <div className="form-card">
       <h2 className="form-section-title">
@@ -672,16 +980,18 @@ const WeddingStoryStep = ({ formData, handleInputChange }) => {
 
       <div className="form-group">
         <label className="form-label">Your Wedding Story</label>
-        <textarea
-          className="form-control"
-          name="story"
-          value={formData.story}
-          onChange={handleInputChange}
-          rows="10"
-          placeholder="Share the beautiful story of your special day..."
-        ></textarea>
+        <SummernoteEditor
+          value={formData.story || ""}
+          onChange={(htmlContent) => {
+            handleInputChange({
+              target: { name: "story", value: htmlContent },
+            });
+          }}
+        />
         <div className="text-right mt-2">
-          <small className="text-muted">{formData.story.length} words</small>
+          <small className="text-muted">
+            {countWords(formData.story)} words
+          </small>
         </div>
       </div>
     </div>
@@ -718,19 +1028,24 @@ const EventCreator = ({ onAdd }) => {
         </div>
         <div className="form-group">
           <label className="form-label">Date</label>
-          <input
-            type="date"
-            className="form-control"
-            value={local.date}
-            onChange={(e) => setLocal({ ...local, date: e.target.value })}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && canAdd) {
-                e.preventDefault();
-                onAdd({ ...local });
-                setLocal({ name: "", date: "", venue: "", description: "" });
-              }
-            }}
-          />
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              value={local.date ? dayjs(local.date) : null}
+              onChange={(newValue) => {
+                const dateString = newValue
+                  ? dayjs(newValue).format("YYYY-MM-DD")
+                  : "";
+                setLocal({ ...local, date: dateString });
+              }}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  size: "small",
+                  placeholder: "Select event date",
+                },
+              }}
+            />
+          </LocalizationProvider>
         </div>
         <div className="form-group">
           <label className="form-label">Venue</label>
@@ -779,6 +1094,12 @@ const EventCreator = ({ onAdd }) => {
 
 const VendorCreator = ({ vendorTypes = [], onAdd }) => {
   const [local, setLocal] = useState({ typeId: "", type: "", name: "" });
+  const [searchResults, setSearchResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  const [loadingSearch, setLoadingSearch] = useState(false);
+  const searchRef = useRef(null);
+  const debounceTimer = useRef(null);
+
   useEffect(() => {
     if (local.typeId && vendorTypes?.length) {
       const found = vendorTypes.find(
@@ -788,6 +1109,91 @@ const VendorCreator = ({ vendorTypes = [], onAdd }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [local.typeId]);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowResults(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, []);
+
+  const performSearch = async (searchQuery) => {
+    if (!searchQuery || searchQuery.length < 2) {
+      setSearchResults([]);
+      setShowResults(false);
+      return;
+    }
+    setLoadingSearch(true);
+    try {
+      let apiUrl = `https://happywedz.com/api/vendor-services?search=${encodeURIComponent(
+        searchQuery
+      )}&limit=10`;
+
+      if (local.typeId && local.type) {
+        const isVenueType = local.type.toLowerCase() === "venues";
+
+        if (isVenueType) {
+          apiUrl += `&vendorType=Venues`;
+        } else {
+          apiUrl += `&vendorType=${encodeURIComponent(local.type)}`;
+        }
+      }
+
+      const response = await axios.get(apiUrl);
+      const results = response.data?.data || [];
+
+      console.log("Search results:", results);
+      console.log("API URL:", apiUrl);
+
+      setSearchResults(results);
+      if (results.length > 0) {
+        setShowResults(true);
+      } else if (searchQuery.length >= 2) {
+        // Show "No results" message
+        setShowResults(true);
+      }
+    } catch (error) {
+      console.error("Search error:", error);
+      setSearchResults([]);
+      setShowResults(false);
+    } finally {
+      setLoadingSearch(false);
+    }
+  };
+
+  const handleVendorNameChange = (e) => {
+    const value = e.target.value;
+    setLocal({ ...local, name: value });
+
+    if (value.length >= 2 && searchResults.length > 0) {
+      setShowResults(true);
+    } else if (value.length < 2) {
+      setShowResults(false);
+      setSearchResults([]);
+    }
+
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      performSearch(value);
+    }, 500);
+  };
+
+  const handleSelectVendor = (vendor) => {
+    const vendorName =
+      vendor.attributes?.vendor_name ||
+      vendor.vendor?.businessName ||
+      vendor.name ||
+      "";
+    setLocal({ ...local, name: vendorName });
+    setShowResults(false);
+  };
 
   const canAdd = local.type && local.name;
 
@@ -799,7 +1205,11 @@ const VendorCreator = ({ vendorTypes = [], onAdd }) => {
           <select
             className="form-control"
             value={local.typeId}
-            onChange={(e) => setLocal({ ...local, typeId: e.target.value })}
+            onChange={(e) => {
+              setLocal({ ...local, typeId: e.target.value, name: "" });
+              setSearchResults([]);
+              setShowResults(false);
+            }}
           >
             <option value="">Select type</option>
             {vendorTypes.map((t) => (
@@ -809,15 +1219,131 @@ const VendorCreator = ({ vendorTypes = [], onAdd }) => {
             ))}
           </select>
         </div>
-        <div className="form-group">
+        <div
+          className="form-group"
+          ref={searchRef}
+          style={{ position: "relative" }}
+        >
           <label className="form-label">Vendor Name</label>
           <input
             type="text"
             className="form-control"
             value={local.name}
-            onChange={(e) => setLocal({ ...local, name: e.target.value })}
+            onChange={handleVendorNameChange}
+            onFocus={() => {
+              if (local.name.length >= 2 && searchResults.length > 0) {
+                setShowResults(true);
+              }
+            }}
             placeholder="e.g., DreamWed Planners"
           />
+          {showResults && local.name.length >= 2 && (
+            <div
+              className="position-absolute bg-white shadow-lg rounded-3 mt-2"
+              style={{
+                top: "100%",
+                left: 0,
+                right: 0,
+                maxHeight: "300px",
+                overflowY: "auto",
+                zIndex: 1000,
+                border: "1px solid #e5e7eb",
+                boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+              }}
+            >
+              {loadingSearch ? (
+                <div className="p-4 text-center">
+                  <div
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                  >
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <span style={{ fontSize: "0.9rem" }}>Searching...</span>
+                </div>
+              ) : searchResults.length > 0 ? (
+                <div>
+                  {searchResults.map((result) => (
+                    <div
+                      key={result.id}
+                      onClick={() => handleSelectVendor(result)}
+                      className="d-flex align-items-center gap-3 p-3 border-bottom cursor-pointer"
+                      style={{
+                        cursor: "pointer",
+                        transition: "background 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "#f9fafb";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "white";
+                      }}
+                    >
+                      <div
+                        className="flex-shrink-0 overflow-hidden"
+                        style={{
+                          borderRadius: "8px",
+                          width: "50px",
+                          height: "50px",
+                        }}
+                      >
+                        <img
+                          src={
+                            result.attributes?.image_url ||
+                            result.media?.[0]?.url ||
+                            "/images/imageNotFound.jpg"
+                          }
+                          alt={result.attributes?.vendor_name || "Vendor"}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/images/imageNotFound.jpg";
+                          }}
+                        />
+                      </div>
+                      <div className="flex-grow-1">
+                        <h6
+                          className="mb-1 fw-semibold"
+                          style={{
+                            fontSize: "0.9rem",
+                            color: "#1f2937",
+                          }}
+                        >
+                          {result.attributes?.vendor_name ||
+                            result.vendor?.businessName ||
+                            "Vendor"}
+                        </h6>
+                        <p
+                          className="mb-0"
+                          style={{
+                            fontSize: "0.85rem",
+                            color: "#6b7280",
+                          }}
+                        >
+                          {result.attributes?.city ||
+                            result.vendor?.city ||
+                            "Location"}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 text-center">
+                  <p
+                    className="mb-0"
+                    style={{ fontSize: "0.9rem", color: "#6b7280" }}
+                  >
+                    No vendors found
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
       <button
@@ -827,6 +1353,8 @@ const VendorCreator = ({ vendorTypes = [], onAdd }) => {
           if (canAdd) {
             onAdd({ name: local.name, type: local.type });
             setLocal({ typeId: "", type: "", name: "" });
+            setSearchResults([]);
+            setShowResults(false);
           }
         }}
         disabled={!canAdd}
@@ -857,7 +1385,8 @@ const EventsStep = ({ formData, handleArrayChange, handleRemoveItem }) => {
                   <h5 className="mb-0">{event.name || `Event ${index + 1}`}</h5>
                   <button
                     type="button"
-                    className="btn btn-sm btn-outline-danger"
+                    style={{ width: "40px", height: "40px" }}
+                    className="btn btn-sm btn-outline-danger f-flex justify-content-center align-items-center col-1 rounded-circle"
                     onClick={() => handleRemoveItem("events", index)}
                   >
                     <FiX />
@@ -905,13 +1434,14 @@ const VendorsStep = ({
           <div className="mt-3">
             {formData.vendors.map((vendor, index) => (
               <div key={index} className="vendor-card mb-3 p-3 border rounded">
-                <div className="d-flex justify-content-between align-items-center mb-2">
+                <div className="d-flex justify-content-between align-items-center mb-2 col-12">
                   <h5 className="mb-0">
                     {vendor.type}: {vendor.name}
                   </h5>
                   <button
                     type="button"
-                    className="btn btn-sm btn-outline-danger"
+                    style={{ width: "40px", height: "40px" }}
+                    className="btn btn-sm btn-outline-danger f-flex justify-content-center align-items-center col-1 rounded-circle"
                     onClick={() => handleRemoveItem("vendors", index)}
                   >
                     <FiX />
@@ -983,7 +1513,14 @@ const GalleryStep = ({
               />
               <button
                 type="button"
-                className="btn btn-sm btn-outline-danger"
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  position: "relative",
+                  top: -30,
+                  right: 30,
+                }}
+                className="btn btn-sm btn-outline-danger f-flex justify-content-center align-items-center col-1 rounded-circle"
                 onClick={() => handleRemoveFile("coverPhoto")}
               >
                 <FiX />
@@ -1044,8 +1581,14 @@ const GalleryStep = ({
                 />
                 <button
                   type="button"
-                  className="btn btn-sm btn-outline-danger"
-                  style={{ position: "absolute", top: -8, right: -8 }}
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    position: "absolute",
+                    top: -8,
+                    right: -8,
+                  }}
+                  className="btn btn-sm btn-outline-danger f-flex justify-content-center align-items-center col-1 rounded-circle"
                   onClick={() => handleRemoveFile("highlightPhotos", idx)}
                 >
                   <FiX />
@@ -1205,7 +1748,10 @@ const HighlightsAndCreditsStep = ({
         ></textarea>
       </div>
 
-      <div className="form-divider" style={{ margin: '2rem 0', borderTop: '2px solid #e0e0e0' }}></div>
+      <div
+        className="form-divider"
+        style={{ margin: "2rem 0", borderTop: "2px solid #e0e0e0" }}
+      ></div>
 
       <h2 className="form-section-title">
         <FiUser /> Credits & Publish
@@ -1249,7 +1795,7 @@ const HighlightsAndCreditsStep = ({
         </div>
       </div>
 
-      <div className="form-divider" style={{ margin: '1.5rem 0' }}></div>
+      <div className="form-divider" style={{ margin: "1.5rem 0" }}></div>
 
       <div className="form-group">
         <label className="form-label d-block">Featured Wedding</label>
@@ -1269,6 +1815,5 @@ const HighlightsAndCreditsStep = ({
     </div>
   );
 };
-
 
 export default RealWeddingForm;
