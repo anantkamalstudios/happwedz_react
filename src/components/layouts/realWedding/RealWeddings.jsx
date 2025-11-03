@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { FaMapMarkerAlt, FaSearch } from "react-icons/fa";
 import { BsExclamationTriangle } from "react-icons/bs";
+import { API_BASE_URL } from "../../../config/constants";
 
 const RealWeddings = ({ onPostClick }) => {
+  const token = localStorage.getItem("token");
   const [searchTerm, setSearchTerm] = useState("");
   const [weddings, setWeddings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +25,7 @@ const RealWeddings = ({ onPostClick }) => {
     "International",
     "Others",
   ];
-  const cultures = ["Maharastrian", "Sindhi", "Tamil", "Christian"];
+  const [cultures, setCultures] = useState([]);
 
   const itemsPerPage = 6;
 
@@ -68,6 +70,29 @@ const RealWeddings = ({ onPostClick }) => {
       }
     };
     fetchCities();
+  }, []);
+
+  useEffect(() => {
+    const fetchCultures = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          `${API_BASE_URL}/real-wedding-culture/public`
+        );
+        console.log(response);
+        if (response.data && response.data.cultures) {
+          setCultures(response?.data?.cultures);
+        } else {
+          setCultures([]);
+        }
+        setError(null);
+      } catch (err) {
+        setError("Failed to fetch wedding stories. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCultures();
   }, []);
 
   const scrollToFilters = () => {
@@ -278,8 +303,8 @@ const RealWeddings = ({ onPostClick }) => {
                 All Cultures
               </option>
               {cultures.map((cul) => (
-                <option value={cul} key={cul}>
-                  {cul}
+                <option value={cul.name} key={cul.id}>
+                  {cul.name}
                 </option>
               ))}
             </select>

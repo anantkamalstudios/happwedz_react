@@ -19,6 +19,7 @@ import {
   FaUserTie,
   FaFemale,
 } from "react-icons/fa";
+import DOMPurify from "dompurify";
 
 export default function WeddingPage({ post, onBackClick }) {
   const vendorTypeIcons = {
@@ -80,10 +81,11 @@ export default function WeddingPage({ post, onBackClick }) {
             <p className="medium mb-0">
               <span
                 dangerouslySetInnerHTML={{
-                  __html: post.story.slice(0, 100),
+                  __html: DOMPurify.sanitize(post?.story?.slice(0, 100) || ""),
                 }}
               />
-              ...<a className="text-warning fw-bold">Read More</a>
+              ...
+              <a className="text-warning fw-bold">Read More</a>
             </p>
           )}
         </div>
@@ -250,12 +252,17 @@ export default function WeddingPage({ post, onBackClick }) {
             className="mb-0 text-justify"
             style={{ fontSize: "1.1rem", lineHeight: "1.8" }}
             dangerouslySetInnerHTML={{
-              __html: post.story
-                ? post.story
-                    .replace(/<\/?(span|font|style|script|div|pre)[^>]*>/gi, "")
-                    .replace(/<(p|br|hr|h[1-6])\b[^>]*>/gi, "")
-                    .replace(/<\/(p|br|hr|h[1-6])>/gi, "")
-                : "",
+              __html: DOMPurify.sanitize(
+                post.story
+                  ? post.story
+                      .replace(
+                        /<\/?(span|font|style|script|div|pre)[^>]*>/gi,
+                        ""
+                      )
+                      .replace(/<(p|br|hr|h[1-6])\b[^>]*>/gi, "")
+                      .replace(/<\/(p|br|hr|h[1-6])>/gi, "")
+                  : ""
+              ),
             }}
           ></div>
         </div>

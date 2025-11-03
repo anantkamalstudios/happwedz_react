@@ -39,8 +39,8 @@ const useInfiniteScroll = (
 
       const portfolioUrls = attributes.Portfolio
         ? attributes.Portfolio.split("|")
-          .map((url) => url.trim())
-          .filter((url) => url)
+            .map((url) => url.trim())
+            .filter((url) => url)
         : [];
       const gallery = media.length > 0 ? media : portfolioUrls;
       const firstImage = gallery.length > 0 ? gallery[0] : null;
@@ -109,10 +109,10 @@ const useInfiniteScroll = (
           : null,
         starting_price: !isVenue
           ? photoPackage ||
-          photoVideoPackage ||
-          attributes.PriceRange ||
-          attributes.price ||
-          null
+            photoVideoPackage ||
+            attributes.PriceRange ||
+            attributes.price ||
+            null
           : null,
 
         address: attributes.address || attributes.Address || "",
@@ -169,12 +169,12 @@ const useInfiniteScroll = (
       try {
         const subCategory = slug
           ? slug
-            .replace(/-{2,}/g, " / ")
-            .replace(/-/g, " ")
-            .replace(/\s*\/\s*/g, " / ")
-            .replace(/\s{2,}/g, " ")
-            .replace(/\b\w/g, (l) => l.toUpperCase())
-            .trim()
+              .replace(/-{2,}/g, " / ")
+              .replace(/-/g, " ")
+              .replace(/\s*\/\s*/g, " / ")
+              .replace(/\s{2,}/g, " ")
+              .replace(/\b\w/g, (l) => l.toUpperCase())
+              .trim()
           : null;
 
         const params = new URLSearchParams();
@@ -268,8 +268,8 @@ const useInfiniteScroll = (
         const itemsRaw = Array.isArray(result)
           ? result
           : Array.isArray(result.data)
-            ? result.data
-            : [];
+          ? result.data
+          : [];
 
         const transformed = transformApiData(itemsRaw);
 

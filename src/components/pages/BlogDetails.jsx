@@ -22,7 +22,10 @@ const getImageUrl = (imageData) => {
       return replacePrefix(imageData);
     }
     // Replace 'photography' with 'blogs' for relative paths
-    const path = imageData.replace(/\/uploads\/photography\//g, "/uploads/blogs/");
+    const path = imageData.replace(
+      /\/uploads\/photography\//g,
+      "/uploads/blogs/"
+    );
     return baseUrl + path;
   }
 
@@ -31,7 +34,10 @@ const getImageUrl = (imageData) => {
       return replacePrefix(imageData[0]);
     }
     // Replace 'photography' with 'blogs' for relative paths
-    const path = imageData[0].replace(/\/uploads\/photography\//g, "/uploads/blogs/");
+    const path = imageData[0].replace(
+      /\/uploads\/photography\//g,
+      "/uploads/blogs/"
+    );
     return baseUrl + path;
   }
 
@@ -43,6 +49,7 @@ import { FaChevronLeft } from "react-icons/fa";
 
 import { User, Calendar, Clock, Heart } from "lucide-react";
 import { useLoader } from "../context/LoaderContext";
+import DOMPurify from "dompurify";
 
 const BlogDetails = ({ blogId, onBackClick }) => {
   const [blogData, setBlogData] = React.useState(null);
@@ -216,7 +223,9 @@ const BlogDetails = ({ blogId, onBackClick }) => {
                   textAlign: "justify",
                   marginBottom: "2rem",
                 }}
-                dangerouslySetInnerHTML={{ __html: paragraph }}
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(paragraph),
+                }}
               ></div>
             </div>
           ))}

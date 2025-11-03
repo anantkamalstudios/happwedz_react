@@ -1679,7 +1679,7 @@ const HighlightsAndCreditsStep = ({
 
       <div className="form-group">
         <label className="form-label">Wedding Themes</label>
-        <input
+        {/* <input
           type="text"
           className="form-control"
           placeholder="Add a theme and press Enter"
@@ -1692,7 +1692,33 @@ const HighlightsAndCreditsStep = ({
               }
             }
           }}
-        />
+        /> */}
+        <select
+          className="form-control"
+          defaultValue=""
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value) {
+              handleArrayChange("themes", value);
+              e.target.value = "";
+            }
+          }}
+        >
+          <option value="" disabled>
+            Select a theme
+          </option>
+
+          <option value="Destination">Destination</option>
+          <option value="Classic">Classic</option>
+          <option value="Grand & Luxurious"> Grand & Luxurious</option>
+          <option value="Pocket Friendly Stunners">
+            Pocket Friendly Stunners
+          </option>
+          <option value="Intimate & Minimalist">Intimate & Minimalist</option>
+          <option value="Modern & Stylish"> Modern & Stylish</option>
+          <option value="International">International</option>
+          <option value="Others">Others</option>
+        </select>
 
         <div className="chips-container">
           {formData.themes.map((theme, index) => (

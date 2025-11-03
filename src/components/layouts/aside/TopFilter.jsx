@@ -20,7 +20,7 @@ const TopFilter = ({
   getActiveCount,
   hasPendingChanges = false,
 }) => {
-  const handleCheckbox = (group, value) => {
+  const handleCheckbox = (group, value) => {   
     onToggleFilter(group, value);
   };
 
