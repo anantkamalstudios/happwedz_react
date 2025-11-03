@@ -73,11 +73,13 @@ const FILTER_CONFIG = {
 
   venues: {
     "venue Type": [
-      "banquet-halls",
+      "Banquet Halls",
       "lawn",
-      "farmhouse",
-      "resort",
-      "destination venue",
+      "Wedding Farmhouses",
+      "Wedding Resorts",
+      "Destination Wedding Venues",
+      "Kalyana Mandapams",
+      "4 Star & Above Wedding Hotels",
     ],
     capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
     "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
@@ -86,11 +88,12 @@ const FILTER_CONFIG = {
 
   "banquet-halls": {
     "venue Type": [
-      "banquet-halls",
-      "lawn",
-      "farmhouse",
-      "resort",
-      "destination venue",
+      "Marriage Garden / lawns",
+      "Wedding Farmhouses",
+      "Wedding Resorts",
+      "Destination Wedding Venues",
+      "Kalyana Mandapams",
+      "4 Star & Above Wedding Hotels",
     ],
     capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
     "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
@@ -99,11 +102,12 @@ const FILTER_CONFIG = {
 
   "wedding-resorts": {
     "venue Type": [
-      "resort",
-      "farmhouse",
-      "lawn",
-      "banquet-halls",
-      "destination venue",
+      "Wedding Resorts",
+      "Wedding Farmhouses",
+      "Marriage Garden / lawns",
+      "Banquet Halls",
+      "Destination Wedding Venues",
+      "Kalyana Mandapams",
     ],
     capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
     "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
@@ -112,58 +116,87 @@ const FILTER_CONFIG = {
 
   "destination-wedding-venues": {
     "venue Type": [
-      "destination venue",
-      "farmhouse",
-      "lawn",
-      "banquet-halls",
-      "resort",
+      "Destination Wedding Venues",
+      "Wedding Farmhouses",
+      "Marriage Garden / lawns",
+      "Banquet Halls",
+      "Wedding Resorts",
     ],
     capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
     "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
     rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
   },
 
-  "small-functions-party-halls": {
+  "small-functions--party-halls": {
     "venue Type": [
       "small function / party halls",
-      "farmhouse",
-      "lawn",
-      "banquet-halls",
-      "resort",
-      "destination venue",
+      "Wedding Farmhouses",
+      "Marriage Garden / lawns",
+      "Banquet Halls",
+      "Wedding Resorts",
+      "Destination Wedding Venues",
+      "4 Star & Above Wedding Hotels",
     ],
     capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
     "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
     rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
   },
 
-  "marriage-garden-lawns": {
+  "marriage-garden--lawns": {
     "venue Type": [
-      "marriage garden / lawns",
-      "farmhouse",
-      "lawn",
-      "banquet-halls",
-      "resort",
-      "destination venue",
+
+      "Wedding Farmhouses",
+      "Marriage Garden / lawns",
+      "Banquet Halls",
+      "Wedding Resorts",
+      "Destination Wedding Venues",
+      "Kalyana Mandapams",
+      "4 Star & Above Wedding Hotels",
     ],
     capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
     "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
     rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
   },
-
-  "wedding-resorts": {
+  "wedding-farmhouses": {
     "venue Type": [
-      "resort",
-      "farmhouse",
-      "lawn",
-      "banquet-halls",
-      "destination venue",
+      "Wedding Farmhouses",
+      "Marriage Garden / lawns",
+      "Banquet Halls",
+      "Wedding Resorts",
+      "Destination Wedding Venues",
+      "Kalyana Mandapams",
+      "4 Star & Above Wedding Hotels",
     ],
     capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
     "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
     rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
   },
-
+  "kalyana-mandapams": {
+    "venue Type": [
+      "Kalyana Mandapams",
+      "Wedding Farmhouses",
+      "Marriage Garden / lawns",
+      "Banquet Halls",
+      "Wedding Resorts",
+      "Destination Wedding Venues",
+    ],
+    capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
+    "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
+    rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
+  },
+  "4-star-and-above-wedding-hotels": {
+    "venue Type": [
+      "4 Star & Above Wedding Hotels",
+      "Wedding Farmhouses",
+      "Marriage Garden / lawns",
+      "Banquet Halls",
+      "Wedding Resorts",
+      "Destination Wedding Venues",
+    ],
+    capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
+    "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
+    rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
+  },
   catering: {
     cuisines: [
       "north indian",
@@ -299,16 +332,6 @@ const FILTER_CONFIG = {
       "75,000+",
     ],
     experience: ["1-3 years", "3-5 years", "10+ years"],
-    rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
-    "review Count": ["<5 reviews", "5+ reviews", "15+ reviews", "30+ reviews"],
-  },
-
-  invitations: {
-    "physical Invite Price": ["<50", "50-100", "100-200", "200-400", "400+"],
-    "design Cost": ["on request"],
-    speciality: ["boxed invites", "unboxed invites", "digital e-cards"],
-    "min Order Quantity": ["<30", "30-50", "50-100", "100-150", "150+"],
-    "store Type": ["physical store", "online store", "both physical & online"],
     rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
     "review Count": ["<5 reviews", "5+ reviews", "15+ reviews", "30+ reviews"],
   },
@@ -459,19 +482,6 @@ const FILTER_CONFIG = {
       "multi designer store",
     ],
     accessories: ["safa for groom", "groom pagri", "juttis"],
-    rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
-    "review Count": ["<5 reviews", "5+ reviews", "15+ reviews", "30+ reviews"],
-    award: ["users' choice awards winner"],
-  },
-
-  jewellery: {
-    type: [
-      "gold",
-      "diamond",
-      "artificial",
-      "flower jewellery",
-      "bridal jewellery on rent",
-    ],
     rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
     "review Count": ["<5 reviews", "5+ reviews", "15+ reviews", "30+ reviews"],
     award: ["users' choice awards winner"],

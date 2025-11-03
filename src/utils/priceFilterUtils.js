@@ -164,3 +164,78 @@ export const extractPriceFilters = (activeFilters) => {
 
     return { minPrice, maxPrice };
 };
+
+// ---------------- Additional Venue helpers ----------------
+
+// Parse a capacity range string like "<100", "100-200", "500-1000", "1000+"
+export const parseCapacityRange = (rangeString) => {
+    if (!rangeString || typeof rangeString !== "string") return null;
+    const clean = rangeString.replace(/,/g, "").trim().toLowerCase();
+
+    if (clean.startsWith("<") || clean.startsWith("under")) {
+        const v = parseInt(clean.replace(/[^0-9]/g, ""));
+        if (!isNaN(v) && v > 0) return { min: null, max: v - 1 };
+        return null;
+    }
+
+    if (clean.includes("+")) {
+        const v = parseInt(clean.replace(/[^0-9]/g, ""));
+        if (!isNaN(v) && v > 0) return { min: v, max: null };
+        return null;
+    }
+
+    if (clean.includes("-")) {
+        const [a, b] = clean.split("-").map((p) => parseInt(p.replace(/[^0-9]/g, "")));
+        if (!isNaN(a) && !isNaN(b)) {
+            const min = Math.min(a, b);
+            const max = Math.max(a, b);
+            return { min, max };
+        }
+    }
+
+    const v = parseInt(clean.replace(/[^0-9]/g, ""));
+    if (!isNaN(v) && v > 0) return { min: null, max: v };
+    return null;
+};
+
+// Extract capacity min/max from active filters (UNION bounding box)
+export const extractCapacityFilters = (activeFilters) => {
+    if (!activeFilters || typeof activeFilters !== "object") {
+        return { minCapacity: null, maxCapacity: null };
+    }
+    const capacityKey = Object.keys(activeFilters).find(
+        (k) => k.toLowerCase() === "capacity"
+    );
+    if (!capacityKey) return { minCapacity: null, maxCapacity: null };
+
+    const ranges = (activeFilters[capacityKey] || [])
+        .map((v) => parseCapacityRange(v))
+        .filter(Boolean);
+    if (ranges.length === 0) return { minCapacity: null, maxCapacity: null };
+
+    const mins = ranges.map((r) => r.min).filter((x) => x !== null && x !== undefined);
+    const maxs = ranges.map((r) => r.max).filter((x) => x !== null && x !== undefined);
+
+    let minCapacity = null;
+    let maxCapacity = null;
+    if (mins.length > 0) minCapacity = Math.min(...mins);
+    if (maxs.length > 0) maxCapacity = Math.max(...maxs);
+
+    if (minCapacity !== null && maxCapacity !== null && minCapacity > maxCapacity) {
+        return { minCapacity: null, maxCapacity: null };
+    }
+    return { minCapacity, maxCapacity };
+};
+
+// Extract selected venue subcategories from "venue Type" group and join comma-separated
+export const extractVenueSubCategories = (activeFilters) => {
+    if (!activeFilters || typeof activeFilters !== "object") return null;
+    const key = Object.keys(activeFilters).find(
+        (k) => k.toLowerCase() === "venue type"
+    );
+    if (!key) return null;
+    const values = activeFilters[key];
+    if (!Array.isArray(values) || values.length === 0) return null;
+    // API accepts comma-separated subCategory list; use as-is
+    return values.join(",");
+};

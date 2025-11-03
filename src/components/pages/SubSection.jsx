@@ -91,6 +91,11 @@ const SubSection = () => {
     setActiveFilters(filters);
   };
 
+  // Reset filters when navigating to a different section/slug (route change)
+  useEffect(() => {
+    setActiveFilters({});
+  }, [section, slug]);
+
   useEffect(() => {
     if (cityFromQuery && cityFromQuery !== "all") {
       setSelectedCity(cityFromQuery);
