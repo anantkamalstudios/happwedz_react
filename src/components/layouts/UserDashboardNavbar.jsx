@@ -111,6 +111,8 @@ const UserDashboardNavbar = () => {
         style={{
           justifyContent: window.innerWidth > 768 ? "center" : "flex-start",
           overflowX: "auto",
+          scrollbarWidth: "thin",
+          scrollbarColor: "#ed1173 #fff",
         }}
       >
         {tabs.map((tab) => (
@@ -137,16 +139,25 @@ const UserDashboardNavbar = () => {
               }}
             >
               {/* {tab.icon} */}
-              <img
-                src={tab.img}
-                alt=""
+              <div
                 style={{
-                  height: "100%",
-                  width: "100%",
-                  objectFit: "contain",
-                  borderRadius: "50%",
+                  height: "60px",
+                  width: "60px",
+                  padding: "5px",
+                  border: "none",
                 }}
-              />
+              >
+                <img
+                  src={tab.img}
+                  alt=""
+                  style={{
+                    height: "100%",
+                    width: "100%",
+                    objectFit: "contain",
+                    borderRadius: "50%",
+                  }}
+                />
+              </div>
             </div>
             <span
               className="mt-2"

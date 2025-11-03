@@ -30,6 +30,7 @@ import LoadingState from "../LoadingState";
 import EmptyState from "../EmptyState";
 import useInfiniteScroll from "../../hooks/useInfiniteScroll";
 import { MyContext } from "../../context/useContext";
+import axios from "axios";
 
 const MainSection = () => {
   const { section } = useParams();
@@ -39,6 +40,27 @@ const MainSection = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [view, setView] = useState("images");
   const [photos, setPhotos] = useState([]);
+  const [heroInfo, setHeroInfo] = useState([]);
+  // console.log(section);
+
+  // useEffect(() => {
+  //   const fetchHeroInfo = async () => {
+  //     try {
+  //       const response = await axios.get("/api/hero-sections");
+  //       const pathSegments = location.pathname.split("/").filter(Boolean); // removes empty parts like '' from leading slash
+
+  //       const baseSection = pathSegments[0]?.toLowerCase();
+  //       const dataInfo = response.data;
+  //       setHeroInfo(
+  //         dataInfo.find((item) => item?.navbar?.type === baseSection)
+  //       );
+  //       console.log(heroInfo);
+  //     } catch (error) {
+  //       console.error("Error fetching hero info:", error);
+  //     }
+  //   };
+  //   fetchHeroInfo();
+  // }, [section]);
 
   const { data, loading, error, hasMore, loadMore } = useInfiniteScroll(
     "venues",

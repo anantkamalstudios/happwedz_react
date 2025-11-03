@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { IoLocationOutline } from "react-icons/io5";
 import { TbView360Number } from "react-icons/tb";
 import { toggleWishlist } from "../../../redux/authSlice";
+import DOMPurify from "dompurify";
 
 const ListView = ({ subVenuesData, handleShow }) => {
   const dispatch = useDispatch();
@@ -206,10 +207,10 @@ const ListView = ({ subVenuesData, handleShow }) => {
                         display: "-webkit-box",
                         WebkitLineClamp: 3,
                         WebkitBoxOrient: "vertical",
-                        lineHeight: "1.5"
+                        lineHeight: "1.5",
                       }}
                       dangerouslySetInnerHTML={{
-                        __html: venue.description || ""
+                        __html: DOMPurify.sanitize(venue.description || ""),
                       }}
                     />
                   </Link>

@@ -18,6 +18,22 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
   const [showResults, setShowResults] = useState(false);
   const debounceTimer = useRef(null);
   const searchRef = useRef(null);
+  const { section } = useParams();
+  const [heroInfo, setHeroInfo] = useState([]);
+
+  useEffect(() => {
+    const fetchHeroInfo = async () => {
+      try {
+        const response = await axios.get("/api/hero-sections");
+        const dataInfo = response.data;
+        setHeroInfo(dataInfo.find((item) => item?.navbar?.type === section));
+        console.log(heroInfo);
+      } catch (error) {
+        console.error("Error fetching hero info:", error);
+      }
+    };
+    fetchHeroInfo();
+  }, [section]);
 
   const searchParams = new URLSearchParams(location.search);
   const vendorType = searchParams.get("vendorType");
@@ -361,6 +377,7 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
                 {dynamicTitle}
               </h1>
               <p className="text-muted mb-4">{placeholders.subtitle}</p>
+              {/* <p className="text-muted mb-4">{heroInfo?.subtitle}</p> */}
 
               <Form
                 onSubmit={handleSubmit}
@@ -575,13 +592,16 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
               <div
                 className="bg-white shadow rounded-start-4 overflow-hidden w-100 h-100"
                 style={{
-                  aspectRatio: "1 / 1",
+                  aspectRatio: "1/1",
                 }}
               >
                 <img
-                  src="/images/venues/hero_img_2.jpg"
+                  src={
+                    "https://happywedzbackend.happywedz.com/uploads/herosection/" +
+                    heroInfo?.image
+                  }
                   alt="Search showcase"
-                  className="w-100 h-100"
+                  className="w-100"
                   style={{ objectFit: "cover" }}
                   onError={(e) => {
                     e.currentTarget.src = "logo-no-bg.png";

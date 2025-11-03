@@ -14,28 +14,19 @@ const DynamicAside = ({ view, setView, section, onFiltersChange }) => {
     isFilterActive,
     getActiveCount,
   } = useFilters({ section, slug });
-
-  // Separate pending filters (user selections) from applied filters (API filters)
-  // activeFilters = what user has selected (pending, not yet applied)
-  // appliedFilters = what's actually sent to the API
   const [appliedFilters, setAppliedFilters] = useState({});
   const prevActiveFiltersRef = useRef(activeFilters);
-
-  // Preserve activeFilters in ref - keep track of what user has selected
   useEffect(() => {
     if (Object.keys(activeFilters).length > 0) {
       prevActiveFiltersRef.current = activeFilters;
     }
   }, [activeFilters]);
 
-  // Handle filter toggle - update pending filters only (don't trigger API)
   const handleToggleFilter = (group, value) => {
     toggleFilter(group, value);
   };
 
-  // Handle apply filters - send pending filters to API but keep them selected
   const handleApplyFilters = () => {
-    // Capture current filters - these are what the user has selected
     const currentFilters = { ...activeFilters };
 
     // Store in ref for recovery if needed
@@ -53,7 +44,6 @@ const DynamicAside = ({ view, setView, section, onFiltersChange }) => {
     // since we're not calling clearFilters() - only toggleFilter updates them
   };
 
-  // Handle clear all - clear both pending and applied
   const handleClearFilters = () => {
     clearFilters();
     setAppliedFilters({});
