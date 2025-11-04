@@ -67,7 +67,7 @@ const useFilters = ({ section, slug }) => {
     setActiveFilters((prev) => {
       const groupFilters = prev[group] || [];
       const exists = groupFilters.includes(value);
-      
+
       if (exists) {
         // Remove filter
         const updated = groupFilters.filter((v) => v !== value);
@@ -97,14 +97,20 @@ const useFilters = ({ section, slug }) => {
   }, []);
 
   // Check if a filter is active
-  const isFilterActive = useCallback((group, value) => {
-    return activeFilters[group]?.includes(value) || false;
-  }, [activeFilters]);
+  const isFilterActive = useCallback(
+    (group, value) => {
+      return activeFilters[group]?.includes(value) || false;
+    },
+    [activeFilters]
+  );
 
   // Get count of active filters in a group
-  const getActiveCount = useCallback((group) => {
-    return activeFilters[group]?.length || 0;
-  }, [activeFilters]);
+  const getActiveCount = useCallback(
+    (group) => {
+      return activeFilters[group]?.length || 0;
+    },
+    [activeFilters]
+  );
 
   // Get total active filter count
   const totalActiveCount = useMemo(() => {

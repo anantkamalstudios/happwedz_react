@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { extractPriceFilters } from "../utils/priceFilterUtils";
+import {
+  extractPriceFilters,
+  extractCapacityFilters,
+  extractVenueSubCategories,
+} from "../utils/priceFilterUtils";
 
 const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
 
@@ -185,7 +189,11 @@ const useInfiniteScroll = (
           params.append("city", city);
         }
 
-        if (!vendorType && subCategory && subCategory.toLowerCase() !== "all") {
+        // Prefer selected venue types for venues; otherwise use slug-derived subCategory
+        const selectedSubcats = extractVenueSubCategories(filtersRef.current);
+        if (selectedSubcats && selectedSubcats.trim().length > 0) {
+          params.append("subCategory", selectedSubcats);
+        } else if (!vendorType && subCategory && subCategory.toLowerCase() !== "all") {
           params.append("subCategory", subCategory);
         }
 
@@ -201,9 +209,18 @@ const useInfiniteScroll = (
           params.append("maxPrice", maxPrice.toString());
         }
 
+        // Extract capacity filters and add as minCapacity/maxCapacity
+        const { minCapacity, maxCapacity } = extractCapacityFilters(filtersRef.current);
+        if (minCapacity !== null && minCapacity !== undefined) {
+          params.append("minCapacity", minCapacity.toString());
+        }
+        if (maxCapacity !== null && maxCapacity !== undefined) {
+          params.append("maxCapacity", maxCapacity.toString());
+        }
+
         // Add other filters as JSON (excluding price filters)
         const nonPriceFilters = { ...filtersRef.current };
-        // Remove price-related keys from filters JSON
+        // Remove price/capacity/venue-type keys from filters JSON
         Object.keys(nonPriceFilters).forEach((key) => {
           const lowerKey = key.toLowerCase();
           if (
@@ -219,7 +236,9 @@ const useInfiniteScroll = (
             lowerKey.includes("decor price") ||
             lowerKey.includes("home function decor") ||
             lowerKey.includes("physical invite price") ||
-            lowerKey.includes("pricing for 200 guests")
+            lowerKey.includes("pricing for 200 guests") ||
+            lowerKey === "capacity" ||
+            lowerKey === "venue type"
           ) {
             delete nonPriceFilters[key];
           }

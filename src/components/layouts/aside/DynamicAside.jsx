@@ -29,14 +29,19 @@ const DynamicAside = ({ view, setView, section, onFiltersChange }) => {
   const handleApplyFilters = () => {
     const currentFilters = { ...activeFilters };
 
+    // Store in ref for recovery if needed
     if (Object.keys(currentFilters).length > 0) {
       prevActiveFiltersRef.current = currentFilters;
     }
 
+    // Set applied filters and notify parent - this triggers API call
     setAppliedFilters(currentFilters);
     if (onFiltersChange) {
       onFiltersChange(currentFilters);
     }
+
+    // The activeFilters in useFilters hook should remain intact
+    // since we're not calling clearFilters() - only toggleFilter updates them
   };
 
   const handleClearFilters = () => {
