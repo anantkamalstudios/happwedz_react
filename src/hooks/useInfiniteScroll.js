@@ -3,6 +3,10 @@ import {
   extractPriceFilters,
   extractCapacityFilters,
   extractVenueSubCategories,
+  extractFoodPriceFilters,
+  extractRoomsFilters,
+  extractRatingFilters,
+  extractReviewFilters,
 } from "../utils/priceFilterUtils";
 
 const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
@@ -43,8 +47,8 @@ const useInfiniteScroll = (
 
       const portfolioUrls = attributes.Portfolio
         ? attributes.Portfolio.split("|")
-            .map((url) => url.trim())
-            .filter((url) => url)
+          .map((url) => url.trim())
+          .filter((url) => url)
         : [];
       const gallery = media.length > 0 ? media : portfolioUrls;
       const firstImage = gallery.length > 0 ? gallery[0] : null;
@@ -113,10 +117,10 @@ const useInfiniteScroll = (
           : null,
         starting_price: !isVenue
           ? photoPackage ||
-            photoVideoPackage ||
-            attributes.PriceRange ||
-            attributes.price ||
-            null
+          photoVideoPackage ||
+          attributes.PriceRange ||
+          attributes.price ||
+          null
           : null,
 
         address: attributes.address || attributes.Address || "",
@@ -173,12 +177,12 @@ const useInfiniteScroll = (
       try {
         const subCategory = slug
           ? slug
-              .replace(/-{2,}/g, " / ")
-              .replace(/-/g, " ")
-              .replace(/\s*\/\s*/g, " / ")
-              .replace(/\s{2,}/g, " ")
-              .replace(/\b\w/g, (l) => l.toUpperCase())
-              .trim()
+            .replace(/-{2,}/g, " / ")
+            .replace(/-/g, " ")
+            .replace(/\s*\/\s*/g, " / ")
+            .replace(/\s{2,}/g, " ")
+            .replace(/\b\w/g, (l) => l.toUpperCase())
+            .trim()
           : null;
 
         const params = new URLSearchParams();
@@ -218,9 +222,45 @@ const useInfiniteScroll = (
           params.append("maxCapacity", maxCapacity.toString());
         }
 
+        // Extract food price per plate
+        const { minFoodPrice, maxFoodPrice } = extractFoodPriceFilters(filtersRef.current);
+        if (minFoodPrice !== null && minFoodPrice !== undefined) {
+          params.append("minFoodPrice", minFoodPrice.toString());
+        }
+        if (maxFoodPrice !== null && maxFoodPrice !== undefined) {
+          params.append("maxFoodPrice", maxFoodPrice.toString());
+        }
+
+        // Extract rooms
+        const { minRooms, maxRooms } = extractRoomsFilters(filtersRef.current);
+        if (minRooms !== null && minRooms !== undefined) {
+          params.append("minRooms", minRooms.toString());
+        }
+        if (maxRooms !== null && maxRooms !== undefined) {
+          params.append("maxRooms", maxRooms.toString());
+        }
+
+        // Extract rating
+        const { minRating, maxRating } = extractRatingFilters(filtersRef.current);
+        if (minRating !== null && minRating !== undefined) {
+          params.append("minRating", minRating.toString());
+        }
+        if (maxRating !== null && maxRating !== undefined) {
+          params.append("maxRating", maxRating.toString());
+        }
+
+        // Extract reviews
+        const { minReviews, maxReviews } = extractReviewFilters(filtersRef.current);
+        if (minReviews !== null && minReviews !== undefined) {
+          params.append("minReviews", minReviews.toString());
+        }
+        if (maxReviews !== null && maxReviews !== undefined) {
+          params.append("maxReviews", maxReviews.toString());
+        }
+
         // Add other filters as JSON (excluding price filters)
         const nonPriceFilters = { ...filtersRef.current };
-        // Remove price/capacity/venue-type keys from filters JSON
+        // Remove price/capacity/venue-type/food price/rooms/rating/reviews keys from filters JSON
         Object.keys(nonPriceFilters).forEach((key) => {
           const lowerKey = key.toLowerCase();
           if (
@@ -238,7 +278,10 @@ const useInfiniteScroll = (
             lowerKey.includes("physical invite price") ||
             lowerKey.includes("pricing for 200 guests") ||
             lowerKey === "capacity" ||
-            lowerKey === "venue type"
+            lowerKey === "venue type" ||
+            lowerKey === "rooms" ||
+            lowerKey === "rating" ||
+            lowerKey === "review count"
           ) {
             delete nonPriceFilters[key];
           }
@@ -287,8 +330,8 @@ const useInfiniteScroll = (
         const itemsRaw = Array.isArray(result)
           ? result
           : Array.isArray(result.data)
-          ? result.data
-          : [];
+            ? result.data
+            : [];
 
         const transformed = transformApiData(itemsRaw);
 

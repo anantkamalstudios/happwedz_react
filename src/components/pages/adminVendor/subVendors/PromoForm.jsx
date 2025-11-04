@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
+// (no redux selector needed in this form component)
 import Swal from "sweetalert2";
+import { IMAGE_BASE_URL } from "../../../../config/constants";
 
 export default function PromoForm({ formData, setFormData, onSave }) {
-  const { vendor, token } = useSelector((state) => state.vendorAuth || {});
   const [form, setForm] = useState({
     title: "",
     promoCode: "",
@@ -22,6 +22,31 @@ export default function PromoForm({ formData, setFormData, onSave }) {
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
   const [serverSuccess, setServerSuccess] = useState("");
+  const [editingIndex, setEditingIndex] = useState(null);
+
+  // If parent passed existing deals, prefill the form with the first deal
+  useEffect(() => {
+    if (Array.isArray(formData?.deals) && formData.deals.length > 0) {
+      const d = formData.deals[0];
+      setForm((s) => ({
+        ...s,
+        title: d.title || "",
+        promoCode: d.code || d.promoCode || "",
+        type: d.type || "percentage",
+        value: d.value || "",
+        startDate: d.startDate || "",
+        endDate: d.endDate || "",
+        description: d.description || "",
+        active: typeof d.active === "boolean" ? d.active : true,
+      }));
+      // hydrate image preview if available
+      if (d.imageName) {
+        let preview = d.imageName;
+        if (preview.startsWith("/uploads/")) preview = IMAGE_BASE_URL + preview;
+        setImagePreview(preview);
+      }
+    }
+  }, [formData?.deals]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -74,17 +99,24 @@ export default function PromoForm({ formData, setFormData, onSave }) {
         active: !!form.active,
         imageName: imageFile?.name || null,
       };
-      setFormData((prev) => ({
-        ...prev,
-        deals: Array.isArray(prev.deals) ? [...prev.deals, newDeal] : [newDeal],
-      }));
+      setFormData((prev) => {
+        const existing = Array.isArray(prev.deals) ? [...prev.deals] : [];
+        if (editingIndex !== null && existing[editingIndex]) {
+          existing[editingIndex] = newDeal;
+        } else {
+          existing.push(newDeal);
+        }
+        return { ...prev, deals: existing };
+      });
       // Let parent handle actual API via onSave (vendorServicesApi)
       await onSave?.();
       setServerSuccess("Promotion added to your service and saved.");
       const payload = { ...form, imageName: imageFile?.name || null };
       localStorage.setItem("promoDraft", JSON.stringify(payload));
     } catch (err) {
-      setServerError(typeof err === "string" ? err : err?.message || "Failed to save");
+      setServerError(
+        typeof err === "string" ? err : err?.message || "Failed to save"
+      );
     } finally {
       setSubmitting(false);
     }
@@ -105,6 +137,59 @@ export default function PromoForm({ formData, setFormData, onSave }) {
     setImageFile(null);
     setImagePreview(null);
     setErrors({});
+  };
+
+  const handleEditDeal = (index) => {
+    const deal = formData?.deals?.[index];
+    if (!deal) return;
+    setForm({
+      title: deal.title || "",
+      promoCode: deal.code || deal.promoCode || "",
+      type: deal.type || "percentage",
+      value: deal.value || "",
+      startDate: deal.startDate || "",
+      endDate: deal.endDate || "",
+      description: deal.description || "",
+      termsAccepted: true,
+      active: typeof deal.active === "boolean" ? deal.active : true,
+    });
+    if (deal.imageName) {
+      let preview = deal.imageName;
+      if (preview.startsWith("/uploads/")) preview = IMAGE_BASE_URL + preview;
+      setImagePreview(preview);
+    } else setImagePreview(null);
+    setEditingIndex(index);
+  };
+
+  const handleDeleteDeal = async (index) => {
+    if (!Array.isArray(formData?.deals)) return;
+    const confirmed = await Swal.fire({
+      title: "Delete this promotion?",
+      text: "This will remove the offer from your storefront.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it",
+    });
+    if (!confirmed.isConfirmed) return;
+    const updated = formData.deals.filter((_, i) => i !== index);
+    setFormData((prev) => ({ ...prev, deals: updated }));
+    try {
+      await onSave?.();
+      Swal.fire({
+        icon: "success",
+        title: "Deleted",
+        timer: 1200,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Delete failed",
+        text: err?.message || String(err),
+      });
+    }
   };
 
   const formattedValue = () =>
@@ -149,8 +234,9 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                     name="promoCode"
                     value={form.promoCode}
                     onChange={handleChange}
-                    className={`form-control ${errors.promoCode ? "error" : ""
-                      }`}
+                    className={`form-control ${
+                      errors.promoCode ? "error" : ""
+                    }`}
                     placeholder="E.g. WWCOUPLE10"
                   />
                   {errors.promoCode && (
@@ -219,8 +305,9 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                     type="date"
                     value={form.startDate}
                     onChange={handleChange}
-                    className={`form-control ${errors.startDate || errors.date ? "error" : ""
-                      }`}
+                    className={`form-control ${
+                      errors.startDate || errors.date ? "error" : ""
+                    }`}
                   />
                   {errors.startDate && (
                     <div className="error-message">{errors.startDate}</div>
@@ -233,8 +320,9 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                     type="date"
                     value={form.endDate}
                     onChange={handleChange}
-                    className={`form-control ${errors.endDate || errors.date ? "error" : ""
-                      }`}
+                    className={`form-control ${
+                      errors.endDate || errors.date ? "error" : ""
+                    }`}
                   />
                   {(errors.endDate || errors.date) && (
                     <div className="error-message">
@@ -286,8 +374,9 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                     onChange={handleChange}
                   />
                   <span
-                    className={`checkmark ${errors.termsAccepted ? "error" : ""
-                      }`}
+                    className={`checkmark ${
+                      errors.termsAccepted ? "error" : ""
+                    }`}
                   ></span>
                   I confirm this offer and its terms
                 </label>
@@ -323,12 +412,14 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                 <button
                   type="button"
                   className="btn-preview folder-item border"
-                  onClick={() => Swal.fire({
-                    text:"Preview Openend",
-                    icon:"info",
-                    position:"top",
-                    timer:"1500"
-                  })}
+                  onClick={() =>
+                    Swal.fire({
+                      text: "Preview Openend",
+                      icon: "info",
+                      position: "top",
+                      timer: "1500",
+                    })
+                  }
                 >
                   Preview
                 </button>
@@ -345,6 +436,45 @@ export default function PromoForm({ formData, setFormData, onSave }) {
 
         <div className="preview-section">
           <div className="preview-card">
+            {Array.isArray(formData?.deals) && formData.deals.length > 0 && (
+              <div className="existing-deals-list mb-3">
+                <h5>Existing Offers</h5>
+                <div className="list-group">
+                  {formData.deals.map((d, i) => (
+                    <div
+                      key={i}
+                      className="d-flex align-items-center justify-content-between p-2 border mb-2 rounded"
+                    >
+                      <div>
+                        <strong>{d.title || d.name || `Offer ${i + 1}`}</strong>
+                        <div className="text-muted small">
+                          Code: {d.code || d.promoCode || "-"}
+                        </div>
+                        <div className="text-muted small">
+                          {d.startDate || "-"} — {d.endDate || "-"}
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-primary"
+                          onClick={() => handleEditDeal(i)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-danger"
+                          onClick={() => handleDeleteDeal(i)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="preview-header">
               <h3>Promotion Preview</h3>
               <p>This is how couples will see your offer</p>
