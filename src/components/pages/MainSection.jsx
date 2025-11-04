@@ -31,6 +31,8 @@ import EmptyState from "../EmptyState";
 import useInfiniteScroll from "../../hooks/useInfiniteScroll";
 import { MyContext } from "../../context/useContext";
 import axios from "axios";
+import ViewSwitcher from "../layouts/Main/ViewSwitcher";
+import ListView from "../layouts/Main/ListView";
 
 const MainSection = () => {
   const { section } = useParams();
@@ -102,6 +104,12 @@ const MainSection = () => {
         {!loading && data.length === 0 && (
           <EmptyState section="venues" title="Venues" />
         )}
+        <div
+          className="w-100 d-flex justify-content-end align-items-center my-3"
+          style={{ padding: "0 3rem" }}
+        >
+          <ViewSwitcher view={view} setView={setView} />
+        </div>
         {data.length > 0 && (
           <div className="container-fluid">
             <InfiniteScroll
@@ -126,11 +134,20 @@ const MainSection = () => {
               scrollThreshold={0.7}
               style={{ overflow: "visible" }}
             >
-              <GridView
-                subVenuesData={data}
-                section="venues"
-                handleShow={handleShow}
-              />
+              {view === "images" && (
+                <GridView
+                  subVenuesData={data}
+                  section="venues"
+                  handleShow={handleShow}
+                />
+              )}
+              {view === "list" && (
+                <ListView
+                  subVenuesData={data}
+                  section="venues"
+                  handleShow={handleShow}
+                />
+              )}
             </InfiniteScroll>
             <PricingModal
               show={show}

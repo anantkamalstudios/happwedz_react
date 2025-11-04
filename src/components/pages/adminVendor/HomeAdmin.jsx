@@ -625,13 +625,13 @@ const HomeAdmin = () => {
             <Card.Body>
               <div className="d-flex justify-content-between align-items-center mb-4">
                 <Card.Title className="mb-0">
-                  Leads,Impression,ProfileViwes Overview
+                  Leads, Impression, Profile Views, Overview
                 </Card.Title>
-                <div className="d-flex gap-2">
+                {/* <div className="d-flex gap-2">
                   <Button variant="outline-secondary" size="sm">
                     Leads
                   </Button>
-                </div>
+                </div> */}
               </div>
               <div style={{ height: "300px" }}>
                 <Line data={leadsChartData} options={leadsChartOptions} />

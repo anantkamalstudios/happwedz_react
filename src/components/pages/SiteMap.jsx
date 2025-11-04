@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import useRegions from "../../hooks/useRegions";
 import { MyContext } from "../../context/useContext";
 
@@ -9,12 +8,11 @@ const SiteMap = () => {
   const { setSelectedCategory, setSelectedCategoryName, types } =
     useContext(MyContext);
 
-  const { data: regions, loading: regionsLoading, error } = useRegions();
+  // const { data: regions, loading: regionsLoading, error } = useRegions();
 
-  const [citiesData, setCitiesData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // const [citiesData, setCitiesData] = useState([]);
+  // const [loading, setLoading] = useState(true);
 
-  // 🔍 Category selection handler
   const findCategoryIdByName = (categoryName) => {
     if (!types || !Array.isArray(types)) return null;
     const category = types.find(

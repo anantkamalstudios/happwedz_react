@@ -115,7 +115,7 @@ const ListView = ({ subVenuesData, handleShow }) => {
                       "/images/imageNotFound.jpg"
                     }
                     alt={venue.name}
-                    className="img-fluid rounded-5 object-fit-cover"
+                    className="img-fluid rounded-5 object-fit-contain"
                     style={{ height: "200px", width: "100%" }}
                     onError={(e) => {
                       e.target.onerror = null;

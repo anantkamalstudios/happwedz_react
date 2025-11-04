@@ -846,17 +846,17 @@ const Header = () => {
                             }}
                             onClick={() => setOpenMenu(null)}
                           >
-                            <div className="container">
+                            <div className="container p-0">
                               <div className="row g-4">
                                 <div className="col-md-12">
                                   <h6 className="fw-semibold mb-3 primary-text text-uppercase">
                                     E-Invitation Categories
                                   </h6>
-                                  <ul className="list-unstyled col">
+                                  <ul className="list-unstyled col m-0 p-0">
                                     {einviteCategories.map((sub, j) => (
                                       <li
                                         key={sub.id || j}
-                                        className="col-12 col-md-4 mb-1"
+                                        className="col-12 col-md-4 mb-1 p-0"
                                       >
                                         <Link
                                           to={`/einvites/category/${sub.cardType}`}
@@ -904,17 +904,18 @@ const Header = () => {
                                   <div className="fw-bold primary-text text-uppercase">
                                     Browse by Category
                                   </div>
-                                  <ul className="list-unstyled mb-0">
+                                  <ul className="list-unstyled col mt-2 p-0">
                                     {weddingTopics.map((topic, index) => (
                                       <li
                                         key={index}
-                                        className="dropdown-link small d-block"
+                                        className="dropdown-link small d-block mb-2"
                                       >
                                         <Link
                                           to="/blog"
                                           style={{
                                             textDecoration: " none",
                                             color: "#212529",
+                                            marginBottom: "10px",
                                           }}
                                         >
                                           {topic}
@@ -928,12 +929,12 @@ const Header = () => {
                                   <h6 className="primary-text fw-bold">
                                     Popular Sections
                                   </h6>
-                                  <ul className="list-unstyled mb-0">
+                                  <ul className="list-unstyled mt-2">
                                     {weddingCategories.map(
                                       (category, index) => (
                                         <li
                                           key={index}
-                                          className="dropdown-link small d-block"
+                                          className="dropdown-link small d-block mb-2"
                                         >
                                           <Link
                                             to="/blog"
@@ -954,11 +955,11 @@ const Header = () => {
                                   <h6 className="primary-text fw-bold">
                                     Most Searched Blogs
                                   </h6>
-                                  <ul className="list-unstyled mb-0">
+                                  <ul className="list-unstyled mb-0 mt-2">
                                     {weddingIdeas.map((idea, index) => (
                                       <li
                                         key={index}
-                                        className="dropdown-link small d-block"
+                                        className="dropdown-link small d-block mb-2"
                                       >
                                         <Link
                                           to="/blog"
@@ -1024,11 +1025,11 @@ const Header = () => {
                                   <div className="fw-bold primary-text text-uppercase">
                                     By City
                                   </div>
-                                  <ul className="list-unstyled mb-0">
+                                  <ul className="list-unstyled mb-0 mt-2">
                                     {byCity.map((city, index) => (
                                       <li
                                         key={index}
-                                        className="dropdown-link small d-block"
+                                        className="dropdown-link small d-block mb-2"
                                       >
                                         <Link
                                           to="/real-wedding"
@@ -1048,11 +1049,11 @@ const Header = () => {
                                   <h6 className="primary-text fw-bold">
                                     By Culture
                                   </h6>
-                                  <ul className="list-unstyled mb-0">
+                                  <ul className="list-unstyled mb-0 mt-2">
                                     {byCulture.map((culture, index) => (
                                       <li
                                         key={index}
-                                        className="dropdown-link small d-block"
+                                        className="dropdown-link small d-block mb-2"
                                       >
                                         <Link
                                           to="/real-wedding"
@@ -1072,11 +1073,11 @@ const Header = () => {
                                   <h6 className="primary-text fw-bold">
                                     By Theme
                                   </h6>
-                                  <ul className="list-unstyled mb-0">
+                                  <ul className="list-unstyled mb-0 mt-2">
                                     {byTheme.map((theme, index) => (
                                       <li
                                         key={index}
-                                        className="dropdown-link small d-block"
+                                        className="dropdown-link small d-block mb-2"
                                       >
                                         <Link
                                           to="/real-wedding"

@@ -103,7 +103,6 @@
 
 // export default VendorPricing;
 
-
 import React from "react";
 
 const VendorPricing = ({ formData, setFormData, onSave, onShowSuccess }) => {
@@ -206,7 +205,9 @@ const VendorPricing = ({ formData, setFormData, onSave, onShowSuccess }) => {
 
           {/* Photo Package Price */}
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Photo Package Price</label>
+            <label className="form-label fw-semibold">
+              Photo Package Price
+            </label>
             <input
               type="number"
               className="form-control"
@@ -241,7 +242,7 @@ const VendorPricing = ({ formData, setFormData, onSave, onShowSuccess }) => {
           </div>
 
           {/* Veg Price (for Venues) */}
-          <div className="col-md-6 mb-3">
+          {/* <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">
               Veg Price Per Plate (for Venues)
             </label>
@@ -258,9 +259,10 @@ const VendorPricing = ({ formData, setFormData, onSave, onShowSuccess }) => {
               placeholder="e.g. 600"
             />
           </div>
+          */}
 
           {/* Non-Veg Price (for Venues) */}
-          <div className="col-md-6 mb-3">
+          {/* <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">
               Non-Veg Price Per Plate (for Venues)
             </label>
@@ -276,7 +278,7 @@ const VendorPricing = ({ formData, setFormData, onSave, onShowSuccess }) => {
               }
               placeholder="e.g. 800"
             />
-          </div>
+          </div> */}
 
           {/* Delivery Time (for Photographers/Other Vendors) */}
           <div className="col-md-6 mb-3">
