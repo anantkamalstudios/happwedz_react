@@ -330,27 +330,33 @@ const UserProfile = ({ user, token }) => {
         if (res.status < 200 || res.status >= 300) {
           throw new Error("Failed to save profile");
         }
+        console.log("hellow orld");
 
-        // Update Redux store with new user data if available
         if (res.data?.user) {
-          const updatedUser = res.data.user;
-          dispatch({
-            type: "UPDATE_USER",
-            payload: {
-              ...effectiveUser,
-              name: updatedUser.name || effectiveUser.name,
-              email: updatedUser.email || effectiveUser.email,
-              phone: updatedUser.phone || effectiveUser.phone,
-              weddingVenue:
-                updatedUser.weddingVenue || effectiveUser.weddingVenue,
-              country: updatedUser.country || effectiveUser.country,
-              city: updatedUser.city || effectiveUser.city,
-              weddingDate: updatedUser.weddingDate || effectiveUser.weddingDate,
-              profileImage:
-                updatedUser.profileImage || effectiveUser.profileImage,
-              coverImage: updatedUser.coverImage || effectiveUser.coverImage,
-            },
-          });
+          const updatedUser = res?.data?.user;
+          console.log(updatedUser);
+
+          dispatch(
+            setCredentials({
+              user: {
+                ...effectiveUser,
+                name: updatedUser.name || effectiveUser.name,
+                email: updatedUser.email || effectiveUser.email,
+                phone: updatedUser.phone || effectiveUser.phone,
+                weddingVenue:
+                  updatedUser.weddingVenue || effectiveUser.weddingVenue,
+                country: updatedUser.country || effectiveUser.country,
+                city: updatedUser.city || effectiveUser.city,
+                weddingDate:
+                  updatedUser.weddingDate || effectiveUser.weddingDate,
+                profileImage:
+                  updatedUser.profileImage || effectiveUser.profileImage,
+                coverImage:
+                  updatedUser.coverImage || effectiveUser.coverImage,
+              },
+              token: effectiveToken,
+            })
+          );
 
           // Update local form data with all fields from response
           setFormData((prev) => ({
