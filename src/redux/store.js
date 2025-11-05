@@ -5,6 +5,7 @@ import locationReducer from "./locationSlice";
 import wishlistReducer from "./wishlistSlice";
 import roleReducer from "./roleSlice";
 import favoriteReducer from "./favoriteSlice";
+import filterReducer from "./filterSlice";
 
 const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ const store = configureStore({
     wishlist: wishlistReducer,
     role: roleReducer,
     favorites: favoriteReducer,
+    filters: filterReducer,
   },
 });
 

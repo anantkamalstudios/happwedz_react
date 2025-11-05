@@ -1,20 +1,30 @@
-import { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setActiveFilters,
+  toggleFilter as toggleFilterAction,
+  clearFilters as clearFiltersAction,
+  selectActiveFilters,
+} from "../redux/filterSlice";
 import FILTER_CONFIG, { DEFAULT_FILTERS } from "../data/filtersConfig";
 
 // Backend-ready hook to retrieve filters dynamically per section/subcategory.
 // Manages both filter options and active selections.
+// Now uses Redux to persist filter state
 const useFilters = ({ section, slug }) => {
+  const dispatch = useDispatch();
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
-  const [activeFilters, setActiveFilters] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const preservedFiltersRef = useRef({});
 
   const key = useMemo(() => {
     if (section === "venues" && !slug) return "venues";
     if (slug) return slug;
     return section || "";
   }, [section, slug]);
+
+  // Get active filters from Redux
+  const activeFilters = useSelector((state) => selectActiveFilters(state, key));
 
   useEffect(() => {
     let isMounted = true;
@@ -35,10 +45,8 @@ const useFilters = ({ section, slug }) => {
         const local = FILTER_CONFIG[key] || DEFAULT_FILTERS;
         if (isMounted) {
           setFilters(local);
-          // Preserve existing activeFilters when config changes (don't clear user selections)
-          if (Object.keys(preservedFiltersRef.current).length > 0) {
-            setActiveFilters(preservedFiltersRef.current);
-          }
+          // Filters are now stored in Redux, so they persist automatically
+          // No need to manually preserve/restore them
         }
       } catch (e) {
         if (isMounted) {
@@ -55,46 +63,28 @@ const useFilters = ({ section, slug }) => {
     };
   }, [key, section, slug]);
 
-  // Preserve activeFilters in ref when they change
-  useEffect(() => {
-    if (Object.keys(activeFilters).length > 0) {
-      preservedFiltersRef.current = activeFilters;
-    }
-  }, [activeFilters]);
+  // Toggle a filter value - uses Redux action
+  const toggleFilter = useCallback(
+    (group, value) => {
+      dispatch(toggleFilterAction({ key, group, value }));
+    },
+    [dispatch, key]
+  );
 
-  // Toggle a filter value
-  const toggleFilter = useCallback((group, value) => {
-    setActiveFilters((prev) => {
-      const groupFilters = prev[group] || [];
-      const exists = groupFilters.includes(value);
-
-      if (exists) {
-        // Remove filter
-        const updated = groupFilters.filter((v) => v !== value);
-        if (updated.length === 0) {
-          const { [group]: _, ...rest } = prev;
-          return rest;
-        }
-        return { ...prev, [group]: updated };
-      } else {
-        // Add filter
-        return { ...prev, [group]: [...groupFilters, value] };
-      }
-    });
-  }, []);
-
-  // Clear all filters
+  // Clear all filters - uses Redux action
   const clearFilters = useCallback(() => {
-    setActiveFilters({});
-  }, []);
+    dispatch(clearFiltersAction({ key }));
+  }, [dispatch, key]);
 
   // Clear specific filter group
-  const clearFilterGroup = useCallback((group) => {
-    setActiveFilters((prev) => {
-      const { [group]: _, ...rest } = prev;
-      return rest;
-    });
-  }, []);
+  const clearFilterGroup = useCallback(
+    (group) => {
+      const currentFilters = { ...activeFilters };
+      delete currentFilters[group];
+      dispatch(setActiveFilters({ key, filters: currentFilters }));
+    },
+    [dispatch, key, activeFilters]
+  );
 
   // Check if a filter is active
   const isFilterActive = useCallback(
