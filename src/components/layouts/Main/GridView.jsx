@@ -3,7 +3,7 @@ import { Row, Col, Card, Container } from "react-bootstrap";
 import { FaStar, FaHeart, FaRegHeart } from "react-icons/fa";
 import { TbView360Number } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toggleWishlist } from "../../../redux/authSlice";
 
 const GridView = ({ subVenuesData, handleShow }) => {
@@ -11,6 +11,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
   const [wishlistIds, setWishlistIds] = useState(new Set());
   const dispatch = useDispatch();
   const { token } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
 
   // Fetch wishlist on component mount to initialize favorites
   useEffect(() => {
@@ -85,7 +86,11 @@ const GridView = ({ subVenuesData, handleShow }) => {
         {subVenuesData && subVenuesData.length > 0 ? (
           subVenuesData.map((venue) => (
             <Col key={venue.id} xs={12} sm={6} lg={4} className="mb-4">
-              <Card className="border-0 main-grid-cards rounded-4 overflow-hidden p-2 h-100">
+              <Card
+                className="border-0 main-grid-cards rounded-4 overflow-hidden p-2 h-100"
+                onClick={() => navigate(`/details/info/${venue.id}`)}
+                style={{ cursor: "pointer" }}
+              >
                 <div className="position-relative" style={{ height: "240px" }}>
                   <Card.Img
                     key={`${venue.id}-${venue.image}`}
@@ -150,7 +155,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                 {/* Card Body */}
                 <Card.Body className="p-3">
                   <Link
-                    to={`/details/info/${venue.id}`}
+                    // to={`/details/info/${venue.id}`}
                     className="text-decoration-none"
                   >
                     {/* Title and Rating Row */}

@@ -219,7 +219,7 @@ const RealWeddings = ({ onPostClick }) => {
         </div>
       </section>
 
-      <section
+      {/* <section
         ref={filterRef}
         className="d-flex justify-content-end align-items-center w-100"
         style={{
@@ -374,6 +374,192 @@ const RealWeddings = ({ onPostClick }) => {
               }}
               onClick={scrollToFilters}
             />
+          </div>
+        </div>
+      </section> */}
+
+      <section
+        ref={filterRef}
+        className="d-flex justify-content-center align-items-center w-100"
+        style={{
+          padding: "40px 30px",
+          backgroundColor: "#f8f8f8",
+        }}
+      >
+        <div
+          className="d-flex justify-content-between align-items-center"
+          style={{
+            display: "flex",
+            gap: "15px",
+            width: "100%",
+            padding: "0 40px",
+          }}
+        >
+          <div className="d-flex justify-content-evenly gap-3">
+            {/* City Dropdown */}
+            <div
+              style={{
+                flex: "0 0 auto",
+                width: "220px",
+              }}
+            >
+              <select
+                value={selectedCity}
+                onChange={(e) => {
+                  setSelectedCity(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="form-select"
+                style={{
+                  backgroundColor: "#fff",
+                  border: "1px solid #C31162",
+                  color: "#C31162",
+                  fontSize: "14px",
+                  padding: "10px 35px 10px 15px",
+                  height: "45px",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  textAlign: "center",
+                }}
+                onClick={scrollToFilters}
+              >
+                <option value={"All Cities"} key={"All Cities"}>
+                  All Cities
+                </option>
+                {city.map((c) => (
+                  <option value={c} key={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Culture Dropdown */}
+            <div
+              style={{
+                flex: "0 0 auto",
+                width: "220px",
+              }}
+            >
+              <select
+                value={selectedCulture}
+                onChange={(e) => {
+                  setSelectedCulture(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="form-select"
+                style={{
+                  backgroundColor: "#fff",
+                  border: "1px solid #C31162",
+                  color: "#C31162",
+                  fontSize: "14px",
+                  padding: "10px 35px 10px 15px",
+                  height: "45px",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  textAlign: "center",
+                }}
+                onClick={scrollToFilters}
+              >
+                <option value={"All Cultures"} key={"All Cultures"}>
+                  All Cultures
+                </option>
+                {cultures.map((cul) => (
+                  <option value={cul.name} key={cul.id}>
+                    {cul.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Theme Dropdown */}
+            <div
+              style={{
+                flex: "0 0 auto",
+                width: "220px",
+              }}
+            >
+              <select
+                value={selectedTheme}
+                onChange={(e) => {
+                  setSelectedTheme(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="form-select"
+                style={{
+                  backgroundColor: "#fff",
+                  border: "1px solid #C31162",
+                  color: "#C31162",
+                  fontSize: "14px",
+                  padding: "10px 35px 10px 15px",
+                  height: "45px",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  textAlign: "center",
+                }}
+                onClick={scrollToFilters}
+              >
+                <option value={"All Themes"} key={"All Themes"}>
+                  All Themes
+                </option>
+                {themes.map((the) => (
+                  <option value={the} key={the}>
+                    {the}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Search Input with Button */}
+          <div
+            style={{
+              flex: "1 1 auto",
+              minWidth: "300px",
+              maxWidth: "500px",
+              display: "flex",
+              gap: "0",
+            }}
+          >
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search by name and location..."
+              style={{
+                backgroundColor: "#fff",
+                border: "1px solid #C31162",
+                borderRight: "none",
+                color: "#333",
+                fontSize: "14px",
+                padding: "10px 15px",
+                height: "45px",
+                borderRadius: "4px 0 0 4px",
+              }}
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              onClick={scrollToFilters}
+            />
+            <button
+              type="button"
+              style={{
+                backgroundColor: "#C31162",
+                border: "1px solid #C31162",
+                color: "#fff",
+                fontSize: "14px",
+                padding: "10px 25px",
+                height: "45px",
+                borderRadius: "0 8px 8px 0",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                fontWeight: "500",
+              }}
+              onClick={scrollToFilters}
+            >
+              Find Vendor
+            </button>
           </div>
         </div>
       </section>

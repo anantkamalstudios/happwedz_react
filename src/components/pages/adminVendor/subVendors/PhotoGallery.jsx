@@ -1,11 +1,13 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { FiX } from "react-icons/fi";
 import { IMAGE_BASE_URL } from "../../../../config/constants";
+import SuccessModal from "../../../ui/SuccessModal";
 
 const PhotoGallery = ({ images = [], onImagesChange, onSave }) => {
   const [localImages, setLocalImages] = useState(images);
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   // Browse button click
   const handleButtonClick = () => {
@@ -65,15 +67,16 @@ const PhotoGallery = ({ images = [], onImagesChange, onSave }) => {
   const handleSave = () => {
     const media = localImages.map((img) => img.file || img.preview || img.url);
     onSave(media);
+    setShowModal(true);
   };
 
   const getImageUrl = (image) => {
     const url = image.preview || image.url;
-    if (url && url.startsWith('/uploads/')) {
+    if (url && url.startsWith("/uploads/")) {
       return IMAGE_BASE_URL + url;
     }
     return url;
-  }
+  };
 
   return (
     <div className="container my-5">
@@ -88,8 +91,9 @@ const PhotoGallery = ({ images = [], onImagesChange, onSave }) => {
 
           {/* Drag & Drop Area */}
           <div
-            className={`border-2 border-dashed rounded-4 p-5 text-center ${isDragging ? "border-primary bg-blue-10" : "border-gray-300"
-              }`}
+            className={`border-2 border-dashed rounded-4 p-5 text-center ${
+              isDragging ? "border-primary bg-blue-10" : "border-gray-300"
+            }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -99,7 +103,9 @@ const PhotoGallery = ({ images = [], onImagesChange, onSave }) => {
 
             <button
               className="btn btn-primary px-4 rounded-pill fw-medium"
-              style={{ background: "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)" }}
+              style={{
+                background: "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)",
+              }}
               onClick={handleButtonClick}
               disabled={localImages.length >= 8}
             >
@@ -109,7 +115,11 @@ const PhotoGallery = ({ images = [], onImagesChange, onSave }) => {
               JPG, PNG up to 1MB (Max 8 images)
             </p>
 
-            {localImages.length >= 8 && <div className="mt-3 text-danger">Maximum of 8 images reached</div>}
+            {localImages.length >= 8 && (
+              <div className="mt-3 text-danger">
+                Maximum of 8 images reached
+              </div>
+            )}
           </div>
 
           <input
@@ -155,6 +165,12 @@ const PhotoGallery = ({ images = [], onImagesChange, onSave }) => {
       <button className="btn btn-primary mt-4" onClick={handleSave}>
         Save Gallery
       </button>
+
+      <SuccessModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        message="Your Photos have been saved successfully!"
+      />
     </div>
   );
 };

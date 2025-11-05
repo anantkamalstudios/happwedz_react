@@ -4,7 +4,7 @@ import { FaStar, FaHeart, FaRegHeart } from "react-icons/fa";
 import { BsLightningCharge } from "react-icons/bs";
 import { LuUsers } from "react-icons/lu";
 import { FaIndianRupeeSign } from "react-icons/fa6";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { IoLocationOutline } from "react-icons/io5";
 import { TbView360Number } from "react-icons/tb";
@@ -18,6 +18,7 @@ const ListView = ({ subVenuesData, handleShow }) => {
   const [hoveredImages, setHoveredImages] = useState({});
   const [favorites, setFavorites] = useState({});
   const [wishlistIds, setWishlistIds] = useState(new Set());
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!token) {
@@ -105,7 +106,11 @@ const ListView = ({ subVenuesData, handleShow }) => {
       <Row>
         {filteredVenues.map((venue) => (
           <Col xs={12} key={venue.id}>
-            <Card className="p-3 mb-4 border-0 shadow-lg rounded-5 overflow-hidden">
+            <Card
+              className="p-3 mb-4 border-0 shadow-lg rounded-5 overflow-hidden"
+              onClick={() => navigate(`/details/info/${venue.id}`)}
+              style={{ cursor: "pointer" }}
+            >
               <Row className="g-0">
                 <Col md={4} className="position-relative">
                   <Card.Img
@@ -115,7 +120,7 @@ const ListView = ({ subVenuesData, handleShow }) => {
                       "/images/imageNotFound.jpg"
                     }
                     alt={venue.name}
-                    className="img-fluid rounded-5 object-fit-contain"
+                    className="img-fluid rounded-5 object-fit-cover"
                     style={{ height: "200px", width: "100%" }}
                     onError={(e) => {
                       e.target.onerror = null;
@@ -170,7 +175,7 @@ const ListView = ({ subVenuesData, handleShow }) => {
 
                 <Col md={8} className="p-3 d-flex flex-column">
                   <Link
-                    to={`/details/info/${venue.id}`}
+                    // to={`/details/info/${venue.id}`}
                     className="text-decoration-none"
                   >
                     <div className="d-flex justify-content-between align-items-start">
