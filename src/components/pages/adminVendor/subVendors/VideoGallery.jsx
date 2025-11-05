@@ -1,176 +1,295 @@
-import React, { useEffect } from "react";
-import { useState, useRef, useCallback } from "react";
-import { FiX } from "react-icons/fi";
+import React, { useState, useEffect } from "react";
+import { X, Plus, Video } from "lucide-react";
 
-const VideoGallery = ({ videos = [], onVideosChange }) => {
-  const [localVideos, setLocalVideos] = useState(videos);
+const VideoGallery = ({ videos: initialVideos = [], onVideosChange }) => {
+  const [videos, setVideos] = useState(initialVideos);
   const [newVideoUrl, setNewVideoUrl] = useState("");
 
   const handleAddUrl = () => {
-    if (newVideoUrl.trim()) {
-      const newVideo = {
-        id: Math.random().toString(36).substr(2, 9),
-        url: newVideoUrl.trim(),
-        preview: newVideoUrl.trim(),
-        title: "",
-        type: "video",
-        file: null,
-      };
-      const updatedVideos = [...localVideos, newVideo];
-      setLocalVideos(updatedVideos);
-      // Immediately notify parent so backend can store the url
-      if (onVideosChange) {
-        // Only send id, url, title, type (no preview/file)
-        onVideosChange(
-          updatedVideos.map(({ id, url, title, type }) => ({
-            id,
-            url,
-            title,
-            type,
-          }))
-        );
-      }
-      setNewVideoUrl("");
-    }
-  };
+    if (!newVideoUrl.trim()) return;
 
-  const handleTitleChange = (id, value) => {
-    setLocalVideos((prev) =>
-      prev.map((img) => (img.id === id ? { ...img, title: value } : img))
-    );
+    const newVideo = {
+      id: Math.random().toString(36).substr(2, 9),
+      url: newVideoUrl.trim(),
+      preview: newVideoUrl.trim(),
+    };
+
+    const updatedVideos = [...videos, newVideo];
+    setVideos(updatedVideos);
+    if (onVideosChange) {
+      // Only pass the URL to parent, which is what we want in the final payload
+      onVideosChange(updatedVideos);
+    }
+    setNewVideoUrl("");
   };
 
   const handleRemoveVideo = (id) => {
-    const updatedVideos = localVideos.filter((img) => img.id !== id);
-    setLocalVideos(updatedVideos);
-    // Immediately notify parent so backend stays in sync
+    const updatedVideos = videos.filter((v) => v.id !== id);
+    setVideos(updatedVideos);
     if (onVideosChange) {
-      onVideosChange(
-        updatedVideos.map(({ id, url, title, type }) => ({
-          id,
-          url,
-          title,
-          type,
-        }))
-      );
+      // Only pass the URL to parent, which is what we want in the final payload
+      onVideosChange(updatedVideos);
     }
   };
 
-  // Sync down from parent when prop changes
-  useEffect(() => {
-    // Accept both uploaded videos (with preview) and videos with a URL (from backend)
-    if (Array.isArray(videos)) {
-      const normalized = videos.map((v) => {
-        // If the video has a preview (local upload), keep as is
-        if (v.preview) return v;
-        // If the video has a url/path (from backend), show as preview
-        if (v.url || v.path) {
-          return {
-            ...v,
-            preview: v.url || v.path,
-            id: v.id || Math.random().toString(36).substr(2, 9),
-            type: v.type || "video",
-            title: v.title || "",
-            file: null,
-          };
-        }
-        return v;
-      });
-      setLocalVideos(normalized);
-    } else {
-      setLocalVideos([]);
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && newVideoUrl.trim()) {
+      handleAddUrl();
     }
-  }, [videos]);
+  };
 
-  // Notify parent on change
   useEffect(() => {
-    if (onVideosChange) {
-      // Only send id, url, title, type (no preview/file)
-      onVideosChange(
-        localVideos.map(({ id, url, title, type }) => ({
-          id,
-          url,
-          title,
-          type,
-        }))
-      );
+    if (Array.isArray(initialVideos)) {
+      const normalized = initialVideos
+        .map((v) => {
+          if (v && typeof v === "object" && (v.url || v.preview)) {
+            return {
+              id: v.id || Math.random().toString(36).substr(2, 9),
+              url: v.url || v.preview,
+              preview: v.preview || v.url,
+            };
+          }
+          if (typeof v === "string") {
+            return {
+              id: Math.random().toString(36).substr(2, 9),
+              url: v,
+              preview: v,
+            };
+          }
+          return null;
+        })
+        .filter(Boolean);
+      setVideos(normalized);
     }
-  }, [localVideos, onVideosChange]);
+  }, [initialVideos]);
 
   return (
-    <div className="container my-5">
-      <div className="card shadow-lg border-0 rounded-3 overflow-hidden">
-        <div className="card-body p-4 p-md-5">
-          <h3 className="mb-4 text-center text-gradient">
-            <span className="primary-text">
-              Upload your best videos to showcase your work
-            </span>
-          </h3>
+    <div
+      style={{
+        minHeight: "100vh",
 
-          {/* URL Input Section */}
-          <div className="mb-4">
-            <label className="form-label fw-semibold">Add Video by URL</label>
-            <div className="input-group">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Paste video URL (MP4, WebM, etc.)"
-                value={newVideoUrl}
-                onChange={(e) => setNewVideoUrl(e.target.value)}
-              />
-              <button
-                className="btn btn-primary"
-                type="button"
-                onClick={handleAddUrl}
-                disabled={!newVideoUrl.trim()}
-              >
-                Add
-              </button>
-            </div>
-            <div className="form-text">
-              Only direct video URLs (MP4, WebM, etc.) are supported.
-            </div>
-          </div>
+        padding: "40px 0",
+      }}
+    >
+      <div className="container">
+        <div className="row justify-content-center">
+          <div className="col-12 col-lg-10">
+            {/* Header Card */}
+            <div
+              className="card shadow-lg mb-4"
+              style={{
+                borderRadius: "20px",
+                border: "none",
+                background: "rgba(255, 255, 255, 0.95)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <div className="card-body p-4">
+                <div className="text-center mb-4">
+                  <div
+                    className="d-inline-flex align-items-center justify-content-center mb-3"
+                    style={{
+                      width: "70px",
+                      height: "70px",
+                      borderRadius: "20px",
+                      background: "#ed1173",
+                    }}
+                  >
+                    <Video size={35} color="white" />
+                  </div>
+                  <h2 className="fw-bold mb-2" style={{ color: "#2d3748" }}>
+                    Video Gallery
+                  </h2>
+                  <p className="text-muted mb-0">
+                    Add and manage your video collection
+                  </p>
+                </div>
 
-          {/* Preview Section */}
-          {localVideos.length > 0 && (
-            <div className="mt-5">
-              <h4 className="mb-4">Preview Videos</h4>
+                {/* Input Section */}
+                <div className="row g-2">
+                  <div className="col">
+                    <input
+                      type="text"
+                      placeholder="Enter video URL (MP4, WebM, etc.)"
+                      value={newVideoUrl}
+                      onChange={(e) => setNewVideoUrl(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      className="form-control form-control-lg"
+                      style={{
+                        borderRadius: "12px",
+                        border: "2px solid #e2e8f0",
+                        padding: "12px 20px",
+                        fontSize: "16px",
+                      }}
+                    />
+                  </div>
+                  <div className="col-auto">
+                    <button
+                      onClick={handleAddUrl}
+                      disabled={!newVideoUrl.trim()}
+                      className="btn btn-lg d-flex align-items-center gap-2"
+                      style={{
+                        background: "#ed1173",
+                        color: "white",
+                        borderRadius: "12px",
+                        border: "none",
+                        padding: "12px 30px",
+                        fontWeight: "600",
+                        transition: "all 0.3s ease",
+                      }}
+                      onMouseOver={(e) => {
+                        if (!e.currentTarget.disabled) {
+                          e.currentTarget.style.transform = "translateY(-2px)";
+                          e.currentTarget.style.boxShadow =
+                            "0 8px 20px rgba(102, 126, 234, 0.4)";
+                        }
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
+                    >
+                      <Plus size={20} />
+                      Add Video
+                    </button>
+                  </div>
+                </div>
+
+                {videos.length > 0 && (
+                  <div className="mt-3">
+                    <div
+                      className="badge"
+                      style={{
+                        background: "#ed1173",
+                        color: "white",
+                        fontSize: "14px",
+                        padding: "8px 16px",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      {videos.length} {videos.length === 1 ? "Video" : "Videos"}{" "}
+                      Added
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Video Grid */}
+            {videos.length > 0 && (
               <div className="row g-4">
-                {localVideos.map((video) => (
-                  <div key={video.id} className="col-md-3 col-6">
-                    <div className="card border-0 shadow-sm h-100">
-                      <div className="position-relative">
+                {videos.map((video) => (
+                  <div key={video.id} className="col-12 col-sm-6 col-lg-4">
+                    <div
+                      className="card h-100 shadow-lg"
+                      style={{
+                        borderRadius: "16px",
+                        border: "none",
+                        overflow: "hidden",
+                        background: "white",
+                        transition: "all 0.3s ease",
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.transform = "translateY(-8px)";
+                        e.currentTarget.style.boxShadow =
+                          "0 20px 40px rgba(0, 0, 0, 0.15)";
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow =
+                          "0 10px 30px rgba(0, 0, 0, 0.1)";
+                      }}
+                    >
+                      <div style={{ position: "relative" }}>
                         <video
-                          src={video.preview || video.url || video.path}
-                          className="card-img-top object-fit-cover"
-                          style={{ height: "150px" }}
+                          src={video.url}
                           controls
+                          style={{
+                            width: "100%",
+                            height: "220px",
+                            objectFit: "cover",
+                            background: "#f7fafc",
+                          }}
                         />
                         <button
-                          className="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle"
                           onClick={() => handleRemoveVideo(video.id)}
+                          className="btn btn-danger btn-sm d-flex align-items-center justify-content-center"
+                          style={{
+                            position: "absolute",
+                            top: "12px",
+                            right: "12px",
+                            width: "36px",
+                            height: "36px",
+                            borderRadius: "50%",
+                            padding: "0",
+                            border: "none",
+                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+                            transition: "all 0.2s ease",
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.transform = "scale(1.1)";
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.transform = "scale(1)";
+                          }}
                         >
-                          <FiX size={16} />
+                          <X size={18} />
                         </button>
                       </div>
-                      <div className="card-body">
-                        <input
-                          type="text"
-                          className="form-control border-0 border-bottom rounded-0 px-0"
-                          placeholder="Video title"
-                          value={video.title}
-                          onChange={(e) =>
-                            handleTitleChange(video.id, e.target.value)
-                          }
-                        />
+                      <div className="card-body p-3">
+                        <p
+                          className="mb-0"
+                          style={{
+                            fontSize: "13px",
+                            color: "#718096",
+                            wordBreak: "break-all",
+                            display: "-webkit-box",
+                            WebkitLineClamp: "2",
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {video.url}
+                        </p>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+
+            {/* Empty State */}
+            {videos.length === 0 && (
+              <div
+                className="card shadow-lg"
+                style={{
+                  borderRadius: "20px",
+                  border: "2px dashed #cbd5e0",
+                  background: "rgba(255, 255, 255, 0.95)",
+                }}
+              >
+                <div className="card-body text-center py-5">
+                  <div
+                    className="d-inline-flex align-items-center justify-content-center mb-3"
+                    style={{
+                      width: "80px",
+                      height: "80px",
+                      borderRadius: "50%",
+                      background: "#ed1173",
+                    }}
+                  >
+                    <Video size={40} color="#a0aec0" />
+                  </div>
+                  <h4 className="fw-bold mb-2" style={{ color: "#4a5568" }}>
+                    No Videos Yet
+                  </h4>
+                  <p className="text-muted mb-0">
+                    Start adding video URLs to build your gallery
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

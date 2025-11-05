@@ -3,6 +3,10 @@ import {
   extractPriceFilters,
   extractCapacityFilters,
   extractVenueSubCategories,
+  extractFoodPriceFilters,
+  extractRoomsFilters,
+  extractRatingFilters,
+  extractReviewFilters,
 } from "../utils/priceFilterUtils";
 
 const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
@@ -89,9 +93,45 @@ const useApiData = (
           params.append("maxCapacity", maxCapacity.toString());
         }
 
+        // Extract food price per plate
+        const { minFoodPrice, maxFoodPrice } = extractFoodPriceFilters(memoizedFilters);
+        if (minFoodPrice !== null && minFoodPrice !== undefined) {
+          params.append("minFoodPrice", minFoodPrice.toString());
+        }
+        if (maxFoodPrice !== null && maxFoodPrice !== undefined) {
+          params.append("maxFoodPrice", maxFoodPrice.toString());
+        }
+
+        // Extract rooms
+        const { minRooms, maxRooms } = extractRoomsFilters(memoizedFilters);
+        if (minRooms !== null && minRooms !== undefined) {
+          params.append("minRooms", minRooms.toString());
+        }
+        if (maxRooms !== null && maxRooms !== undefined) {
+          params.append("maxRooms", maxRooms.toString());
+        }
+
+        // Extract rating
+        const { minRating, maxRating } = extractRatingFilters(memoizedFilters);
+        if (minRating !== null && minRating !== undefined) {
+          params.append("minRating", minRating.toString());
+        }
+        if (maxRating !== null && maxRating !== undefined) {
+          params.append("maxRating", maxRating.toString());
+        }
+
+        // Extract reviews
+        const { minReviews, maxReviews } = extractReviewFilters(memoizedFilters);
+        if (minReviews !== null && minReviews !== undefined) {
+          params.append("minReviews", minReviews.toString());
+        }
+        if (maxReviews !== null && maxReviews !== undefined) {
+          params.append("maxReviews", maxReviews.toString());
+        }
+
         // Add other filters as JSON (excluding price filters)
         const nonPriceFilters = { ...memoizedFilters };
-        // Remove price/capacity/venue-type keys from filters JSON
+        // Remove price/capacity/venue-type/food price/rooms/rating/reviews keys from filters JSON
         Object.keys(nonPriceFilters).forEach((key) => {
           const lowerKey = key.toLowerCase();
           if (
@@ -109,7 +149,10 @@ const useApiData = (
             lowerKey.includes("physical invite price") ||
             lowerKey.includes("pricing for 200 guests") ||
             lowerKey === "capacity" ||
-            lowerKey === "venue type"
+            lowerKey === "venue type" ||
+            lowerKey === "rooms" ||
+            lowerKey === "rating" ||
+            lowerKey === "review count"
           ) {
             delete nonPriceFilters[key];
           }

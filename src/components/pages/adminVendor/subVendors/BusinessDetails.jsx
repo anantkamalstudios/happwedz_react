@@ -272,107 +272,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
   return (
     <div className="">
       {/* Change Password panel */}
-      <div className="p-3 border rounded mb-4 bg-white">
-        <h6 className="mb-3 fw-bold">Change Password</h6>
-        {!showPasswordFields ? (
-          <button
-            type="button"
-            className="btn btn-outline-secondary"
-            onClick={() => {
-              setShowPasswordFields(true);
-              setError("");
-              setSuccess("");
-            }}
-          >
-            Change Password
-          </button>
-        ) : (
-          <div>
-            <div className="mb-3">
-              <label className="form-label">Current Password</label>
-              <input
-                type={showPasswords ? "text" : "password"}
-                className="form-control"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-              />
-              {changePwdErrors.oldPassword && (
-                <div className="text-danger small">
-                  {changePwdErrors.oldPassword}
-                </div>
-              )}
-            </div>
-            <div className="mb-3">
-              <label className="form-label">New Password</label>
-              <input
-                type={showPasswords ? "text" : "password"}
-                className="form-control"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-              {changePwdErrors.newPassword && (
-                <div className="text-danger small">
-                  {changePwdErrors.newPassword}
-                </div>
-              )}
-              {newPassword ? (
-                <div className="small mt-1">
-                  Strength: <strong>{getPasswordStrength(newPassword)}</strong>
-                </div>
-              ) : null}
-            </div>
-            <div className="mb-3">
-              <label className="form-label">Confirm New Password</label>
-              <input
-                type={showPasswords ? "text" : "password"}
-                className="form-control"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-              {changePwdErrors.confirmPassword && (
-                <div className="text-danger small">
-                  {changePwdErrors.confirmPassword}
-                </div>
-              )}
-            </div>
-            <div className="d-flex gap-2">
-              <div className="me-auto d-flex align-items-center">
-                <input
-                  id="showPasswords"
-                  type="checkbox"
-                  className="form-check-input me-2"
-                  checked={showPasswords}
-                  onChange={(e) => setShowPasswords(e.target.checked)}
-                />
-                <label htmlFor="showPasswords" className="form-check-label">
-                  Show passwords
-                </label>
-              </div>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleChangePassword}
-                disabled={changePwdLoading}
-              >
-                {changePwdLoading ? "Updating..." : "Update Password"}
-              </button>
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={() => {
-                  setShowPasswordFields(false);
-                  setCurrentPassword("");
-                  setNewPassword("");
-                  setConfirmPassword("");
-                  setChangePwdErrors({});
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+
       {/* <div className="p-3 border rounded mb-4 bg-white">
         <h6 className="mb-3 fw-bold">Login Information</h6>
         <div className="mb-3">
@@ -701,6 +601,108 @@ const BusinessDetails = ({ formData, setFormData }) => {
             value={formData.attributes?.lastName || ""}
             onChange={handleAttributeChange}
           />
+        </div>
+        <div className="p-3 border rounded mb-4 bg-white">
+          <h6 className="mb-3 fw-bold">Change Password</h6>
+          {!showPasswordFields ? (
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              onClick={() => {
+                setShowPasswordFields(true);
+                setError("");
+                setSuccess("");
+              }}
+            >
+              Change Password
+            </button>
+          ) : (
+            <div>
+              <div className="mb-3">
+                <label className="form-label">Current Password</label>
+                <input
+                  type={showPasswords ? "text" : "password"}
+                  className="form-control"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                />
+                {changePwdErrors.oldPassword && (
+                  <div className="text-danger small">
+                    {changePwdErrors.oldPassword}
+                  </div>
+                )}
+              </div>
+              <div className="mb-3">
+                <label className="form-label">New Password</label>
+                <input
+                  type={showPasswords ? "text" : "password"}
+                  className="form-control"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+                {changePwdErrors.newPassword && (
+                  <div className="text-danger small">
+                    {changePwdErrors.newPassword}
+                  </div>
+                )}
+                {newPassword ? (
+                  <div className="small mt-1">
+                    Strength:{" "}
+                    <strong>{getPasswordStrength(newPassword)}</strong>
+                  </div>
+                ) : null}
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Confirm New Password</label>
+                <input
+                  type={showPasswords ? "text" : "password"}
+                  className="form-control"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+                {changePwdErrors.confirmPassword && (
+                  <div className="text-danger small">
+                    {changePwdErrors.confirmPassword}
+                  </div>
+                )}
+              </div>
+              <div className="d-flex gap-2">
+                <div className="me-auto d-flex align-items-center">
+                  <input
+                    id="showPasswords"
+                    type="checkbox"
+                    className="form-check-input me-2"
+                    checked={showPasswords}
+                    onChange={(e) => setShowPasswords(e.target.checked)}
+                  />
+                  <label htmlFor="showPasswords" className="form-check-label">
+                    Show passwords
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleChangePassword}
+                  disabled={changePwdLoading}
+                >
+                  {changePwdLoading ? "Updating..." : "Update Password"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={() => {
+                    setShowPasswordFields(false);
+                    setCurrentPassword("");
+                    setNewPassword("");
+                    setConfirmPassword("");
+                    setChangePwdErrors({});
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       {error && <div className="alert alert-danger mt-2">{error}</div>}
