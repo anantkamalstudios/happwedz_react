@@ -90,6 +90,19 @@ const Footer = () => {
                 }}
               />
             </Link>
+
+            <p
+              style={{
+                marginTop: "20px",
+                maxWidth: "85%",
+                fontSize: "15px",
+                lineHeight: "1.8",
+              }}
+            >
+              29/1B, Sinhgad Rd, next to Vidya Sahakri Bank,
+              <br /> Near Veer Baji Pasalkar Chowk, Kirti Nagar, Vadgaon Budruk,
+              Pune, Maharashtra 411041
+            </p>
           </div>
 
           {/* === PLAN YOUR WEDDING === */}
