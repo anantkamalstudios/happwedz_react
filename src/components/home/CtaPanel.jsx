@@ -9,10 +9,22 @@ const CtaPanel = ({
   btnName,
   heading,
   subHeading,
+  background,
 }) => {
   return (
     <div className="home-cta-section my-5">
-      <div className="container ui-card">
+      <div
+        className="container ui-card"
+        style={{
+          background:
+            background === "bigleaf"
+              ? `linear-gradient(to bottom, #fbcfe8, #f7e0ed, #f8defc), url(${background})`
+              : `url(${background})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
         <div className="row ">
           {/* Logo - col-2 */}
           <div className="col-12 col-md-1 text-md-end mb-3 mb-md-0">
@@ -41,7 +53,16 @@ const CtaPanel = ({
             {btnName && link && (
               <div className="d-flex justify-content-end w-100">
                 <Link to={link}>
-                  <button className="btn" style={{padding:"10px 8rem", backgroundColor:"#C31162", color:"#fff"}}>{btnName}</button>
+                  <button
+                    className="btn"
+                    style={{
+                      padding: "10px 8rem",
+                      backgroundColor: "#C31162",
+                      color: "#fff",
+                    }}
+                  >
+                    {btnName}
+                  </button>
                 </Link>
               </div>
             )}

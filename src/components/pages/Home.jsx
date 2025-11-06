@@ -14,11 +14,14 @@ import AppDownloadSection from "../home/AppDownloadSection";
 import MansoryImageSection from "../home/MansoryImageSection";
 import CtaPanel from "../home/CtaPanel";
 import logo from "../../../public/happywed_white.png";
-import image from "../../../public/images/home/try.png";
+// import image from "../../../public/images/home/try.png";
+import image from "../../../public/images/home/1.jpg";
 import einviteImage from "../../../public/images/home/einvite.png";
 import MainTestimonial from "../home/MainTestimonial";
 import MetroCities from "../home/MetroCities";
 import HomeGennie from "../common/HomeGennie";
+import bigleafcta1 from "../../../public/images/home/bigleafcta1.jpg";
+import bigleaf from "../../../public/images/home/bigleaf.png";
 const Home = () => {
   return (
     <div style={{ position: "relative" }}>
@@ -34,6 +37,7 @@ const Home = () => {
         title="Create Your Look !"
         subtitle="Experience How You'll Look in Your Wedding Day with AI-Powered Virtual Makeover."
         btnName="Try Virtual Look"
+        background={bigleafcta1}
       />
       <PlanningToolsCTA />
       <MansoryImageSection />
@@ -43,10 +47,11 @@ const Home = () => {
         img={einviteImage}
         heading="E-INVITES"
         subHeading="Create Stunning Digital Wedding Invitations That Wow"
-        title="Design Beautiful E-Invites with Our Easy-to-Use Editor !" 
+        title="Design Beautiful E-Invites with Our Easy-to-Use Editor !"
         subtitle="Discover curated options that fit your style, budget and location. Search and compare instantly."
         link="/einvites"
         btnName="Create Your E-Invite"
+        background={bigleaf}
       />
       <RealWeddings />
       {/* <FeaturedVendorsSection /> */}

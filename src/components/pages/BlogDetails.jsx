@@ -122,10 +122,7 @@ const BlogDetails = ({ blogId, onBackClick }) => {
         </button>
       </div>
 
-      <div
-        className="container"
-        style={{ maxWidth: "700px", paddingBottom: "4rem" }}
-      >
+      <div className="container">
         {blogData.category && (
           <div className="text-center mb-3">
             <span
@@ -143,7 +140,12 @@ const BlogDetails = ({ blogId, onBackClick }) => {
             </span>
           </div>
         )}
+      </div>
 
+      <div
+        className="container"
+        style={{ maxWidth: "700px", paddingBottom: "4rem" }}
+      >
         <h1
           className="text-center mb-4"
           style={{
@@ -336,56 +338,81 @@ const BlogDetails = ({ blogId, onBackClick }) => {
           >
             Share this beautiful wedding story
           </p>
-          <div>
-            <button
-              className="btn btn-sm me-2 mb-2"
-              style={{
-                backgroundColor: "#3b5998",
-                color: "white",
-                borderRadius: "20px",
-                padding: "8px 20px",
-                border: "none",
-              }}
-            >
-              Facebook
-            </button>
-            <button
-              className="btn btn-sm me-2 mb-2"
-              style={{
-                backgroundColor: "#1DA1F2",
-                color: "white",
-                borderRadius: "20px",
-                padding: "8px 20px",
-                border: "none",
-              }}
-            >
-              Twitter
-            </button>
-            <button
-              className="btn btn-sm me-2 mb-2"
-              style={{
-                backgroundColor: "#E60023",
-                color: "white",
-                borderRadius: "20px",
-                padding: "8px 20px",
-                border: "none",
-              }}
-            >
-              Pinterest
-            </button>
-            <button
-              className="btn btn-sm mb-2"
-              style={{
-                backgroundColor: "#25D366",
-                color: "white",
-                borderRadius: "20px",
-                padding: "8px 20px",
-                border: "none",
-              }}
-            >
-              WhatsApp
-            </button>
-          </div>
+
+          {(() => {
+            const blogUrl = `https://happywedz.com/blog/${blogId}`;
+            const blogTitle = encodeURIComponent(
+              blogData.title || "Beautiful Wedding Story"
+            );
+            const encodedUrl = encodeURIComponent(blogUrl);
+
+            const shareLinks = {
+              facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+              twitter: `https://twitter.com/intent/tweet?text=${blogTitle}&url=${encodedUrl}`,
+              pinterest: `https://pinterest.com/pin/create/button/?url=${encodedUrl}&description=${blogTitle}`,
+              whatsapp: `https://api.whatsapp.com/send?text=${blogTitle}%20${encodedUrl}`,
+            };
+
+            return (
+              <div>
+                <button
+                  onClick={() => window.open(shareLinks.facebook, "_blank")}
+                  className="btn btn-sm me-2 mb-2"
+                  style={{
+                    backgroundColor: "#3b5998",
+                    color: "white",
+                    borderRadius: "20px",
+                    padding: "8px 20px",
+                    border: "none",
+                  }}
+                >
+                  Facebook
+                </button>
+
+                <button
+                  onClick={() => window.open(shareLinks.twitter, "_blank")}
+                  className="btn btn-sm me-2 mb-2"
+                  style={{
+                    backgroundColor: "#1DA1F2",
+                    color: "white",
+                    borderRadius: "20px",
+                    padding: "8px 20px",
+                    border: "none",
+                  }}
+                >
+                  Twitter
+                </button>
+
+                <button
+                  onClick={() => window.open(shareLinks.pinterest, "_blank")}
+                  className="btn btn-sm me-2 mb-2"
+                  style={{
+                    backgroundColor: "#E60023",
+                    color: "white",
+                    borderRadius: "20px",
+                    padding: "8px 20px",
+                    border: "none",
+                  }}
+                >
+                  Pinterest
+                </button>
+
+                <button
+                  onClick={() => window.open(shareLinks.whatsapp, "_blank")}
+                  className="btn btn-sm mb-2"
+                  style={{
+                    backgroundColor: "#25D366",
+                    color: "white",
+                    borderRadius: "20px",
+                    padding: "8px 20px",
+                    border: "none",
+                  }}
+                >
+                  WhatsApp
+                </button>
+              </div>
+            );
+          })()}
         </div>
 
         <div

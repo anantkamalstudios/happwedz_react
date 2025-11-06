@@ -33,6 +33,7 @@ import { MyContext } from "../../context/useContext";
 import axios from "axios";
 import ViewSwitcher from "../layouts/Main/ViewSwitcher";
 import ListView from "../layouts/Main/ListView";
+import UserPrivateRoute from "../routes/UserPrivateRoute";
 
 const MainSection = () => {
   const { section } = useParams();
@@ -282,7 +283,9 @@ const MainSection = () => {
   if (section === "genie") {
     return (
       <>
-        <Genie />
+        <UserPrivateRoute>
+          <Genie />
+        </UserPrivateRoute>
       </>
     );
   }
