@@ -107,19 +107,16 @@ const PhotoGallery = ({ images = [], onImagesChange, onSave }) => {
                 background: "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)",
               }}
               onClick={handleButtonClick}
-              disabled={localImages.length >= 8}
             >
               Browse Files
             </button>
-            <p className="small text-muted mt-2 mb-0">
-              JPG, PNG up to 1MB (Max 8 images)
-            </p>
+            <p className="small text-muted mt-2 mb-0">JPG, PNG up to 1MB</p>
 
-            {localImages.length >= 8 && (
+            {/* {localImages.length >= 8 && (
               <div className="mt-3 text-danger">
                 Maximum of 8 images reached
               </div>
-            )}
+            )} */}
           </div>
 
           <input
