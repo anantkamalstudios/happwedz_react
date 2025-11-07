@@ -13,7 +13,7 @@ const GridImages = ({ category, searchQuery, photos }) => {
           "https://happywedzbackend.happywedz.com"
         );
         // Extract filename and create fallback URL for blogs folder
-        const filename = url.split('/').pop();
+        const filename = url.split("/").pop();
         fallbackUrl = `https://happywedzbackend.happywedz.com/uploads/blogs/${filename}`;
       }
       if (url?.startsWith("https://happywedz.com/uploads/photography/")) {
@@ -22,7 +22,7 @@ const GridImages = ({ category, searchQuery, photos }) => {
           "https://happywedzbackend.happywedz.com"
         );
         // Extract filename and create fallback URL for blogs folder
-        const filename = url.split('/').pop();
+        const filename = url.split("/").pop();
         fallbackUrl = `https://happywedzbackend.happywedz.com/uploads/blogs/${filename}`;
       }
       if (url?.startsWith("https://happywedz.com/uploads/blogs/")) {
@@ -47,11 +47,10 @@ const GridImages = ({ category, searchQuery, photos }) => {
         img.description?.toLowerCase().includes(searchLower) ||
         img.photographer_name?.toLowerCase().includes(searchLower) ||
         img.city_name?.toLowerCase().includes(searchLower) ||
-        img.tags?.some(tag => tag.toLowerCase().includes(searchLower));
+        img.tags?.some((tag) => tag.toLowerCase().includes(searchLower));
 
       return matchesCategory && matchesSearch;
     });
-
 
   return (
     <div className="py-5 container">
@@ -59,38 +58,43 @@ const GridImages = ({ category, searchQuery, photos }) => {
         {filteredImages.length === 0 && (
           <div className="text-center text-muted">No images found.</div>
         )}
-        {filteredImages.map((img, index) => (
-          <div key={index} className="masonry-item">
-            <Link
-              to={`/photography/details/${img.id}`}
-              className="text-decoration-none"
-              style={{ cursor: "pointer" }}
-            >
-              <div className="card border-0 shadow-sm">
-                <img
-                  src={
-                    img.url || "https://via.placeholder.com/300x200?text=No+Image"
-                  }
-                  alt={img.title || "No Title"}
-                  className="card-img-top"
-                  loading="lazy"
-                  onError={(e) => {
-                    if (img.fallbackUrl && e.target.src !== img.fallbackUrl) {
-                      e.target.src = img.fallbackUrl;
-                    } else {
-                      e.target.src =
-                        "https://via.placeholder.com/300x200?text=No+Image";
+        {filteredImages
+          .filter((img) => img.status === "active")
+          .map((img, index) => (
+            <div key={index} className="masonry-item">
+              <Link
+                to={`/photography/details/${img.id}`}
+                className="text-decoration-none"
+                style={{ cursor: "pointer" }}
+              >
+                <div className="card border-0 shadow-sm">
+                  <img
+                    src={
+                      img.url ||
+                      "https://via.placeholder.com/300x200?text=No+Image"
                     }
-                  }}
-                />
-                <div className="card-body p-2">
-                  <h6 className="mb-1">{img.title || "No Title"}</h6>
-                  <small className="text-muted">{img.city_name || "No City"}</small>
+                    alt={img.title || "No Title"}
+                    className="card-img-top"
+                    loading="lazy"
+                    onError={(e) => {
+                      if (img.fallbackUrl && e.target.src !== img.fallbackUrl) {
+                        e.target.src = img.fallbackUrl;
+                      } else {
+                        e.target.src =
+                          "https://via.placeholder.com/300x200?text=No+Image";
+                      }
+                    }}
+                  />
+                  <div className="card-body p-2">
+                    <h6 className="mb-1">{img.title || "No Title"}</h6>
+                    <small className="text-muted">
+                      {img.city_name || "No City"}
+                    </small>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          </div>
-        ))}
+              </Link>
+            </div>
+          ))}
       </div>
     </div>
   );

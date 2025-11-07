@@ -264,9 +264,11 @@ const VendorAvailability = ({
   onShowSuccess,
 }) => {
   const [availableDates, setAvailableDates] = useState(
-    (formData?.availableSlots || formData?.available_slots || []).map(
-      (item) => item.date
-    )
+    (
+      formData?.attributes?.availableSlots ||
+      formData?.attributes?.available_slots ||
+      []
+    ).map((item) => item.date)
   );
 
   // Sync selected dates to formData.availableSlots automatically
@@ -275,12 +277,11 @@ const VendorAvailability = ({
       ...prev,
       availableSlots: availableDates.map((d) => ({
         date: d,
-        slots: [],
+        // slots: [],
       })),
     }));
   }, [availableDates, setFormData]);
 
-  // Nested input change handler (for timing fields)
   const handleNestedInputChange = (subSection, field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -302,7 +303,7 @@ const VendorAvailability = ({
       <div className="p-3 border rounded bg-white">
         <h6 className="mb-3 fw-bold">Availability & Slots</h6>
 
-        <div className="row">
+        {/* <div className="row">
           <div className="col-md-4 mb-3">
             <label className="form-label fw-semibold">Opening Time</label>
             <input
@@ -370,7 +371,7 @@ const VendorAvailability = ({
               <option value="No">No</option>
             </select>
           </div>
-        </div>
+        </div> */}
 
         {/* Calendar Section */}
         <div className="row">
