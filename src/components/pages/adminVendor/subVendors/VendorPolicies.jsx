@@ -142,7 +142,7 @@ const VendorPolicies = ({ formData, setFormData, onSave }) => {
             <input
               type="text"
               className="form-control"
-              value={formData.payment_terms || ""}
+              value={formData?.payment_terms || ""}
               onChange={(e) =>
                 handleInputChange("payment_terms", e.target.value)
               }
