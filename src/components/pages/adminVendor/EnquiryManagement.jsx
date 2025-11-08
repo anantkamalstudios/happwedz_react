@@ -23,6 +23,7 @@ import {
 import { useSelector } from "react-redux";
 import QuotationModal from "./QuotationModal";
 import { useToast } from "../../layouts/toasts/Toast";
+import axios from "axios";
 
 const API_BASE_URL = "https://happywedz.com/api";
 
@@ -119,6 +120,8 @@ const EnquiryManagement = () => {
         url = `${API_BASE_URL}/inbox/request/${requestId}/status`;
         headers["Content-Type"] = "application/json";
         options.body = JSON.stringify({ newStatus: action });
+      } else if (isArchiveAction) {
+        url = `${API_BASE_URL}/inbox/${inboxId}/archive`;
       } else {
         url = `${API_BASE_URL}/inbox/${inboxId}/${action}`;
       }
@@ -166,11 +169,21 @@ const EnquiryManagement = () => {
         setSelectedLead(null);
       }
 
-      // Refetch to ensure data consistency
       fetchInbox();
     } catch (err) {
       console.error(`Error on action '${action}':`, err);
       setError(err.message);
+    }
+  };
+
+  const handleDeleteEmail = async (id) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/inbox/${id}`, {
+        headers: { Authorization: `Bearer ${vendorToken} ` },
+      });
+      fetchInbox();
+    } catch (e) {
+      console.log(e);
     }
   };
 
@@ -189,6 +202,12 @@ const EnquiryManagement = () => {
         count: counts.total,
         icon: <Inbox size={18} />,
       },
+      // {
+      //   id: "read",
+      //   name: "Read",
+      //   count: counts.read,
+      //   icon: <MailOpen size={18} />,
+      // },
       {
         id: "unread",
         name: "Unread",
@@ -681,18 +700,34 @@ const EnquiryManagement = () => {
                                 </div>
                               </div>
                             </div>
-                            {/* <button
-                              className="btn btn-outline-secondary btn-sm rounded-pill"
-                              onClick={() =>
-                                handleAction(
-                                  selectedLead,
-                                  selectedLead.isArchived ? "" : "archive"
-                                )
-                              }
-                            >
-                              <Archive size={14} className="me-1" />
-                              {selectedLead.isArchived ? "" : "Archive"}
-                            </button> */}
+
+                            <div className="d-flex gap-2">
+                              <button
+                                className="btn btn-outline-secondary btn-sm rounded-pill"
+                                onClick={() =>
+                                  handleAction(
+                                    selectedLead,
+                                    selectedLead.isArchived
+                                      ? "unarchive"
+                                      : "archive"
+                                  )
+                                }
+                              >
+                                {/* <Archive size={14} className="me-1" /> */}
+                                {selectedLead.isArchived
+                                  ? "Unarchive"
+                                  : "Archive"}
+                              </button>
+                              <button
+                                className="btn btn-outline-secondary btn-sm rounded-pill"
+                                onClick={() =>
+                                  handleDeleteEmail(selectedLead.id)
+                                }
+                              >
+                                {" "}
+                                Delete
+                              </button>
+                            </div>
                           </div>
 
                           {/* Meta Info Cards */}

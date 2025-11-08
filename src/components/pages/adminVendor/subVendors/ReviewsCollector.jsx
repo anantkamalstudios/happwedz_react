@@ -112,13 +112,8 @@ ${name}`;
         reviewUrl,
       };
 
-      // const response = await axios.post(
-      //   'http://localhost:4000/reviews/review-requests',
-      //   payload
-      // );
-
       const response = await axios.post(
-        "https://happywedz.com/api/reviews/review-requests",
+        "https://happywedz.com/api/reviews/send-review-request",
         payload,
         {
           headers: {
