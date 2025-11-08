@@ -6,7 +6,9 @@ const Photos = ({ title, images = [], loading = false }) => {
   const displayImages = images && images.length > 0 ? images : [];
 
   const normalizeImageUrl = (url) => {
-    if (!url) return "https://via.placeholder.com/450x300?text=Image+Not+Available";
+    // if (!url) return "https://via.placeholder.com/450x300?text=Image+Not+Available";
+    if (!url)
+      return "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
     if (url.startsWith("http")) {
       return url.replace("http://happywedz.com/", IMAGE_BASE_URL);
     }
@@ -51,7 +53,8 @@ const Photos = ({ title, images = [], loading = false }) => {
 
           const imageUrl = normalizeImageUrl(rawUrl);
           const imageName = img.title || img.name || "Wedding Photo";
-          const imageType = img.category_name || img.type_name || img.type || "";
+          const imageType =
+            img.category_name || img.type_name || img.type || "";
 
           return (
             <div key={img.id || index} className="masonry-item">
@@ -73,7 +76,9 @@ const Photos = ({ title, images = [], loading = false }) => {
                   />
                   <div className="card-body p-2">
                     <h6 className="mb-1 text-dark">{imageName}</h6>
-                    {imageType && <small className="text-muted">{imageType}</small>}
+                    {imageType && (
+                      <small className="text-muted">{imageType}</small>
+                    )}
                   </div>
                 </div>
               </Link>

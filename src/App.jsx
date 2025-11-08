@@ -24,7 +24,7 @@ import TopRatedVendors from "./components/pages/TopRatedVendors";
 import CareersPage from "./components/pages/CareersPage";
 import DestinationWeddingDetailPage from "./components/pages/DestinationWeddingDetailPage";
 import BusinessClaimForm from "./components/pages/BusinessClaimForm";
-import PrivacyPolicy from "./components/pages/PrivacyPolicy";
+// import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
@@ -49,6 +49,8 @@ const MatrimonialMain = lazy(() =>
 const ProfileMatrimonial = lazy(() =>
   import("./components/pages/matrimonial/ProfileMatrimonial")
 );
+const PrivacyPolicy = lazy(() => import("./components/pages/PrivacyPolicy"));
+
 const MatrimonialRegister = lazy(() =>
   import("./components/pages/matrimonial/MatrimonialRegistration")
 );
