@@ -22,6 +22,26 @@ const BusinessDetails = ({ formData, setFormData }) => {
 
   const { vendor, token } = useSelector((state) => state.vendorAuth || {});
   const dispatch = useDispatch();
+
+  // Fetch fresh vendor data from API when component loads
+  useEffect(() => {
+    const fetchVendorData = async () => {
+      if (vendor?.id) {
+        try {
+          const vendorData = await vendorsApi.getVendorById(vendor.id);
+          if (vendorData) {
+            // Update Redux store with fresh vendor data from API
+            dispatch(setVendor(vendorData));
+          }
+        } catch (error) {
+          console.error("Failed to fetch vendor data:", error);
+        }
+      }
+    };
+
+    fetchVendorData();
+  }, [vendor?.id, dispatch]);
+
   // Pre-fill data from Redux when the component loads
   useEffect(() => {
     if (vendor) {
@@ -83,7 +103,17 @@ const BusinessDetails = ({ formData, setFormData }) => {
         vendor.image ||
         vendor.picture ||
         null;
-      setProfileImagePreview(candidate || null);
+
+      // Normalize URL - fix /src/uploads/ to /uploads/ if present
+      let imageUrl = candidate;
+      if (imageUrl && typeof imageUrl === "string") {
+        // Fix the URL path if it has /src/uploads/ instead of /uploads/
+        imageUrl = imageUrl.replace(/\/src\/uploads\//g, "/uploads/");
+      } else {
+        imageUrl = null;
+      }
+
+      setProfileImagePreview(imageUrl);
     } else {
       setProfileImagePreview(null);
     }
@@ -108,7 +138,6 @@ const BusinessDetails = ({ formData, setFormData }) => {
   const buildRegisterPayload = () => {
     const a = formData.attributes || {};
     const payload = {
-      id: vendor?.id || null,
       businessName: a.businessName || "",
       email: a.email || "",
       phone: a.phone || "",
@@ -128,7 +157,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
     if (newPassword && newPassword === confirmPassword) {
       payload.password = newPassword;
     }
-    // Add profileImageFile for update
+    // Add profileImageFile for update (will be handled separately in FormData)
     if (profileImageFile) {
       payload.profileImage = profileImageFile;
     }
@@ -170,36 +199,51 @@ const BusinessDetails = ({ formData, setFormData }) => {
         // If profileImageFile is present, use FormData
         if (profileImageFile) {
           const formDataObj = new FormData();
+          // Append all fields except profileImage (we'll append the file separately)
           Object.entries(payload).forEach(([key, value]) => {
-            // skip null/undefined values when appending
-            if (value === null || value === undefined) return;
-            formDataObj.append(key, value);
+            // Skip null/undefined values and the profileImage key (we handle file separately)
+            if (value === null || value === undefined || key === "profileImage") return;
+            // Convert numbers to strings for FormData, keep strings as-is (including empty strings)
+            const formValue = typeof value === "number" ? String(value) : value;
+            formDataObj.append(key, formValue);
           });
-          // ensure file is appended under expected key
-          if (profileImageFile)
-            formDataObj.append("profileImage", profileImageFile);
+          // Append the file with the correct key
+          formDataObj.append("profileImage", profileImageFile);
           updatedVendor = await vendorsApi.updateVendor(vendor.id, formDataObj);
         } else {
           // Update without file using the vendorsApi.updateVendor endpoint
           updatedVendor = await vendorsApi.updateVendor(vendor.id, payload);
         }
 
-        // Update Redux store with the updated vendor data
-        if (updatedVendor) {
-          // Merge updated data with existing vendor data
+        // Fetch fresh vendor data from API after successful update to get updated profileImage URL
+        try {
+          const freshVendorData = await vendorsApi.getVendorById(vendor.id);
+          if (freshVendorData) {
+            // Update Redux store with fresh vendor data from API (includes updated profileImage URL)
+            dispatch(setVendor(freshVendorData));
+          } else {
+            // Fallback: merge without profileImage File object
+            const { profileImage: _, ...payloadWithoutFile } = payload;
+            const mergedVendor = {
+              ...vendor,
+              ...payloadWithoutFile,
+            };
+            dispatch(setVendor(mergedVendor));
+          }
+        } catch (fetchError) {
+          // If fetch fails, still update with what we have (excluding File object)
+          console.warn("Failed to fetch updated vendor:", fetchError);
+          const { profileImage: _, ...payloadWithoutFile } = payload;
           const mergedVendor = {
             ...vendor,
-            ...updatedVendor,
-            ...payload,
+            ...payloadWithoutFile,
           };
           dispatch(setVendor(mergedVendor));
-        } else {
-          // If API doesn't return updated data, merge from payload
-          const mergedVendor = {
-            ...vendor,
-            ...payload,
-          };
-          dispatch(setVendor(mergedVendor));
+        }
+
+        // Clear the file selection after successful update so preview uses server URL
+        if (profileImageFile) {
+          setProfileImageFile(null);
         }
       } else {
         // Register new vendor
@@ -371,7 +415,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
           <label className="form-label">Profile Image</label>
           <div className="d-flex align-items-center gap-3">
             <div style={{ width: 96, height: 96, flex: "0 0 96px" }}>
-              {profileImagePreview ? (
+              {profileImagePreview && typeof profileImagePreview === "string" ? (
                 <img
                   src={profileImagePreview}
                   alt="Profile preview"
@@ -381,6 +425,14 @@ const BusinessDetails = ({ formData, setFormData }) => {
                     objectFit: "cover",
                     borderRadius: "50%",
                     border: "1px solid #e5e7eb",
+                  }}
+                  onError={(e) => {
+                    // If image fails to load, log error and hide image
+                    console.error("Failed to load profile image:", profileImagePreview);
+                    e.target.style.display = "none";
+                  }}
+                  onLoad={() => {
+                    console.log("Profile image loaded successfully:", profileImagePreview);
                   }}
                 />
               ) : (

@@ -10,12 +10,16 @@ const getAuthHeader = (token) =>
 
 export const createWebsite = async (formData, token) => {
   try {
-    const res = await axios.post(`${API_BASE_URL}wedding-websites`, formData, {
-      headers: {
-        ...getAuthHeader(token),
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const res = await axios.post(
+      `${API_BASE_URL}weddingwebsite/wedding-websites`,
+      formData,
+      {
+        headers: {
+          ...getAuthHeader(token),
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
     return res.data;
   } catch (err) {
     console.error(
@@ -32,9 +36,12 @@ export const createWebsite = async (formData, token) => {
 
 export const getMyWebsites = async (token) => {
   try {
-    const res = await axios.get(`${API_BASE_URL}wedding-websites`, {
-      headers: getAuthHeader(token),
-    });
+    const res = await axios.get(
+      `${API_BASE_URL}weddingwebsite/wedding-websites`,
+      {
+        headers: getAuthHeader(token),
+      }
+    );
     return res.data;
   } catch (err) {
     console.error(
@@ -47,9 +54,12 @@ export const getMyWebsites = async (token) => {
 
 export const getWebsiteById = async (id, token) => {
   try {
-    const res = await axios.get(`${API_BASE_URL}wedding-websites/${id}`, {
-      headers: getAuthHeader(token),
-    });
+    const res = await axios.get(
+      `${API_BASE_URL}weddingwebsite/wedding-websites/${id}`,
+      {
+        headers: getAuthHeader(token),
+      }
+    );
     return res.data;
   } catch (err) {
     console.error(
@@ -63,7 +73,7 @@ export const getWebsiteById = async (id, token) => {
 export const updateWebsite = async (id, formData, token) => {
   try {
     const res = await axios.put(
-      `${API_BASE_URL}wedding-websites/${id}`,
+      `${API_BASE_URL}weddingwebsite/wedding-websites/${id}`,
       formData,
       {
         headers: {
@@ -88,9 +98,12 @@ export const updateWebsite = async (id, formData, token) => {
 
 export const deleteWebsite = async (id, token) => {
   try {
-    const res = await axios.delete(`${API_BASE_URL}wedding-websites/${id}`, {
-      headers: getAuthHeader(token),
-    });
+    const res = await axios.delete(
+      `${API_BASE_URL}weddingwebsite/wedding-websites/${id}`,
+      {
+        headers: getAuthHeader(token),
+      }
+    );
     return res.data;
   } catch (err) {
     console.error(
@@ -104,7 +117,7 @@ export const deleteWebsite = async (id, token) => {
 export const publishWebsite = async (id, token) => {
   try {
     const res = await axios.post(
-      `${API_BASE_URL}wedding-websites/${id}/publish`,
+      `${API_BASE_URL}weddingwebsite/wedding-websites/${id}/publish`,
       {},
       {
         headers: getAuthHeader(token),
@@ -122,9 +135,12 @@ export const publishWebsite = async (id, token) => {
 
 export const viewPublicWebsite = async (websiteUrl, token) => {
   try {
-    const res = await axios.get(`${API_BASE_URL}wedding/${websiteUrl}`, {
-      headers: getAuthHeader(token),
-    });
+    const res = await axios.get(
+      `${API_BASE_URL}weddingwebsite/wedding/${websiteUrl}`,
+      {
+        headers: getAuthHeader(token),
+      }
+    );
     return res.data;
   } catch (err) {
     console.error(
