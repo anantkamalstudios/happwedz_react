@@ -91,6 +91,12 @@ const SubSection = () => {
     setActiveFilters(filters);
   };
 
+  // Reset filters when navigating to a different section/slug (route change)
+  // This ensures API calls use fresh filters (not previous route's filters)
+  useEffect(() => {
+    setActiveFilters({});
+  }, [section, slug]);
+
   useEffect(() => {
     if (cityFromQuery && cityFromQuery !== "all") {
       setSelectedCity(cityFromQuery);

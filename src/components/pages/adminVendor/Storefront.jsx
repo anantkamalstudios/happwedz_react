@@ -1,43 +1,13 @@
 import { IMAGE_BASE_URL } from "../../../config/constants.js";
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
-import { FaQuestion, FaRegBuilding } from "react-icons/fa";
-import {
-  FaMapMarkerAlt,
-  FaQuestionCircle,
-  FaBullhorn,
-  FaCamera,
-  FaVideo,
-  FaCalendarAlt,
-  FaHandshake,
-  FaUsers,
-  FaShareAlt,
-  FaRing,
-  FaBuilding,
-  FaPhone,
-  FaImage,
-  FaRupeeSign,
-  FaCheckCircle,
-  FaFilePdf,
-  FaClock,
-  FaGift,
-} from "react-icons/fa";
+import { FaRegBuilding } from "react-icons/fa";
 import { Nav } from "react-bootstrap";
-import {
-  CiBullhorn,
-  CiCircleInfo,
-  CiCircleQuestion,
-  CiLocationOn,
-} from "react-icons/ci";
+import { CiBullhorn, CiCircleQuestion, CiLocationOn } from "react-icons/ci";
 import BusinessDetails from "./subVendors/BusinessDetails";
-import VendorForm from "./subVendors/VendorForm";
-import LocationForm from "./subVendors/LocationForm";
 import PromoForm from "./subVendors/PromoForm";
 import PhotoGallery from "./subVendors/PhotoGallery";
 import VideoGallery from "./subVendors/VideoGallery";
-import Event from "./subVendors/Event";
-import EndorsementForm from "./subVendors/EndorsementForm";
-import OwnersManager from "./subVendors/OwnersManager";
 // import SocialDetails from "./subVendors/SocialDetails";
 // Vendor Form Sections
 import VendorBasicInfo from "./subVendors/VendorBasicInfo";
@@ -114,12 +84,12 @@ const Storefront = ({ setCompletion }) => {
           const actualData = Array.isArray(serviceData)
             ? serviceData[0]
             : serviceData;
-          if (actualData) {
-            if (actualData.media) {
-              // Support both new flat-array media responses and legacy { gallery, videos } shape
-              let gallery = [];
-              let videos = [];
 
+          if (actualData) {
+            let gallery = [];
+            let videos = [];
+
+            if (actualData.media) {
               if (Array.isArray(actualData.media)) {
                 // media: ["/uploads/x.jpg", "https://.../y.png"]
                 gallery = actualData.media.map((item) =>
@@ -143,41 +113,57 @@ const Storefront = ({ setCompletion }) => {
                     )
                   : [];
               }
-
-              // Normalize gallery and videos: prefix relative paths and build draft objects
-              const photoDraftsData = Array.isArray(gallery)
-                ? gallery.map((item, index) => {
-                    let preview = item || "";
-                    if (preview && preview.startsWith("/uploads/"))
-                      preview = IMAGE_BASE_URL + preview;
-                    return {
-                      preview,
-                      file: null,
-                    };
-                  })
-                : [];
-              setPhotoDrafts(photoDraftsData.filter((p) => p.preview));
-
-              const videoDraftsData = Array.isArray(videos)
-                ? videos.map((item, index) => {
-                    let preview = item || "";
-                    if (preview && preview.startsWith("/uploads/"))
-                      preview = IMAGE_BASE_URL + preview;
-                    return {
-                      id: `video_${index}`,
-                      title: "",
-                      type: "video",
-                      preview,
-                      file: null,
-                    };
-                  })
-                : [];
-              setVideoDrafts(videoDraftsData.filter((v) => v.preview));
             }
+
+            if (actualData.attributes) {
+              const videosFromAttr =
+                actualData.attributes.video ||
+                actualData.attributes.vedio ||
+                [];
+              if (Array.isArray(videosFromAttr)) {
+                const normalizedVideos = videosFromAttr
+                  .map((v) =>
+                    typeof v === "string" ? v : v.url || v.path || null
+                  )
+                  .filter(Boolean);
+                videos = [...new Set([...videos, ...normalizedVideos])];
+              }
+            }
+
+            // Normalize gallery and videos: prefix relative paths and build draft objects
+            const photoDraftsData = Array.isArray(gallery)
+              ? gallery.map((item, index) => {
+                  let preview = item || "";
+                  if (preview && preview.startsWith("/uploads/"))
+                    preview = IMAGE_BASE_URL + preview;
+                  return {
+                    preview,
+                    file: null,
+                  };
+                })
+              : [];
+            setPhotoDrafts(photoDraftsData.filter((p) => p.preview));
+
+            const videoDraftsData = Array.isArray(videos)
+              ? videos.map((item, index) => {
+                  let preview = item || "";
+                  if (preview && preview.startsWith("/uploads/"))
+                    preview = IMAGE_BASE_URL + preview;
+                  return {
+                    id: `video_${index}`,
+                    title: "",
+                    type: "video",
+                    preview,
+                    file: null,
+                  };
+                })
+              : [];
+            setVideoDrafts(videoDraftsData.filter((v) => v.preview));
             if (actualData && actualData.attributes) {
               setFormData((prev) => ({
                 ...prev,
                 ...actualData,
+                deals: actualData.attributes.deals || [],
                 contact: actualData.attributes.contact
                   ? {
                       contactName: actualData.attributes.contact.name || "",
@@ -232,7 +218,7 @@ const Storefront = ({ setCompletion }) => {
                   actualData.attributes.cancellation_policy || "",
                 refundPolicy: actualData.attributes.refund_policy || "",
 
-                paymentTerms: actualData.attributes.payment_terms || "",
+                payment_terms: actualData.attributes.payment_terms || "",
                 parking: actualData.attributes.parking || "",
 
                 tnc: actualData.attributes.tnc || "",
@@ -272,6 +258,7 @@ const Storefront = ({ setCompletion }) => {
                 delivery_time: actualData.attributes.delivery_time || "",
                 decorPolicy: actualData.attributes.decor_policy || "",
                 area: actualData.attributes.area || "",
+                video: actualData.attributes.video || [],
 
                 attributes: {
                   ...prev.attributes,
@@ -280,8 +267,6 @@ const Storefront = ({ setCompletion }) => {
                     actualData.attributes.contact?.email ||
                     prev.attributes?.email,
                 },
-
-                // add other fields as needed
               }));
             }
           }
@@ -330,11 +315,9 @@ const Storefront = ({ setCompletion }) => {
   }, [photoDrafts]);
 
   useEffect(() => {
-    const meta = videoDrafts.map(({ id, title, type = "video", preview }) => ({
-      id,
-      title,
-      type,
-      preview,
+    // Persist only lightweight preview URLs for videos (avoid storing internal ids/titles)
+    const meta = videoDrafts.map(({ preview, url }) => ({
+      preview: preview || url,
     }));
     localStorage.setItem("videoDraftsMeta", JSON.stringify(meta));
   }, [videoDrafts]);
@@ -415,9 +398,9 @@ const Storefront = ({ setCompletion }) => {
       available_slots: Array.isArray(formData.availableSlots)
         ? formData.availableSlots.map((s) => ({
             date: s.date,
-            slots:
-              s.slots ||
-              (s.timeFrom && s.timeTo ? [`${s.timeFrom}-${s.timeTo}`] : []),
+            // slots:
+            //   s.slots ||
+            //   (s.timeFrom && s.timeTo ? [`${s.timeFrom}-${s.timeTo}`] : []),
           }))
         : [],
       catering_policy: formData.cateringPolicy || "",
@@ -452,6 +435,21 @@ const Storefront = ({ setCompletion }) => {
       ...(Array.isArray(formData.attributes?.menus)
         ? { menus: formData.attributes.menus }
         : {}),
+
+      video: Array.isArray(videoDrafts)
+        ? videoDrafts
+            .map((v) => v.url || v.preview || "")
+            .filter(
+              (url) =>
+                url &&
+                typeof url === "string" &&
+                !url.startsWith("blob:") &&
+                !url.startsWith("data:")
+            )
+            .map((url) =>
+              url.startsWith("/uploads/") ? IMAGE_BASE_URL + url : url
+            )
+        : formData.attributes?.video || [],
     };
 
     // Remove undefined keys
@@ -476,20 +474,8 @@ const Storefront = ({ setCompletion }) => {
       : Array.isArray(formData.gallery)
       ? formData.gallery.filter((g) => typeof g === "string")
       : [];
-
-    const videos = Array.isArray(videoDrafts)
-      ? videoDrafts
-          .map((v) => v.preview || v.url || v.path || null)
-          .filter(Boolean)
-      : Array.isArray(formData.media?.videos)
-      ? formData.media.videos
-          .map((v) => (typeof v === "string" ? v : v.url || v.path || null))
-          .filter(Boolean)
-      : [];
-
     const media = {
       gallery,
-      videos,
       coverImage: formData.media?.coverImage || formData.coverImage || "",
     };
 
@@ -511,12 +497,9 @@ const Storefront = ({ setCompletion }) => {
     const gallery = Array.isArray(m.gallery)
       ? m.gallery.map(normalizeUrl).filter(Boolean)
       : [];
-    const videos = Array.isArray(m.videos)
-      ? m.videos.map(normalizeUrl).filter(Boolean)
-      : [];
 
-    // prefer images first, then videos (both as URL strings)
-    return [...gallery, ...videos];
+    // Only include gallery images in the flat media array. Videos are sent under attributes.video
+    return gallery;
   };
 
   const buildFormData = () => {
@@ -649,7 +632,7 @@ const Storefront = ({ setCompletion }) => {
   };
 
   // Only show Menus sidebar for vendorTypeName 'Venues' or 'Caterers' (case-insensitive)
-  const allowedMenuTypes = ["venues", "caterers"];
+  const allowedMenuTypes = React.useMemo(() => ["venues", "caterers"], []);
   const normalizedVendorTypeName = (vendorTypeName || "").trim().toLowerCase();
 
   // Calculate completion percentage
@@ -681,7 +664,8 @@ const Storefront = ({ setCompletion }) => {
         id: "vendor-policies",
         fields: ["tnc", "cancellationPolicy", "refundPolicy"],
       },
-      { id: "vendor-availability", fields: ["timing.open", "timing.close"] },
+      // { id: "vendor-availability", fields: ["timing.open", "timing.close"] },
+      { id: "vendor-availability", fields: ["attributes.available_slots"] },
       { id: "vendor-marketing", fields: ["primaryCTA"] },
     ];
 
@@ -843,7 +827,6 @@ const Storefront = ({ setCompletion }) => {
             onImagesChange={setPhotoDrafts}
             onShowSuccess={showSuccessModal}
             onSave={(media) => {
-              // media: array of File or preview/url strings
               const drafts = (media || []).map((m) => {
                 if (m instanceof File) {
                   return {
@@ -857,7 +840,6 @@ const Storefront = ({ setCompletion }) => {
                     preview = IMAGE_BASE_URL + preview;
                   return { preview, file: null };
                 }
-                // fallback for objects
                 return {
                   preview: m.preview || m.url || "",
                   file: m.file || null,

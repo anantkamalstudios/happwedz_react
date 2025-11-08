@@ -27,14 +27,17 @@ const BlogsCarousel = () => {
         // Map API fields to component fields
         const mappedBlogs = result.data.map((blog) => {
           // Remove the port number (4000) from the image URL
-          const cleanedImageUrl = blog.image.replace('https://happywedz.com:4000', 'https://happywedzbackend.happywedz.com/');
+          const cleanedImageUrl = blog.image.replace(
+            "https://happywedz.com:4000",
+            "https://happywedzbackend.happywedz.com/"
+          );
 
           return {
             id: blog.id,
             title: blog.title,
             desc: blog.shortDescription,
             category: "Blog",
-            img: cleanedImageUrl,  // use the cleaned image URL
+            img: cleanedImageUrl,
             author: blog.author,
             authorImg: "./images/no-image.png",
             date: new Date(blog.postDate).toLocaleDateString(),
@@ -54,8 +57,6 @@ const BlogsCarousel = () => {
 
     fetchBlogs();
   }, []);
-
-
 
   return (
     <div className="blogs-carousel-wrapper py-5 px-3">
@@ -94,15 +95,16 @@ const BlogsCarousel = () => {
             <SwiperSlide key={i}>
               <div
                 className="blogs-card p-2 m-2"
-                style={{ height: "500px", borderRadius: "0", cursor: "pointer" }}
+                style={{
+                  height: "550px",
+                  borderRadius: "0",
+                  cursor: "pointer",
+                }}
                 onClick={() => navigate(`/blog/${blog.id}`)}
               >
                 {/* Image */}
                 <div className="blogs-card-image p-2">
-                  <img
-                    src={blog.img}
-                    alt={blog.title}
-                  />
+                  <img src={blog.img} alt={blog.title} />
                 </div>
 
                 {/* Content */}

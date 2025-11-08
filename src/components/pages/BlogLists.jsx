@@ -10,7 +10,6 @@ import {
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-
 const BlogLists = ({ onPostClick }) => {
   const [blogs, setBlogs] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -65,12 +64,15 @@ const BlogLists = ({ onPostClick }) => {
     const vendorMatch =
       !selectedVendor ||
       (blog.author &&
-        blog.author.toLowerCase().includes(selectedVendor.toLowerCase()));
+        blog.author
+          .toLowerCase()
+          .split(" ")
+          .some((word) => word.startsWith(selectedVendor.toLowerCase())));
     const dateMatch =
       !selectedDate ||
       (blog.postDate &&
         new Date(blog.postDate).toDateString() ===
-        new Date(selectedDate).toDateString());
+          new Date(selectedDate).toDateString());
 
     return titleMatch && vendorMatch && dateMatch;
   });
@@ -113,7 +115,10 @@ const BlogLists = ({ onPostClick }) => {
       }
       let path = imageData;
       if (!useFallback) {
-        path = imageData.replace(/\/uploads\/blogs\//g, "/uploads/photography/");
+        path = imageData.replace(
+          /\/uploads\/blogs\//g,
+          "/uploads/photography/"
+        );
       }
       return baseUrl + path;
     }
@@ -124,7 +129,10 @@ const BlogLists = ({ onPostClick }) => {
       }
       let path = imageData[0];
       if (!useFallback) {
-        path = imageData[0].replace(/\/uploads\/blogs\//g, "/uploads/photography/");
+        path = imageData[0].replace(
+          /\/uploads\/blogs\//g,
+          "/uploads/photography/"
+        );
       }
       return baseUrl + path;
     }
@@ -134,7 +142,7 @@ const BlogLists = ({ onPostClick }) => {
 
   const handleImageError = (e, imageKey, imageData) => {
     if (!imageErrors[imageKey]) {
-      setImageErrors(prev => ({ ...prev, [imageKey]: true }));
+      setImageErrors((prev) => ({ ...prev, [imageKey]: true }));
       e.target.src = getImageUrl(imageData, true);
     } else {
       e.target.src = "./images/noimage.jpeg";
@@ -216,9 +224,18 @@ const BlogLists = ({ onPostClick }) => {
                         <div className="row g-0" style={{ height: "100%" }}>
                           <div className="col-6">
                             <img
-                              src={getImageUrl(blog.image[0], imageErrors[`${blog.id}-0`])}
+                              src={getImageUrl(
+                                blog.image[0],
+                                imageErrors[`${blog.id}-0`]
+                              )}
                               alt={blog.title}
-                              onError={(e) => handleImageError(e, `${blog.id}-0`, blog.image[0])}
+                              onError={(e) =>
+                                handleImageError(
+                                  e,
+                                  `${blog.id}-0`,
+                                  blog.image[0]
+                                )
+                              }
                               style={{
                                 width: "100%",
                                 height: "240px",
@@ -228,9 +245,18 @@ const BlogLists = ({ onPostClick }) => {
                           </div>
                           <div className="col-6">
                             <img
-                              src={getImageUrl(blog.image[1], imageErrors[`${blog.id}-1`])}
+                              src={getImageUrl(
+                                blog.image[1],
+                                imageErrors[`${blog.id}-1`]
+                              )}
                               alt={blog.title}
-                              onError={(e) => handleImageError(e, `${blog.id}-1`, blog.image[1])}
+                              onError={(e) =>
+                                handleImageError(
+                                  e,
+                                  `${blog.id}-1`,
+                                  blog.image[1]
+                                )
+                              }
                               style={{
                                 width: "100%",
                                 height: "240px",
@@ -241,10 +267,15 @@ const BlogLists = ({ onPostClick }) => {
                         </div>
                       ) : (
                         <img
-                          src={getImageUrl(blog.image, imageErrors[`${blog.id}-main`])}
+                          src={getImageUrl(
+                            blog.image,
+                            imageErrors[`${blog.id}-main`]
+                          )}
                           className="card-img-top"
                           alt={blog.title}
-                          onError={(e) => handleImageError(e, `${blog.id}-main`, blog.image)}
+                          onError={(e) =>
+                            handleImageError(e, `${blog.id}-main`, blog.image)
+                          }
                           style={{
                             width: "100%",
                             height: "240px",
@@ -323,8 +354,9 @@ const BlogLists = ({ onPostClick }) => {
               <nav className="mt-5">
                 <ul className="pagination justify-content-center">
                   <li
-                    className={`page-item ${currentPage === 1 ? "disabled" : ""
-                      }`}
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -339,8 +371,9 @@ const BlogLists = ({ onPostClick }) => {
                   {[...Array(totalPages)].map((_, idx) => (
                     <li
                       key={idx}
-                      className={`page-item ${currentPage === idx + 1 ? "active" : ""
-                        }`}
+                      className={`page-item ${
+                        currentPage === idx + 1 ? "active" : ""
+                      }`}
                     >
                       <button
                         className="page-link"
@@ -357,8 +390,9 @@ const BlogLists = ({ onPostClick }) => {
                     </li>
                   ))}
                   <li
-                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
-                      }`}
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"

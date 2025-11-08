@@ -26,6 +26,7 @@ ${name}`;
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({ username: "", email: "" });
 
   const vendorId = vendor?.id || vendor?._id || vendor?.vendorId;
   const ccEmail =
@@ -35,11 +36,52 @@ ${name}`;
     : `${window.location.origin}/write-review/`;
 
   const addRecipient = () => {
-    if (username.trim() && email.trim()) {
-      setRecipients([...recipients, { username, email }]);
-      setUsername("");
-      setEmail("");
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    const newErrors = { username: "", email: "" };
+
+    if (!trimmedUsername) {
+      newErrors.username = "Username is required.";
+      Swal.fire({
+        icon: "error",
+        text: "Username is required.",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#ed1173",
+      });
     }
+
+    if (!trimmedEmail) {
+      newErrors.email = "Email is required.";
+      Swal.fire({
+        icon: "error",
+        text: "Email is required.",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#ed1173",
+      });
+    } else if (!emailRegex.test(trimmedEmail)) {
+      newErrors.email = "Please enter a valid email address.";
+      Swal.fire({
+        icon: "error",
+        text: "Please enter a valid email address.",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#ed1173",
+      });
+    }
+
+    if (newErrors.username || newErrors.email) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setRecipients([
+      ...recipients,
+      { username: trimmedUsername, email: trimmedEmail },
+    ]);
+    setUsername("");
+    setEmail("");
+    setErrors({ username: "", email: "" });
   };
 
   const removeRecipient = (index) => {
@@ -70,13 +112,8 @@ ${name}`;
         reviewUrl,
       };
 
-      // const response = await axios.post(
-      //   'http://localhost:4000/reviews/review-requests',
-      //   payload
-      // );
-
       const response = await axios.post(
-        "https://happywedz.com/api/reviews/review-requests",
+        "https://happywedz.com/api/reviews/send-review-request",
         payload,
         {
           headers: {
@@ -150,7 +187,7 @@ ${name}`;
                   placeholder="Username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && addRecipient()}
+                  onKeyDown={(e) => e.key === "Enter" && addRecipient()}
                 />
               </div>
               <div className="col-md-5">
@@ -160,7 +197,7 @@ ${name}`;
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && addRecipient()}
+                  onKeyDown={(e) => e.key === "Enter" && addRecipient()}
                 />
               </div>
               <div className="col-md-2">

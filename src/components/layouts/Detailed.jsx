@@ -11,6 +11,7 @@ import "swiper/css/autoplay";
 import vendorServicesApi from "../../services/api/vendorServicesApi";
 import PricingModal from "./PricingModal";
 import BusinessClaimForm from "../pages/BusinessClaimForm";
+import DOMPurify from "dompurify";
 
 import {
   FaStar,
@@ -676,7 +677,7 @@ const Detailed = () => {
                           className="img-fluid rounded"
                           style={{
                             cursor: "pointer",
-                            height: "100px",
+                            height: "100%",
                             objectFit: "cover",
                           }}
                           onError={(e) => {
@@ -702,7 +703,9 @@ const Detailed = () => {
                   className="description-text text-black"
                   style={{ textAlign: "justify" }}
                   dangerouslySetInnerHTML={{
-                    __html: venueData.attributes.about_us,
+                    __html: DOMPurify.sanitize(
+                      venueData?.attributes?.about_us || ""
+                    ),
                   }}
                 />
               ) : (
@@ -733,7 +736,7 @@ const Detailed = () => {
                       <div
                         className={`amenity-item d-flex align-items-center ${
                           item.name.startsWith("-") ? "ms-4" : ""
-                        } my-2`}
+                        }`}
                       >
                         {item.icon && (
                           <div
@@ -806,7 +809,7 @@ const Detailed = () => {
               )}
             </div> */}
 
-            <div className="py-5">
+            <div className="py-2">
               <ReviewSection vendor={activeVendor} />
             </div>
 

@@ -128,56 +128,65 @@ const Header = () => {
       id: "wedding",
       slug: "my-wedding",
       label: "My Wedding",
-      icon: <FaRing style={{ color: "#fff" }} />,
+      img: "/images/userDashboard/mywedding-img.svg",
+      // icon: <FaRing style={{ color: "#fff" }} />,
     },
     {
       id: "checklist",
       slug: "checklist",
       label: "Checklist",
-      icon: <FaClipboardList style={{ color: "#fff" }} />,
+      // icon: <FaClipboardList style={{ color: "#fff" }} />,
+      img: "/images/userDashboard/checklist-img.svg",
     },
     {
       id: "vendors",
       slug: "vendor",
       label: "Vendor",
-      icon: <FaStore style={{ color: "#fff" }} />,
+      // icon: <FaStore style={{ color: "#fff" }} />,
+      img: "/images/userDashboard/vendor-img.svg",
     },
     {
       id: "guest-list",
       slug: "guest-list",
       label: "Guest list",
-      icon: <FaUsers style={{ color: "#fff" }} />,
+      // icon: <FaUsers style={{ color: "#fff" }} />,
+      img: "/images/userDashboard/guestlist-img.svg",
     },
     {
       id: "budget",
       slug: "budget",
       label: "Budget",
-      icon: <FaPiggyBank style={{ color: "#fff" }} />,
+      // icon: <FaPiggyBank style={{ color: "#fff" }} />,
+      img: "/images/userDashboard/budget-img.svg",
     },
     {
       id: "wishlist",
       slug: "wishlist",
       label: "Wishlist",
-      icon: <FaHeart style={{ color: "#fff" }} />,
+      // icon: <FaHeart style={{ color: "#fff" }} />,
+      img: "/images/userDashboard/wishlist-img.svg",
     },
     // { id: "booking", slug: "booking", label: "Booking", icon: <FaShoppingCart /> },
     {
       id: "message",
       slug: "message",
       label: "Message",
-      icon: <FaEnvelopeOpenText style={{ color: "#fff" }} />,
+      // icon: <FaEnvelopeOpenText style={{ color: "#fff" }} />,
+      img: "/images/userDashboard/message-img.svg",
     },
     {
       id: "real-wedding",
       slug: "real-wedding",
       label: "Real wedding",
-      icon: <FaUserFriends style={{ color: "#fff" }} />,
+      // icon: <FaUserFriends style={{ color: "#fff" }} />,
+      img: "/images/userDashboard/real-wedding-img.svg",
     },
     {
       id: "user-profile",
       slug: "user-profile",
       label: "Profile",
-      icon: <FaUser style={{ color: "#fff" }} />,
+      // icon: <FaUser style={{ color: "#fff" }} />,
+      img: "/images/userDashboard/userProfile-img.svg",
     },
   ];
 
@@ -425,7 +434,7 @@ const Header = () => {
                                             "#212529")
                                         }
                                       >
-                                        <span
+                                        {/* <span
                                           className="fs-18"
                                           style={{
                                             fontSize: "30px",
@@ -440,7 +449,37 @@ const Header = () => {
                                           }}
                                         >
                                           {tab.icon}
-                                        </span>
+                                        </span> */}
+                                        <div
+                                          className="d-flex align-items-center justify-content-center"
+                                          style={{
+                                            width: "45px",
+                                            height: "45px",
+                                            borderRadius: "50%",
+                                            backgroundColor: "#ed1173",
+                                            color: "#fff",
+                                          }}
+                                        >
+                                          <div
+                                            style={{
+                                              height: "45px",
+                                              width: "45px",
+                                              padding: "5px",
+                                              border: "none",
+                                            }}
+                                          >
+                                            <img
+                                              src={tab.img}
+                                              alt=""
+                                              style={{
+                                                height: "100%",
+                                                width: "100%",
+                                                objectFit: "contain",
+                                                borderRadius: "50%",
+                                              }}
+                                            />
+                                          </div>
+                                        </div>
                                         <span className="ms-2 small">
                                           {tab.label}
                                         </span>
@@ -846,17 +885,17 @@ const Header = () => {
                             }}
                             onClick={() => setOpenMenu(null)}
                           >
-                            <div className="container">
+                            <div className="container p-0">
                               <div className="row g-4">
                                 <div className="col-md-12">
                                   <h6 className="fw-semibold mb-3 primary-text text-uppercase">
                                     E-Invitation Categories
                                   </h6>
-                                  <ul className="list-unstyled col">
+                                  <ul className="list-unstyled col m-0 p-0">
                                     {einviteCategories.map((sub, j) => (
                                       <li
                                         key={sub.id || j}
-                                        className="col-12 col-md-4 mb-1"
+                                        className="col-12 col-md-4 mb-1 p-0"
                                       >
                                         <Link
                                           to={`/einvites/category/${sub.cardType}`}
@@ -904,17 +943,18 @@ const Header = () => {
                                   <div className="fw-bold primary-text text-uppercase">
                                     Browse by Category
                                   </div>
-                                  <ul className="list-unstyled mb-0">
+                                  <ul className="list-unstyled col mt-2 p-0">
                                     {weddingTopics.map((topic, index) => (
                                       <li
                                         key={index}
-                                        className="dropdown-link small d-block"
+                                        className="dropdown-link small d-block mb-2"
                                       >
                                         <Link
                                           to="/blog"
                                           style={{
                                             textDecoration: " none",
                                             color: "#212529",
+                                            marginBottom: "10px",
                                           }}
                                         >
                                           {topic}
@@ -928,12 +968,12 @@ const Header = () => {
                                   <h6 className="primary-text fw-bold">
                                     Popular Sections
                                   </h6>
-                                  <ul className="list-unstyled mb-0">
+                                  <ul className="list-unstyled mt-2">
                                     {weddingCategories.map(
                                       (category, index) => (
                                         <li
                                           key={index}
-                                          className="dropdown-link small d-block"
+                                          className="dropdown-link small d-block mb-2"
                                         >
                                           <Link
                                             to="/blog"
@@ -954,11 +994,11 @@ const Header = () => {
                                   <h6 className="primary-text fw-bold">
                                     Most Searched Blogs
                                   </h6>
-                                  <ul className="list-unstyled mb-0">
+                                  <ul className="list-unstyled mb-0 mt-2">
                                     {weddingIdeas.map((idea, index) => (
                                       <li
                                         key={index}
-                                        className="dropdown-link small d-block"
+                                        className="dropdown-link small d-block mb-2"
                                       >
                                         <Link
                                           to="/blog"
@@ -1024,11 +1064,11 @@ const Header = () => {
                                   <div className="fw-bold primary-text text-uppercase">
                                     By City
                                   </div>
-                                  <ul className="list-unstyled mb-0">
+                                  <ul className="list-unstyled mb-0 mt-2">
                                     {byCity.map((city, index) => (
                                       <li
                                         key={index}
-                                        className="dropdown-link small d-block"
+                                        className="dropdown-link small d-block mb-2"
                                       >
                                         <Link
                                           to="/real-wedding"
@@ -1048,11 +1088,11 @@ const Header = () => {
                                   <h6 className="primary-text fw-bold">
                                     By Culture
                                   </h6>
-                                  <ul className="list-unstyled mb-0">
+                                  <ul className="list-unstyled mb-0 mt-2">
                                     {byCulture.map((culture, index) => (
                                       <li
                                         key={index}
-                                        className="dropdown-link small d-block"
+                                        className="dropdown-link small d-block mb-2"
                                       >
                                         <Link
                                           to="/real-wedding"
@@ -1072,11 +1112,11 @@ const Header = () => {
                                   <h6 className="primary-text fw-bold">
                                     By Theme
                                   </h6>
-                                  <ul className="list-unstyled mb-0">
+                                  <ul className="list-unstyled mb-0 mt-2">
                                     {byTheme.map((theme, index) => (
                                       <li
                                         key={index}
-                                        className="dropdown-link small d-block"
+                                        className="dropdown-link small d-block mb-2"
                                       >
                                         <Link
                                           to="/real-wedding"

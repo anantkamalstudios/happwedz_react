@@ -311,9 +311,7 @@ const QuotationModal = ({ show, onClose, lead, vendorToken }) => {
                   placeholder="e.g., Photography, Videography, Album"
                   required
                 />
-                <div className="form-text">
-                  Enter service details. This is sent as a list to the API.
-                </div>
+                <div className="form-text">Enter service details.</div>
               </div>
 
               <div className="mb-3">

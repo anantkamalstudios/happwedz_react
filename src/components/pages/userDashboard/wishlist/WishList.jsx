@@ -105,6 +105,87 @@ const Wishlist = () => {
       setLoading(false);
     };
 
+    // const fetchWishlist = async () => {
+    //   setLoading(true);
+    //   try {
+    //     const res = await fetch(`https://happywedz.com/api/wishlist`, {
+    //       headers: { Authorization: `Bearer ${token}` },
+    //     });
+
+    //     // 🧠 Handle expired / unauthorized token
+    //     if (res.status === 401) {
+    //       console.warn("Token expired or unauthorized. Logging out...");
+    //       localStorage.removeItem("token");
+    //       window.location.href = "/customer-login"; // or use navigate("/login") if using react-router
+    //       return; // stop function
+    //     }
+
+    //     const data = await res.json();
+
+    //     if (data.success && data.data.length > 0) {
+    //       const enrichedData = await Promise.all(
+    //         data.data
+    //           .filter(
+    //             (item) =>
+    //               item.vendor_services_id &&
+    //               item.vendor_services_id !== "undefined" &&
+    //               item.vendor_services_id !== undefined
+    //           )
+    //           .map(async (item) => {
+    //             try {
+    //               const serviceId = parseInt(item.vendor_services_id);
+    //               if (isNaN(serviceId) || serviceId <= 0) {
+    //                 throw new Error(
+    //                   `Invalid vendor_services_id: ${item.vendor_services_id}`
+    //                 );
+    //               }
+
+    //               const serviceData =
+    //                 await vendorServicesApi.getVendorServiceById(serviceId);
+
+    //               return {
+    //                 wishlist_id: item.wishlist_id,
+    //                 vendor_services_id: item.vendor_services_id,
+    //                 businessName:
+    //                   serviceData?.vendor?.businessName ||
+    //                   serviceData?.attributes?.name ||
+    //                   "Unknown Vendor",
+    //                 city:
+    //                   serviceData?.location?.city ||
+    //                   serviceData?.attributes?.city ||
+    //                   "Unknown City",
+    //                 image: getImageUrl(
+    //                   serviceData?.media?.[0] ||
+    //                     serviceData?.attributes?.cover_image ||
+    //                     serviceData?.cover_image ||
+    //                     serviceData?.image ||
+    //                     null
+    //                 ),
+    //               };
+    //             } catch (err) {
+    //               console.error("Error fetching service:", err);
+    //               return {
+    //                 wishlist_id: item.wishlist_id,
+    //                 vendor_services_id: item.vendor_services_id,
+    //                 businessName: item.businessName || "Unknown",
+    //                 city: "Unknown",
+    //                 image: "/images/imageNotFound.jpg",
+    //               };
+    //             }
+    //           })
+    //       );
+
+    //       const validData = enrichedData.filter((item) => item != null);
+    //       setWishlist(validData);
+    //     } else {
+    //       setWishlist([]);
+    //     }
+    //   } catch (err) {
+    //     console.error("Error fetching wishlist:", err);
+    //   }
+    //   setLoading(false);
+    // };
+
     fetchWishlist();
   }, [token]);
 

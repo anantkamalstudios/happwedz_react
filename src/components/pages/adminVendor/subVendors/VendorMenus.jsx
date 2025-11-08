@@ -1,20 +1,17 @@
 import React from "react";
 
-// Simple Menus manager for Caterers: add menu name, price, items, type (veg/non-veg)
 const VendorMenus = ({ formData, setFormData, onSave }) => {
-  // Always use menus from formData.attributes.menus
   const menus = Array.isArray(formData.attributes?.menus)
     ? formData.attributes.menus
     : [
         {
           title: "",
           price: "",
-          type: "veg", // default type
+          type: "veg",
           items: [""],
         },
       ];
 
-  // Update only attributes.menus, never root menus
   const setMenus = (next) =>
     setFormData((prev) => ({
       ...prev,
@@ -90,7 +87,7 @@ const VendorMenus = ({ formData, setFormData, onSave }) => {
         {menus.map((menu, index) => (
           <div key={index} className="border rounded p-3 mb-3 bg-light">
             <div className="row">
-              <div className="col-md-4 mb-3">
+              {/* <div className="col-md-4 mb-3">
                 <label className="form-label fw-semibold">Menu Title</label>
                 <input
                   type="text"
@@ -101,8 +98,8 @@ const VendorMenus = ({ formData, setFormData, onSave }) => {
                   }
                   placeholder="e.g., Veg Silver, Non-Veg Gold"
                 />
-              </div>
-              <div className="col-md-3 mb-3">
+              </div> */}
+              {/* <div className="col-md-3 mb-3">
                 <label className="form-label fw-semibold">Type</label>
                 <select
                   className="form-select"
@@ -114,8 +111,43 @@ const VendorMenus = ({ formData, setFormData, onSave }) => {
                   <option value="veg">Veg</option>
                   <option value="non-veg">Non-Veg</option>
                 </select>
+              </div> */}
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-semibold">
+                  Veg Price Per Plate (for Venues)
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={formData.veg_price || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      veg_price: e.target.value,
+                    }))
+                  }
+                  placeholder="e.g. 600"
+                />
               </div>
-              <div className="col-md-3 mb-3">
+              {/* Non-Veg Price (for Venues) */}
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-semibold">
+                  Non-Veg Price Per Plate (for Venues)
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={formData.non_veg_price || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      non_veg_price: e.target.value,
+                    }))
+                  }
+                  placeholder="e.g. 800"
+                />
+              </div>
+              {/* <div className="col-md-3 mb-3">
                 <label className="form-label fw-semibold">
                   Price (per plate)
                 </label>
@@ -128,17 +160,17 @@ const VendorMenus = ({ formData, setFormData, onSave }) => {
                   }
                   placeholder="e.g., 650"
                 />
-              </div>
-              <div className="col-md-2 mb-3 d-flex align-items-end">
+              </div> */}
+              {/* <div className="col-md-2 mb-3 d-flex align-items-end">
                 <button
                   className="btn btn-outline-danger w-100"
                   onClick={() => removeMenu(index)}
                 >
                   Remove
                 </button>
-              </div>
+              </div> */}
             </div>
-            <div className="mb-2 fw-semibold">Items</div>
+            {/* <div className="mb-2 fw-semibold">Items</div>
             {menu.items.map((it, itemIdx) => (
               <div className="row mb-2" key={itemIdx}>
                 <div className="col-md-10">
@@ -161,19 +193,19 @@ const VendorMenus = ({ formData, setFormData, onSave }) => {
                   </button>
                 </div>
               </div>
-            ))}
-            <button
+            ))} */}
+            {/* <button
               className="btn btn-sm btn-outline-secondary"
               onClick={() => addItem(index)}
             >
               Add Item
-            </button>
+            </button> */}
           </div>
         ))}
         <div className="d-flex gap-2">
-          <button className="btn btn-outline-secondary" onClick={addMenu}>
+          {/* <button className="btn btn-outline-secondary" onClick={addMenu}>
             Add Menu
-          </button>
+          </button> */}
           <button className="btn btn-primary" onClick={handleSaveMenus}>
             Save Menus
           </button>

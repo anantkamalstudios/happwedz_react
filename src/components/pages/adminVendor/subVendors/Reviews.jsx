@@ -27,7 +27,13 @@ const ReplyForm = ({ reviewId, onReplySubmit }) => {
   );
 };
 
-const Reviews = ({ reviews, onReplySubmit, averageRating, totalReviews }) => {
+const Reviews = ({
+  reviews,
+  onReplySubmit,
+  averageRating,
+  totalReviews,
+  onDelete,
+}) => {
   const [replyingTo, setReplyingTo] = useState(null);
 
   const renderStars = (rating) =>
@@ -88,12 +94,20 @@ const Reviews = ({ reviews, onReplySubmit, averageRating, totalReviews }) => {
                   }}
                 />
               ) : (
-                <button
-                  className="btn btn-sm btn-outline-primary mt-2"
-                  onClick={() => setReplyingTo(review.id)}
-                >
-                  Reply
-                </button>
+                <>
+                  <button
+                    className="btn btn-sm btn-outline-primary mt-2"
+                    onClick={() => setReplyingTo(review.id)}
+                  >
+                    Reply
+                  </button>
+                  <button
+                    className="btn btn-sm btn-outline-danger mt-2 ms-2"
+                    onClick={() => onDelete(review.id)}
+                  >
+                    Delete
+                  </button>
+                </>
               )}
             </div>
           ))

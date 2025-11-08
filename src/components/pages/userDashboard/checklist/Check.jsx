@@ -12,10 +12,12 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import dayjs from 'dayjs';
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
+ import { PDFDownloadLink } from "@react-pdf/renderer";
+ import ChecklistPDF from "./ChecklistPDF";
 
 const BASE_URL = "https://happywedz.com/api/new-checklist";
 const CATEGORY_API =
@@ -39,13 +41,13 @@ const Check = () => {
 
   // Handler for start date change
   const handleStartDateChange = (newDate) => {
-    const formattedDate = newDate ? dayjs(newDate).format('YYYY-MM-DD') : '';
+    const formattedDate = newDate ? dayjs(newDate).format("YYYY-MM-DD") : "";
     setStartDate(formattedDate);
   };
 
   // Handler for wedding date change
   const handleWeddingDateChange = (newDate) => {
-    const formattedDate = newDate ? dayjs(newDate).format('YYYY-MM-DD') : '';
+    const formattedDate = newDate ? dayjs(newDate).format("YYYY-MM-DD") : "";
     setWeddingDate(formattedDate);
   };
   const [refresh, setRefresh] = useState(false);
@@ -577,7 +579,7 @@ const Check = () => {
 
         .checklist-table tbody tr:hover {
           background: #fdf2f8;
-          transform: scale(1.01);
+          // transform: scale(1.01);
         }
 
         .checklist-table tbody td {
@@ -794,8 +796,8 @@ const Check = () => {
                       slotProps={{
                         textField: {
                           fullWidth: true,
-                          size: 'small',
-                          placeholder: 'Select start date',
+                          size: "small",
+                          placeholder: "Select start date",
                         },
                       }}
                     />
@@ -814,8 +816,8 @@ const Check = () => {
                       slotProps={{
                         textField: {
                           fullWidth: true,
-                          size: 'small',
-                          placeholder: 'Select wedding date',
+                          size: "small",
+                          placeholder: "Select wedding date",
                         },
                       }}
                     />
@@ -829,8 +831,8 @@ const Check = () => {
                       {daysLeft > 0
                         ? "Days Until Wedding"
                         : daysLeft === 0
-                          ? "Wedding Day!"
-                          : "Days Since Wedding"}
+                        ? "Wedding Day!"
+                        : "Days Since Wedding"}
                     </span>
                   </div>
                 )}
@@ -846,12 +848,33 @@ const Check = () => {
                     Wedding Checklist
                   </h5>
                   <div className="header-actions d-flex gap-2">
-                    <button className="btn">
-                      <FaDownload className="me-1" /> Download
-                    </button>
-                    <button className="btn">
+                    <PDFDownloadLink
+                      document={
+                        <ChecklistPDF
+                          items={
+                            (distributedTasks && distributedTasks.length > 0)
+                              ? distributedTasks
+                              : checklists
+                          }
+                          categories={categories}
+                          meta={{
+                            userName: user?.name || user?.email || "User",
+                            generatedAt: new Date(),
+                          }}
+                        />
+                      }
+                      fileName={`checklist-${userId || "user"}.pdf`}
+                    >
+                      {({ loading }) => (
+                        <button className="btn">
+                          <FaDownload className="me-1" />
+                          {loading ? "Preparing..." : "Download"}
+                        </button>
+                      )}
+                    </PDFDownloadLink>
+                    {/* <button className="btn">
                       <FaPrint className="me-1" /> Print
-                    </button>
+                    </button> */}
                   </div>
                 </div>
 
@@ -980,10 +1003,11 @@ const Check = () => {
                               <tr key={item.id}>
                                 <td className="text-center">
                                   <div
-                                    className={`status-icon ${item.status === "completed"
-                                      ? "completed"
-                                      : "pending"
-                                      }`}
+                                    className={`status-icon ${
+                                      item.status === "completed"
+                                        ? "completed"
+                                        : "pending"
+                                    }`}
                                     onClick={() =>
                                       toggleStatus(item.id, item.status)
                                     }
@@ -1076,8 +1100,9 @@ const Check = () => {
                             {Array.from({ length: totalPages }, (_, i) => (
                               <li
                                 key={i + 1}
-                                className={`page-item ${currentPage === i + 1 ? "active" : ""
-                                  }`}
+                                className={`page-item ${
+                                  currentPage === i + 1 ? "active" : ""
+                                }`}
                               >
                                 <button
                                   onClick={() => paginate(i + 1)}

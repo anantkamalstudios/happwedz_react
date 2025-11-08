@@ -17,40 +17,47 @@ const MasonryImageSection = () => {
     loadPhotos();
   }, []);
 
+  console.log(allPhotos, "photos");
+
   useEffect(() => {
     if (allPhotos && allPhotos.length > 0) {
-      // Take first 6 photos and transform them
-      const transformedImages = allPhotos.slice(0, 6).map((photo, index) => {
-        // Get first image from images array
-        let imageUrl = photo.images?.[0]?.trim();
+      const transformedImages = allPhotos
+        .filter((photo) => photo.status === "active")
+        .slice(0, 6)
+        .map((photo, index) => {
+          let imageUrl = photo.images?.[0]?.trim();
 
-        // Replace old URL prefix with backend prefix
-        if (imageUrl?.startsWith("http://happywedz.com/uploads/photography/")) {
-          imageUrl = imageUrl.replace(
-            "http://happywedz.com",
-            "https://happywedzbackend.happywedz.com"
-          );
-        }
-        if (imageUrl?.startsWith("https://happywedz.com/uploads/photography/")) {
-          imageUrl = imageUrl.replace(
-            "https://happywedz.com",
-            "https://happywedzbackend.happywedz.com"
-          );
-        }
+          // Replace old URL prefix with backend prefix
+          if (
+            imageUrl?.startsWith("http://happywedz.com/uploads/photography/")
+          ) {
+            imageUrl = imageUrl.replace(
+              "http://happywedz.com",
+              "https://happywedzbackend.happywedz.com"
+            );
+          }
+          if (
+            imageUrl?.startsWith("https://happywedz.com/uploads/photography/")
+          ) {
+            imageUrl = imageUrl.replace(
+              "https://happywedz.com",
+              "https://happywedzbackend.happywedz.com"
+            );
+          }
 
-        // Alternate between large and medium sizes
-        const size = index % 2 === 0 ? "large" : "medium";
+          // Alternate between large and medium sizes
+          const size = index % 2 === 0 ? "large" : "medium";
 
-        return {
-          id: photo.id,
-          src: imageUrl,
-          fallbackSrc: imageUrl?.includes("/uploads/photography/") 
-            ? imageUrl.replace("/uploads/photography/", "/uploads/blogs/")
-            : null,
-          title: photo.title || "Wedding",
-          size: size,
-        };
-      });
+          return {
+            id: photo.id,
+            src: imageUrl,
+            fallbackSrc: imageUrl?.includes("/uploads/photography/")
+              ? imageUrl.replace("/uploads/photography/", "/uploads/blogs/")
+              : null,
+            title: photo.title || "Wedding",
+            size: size,
+          };
+        });
 
       setWeddingImages(transformedImages);
     }
@@ -104,7 +111,10 @@ const MasonryImageSection = () => {
                           src={weddingImages[0].src}
                           alt={weddingImages[0].title}
                           onError={(e) => {
-                            if (weddingImages[0].fallbackSrc && e.target.src !== weddingImages[0].fallbackSrc) {
+                            if (
+                              weddingImages[0].fallbackSrc &&
+                              e.target.src !== weddingImages[0].fallbackSrc
+                            ) {
                               e.target.src = weddingImages[0].fallbackSrc;
                             } else {
                               e.target.onerror = null;
@@ -113,7 +123,9 @@ const MasonryImageSection = () => {
                           }}
                         />
                         <div className="gallery-overlay">
-                          <p className="gallery-title">{weddingImages[0].title}</p>
+                          <p className="gallery-title">
+                            {weddingImages[0].title}
+                          </p>
                         </div>
                       </Link>
                     </div>
@@ -126,7 +138,10 @@ const MasonryImageSection = () => {
                           src={weddingImages[3].src}
                           alt={weddingImages[3].title}
                           onError={(e) => {
-                            if (weddingImages[3].fallbackSrc && e.target.src !== weddingImages[3].fallbackSrc) {
+                            if (
+                              weddingImages[3].fallbackSrc &&
+                              e.target.src !== weddingImages[3].fallbackSrc
+                            ) {
                               e.target.src = weddingImages[3].fallbackSrc;
                             } else {
                               e.target.onerror = null;
@@ -135,7 +150,9 @@ const MasonryImageSection = () => {
                           }}
                         />
                         <div className="gallery-overlay">
-                          <p className="gallery-title">{weddingImages[3].title}</p>
+                          <p className="gallery-title">
+                            {weddingImages[3].title}
+                          </p>
                         </div>
                       </Link>
                     </div>
@@ -150,7 +167,10 @@ const MasonryImageSection = () => {
                           src={weddingImages[1].src}
                           alt={weddingImages[1].title}
                           onError={(e) => {
-                            if (weddingImages[1].fallbackSrc && e.target.src !== weddingImages[1].fallbackSrc) {
+                            if (
+                              weddingImages[1].fallbackSrc &&
+                              e.target.src !== weddingImages[1].fallbackSrc
+                            ) {
                               e.target.src = weddingImages[1].fallbackSrc;
                             } else {
                               e.target.onerror = null;
@@ -159,7 +179,9 @@ const MasonryImageSection = () => {
                           }}
                         />
                         <div className="gallery-overlay">
-                          <p className="gallery-title">{weddingImages[1].title}</p>
+                          <p className="gallery-title">
+                            {weddingImages[1].title}
+                          </p>
                         </div>
                       </Link>
                     </div>
@@ -172,7 +194,10 @@ const MasonryImageSection = () => {
                           src={weddingImages[4].src}
                           alt={weddingImages[4].title}
                           onError={(e) => {
-                            if (weddingImages[4].fallbackSrc && e.target.src !== weddingImages[4].fallbackSrc) {
+                            if (
+                              weddingImages[4].fallbackSrc &&
+                              e.target.src !== weddingImages[4].fallbackSrc
+                            ) {
                               e.target.src = weddingImages[4].fallbackSrc;
                             } else {
                               e.target.onerror = null;
@@ -181,7 +206,9 @@ const MasonryImageSection = () => {
                           }}
                         />
                         <div className="gallery-overlay">
-                          <p className="gallery-title">{weddingImages[4].title}</p>
+                          <p className="gallery-title">
+                            {weddingImages[4].title}
+                          </p>
                         </div>
                       </Link>
                     </div>
@@ -196,7 +223,10 @@ const MasonryImageSection = () => {
                           src={weddingImages[2].src}
                           alt={weddingImages[2].title}
                           onError={(e) => {
-                            if (weddingImages[2].fallbackSrc && e.target.src !== weddingImages[2].fallbackSrc) {
+                            if (
+                              weddingImages[2].fallbackSrc &&
+                              e.target.src !== weddingImages[2].fallbackSrc
+                            ) {
                               e.target.src = weddingImages[2].fallbackSrc;
                             } else {
                               e.target.onerror = null;
@@ -205,7 +235,9 @@ const MasonryImageSection = () => {
                           }}
                         />
                         <div className="gallery-overlay">
-                          <p className="gallery-title">{weddingImages[2].title}</p>
+                          <p className="gallery-title">
+                            {weddingImages[2].title}
+                          </p>
                         </div>
                       </Link>
                     </div>
@@ -218,7 +250,10 @@ const MasonryImageSection = () => {
                           src={weddingImages[5].src}
                           alt={weddingImages[5].title}
                           onError={(e) => {
-                            if (weddingImages[5].fallbackSrc && e.target.src !== weddingImages[5].fallbackSrc) {
+                            if (
+                              weddingImages[5].fallbackSrc &&
+                              e.target.src !== weddingImages[5].fallbackSrc
+                            ) {
                               e.target.src = weddingImages[5].fallbackSrc;
                             } else {
                               e.target.onerror = null;
@@ -227,7 +262,9 @@ const MasonryImageSection = () => {
                           }}
                         />
                         <div className="gallery-overlay">
-                          <p className="gallery-title">{weddingImages[5].title}</p>
+                          <p className="gallery-title">
+                            {weddingImages[5].title}
+                          </p>
                         </div>
                       </Link>
                     </div>

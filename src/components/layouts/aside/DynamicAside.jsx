@@ -1,10 +1,13 @@
 // DynamicAside.jsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useMemo, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { selectAppliedFilters, setAppliedFilters, clearFiltersByKey } from "../../../redux/filterSlice";
 import TopFilter from "./TopFilter";
 import useFilters from "../../../hooks/useFilters";
 
 const DynamicAside = ({ view, setView, section, onFiltersChange }) => {
+  const dispatch = useDispatch();
   const { slug } = useParams();
   const {
     filters,
@@ -15,56 +18,66 @@ const DynamicAside = ({ view, setView, section, onFiltersChange }) => {
     getActiveCount,
   } = useFilters({ section, slug });
 
-  // Separate pending filters (user selections) from applied filters (API filters)
-  // activeFilters = what user has selected (pending, not yet applied)
-  // appliedFilters = what's actually sent to the API
-  const [appliedFilters, setAppliedFilters] = useState({});
-  const prevActiveFiltersRef = useRef(activeFilters);
+  // Get the filter key
+  const filterKey = useMemo(() => {
+    if (section === "venues" && !slug) return "venues";
+    if (slug) return slug;
+    return section || "";
+  }, [section, slug]);
 
-  // Preserve activeFilters in ref - keep track of what user has selected
+  // Get applied filters from Redux
+  const appliedFilters = useSelector((state) =>
+    selectAppliedFilters(state, filterKey)
+  );
+
+  // Track previous filter key to detect route changes
+  const prevFilterKeyRef = useRef(filterKey);
+
+  // Clear filters when navigating to a different route (key changes)
   useEffect(() => {
-    if (Object.keys(activeFilters).length > 0) {
-      prevActiveFiltersRef.current = activeFilters;
-    }
-  }, [activeFilters]);
+    if (prevFilterKeyRef.current !== null && prevFilterKeyRef.current !== filterKey) {
+      // Route changed - clear filters for the old key in Redux
+      dispatch(clearFiltersByKey({ key: prevFilterKeyRef.current }));
 
-  // Handle filter toggle - update pending filters only (don't trigger API)
+      // IMPORTANT: Also notify parent to clear filters in SubSection
+      // This ensures API calls don't use old filters from previous route
+      if (onFiltersChange) {
+        onFiltersChange({});
+      }
+    }
+    prevFilterKeyRef.current = filterKey;
+  }, [filterKey, dispatch, onFiltersChange]);
+
   const handleToggleFilter = (group, value) => {
     toggleFilter(group, value);
   };
 
-  // Handle apply filters - send pending filters to API but keep them selected
   const handleApplyFilters = () => {
-    // Capture current filters - these are what the user has selected
+    // Capture current filters - these are stored in Redux and will stay checked
     const currentFilters = { ...activeFilters };
-    
-    // Store in ref for recovery if needed
-    if (Object.keys(currentFilters).length > 0) {
-      prevActiveFiltersRef.current = currentFilters;
-    }
-    
-    // Set applied filters and notify parent - this triggers API call
-    setAppliedFilters(currentFilters);
+
+    // Store applied filters in Redux (separate from activeFilters)
+    // This way activeFilters stay checked, but we know what's applied
+    dispatch(setAppliedFilters({ key: filterKey, filters: currentFilters }));
+
+    // Notify parent - this triggers API call
+    // activeFilters remain in Redux, so checkboxes stay checked!
     if (onFiltersChange) {
       onFiltersChange(currentFilters);
     }
-    
-    // The activeFilters in useFilters hook should remain intact
-    // since we're not calling clearFilters() - only toggleFilter updates them
   };
 
-  // Handle clear all - clear both pending and applied
   const handleClearFilters = () => {
+    // Clear filters in Redux (this also clears applied filters)
     clearFilters();
-    setAppliedFilters({});
-    prevActiveFiltersRef.current = {};
     if (onFiltersChange) {
       onFiltersChange({});
     }
   };
 
   // Check if there are pending changes (activeFilters != appliedFilters)
-  const hasPendingChanges = JSON.stringify(activeFilters) !== JSON.stringify(appliedFilters);
+  const hasPendingChanges =
+    JSON.stringify(activeFilters) !== JSON.stringify(appliedFilters);
 
   return (
     <TopFilter
