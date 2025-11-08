@@ -26,14 +26,60 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
       try {
         const response = await axios.get("/api/hero-sections");
         const dataInfo = response.data;
-        setHeroInfo(dataInfo.find((item) => item?.navbar?.type === section));
-        console.log(heroInfo);
+
+        const pathSegments = location.pathname.split("/").filter(Boolean);
+        const baseSectionRaw = pathSegments[0]?.toLowerCase();
+        const baseSection =
+          baseSectionRaw === "vendor"
+            ? "vendors"
+            : baseSectionRaw === "venue"
+            ? "venues"
+            : baseSectionRaw;
+
+        const effectiveSection =
+          baseSection === "venues" || baseSection === "vendors"
+            ? baseSection
+            : section &&
+              (["venues", "vendors", "venue", "vendor"].includes(
+                section.toLowerCase()
+              ))
+            ? (section.toLowerCase() === "vendor"
+                ? "vendors"
+                : section.toLowerCase() === "venue"
+                ? "venues"
+                : section.toLowerCase())
+            : location.pathname.includes("/venues") ||
+              location.pathname.includes("/venue")
+            ? "venues"
+            : location.pathname.includes("/vendors") ||
+              location.pathname.includes("/vendor")
+            ? "vendors"
+            : null;
+
+        const normalizeType = (t) => {
+          const v = (t || "").toLowerCase();
+          if (v.includes("venue")) return "venues";
+          if (v.includes("vendor")) return "vendors";
+          return v || null;
+        };
+
+        let matched = dataInfo.find(
+          (item) => normalizeType(item?.navbar?.type) === effectiveSection
+        );
+        if (!matched && effectiveSection) {
+          matched = dataInfo.find((item) =>
+            (item?.navbar?.type || "").toLowerCase().includes(
+              effectiveSection === "venues" ? "venue" : "vendor"
+            )
+          );
+        }
+        setHeroInfo(matched || null);
       } catch (error) {
         console.error("Error fetching hero info:", error);
       }
     };
     fetchHeroInfo();
-  }, [section]);
+  }, [section, location.pathname]);
 
   const searchParams = new URLSearchParams(location.search);
   const vendorType = searchParams.get("vendorType");

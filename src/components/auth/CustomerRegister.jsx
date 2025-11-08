@@ -67,7 +67,8 @@ const CustomerRegister = () => {
 
     switch (name) {
       case "name":
-        const nameRegex = /^([A-Za-z]{3,16})([ ]{0,1})([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})$/;
+        const nameRegex =
+          /^([A-Za-z]{3,16})([ ]{0,1})([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})$/;
         if (!value.trim()) {
           error = "Full name is required";
         } else if (!nameRegex.test(value)) {
@@ -85,11 +86,13 @@ const CustomerRegister = () => {
         break;
 
       case "password":
-        const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+        const passwordRegex =
+          /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
         if (!value) {
           error = "Password is required";
         } else if (!passwordRegex.test(value)) {
-          error = "Password must be 8+ chars with uppercase, lowercase, and number";
+          error =
+            "Password must be 8+ chars with uppercase, lowercase, and number";
         }
         break;
 
@@ -138,11 +141,13 @@ const CustomerRegister = () => {
   const validate = () => {
     const newErrors = {};
 
-    const nameRegex = /^([A-Za-z]{3,16})([ ]{0,1})([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})$/;
+    const nameRegex =
+      /^([A-Za-z]{3,16})([ ]{0,1})([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})$/;
     if (!formData.name.trim()) {
       newErrors.name = "Full name is required";
     } else if (!nameRegex.test(formData.name)) {
-      newErrors.name = "Name must contain 3-16 letters per word, spaces allowed";
+      newErrors.name =
+        "Name must contain 3-16 letters per word, spaces allowed";
     }
 
     const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
@@ -156,7 +161,8 @@ const CustomerRegister = () => {
     if (!formData.password) {
       newErrors.password = "Password is required";
     } else if (!passwordRegex.test(formData.password)) {
-      newErrors.password = "Password must be 8+ chars with uppercase, lowercase, and number";
+      newErrors.password =
+        "Password must be 8+ chars with uppercase, lowercase, and number";
     }
 
     if (!formData.phone.trim()) {
@@ -311,8 +317,9 @@ const CustomerRegister = () => {
                   <input
                     type="text"
                     name="name"
-                    className={`form-control ${errors.name ? "is-invalid" : ""
-                      }`}
+                    className={`form-control ${
+                      errors.name ? "is-invalid" : ""
+                    }`}
                     placeholder="Full Name"
                     value={formData.name}
                     onChange={handleChange}
@@ -329,8 +336,9 @@ const CustomerRegister = () => {
                   <input
                     type="email"
                     name="email"
-                    className={`form-control ${errors.email ? "is-invalid" : ""
-                      }`}
+                    className={`form-control ${
+                      errors.email ? "is-invalid" : ""
+                    }`}
                     placeholder="Email"
                     value={formData.email}
                     onChange={handleChange}
@@ -347,8 +355,9 @@ const CustomerRegister = () => {
                   <input
                     type={passwordVisible ? "text" : "password"}
                     name="password"
-                    className={`form-control ${errors.password ? "is-invalid" : ""
-                      }`}
+                    className={`form-control ${
+                      errors.password ? "is-invalid" : ""
+                    }`}
                     placeholder="Password"
                     value={formData.password}
                     onChange={handleChange}
@@ -374,7 +383,7 @@ const CustomerRegister = () => {
                 </div>
               </div>
 
-              <style jsx>
+              <style>
                 {`
                   .input-number::-webkit-inner-spin-button,
                   .input-number::-webkit-outer-spin-button {
@@ -391,8 +400,9 @@ const CustomerRegister = () => {
                   <input
                     type="number"
                     name="phone"
-                    className={`input-number form-control ${errors.phone ? "is-invalid" : ""
-                      }`}
+                    className={`input-number form-control ${
+                      errors.phone ? "is-invalid" : ""
+                    }`}
                     placeholder="Phone"
                     value={formData.phone}
                     onChange={handleChange}
@@ -412,8 +422,9 @@ const CustomerRegister = () => {
                   <input
                     type="text"
                     name="weddingVenue"
-                    className={`form-control ${errors.weddingVenue ? "is-invalid" : ""
-                      }`}
+                    className={`form-control ${
+                      errors.weddingVenue ? "is-invalid" : ""
+                    }`}
                     placeholder="Wedding Venue"
                     value={formData.weddingVenue}
                     onChange={handleChange}
@@ -431,8 +442,9 @@ const CustomerRegister = () => {
                 <div className="form-floating">
                   <select
                     name="country"
-                    className={`form-select ${errors.country ? "is-invalid" : ""
-                      }`}
+                    className={`form-select ${
+                      errors.country ? "is-invalid" : ""
+                    }`}
                     value={formData.country}
                     onChange={handleChange}
                   >
@@ -477,8 +489,9 @@ const CustomerRegister = () => {
                   <input
                     type="date"
                     name="weddingDate"
-                    className={`form-control ${errors.weddingDate ? "is-invalid" : ""
-                      }`}
+                    className={`form-control ${
+                      errors.weddingDate ? "is-invalid" : ""
+                    }`}
                     value={formData.weddingDate}
                     onChange={handleChange}
                   />

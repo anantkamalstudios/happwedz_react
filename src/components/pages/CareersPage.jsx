@@ -35,7 +35,7 @@ const CareersPage = () => {
 
   return (
     <div>
-      <div
+      {/* <div
         style={{
           backgroundImage:
             "url('https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1074')",
@@ -45,18 +45,28 @@ const CareersPage = () => {
           position: "relative",
           textAlign: "center",
           padding: "120px 20px 100px 20px",
+          backgroundColor: "rgba(0,0,0,0.1)",
         }}
       >
-        {/* <div
+        <div
           style={{
             position: "absolute",
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            zIndex: 1,
           }}
-        ></div> */}
-        <div style={{ color: "#C31162", zIndex: 20, height: "100%" }}>
+        />
+        <div
+          style={{
+            color: "#fff",
+            zIndex: 20,
+            height: "100%",
+            position: "relative",
+          }}
+        >
           <h1 style={{ fontWeight: "bold" }}>HappWedz Careers</h1>
           <p style={{ fontSize: "18px", marginTop: "10px" }}>
             We are a team of killer enthusiasts, aiming to re-build the wedding
@@ -116,6 +126,115 @@ const CareersPage = () => {
               BUSINESS
             </button>
           </div>
+        </div>
+      </div> */}
+      <div
+        style={{
+          position: "relative",
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1074')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          color: "#fff",
+          textAlign: "center",
+          height: "70vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        {/* Dark overlay */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            zIndex: 1,
+          }}
+        />
+
+        {/* Centered content */}
+        <div
+          style={{
+            position: "relative",
+            zIndex: 2,
+            padding: "0 20px",
+            textAlign: "center",
+            maxWidth: "800px",
+          }}
+        >
+          <h1
+            style={{
+              fontWeight: "bold",
+              fontSize: "2.5rem",
+              marginBottom: "15px",
+            }}
+          >
+            HappyWedz Careers
+          </h1>
+          <p style={{ fontSize: "18px", marginBottom: "10px" }}>
+            We are a team of killer enthusiasts, aiming to re-build the wedding
+            space.
+          </p>
+          <p style={{ fontSize: "16px", lineHeight: "1.5" }}>
+            If you care about weddings, technology & innovation, then you could
+            be the one we are looking for.
+          </p>
+        </div>
+
+        {/* Bottom Tabs */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "30px",
+            left: "30%",
+            transform: "translateX(-50%)",
+            display: "flex",
+            gap: "40px",
+            fontWeight: "600",
+            fontSize: "18px",
+            zIndex: 3,
+          }}
+        >
+          <button
+            onClick={() => handleTabChange("technology")}
+            style={{
+              background: "none",
+              border: "none",
+              color: activeTab === "technology" ? "#fff" : "#f8f9fa",
+              borderBottom:
+                activeTab === "technology"
+                  ? "3px solid #d63384"
+                  : "3px solid transparent",
+              paddingBottom: "6px",
+              cursor: "pointer",
+              transition: "0.3s",
+            }}
+          >
+            TECHNOLOGY
+          </button>
+
+          <button
+            onClick={() => handleTabChange("business")}
+            style={{
+              background: "none",
+              border: "none",
+              color: activeTab === "business" ? "#fff" : "#f8f9fa",
+              borderBottom:
+                activeTab === "business"
+                  ? "3px solid #d63384"
+                  : "3px solid transparent",
+              paddingBottom: "6px",
+              cursor: "pointer",
+              transition: "0.3s",
+            }}
+          >
+            BUSINESS
+          </button>
         </div>
       </div>
 

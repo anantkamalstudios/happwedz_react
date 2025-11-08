@@ -105,7 +105,6 @@ const Footer = () => {
             </p>
           </div>
 
-          {/* === PLAN YOUR WEDDING === */}
           <div style={{ flex: "1 1 20%", color: "#fff" }}>
             <h6 className="footer-title">Plan Your Wedding</h6>
             <ul className="footer-list">

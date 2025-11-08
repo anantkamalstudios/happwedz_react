@@ -476,27 +476,13 @@ const TryLanding = () => {
   const [showModal, setShowModal] = useState(false);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [imagesLoaded, setImagesLoaded] = useState(false); // Track image loading
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
-
-  const sliderRef = useRef(null);
-
-  // Slider settings
-  const settings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 1500,
-    pauseOnHover: false,
-    arrows: false,
-    adaptiveHeight: false, // Important
-    responsive: [],
-  };
+  const autoplayRef = useRef(null);
 
   // List of image paths
   const imageSources = [
@@ -504,6 +490,23 @@ const TryLanding = () => {
     "/images/try/carousel-img-2.png",
     "/images/try/carousel-img-3.png",
   ];
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+  };
+
+  // Autoplay effect
+  useEffect(() => {
+    autoplayRef.current = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % imageSources.length);
+    }, 1500);
+
+    return () => {
+      if (autoplayRef.current) {
+        clearInterval(autoplayRef.current);
+      }
+    };
+  }, []);
 
   // Preload all images
   useEffect(() => {
@@ -521,22 +524,9 @@ const TryLanding = () => {
       const img = new Image();
       img.src = src;
       img.onload = handleImageLoad;
-      img.onerror = handleImageLoad; // Count even if error (to avoid hang)
+      img.onerror = handleImageLoad;
     });
   }, []);
-
-  // Reinitialize slider after images load
-  useEffect(() => {
-    if (imagesLoaded && sliderRef.current) {
-      setTimeout(() => {
-        try {
-          sliderRef.current.slickGoTo(0);
-          // Force resize to recalculate
-          window.dispatchEvent(new Event("resize"));
-        } catch (e) {}
-      }, 100);
-    }
-  }, [imagesLoaded]);
 
   useEffect(() => {
     setIsLoaded(true);
@@ -560,42 +550,6 @@ const TryLanding = () => {
 
   return (
     <>
-      <style>
-        {`
-          .slick-dots li button:before {
-            color: #2196F3 !important;
-            font-size: 12px;
-          }
-          .slick-dots li.slick-active button:before {
-            color: #C31162 !important;
-          }
-          .slick-dots {
-            display: flex !important;
-            flex-direction: row !important;
-            justify-content: center !important;
-            position: absolute !important;
-            bottom: 12px !important;
-            left: 0 !important;
-            right: 0 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            list-style: none !important;
-            z-index: 50;
-          }
-          .slick-dots li {
-            margin: 0 6px !important;
-          }
-          .slick-slider, .slick-list, .slick-track, .slick-slide > div {
-            height: 100% !important;
-          }
-          .slider-image {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-          }
-        `}
-      </style>
-
       <div className="try-first-page-container">
         {/* Hero Section */}
         <div
@@ -605,123 +559,198 @@ const TryLanding = () => {
         >
           <div
             style={{
-              height: "100%",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: "3rem",
+              minHeight: "calc(100vh - 150px)",
+              height: "auto",
               position: "relative",
+              paddingTop: 0,
             }}
           >
             <div
-              className="try-first-page-hero-content px-6"
               style={{
-                placeSelf: "flex-end",
                 display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-end",
-                width: "100%",
-                gap: "2rem",
+                justifyContent: "center",
+                alignItems: "stretch",
+                gap: "3rem",
+                height: "calc(100vh - 150px)",
+                maxHeight: "680px",
+                paddingTop: 0,
               }}
             >
+              {/* Heading Container */}
               <div
-                className="try-first-page-content-wrapper"
+                className="try-first-page-hero-content px-6"
                 style={{
-                  marginBottom: "2rem",
-                  marginLeft: "3rem",
-                  maxWidth: "520px",
-                  width: "100%",
+                  alignSelf: "flex-end",
+                  display: "flex",
+                  justifyContent: "flex-start",
+                  alignItems: "flex-end",
+                  flex: "0 0 40%",
+                  gap: "2rem",
                 }}
               >
-                <h1
-                  className="try-first-page-title"
+                <div
+                  className="try-first-page-content-wrapper"
                   style={{
-                    fontWeight: "400",
-                    textAlign: "start",
-                    color: "#C31162",
-                  }}
-                >
-                  Virtual Try On
-                </h1>
-                <p
-                  style={{
-                    fontSize: "1.6rem",
-                    fontWeight: "500",
-                    wordSpacing: "1.5px",
-                    color: "#C31162",
-                  }}
-                >
-                  Makeup, Jewellary & Outfits in One Place
-                </p>
-                <button
-                  style={{
-                    background: "linear-gradient(to right, #E83580, #821E48)",
-                    color: "#fff",
-                    border: "2px solid #C31162",
-                    padding: "0.5rem 0",
-                    fontWeight: "500",
-                    borderRadius: "10px",
-                    fontSize: "1.5rem",
+                    marginBottom: "3rem",
+                    marginLeft: "3rem",
+                    maxWidth: "520px",
                     width: "100%",
                   }}
-                  onClick={handleGetStarted}
                 >
-                  Get Started
-                </button>
-              </div>
-            </div>
-
-            {/* Slider Container */}
-            <div
-              style={{
-                maxWidth: "850px",
-                height: "500px",
-                borderRadius: "20px",
-                overflow: "hidden",
-              }}
-            >
-              {imagesLoaded ? (
-                <Slider ref={sliderRef} {...settings}>
-                  {imageSources.map((src, index) => (
-                    <div key={index}>
-                      <div
-                        style={{
-                          height: "500px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          background: "transparent",
-                          borderRadius: "20px",
-                          // boxShadow: "0 8px 40px #C31162",
-                          padding: "0 20px",
-                        }}
-                      >
-                        <img
-                          src={src}
-                          alt={`carousel ${index + 1}`}
-                          className="slider-image"
-                          style={{ borderRadius: "16px" }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </Slider>
-              ) : (
-                <div
-                  style={{
-                    height: "500px",
-                    background: "transparent",
-                    borderRadius: "20px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#999",
-                    fontSize: "1.2rem",
-                  }}
-                >
-                  Loading...
+                  <h1
+                    className="try-first-page-title"
+                    style={{
+                      fontWeight: "400",
+                      textAlign: "start",
+                      color: "#C31162",
+                    }}
+                  >
+                    Virtual Try On
+                  </h1>
+                  <p
+                    style={{
+                      fontSize: "1.6rem",
+                      fontWeight: "500",
+                      wordSpacing: "1.5px",
+                      color: "#C31162",
+                    }}
+                  >
+                    Makeup, Jewellary & Outfits in One Place
+                  </p>
+                  <button
+                    style={{
+                      background: "linear-gradient(to right, #E83580, #821E48)",
+                      color: "#fff",
+                      border: "2px solid #C31162",
+                      padding: "0.5rem 0",
+                      fontWeight: "500",
+                      borderRadius: "10px",
+                      fontSize: "1.5rem",
+                      width: "100%",
+                    }}
+                    onClick={handleGetStarted}
+                  >
+                    Get Started
+                  </button>
                 </div>
-              )}
+              </div>
+
+              {/* Slider Container */}
+              <div
+                style={{
+                  maxWidth: "850px",
+                  height: "100%",
+                  borderRadius: "20px",
+                  overflow: "hidden",
+                  alignSelf: "flex-start",
+                  marginTop: "-20px",
+                  flex: "1 1 60%",
+                }}
+              >
+                {imagesLoaded ? (
+                  <div
+                    style={{
+                      position: "relative",
+                      width: "100%",
+                      height: "100%",
+                      maxHeight: "480px",
+                      overflow: "hidden",
+                      borderRadius: "20px",
+                      background: "transparent",
+                    }}
+                  >
+                    {/* Slides Container */}
+                    <div
+                      style={{
+                        display: "flex",
+                        height: "100%",
+
+                        transform: `translateX(-${currentSlide * 100}%)`,
+                        transition: "transform 500ms ease-in-out",
+                      }}
+                    >
+                      {imageSources.map((src, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            minWidth: "100%",
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <img
+                            src={src}
+                            alt={`carousel ${index + 1}`}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "stretch",
+                              borderRadius: "16px",
+                            }}
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                              e.target.parentElement.innerHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; color: white; font-size: 24px;">Image ${
+                                index + 1
+                              }</div>`;
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Dots Navigation */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        left: "0",
+                        right: "0",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: "10px",
+                        zIndex: 50,
+                      }}
+                    >
+                      {imageSources.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => goToSlide(index)}
+                          style={{
+                            width: "8px",
+                            height: "12px",
+                            borderRadius: "50%",
+                            border: "none",
+                            background:
+                              currentSlide === index ? "#C31162" : "#ed1147",
+                            cursor: "pointer",
+                            transition: "all 300ms ease",
+                            opacity: currentSlide === index ? 1 : 0.6,
+                          }}
+                          aria-label={`Go to slide ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      height: "100%",
+                      background: "transparent",
+                      borderRadius: "20px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#999",
+                      fontSize: "1.2rem",
+                    }}
+                  >
+                    Loading...
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
