@@ -3,6 +3,7 @@ import { FiMail, FiPhone, FiMapPin } from "react-icons/fi";
 import { FaApple, FaGooglePlay } from "react-icons/fa";
 import { text } from "@fortawesome/fontawesome-svg-core";
 import Swal from "sweetalert2";
+import { Briefcase, Heart, Mail, TrendingUp, Users } from "lucide-react";
 
 const Contactus = () => {
   const [formData, setFormData] = useState({
@@ -209,7 +210,131 @@ const Contactus = () => {
       width: "100%",
       height: "auto",
     },
+    container: {
+      width: "100%",
+      maxWidth: "1200px",
+      margin: "0 auto",
+      padding: "40px 24px",
+    },
+    header: {
+      textAlign: "center",
+      marginBottom: "48px",
+    },
+    mainTitle: {
+      fontSize: "36px",
+      fontWeight: "bold",
+      color: "#1f2937",
+      marginBottom: "12px",
+    },
+    subtitle: {
+      fontSize: "16px",
+      color: "#6b7280",
+    },
+    grid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+      gap: "24px",
+      marginBottom: "40px",
+    },
+    card: {
+      backgroundColor: "white",
+      borderRadius: "2px",
+      padding: "24px",
+      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.07)",
+      border: "1px solid #f3f4f6",
+      transition: "all 0.3s ease",
+      cursor: "pointer",
+    },
+    iconWrapper: {
+      width: "56px",
+      height: "56px",
+      borderRadius: "12px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "white",
+      marginBottom: "16px",
+      transition: "transform 0.3s ease",
+    },
+    cardTitle: {
+      fontSize: "20px",
+      fontWeight: "bold",
+      color: "#1f2937",
+      marginBottom: "8px",
+    },
+    cardText: {
+      fontSize: "14px",
+      color: "#6b7280",
+      lineHeight: "1.6",
+      marginBottom: "16px",
+    },
+    emailLink: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "6px",
+      color: "#e41f81",
+      fontSize: "14px",
+      fontWeight: "500",
+      textDecoration: "none",
+      transition: "color 0.2s ease",
+    },
+    footer: {
+      textAlign: "center",
+      marginTop: "40px",
+    },
+    footerText: {
+      fontSize: "14px",
+      color: "#9ca3af",
+    },
+    footerLink: {
+      color: "#e41f81",
+      fontWeight: "500",
+      textDecoration: "none",
+    },
   };
+
+  const contactCards = [
+    {
+      icon: <Briefcase size={24} />,
+      title: "Vendors",
+      description:
+        "Are you an expert vendor eager to expand your business opportunities? Connect with us and discover the ideal platform to grow.",
+      email: "user@happywedz.com",
+      gradient: "linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)",
+    },
+    {
+      icon: <TrendingUp size={24} />,
+      title: "Marketing Collaborations",
+      description:
+        "For direct collaborations—including promotional events, shoots, or paid opportunities—reach out to us.",
+      email: "user@happywedz.com",
+      gradient: "linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)",
+    },
+    {
+      icon: <Heart size={24} />,
+      title: "Wedding Submissions",
+      description:
+        "We're passionate about celebrating weddings on happywedz.com! Share your wedding story, photos, and vendor details with us.",
+      email: "user@happywedz.com",
+      gradient: "linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)",
+    },
+    {
+      icon: <Users size={24} />,
+      title: "Careers",
+      description:
+        "We have a team of dedicated professionals on the network, and we're always on the lookout for new talent. Join us today!",
+      email: "hr@happywedz.com",
+      gradient: "linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)",
+    },
+    {
+      icon: <Mail size={24} />,
+      title: "Customers",
+      description:
+        "We aim to connect you with the very best in premium vendors. Share your feedback or concerns to help us improve.",
+      email: "feedback@happywedz.com",
+      gradient: "linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)",
+    },
+  ];
 
   const appButtonStyle = {
     ...styles.appButton,
@@ -235,6 +360,24 @@ const Contactus = () => {
       }
     }
   `;
+
+  const handleCardHover = (e, isHovering) => {
+    if (isHovering) {
+      e.currentTarget.style.transform = "translateY(-8px)";
+      e.currentTarget.style.boxShadow = "0 20px 25px rgba(0, 0, 0, 0.1)";
+      const icon = e.currentTarget.querySelector(".icon-wrapper");
+      if (icon) icon.style.transform = "scale(1.1)";
+    } else {
+      e.currentTarget.style.transform = "translateY(0)";
+      e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.07)";
+      const icon = e.currentTarget.querySelector(".icon-wrapper");
+      if (icon) icon.style.transform = "scale(1)";
+    }
+  };
+
+  const handleLinkHover = (e, isHovering) => {
+    e.currentTarget.style.color = isHovering ? "#c7185e" : "#e41f81";
+  };
 
   return (
     <div style={styles.container}>
@@ -316,111 +459,60 @@ const Contactus = () => {
             </div>
 
             {/* Vendors Section */}
-            <div className="shadow-lg">
-              <div style={styles.categorySection}>
-                <h3
-                  style={{
-                    ...styles.categoryHeading,
-                    borderBottom: "1px solid #e41f81ff",
-                    display: "inline-block",
-                    paddingBottom: "5px",
-                    marginBottom: "15px",
-                  }}
-                >
-                  Vendors
-                </h3>
-                <p style={styles.categoryText}>
-                  Are you an expert vendor eager to expand your business
-                  opportunities? Connect with us and discover the ideal platform
-                  to grow. Reach out anytime at user@happywedz.com to start your
-                  journey.
-                </p>
+            <div style={styles.container}>
+              <div style={styles.header}>
+                <h2 style={styles.mainTitle}>Get In Touch</h2>
+                <p style={styles.subtitle}>We'd love to hear from you</p>
               </div>
 
-              {/* Marketing Collaborations */}
-              <div style={styles.categorySection}>
-                <h3
-                  style={{
-                    ...styles.categoryHeading,
-                    borderBottom: "1px solid #e41f81ff",
-                    display: "inline-block",
-                    paddingBottom: "5px",
-                    marginBottom: "15px",
-                  }}
-                >
-                  {" "}
-                  Marketing Collaborations
-                </h3>
-                <p style={styles.categoryText}>
-                  For direct collaborations—including promotional events,
-                  shoots, or paid opportunities—reach out to us at
-                  user@happywedz.com
-                </p>
+              <div style={styles.grid}>
+                {contactCards.map((card, index) => (
+                  <div
+                    key={index}
+                    style={styles.card}
+                    onMouseEnter={(e) => handleCardHover(e, true)}
+                    onMouseLeave={(e) => handleCardHover(e, false)}
+                  >
+                    <div
+                      className="icon-wrapper"
+                      style={{
+                        ...styles.iconWrapper,
+                        background: card.gradient,
+                      }}
+                    >
+                      {card.icon}
+                    </div>
+
+                    <h3 style={styles.cardTitle}>{card.title}</h3>
+
+                    <p style={styles.cardText}>{card.description}</p>
+
+                    <a
+                      href={`mailto:${card.email}`}
+                      style={styles.emailLink}
+                      onMouseEnter={(e) => handleLinkHover(e, true)}
+                      onMouseLeave={(e) => handleLinkHover(e, false)}
+                    >
+                      <Mail size={16} />
+                      {card.email}
+                    </a>
+                  </div>
+                ))}
               </div>
 
-              {/* Wedding Submissions */}
-              <div style={styles.categorySection}>
-                <h3
-                  style={{
-                    ...styles.categoryHeading,
-                    borderBottom: "1px solid #e41f81ff",
-                    display: "inline-block",
-                    paddingBottom: "5px",
-                    marginBottom: "15px",
-                  }}
-                >
-                  Wedding Submissions
-                </h3>
-                <p style={styles.categoryText}>
-                  We're passionate about celebrating weddings on happywedz.com!
-                  To share your wedding story, photos, and vendor details, email
-                  us at user@happywedz.com or send us a direct message on
-                  Instagram.
+              {/* <div style={styles.footer}>
+                <p style={styles.footerText}>
+                  Or reach out to us on{" "}
+                  <a
+                    href="#"
+                    style={styles.footerLink}
+                    onMouseEnter={(e) => handleLinkHover(e, true)}
+                    onMouseLeave={(e) => handleLinkHover(e, false)}
+                  >
+                    Instagram
+                  </a>
                 </p>
-              </div>
-
-              {/* Careers */}
-              <div style={styles.categorySection}>
-                <h3
-                  style={{
-                    ...styles.categoryHeading,
-                    borderBottom: "1px solid #e41f81ff",
-                    display: "inline-block",
-                    paddingBottom: "5px",
-                    marginBottom: "15px",
-                  }}
-                >
-                  Careers
-                </h3>
-                <p style={styles.categoryText}>
-                  We have a team of dedicated professionals on the network, and
-                  we’re always on the lookout for new talent. If you’re
-                  interested in joining us, please send your resume to
-                  hr@happywedz.com.
-                </p>
-              </div>
-
-              {/* Customers */}
-              <div style={styles.categorySection}>
-                <h3
-                  style={{
-                    ...styles.categoryHeading,
-                    borderBottom: "1px solid #e41f81ff",
-                    display: "inline-block",
-                    paddingBottom: "5px",
-                    marginBottom: "15px",
-                  }}
-                >
-                  Customers
-                </h3>
-                <p style={styles.categoryText}>
-                  We aim to connect you with the very best in premium vendors.
-                  If you have feedback about your experience, we’d love to hear
-                  from you! As a learning-focused organization, your input helps
-                  us improve. Please share your feedback or concerns at
-                  feedback@happywedz.com.
-                </p>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -493,11 +585,10 @@ const Contactus = () => {
                 <FiMapPin size={25} className="primary-text" />
                 <div className="d-flex flex-column">
                   <span className="fs-18 fw-bold">
-                    HappyWedz Office, 123 Lotus Avenue, 2nd Floor, Mumbai,
-                    400001, India
-                  </span>
-                  <span className="fs-18 fw-bold">
-                    near croma, borivali west Mumbai 400014 Get Directions
+                    29/1B, Sinhgad Rd, next to Vidya Sahakri Bank,
+                    <br /> Near Veer Baji Pasalkar Chowk,
+                    <br /> Kirti Nagar, Vadgaon Budruk,
+                    <br /> Pune, Maharashtra 411041
                   </span>
                 </div>
               </div>
@@ -506,7 +597,7 @@ const Contactus = () => {
             <div style={styles.contactBox}>
               <div className="d-flex flex-wrap justify-content-center gap-4">
                 <a
-                  href="https://play.google.com/store/apps/details?id=com.wedmegood.wmgapp"
+                  href="https://play.google.com/store/apps/details?id=com.happy.happy_weds_vendors"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

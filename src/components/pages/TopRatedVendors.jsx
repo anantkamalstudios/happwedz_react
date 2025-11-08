@@ -68,7 +68,7 @@ const TopRatedVendors = () => {
     >
       <h4>Top Rated Vendors Page</h4>
       <p style={{ color: "gray" }}>
-        Meet out top vendors famoues in the various cities
+        Meet our top vendors famous in the various cities
       </p>
       <div
         style={{
