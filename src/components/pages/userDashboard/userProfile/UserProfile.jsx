@@ -17,6 +17,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { TextField } from "@mui/material";
 import dayjs from "dayjs";
 import { setCredentials } from "../../../../redux/authSlice";
+import { getImageUrl } from "../../../../utils/imageUtils";
 
 const initialState = {
   id: "",
@@ -88,19 +89,23 @@ const UserProfile = ({ user, token }) => {
   }, [userId]);
 
   const profilePreview = useMemo(() => {
-    return formData.profileImage && typeof formData.profileImage !== "string"
-      ? URL.createObjectURL(formData.profileImage)
-      : typeof formData.profileImage === "string"
-      ? formData.profileImage
-      : "";
+    if (formData.profileImage && typeof formData.profileImage !== "string") {
+      return URL.createObjectURL(formData.profileImage);
+    }
+    if (typeof formData.profileImage === "string" && formData.profileImage) {
+      return getImageUrl(formData.profileImage);
+    }
+    return "";
   }, [formData.profileImage]);
 
   const coverPreview = useMemo(() => {
-    return formData.coverImage && typeof formData.coverImage !== "string"
-      ? URL.createObjectURL(formData.coverImage)
-      : typeof formData.coverImage === "string"
-      ? formData.coverImage
-      : "";
+    if (formData.coverImage && typeof formData.coverImage !== "string") {
+      return URL.createObjectURL(formData.coverImage);
+    }
+    if (typeof formData.coverImage === "string" && formData.coverImage) {
+      return getImageUrl(formData.coverImage);
+    }
+    return "";
   }, [formData.coverImage]);
 
   useEffect(() => {
@@ -351,8 +356,7 @@ const UserProfile = ({ user, token }) => {
                   updatedUser.weddingDate || effectiveUser.weddingDate,
                 profileImage:
                   updatedUser.profileImage || effectiveUser.profileImage,
-                coverImage:
-                  updatedUser.coverImage || effectiveUser.coverImage,
+                coverImage: updatedUser.coverImage || effectiveUser.coverImage,
               },
               token: effectiveToken,
             })
@@ -410,9 +414,10 @@ const UserProfile = ({ user, token }) => {
               style={{
                 height: "180px",
                 background:
-                  coverPreview || formData.coverImage
+                  coverPreview ||
+                  (formData.coverImage && getImageUrl(formData.coverImage))
                     ? `url(${
-                        coverPreview || formData.coverImage
+                        coverPreview || getImageUrl(formData.coverImage)
                       }) center/cover no-repeat`
                     : "linear-gradient(135deg, #fdf2f8 0%, #e9d5ff 100%)",
                 borderTopLeftRadius: "0.375rem",

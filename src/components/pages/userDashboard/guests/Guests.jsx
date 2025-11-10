@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import {
@@ -12,6 +12,10 @@ import {
   FaTrash,
 } from "react-icons/fa";
 import Swal from "sweetalert2";
+import EmailModal from "../../../ui/EmailModal";
+import { pdf } from "@react-pdf/renderer";
+import GuestListPDF from "./GuestListPDF";
+import { useNavigate } from "react-router-dom";
 
 const initialGuestFormState = {
   name: "",
@@ -27,6 +31,9 @@ const initialGuestFormState = {
 const Guests = () => {
   const token = useSelector((state) => state.auth.token);
   const userId = useSelector((state) => state.auth.user?.id);
+  const userEmail = useSelector((state) => state.auth.user?.email) || "";
+  const userName = useSelector((state) => state.auth.user?.name) || "";
+  const userPhone = useSelector((state) => state.auth.user?.phone) || "";
   const [guests, setGuests] = useState([]);
   const [newGuestForm, setNewGuestForm] = useState(initialGuestFormState);
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,25 +43,64 @@ const Guests = () => {
   const [showAddGroupForm, setShowAddGroupForm] = useState(false);
   const [showMessageOptions, setShowMessageOptions] = useState(false);
   const [loading, setLoading] = useState(true);
+  const printRef = useRef();
+  const navigate = useNavigate();
 
   const [formError, setFormError] = useState("");
   const [refresh, setRefresh] = useState(false);
   const [availableGroups, setAvailableGroups] = useState([]);
   const [newGroupName, setNewGroupName] = useState("");
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   const statusOptions = ["Attending", "Not Attending", "Pending"];
   const typeOptions = ["Adult", "Child"];
   const menuOptions = ["Veg", "NonVeg", "All"];
 
+  const handlePrint = () => {
+    if (!printRef.current) {
+      Swal.fire({
+        icon: "error",
+        text: "No content available to print",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#C31162",
+      });
+      return;
+    }
+    const printContents = printRef.current.innerHTML;
+    const printWindow = window.open("", "", "height=600,width=800");
+    if (!printWindow) {
+      Swal.fire({
+        icon: "error",
+        text: "Please allow popups to print",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#C31162",
+      });
+      return;
+    }
+    printWindow.document.write("<html><head><title>Guest List</title>");
+    printWindow.document.write(`
+      <style>
+        body { font-family: Arial; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+      </style>
+    `);
+    printWindow.document.write("</head><body>");
+    printWindow.document.write(printContents);
+    printWindow.document.write("</body></html>");
+    printWindow.document.close();
+    printWindow.print();
+  };
+
   const axiosInstance = React.useMemo(() => {
     if (!token) return null;
-
-    const isFirebaseToken = token.startsWith("eyJ") && token.includes(".");
 
     return axios.create({
       headers: {
         Authorization: `Bearer ${token}`,
-        ...(isFirebaseToken && { "X-Firebase-Token": "true" }),
+        "X-Auth-Provider": "google",
       },
     });
   }, [token]);
@@ -90,42 +136,39 @@ const Guests = () => {
   }, [refresh, fetchGuests]);
 
   useEffect(() => {
-    const savedGroups = localStorage.getItem('guestGroups');
+    const savedGroups = localStorage.getItem("guestGroups");
     if (savedGroups) {
       try {
         const groups = JSON.parse(savedGroups);
         setAvailableGroups(groups);
       } catch (error) {
-        console.error('Error loading groups from localStorage:', error);
+        console.error("Error loading groups from localStorage:", error);
         setAvailableGroups([]);
       }
     }
   }, []);
 
-  // Save groups to localStorage whenever they change
   const saveGroupToLocalStorage = (groupName) => {
     if (!groupName.trim()) return;
 
-    const savedGroups = localStorage.getItem('guestGroups');
+    const savedGroups = localStorage.getItem("guestGroups");
     let groups = [];
 
     if (savedGroups) {
       try {
         groups = JSON.parse(savedGroups);
       } catch (error) {
-        console.error('Error parsing groups:', error);
+        console.error("Error parsing groups:", error);
       }
     }
 
-    // Add new group if it doesn't exist
     if (!groups.includes(groupName)) {
       groups.push(groupName);
-      localStorage.setItem('guestGroups', JSON.stringify(groups));
+      localStorage.setItem("guestGroups", JSON.stringify(groups));
       setAvailableGroups(groups);
     }
   };
 
-  // Create a unique list of groups from the guests for the filter dropdown
   const uniqueGroups = [
     "All",
     ...new Set(guests.map((g) => g.group || "Other")),
@@ -158,7 +201,6 @@ const Guests = () => {
       g.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Pagination calculations
   const [currentPage, setCurrentPage] = useState(1);
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -262,16 +304,184 @@ const Guests = () => {
   const adultsCount = guests.filter((g) => g && g.type === "Adult").length;
   const childrenCount = guests.filter((g) => g && g.type === "Child").length;
 
-  const sendMessage = (type) => {
-    // alert(`Sending ${type} message`);
-    Swal.fire({
-      icon: "info",
-      text: `Sending ${type} message`,
-      timer: "3000",
-      confirmButtonText: "OK",
-      confirmButtonColor: "#C31162"
+  const formatGuestListForWhatsApp = () => {
+    if (guests.length === 0) {
+      return "No guests in the list.";
+    }
+
+    let message = `*Guest List*\n\n`;
+    message += `Total Guests: ${guests.length}\n`;
+    message += `Attending: ${attendingCount} | Pending: ${pendingCount} | Not Attending: ${declinedCount}\n`;
+    message += `Adults: ${adultsCount} | Children: ${childrenCount}\n\n`;
+    message += `*Guest Details:*\n\n`;
+
+    // Group all guests by group (not filtered)
+    const allGroupedGuests = guests.reduce((acc, guest) => {
+      const groupName = guest.group || "Other";
+      if (!acc[groupName]) {
+        acc[groupName] = [];
+      }
+      acc[groupName].push(guest);
+      return acc;
+    }, {});
+
+    Object.entries(allGroupedGuests).forEach(([groupName, groupGuests]) => {
+      message += `*${groupName}* (${groupGuests.length})\n`;
+      groupGuests.forEach((guest, index) => {
+        message += `${index + 1}. ${guest.name}`;
+        if (guest.email) message += ` (${guest.email})`;
+        message += `\n   Status: ${guest.status || "Pending"}`;
+        if (guest.companions > 0)
+          message += ` | Companions: ${guest.companions}`;
+        if (guest.seat_number) message += ` | Seat: ${guest.seat_number}`;
+        message += ` | Type: ${guest.type || "Adult"} | Menu: ${
+          guest.menu || "Veg"
+        }`;
+        message += `\n`;
+      });
+      message += `\n`;
     });
-    setShowMessageOptions(false);
+
+    return message;
+  };
+
+  const sendMessage = (type) => {
+    if (type === "Email") {
+      setShowEmailModal(true);
+      setShowMessageOptions(false);
+    } else if (type === "WhatsApp") {
+      // WhatsApp functionality
+      if (!userPhone) {
+        Swal.fire({
+          icon: "error",
+          text: "Phone number not found. Please update your profile with a phone number.",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#C31162",
+        });
+        setShowMessageOptions(false);
+        return;
+      }
+
+      if (guests.length === 0) {
+        Swal.fire({
+          icon: "info",
+          text: "No guests to share.",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#C31162",
+        });
+        setShowMessageOptions(false);
+        return;
+      }
+
+      // Format phone number for WhatsApp (remove spaces, dashes, plus signs, and parentheses)
+      // WhatsApp requires international format: country code + number (no +, spaces, or special chars)
+      let phoneNumber = userPhone
+        .replace(/\s+/g, "")
+        .replace(/-/g, "")
+        .replace(/\+/g, "")
+        .replace(/\(/g, "")
+        .replace(/\)/g, "")
+        .replace(/\./g, "");
+
+      // Remove leading 0 if present (some countries use leading 0 for local numbers)
+      if (phoneNumber.startsWith("0")) {
+        phoneNumber = phoneNumber.substring(1);
+      }
+
+      // Validate phone number (should contain only digits)
+      if (!/^\d+$/.test(phoneNumber)) {
+        Swal.fire({
+          icon: "error",
+          text: "Invalid phone number format. Please update your profile with a valid phone number.",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#C31162",
+        });
+        setShowMessageOptions(false);
+        return;
+      }
+
+      const message = formatGuestListForWhatsApp();
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+
+      // Open WhatsApp Web in a new tab
+      window.open(whatsappUrl, "_blank");
+      setShowMessageOptions(false);
+    }
+  };
+
+  const redirectToEinviteCards = () => {
+    navigate(`/einvites/my-cards`);
+  };
+
+  const handleSendGuestListEmail = async (emailData) => {
+    if (!emailData || !emailData.toEmail || emailData.toEmail.length === 0) {
+      Swal.fire({
+        icon: "error",
+        text: "Please add at least one recipient email",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#C31162",
+      });
+      return;
+    }
+
+    if (!axiosInstance || !userId) {
+      Swal.fire({
+        icon: "error",
+        text: "Authentication error. Please log in again.",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#C31162",
+      });
+      return;
+    }
+
+    setSendingEmail(true);
+    try {
+      const userIdToSend = isNaN(userId) ? userId : parseInt(userId, 10);
+
+      const payload = {
+        userId: userIdToSend,
+        toEmail: emailData.toEmail,
+        ...(emailData.ccEmail &&
+          emailData.ccEmail.length > 0 && { ccEmail: emailData.ccEmail }),
+        ...(emailData.bccEmail &&
+          emailData.bccEmail.length > 0 && { bccEmail: emailData.bccEmail }),
+        subject: emailData.subject || "Guest List",
+        message: emailData.message || "",
+      };
+
+      const response = await axiosInstance.post(
+        "https://happywedz.com/api/guestlist/send-guestlist-email",
+        payload
+      );
+
+      if (response.data?.success) {
+        Swal.fire({
+          icon: "success",
+          text: "Guest list sent successfully!",
+          timer: 3000,
+          confirmButtonText: "OK",
+          confirmButtonColor: "#C31162",
+        });
+        setShowEmailModal(false);
+      } else {
+        throw new Error(response.data?.message || "Failed to send email");
+      }
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "An error occurred while sending the email.";
+      Swal.fire({
+        icon: "error",
+        text: errorMessage,
+        confirmButtonText: "OK",
+        confirmButtonColor: "#C31162",
+      });
+      console.error("Send Email Error:", err.response || err);
+    } finally {
+      setSendingEmail(false);
+    }
   };
 
   if (loading) {
@@ -283,26 +493,70 @@ const Guests = () => {
   }
 
   const handleDownload = async () => {
-    if (!axiosInstance) return;
+    if (guests.length === 0) {
+      Swal.fire({
+        icon: "info",
+        text: "No guests to download.",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#C31162",
+      });
+      return;
+    }
+
     try {
-      const response = await axiosInstance.get(
-        "https://happywedz.com/api/guestlist/export/excel",
-        {
-          responseType: "blob", // Important for file downloads
-        }
+      // Show loading message
+      Swal.fire({
+        title: "Generating PDF...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      // Generate PDF
+      const doc = (
+        <GuestListPDF
+          guests={guests}
+          meta={{
+            userName: userName || "",
+            generatedAt: new Date(),
+          }}
+        />
       );
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+
+      const asPdf = pdf(doc);
+      const blob = await asPdf.toBlob();
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", "guest-list.xlsx");
+      link.setAttribute("download", "guest-list.pdf");
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
+
+      // Close loading and show success
+      Swal.close();
+      Swal.fire({
+        icon: "success",
+        text: "Guest list downloaded successfully!",
+        timer: 2000,
+        confirmButtonText: "OK",
+        confirmButtonColor: "#C31162",
+      });
     } catch (err) {
       console.error("Download Error:", err);
-      Swal.fire("Error!", "Could not download the guest list.", "error");
+      Swal.close();
+      Swal.fire({
+        icon: "error",
+        text: "Could not download the guest list.",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#C31162",
+      });
     }
-  }
+  };
 
   return (
     <div className="wgl-container">
@@ -385,22 +639,37 @@ const Guests = () => {
             {showMessageOptions && (
               <div className="wgl-dropdown-menu">
                 <button onClick={() => sendMessage("Email")}>Email</button>
-                <button onClick={() => sendMessage("SMS")}>SMS</button>
+                <button onClick={() => redirectToEinviteCards()}>
+                  Einvite Cards
+                </button>
                 <button onClick={() => sendMessage("WhatsApp")}>
                   WhatsApp
                 </button>
               </div>
             )}
           </div>
+
+          {/* Email Modal */}
+          <EmailModal
+            show={showEmailModal}
+            onClose={() => setShowEmailModal(false)}
+            onSend={handleSendGuestListEmail}
+            sending={sendingEmail}
+            userEmail={userEmail}
+            userName={userName}
+          />
           <button
             className="wgl-button wgl-button-secondary"
             onClick={handleDownload}
           >
             <FaDownload className="wgl-button-icon" /> Download
           </button>
-          <button className="wgl-button wgl-button-secondary">
+          {/* <button
+            className="wgl-button wgl-button-secondary"
+            onClick={handlePrint}
+          >
             <FaPrint className="wgl-button-icon" /> Print
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -542,7 +811,7 @@ const Guests = () => {
                   Swal.fire({
                     icon: "error",
                     text: "Please enter a group name",
-                    confirmButtonColor: "#C31162"
+                    confirmButtonColor: "#C31162",
                   });
                   return;
                 }
@@ -555,7 +824,7 @@ const Guests = () => {
                   text: `Group "${newGroupName}" created successfully`,
                   timer: 3000,
                   confirmButtonText: "OK",
-                  confirmButtonColor: "#C31162"
+                  confirmButtonColor: "#C31162",
                 });
 
                 setShowAddGroupForm(false);
@@ -583,7 +852,9 @@ const Guests = () => {
             <option value="All">All Groups</option>
             <option value="Other">Other</option>
             {availableGroups.map((group) => (
-              <option key={group} value={group}>{group}</option>
+              <option key={group} value={group}>
+                {group}
+              </option>
             ))}
           </select>
         </div>
@@ -606,57 +877,84 @@ const Guests = () => {
       </div>
 
       {/* Guest Table */}
-      <div className="wgl-guest-list">
+      <div className="wgl-guest-list" ref={printRef}>
         {Object.keys(filteredAndGroupedGuests).length > 0 ? (
-          Object.entries(filteredAndGroupedGuests).map(([groupName, groupGuests]) => (
-            <div key={groupName} className="wgl-guest-group-section mb-5">
-              <h4 className="wgl-group-title">{groupName} ({groupGuests.length})</h4>
-              <table className="wgl-guest-table">
-                <thead>
-                  <tr>
-                    <th className="wgl-table-header">Guest</th>
-                    <th className="wgl-table-header">Status</th>
-                    <th className="wgl-table-header">Companions</th>
-                    <th className="wgl-table-header">Seat</th>
-                    <th className="wgl-table-header">Type</th>
-                    <th className="wgl-table-header">Menu</th>
-                    <th className="wgl-table-header">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {groupGuests.map((g) => (
-                    <tr key={g.id} className="wgl-guest-row">
-                      <td className="wgl-guest-name">{g.name}</td>
-                      <td className="wgl-guest-status">
-                        <select
-                          className={`wgl-status-select wgl-status-${g.status.toLowerCase()}`}
-                          value={g.status}
-                          onChange={(e) => updateGuestField(g.id, "status", e.target.value)}
-                        >
-                          {statusOptions.map((s) => (<option key={s}>{s}</option>))}
-                        </select>
-                      </td>
-                      <td className="wgl-guest-companions">{g.companions}</td>
-                      <td className="wgl-guest-seat">{g.seat_number}</td>
-                      <td className="wgl-guest-type">
-                        <select value={g.type} onChange={(e) => updateGuestField(g.id, "type", e.target.value)}>
-                          {typeOptions.map((t) => (<option key={t}>{t}</option>))}
-                        </select>
-                      </td>
-                      <td className="wgl-guest-menu">
-                        <select value={g.menu} onChange={(e) => updateGuestField(g.id, "menu", e.target.value)}>
-                          {menuOptions.map((m) => (<option key={m}>{m}</option>))}
-                        </select>
-                      </td>
-                      <td className="wgl-guest-actions">
-                        <button className="wgl-action-button wgl-action-delete" onClick={() => deleteGuestAPI(g.id)}><FaTrash /></button>
-                      </td>
+          Object.entries(filteredAndGroupedGuests).map(
+            ([groupName, groupGuests]) => (
+              <div key={groupName} className="wgl-guest-group-section mb-5">
+                <h4 className="wgl-group-title p-2">
+                  {groupName} ({groupGuests.length})
+                </h4>
+                <table className="wgl-guest-table">
+                  <thead>
+                    <tr>
+                      <th className="wgl-table-header">Guest</th>
+                      <th className="wgl-table-header">Status</th>
+                      <th className="wgl-table-header">Companions</th>
+                      <th className="wgl-table-header">Seat</th>
+                      <th className="wgl-table-header">Type</th>
+                      <th className="wgl-table-header">Menu</th>
+                      <th className="wgl-table-header">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ))
+                  </thead>
+                  <tbody>
+                    {groupGuests.map((g) => (
+                      <tr key={g.id} className="wgl-guest-row">
+                        <td className="wgl-guest-name">{g.name}</td>
+                        <td className="wgl-guest-status">
+                          <select
+                            className={`wgl-status-select wgl-status-${g.status.toLowerCase()}`}
+                            value={g.status}
+                            onChange={(e) =>
+                              updateGuestField(g.id, "status", e.target.value)
+                            }
+                          >
+                            {statusOptions.map((s) => (
+                              <option key={s}>{s}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="wgl-guest-companions">{g.companions}</td>
+                        <td className="wgl-guest-seat">{g.seat_number}</td>
+                        <td className="wgl-guest-type">
+                          <select
+                            value={g.type}
+                            onChange={(e) =>
+                              updateGuestField(g.id, "type", e.target.value)
+                            }
+                          >
+                            {typeOptions.map((t) => (
+                              <option key={t}>{t}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="wgl-guest-menu">
+                          <select
+                            value={g.menu}
+                            onChange={(e) =>
+                              updateGuestField(g.id, "menu", e.target.value)
+                            }
+                          >
+                            {menuOptions.map((m) => (
+                              <option key={m}>{m}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="wgl-guest-actions">
+                          <button
+                            className="wgl-action-button wgl-action-delete"
+                            onClick={() => deleteGuestAPI(g.id)}
+                          >
+                            <FaTrash />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
+          )
         ) : (
           <div className="wgl-empty-state">
             <p>No guests found matching your criteria</p>

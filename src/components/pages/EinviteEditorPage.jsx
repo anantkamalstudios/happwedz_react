@@ -37,13 +37,10 @@ const EinviteEditorPage = () => {
 
   const handleSave = async (updatedPayload) => {
     try {
-      // If we're editing a template (no ownerUserId or explicitly marked isTemplate),
-      // first create a user-owned instance by cloning.
       const isTemplate = card?.isTemplate === true || !card?.ownerUserId;
 
       if (isTemplate) {
         if (!currentUserId) {
-          // alert("Please log in to customize this card.");
           Swal.fire({
             text: "Please log in to customize this card.",
             timer: 1500,
@@ -59,7 +56,7 @@ const EinviteEditorPage = () => {
           cardType: updatedPayload.cardType || card.cardType,
           backgroundUrl: updatedPayload.backgroundUrl || card.backgroundUrl,
           thumbnailUrl: updatedPayload.thumbnailUrl || card.thumbnailUrl,
-          editableFields: updatedPayload.editableFields, // string or array OK
+          editableFields: updatedPayload.editableFields,
         };
 
         const created = await einviteApi.createInstance(createBody);

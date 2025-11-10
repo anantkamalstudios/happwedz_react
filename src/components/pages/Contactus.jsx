@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { FiMail, FiPhone, FiMapPin } from "react-icons/fi";
-import { FaApple, FaGooglePlay } from "react-icons/fa";
-import { text } from "@fortawesome/fontawesome-svg-core";
 import Swal from "sweetalert2";
 import { Briefcase, Heart, Mail, TrendingUp, Users } from "lucide-react";
+import { useContact } from "../../hooks/useContact";
 
 const Contactus = () => {
+  const { submitContact, loading, error } = useContact();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -21,12 +21,28 @@ const Contactus = () => {
     });
   };
 
-  const handleSubmit = () => {
-    Swal.fire({
-      icon: "success",
-      text: "Form submitted successfully!",
-      timer: 1500,
-    });
+  const handleSubmit = async () => {
+    try {
+      await submitContact(formData);
+      Swal.fire({
+        icon: "success",
+        text: "Form submitted successfully!",
+        timer: 1500,
+      });
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        message: "",
+      });
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error || "Failed to submit form. Please try again.",
+      });
+    }
   };
 
   const styles = {
@@ -336,18 +352,6 @@ const Contactus = () => {
     },
   ];
 
-  const appButtonStyle = {
-    ...styles.appButton,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "8px",
-    backgroundColor: "#000",
-    color: "#fff",
-    textDecoration: "none",
-    padding: "8px 12px",
-  };
-
   const mobileStyles = `
     @media (max-width: 768px) {
       .left-col, .right-col {
@@ -452,8 +456,12 @@ const Contactus = () => {
                   ></textarea>
                 </div>
 
-                <button onClick={handleSubmit} style={styles.button}>
-                  SUBMIT
+                <button
+                  onClick={handleSubmit}
+                  style={styles.button}
+                  disabled={loading}
+                >
+                  {loading ? "SUBMITTING..." : "SUBMIT"}
                 </button>
               </div>
             </div>

@@ -118,6 +118,8 @@ const EinviteMyCards = () => {
               cards={cards}
               loading={false}
               showActions={true}
+              showEditButton={true}
+              showShareButton={false}
               onDelete={handleDeleteCard}
             />
           </>
