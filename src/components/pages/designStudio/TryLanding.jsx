@@ -550,6 +550,50 @@ const TryLanding = () => {
 
   return (
     <>
+      {/* Responsive hero layout: added styles to stack on md/sm screens */}
+      <style>
+        {`
+          /* Responsive: hero stacks into column on md and sm screens */
+          @media (max-width: 992px) {
+            /* md and below */
+            .try-hero-flex {
+              flex-direction: column !important;
+              align-items: center !important;
+              height: auto !important;
+              max-height: none !important;
+              gap: 1.5rem !important;
+            }
+            .try-hero-left {
+              align-self: stretch !important;
+              padding-left: 1rem !important;
+              padding-right: 1rem !important;
+              flex: 0 0 100% !important;
+            }
+            .try-hero-left .try-first-page-content-wrapper {
+              margin-left: 0 !important;
+              margin-bottom: 1rem !important;
+              max-width: 100% !important;
+            }
+            .try-hero-right {
+              align-self: stretch !important;
+              margin-top: 0 !important;
+              max-width: 100% !important;
+              flex: 0 0 100% !important;
+            }
+            .try-hero-right .carousel-shell {
+              max-height: 380px !important;
+              height: auto !important;
+            }
+          }
+
+          @media (max-width: 576px) {
+            /* sm and below */
+            .try-hero-right .carousel-shell {
+              max-height: 320px !important;
+            }
+          }
+        `}
+      </style>
       <div className="try-first-page-container">
         {/* Hero Section */}
         <div
@@ -565,7 +609,9 @@ const TryLanding = () => {
               paddingTop: 0,
             }}
           >
+            {/* Wrapper: added try-hero-flex to control responsive column layout */}
             <div
+              className="try-hero-flex"
               style={{
                 display: "flex",
                 justifyContent: "center",
@@ -577,8 +623,9 @@ const TryLanding = () => {
               }}
             >
               {/* Heading Container */}
+              {/* Added try-hero-left class for responsive stacking */}
               <div
-                className="try-first-page-hero-content px-6"
+                className="try-first-page-hero-content px-6 try-hero-left"
                 style={{
                   alignSelf: "flex-end",
                   display: "flex",
@@ -636,7 +683,9 @@ const TryLanding = () => {
               </div>
 
               {/* Slider Container */}
+              {/* Added try-hero-right class for responsive stacking */}
               <div
+                className="try-hero-right"
                 style={{
                   maxWidth: "850px",
                   height: "100%",
@@ -648,7 +697,9 @@ const TryLanding = () => {
                 }}
               >
                 {imagesLoaded ? (
+                  /* Added carousel-shell to adjust height at breakpoints */
                   <div
+                    className="carousel-shell"
                     style={{
                       position: "relative",
                       width: "100%",

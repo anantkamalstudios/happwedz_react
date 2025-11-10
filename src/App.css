@@ -567,7 +567,7 @@ body {
 }
 
 .col-lg-6.d-none.d-lg-block {
-  background: url("/images/auth/login.jpg") no-repeat center center;
+  background: url("/images/auth/download.jpg") no-repeat center center;
   background-size: cover;
   min-height: 700px;
 }
@@ -20382,3 +20382,50 @@ input:checked + .slider:before {
     font-size: 22px;
   }
 }
+
+
+/* for the header */
+/* Mobile Drawer Styles */
+.mobile-drawer-open {
+  box-shadow: 2px 0 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Smooth scrolling for mobile menu */
+.mobile-drawer-open > div {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Custom scrollbar for mobile menu */
+.mobile-drawer-open::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mobile-drawer-open::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.mobile-drawer-open::-webkit-scrollbar-thumb {
+  background: #C31162;
+  border-radius: 4px;
+}
+
+.mobile-drawer-open::-webkit-scrollbar-thumb:hover {
+  background: #a00e4f;
+}
+
+/* Prevent body scroll when mobile menu is open */
+body.mobile-menu-active {
+  overflow: hidden;
+}
+
+/* Mobile submenu animations */
+.mobile-submenu-enter {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+
+.mobile-submenu-enter-active {
+  max-height: 1000px;
+}
+/* end for the header */

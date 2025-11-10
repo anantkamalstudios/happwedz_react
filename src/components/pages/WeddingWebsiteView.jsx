@@ -1,71 +1,91 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { FiEdit, FiShare, FiArrowLeft } from "react-icons/fi";
 import { icons } from "lucide-react";
 
 const WeddingWebsiteView = () => {
-    const { id } = useParams();
-    const navigate = useNavigate();
-    const [websiteData, setWebsiteData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [websiteData, setWebsiteData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const token = useSelector((state) => state.auth.token);
 
-    useEffect(() => {
-        const fetchWebsiteData = async () => {
-            try {
-                const response = await fetch(`/api/wedding-websites/${id}`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
+  // Expected response fields (example payload structure sent by the form):
+  // const formPayload = buildFormData({
+  //   userId,
+  //   templateId,
+  //   weddingDate,
+  //   brideData: { name, description },
+  //   groomData: { name, description },
+  //   loveStory: [{ title, date, description }],
+  //   weddingParty: [{ name, relation }],
+  //   whenWhere: [{ title, location, description, date }],
+  //   sliderImages, brideImage, groomImage, loveStoryImages, weddingPartyImages, whenWhereImages, galleryFiles
+  // });
 
-                if (response.ok) {
-                    const data = await response.json();
-                    setWebsiteData(data);
-                } else {
-                    setError('Failed to load wedding website');
-                }
-            } catch (err) {
-                setError('Error loading wedding website');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchWebsiteData();
-    }, [id]);
-
-    if (loading) {
-        return (
-            <div className="d-flex justify-content-center align-items-center min-vh-100">
-                <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-            </div>
+  useEffect(() => {
+    const fetchWebsiteData = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const response = await fetch(
+          "https://happywedz.com/api/weddingwebsite/wedding-websites",
+          {
+            headers: {
+              Authorization: token ? `Bearer ${token}` : "",
+            },
+          }
         );
-    }
 
-    if (error || !websiteData) {
-        return (
-            <div className="container py-5">
-                <div className="text-center">
-                    <h2 className="text-danger">Error</h2>
-                    <p>{error || 'Wedding website not found'}</p>
-                    <button
-                        className="btn btn-primary"
-                        onClick={() => navigate('/choose-template')}
-                    >
-                        <FiArrowLeft className="me-2" />
-                        Back to Templates
-                    </button>
-                </div>
-            </div>
-        );
-    }
+        if (!response.ok) {
+          setError("Failed to load wedding website");
+          return;
+        }
+        const data = await response.json();
+        setWebsiteData(Array.isArray(data) ? data[0] : data);
+      } catch (err) {
+        setError("Error loading wedding website");
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchWebsiteData();
+  }, [token, id]);
+
+  if (loading) {
     return (
-        <div className="wedding-website-view">
-            <style>{`
+      <div className="d-flex justify-content-center align-items-center min-vh-100">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !websiteData) {
+    return (
+      <div className="container py-5">
+        <div className="text-center">
+          <h2 className="text-danger">Error</h2>
+          <p>{error || "Wedding website not found"}</p>
+          <button
+            className="btn btn-primary"
+            onClick={() => navigate("/choose-template")}
+          >
+            <FiArrowLeft className="me-2" />
+            Back to Templates
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="wedding-website-view">
+      <style>{`
                 .wedding-website-view {
                     min-height: 100vh;
                     background: linear-gradient(135deg, #fdfbfb 0%, #f8f4f1 100%);
@@ -180,143 +200,155 @@ const WeddingWebsiteView = () => {
                 }
             `}</style>
 
-            <div className="website-header">
-                <div className="container">
-                    <div className="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3 className="mb-1">{websiteData.brideName} & {websiteData.groomName}</h3>
-                            <p className="text-muted mb-0">Wedding Website</p>
-                        </div>
-                        <div className="action-buttons">
-                            <button
-                                className="btn btn-action"
-                                onClick={() => navigate(`/wedding-form/${websiteData.templateId}?edit=${id}`)}
-                            >
-                                <FiEdit className="me-1" />
-                                Edit Website
-                            </button>
-                            <button
-                                className="btn btn-secondary-action"
-                                onClick={() => {
-                                    if (websiteData.isPublished) {
-                                        navigator.clipboard.writeText(`${window.location.origin}/api/wedding/${websiteData.websiteUrl}`);
-                                        // alert('Website link copied to clipboard!');
-                                        Swal.fire({
-                                            icon: 'success',
-                                            text: 'Website link copied to clipboard!',
-                                            confirmButtonText: 'OK',
-                                            timer: '3000'
-                                        })
-                                    } else {
-                                        // alert('Please publish your website first to share it.');
-                                        Swal.fire({
-                                            icon:"warning",
-                                            text: "Please publish your website first to share it.",
-                                            confirmButtonText: "OK",
-                                            timer: "3000"
-                                        })
-                                    }
-                                }}
-                            >
-                                <FiShare className="me-1" />
-                                Share
-                            </button>
-                        </div>
-                    </div>
-                </div>
+      <div className="website-header">
+        <div className="container">
+          <div className="d-flex justify-content-between align-items-center">
+            <div>
+              <h3 className="mb-1">
+                {websiteData.brideName} & {websiteData.groomName}
+              </h3>
+              <p className="text-muted mb-0">Wedding Website</p>
             </div>
-
-            <div className="container py-4">
-                <div className="row">
-                    <div className="col-lg-8">
-                        <div className="website-preview">
-                            <iframe
-                                src={`/api/wedding/${websiteData.websiteUrl}`}
-                                className="preview-frame"
-                                title="Wedding Website Preview"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="col-lg-4">
-                        <div className="website-info">
-                            <h5 className="mb-4">Website Information</h5>
-
-                            <div className="info-item">
-                                <span className="info-label">Template:</span>
-                                <span className="info-value">{websiteData.templateId}</span>
-                            </div>
-
-                            <div className="info-item">
-                                <span className="info-label">Wedding Date:</span>
-                                <span className="info-value">
-                                    {new Date(websiteData.weddingDate).toLocaleDateString()}
-                                </span>
-                            </div>
-
-                            <div className="info-item">
-                                <span className="info-label">Status:</span>
-                                <span className={`status-badge ${websiteData.isPublished ? 'status-published' : 'status-draft'}`}>
-                                    {websiteData.isPublished ? 'Published' : 'Draft'}
-                                </span>
-                            </div>
-
-                            <div className="info-item">
-                                <span className="info-label">Created:</span>
-                                <span className="info-value">
-                                    {new Date(websiteData.createdAt).toLocaleDateString()}
-                                </span>
-                            </div>
-
-                            <div className="info-item">
-                                <span className="info-label">Last Updated:</span>
-                                <span className="info-value">
-                                    {new Date(websiteData.updatedAt).toLocaleDateString()}
-                                </span>
-                            </div>
-
-                            {websiteData.isPublished && (
-                                <div className="info-item">
-                                    <span className="info-label">Public URL:</span>
-                                    <span className="info-value">
-                                        <a
-                                            href={`/api/wedding/${websiteData.websiteUrl}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-decoration-none"
-                                        >
-                                            View Website
-                                        </a>
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="website-info">
-                            <h6 className="mb-3">Quick Actions</h6>
-                            <div className="d-grid gap-2">
-                                <button
-                                    className="btn btn-outline-primary"
-                                    onClick={() => navigate('/choose-template')}
-                                >
-                                    Create Another Website
-                                </button>
-                                <button
-                                    className="btn btn-outline-secondary"
-                                    onClick={() => {
-                                        // Navigate to user dashboard
-                                        navigate('/user-dashboard');
-                                    }}
-                                >
-                                    Back to Dashboard
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div className="action-buttons">
+              <button
+                className="btn btn-action"
+                onClick={() =>
+                  navigate(`/wedding-form/${websiteData.templateId}?edit=${id}`)
+                }
+              >
+                <FiEdit className="me-1" />
+                Edit Website
+              </button>
+              <button
+                className="btn btn-secondary-action"
+                onClick={() => {
+                  if (websiteData.isPublished) {
+                    navigator.clipboard.writeText(
+                      `${window.location.origin}/api/wedding/${websiteData.websiteUrl}`
+                    );
+                    // alert('Website link copied to clipboard!');
+                    Swal.fire({
+                      icon: "success",
+                      text: "Website link copied to clipboard!",
+                      confirmButtonText: "OK",
+                      timer: "3000",
+                    });
+                  } else {
+                    // alert('Please publish your website first to share it.');
+                    Swal.fire({
+                      icon: "warning",
+                      text: "Please publish your website first to share it.",
+                      confirmButtonText: "OK",
+                      timer: "3000",
+                    });
+                  }
+                }}
+              >
+                <FiShare className="me-1" />
+                Share
+              </button>
             </div>
+          </div>
         </div>
-    );
+      </div>
+
+      <div className="container py-4">
+        <div className="row">
+          {/* <div className="col-lg-8">
+            <div className="website-preview">
+              <iframe
+                src={`/api/wedding/${websiteData.websiteUrl}`}
+                className="preview-frame"
+                title="Wedding Website Preview"
+              />
+            </div>
+          </div>  */}
+
+          <div className="col-lg-4">
+            <div className="website-info">
+              <h5 className="mb-4">Website Information</h5>
+
+              <div className="info-item">
+                <span className="info-label">Template:</span>
+                <span className="info-value">{websiteData.templateId}</span>
+              </div>
+
+              <div className="info-item">
+                <span className="info-label">Wedding Date:</span>
+                <span className="info-value">
+                  {new Date(websiteData.weddingDate).toLocaleDateString()}
+                </span>
+              </div>
+
+              <div className="info-item">
+                <span className="info-label">Status:</span>
+                <span
+                  className={`status-badge ${
+                    websiteData.isPublished
+                      ? "status-published"
+                      : "status-draft"
+                  }`}
+                >
+                  {websiteData.isPublished ? "Published" : "Draft"}
+                </span>
+              </div>
+
+              <div className="info-item">
+                <span className="info-label">Created:</span>
+                <span className="info-value">
+                  {new Date(websiteData.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+
+              <div className="info-item">
+                <span className="info-label">Last Updated:</span>
+                <span className="info-value">
+                  {new Date(websiteData.updatedAt).toLocaleDateString()}
+                </span>
+              </div>
+
+              {websiteData.isPublished && (
+                <div className="info-item">
+                  <span className="info-label">Public URL:</span>
+                  <span className="info-value">
+                    <a
+                      href={`/api/wedding/${websiteData.websiteUrl}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-decoration-none"
+                    >
+                      View Website
+                    </a>
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="website-info">
+              <h6 className="mb-3">Quick Actions</h6>
+              <div className="d-grid gap-2">
+                <button
+                  className="btn btn-outline-primary"
+                  onClick={() => navigate("/choose-template")}
+                >
+                  Create Another Website
+                </button>
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={() => {
+                    // Navigate to user dashboard
+                    navigate("/user-dashboard");
+                  }}
+                >
+                  Back to Dashboard
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default WeddingWebsiteView;

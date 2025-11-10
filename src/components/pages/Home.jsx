@@ -21,6 +21,7 @@ import MainTestimonial from "../home/MainTestimonial";
 import MetroCities from "../home/MetroCities";
 import HomeGennie from "../common/HomeGennie";
 import bigleafcta1 from "../../../public/images/home/bigleafcta1.jpg";
+import bigleafcta5 from "../../../public/images/home/bigleafcta5.jpg";
 import bigleaf from "../../../public/images/home/bigleaf.png";
 const Home = () => {
   return (
@@ -51,7 +52,7 @@ const Home = () => {
         subtitle="Discover curated options that fit your style, budget and location. Search and compare instantly."
         link="/einvites"
         btnName="Create Your E-Invite"
-        background={bigleaf}
+        background={bigleafcta5}
       />
       <RealWeddings />
       {/* <FeaturedVendorsSection /> */}

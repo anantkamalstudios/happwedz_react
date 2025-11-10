@@ -213,9 +213,6 @@ const WeddingWebsiteForm = () => {
     data.weddingPartyImages?.forEach(
       (file) => file && formData.append("weddingParty", file)
     );
-    data.whenWhereImages?.forEach(
-      (file) => file && formData.append("whenWhere", file)
-    );
     data.galleryFiles?.forEach(
       (file) => file && formData.append("gallery", file)
     );
