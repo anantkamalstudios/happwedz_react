@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import EventDatePicker from "./DayPicker";
 import Swal from "sweetalert2";
+import messagesApi from "../../services/api/messagesApi";
 
 const PricingModal = ({ show, handleClose, vendorId }) => {
   const { user, token } = useSelector((state) => state.auth);
@@ -130,6 +131,22 @@ const PricingModal = ({ show, handleClose, vendorId }) => {
         }
         throw new Error(result.message || "Something went wrong.");
       }
+      // Try to create or ensure a conversation exists for this vendor/user
+      try {
+        const createdRequestId =
+          result?.data?.id || result?.request?.id || result?.id || null;
+        await messagesApi.createConversation({
+          vendorId,
+          ...(createdRequestId ? { requestId: createdRequestId } : {}),
+        });
+      } catch (convErr) {
+        // Non-fatal: if conversation already exists or API returns a soft error, we ignore
+        console.warn(
+          "createConversation warning:",
+          convErr?.message || convErr
+        );
+      }
+
       Swal.fire({
         icon: "Success",
         text: "Request sent successfully!",
@@ -149,19 +166,8 @@ const PricingModal = ({ show, handleClose, vendorId }) => {
       <Modal show={show} onHide={handleClose} size="lg" centered>
         <Modal.Header closeButton>
           <div className="d-flex align-items-center w-100">
-            {/* {vendorDetails?.image && (
-              <Image
-                src={`https://happywedzbackend.happywedz.com${vendorDetails.image}`}
-                rounded
-                style={{ width: "60px", height: "60px", objectFit: "cover" }}
-                className="me-3"
-              />
-            )} */}
             <div className="d-flex flex-column">
               <h5 className="mb-1">Request Pricing</h5>
-              {/* <h6 className="mb-1 text-muted fw-normal">
-                {vendorDetails?.businessName || "Loading..."}
-              </h6> */}
               <p className="mb-0 text-muted" style={{ fontSize: "12px" }}>
                 Please provide your details below to request pricing from this
                 vendor.

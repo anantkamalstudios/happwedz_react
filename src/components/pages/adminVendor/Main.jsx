@@ -10,6 +10,7 @@ import EnquiryManagement from "./EnquiryManagement";
 import Settings from "./Settings";
 import ReviewsDashboard from "./subVendors/ReviewsDashboard";
 import Reviews from "./subVendors/Reviews";
+import VendorMessages from "./messages/VendorMessages";
 
 const Main = () => {
   const { slug } = useParams();
@@ -28,6 +29,8 @@ const Main = () => {
         return <ReviewsPage />;
       case "vendor-setting":
         return <Settings />;
+      case "vendor-messages":
+        return <VendorMessages />;
       case "vendor-enquiries":
         return <EnquiryManagement />;
       default:

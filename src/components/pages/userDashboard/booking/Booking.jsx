@@ -240,7 +240,7 @@ const Booking = () => {
                         <CiBookmarkCheck />
                         <span>Service Booked</span>
                       </div>
-                      <Dropdown
+                      {/* <Dropdown
                         onSelect={(key) => handleActionChange(item.id, key)}
                       >
                         <Dropdown.Toggle className="user-booking-action-dropdown">
@@ -257,7 +257,7 @@ const Booking = () => {
                             Discussed
                           </Dropdown.Item>
                         </Dropdown.Menu>
-                      </Dropdown>
+                      </Dropdown> */}
                     </div>
                   </Card.Body>
                 </Card>
