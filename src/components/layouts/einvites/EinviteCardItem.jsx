@@ -1,16 +1,22 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { getImageUrl, handleImageError } from "../../../utils/imageUtils";
-import { FiEdit2 } from "react-icons/fi";
+import { FiEdit2, FiShare2 } from "react-icons/fi";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const EinviteCardItem = ({
   card,
   showActions = true,
+  showEditButton = true,
+  showShareButton = false,
   onCardClickEdit = false,
   fixedImageHeight,
-}) => { 
+}) => {
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
+  const location = useLocation();
+
+  const isMyCardsPage = location.pathname === "/einvites/my-cards";
+  const shouldShowShareButton = showShareButton || isMyCardsPage;
 
   const handleCustomize = () => {
     navigate(`/einvites/editor/${card.id}`);
@@ -18,6 +24,11 @@ const EinviteCardItem = ({
 
   const handlePreview = () => {
     navigate(`/einvites/preview/${card.id}`);
+  };
+
+  const handleShare = (e) => {
+    e.stopPropagation();
+    navigate(`/einvites/share/${card.id}`);
   };
 
   const handleWholeCardClick = () => {
@@ -65,66 +76,55 @@ const EinviteCardItem = ({
               )
             }
           />
-          {/* Overlay text fields on the card */}
-          {/* {card.editableFields && card.editableFields.length > 0 && (
-            <>
-              {card.editableFields
-                .filter(
-                  (field) => field.defaultText && field.defaultText.trim()
-                )
-                .map((field) => (
-                  <div
-                    key={field.id}
-                    className="position-absolute"
-                    style={{
-                      left: `${(field.x / 414) * 100}%`,
-                      top: `${(field.y / 659.288) * 100}%`,
-                      color: field.color || "#000000",
-                      fontFamily: field.fontFamily || "Arial",
-                      fontSize: `${Math.max(
-                        8,
-                        (field.fontSize / 414) * (fixedImageHeight || 400)
-                      )}px`,
-                      fontWeight: "normal",
-                      whiteSpace: "nowrap",
-                      pointerEvents: "none",
-                      textShadow: "1px 1px 2px rgba(0,0,0,0.3)",
-                      zIndex: 5,
-                    }}
-                  >
-                    {field.defaultText}
-                  </div>
-                ))}
-            </>
-          )} */}
 
-          {isHovered && (
+          {isHovered && showActions && (
             <div
-              className="position-absolute"
+              className="position-absolute d-flex gap-2"
               style={{
                 top: "12px",
                 right: "12px",
                 zIndex: 10,
               }}
             >
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCustomize();
-                }}
-                className="btn btn-light d-flex align-items-center justify-content-center"
-                style={{
-                  width: "40px",
-                  height: "40px",
-                  borderRadius: "50%",
-                  padding: 0,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                  border: "none",
-                  transition: "all 0.2s ease",
-                }}
-              >
-                <FiEdit2 size={18} />
-              </button>
+              {shouldShowShareButton && (
+                <button
+                  onClick={handleShare}
+                  className="btn btn-light d-flex align-items-center justify-content-center"
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    padding: 0,
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                    border: "none",
+                    transition: "all 0.2s ease",
+                  }}
+                  title="Share card"
+                >
+                  <FiShare2 size={18} />
+                </button>
+              )}
+              {showEditButton && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCustomize();
+                  }}
+                  className="btn btn-light d-flex align-items-center justify-content-center"
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    padding: 0,
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                    border: "none",
+                    transition: "all 0.2s ease",
+                  }}
+                  title="Edit card"
+                >
+                  <FiEdit2 size={18} />
+                </button>
+              )}
             </div>
           )}
 

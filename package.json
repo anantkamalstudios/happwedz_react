@@ -33,6 +33,7 @@
     "face-api.js": "^0.22.2",
     "firebase": "^12.3.0",
     "framer-motion": "^12.23.12",
+    "inherits": "^2.0.4",
     "jquery": "^3.7.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.541.0",

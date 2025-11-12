@@ -8,6 +8,7 @@ import {
   FaHeart,
 } from "react-icons/fa";
 import { FiCheck, FiTrash, FiLink, FiEdit, FiClock } from "react-icons/fi";
+import axiosInstance from "../../../../services/api/axiosInstance";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -16,10 +17,9 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
- import { PDFDownloadLink } from "@react-pdf/renderer";
- import ChecklistPDF from "./ChecklistPDF";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import ChecklistPDF from "./ChecklistPDF";
 
-const BASE_URL = "https://happywedz.com/api/new-checklist";
 const CATEGORY_API =
   "https://happywedz.com/api/vendor-types/with-subcategories/all";
 
@@ -58,19 +58,12 @@ const Check = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const axiosInstance = axios.create({
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-  });
-
   const fetchChecklists = async () => {
     if (!userId || !token) return;
     setLoading(true);
     try {
       const res = await axiosInstance.get(
-        `${BASE_URL}/newChecklist/user/${userId}`
+        `/new-checklist/newChecklist/user/${userId}`
       );
       const fetchedChecklists = res.data?.data || [];
       setChecklists(fetchedChecklists);
@@ -227,7 +220,7 @@ const Check = () => {
     };
 
     try {
-      await axiosInstance.post(`${BASE_URL}/create`, payload);
+      await axiosInstance.post(`/new-checklist/create`, payload);
       setText("");
       setVendorSubId("");
       setRefresh((prev) => !prev);
@@ -250,7 +243,7 @@ const Check = () => {
   const toggleStatus = async (id, currentStatus) => {
     try {
       const newStatus = currentStatus === "completed" ? "pending" : "completed";
-      await axiosInstance.put(`${BASE_URL}/update/${id}`, {
+      await axiosInstance.put(`/new-checklist/update/${id}`, {
         status: newStatus,
       });
       setRefresh((prev) => !prev);
@@ -261,7 +254,7 @@ const Check = () => {
 
   const deleteChecklist = async (id) => {
     try {
-      await axiosInstance.delete(`${BASE_URL}/delete/${id}`);
+      await axiosInstance.delete(`/new-checklist/delete/${id}`);
       setRefresh((prev) => !prev);
     } catch (err) {
       setError("Failed to delete checklist.");
@@ -852,7 +845,7 @@ const Check = () => {
                       document={
                         <ChecklistPDF
                           items={
-                            (distributedTasks && distributedTasks.length > 0)
+                            distributedTasks && distributedTasks.length > 0
                               ? distributedTasks
                               : checklists
                           }

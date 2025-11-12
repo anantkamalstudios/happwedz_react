@@ -49,6 +49,12 @@ const Navbar = ({ storefrontCompletion }) => {
       icon: "/images/vendorsDashboard/enquireico.png",
     },
     {
+      id: "message",
+      slug: "vendor-messages",
+      label: "Messages",
+      icon: "/images/vendorsDashboard/chat.png",
+    },
+    {
       id: "reviews",
       slug: "vendor-reviews",
       label: "Reviews",

@@ -61,7 +61,7 @@ const RealWeddingForm = ({ user, token }) => {
     decor: "",
     additionalCredits: [],
 
-    status: "draft",
+    status: "pending",
     featured: false,
   });
 
@@ -272,28 +272,65 @@ const RealWeddingForm = ({ user, token }) => {
 
     const data = new FormData();
 
-    Object.keys(formData).forEach((key) => {
-      const value = formData[key];
-      if (key === "highlightPhotos" || key === "allPhotos") {
-        (value || []).forEach((file) => {
-          if (file instanceof File) data.append(key, file);
-        });
+    const payload = {
+      title: formData.title,
+      slug: formData.slug,
+      wedding_date: formData.weddingDate,
+      country: formData.country,
+      city: formData.city,
+      cultures: formData.cultures ? [formData.cultures] : [],
+      venues: formData.venues,
+      bride_name: formData.brideName,
+      bride_bio: formData.brideBio,
+      groom_name: formData.groomName,
+      groom_bio: formData.groomBio,
+      story: formData.story,
+      events: formData.events,
+      vendors: formData.vendors,
+      themes: formData.themes,
+      bride_outfit: formData.brideOutfit,
+      groom_outfit: formData.groomOutfit,
+      special_moments: formData.specialMoments,
+      photographer: formData.photographer,
+      makeup: formData.makeup,
+      decor: formData.decor,
+      additional_credits: formData.additionalCredits,
+      status: formData.status || "pending",
+      featured: formData.featured,
+    };
+
+    Object.entries(payload).forEach(([key, value]) => {
+      if (value === null || value === undefined || value === "") return;
+
+      if (typeof value === "boolean") {
+        data.append(key, value ? "true" : "false");
         return;
       }
-      if (key === "coverPhoto") {
-        if (value instanceof File) data.append("coverPhoto", value);
-        return;
-      }
-      if (Array.isArray(value)) {
+
+      if (Array.isArray(value) || typeof value === "object") {
+        if (Array.isArray(value) && value.length === 0) return;
         data.append(key, JSON.stringify(value));
         return;
       }
-      if (value !== null && value !== undefined) {
-        data.append(key, value);
+
+      data.append(key, value);
+    });
+
+    if (formData.coverPhoto instanceof File) {
+      data.append("cover_photo", formData.coverPhoto);
+    }
+
+    (formData.highlightPhotos || []).forEach((file) => {
+      if (file instanceof File) {
+        data.append("highlight_photos", file);
       }
     });
 
-    data.set("status", "pending");
+    (formData.allPhotos || []).forEach((file) => {
+      if (file instanceof File) {
+        data.append("all_photos", file);
+      }
+    });
 
     try {
       const response = await axios.post(
@@ -301,7 +338,6 @@ const RealWeddingForm = ({ user, token }) => {
         data,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`,
           },
         }
@@ -1679,20 +1715,6 @@ const HighlightsAndCreditsStep = ({
 
       <div className="form-group">
         <label className="form-label">Wedding Themes</label>
-        {/* <input
-          type="text"
-          className="form-control"
-          placeholder="Add a theme and press Enter"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              if (e.target.value.trim()) {
-                handleArrayChange("themes", e.target.value.trim());
-                e.target.value = "";
-              }
-            }
-          }}
-        /> */}
         <select
           className="form-control"
           defaultValue=""

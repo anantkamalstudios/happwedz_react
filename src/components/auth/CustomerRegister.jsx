@@ -383,7 +383,7 @@ const CustomerRegister = () => {
                 </div>
               </div>
 
-              <style>
+              <style jsx>
                 {`
                   .input-number::-webkit-inner-spin-button,
                   .input-number::-webkit-outer-spin-button {

@@ -30,14 +30,70 @@ const RealWeddings = ({ onPostClick }) => {
   const itemsPerPage = 6;
 
   useEffect(() => {
+    const parseJSON = (value, fallback = []) => {
+      if (!value) return fallback;
+      if (Array.isArray(value)) return value;
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : fallback;
+      } catch (err) {
+        return fallback;
+      }
+    };
+
+    const normalizeWedding = (wedding) => ({
+      id: wedding.id,
+      title: wedding.title,
+      slug: wedding.slug,
+      city: wedding.city || "",
+      culture: (() => {
+        const cultures = parseJSON(
+          wedding.cultures ?? wedding.culture,
+          wedding.cultures && typeof wedding.cultures === "string"
+            ? wedding.cultures.split(",")
+            : []
+        );
+        if (Array.isArray(cultures) && cultures.length > 0) {
+          return cultures[0];
+        }
+        return typeof wedding.culture === "string" ? wedding.culture : "";
+      })(),
+      themes: parseJSON(wedding.themes, []),
+      brideName: wedding.bride_name || wedding.brideName || "",
+      brideBio: wedding.bride_bio || wedding.brideBio || "",
+      groomName: wedding.groom_name || wedding.groomName || "",
+      groomBio: wedding.groom_bio || wedding.groomBio || "",
+      weddingDate: wedding.wedding_date || wedding.weddingDate || "",
+      story: wedding.story || "",
+      coverPhoto: wedding.cover_photo || wedding.coverPhoto || "",
+      highlightPhotos: parseJSON(
+        wedding.highlight_photos || wedding.highlightPhotos,
+        []
+      ),
+      allPhotos: parseJSON(wedding.all_photos || wedding.allPhotos, []),
+      events: parseJSON(wedding.events, []),
+      vendors: parseJSON(wedding.vendors, []),
+      specialMoments: wedding.special_moments || wedding.specialMoments || "",
+      brideOutfit: wedding.bride_outfit || wedding.brideOutfit || "",
+      groomOutfit: wedding.groom_outfit || wedding.groomOutfit || "",
+      photographer: wedding.photographer || "",
+      makeup: wedding.makeup || "",
+      decor: wedding.decor || "",
+      status: wedding.status,
+    });
+
     const fetchWeddings = async () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          "https://happywedz.com/api/realwedding"
+          "https://happywedz.com/api/realwedding/public/"
         );
-        if (response.data && Array.isArray(response.data)) {
-          setWeddings(response.data);
+
+        const dataArray = response.data.weddings || response.data;
+
+        if (Array.isArray(dataArray)) {
+          const normalized = dataArray.map(normalizeWedding);
+          setWeddings(normalized);
         } else {
           setWeddings([]);
         }
@@ -109,12 +165,14 @@ const RealWeddings = ({ onPostClick }) => {
       wedding.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       wedding.city?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const city =
+    const cityMatch =
       selectedCity === "All Cities" ||
-      wedding.city.toLowerCase() === selectedCity.toLowerCase();
+      (wedding.city &&
+        wedding.city.toLowerCase() === selectedCity.toLowerCase());
 
     const culture =
-      selectedCulture === "All Cultures" || wedding.culture === selectedCulture;
+      selectedCulture === "All Cultures" ||
+      wedding.culture?.toLowerCase() === selectedCulture.toLowerCase();
 
     const theme = (() => {
       if (selectedTheme === "All Themes") return true;
@@ -128,7 +186,7 @@ const RealWeddings = ({ onPostClick }) => {
       }
     })();
 
-    return isPublished && matchesSearch && city && culture && theme;
+    return isPublished && matchesSearch && cityMatch && culture && theme;
   });
 
   useEffect(() => {
@@ -143,18 +201,10 @@ const RealWeddings = ({ onPostClick }) => {
     setCurrentPage(1);
   };
 
-  // Pagination logic
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentWeddings = filteredWeddings.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.ceil(filteredWeddings.length / itemsPerPage);
-
-  const getImageUrl = (path) => {
-    if (!path) {
-      return "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop";
-    }
-    return `https://happywedzbackend.happywedz.com${path}`;
-  };
 
   const WeddingCard = ({ wedding }) => (
     <div
@@ -164,7 +214,7 @@ const RealWeddings = ({ onPostClick }) => {
       <div className="wedding-card h-100 shadow-sm rounded-3 overflow-hidden">
         <div className="position-relative">
           <img
-            src={getImageUrl(wedding.coverPhoto)}
+            src={wedding.coverPhoto}
             alt={wedding.title}
             className="img-fluid"
             style={{ width: "100%", height: "400px", objectFit: "cover" }}
@@ -173,7 +223,7 @@ const RealWeddings = ({ onPostClick }) => {
             className="position-absolute bottom-0 end-0 text-white p-5 "
             style={{ background: "rgba(195, 17, 98, 0.7)" }}
           >
-            {wedding.highlightPhotos?.length || "30"} Photos
+            {wedding.highlightPhotos?.length || 0} Photos
           </div>
         </div>
         <div className="p-2">

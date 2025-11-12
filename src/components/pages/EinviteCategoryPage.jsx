@@ -158,7 +158,9 @@ const EinviteCategoryPage = () => {
               <EinviteCardGrid
                 cards={filteredCards}
                 loading={false}
-                showActions={false}
+                showActions={true}
+                showEditButton={true}
+                showShareButton={false}
               />
             )}
           </div>

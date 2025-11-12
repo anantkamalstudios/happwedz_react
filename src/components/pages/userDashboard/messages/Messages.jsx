@@ -1,59 +1,42 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FiSend, FiSmile, FiClock } from "react-icons/fi";
 import { FaUserCircle } from "react-icons/fa";
+import { useSelector } from "react-redux";
+import messagesApi from "../../../../services/api/messagesApi";
+import { vendorsApi } from "../../../../services/api/vendorAuthApi";
+import axiosInstance from "../../../../services/api/axiosInstance";
 
-const vendors = [
-  {
-    id: "vendor1",
-    name: "Timp's Studio",
-    description:
-      "Professional wedding photography & videography — years of experience capturing moments with style.",
-    phone: "+91 98765 43210",
-    location: "Mumbai, India",
-  },
-  {
-    id: "vendor2",
-    name: "SwarSamrat DJ",
-    description: "Top-tier DJ and music setup services for weddings & parties.",
-    phone: "+91 91234 56789",
-    location: "Delhi, India",
-  },
-];
+const ONLINE_WINDOW_MS = 60 * 1000;
+function isOnline(lastActiveAtIso) {
+  if (!lastActiveAtIso) return false;
+  return Date.now() - new Date(lastActiveAtIso).getTime() <= ONLINE_WINDOW_MS;
+}
 
-const sampleMessages = [
-  {
-    id: 1,
-    vendorId: "vendor1",
-    sender: "vendor",
-    name: "Tom's Studio",
-    text: "Hi! Thanks for reaching out — how can I help with your event?",
-    time: "2025-09-08T10:12:00",
-  },
-  {
-    id: 2,
-    vendorId: "vendor1",
-    sender: "user",
-    name: "You",
-    text: "Hi Tom — what packages do you offer for a 200-person wedding?",
-    time: "2025-09-08T10:14:00",
-  },
-  {
-    id: 3,
-    vendorId: "vendor1",
-    sender: "vendor",
-    name: "Tom's Studio",
-    text: "We have three tiered packages. I can share details or schedule a call.",
-    time: "2025-09-08T10:15:30",
-  },
-  {
-    id: 4,
-    vendorId: "vendor2",
-    sender: "vendor",
-    name: "SwarSamrat DJ",
-    text: "We have DJ packages starting at ₹50,000. Shall I share details?",
-    time: "2025-09-08T10:16:00",
-  },
-];
+const normalizeConversation = (c) => {
+  const vendor = c.vendor || {};
+  return {
+    id: c.id,
+    vendorId: c.vendorId,
+    vendorName: vendor.businessName || vendor.name || "Vendor",
+    vendorImage: vendor.profileImage || vendor.image || null,
+    vendorLastActiveAt: vendor.lastActiveAt || null,
+    vendorDescription: vendor.description || "",
+    lastMessagePreview: c.lastMessagePreview || "",
+    lastMessageAt: c.lastMessageAt || c.updatedAt || c.createdAt,
+    unreadCount: c.userUnreadCount || 0,
+  };
+};
+
+const normalizeMessage = (m, selfUserId) => {
+  const isUser = (m.senderType || "").toLowerCase() === "user";
+  return {
+    id: m.id,
+    sender: isUser ? "user" : "vendor",
+    name: isUser ? "You" : m.senderName || "Vendor",
+    text: m.message || m.text || "",
+    time: m.createdAt || new Date().toISOString(),
+  };
+};
 
 function formatTime(iso) {
   const d = new Date(iso);
@@ -65,21 +48,24 @@ function formatTime(iso) {
   });
 }
 
-const Avatar = ({ name, size = 36 }) => {
-  const initial = (name || "U").trim().charAt(0).toUpperCase();
+const Avatar = ({ name, size = 36, imageUrl }) => {
+  const fallback = "/images/no-image.png";
   return (
-    <div
-      className="d-inline-flex align-items-center justify-content-center text-white fw-bold"
+    <img
+      src={imageUrl || fallback}
+      alt={name || "Avatar"}
+      onError={(e) => {
+        if (e.currentTarget.src !== fallback) {
+          e.currentTarget.src = fallback;
+        }
+      }}
       style={{
         width: size,
         height: size,
         borderRadius: "50%",
-        background: "#6c757d",
-        fontSize: Math.max(12, Math.floor(size / 2.5)),
+        objectFit: "cover",
       }}
-    >
-      {initial}
-    </div>
+    />
   );
 };
 
@@ -98,9 +84,15 @@ const QuickChip = ({ label, onClick }) => (
 );
 
 const Messages = () => {
-  const [messages, setMessages] = useState(sampleMessages);
+  const { user, token } = useSelector((state) => state.auth);
+  const [conversations, setConversations] = useState([]);
+  const [activeConversationId, setActiveConversationId] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [loadingConversations, setLoadingConversations] = useState(false);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [error, setError] = useState(null);
   const [input, setInput] = useState("");
-  const [activeVendorId, setActiveVendorId] = useState("vendor1");
+  const [userImageUrl, setUserImageUrl] = useState(null);
   const [quickReplies] = useState([
     "I'm Interested",
     "Still Thinking",
@@ -108,29 +100,274 @@ const Messages = () => {
   ]);
   const scrollRef = useRef(null);
 
-  const activeVendor = vendors.find((v) => v.id === activeVendorId);
-  const filteredMessages = messages.filter(
-    (m) => m.vendorId === activeVendorId
+  const activeConversation = conversations.find(
+    (c) => c.id === activeConversationId
   );
+
+  const selectConversation = (id) => {
+    setActiveConversationId(id);
+    // Optimistically reset unread count for this thread
+    setConversations((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, unreadCount: 0 } : c))
+    );
+  };
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, activeVendorId]);
+  }, [messages, activeConversationId]);
 
-  const sendMessage = (text) => {
+  // Load current user's profile image (from Redux or API fallback)
+  useEffect(() => {
+    let isMounted = true;
+    const loadUserImage = async () => {
+      try {
+        if (user?.profileImage) {
+          setUserImageUrl(user.profileImage);
+          return;
+        }
+        if (user?.id) {
+          const res = await axiosInstance.get(`/user/${user.id}`);
+          const u = res?.data?.user || res?.user || res?.data;
+          if (!isMounted) return;
+          setUserImageUrl(u?.profileImage || null);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    loadUserImage();
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id, user?.profileImage]);
+
+  // Presence heartbeat every ~45s when visible
+  useEffect(() => {
+    if (!token) return;
+    let stopped = false;
+    let timer;
+    const send = async () => {
+      try {
+        if (document.visibilityState === "visible") {
+          await axiosInstance.post("/presence/heartbeat");
+        }
+      } catch {}
+      if (!stopped) timer = setTimeout(send, 45000);
+    };
+    send();
+    const onVis = () => {
+      if (document.visibilityState === "visible") {
+        axiosInstance.post("/presence/heartbeat").catch(() => {});
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      stopped = true;
+      if (timer) clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [token]);
+
+  // Load conversations
+  useEffect(() => {
+    let isMounted = true;
+    const load = async () => {
+      setLoadingConversations(true);
+      setError(null);
+      try {
+        const res = await messagesApi.getConversations();
+        const list = Array.isArray(res)
+          ? res
+          : res?.data || res?.conversations || [];
+        const mapped = list.map(normalizeConversation);
+        if (!isMounted) return;
+        setConversations(mapped);
+        // Enrich with vendor details (name + profile image)
+        try {
+          const uniqueVendorIds = [
+            ...new Set(mapped.map((c) => c.vendorId).filter(Boolean)),
+          ];
+          if (uniqueVendorIds.length > 0) {
+            const details = await Promise.all(
+              uniqueVendorIds.map((id) =>
+                vendorsApi
+                  .getVendorById(id)
+                  .then((d) => ({ id, data: d }))
+                  .catch(() => ({ id, data: null }))
+              )
+            );
+            const idToVendor = new Map();
+            details.forEach(({ id, data }) => {
+              if (!data) return;
+              const v = data?.data || data;
+              idToVendor.set(id, {
+                name: v.businessName || v.name || "Vendor",
+                image: v.profileImage || v.image || null,
+                lastActiveAt: v.lastActiveAt || null,
+              });
+            });
+            if (!isMounted) return;
+            setConversations((prev) =>
+              prev.map((c) => {
+                const v = idToVendor.get(c.vendorId);
+                return v
+                  ? {
+                      ...c,
+                      vendorName: v.name || c.vendorName,
+                      vendorImage: v.image || c.vendorImage,
+                      vendorLastActiveAt:
+                        v.lastActiveAt || c.vendorLastActiveAt,
+                    }
+                  : c;
+              })
+            );
+          }
+        } catch {
+          // ignore enrichment errors
+        }
+        if (mapped.length > 0 && !activeConversationId) {
+          setActiveConversationId(mapped[0].id);
+        }
+      } catch (e) {
+        if (!isMounted) return;
+        setError(e.message || "Failed to load conversations");
+        console.log(e.response || "Failed to load conversations");
+      } finally {
+        if (isMounted) setLoadingConversations(false);
+      }
+    };
+    if (token) load();
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
+
+  // Load messages when conversation changes
+  useEffect(() => {
+    let isMounted = true;
+    const loadMsgs = async () => {
+      if (!activeConversationId) return;
+      setLoadingMessages(true);
+      setError(null);
+      try {
+        const res = await messagesApi.getMessages(activeConversationId, {
+          page: 1,
+          limit: 50,
+        });
+        const list = Array.isArray(res)
+          ? res
+          : res?.data || res?.messages || [];
+        const mapped = list.map((m) => normalizeMessage(m, user?.id));
+        if (!isMounted) return;
+        setMessages(mapped);
+      } catch (e) {
+        if (!isMounted) return;
+        setError(e.message || "Failed to load messages");
+      } finally {
+        if (isMounted) setLoadingMessages(false);
+      }
+    };
+    if (token) loadMsgs();
+    return () => {
+      isMounted = false;
+    };
+  }, [token, activeConversationId, user?.id]);
+
+  // Polling: conversations (10s) and active conversation messages (4s)
+  useEffect(() => {
+    if (!token) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await messagesApi.getConversations();
+        const list = Array.isArray(res)
+          ? res
+          : res?.data || res?.conversations || [];
+        const mapped = list.map(normalizeConversation);
+        setConversations((prev) => {
+          // Preserve enriched vendorName/image if already present
+          const byId = new Map(prev.map((c) => [c.id, c]));
+          return mapped.map((c) => {
+            const old = byId.get(c.id);
+            return old
+              ? {
+                  ...c,
+                  vendorName: old.vendorName || c.vendorName,
+                  vendorImage: old.vendorImage || c.vendorImage,
+                  unreadCount:
+                    activeConversationId === c.id ? 0 : c.unreadCount,
+                }
+              : c;
+          });
+        });
+      } catch {}
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [token, activeConversationId]);
+
+  useEffect(() => {
+    if (!token || !activeConversationId) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await messagesApi.getMessages(activeConversationId, {
+          page: 1,
+          limit: 50,
+        });
+        const list = Array.isArray(res)
+          ? res
+          : res?.data || res?.messages || [];
+        const mapped = list.map((m) => normalizeMessage(m, user?.id));
+        setMessages(mapped);
+      } catch {}
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [token, activeConversationId, user?.id]);
+
+  const sendMessage = async (text) => {
     if (!text || !text.trim()) return;
-    const newMsg = {
-      id: Date.now(),
-      vendorId: activeVendorId,
+    if (!activeConversationId) return;
+    const optimistic = {
+      id: `tmp-${Date.now()}`,
       sender: "user",
       name: "You",
       text: text.trim(),
       time: new Date().toISOString(),
     };
-    setMessages((m) => [...m, newMsg]);
+    setMessages((m) => [...m, optimistic]);
     setInput("");
+    try {
+      const res = await messagesApi.sendMessage(activeConversationId, {
+        message: text.trim(),
+        // Provide receiver info to satisfy backend NOT NULL receiverId
+        receiverId: activeConversation?.vendorId,
+        receiverType: "vendor",
+      });
+      // Backend returns created message object directly
+      const saved = res && typeof res === "object" ? res : null;
+      if (saved) {
+        const normalized = normalizeMessage(saved, user?.id);
+        setMessages((m) =>
+          m.map((x) => (x.id === optimistic.id ? normalized : x))
+        );
+        // update conversation preview/time locally
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === activeConversationId
+              ? {
+                  ...c,
+                  lastMessagePreview: saved.message || text.trim(),
+                  lastMessageAt: saved.createdAt || new Date().toISOString(),
+                }
+              : c
+          )
+        );
+      }
+    } catch (e) {
+      setError(e.message || "Failed to send message");
+      // rollback optimistic
+      setMessages((m) => m.filter((x) => x.id !== optimistic.id));
+    }
   };
 
   const handleQuick = (label) => sendMessage(label);
@@ -156,27 +393,46 @@ const Messages = () => {
           <div className="card border-0 rounded-4 shadow-sm p-3 h-100">
             <h6 className="fw-bold mb-3">Vendors</h6>
             <div className="list-group">
-              {vendors.map((v) => (
-                <div
-                  key={v.id}
-                  className={`list-group-item border-0 vendor-card rounded-3 mb-2 p-3 ${
-                    activeVendorId === v.id ? "bg-light" : ""
-                  }`}
-                  onClick={() => setActiveVendorId(v.id)}
-                >
-                  <div className="d-flex align-items-center overflow-hidden">
-                    <Avatar name={v.name} size={40} />
-                    <div className="ms-3">
-                      <div className="fw-bold">{v.name}</div>
-                      <div className="small text-muted text-truncate">
-                        {v.description.length > 30
-                          ? v.description.slice(0, 30) + "..."
-                          : v.description}
+              {loadingConversations ? (
+                <div className="p-3 text-muted small">
+                  Loading conversations…
+                </div>
+              ) : conversations.length === 0 ? (
+                <div className="p-3 text-muted small">
+                  No conversations yet.
+                </div>
+              ) : (
+                conversations.map((c) => (
+                  <div
+                    key={c.id}
+                    className={`list-group-item border-0 vendor-card rounded-3 mb-2 p-3 ${
+                      activeConversationId === c.id ? "bg-light" : ""
+                    }`}
+                    onClick={() => selectConversation(c.id)}
+                  >
+                    <div className="d-flex align-items-center overflow-hidden">
+                      <Avatar
+                        name={c.vendorName}
+                        imageUrl={c.vendorImage}
+                        size={40}
+                      />
+                      <div className="ms-3">
+                        <div className="d-flex align-items-center">
+                          <div className="fw-bold me-2">{c.vendorName}</div>
+                          {c.unreadCount > 0 && (
+                            <span className="badge bg-primary rounded-pill">
+                              {c.unreadCount}
+                            </span>
+                          )}
+                        </div>
+                        <div className="small text-muted text-truncate">
+                          {c.lastMessagePreview || c.vendorDescription || ""}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -187,11 +443,23 @@ const Messages = () => {
             {/* Header */}
             <div className="card-body border-bottom py-3 d-flex align-items-center justify-content-between">
               <div className="d-flex align-items-center">
-                <Avatar name={activeVendor.name} size={44} />
+                <Avatar
+                  name={activeConversation?.vendorName || "Vendor"}
+                  imageUrl={activeConversation?.vendorImage}
+                  size={44}
+                />
                 <div className="ms-3">
-                  <div className="fw-bold">{activeVendor.name}</div>
+                  <div className="fw-bold">
+                    {activeConversation?.vendorName || "Select a conversation"}
+                  </div>
                   <div className="small text-muted">
-                    Online • Last seen {formatTime(new Date().toISOString())}
+                    {isOnline(activeConversation?.vendorLastActiveAt)
+                      ? "Online"
+                      : `Last seen ${
+                          activeConversation?.vendorLastActiveAt
+                            ? formatTime(activeConversation.vendorLastActiveAt)
+                            : formatTime(new Date().toISOString())
+                        }`}
                   </div>
                 </div>
               </div>
@@ -202,45 +470,68 @@ const Messages = () => {
 
             {/* Messages */}
             <div className="card-body chat-scroll" ref={scrollRef}>
-              <div className="d-flex flex-column gap-3">
-                {filteredMessages.map((m) => (
-                  <div
-                    key={m.id}
-                    className={`d-flex ${
-                      m.sender === "user"
-                        ? "justify-content-end"
-                        : "justify-content-start"
-                    }`}
-                  >
-                    {m.sender === "vendor" ? (
-                      <div className="d-flex align-items-start">
-                        <div className="me-2">
-                          <Avatar name={m.name} size={36} />
-                        </div>
-                        <div>
-                          <div className="msg-time mb-1 small">
-                            {m.name} • {formatTime(m.time)}
+              {error && !loadingMessages && activeConversationId ? (
+                <div
+                  className="alert alert-danger py-2 px-3 small"
+                  role="alert"
+                >
+                  {error || "Failed to load messages."}
+                </div>
+              ) : loadingMessages ? (
+                <div className="text-muted small">Loading messages…</div>
+              ) : !activeConversationId ? (
+                <div className="text-muted small">Select a conversation</div>
+              ) : (
+                <div className="d-flex flex-column gap-3">
+                  {messages.map((m) => (
+                    <div
+                      key={m.id}
+                      className={`d-flex ${
+                        m.sender === "user"
+                          ? "justify-content-end"
+                          : "justify-content-start"
+                      }`}
+                    >
+                      {m.sender === "vendor" ? (
+                        <div className="d-flex align-items-start">
+                          <div className="me-2">
+                            <Avatar
+                              name={m.name}
+                              imageUrl={activeConversation?.vendorImage}
+                              size={36}
+                            />
                           </div>
-                          <div className="msg-bubble msg-vendor">{m.text}</div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="d-flex align-items-end">
-                        <div
-                          className="me-2 text-end"
-                          style={{ marginRight: 8 }}
-                        >
-                          <div className="msg-time mb-1 small">
-                            {formatTime(m.time)}
+                          <div>
+                            <div className="msg-time mb-1 small">
+                              {m.name} • {formatTime(m.time)}
+                            </div>
+                            <div className="msg-bubble msg-vendor">
+                              {m.text}
+                            </div>
                           </div>
-                          <div className="msg-bubble msg-user">{m.text}</div>
                         </div>
-                        <Avatar name="You" size={36} />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+                      ) : (
+                        <div className="d-flex align-items-end">
+                          <div
+                            className="me-2 text-end"
+                            style={{ marginRight: 8 }}
+                          >
+                            <div className="msg-time mb-1 small">
+                              {formatTime(m.time)}
+                            </div>
+                            <div className="msg-bubble msg-user">{m.text}</div>
+                          </div>
+                          <Avatar
+                            name="You"
+                            imageUrl={userImageUrl}
+                            size={36}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Quick chips */}

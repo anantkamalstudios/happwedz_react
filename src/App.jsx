@@ -10,6 +10,8 @@ import BlogDetails from "./components/pages/BlogDetails";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "./redux/authSlice";
 import { setVendorCredentials } from "./redux/vendorAuthSlice";
+// Import axios instance to initialize interceptors
+import "./services/api/axiosInstance";
 import ToastProvider from "./components/layouts/toasts/Toast";
 import LoaderProvider from "./components/context/LoaderContext";
 import VendorPrivateRoute from "./components/routes/VendorPrivateRoute";
@@ -24,7 +26,7 @@ import TopRatedVendors from "./components/pages/TopRatedVendors";
 import CareersPage from "./components/pages/CareersPage";
 import DestinationWeddingDetailPage from "./components/pages/DestinationWeddingDetailPage";
 import BusinessClaimForm from "./components/pages/BusinessClaimForm";
-import PrivacyPolicy from "./components/pages/PrivacyPolicy";
+// import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
@@ -49,6 +51,8 @@ const MatrimonialMain = lazy(() =>
 const ProfileMatrimonial = lazy(() =>
   import("./components/pages/matrimonial/ProfileMatrimonial")
 );
+const PrivacyPolicy = lazy(() => import("./components/pages/PrivacyPolicy"));
+
 const MatrimonialRegister = lazy(() =>
   import("./components/pages/matrimonial/MatrimonialRegistration")
 );
@@ -178,9 +182,31 @@ function App() {
   useEffect(() => {
     const user = localStorage.getItem("user");
     const token = localStorage.getItem("token");
+    const tokenTimestamp = localStorage.getItem("tokenTimestamp");
+
     if (user && token) {
-      dispatch(setCredentials({ user: JSON.parse(user), token }));
+      if (tokenTimestamp) {
+        const now = Date.now();
+        const elapsed = now - parseInt(tokenTimestamp, 10);
+        const TOKEN_EXPIRATION_TIME = 60 * 60 * 1000; // 1 hour
+
+        if (elapsed >= TOKEN_EXPIRATION_TIME) {
+          // Token expired, clear auth
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          localStorage.removeItem("tokenTimestamp");
+        } else {
+          // Token still valid, set credentials
+          dispatch(setCredentials({ user: JSON.parse(user), token }));
+        }
+      } else {
+        // No timestamp means old token, consider it expired
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+      }
     }
+
+    // Vendor tokens don't have expiration tracking yet, but we'll set them
     const vendor = localStorage.getItem("vendor");
     const vendorToken = localStorage.getItem("vendorToken");
     if (vendor && vendorToken) {

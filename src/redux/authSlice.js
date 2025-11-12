@@ -2,6 +2,22 @@ import { createSlice } from "@reduxjs/toolkit";
 import { vendorLogout } from "./vendorAuthSlice";
 import Swal from "sweetalert2";
 
+const TOKEN_EXPIRATION_TIME = 60 * 60 * 1000;
+
+const getTokenTimestamp = () => {
+  const timestamp = localStorage.getItem("tokenTimestamp");
+  return timestamp ? parseInt(timestamp, 10) : null;
+};
+
+export const isTokenExpired = () => {
+  const tokenTimestamp = getTokenTimestamp();
+  if (!tokenTimestamp) return true;
+
+  const now = Date.now();
+  const elapsed = now - tokenTimestamp;
+  return elapsed >= TOKEN_EXPIRATION_TIME;
+};
+
 const initialState = {
   user: JSON.parse(localStorage.getItem("user")) || null,
   token: localStorage.getItem("token") || null,
@@ -17,6 +33,7 @@ const authSlice = createSlice({
 
       localStorage.setItem("user", JSON.stringify(action.payload.user));
       localStorage.setItem("token", action.payload.token);
+      localStorage.setItem("tokenTimestamp", Date.now().toString());
     },
 
     logout: (state) => {
@@ -24,6 +41,7 @@ const authSlice = createSlice({
       state.token = null;
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      localStorage.removeItem("tokenTimestamp");
     },
   },
 });
