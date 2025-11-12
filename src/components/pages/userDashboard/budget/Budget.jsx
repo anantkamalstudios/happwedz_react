@@ -194,7 +194,7 @@ const Budget = () => {
                 className="wb-category-header"
                 onClick={() => toggleCategory(category.id)}
               >
-                <div className="wb-category-name">
+                <div className="wb-category-name fs-16">
                   {selectedCategoryId === category.id ? (
                     <FaBookOpenReader className="wb-category-icon" />
                   ) : (
@@ -202,7 +202,7 @@ const Budget = () => {
                   )}
                   {category.name}
                 </div>
-                <div className="wb-category-amount">
+                <div className="wb-category-amount fs-16">
                   {formatCurrency(category.amount)}
                 </div>
               </div>
@@ -373,9 +373,9 @@ const Budget = () => {
             <>
               <h2 className="wb-section-title">Expense Details</h2>
               <div className="wb-pie-chart-container">
-                <div className="wb-pie-chart-message">
+                {/* <div className="wb-pie-chart-message">
                   Select a category to view expense details
-                </div>
+                </div> */}
                 <div className="wb-pie-chart-wrapper">
                   <ResponsiveContainer width="100%" height={400}>
                     <PieChart>
@@ -383,13 +383,10 @@ const Budget = () => {
                         data={getPieChartData()}
                         cx="50%"
                         cy="50%"
-                        labelLine={false}
                         outerRadius={120}
                         fill="#8884d8"
                         dataKey="value"
-                        label={({ name, percent }) =>
-                          `${name}: ${(percent * 100).toFixed(0)}%`
-                        }
+                        label={false}
                       >
                         {categories.map((entry, index) => (
                           <Cell
@@ -398,8 +395,22 @@ const Budget = () => {
                           />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(value) => formatCurrency(value)} />
-                      <Legend />
+                      <Tooltip
+                        formatter={(value, name) => [
+                          formatCurrency(value),
+                          name,
+                        ]}
+                        contentStyle={{
+                          backgroundColor: "#fff",
+                          border: "1px solid #ffcdd2",
+                          borderRadius: "8px",
+                          padding: "10px",
+                        }}
+                      />
+                      <Legend
+                        wrapperStyle={{ paddingTop: "20px" }}
+                        formatter={(value) => value}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -411,5 +422,4 @@ const Budget = () => {
     </div>
   );
 };
-
 export default Budget;

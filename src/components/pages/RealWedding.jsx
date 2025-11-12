@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import RealWeddings from "../layouts/realWedding/RealWeddings";
-import BlogDetails from "./BlogDetails";
 import RealWeddingDetails from "../layouts/realWedding/RealWeddingDetails";
 
 const RealWedding = () => {

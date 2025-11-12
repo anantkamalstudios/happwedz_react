@@ -463,39 +463,6 @@ const EnquiryManagement = () => {
                         </div>
                       ))}
                     </div>
-
-                    {/* Tools */}
-                    <div>
-                      <h6
-                        className="text-uppercase text-muted fw-bold mb-3"
-                        style={{ fontSize: "11px", letterSpacing: "1px" }}
-                      >
-                        Tools
-                      </h6>
-                      {tools.map((tool) => (
-                        <div
-                          key={tool.id}
-                          className="d-flex align-items-center p-3 mb-2"
-                          role="button"
-                          style={{
-                            borderRadius: "12px",
-                            transition: "all 0.3s ease",
-                            fontSize: "14px",
-                            color: tool.premium ? "#f39c12" : "#6c757d",
-                          }}
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.background = "#f8f9fa")
-                          }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.background = "transparent")
-                          }
-                        >
-                          {tool.icon}
-                          <span className="ms-2">{tool.name}</span>
-                          {tool.premium && <Crown size={14} className="ms-2" />}
-                        </div>
-                      ))}
-                    </div>
                   </div>
                 </div>
 

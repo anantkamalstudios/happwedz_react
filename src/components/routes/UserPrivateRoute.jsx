@@ -9,13 +9,11 @@ const UserPrivateRoute = ({ children }) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Check if token is expired
     if (token && isTokenExpired()) {
       dispatch(logout());
     }
   }, [token, dispatch]);
 
-  // If no user or token is expired, redirect to login
   if (!user || !token || isTokenExpired()) {
     return <Navigate to="/customer-login" replace />;
   }

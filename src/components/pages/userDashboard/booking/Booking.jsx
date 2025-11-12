@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { Row, Col, Card, Spinner, Dropdown, Badge } from "react-bootstrap";
+import {
+  Row,
+  Col,
+  Card,
+  Spinner,
+  Dropdown,
+  Badge,
+  Button,
+} from "react-bootstrap";
 import {
   FaUser,
   FaEnvelope,
@@ -11,14 +19,21 @@ import {
   FaCheckCircle,
   FaClock,
   FaTimesCircle,
+  FaBan,
+  FaChevronDown,
+  FaChevronUp,
 } from "react-icons/fa";
 import { CiBookmarkCheck } from "react-icons/ci";
+import Swal from "sweetalert2";
+import Loader from "../../../ui/Loader";
 
 const Booking = () => {
   const { token, user } = useSelector((state) => state.auth);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
+  const [expandedCards, setExpandedCards] = useState({});
+  const [cancelling, setCancelling] = useState({});
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -53,12 +68,74 @@ const Booking = () => {
     );
   };
 
+  const toggleCardExpansion = (cardId) => {
+    setExpandedCards((prev) => ({
+      ...prev,
+      [cardId]: !prev[cardId],
+    }));
+  };
+
+  const handleCancelRequest = async (requestId) => {
+    const result = await Swal.fire({
+      title: "Cancel Quotation?",
+      text: "Are you sure you want to cancel this quotation request? This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, cancel it",
+      cancelButtonText: "No, keep it",
+    });
+
+    if (!result.isConfirmed) return;
+
+    setCancelling((prev) => ({ ...prev, [requestId]: true }));
+
+    try {
+      const res = await axios.delete(
+        `https://happywedz.com/api/request-pricing/user/quotations/${requestId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (res.data.success) {
+        setBookings((prev) =>
+          prev.map((b) =>
+            (b.requestId || b.id) === requestId
+              ? { ...b, status: "cancelled" }
+              : b
+          )
+        );
+        Swal.fire(
+          "Cancelled!",
+          "Your quotation request has been cancelled.",
+          "success"
+        );
+      } else {
+        throw new Error(res.data.message || "Failed to cancel quotation");
+      }
+    } catch (err) {
+      console.error("Error cancelling booking:", err);
+      Swal.fire(
+        "Error",
+        err.response?.data?.message ||
+          "Failed to cancel quotation. Please try again.",
+        "error"
+      );
+    } finally {
+      setCancelling((prev) => ({ ...prev, [requestId]: false }));
+    }
+  };
+
   const getStatusIcon = (status) => {
     switch (status) {
       case "replied":
         return <FaCheckCircle />;
       case "pending":
         return <FaClock />;
+      case "cancelled":
+        return <FaBan />;
       default:
         return <FaTimesCircle />;
     }
@@ -69,6 +146,7 @@ const Booking = () => {
       ? bookings
       : bookings.filter((b) => b.status === filterStatus);
 
+  console.log("bookings", filteredBookings);
   return (
     <div className="user-booking-container">
       <div className="user-booking-header">
@@ -108,6 +186,15 @@ const Booking = () => {
                 Pending ({bookings.filter((b) => b.status === "pending").length}
                 )
               </button>
+              <button
+                className={`user-booking-filter-tab ${
+                  filterStatus === "cancelled" ? "active" : ""
+                }`}
+                onClick={() => setFilterStatus("cancelled")}
+              >
+                Cancelled (
+                {bookings.filter((b) => b.status === "cancelled").length})
+              </button>
             </div>
           </div>
         </div>
@@ -115,8 +202,7 @@ const Booking = () => {
 
       {loading ? (
         <div className="user-booking-loading">
-          <Spinner animation="border" className="user-booking-spinner" />
-          <p className="user-booking-loading-text">Loading your bookings...</p>
+          <Loader />
         </div>
       ) : filteredBookings.length === 0 ? (
         <div className="user-booking-empty">
@@ -133,136 +219,171 @@ const Booking = () => {
       ) : (
         <div className="user-booking-grid-container">
           <Row className="g-4">
-            {filteredBookings.map((item) => (
-              <Col md={6} xl={4} key={item.id}>
-                <Card className="user-booking-card">
-                  <div className="user-booking-card-image-wrapper">
-                    <img
-                      src={
-                        item.vendor?.profileImage || "/images/imageNotFound.jpg"
-                      }
-                      alt={item.vendor?.businessName}
-                      className="user-booking-card-image"
-                    />
-                    <div className="user-booking-image-overlay"></div>
-                    <Badge
-                      bg="none"
-                      className={`user-booking-status-badge user-booking-status-${item.status}`}
-                    >
-                      {getStatusIcon(item.status)}
-                      <span className="ms-1">{item.status}</span>
-                    </Badge>
-                  </div>
+            {filteredBookings.map((item) => {
+              const isExpanded = expandedCards[item.id];
+              const isCancelled = item.status === "cancelled";
 
-                  <Card.Body className="user-booking-card-body">
-                    <div className="user-booking-vendor-section">
-                      <h3 className="user-booking-vendor-name">
-                        {item.vendor?.businessName || "Unknown Vendor"}
-                      </h3>
-                      <p className="user-booking-vendor-location">
-                        <FaMapMarkerAlt />
-                        <span>
-                          {item.vendor?.city || "Unknown"}, {item.vendor?.state}
-                        </span>
-                      </p>
-                    </div>
-
-                    <div className="user-booking-info-section">
-                      <h4 className="user-booking-section-title">
-                        Booking Details
-                      </h4>
-                      <div className="user-booking-info-grid">
-                        <div className="user-booking-info-item">
-                          <FaUser className="user-booking-info-icon" />
-                          <span className="user-booking-info-text">
-                            {item.firstName} {item.lastName}
-                          </span>
-                        </div>
-                        <div className="user-booking-info-item">
-                          <FaEnvelope className="user-booking-info-icon" />
-                          <span className="user-booking-info-text">
-                            {item.email}
-                          </span>
-                        </div>
-                        <div className="user-booking-info-item">
-                          <FaPhone className="user-booking-info-icon" />
-                          <span className="user-booking-info-text">
-                            {item.phone}
-                          </span>
-                        </div>
-                        <div className="user-booking-info-item">
-                          <FaCalendarAlt className="user-booking-info-icon" />
-                          <span className="user-booking-info-text">
-                            <strong>{item.eventDate}</strong>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="user-booking-quote-section">
-                      <h4 className="user-booking-section-title">
-                        Quotation Details
-                      </h4>
-                      <div className="user-booking-quote-card">
-                        <div className="user-booking-quote-item">
-                          <span className="user-booking-quote-label">
-                            Quote Price
-                          </span>
-                          <span className="user-booking-quote-value user-booking-quote-price">
-                            {item.quote?.price
-                              ? `₹ ${item.quote.price}`
-                              : "Not provided"}
-                          </span>
-                        </div>
-                        <div className="user-booking-quote-item">
-                          <span className="user-booking-quote-label">
-                            Valid Till
-                          </span>
-                          <span className="user-booking-quote-value">
-                            {item.quote?.validTill || "N/A"}
-                          </span>
-                        </div>
-                        {item.quote?.message && (
-                          <div className="user-booking-quote-message">
-                            <span className="user-booking-quote-label">
-                              Message
-                            </span>
-                            <p className="user-booking-quote-message-text">
-                              {item.quote.message}
+              return (
+                <Col md={6} xl={4} key={item.id}>
+                  <Card className="user-booking-card">
+                    <Card.Body className="user-booking-card-body rounded-5">
+                      <div className="user-booking-card-compact rounded-5">
+                        <div className="user-booking-card-profile-section">
+                          <div className="user-booking-card-profile-image-wrapper rounded-5">
+                            <img
+                              src={
+                                item.vendor?.profileImage ||
+                                "/images/imageNotFound.jpg"
+                              }
+                              alt={item.vendor?.businessName}
+                              className="user-booking-card-profile-image"
+                            />
+                            <Badge
+                              bg="none"
+                              className={`user-booking-status-badge user-booking-status-${item.status}`}
+                            >
+                              {getStatusIcon(item.status)}
+                              <span className="ms-1">{item.status}</span>
+                            </Badge>
+                          </div>
+                          <div className="user-booking-card-vendor-info">
+                            <h3 className="user-booking-vendor-name">
+                              {item.vendor?.businessName || "Unknown Vendor"}
+                            </h3>
+                            <p className="user-booking-vendor-location">
+                              <FaMapMarkerAlt />
+                              <span>
+                                {item.vendor?.city || "Unknown"},{" "}
+                                {item.vendor?.state || ""}
+                              </span>
                             </p>
                           </div>
-                        )}
-                      </div>
-                    </div>
+                        </div>
 
-                    <div className="user-booking-actions">
-                      <div className="user-booking-service-badge">
-                        <CiBookmarkCheck />
-                        <span>Service Booked</span>
+                        {isExpanded && (
+                          <div className="user-booking-card-expanded">
+                            <div className="user-booking-info-section">
+                              <h4 className="user-booking-section-title">
+                                Booking Details
+                              </h4>
+                              <div className="user-booking-info-grid">
+                                <div className="user-booking-info-item">
+                                  <FaUser className="user-booking-info-icon" />
+                                  <span className="user-booking-info-text">
+                                    {item.firstName} {item.lastName}
+                                  </span>
+                                </div>
+                                <div className="user-booking-info-item">
+                                  <FaEnvelope className="user-booking-info-icon" />
+                                  <span className="user-booking-info-text">
+                                    {item.email}
+                                  </span>
+                                </div>
+                                <div className="user-booking-info-item">
+                                  <FaPhone className="user-booking-info-icon" />
+                                  <span className="user-booking-info-text">
+                                    {item.phone}
+                                  </span>
+                                </div>
+                                <div className="user-booking-info-item">
+                                  <FaCalendarAlt className="user-booking-info-icon" />
+                                  <span className="user-booking-info-text">
+                                    <strong>{item.eventDate}</strong>
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="user-booking-quote-section">
+                              <h4 className="user-booking-section-title">
+                                Quotation Details
+                              </h4>
+                              <div className="user-booking-quote-card">
+                                <div className="user-booking-quote-item">
+                                  <span className="user-booking-quote-label">
+                                    Quote Price
+                                  </span>
+                                  <span className="user-booking-quote-value user-booking-quote-price">
+                                    {item.quote?.price
+                                      ? `₹ ${item.quote.price}`
+                                      : "Not provided"}
+                                  </span>
+                                </div>
+                                <div className="user-booking-quote-item">
+                                  <span className="user-booking-quote-label">
+                                    Valid Till
+                                  </span>
+                                  <span className="user-booking-quote-value">
+                                    {item.quote?.validTill || "N/A"}
+                                  </span>
+                                </div>
+                                {item.quote?.message && (
+                                  <div className="user-booking-quote-message">
+                                    <span className="user-booking-quote-label">
+                                      Message
+                                    </span>
+                                    <p className="user-booking-quote-message-text">
+                                      {item.quote.message}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="user-booking-card-actions">
+                          <Button
+                            variant="link"
+                            className="user-booking-show-more-btn"
+                            onClick={() => toggleCardExpansion(item.id)}
+                          >
+                            {isExpanded ? (
+                              <>
+                                <FaChevronUp className="me-1" />
+                                Show Less
+                              </>
+                            ) : (
+                              <>
+                                <FaChevronDown className="me-1" />
+                                Show More
+                              </>
+                            )}
+                          </Button>
+                          {!isCancelled && (
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              className="user-booking-cancel-btn"
+                              onClick={() =>
+                                handleCancelRequest(item.requestId || item.id)
+                              }
+                              disabled={cancelling[item.requestId || item.id]}
+                            >
+                              {cancelling[item.requestId || item.id] ? (
+                                <>
+                                  <Spinner
+                                    animation="border"
+                                    size="sm"
+                                    className="me-1"
+                                  />
+                                  Cancelling...
+                                </>
+                              ) : (
+                                <>
+                                  <FaBan className="me-1" />
+                                  Cancel
+                                </>
+                              )}
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                      {/* <Dropdown
-                        onSelect={(key) => handleActionChange(item.id, key)}
-                      >
-                        <Dropdown.Toggle className="user-booking-action-dropdown">
-                          {item.localStatus || "Update Status"}
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu className="user-booking-dropdown-menu">
-                          <Dropdown.Item eventKey="Booked">
-                            Booked
-                          </Dropdown.Item>
-                          <Dropdown.Item eventKey="Pending">
-                            Pending
-                          </Dropdown.Item>
-                          <Dropdown.Item eventKey="Discussed">
-                            Discussed
-                          </Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown> */}
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))}
+                    </Card.Body>
+                  </Card>
+                </Col>
+              );
+            })}
           </Row>
         </div>
       )}
