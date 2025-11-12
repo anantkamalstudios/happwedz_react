@@ -12,7 +12,6 @@ import {
   FiCamera,
 } from "react-icons/fi";
 import { useSelector } from "react-redux";
-// import { weddingWebsiteApi } from '../../services/api';
 import { weddingWebsiteApi } from "../../services/api/weddingWebsiteApi";
 import Swal from "sweetalert2";
 
@@ -21,7 +20,7 @@ const WeddingWebsiteForm = () => {
   const { templateId } = useParams();
   const [searchParams] = useSearchParams();
   const editId = useMemo(() => searchParams.get("edit"), [searchParams]);
-  const auth = useSelector((state) => state.auth);
+
   const [formData, setFormData] = useState({
     sliderImages: [],
     weddingDate: "",
@@ -42,7 +41,8 @@ const WeddingWebsiteForm = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [initializing, setInitializing] = useState(!!editId);
+  const [initializing, setInitializing] = useState(true);
+  const [existingId, setExistingId] = useState(editId || null);
 
   // File upload handlers
   const handleFileUpload = (e, section, index = null) => {
@@ -186,173 +186,318 @@ const WeddingWebsiteForm = () => {
     }));
   };
 
+  // Normalize API data into current form state shape
+  const mapExistingToFormState = (data) => {
+    const toPreviewItem = (src) => ({
+      id: Date.now() + Math.random(),
+      file: null,
+      preview: src,
+    });
+
+    return {
+      weddingDate: data.weddingDate
+        ? String(data.weddingDate).slice(0, 10)
+        : "",
+      bride: {
+        image: null,
+        preview:
+          data.brideImageUrl ||
+          data?.bride?.imageUrl ||
+          data?.bride?.image_url ||
+          data?.brideData?.image ||
+          null,
+        name:
+          data.brideName ||
+          data?.bride?.name ||
+          data?.brideData?.name ||
+          data?.brideData?.title ||
+          "",
+        description:
+          data?.brideDescription ||
+          data?.bride?.description ||
+          data?.brideData?.description ||
+          "",
+      },
+      groom: {
+        image: null,
+        preview:
+          data.groomImageUrl ||
+          data?.groom?.imageUrl ||
+          data?.groom?.image_url ||
+          data?.groomData?.image ||
+          null,
+        name:
+          data.groomName ||
+          data?.groom?.name ||
+          data?.groomData?.name ||
+          data?.groomData?.title ||
+          "",
+        description:
+          data?.groomDescription ||
+          data?.groom?.description ||
+          data?.groomData?.description ||
+          "",
+      },
+      sliderImages: Array.isArray(data.slider)
+        ? data.slider
+            .map((u) => toPreviewItem(typeof u === "string" ? u : u?.url || ""))
+            .filter((x) => x.preview)
+        : Array.isArray(data.sliderImages)
+        ? data.sliderImages
+            .map((u) => toPreviewItem(typeof u === "string" ? u : u?.url || ""))
+            .filter((x) => x.preview)
+        : [],
+      loveStory: Array.isArray(data.loveStory)
+        ? data.loveStory.map((s) => ({
+            id: Date.now() + Math.random(),
+            image: null,
+            preview: s.imageUrl || s.image_url || s.image || null,
+            title: s.title || "",
+            date: s.date || "",
+            description: s.description || "",
+          }))
+        : [],
+      weddingParty: Array.isArray(data.weddingParty)
+        ? data.weddingParty.map((m) => ({
+            id: Date.now() + Math.random(),
+            image: null,
+            preview: m.imageUrl || m.image_url || m.image || null,
+            name: m.name || m.title || "",
+            relation: m.relation || m.role || "",
+          }))
+        : [],
+      whenWhere: Array.isArray(data.whenWhere)
+        ? data.whenWhere.map((w) => {
+            const datePart =
+              (w.date && String(w.date).slice(0, 10)) ||
+              (w.datetime && String(w.datetime).slice(0, 10)) ||
+              "";
+            const timePart =
+              (w.time && String(w.time).slice(0, 5)) ||
+              (w.datetime && String(w.datetime).includes("T")
+                ? String(w.datetime).split("T")[1]?.slice(0, 5)
+                : "") ||
+              "";
+            const datetimeLocal =
+              datePart && timePart ? `${datePart}T${timePart}` : datePart;
+            return {
+              id: Date.now() + Math.random(),
+              image: null,
+              preview: w.imageUrl || w.image_url || w.image || null,
+              title: w.title || "",
+              location: w.location || "",
+              description: w.description || "",
+              date: datetimeLocal,
+            };
+          })
+        : [],
+      gallery: Array.isArray(data.gallery)
+        ? data.gallery
+            .map((u) => toPreviewItem(typeof u === "string" ? u : u?.url || ""))
+            .filter((x) => x.preview)
+        : Array.isArray(data.galleryImages)
+        ? data.galleryImages
+            .map((u) => toPreviewItem(typeof u === "string" ? u : u?.url || ""))
+            .filter((x) => x.preview)
+        : [],
+    };
+  };
+
   const { user, token: userToken } = useSelector((state) => state.auth);
 
-  // ✅ Helper function: Convert JSON + Files into FormData
+  // ✅ Corrected version – matches backend multer field names exactly
   const buildFormData = (data) => {
     const formData = new FormData();
 
+    // Basic info
     formData.append("userId", data.userId);
     formData.append("templateId", data.templateId);
     formData.append("weddingDate", data.weddingDate);
 
-    // JSON sections
-    formData.append("brideData", JSON.stringify(data.brideData));
-    formData.append("groomData", JSON.stringify(data.groomData));
-    formData.append("loveStory", JSON.stringify(data.loveStory));
-    formData.append("weddingParty", JSON.stringify(data.weddingParty));
-    formData.append("whenWhere", JSON.stringify(data.whenWhere));
+    // JSON data
+    formData.append("brideData", JSON.stringify(data.brideData || {}));
+    formData.append("groomData", JSON.stringify(data.groomData || {}));
+    formData.append("loveStory", JSON.stringify(data.loveStory || []));
+    formData.append("weddingParty", JSON.stringify(data.weddingParty || []));
+    formData.append("whenWhere", JSON.stringify(data.whenWhere || []));
+    formData.append("galleryImages", JSON.stringify(data.galleryImages || []));
+    // Preserve existing slider URLs as array items (repeat field)
+    (data.sliderImages || []).forEach((url) => {
+      if (url) formData.append("sliderImages", url);
+    });
 
-    // Image files (use backend's expected field names)
-    data.sliderImages?.forEach(
-      (file) => file && formData.append("slider", file)
-    );
-    data.loveStoryImages?.forEach(
-      (file) => file && formData.append("loveStory", file)
-    );
-    data.weddingPartyImages?.forEach(
-      (file) => file && formData.append("weddingParty", file)
-    );
-    data.galleryFiles?.forEach(
-      (file) => file && formData.append("gallery", file)
-    );
+    // ✅ File uploads (field names must match backend)
+    // New slider files
+    (data.sliderFiles || []).forEach((file) => {
+      if (file) formData.append("slider", file); // backend: slider
+    });
 
-    // Bride & Groom individual images
-    if (data.brideImage) formData.append("bride", data.brideImage);
-    if (data.groomImage) formData.append("groom", data.groomImage);
+    if (data.brideImage) formData.append("bride", data.brideImage); // backend: bride
+    if (data.groomImage) formData.append("groom", data.groomImage); // backend: groom
+
+    (data.loveStoryImages || []).forEach((file) => {
+      if (file) formData.append("loveStory", file); // backend: loveStory
+    });
+
+    (data.weddingPartyImages || []).forEach((file) => {
+      if (file) formData.append("weddingParty", file); // backend: weddingParty
+    });
+
+    // Include whenWhere images if backend supports it
+    (data.whenWhereImages || []).forEach((file) => {
+      if (file) formData.append("whenWhere", file); // backend: whenWhere
+    });
+
+    (data.galleryFiles || []).forEach((file) => {
+      if (file) formData.append("gallery", file); // backend: gallery
+    });
 
     return formData;
   };
-
-  // const handleSubmit = async (e) => {
-  //     e.preventDefault();
-  //     setLoading(true);
-
-  //     try {
-  //         // Prepare the data for the API
-  //         const apiData = {
-  //             userId: user?.id,
-  //             templateId: templateId || 'royal',
-  //             weddingDate: formData.weddingDate,
-  //             brideData: {
-  //                 name: formData.bride.name,
-  //                 description: formData.bride.description,
-  //             },
-  //             groomData: {
-  //                 name: formData.groom.name,
-  //                 description: formData.groom.description,
-  //             },
-  //             loveStory: formData.loveStory.map((story) => ({
-  //                 title: story.title || '',
-  //                 date: story.date || '',
-  //                 description: story.description || '',
-  //             })),
-  //             weddingParty: formData.weddingParty.map((member) => ({
-  //                 name: member.name || '',
-  //                 relation: member.relation || '',
-  //             })),
-  //             whenWhere: formData.whenWhere.map((event) => ({
-  //                 title: event.title || '',
-  //                 location: event.location || '',
-  //                 description: event.description || '',
-  //                 date: event.date || '',
-  //             })),
-  //             galleryImages: formData.gallery
-  //                 .filter((g) => typeof g.preview === 'string' && g.preview.startsWith('/uploads/'))
-  //                 .map((g) => g.preview),
-  //             // File arrays for upload
-  //             sliderImages: formData.sliderImages.map((img) => img.file).filter(Boolean),
-  //             brideImage: formData.bride.image,
-  //             groomImage: formData.groom.image,
-  //             loveStoryImages: formData.loveStory.map((story) => story.image).filter(Boolean),
-  //             weddingPartyImages: formData.weddingParty.map((member) => member.image).filter(Boolean),
-  //             whenWhereImages: formData.whenWhere.map((event) => event.image).filter(Boolean),
-  //             galleryFiles: formData.gallery.map((img) => img.file).filter(Boolean),
-  //         };
-
-  //         // Handle existing images (from edit mode)
-  //         if (formData.bride.preview && typeof formData.bride.preview === 'string' && formData.bride.preview.startsWith('/uploads/')) {
-  //             apiData.brideData.image_url = formData.bride.preview;
-  //         }
-  //         if (formData.groom.preview && typeof formData.groom.preview === 'string' && formData.groom.preview.startsWith('/uploads/')) {
-  //             apiData.groomData.image_url = formData.groom.preview;
-  //         }
-
-  //         let result;
-  //         if (editId) {
-  //             // Update existing website
-  //             result = await weddingWebsiteApi.updateWebsite(editId, apiData);
-  //             alert('Wedding website updated successfully!');
-  //         } else {
-  //             // Create new website
-  //             result = await weddingWebsiteApi.createWebsite(apiData);
-  //             alert('Wedding website created successfully!');
-  //         }
-
-  //         // Navigate based on result
-  //         if (result?.id) {
-  //             navigate(`/wedding-website/${result.id}`);
-  //         } else if (editId) {
-  //             navigate(`/wedding-website/${editId}`);
-  //         } else {
-  //             navigate('/my-wedding-websites');
-  //         }
-  //     } catch (err) {
-  //         console.error('Error saving wedding website:', err);
-  //         alert(`Failed to save wedding website: ${err.message}`);
-  //     } finally {
-  //         setLoading(false);
-  //     }
-  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Prepare JSON parts, including existing image URLs if no new file
+      const bridePreview =
+        typeof formData.bride.preview === "string"
+          ? formData.bride.preview
+          : "";
+      const groomPreview =
+        typeof formData.groom.preview === "string"
+          ? formData.groom.preview
+          : "";
+
+      const brideDataJson = {
+        name: formData.bride.name,
+        title: formData.bride.name, // support backend expecting `title`
+        description: formData.bride.description,
+        ...(formData.bride.image
+          ? {}
+          : bridePreview
+          ? { image: bridePreview, image_url: bridePreview }
+          : {}),
+      };
+
+      const groomDataJson = {
+        name: formData.groom.name,
+        title: formData.groom.name, // support backend expecting `title`
+        description: formData.groom.description,
+        ...(formData.groom.image
+          ? {}
+          : groomPreview
+          ? { image: groomPreview, image_url: groomPreview }
+          : {}),
+      };
+
+      // Build arrays so items with new files come first to align index-based backends
+      const reorderWithFilesFirst = (items, makeJson, getFile) => {
+        const enriched = items.map((it) => ({
+          json: makeJson(it),
+          file: getFile(it),
+        }));
+        const withFile = enriched.filter((e) => !!e.file);
+        const withoutFile = enriched.filter((e) => !e.file);
+        return {
+          json: [
+            ...withFile.map((e) => e.json),
+            ...withoutFile.map((e) => e.json),
+          ],
+          files: withFile.map((e) => e.file),
+        };
+      };
+
+      const loveStoryBuilt = reorderWithFilesFirst(
+        formData.loveStory,
+        (s) => {
+          const hasDate = s.date || "";
+          return {
+            title: s.title,
+            description: s.description,
+            date: hasDate,
+            ...(s.image
+              ? {}
+              : typeof s.preview === "string" && s.preview
+              ? { image_url: s.preview }
+              : {}),
+          };
+        },
+        (s) => s.image
+      );
+
+      const weddingPartyBuilt = reorderWithFilesFirst(
+        formData.weddingParty,
+        (m) => ({
+          name: m.name || m.title || "",
+          title: m.name || m.title || "",
+          relation: m.relation || m.role || "",
+          role: m.relation || m.role || "",
+          ...(m.image
+            ? {}
+            : typeof m.preview === "string" && m.preview
+            ? { image_url: m.preview }
+            : {}),
+        }),
+        (m) => m.image
+      );
+
+      const whenWhereBuilt = reorderWithFilesFirst(
+        formData.whenWhere,
+        (w) => {
+          let dateOnly = w.date || "";
+          let timeOnly = "";
+          if (dateOnly && dateOnly.includes("T")) {
+            const [d, t] = dateOnly.split("T");
+            dateOnly = d;
+            timeOnly = t?.slice(0, 5) || "";
+          }
+          return {
+            title: w.title,
+            location: w.location,
+            description: w.description,
+            date: dateOnly,
+            time: w.time || timeOnly || "",
+            ...(w.image
+              ? {}
+              : typeof w.preview === "string" && w.preview
+              ? { image_url: w.preview }
+              : {}),
+          };
+        },
+        (w) => w.image
+      );
+
       // Build FormData from form inputs
       const formPayload = buildFormData({
         userId: user?.id,
         templateId: templateId || "royal",
         weddingDate: formData.weddingDate,
-        brideData: {
-          name: formData.bride.name,
-          description: formData.bride.description,
-        },
-        groomData: {
-          name: formData.groom.name,
-          description: formData.groom.description,
-        },
-        loveStory: formData.loveStory.map((s) => ({
-          title: s.title,
-          date: s.date,
-          description: s.description,
-        })),
-        weddingParty: formData.weddingParty.map((m) => ({
-          name: m.name,
-          relation: m.relation,
-        })),
-        whenWhere: formData.whenWhere.map((w) => ({
-          title: w.title,
-          location: w.location,
-          description: w.description,
-          date: w.date,
-        })),
-        sliderImages: formData.sliderImages.map((i) => i.file).filter(Boolean),
+        brideData: brideDataJson,
+        groomData: groomDataJson,
+        loveStory: loveStoryBuilt.json,
+        weddingParty: weddingPartyBuilt.json,
+        whenWhere: whenWhereBuilt.json,
+        // Preserve existing slider URLs and append only new files
+        sliderImages: formData.sliderImages
+          //  .filter((i) => typeof i.preview === "string" && i.preview)
+          .filter((i) => !i.file && i.preview)
+          .map((i) => i.preview),
+        sliderFiles: formData.sliderImages.map((i) => i.file).filter(Boolean),
         brideImage: formData.bride.image,
         groomImage: formData.groom.image,
-        loveStoryImages: formData.loveStory.map((s) => s.image).filter(Boolean),
-        weddingPartyImages: formData.weddingParty
-          .map((m) => m.image)
-          .filter(Boolean),
-        whenWhereImages: formData.whenWhere.map((w) => w.image).filter(Boolean),
+        loveStoryImages: loveStoryBuilt.files,
+        weddingPartyImages: weddingPartyBuilt.files,
+        whenWhereImages: whenWhereBuilt.files,
+                galleryImages: formData.gallery.filter((g) => !g.file && g.preview).map((g) => g.preview),
         galleryFiles: formData.gallery.map((g) => g.file).filter(Boolean),
       });
 
       let result;
-      if (editId) {
+      if (existingId) {
         result = await weddingWebsiteApi.updateWebsite(
-          editId,
+          existingId,
           formPayload,
           userToken
         );
@@ -374,8 +519,13 @@ const WeddingWebsiteForm = () => {
         });
       }
 
-      if (result?.id) navigate(`/wedding-website/${result.id}`);
-      else navigate("/my-wedding-websites");
+      if (result?.id) {
+        navigate(`/wedding-website/${result.id}`);
+      } else if (existingId) {
+        navigate(`/wedding-website/${existingId}`);
+      } else {
+        navigate("/my-wedding-websites");
+      }
     } catch (err) {
       console.error("Error saving wedding website:", err);
       //   alert(`Failed to save wedding website: ${err.message}`);
@@ -391,100 +541,49 @@ const WeddingWebsiteForm = () => {
   };
 
   useEffect(() => {
-    if (!editId) return;
     let isMounted = true;
     (async () => {
       try {
-        const data = await weddingWebsiteApi.getWebsiteById(editId);
-        if (!isMounted) return;
+        // Priority 1: explicit editId in URL
+        if (editId) {
+          const data = await weddingWebsiteApi.getWebsiteById(
+            editId,
+            userToken
+          );
+          if (!isMounted) return;
+          setExistingId(editId);
+          setFormData((prev) => ({
+            ...prev,
+            ...mapExistingToFormState(data),
+          }));
+          return;
+        }
 
-        // Best-effort mapping; tolerate variations
-        const toPreviewItem = (src) => ({
-          id: Date.now() + Math.random(),
-          file: null,
-          preview: src,
-        });
-        setFormData((prev) => ({
-          ...prev,
-          weddingDate: data.weddingDate
-            ? String(data.weddingDate).slice(0, 10)
-            : "",
-          bride: {
-            image: null,
-            preview:
-              data.brideImageUrl ||
-              data?.bride?.imageUrl ||
-              data?.bride?.image_url ||
-              null,
-            name: data.brideName || data?.bride?.name || "",
-            description:
-              data?.brideDescription || data?.bride?.description || "",
-          },
-          groom: {
-            image: null,
-            preview:
-              data.groomImageUrl ||
-              data?.groom?.imageUrl ||
-              data?.groom?.image_url ||
-              null,
-            name: data.groomName || data?.groom?.name || "",
-            description:
-              data?.groomDescription || data?.groom?.description || "",
-          },
-          sliderImages: Array.isArray(data.slider)
-            ? data.slider
-                .map((u) =>
-                  toPreviewItem(typeof u === "string" ? u : u?.url || "")
-                )
-                .filter((x) => x.preview)
-            : Array.isArray(data.sliderImages)
-            ? data.sliderImages
-                .map((u) =>
-                  toPreviewItem(typeof u === "string" ? u : u?.url || "")
-                )
-                .filter((x) => x.preview)
-            : [],
-          loveStory: Array.isArray(data.loveStory)
-            ? data.loveStory.map((s) => ({
-                id: Date.now() + Math.random(),
-                image: null,
-                preview: s.imageUrl || s.image_url || s.image || null,
-                title: s.title || "",
-                date: s.date || "",
-                description: s.description || "",
-              }))
-            : [],
-          weddingParty: Array.isArray(data.weddingParty)
-            ? data.weddingParty.map((m) => ({
-                id: Date.now() + Math.random(),
-                image: null,
-                preview: m.imageUrl || m.image_url || m.image || null,
-                name: m.name || "",
-                relation: m.relation || "",
-              }))
-            : [],
-          whenWhere: Array.isArray(data.whenWhere)
-            ? data.whenWhere.map((w) => ({
-                id: Date.now() + Math.random(),
-                image: null,
-                preview: w.imageUrl || w.image_url || w.image || null,
-                title: w.title || "",
-                location: w.location || "",
-                description: w.description || "",
-                date: w.date || "",
-              }))
-            : [],
-          gallery: Array.isArray(data.gallery)
-            ? data.gallery
-                .map((u) =>
-                  toPreviewItem(typeof u === "string" ? u : u?.url || "")
-                )
-                .filter((x) => x.preview)
-            : [],
-        }));
+        // Priority 2: auto-detect existing website by template for this user
+        const list = await weddingWebsiteApi.getMyWebsites(userToken);
+        if (!isMounted) return;
+        const match = Array.isArray(list)
+          ? list.find(
+              (w) =>
+                String(w.templateId).toLowerCase() ===
+                String(templateId || "").toLowerCase()
+            )
+          : null;
+
+        if (match?.id) {
+          const data = await weddingWebsiteApi.getWebsiteById(
+            match.id,
+            userToken
+          );
+          if (!isMounted) return;
+          setExistingId(match.id);
+          setFormData((prev) => ({
+            ...prev,
+            ...mapExistingToFormState(data),
+          }));
+        }
       } catch (e) {
-        console.error("Error loading website data:", e);
-        // alert("Failed to load existing website data");
+        console.error("Error initializing website form:", e);
         Swal.fire({
           icon: "error",
           text: "Failed to load existing website data",
@@ -498,7 +597,7 @@ const WeddingWebsiteForm = () => {
     return () => {
       isMounted = false;
     };
-  }, [editId]);
+  }, [editId, templateId, userToken]);
 
   if (initializing) {
     return (
