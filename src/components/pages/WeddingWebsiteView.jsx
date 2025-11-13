@@ -3,7 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { FiEdit, FiShare, FiArrowLeft } from "react-icons/fi";
 import { icons } from "lucide-react";
-
+import { TEMPLATE_LIST } from "../../templates";
+import Swal from "sweetalert2";
+import { weddingWebsiteApi } from "../../services/api/weddingWebsiteApi";
+import { API_BASE_URL } from "../../config/constants";
 const WeddingWebsiteView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -11,7 +14,8 @@ const WeddingWebsiteView = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const token = useSelector((state) => state.auth.token);
-
+  const [TemplateComponent, setTemplateComponent] = useState(null);
+  const [templateLoadError, setTemplateLoadError] = useState("");
   // Expected response fields (example payload structure sent by the form):
   // const formPayload = buildFormData({
   //   userId,
@@ -24,37 +28,44 @@ const WeddingWebsiteView = () => {
   //   whenWhere: [{ title, location, description, date }],
   //   sliderImages, brideImage, groomImage, loveStoryImages, weddingPartyImages, whenWhereImages, galleryFiles
   // });
-
   useEffect(() => {
     const fetchWebsiteData = async () => {
       setLoading(true);
       setError("");
       try {
-        const response = await fetch(
-          "https://happywedz.com/api/weddingwebsite/wedding-websites",
-          {
-            headers: {
-              Authorization: token ? `Bearer ${token}` : "",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          setError("Failed to load wedding website");
-          return;
-        }
-        const data = await response.json();
-        setWebsiteData(Array.isArray(data) ? data[0] : data);
+        const data = await weddingWebsiteApi.getWebsiteById(id, token);
+        setWebsiteData(data);
       } catch (err) {
         setError("Error loading wedding website");
       } finally {
         setLoading(false);
       }
     };
-
-    fetchWebsiteData();
+    if (id) fetchWebsiteData();
   }, [token, id]);
-
+  // Load the template component dynamically once websiteData is available
+  useEffect(() => {
+    if (!websiteData?.templateId) return;
+    setTemplateLoadError("");
+    setTemplateComponent(null);
+    const selected = TEMPLATE_LIST.find(
+      (t) =>
+        String(t.id).toLowerCase() ===
+        String(websiteData.templateId).toLowerCase()
+    );
+    if (!selected) {
+      setTemplateLoadError(`Unknown template: ${websiteData.templateId}`);
+      return;
+    }
+    selected
+      .load()
+      .then((mod) => {
+        setTemplateComponent(() => mod.default || mod);
+      })
+      .catch(() => {
+        setTemplateLoadError("Failed to load selected template");
+      });
+  }, [websiteData]);
   if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center min-vh-100">
@@ -64,7 +75,6 @@ const WeddingWebsiteView = () => {
       </div>
     );
   }
-
   if (error || !websiteData) {
     return (
       <div className="container py-5">
@@ -82,7 +92,104 @@ const WeddingWebsiteView = () => {
       </div>
     );
   }
+  const normalizeWebsiteData = (data) => {
+    if (!data) return data;
+    const sliderArr =
+      Array.isArray(data.slider) && data.slider.length > 0
+        ? data.slider
+        : Array.isArray(data.sliderImages)
+        ? data.sliderImages
+        : [];
+    const galleryArr =
+      Array.isArray(data.gallery) && data.gallery.length > 0
+        ? data.gallery
+        : Array.isArray(data.galleryImages)
+        ? data.galleryImages
+        : [];
+    const toImageUrl = (obj) =>
+      obj?.imageUrl || obj?.image_url || obj?.image || null;
+    const bride = {
+      name:
+        data.brideName ||
+        data?.bride?.name ||
+        data?.bride?.title ||
+        data?.brideData?.name ||
+        data?.brideData?.title ||
+        "",
+      description:
+        data?.brideDescription ||
+        data?.bride?.description ||
+        data?.brideData?.description ||
+        "",
+      imageUrl:
+        data.brideImageUrl ||
+        toImageUrl(data.bride) ||
+        toImageUrl(data.brideData) ||
+        null,
+    };
+    const groom = {
+      name:
+        data.groomName ||
+        data?.groom?.name ||
+        data?.groom?.title ||
+        data?.groomData?.name ||
+        data?.groomData?.title ||
+        "",
+      description:
+        data?.groomDescription ||
+        data?.groom?.description ||
+        data?.groomData?.description ||
+        "",
+      imageUrl:
+        data.groomImageUrl ||
+        toImageUrl(data.groom) ||
+        toImageUrl(data.groomData) ||
+        null,
+    };
+    const loveStory =
+      Array.isArray(data.loveStory) &&
+      data.loveStory.map((s) => ({
+        title: s.title || "",
+        date: s.date || "",
+        description: s.description || "",
+        imageUrl: toImageUrl(s),
+      }));
+    const weddingParty =
+      Array.isArray(data.weddingParty) &&
+      data.weddingParty.map((m) => ({
+        name: m.name || m.title || "",
+        relation: m.relation || m.role || "",
+        role: m.relation || m.role || "",
+        imageUrl: toImageUrl(m),
+      }));
+    const whenWhere =
+      Array.isArray(data.whenWhere) &&
+      data.whenWhere.map((w) => ({
+        title: w.title || "",
+        location: w.location || "",
+        description: w.description || "",
+        date: w.date || "",
+        time: w.time || "",
+        imageUrl: toImageUrl(w),
+      }));
+    return {
+      ...data,
+      // Provide both aliases so templates depending on either won't break
+      slider: sliderArr,
+      sliderImages: sliderArr,
+      gallery: galleryArr,
+      galleryImages: galleryArr,
+      bride,
+      groom,
+      loveStory: loveStory || [],
+      weddingParty: weddingParty || [],
+      whenWhere: whenWhere || [],
+    };
+  };
 
+  console.log("websiteData", websiteData);
+
+  const normalizedData = normalizeWebsiteData(websiteData);
   return (
     <div className="wedding-website-view">
       <style>{`
@@ -199,13 +306,13 @@ const WeddingWebsiteView = () => {
                     color: #856404;
                 }
             `}</style>
-
       <div className="website-header">
         <div className="container">
-          <div className="d-flex justify-content-between align-items-center">
+          <div className="d-flex justify-content-between align-items-center w-100">
             <div>
               <h3 className="mb-1">
-                {websiteData.brideName} & {websiteData.groomName}
+                {normalizedData?.bride?.name || ""} &{" "}
+                {normalizedData?.groom?.name || ""}
               </h3>
               <p className="text-muted mb-0">Wedding Website</p>
             </div>
@@ -224,7 +331,7 @@ const WeddingWebsiteView = () => {
                 onClick={() => {
                   if (websiteData.isPublished) {
                     navigator.clipboard.writeText(
-                      `${window.location.origin}/api/wedding/${websiteData.websiteUrl}`
+                      `${API_BASE_URL}/weddingwebsite/wedding/${websiteData.websiteUrl}`
                     );
                     // alert('Website link copied to clipboard!');
                     Swal.fire({
@@ -251,35 +358,48 @@ const WeddingWebsiteView = () => {
           </div>
         </div>
       </div>
-
       <div className="container py-4">
         <div className="row">
-          {/* <div className="col-lg-8">
+          <div className="col-lg-12">
             <div className="website-preview">
-              <iframe
-                src={`/api/wedding/${websiteData.websiteUrl}`}
-                className="preview-frame"
-                title="Wedding Website Preview"
-              />
+              {templateLoadError && (
+                <div className="p-4 text-center text-danger">
+                  {templateLoadError}
+                </div>
+              )}
+              {!templateLoadError && !TemplateComponent && (
+                <div className="d-flex justify-content-center align-items-center preview-frame">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading template...</span>
+                  </div>
+                </div>
+              )}
+              {TemplateComponent && (
+                <div
+                  style={{
+                    minHeight: "80vh",
+                    minWidth: "100%",
+                    position: "relative",
+                  }}
+                >
+                  <TemplateComponent data={normalizedData} />
+                </div>
+              )}
             </div>
-          </div>  */}
-
-          <div className="col-lg-4">
+          </div>
+          {/* <div className="col-lg-4">
             <div className="website-info">
               <h5 className="mb-4">Website Information</h5>
-
               <div className="info-item">
                 <span className="info-label">Template:</span>
                 <span className="info-value">{websiteData.templateId}</span>
               </div>
-
               <div className="info-item">
                 <span className="info-label">Wedding Date:</span>
                 <span className="info-value">
                   {new Date(websiteData.weddingDate).toLocaleDateString()}
                 </span>
               </div>
-
               <div className="info-item">
                 <span className="info-label">Status:</span>
                 <span
@@ -292,21 +412,18 @@ const WeddingWebsiteView = () => {
                   {websiteData.isPublished ? "Published" : "Draft"}
                 </span>
               </div>
-
               <div className="info-item">
                 <span className="info-label">Created:</span>
                 <span className="info-value">
                   {new Date(websiteData.createdAt).toLocaleDateString()}
                 </span>
               </div>
-
               <div className="info-item">
                 <span className="info-label">Last Updated:</span>
                 <span className="info-value">
                   {new Date(websiteData.updatedAt).toLocaleDateString()}
                 </span>
               </div>
-
               {websiteData.isPublished && (
                 <div className="info-item">
                   <span className="info-label">Public URL:</span>
@@ -323,7 +440,6 @@ const WeddingWebsiteView = () => {
                 </div>
               )}
             </div>
-
             <div className="website-info">
               <h6 className="mb-3">Quick Actions</h6>
               <div className="d-grid gap-2">
@@ -344,11 +460,10 @@ const WeddingWebsiteView = () => {
                 </button>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
   );
 };
-
 export default WeddingWebsiteView;

@@ -215,7 +215,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                                   className="fw-bold text-dark"
                                   style={{ fontSize: "16px" }}
                                 >
-                                  ₹ {String(venue.vegPrice)}
+                                  ₹ {String(venue.vegPrice.replace("Rs.", ""))}
                                 </span>
                               </div>
                             )}
@@ -232,7 +232,8 @@ const GridView = ({ subVenuesData, handleShow }) => {
                                   className="fw-bold text-dark"
                                   style={{ fontSize: "16px" }}
                                 >
-                                  ₹ {String(venue.nonVegPrice)}
+                                  ₹{" "}
+                                  {String(venue.nonVegPrice.replace("Rs.", ""))}
                                 </span>
                               </div>
                             )}
@@ -244,7 +245,9 @@ const GridView = ({ subVenuesData, handleShow }) => {
                             style={{ fontSize: "16px" }}
                           >
                             {venue.starting_price
-                              ? `${String(venue.starting_price)}`
+                              ? `₹ ${String(
+                                  venue.starting_price.replace("Rs.", "")
+                                )}`
                               : "Contact for pricing"}
                           </span>
                         </div>

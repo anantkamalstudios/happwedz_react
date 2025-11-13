@@ -954,7 +954,7 @@ const Detailed = () => {
                       </h4>
                       <div className="price-value fs-4 fw-bold">
                         {venueData.attributes?.veg_price
-                          ? `₹${parseInt(
+                          ? `₹ ${parseInt(
                               venueData.attributes.veg_price.replace(/,/g, "")
                             ).toLocaleString()} onwards`
                           : "Contact for pricing"}
@@ -964,7 +964,7 @@ const Detailed = () => {
                       </h4>
                       <div className="price-value fs-4 fw-bold">
                         {venueData.attributes?.non_veg_price
-                          ? `₹${parseInt(
+                          ? `₹ ${parseInt(
                               venueData.attributes.non_veg_price.replace(
                                 /,/g,
                                 ""
@@ -999,8 +999,13 @@ const Detailed = () => {
                         <h4 className="price-title fw-bold mt-3">
                           Pricing Range (Starting)
                         </h4>
-                        {venueData.attributes?.PriceRange
-                          ? venueData.attributes.PriceRange
+                        ₹{" "}
+                        {venueData.attributes?.PriceRange ||
+                        venueData.attributes.starting_price
+                          ? venueData.attributes.PriceRange.replace(
+                              "Rs.",
+                              ""
+                            ).trim() || venueData.attributes.starting_price
                           : venueData.attributes.photo_package_price
                           ? `₹${parseInt(
                               venueData.attributes.photo_package_price.replace(
@@ -1016,13 +1021,11 @@ const Detailed = () => {
                             Photo + Video Package (Starting)
                           </h4>
                           <div className="price-value fs-4 fw-bold">
-                            Rs.
-                            {parseInt(
-                              venueData.attributes.photo_video_package_price.replace(
-                                /,/g,
-                                ""
-                              )
-                            ).toLocaleString()}{" "}
+                            ₹{" "}
+                            {venueData.attributes.photo_video_package_price.replace(
+                              "Rs.",
+                              ""
+                            )}{" "}
                           </div>
                         </>
                       )}

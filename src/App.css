@@ -255,10 +255,10 @@ body {
 }
 
 .wrapper {
-  max-width: 1200px;
+  max-width: 1400px;
   min-width: 950px;
   margin: 0 auto;
-  padding: 15px;
+  padding: 15px 20px;
   display: block;
 }
 

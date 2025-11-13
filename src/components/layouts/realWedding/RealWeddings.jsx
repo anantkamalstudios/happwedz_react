@@ -1,6 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import axios from "axios";
-import { FaMapMarkerAlt, FaSearch } from "react-icons/fa";
+import {
+  FaMapMarkerAlt,
+  FaSearch,
+  FaChevronDown,
+  FaChevronUp,
+} from "react-icons/fa";
 import { BsExclamationTriangle } from "react-icons/bs";
 import { API_BASE_URL } from "../../../config/constants";
 
@@ -16,6 +21,43 @@ const RealWeddings = ({ onPostClick }) => {
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [selectedCulture, setSelectedCulture] = useState("All Cultures");
   const [selectedTheme, setSelectedTheme] = useState("All Themes");
+  const [cultures, setCultures] = useState([]);
+  const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
+  const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
+  const [isCultureDropdownOpen, setIsCultureDropdownOpen] = useState(false);
+  const [citySearchTerm, setCitySearchTerm] = useState("");
+  const cityDropdownRef = useRef(null);
+  const themeDropdownRef = useRef(null);
+  const cultureDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        cityDropdownRef.current &&
+        !cityDropdownRef.current.contains(event.target)
+      ) {
+        setIsCityDropdownOpen(false);
+      }
+      if (
+        themeDropdownRef.current &&
+        !themeDropdownRef.current.contains(event.target)
+      ) {
+        setIsThemeDropdownOpen(false);
+      }
+      if (
+        cultureDropdownRef.current &&
+        !cultureDropdownRef.current.contains(event.target)
+      ) {
+        setIsCultureDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const themes = [
     "Destination",
     "Grand & Luxurious",
@@ -25,7 +67,37 @@ const RealWeddings = ({ onPostClick }) => {
     "International",
     "Others",
   ];
-  const [cultures, setCultures] = useState([]);
+
+  const filteredCities = city.filter((c) =>
+    c.toLowerCase().includes(citySearchTerm.toLowerCase())
+  );
+
+  const filteredThemes = themes.filter((theme) =>
+    theme.toLowerCase().includes(selectedTheme.toLowerCase())
+  );
+
+  const filteredCultures = cultures.filter((culture) =>
+    culture.name.toLowerCase().includes(selectedCulture.toLowerCase())
+  );
+
+  const handleCitySelect = (selected) => {
+    setSelectedCity(selected);
+    setCurrentPage(1);
+    setIsCityDropdownOpen(false);
+    setCitySearchTerm("");
+  };
+
+  const handleThemeSelect = (selected) => {
+    setSelectedTheme(selected);
+    setCurrentPage(1);
+    setIsThemeDropdownOpen(false);
+  };
+
+  const handleCultureSelect = (selected) => {
+    setSelectedCulture(selected);
+    setCurrentPage(1);
+    setIsCultureDropdownOpen(false);
+  };
 
   const itemsPerPage = 6;
 
@@ -108,25 +180,34 @@ const RealWeddings = ({ onPostClick }) => {
     fetchWeddings();
   }, []);
 
-  useEffect(() => {
-    const fetchCities = async () => {
+  const [cities, setCities] = useState([]);
+
+  const fetchCities = useMemo(
+    () => async () => {
       try {
-        const response = await axios.post(
-          "https://countriesnow.space/api/v0.1/countries/cities",
-          { country: "India" }
-        );
-        if (response.data && response.data.data) {
-          const sortedCities = response.data.data.sort((a, b) =>
-            a.localeCompare(b)
+        if (cities.length === 0) {
+          const response = await axios.post(
+            "https://countriesnow.space/api/v0.1/countries/cities",
+            { country: "India" }
           );
-          setCity(sortedCities);
+          if (response.data?.data) {
+            const sortedCities = response.data.data.sort((a, b) =>
+              a.localeCompare(b)
+            );
+            setCities(sortedCities);
+            setCity(sortedCities);
+          }
         }
       } catch (error) {
-      } finally {
+        console.error("Error fetching cities:", error);
       }
-    };
+    },
+    [cities.length]
+  );
+
+  useEffect(() => {
     fetchCities();
-  }, []);
+  }, [fetchCities]);
 
   useEffect(() => {
     const fetchCultures = async () => {
@@ -269,165 +350,6 @@ const RealWeddings = ({ onPostClick }) => {
         </div>
       </section>
 
-      {/* <section
-        ref={filterRef}
-        className="d-flex justify-content-end align-items-center w-100"
-        style={{
-          padding: "0 30px",
-        }}
-      >
-        <div
-          className="d-flex justify-content-between align-items-center w-100"
-          style={{
-            display: "flex",
-            gap: "20px",
-            backgroundColor: "#ffffff",
-            borderBottom: "1px solid #e5e5e5",
-            alignItems: "center",
-            padding: "20px",
-          }}
-        >
-          <div
-            style={{
-              flex: 1,
-              height: "60px",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <select
-              value={selectedCity}
-              onChange={(e) => {
-                setSelectedCity(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="form-select w-100"
-              style={{
-                backgroundColor: "#fff",
-                border: "1px solid #C31162",
-                color: "#333",
-                fontSize: "15px",
-                padding: "12px 16px",
-                height: "100%",
-                borderRadius: "0px",
-              }}
-              onClick={scrollToFilters}
-            >
-              <option value={"All Cities"} key={"All Cities"}>
-                All Cities
-              </option>
-              {city.map((c) => (
-                <option value={c} key={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div
-            style={{
-              flex: 1,
-              height: "60px",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <select
-              value={selectedCulture}
-              onChange={(e) => {
-                setSelectedCulture(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="form-select w-100"
-              style={{
-                backgroundColor: "#fff",
-                border: "1px solid #C31162",
-                color: "#333",
-                fontSize: "15px",
-                padding: "12px 16px",
-                height: "100%",
-                borderRadius: "0px",
-              }}
-              onClick={scrollToFilters}
-            >
-              <option value={"All Cultures"} key={"All Cultures"}>
-                All Cultures
-              </option>
-              {cultures.map((cul) => (
-                <option value={cul.name} key={cul.id}>
-                  {cul.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div
-            style={{
-              flex: 1,
-              height: "60px",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <select
-              value={selectedTheme}
-              onChange={(e) => {
-                setSelectedTheme(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="form-select w-100"
-              style={{
-                backgroundColor: "#fff",
-                border: "1px solid #C31162",
-                color: "#333",
-                fontSize: "15px",
-                padding: "12px 16px",
-                height: "100%",
-                borderRadius: "0px",
-              }}
-              onClick={scrollToFilters}
-            >
-              <option value={"All Themes"} key={"All Themes"}>
-                All Themes
-              </option>
-              {themes.map((the) => (
-                <option value={the} key={the}>
-                  {the}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div
-            style={{
-              flex: 2,
-              height: "60px",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <input
-              type="text"
-              className="form-control w-100"
-              placeholder="Search by names and location..."
-              style={{
-                backgroundColor: "#fff",
-                border: "1px solid #C31162",
-                color: "#000",
-                fontSize: "15px",
-                padding: "12px 16px",
-                height: "100%",
-                borderRadius: "0px",
-              }}
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              onClick={scrollToFilters}
-            />
-          </div>
-        </div>
-      </section> */}
-
       <section
         ref={filterRef}
         className="d-flex justify-content-center align-items-center w-100"
@@ -446,42 +368,164 @@ const RealWeddings = ({ onPostClick }) => {
           }}
         >
           <div className="d-flex justify-content-evenly gap-3">
-            {/* City Dropdown */}
+            {/* Custom City Dropdown */}
             <div
               style={{
                 flex: "0 0 auto",
                 width: "220px",
+                position: "relative",
               }}
+              ref={cityDropdownRef}
+              onClick={scrollToFilters}
             >
-              <select
-                value={selectedCity}
-                onChange={(e) => {
-                  setSelectedCity(e.target.value);
-                  setCurrentPage(1);
+              <button
+                onClick={(e) => {
+                  setTimeout(scrollToFilters, 50);
+                  e.stopPropagation();
+                  setIsCityDropdownOpen(!isCityDropdownOpen);
                 }}
-                className="form-select"
                 style={{
+                  width: "100%",
                   backgroundColor: "#fff",
                   border: "1px solid #C31162",
                   color: "#C31162",
                   fontSize: "14px",
-                  padding: "10px 35px 10px 15px",
+                  padding: "10px 16px",
                   height: "45px",
                   borderRadius: "4px",
                   cursor: "pointer",
-                  textAlign: "center",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  textAlign: "left",
                 }}
-                onClick={scrollToFilters}
               >
-                <option value={"All Cities"} key={"All Cities"}>
-                  All Cities
-                </option>
-                {city.map((c) => (
-                  <option value={c} key={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+                <span
+                  style={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {selectedCity}
+                </span>
+                {isCityDropdownOpen ? <FaChevronUp /> : <FaChevronDown />}
+              </button>
+
+              {isCityDropdownOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 5px)",
+                    left: 0,
+                    right: 0,
+                    backgroundColor: "#fff",
+                    border: "1px solid #C31162",
+                    borderRadius: "4px",
+                    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                    zIndex: 1000,
+                    maxHeight: "300px",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: "8px",
+                      borderBottom: "1px solid #f0f0f0",
+                    }}
+                  >
+                    <div style={{ position: "relative" }}>
+                      <FaSearch
+                        style={{
+                          position: "absolute",
+                          left: "12px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          color: "#999",
+                          fontSize: "14px",
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={citySearchTerm}
+                        onChange={(e) => setCitySearchTerm(e.target.value)}
+                        placeholder="Search cities..."
+                        style={{
+                          width: "100%",
+                          padding: "8px 12px 8px 32px",
+                          border: "1px solid #ddd",
+                          borderRadius: "4px",
+                          fontSize: "14px",
+                          outline: "none",
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      overflowY: "auto",
+                      maxHeight: "250px",
+                      overflowX: "hidden",
+                    }}
+                  >
+                    <div
+                      onClick={() => handleCitySelect("All Cities")}
+                      style={{
+                        padding: "10px 16px",
+                        cursor: "pointer",
+                        backgroundColor:
+                          selectedCity === "All Cities"
+                            ? "#f8e3ee"
+                            : "transparent",
+                        color:
+                          selectedCity === "All Cities" ? "#C31162" : "#333",
+                        fontWeight:
+                          selectedCity === "All Cities" ? "500" : "normal",
+                        "&:hover": {
+                          backgroundColor: "#f9f9f9",
+                        },
+                      }}
+                    >
+                      All Cities
+                    </div>
+                    {filteredCities.length > 0 ? (
+                      filteredCities.map((city) => (
+                        <div
+                          key={city}
+                          onClick={() => handleCitySelect(city)}
+                          style={{
+                            padding: "10px 16px",
+                            cursor: "pointer",
+                            backgroundColor:
+                              selectedCity === city ? "#f8e3ee" : "transparent",
+                            color: selectedCity === city ? "#C31162" : "#333",
+                            fontWeight:
+                              selectedCity === city ? "500" : "normal",
+                            "&:hover": {
+                              backgroundColor: "#f9f9f9",
+                            },
+                          }}
+                        >
+                          {city}
+                        </div>
+                      ))
+                    ) : (
+                      <div
+                        style={{
+                          padding: "10px 16px",
+                          color: "#666",
+                          fontStyle: "italic",
+                        }}
+                      >
+                        No cities found
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Culture Dropdown */}
@@ -489,37 +533,104 @@ const RealWeddings = ({ onPostClick }) => {
               style={{
                 flex: "0 0 auto",
                 width: "220px",
+                position: "relative",
               }}
+              ref={cultureDropdownRef}
             >
-              <select
-                value={selectedCulture}
-                onChange={(e) => {
-                  setSelectedCulture(e.target.value);
-                  setCurrentPage(1);
+              <button
+                onClick={() => {
+                  setIsCultureDropdownOpen(!isCultureDropdownOpen);
+                  scrollToFilters();
                 }}
-                className="form-select"
                 style={{
+                  width: "100%",
                   backgroundColor: "#fff",
                   border: "1px solid #C31162",
                   color: "#C31162",
                   fontSize: "14px",
-                  padding: "10px 35px 10px 15px",
+                  padding: "10px 16px",
                   height: "45px",
                   borderRadius: "4px",
                   cursor: "pointer",
-                  textAlign: "center",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  textAlign: "left",
                 }}
-                onClick={scrollToFilters}
               >
-                <option value={"All Cultures"} key={"All Cultures"}>
-                  All Cultures
-                </option>
-                {cultures.map((cul) => (
-                  <option value={cul.name} key={cul.id}>
-                    {cul.name}
-                  </option>
-                ))}
-              </select>
+                <span
+                  style={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {selectedCulture}
+                </span>
+                {isCultureDropdownOpen ? <FaChevronUp /> : <FaChevronDown />}
+              </button>
+
+              {isCultureDropdownOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 5px)",
+                    left: 0,
+                    right: 0,
+                    backgroundColor: "#fff",
+                    border: "1px solid #C31162",
+                    borderRadius: "4px",
+                    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                    zIndex: 1000,
+                    maxHeight: "300px",
+                    overflowY: "auto",
+                  }}
+                >
+                  <div
+                    onClick={() => handleCultureSelect("All Cultures")}
+                    style={{
+                      padding: "10px 16px",
+                      cursor: "pointer",
+                      backgroundColor:
+                        selectedCulture === "All Cultures"
+                          ? "#f8e3ee"
+                          : "transparent",
+                      color:
+                        selectedCulture === "All Cultures" ? "#C31162" : "#333",
+                      fontWeight:
+                        selectedCulture === "All Cultures" ? "500" : "normal",
+                      "&:hover": {
+                        backgroundColor: "#f9f9f9",
+                      },
+                    }}
+                  >
+                    All Cultures
+                  </div>
+                  {cultures.map((culture) => (
+                    <div
+                      key={culture.id}
+                      onClick={() => handleCultureSelect(culture.name)}
+                      style={{
+                        padding: "10px 16px",
+                        cursor: "pointer",
+                        backgroundColor:
+                          selectedCulture === culture.name
+                            ? "#f8e3ee"
+                            : "transparent",
+                        color:
+                          selectedCulture === culture.name ? "#C31162" : "#333",
+                        fontWeight:
+                          selectedCulture === culture.name ? "500" : "normal",
+                        "&:hover": {
+                          backgroundColor: "#f9f9f9",
+                        },
+                      }}
+                    >
+                      {culture.name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Theme Dropdown */}
@@ -527,37 +638,100 @@ const RealWeddings = ({ onPostClick }) => {
               style={{
                 flex: "0 0 auto",
                 width: "220px",
+                position: "relative",
               }}
+              ref={themeDropdownRef}
             >
-              <select
-                value={selectedTheme}
-                onChange={(e) => {
-                  setSelectedTheme(e.target.value);
-                  setCurrentPage(1);
+              <button
+                onClick={() => {
+                  setIsThemeDropdownOpen(!isThemeDropdownOpen);
+                  scrollToFilters();
                 }}
-                className="form-select"
                 style={{
+                  width: "100%",
                   backgroundColor: "#fff",
                   border: "1px solid #C31162",
                   color: "#C31162",
                   fontSize: "14px",
-                  padding: "10px 35px 10px 15px",
+                  padding: "10px 16px",
                   height: "45px",
                   borderRadius: "4px",
                   cursor: "pointer",
-                  textAlign: "center",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  textAlign: "left",
                 }}
-                onClick={scrollToFilters}
               >
-                <option value={"All Themes"} key={"All Themes"}>
-                  All Themes
-                </option>
-                {themes.map((the) => (
-                  <option value={the} key={the}>
-                    {the}
-                  </option>
-                ))}
-              </select>
+                <span
+                  style={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {selectedTheme}
+                </span>
+                {isThemeDropdownOpen ? <FaChevronUp /> : <FaChevronDown />}
+              </button>
+
+              {isThemeDropdownOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 5px)",
+                    left: 0,
+                    right: 0,
+                    backgroundColor: "#fff",
+                    border: "1px solid #C31162",
+                    borderRadius: "4px",
+                    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                    zIndex: 1000,
+                    maxHeight: "300px",
+                    overflowY: "auto",
+                  }}
+                >
+                  <div
+                    onClick={() => handleThemeSelect("All Themes")}
+                    style={{
+                      padding: "10px 16px",
+                      cursor: "pointer",
+                      backgroundColor:
+                        selectedTheme === "All Themes"
+                          ? "#f8e3ee"
+                          : "transparent",
+                      color:
+                        selectedTheme === "All Themes" ? "#C31162" : "#333",
+                      fontWeight:
+                        selectedTheme === "All Themes" ? "500" : "normal",
+                      "&:hover": {
+                        backgroundColor: "#f9f9f9",
+                      },
+                    }}
+                  >
+                    All Themes
+                  </div>
+                  {themes.map((theme) => (
+                    <div
+                      key={theme}
+                      onClick={() => handleThemeSelect(theme)}
+                      style={{
+                        padding: "10px 16px",
+                        cursor: "pointer",
+                        backgroundColor:
+                          selectedTheme === theme ? "#f8e3ee" : "transparent",
+                        color: selectedTheme === theme ? "#C31162" : "#333",
+                        fontWeight: selectedTheme === theme ? "500" : "normal",
+                        "&:hover": {
+                          backgroundColor: "#f9f9f9",
+                        },
+                      }}
+                    >
+                      {theme}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

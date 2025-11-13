@@ -36,7 +36,7 @@
 
 .item1,
 .items1{
-    background: url(../../images/slider/1.jpg);
+    /* background: url(../../images/slider/1.jpg); */
     height: 950px;
     display: flex!important;
     justify-content: center;
@@ -45,12 +45,12 @@
 }
 
 .items1{
-  background: url(../../images/slider/3.jpg);
+  /* background: url(../../images/slider/3.jpg); */
 }
 
 .item2,
 .items2{
-    background: url(../../images/slider/2.jpg);
+    /* background: url(../../images/slider/2.jpg); */
     height: 950px;
      display: flex!important;
     justify-content: center;
@@ -60,12 +60,12 @@
 
 
 .items2{
-  background: url(../../images/slider/4.jpg);
+  /* background: url(../../images/slider/4.jpg); */
 }
 
 .slide-content {
     text-align: center;
-    background: rgba(178,201,211,.8);
+    /* background: rgba(178,201,211,.8); */
     max-width: 380px;
     height: 380px;
     display: flex;
@@ -212,3 +212,8 @@
       transform: scale3d(1, 1, 1);
     }
   }
+
+  .items1,
+.items2 {
+  position: relative; /* 🔥 required so ::before overlay behaves */
+}

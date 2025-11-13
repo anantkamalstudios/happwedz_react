@@ -126,7 +126,7 @@ const Navbar = ({ storefrontCompletion }) => {
                 gap: 6,
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 30 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 40 }}>
                 {/* Compact progress bar */}
                 <div
                   style={{
@@ -188,20 +188,27 @@ const Navbar = ({ storefrontCompletion }) => {
                     </span>
                   </div>
                 </div>
-                {/* <span
+                <div
                   style={{
-                    color: "#2c3e50",
-                    fontWeight: "600",
-                    fontSize: "14px",
-                    whiteSpace: "nowrap",
-                    marginBottom: 2,
+                    display: "flex",
+                    flexDirection: "column",
                   }}
                 >
-                  Grow Your Business
-                </span>
-                <Link className="btn upgrade-btn border-0 p-0">
-                  Upgrade Now
-                </Link> */}
+                  <span
+                    style={{
+                      color: "#2c3e50",
+                      fontWeight: "600",
+                      fontSize: "14px",
+                      whiteSpace: "nowrap",
+                      marginBottom: 2,
+                    }}
+                  >
+                    Grow Your Business
+                  </span>
+                  <Link className="btn upgrade-btn border-0 p-0">
+                    Upgrade Now
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
