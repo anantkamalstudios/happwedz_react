@@ -192,8 +192,16 @@ const ListView = ({ subVenuesData, handleShow }) => {
                     </p>
 
                     <p className="fw-semibold text-dark mb-2">
-                      <FaIndianRupeeSign size={14} /> {venue.price}{" "}
-                      <small>per day</small>
+                      <FaIndianRupeeSign size={14} />{" "}
+                      {(
+                        venue?.vegPrice ||
+                        venue?.nonVegPrice ||
+                        venue?.starting_price ||
+                        "Contact For Price"
+                      )
+                        ?.replace(/rs\.?/i, "")
+                        ?.trim()}
+                      {/* <small>per day</small> */}
                     </p>
 
                     <div className="d-flex align-items-center mb-2">

@@ -509,15 +509,7 @@
 // export default HomeGennie;
 
 import React, { useEffect, useRef, useState } from "react";
-import {
-  X,
-  Send,
-  Sparkles,
-  ArrowLeft,
-  Menu,
-  Plus,
-  SendHorizonal,
-} from "lucide-react";
+import { ArrowLeft, Menu, Plus, SendHorizonal } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FaChevronLeft } from "react-icons/fa6";
 
@@ -638,7 +630,6 @@ const HomeGennie = () => {
         padding: "20px",
       }}
     >
-      {/* Floating Chat Button */}
       {!isChatOpen && (
         <button
           onClick={() => setIsChatOpen(true)}
@@ -663,26 +654,18 @@ const HomeGennie = () => {
           onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
           onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
-          <Sparkles
-            style={{ width: "28px", height: "28px", color: "ec4899" }}
-          />
-          <div
+          <img
+            src="./gennie-logo.png"
+            alt="logo"
             style={{
-              position: "absolute",
-              top: "-4px",
-              right: "-4px",
-              width: "16px",
-              height: "16px",
-              backgroundColor: "#4ade80",
-              borderRadius: "50%",
-              border: "2px solid white",
-              animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+              height: "100%",
+              width: "100%",
+              objectFit: "cover",
             }}
-          ></div>
+          />
         </button>
       )}
 
-      {/* Chat Interface */}
       {isChatOpen && (
         <div
           style={{
@@ -701,7 +684,6 @@ const HomeGennie = () => {
             overflow: "hidden",
           }}
         >
-          {/* Header */}
           <div
             style={{
               padding: "16px 20px",
@@ -811,7 +793,6 @@ const HomeGennie = () => {
             </div>
           </div>
 
-          {/* Messages Container */}
           <div
             ref={messageContainerRef}
             style={{
@@ -838,11 +819,13 @@ const HomeGennie = () => {
                       justifyContent: "center",
                     }}
                   >
-                    <Sparkles
+                    <img
+                      src="./gennie-logo.png"
+                      alt="logo"
                       style={{
-                        width: "40px",
-                        height: "40px",
-                        color: "#ec4899",
+                        height: "100%",
+                        width: "100%",
+                        objectFit: "cover",
                       }}
                     />
                   </div>
@@ -860,7 +843,6 @@ const HomeGennie = () => {
                   </p>
                 </div>
 
-                {/* Quick Actions */}
                 <div className="row g-2 mb-4">
                   {quickActions.map((action, idx) => (
                     <div key={idx} className="col-3">
@@ -903,7 +885,6 @@ const HomeGennie = () => {
                   ))}
                 </div>
 
-                {/* Popular Questions */}
                 <div>
                   <p
                     style={{
@@ -995,9 +976,6 @@ const HomeGennie = () => {
                       flexShrink: 0,
                     }}
                   >
-                    {/* <Sparkles
-                      style={{ width: "16px", height: "16px", color: "white" }}
-                    /> */}
                     <img
                       src="./gennie-logo.png"
                       alt="logo"
@@ -1059,8 +1037,14 @@ const HomeGennie = () => {
                     flexShrink: 0,
                   }}
                 >
-                  <Sparkles
-                    style={{ width: "16px", height: "16px", color: "white" }}
+                  <img
+                    src="./gennie-logo.png"
+                    alt="logo"
+                    style={{
+                      height: "100%",
+                      width: "100%",
+                      objectFit: "cover",
+                    }}
                   />
                 </div>
                 <div
@@ -1106,7 +1090,6 @@ const HomeGennie = () => {
             )}
           </div>
 
-          {/* Input Area */}
           <div
             style={{
               borderTop: "1px solid #f3f4f6",

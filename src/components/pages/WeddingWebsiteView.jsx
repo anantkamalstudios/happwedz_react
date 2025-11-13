@@ -308,7 +308,7 @@ const WeddingWebsiteView = () => {
             `}</style>
       <div className="website-header">
         <div className="container">
-          <div className="d-flex justify-content-between align-items-center">
+          <div className="d-flex justify-content-between align-items-center w-100">
             <div>
               <h3 className="mb-1">
                 {normalizedData?.bride?.name || ""} &{" "}

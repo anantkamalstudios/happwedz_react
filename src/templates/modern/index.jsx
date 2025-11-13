@@ -1,23 +1,22 @@
 import React from "react";
-
-// components
-import Couple from "../components/couple";
+// import Couple from "../components/couple";
 import PreviewHero from "../components/hero2";
 import Story from "../components/story";
-import Welcome from "../components/welcome-area";
+// import Welcome from "../components/welcome-area";
 import People from "../components/people";
 import Location from "../components/location";
 import Gallery from "../components/gallery";
 import Rsvp from "../components/rsvp";
-import Getting from "../components/getting";
+// import Getting from "../components/getting";
 import Gift from "../components/gift";
 import Navbar from "../components/Navbar";
 import Saveday from "../components/countdown";
 import Footer from "../components/footer";
-import couple1 from "../images/couple/img-2.jpg";
-import couple2 from "../images/couple/img-1.jpg";
+import ModernCouple from "../components/Modern Couple/Index";
+import RsvpComponent from "../components/Modern Rsvp/RsvpComponent";
+import WeddingPartyComponent from "../components/Modern People/WeddingPartyComponent";
 
-const Homepage = ({ data }) => {
+const Homepage2 = ({ data }) => {
   return (
     <div>
       <Navbar />
@@ -30,22 +29,23 @@ const Homepage = ({ data }) => {
         weddingDate={data?.weddingDate}
       />
       <Saveday saveday={"s2"} weddingDate={data?.weddingDate} />
-      <Couple
-        couple={"s2"}
-        brideData={data?.brideData}
-        groomData={data?.groomData}
-      />
+      <ModernCouple brideData={data?.brideData} groomData={data?.groomData} />
       {/* <Welcome /> */}
       <Story loveStory={data?.loveStory} />
-      <People guest={"guest-style"} weddingParty={data?.weddingParty} />
+      {/* <People guest={"guest-style"} weddingParty={data?.weddingParty} /> */}
+      <WeddingPartyComponent
+        weddingParty={data?.weddingParty}
+        guest={"guest-style"}
+      />
       <Location whenWhere={data?.whenWhere} />
       <Gallery galleryImages={data?.galleryImages} />
-      <Rsvp />
+      {/* <Rsvp /> */}
+      <RsvpComponent />
       {/* <Getting /> */}
-      <Gift />
+      {/* <Gift /> */}
       <Footer sliderImages={data?.sliderImages} />
     </div>
   );
 };
 
-export default Homepage;
+export default Homepage2;
