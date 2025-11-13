@@ -34,6 +34,8 @@ import axios from "axios";
 import ViewSwitcher from "../layouts/Main/ViewSwitcher";
 import ListView from "../layouts/Main/ListView";
 import UserPrivateRoute from "../routes/UserPrivateRoute";
+import DynamicAside from "../layouts/aside/DynamicAside";
+import { useMemo } from "react";
 
 const MainSection = () => {
   const { section } = useParams();
@@ -41,36 +43,28 @@ const MainSection = () => {
   const [selectedCity, setSelectedCity] = useState(reduxLocation);
   const [show, setShow] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-  const [view, setView] = useState("images");
+  
+  const storageKey = useMemo(
+    () => `viewMode:${section}:main`,
+    [section]
+  );
+
+  const [view, setView] = useState(() => {
+    const saved = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
+    return saved || "images";
+  });
+  
   const [photos, setPhotos] = useState([]);
   const [heroInfo, setHeroInfo] = useState([]);
-  // console.log(section);
-
-  // useEffect(() => {
-  //   const fetchHeroInfo = async () => {
-  //     try {
-  //       const response = await axios.get("/api/hero-sections");
-  //       const pathSegments = location.pathname.split("/").filter(Boolean); // removes empty parts like '' from leading slash
-
-  //       const baseSection = pathSegments[0]?.toLowerCase();
-  //       const dataInfo = response.data;
-  //       setHeroInfo(
-  //         dataInfo.find((item) => item?.navbar?.type === baseSection)
-  //       );
-  //       console.log(heroInfo);
-  //     } catch (error) {
-  //       console.error("Error fetching hero info:", error);
-  //     }
-  //   };
-  //   fetchHeroInfo();
-  // }, [section]);
+  const [venueFilters, setVenueFilters] = useState({});
 
   const { data, loading, error, hasMore, loadMore } = useInfiniteScroll(
     "venues",
     null,
     selectedCity,
     "Venues",
-    9
+    9,
+    venueFilters
   );
   const [searchQuery, setSearchQuery] = useState("");
   const {
@@ -80,11 +74,28 @@ const MainSection = () => {
     setSelectedCategoryName,
     displayPhotos,
     loading: photosLoading,
+    sortBy,
+    setSortBy,
   } = useContext(MyContext);
 
   useEffect(() => {
     setSelectedCity(reduxLocation);
   }, [reduxLocation]);
+
+  useEffect(() => {
+    const saved = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
+    if (saved && saved !== view) {
+      setView(saved);
+    }
+  }, [storageKey]);
+
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(storageKey, view);
+      }
+    } catch (e) {}
+  }, [view, storageKey]);
 
   const handleShow = (id) => {
     setSelectedId(id);
@@ -105,12 +116,14 @@ const MainSection = () => {
         {!loading && data.length === 0 && (
           <EmptyState section="venues" title="Venues" />
         )}
-        <div
-          className="w-100 d-flex justify-content-end align-items-center my-3"
-          style={{ padding: "0 3rem" }}
-        >
-          <ViewSwitcher view={view} setView={setView} />
-        </div>
+
+        <DynamicAside
+          section="venues"
+          view={view}
+          setView={setView}
+          onFiltersChange={setVenueFilters}
+        />
+
         {data.length > 0 && (
           <div className="container-fluid">
             <InfiniteScroll
@@ -196,6 +209,8 @@ const MainSection = () => {
           category={selectedCategoryName}
           onCategoryChange={setSelectedCategory}
           onSearchChange={setSearchQuery}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
         />
 
         {photosLoading ? (

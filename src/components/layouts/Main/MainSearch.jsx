@@ -6,7 +6,7 @@ import { Link, useParams, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useSelector } from "react-redux";
 
-const MainSearch = ({ title = "Find what you need", onSearch }) => {
+const MainSearch = ({ title = "Find Venues", onSearch }) => {
   const { slug } = useParams();
   const location = useLocation();
   const [keyword, setKeyword] = useState("");
@@ -33,8 +33,8 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
           baseSectionRaw === "vendor"
             ? "vendors"
             : baseSectionRaw === "venue"
-            ? "venues"
-            : baseSectionRaw;
+              ? "venues"
+              : baseSectionRaw;
 
         const effectiveSection =
           baseSection === "venues" || baseSection === "vendors"
@@ -43,18 +43,18 @@ const MainSearch = ({ title = "Find what you need", onSearch }) => {
               (["venues", "vendors", "venue", "vendor"].includes(
                 section.toLowerCase()
               ))
-            ? (section.toLowerCase() === "vendor"
+              ? (section.toLowerCase() === "vendor"
                 ? "vendors"
                 : section.toLowerCase() === "venue"
+                  ? "venues"
+                  : section.toLowerCase())
+              : location.pathname.includes("/venues") ||
+                location.pathname.includes("/venue")
                 ? "venues"
-                : section.toLowerCase())
-            : location.pathname.includes("/venues") ||
-              location.pathname.includes("/venue")
-            ? "venues"
-            : location.pathname.includes("/vendors") ||
-              location.pathname.includes("/vendor")
-            ? "vendors"
-            : null;
+                : location.pathname.includes("/vendors") ||
+                  location.pathname.includes("/vendor")
+                  ? "vendors"
+                  : null;
 
         const normalizeType = (t) => {
           const v = (t || "").toLowerCase();

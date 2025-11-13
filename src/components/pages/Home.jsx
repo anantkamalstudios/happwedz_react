@@ -27,7 +27,6 @@ const Home = () => {
   return (
     <div style={{ position: "relative" }}>
       <Herosection />
-      {/* <StatisticsSection /> */}
       <WeddingCategories />
       <CtaPanel
         logo={logo}

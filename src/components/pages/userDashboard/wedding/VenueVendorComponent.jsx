@@ -25,10 +25,6 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
   const [selectedSlug, setSelectedSlug] = useState(null);
   const [selectedLabel, setSelectedLabel] = useState("");
 
-  // Venue subcategories (for venues box only)
-  const [venueSubcategories, setVenueSubcategories] = useState([]);
-  const [loadingVenueCats, setLoadingVenueCats] = useState(false);
-
   const BACKEND_BASE_URL = "https://happywedzbackend.happywedz.com";
   const buildImageUrl = (path) => {
     if (!path) return null;
@@ -78,9 +74,12 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
           " rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px",
         flex: 1,
         padding: "2rem",
+        height: "600px",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px", flex: 1 }}>
         <h2 className="fw-bold dark-pink-text text-center">
           {isVendorBox ? "Book all your Vendors" : "Find the perfect Venue"}
         </h2>
@@ -129,7 +128,7 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
         </div>
 
         {isVendorBox ? (
-          <div style={{ position: "relative", minHeight: "220px" }}>
+          <div style={{ position: "relative" }}>
             <Swiper
               modules={[Navigation, Autoplay]}
               spaceBetween={16}
@@ -147,12 +146,17 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
                 <SwiperSlide key={item.id || idx}>
                   <Link
                     to={`/details/info/${item.id}`}
-                    className="text-decoration-none h-100 d-block"
-                    style={{ color: "inherit" }}
+                    className="text-decoration-none d-block"
+                    style={{ color: "inherit", height: "100%" }}
                   >
                     <div
-                      className="card border-0 shadow-sm overflow-hidden h-100"
-                      style={{ borderRadius: "12px" }}
+                      className="card border-0 shadow-sm overflow-hidden"
+                      style={{
+                        borderRadius: "12px",
+                        height: "310px",
+                        display: "flex",
+                        flexDirection: "column",
+                      }}
                     >
                       <div
                         style={{
@@ -175,17 +179,28 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
                           }}
                         />
                       </div>
-                      <div className="card-body p-3">
-                        <h5
-                          className="card-title mb-2 fw-semibold"
-                          style={{ fontSize: "16px", lineHeight: "1.3" }}
+                      <div
+                        className="card-body p-3"
+                        style={{ flex: 1, display: "flex", flexDirection: "column" }}
+                      >
+                        <h6
+                          className="card-title fw-semibold"
+                          style={{
+                            fontSize: "16px",
+                            lineHeight: "1.3",
+                            height: "42px",
+                            overflow: "hidden",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                          }}
                         >
                           {item.name || "Name"}
-                        </h5>
+                        </h6>
 
                         <div
                           className="d-flex align-items-center mb-2"
-                          style={{ gap: "6px" }}
+                          style={{ gap: "6px", height: "20px" }}
                         >
                           <FaStar
                             style={{ color: "#FFA500", fontSize: "14px" }}
@@ -218,12 +233,19 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
                               flexShrink: 0,
                             }}
                           />
-                          <p className="text-muted small mb-1">
-                            <IoLocationOutline className="me-2" />
-                            {(item.location || "")
-                              .split(" ")
-                              .slice(0, 1)
-                              .join(" ")}
+                          <p
+                            className="mb-0 text-muted small"
+                            style={{
+                              color: "#666",
+                              fontSize: "13px",
+                              lineHeight: "1.4",
+                              overflow: "hidden",
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                            }}
+                          >
+                            {(item.location || "").split(" ").slice(0, 1).join(" ")}
                             {item.location?.split(" ").length > 1 && "..."}
                           </p>
                         </div>
@@ -269,8 +291,8 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
               ? loadingVendors
                 ? "Loading..."
                 : selectedLabel
-                ? `Search ${selectedLabel}`
-                : "Search Vendors"
+                  ? `Search ${selectedLabel}`
+                  : "Search Vendors"
               : "Search Venues"}
           </button>
         </div>
@@ -287,6 +309,15 @@ const VenueSwiper = () => {
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(false);
   const BACKEND_BASE_URL = "https://happywedzbackend.happywedz.com";
+
+  const truncateWords = (str, numWords) => {
+    if (!str) return "";
+    const words = str.split(" ");
+    return words.length > numWords
+      ? words.slice(0, numWords).join(" ") + "..."
+      : str;
+  };
+
 
   const buildImageUrl = (path) => {
     if (!path) return null;
@@ -392,8 +423,8 @@ const VenueSwiper = () => {
                 className="card-body p-3"
                 style={{ flex: 1, display: "flex", flexDirection: "column" }}
               >
-                <h5
-                  className="card-title mb-2 fw-semibold"
+                <h6
+                  className="card-title  fw-semibold"
                   style={{
                     fontSize: "16px",
                     lineHeight: "1.3",
@@ -404,8 +435,8 @@ const VenueSwiper = () => {
                     WebkitBoxOrient: "vertical",
                   }}
                 >
-                  {venue.name}
-                </h5>
+                  {truncateWords(venue.name, 3)}
+                </h6>
 
                 <div
                   className="d-flex align-items-center mb-2"
@@ -449,9 +480,8 @@ const VenueSwiper = () => {
                       WebkitBoxOrient: "vertical",
                     }}
                   >
-                    <IoLocationOutline className="me-2" />
-                    {(venue.location || "").split(" ").slice(0, 10).join(" ")}
-                    {venue.location?.split(" ").length > 10 && "..."}
+                    {(venue.location || "").split(" ").slice(0, 1).join(" ")}
+                    {venue.location?.split(" ").length > 1 && "..."}
                   </p>
                 </div>
               </div>
