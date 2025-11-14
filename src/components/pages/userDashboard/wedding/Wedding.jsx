@@ -332,13 +332,14 @@ const Wedding = () => {
         <section className="col-lg-12">
           <CtaPanel
             logo={logo}
-            img={image}
+            img="./images/home/1.jpg"
             heading="Design Studio"
             subHeading="Try Virtual Makeup & Grooming Looks for Your Big Day"
             link="/try"
             title="Create Your Look !"
-            subtitle="Experience How You'll Look on Your Wedding Day with AI-Powered Virtual Makeover"
+            subtitle="Experience How You'll Look in Your Wedding Day with AI-Powered Virtual Makeover."
             btnName="Try Virtual Look"
+            background="./images/home/bigleafcta1.jpg"
           />
         </section>
 

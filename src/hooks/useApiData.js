@@ -29,14 +29,34 @@ const useApiData = (
     total: 0,
     totalPages: 0,
   });
+  
+  console.log('useApiData - Initial State:', {
+    section,
+    slug,
+    city,
+    vendorType,
+    initialPage,
+    initialLimit,
+    currentState: { data, loading, error, pagination }
+  });
   const abortRef = useRef(null);
   const cacheRef = useRef(new Map());
 
   const memoizedFilters = useMemo(() => filters, [JSON.stringify(filters)]);
 
+  useEffect(() => {
+    console.log('useApiData - State updated:', {
+      data: data,
+      loading: loading,
+      error: error,
+      pagination: pagination
+    });
+  }, [data, loading, error, pagination]);
+
   const fetchData = useCallback(
     async (page = initialPage, limit = initialLimit) => {
       if (!section || (!slug && !vendorType)) {
+        console.log('useApiData - Missing required parameters');
         setData([]);
         setLoading(false);
         return;
@@ -46,14 +66,15 @@ const useApiData = (
       setError(null);
 
       try {
+        console.log('useApiData - Starting fetch with params:', { page, limit });
         const subCategory = slug
           ? slug
-            .replace(/-{2,}/g, " / ")
-            .replace(/-/g, " ")
-            .replace(/\s*\/\s*/g, " / ")
-            .replace(/\s{2,}/g, " ")
-            .replace(/\b\w/g, (l) => l.toUpperCase())
-            .trim()
+              .replace(/-{2,}/g, " / ")
+              .replace(/-/g, " ")
+              .replace(/\s*\/\s*/g, " / ")
+              .replace(/\s{2,}/g, " ")
+              .replace(/\b\w/g, (l) => l.toUpperCase())
+              .trim()
           : null;
 
         const params = new URLSearchParams();
@@ -68,7 +89,11 @@ const useApiData = (
         const selectedSubcats = extractVenueSubCategories(memoizedFilters);
         if (selectedSubcats && selectedSubcats.trim().length > 0) {
           params.append("subCategory", selectedSubcats);
-        } else if (!vendorType && subCategory && subCategory.toLowerCase() !== "all") {
+        } else if (
+          !vendorType &&
+          subCategory &&
+          subCategory.toLowerCase() !== "all"
+        ) {
           params.append("subCategory", subCategory);
         }
 
@@ -85,7 +110,8 @@ const useApiData = (
         }
 
         // Extract capacity filters and add as minCapacity/maxCapacity
-        const { minCapacity, maxCapacity } = extractCapacityFilters(memoizedFilters);
+        const { minCapacity, maxCapacity } =
+          extractCapacityFilters(memoizedFilters);
         if (minCapacity !== null && minCapacity !== undefined) {
           params.append("minCapacity", minCapacity.toString());
         }
@@ -94,7 +120,8 @@ const useApiData = (
         }
 
         // Extract food price per plate
-        const { minFoodPrice, maxFoodPrice } = extractFoodPriceFilters(memoizedFilters);
+        const { minFoodPrice, maxFoodPrice } =
+          extractFoodPriceFilters(memoizedFilters);
         if (minFoodPrice !== null && minFoodPrice !== undefined) {
           params.append("minFoodPrice", minFoodPrice.toString());
         }
@@ -121,7 +148,8 @@ const useApiData = (
         }
 
         // Extract reviews
-        const { minReviews, maxReviews } = extractReviewFilters(memoizedFilters);
+        const { minReviews, maxReviews } =
+          extractReviewFilters(memoizedFilters);
         if (minReviews !== null && minReviews !== undefined) {
           params.append("minReviews", minReviews.toString());
         }
@@ -163,10 +191,25 @@ const useApiData = (
         }
 
         const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
+        console.log('useApiData - Constructed API URL:', apiUrl);
+        console.log('useApiData - Request filters:', {
+          price: { minPrice, maxPrice },
+          capacity: { minCapacity, maxCapacity },
+          foodPrice: { minFoodPrice, maxFoodPrice },
+          rooms: { minRooms, maxRooms },
+          rating: { minRating, maxRating },
+          reviews: { minReviews, maxReviews },
+          otherFilters: nonPriceFilters
+        });
 
         const cacheKey = apiUrl;
         if (cacheRef.current.has(cacheKey)) {
+          console.log('useApiData - Using cached data for:', cacheKey);
           const cached = cacheRef.current.get(cacheKey);
+          console.log('useApiData - Cached data:', {
+            data: cached.data,
+            pagination: cached.pagination
+          });
           setData(cached.data);
           setPagination(cached.pagination);
           setLoading(false);
@@ -188,17 +231,23 @@ const useApiData = (
         }
 
         const result = await response.json();
+        console.log('useApiData - Raw API response:', result);
+        
         const itemsRaw = Array.isArray(result)
           ? result
           : Array.isArray(result.data)
-            ? result.data
-            : [];
+          ? result.data
+          : [];
+          
+        console.log('useApiData - Extracted items:', itemsRaw);
 
         if (Array.isArray(result)) {
           const total = itemsRaw.length;
           const start = (page - 1) * limit;
           const pagedItems = itemsRaw.slice(start, start + limit);
           const transformed = transformApiData(pagedItems);
+          const transformedData = transformApiData(pagedItems);
+          console.log('useApiData - Transformed data:', transformedData);
           setData(transformed);
           const nextPagination = {
             page,
@@ -206,6 +255,13 @@ const useApiData = (
             total,
             totalPages: Math.ceil(total / limit),
           };
+          const paginationData = {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+          };
+          console.log('useApiData - Pagination data:', paginationData);
           setPagination(nextPagination);
           cacheRef.current.set(cacheKey, {
             data: transformed,
@@ -213,6 +269,8 @@ const useApiData = (
           });
         } else {
           const transformed = transformApiData(itemsRaw);
+          const transformedData = transformApiData(itemsRaw);
+          console.log('useApiData - Transformed data:', transformedData);
           setData(transformed);
           if (result.pagination) {
             const nextPagination = {
@@ -221,6 +279,13 @@ const useApiData = (
               total: result.pagination.total || 0,
               totalPages: result.pagination.totalPages || 0,
             };
+            const paginationData = {
+              page: result.pagination.page || page,
+              limit: result.pagination.limit || limit,
+              total: result.pagination.total || 0,
+              totalPages: result.pagination.totalPages || 0,
+            };
+            console.log('useApiData - Pagination data:', paginationData);
             setPagination(nextPagination);
             cacheRef.current.set(cacheKey, {
               data: transformed,
@@ -250,19 +315,24 @@ const useApiData = (
   );
 
   const refetch = useCallback(() => {
+    console.log('useApiData - Refetching data');
     fetchData(pagination.page, pagination.limit);
   }, [fetchData, pagination.page, pagination.limit]);
 
   const goToPage = useCallback(
     (page) => {
-      if (page >= 1 && page <= pagination.totalPages) {
-        fetchData(page, pagination.limit);
+      console.log('useApiData - goToPage called with page:', page);
+      if (page < 1 || page > pagination.totalPages) {
+        console.log('useApiData - Invalid page number:', page);
+        return;
       }
+      fetchData(page);
     },
-    [fetchData, pagination.limit, pagination.totalPages]
+    [fetchData, pagination.totalPages]
   );
 
   const nextPage = useCallback(() => {
+    console.log('useApiData - Next page called');
     if (pagination.page < pagination.totalPages) {
       goToPage(pagination.page + 1);
     }
@@ -308,8 +378,8 @@ const transformApiData = (items) => {
 
     const portfolioUrls = attributes.Portfolio
       ? attributes.Portfolio.split("|")
-        .map((url) => url.trim())
-        .filter((url) => url)
+          .map((url) => url.trim())
+          .filter((url) => url)
       : [];
     const gallery = media.length > 0 ? media : portfolioUrls;
     const firstImage = gallery.length > 0 ? gallery[0] : null;
@@ -380,10 +450,10 @@ const transformApiData = (items) => {
         : null,
       starting_price: !isVenue
         ? photoPackage ||
-        photoVideoPackage ||
-        attributes.PriceRange ||
-        attributes.price ||
-        null
+          photoVideoPackage ||
+          attributes.PriceRange ||
+          attributes.price ||
+          null
         : null,
 
       address: attributes.address || attributes.Address || "",

@@ -91,7 +91,6 @@ const Storefront = ({ setCompletion }) => {
 
             if (actualData.media) {
               if (Array.isArray(actualData.media)) {
-                // media: ["/uploads/x.jpg", "https://.../y.png"]
                 gallery = actualData.media.map((item) =>
                   typeof item === "string"
                     ? item
@@ -177,6 +176,7 @@ const Storefront = ({ setCompletion }) => {
                         actualData.attributes.contact.inquiryEmail || "",
                     }
                   : {},
+                city: actualData.attributes.city || "",
 
                 location: actualData.attributes.location
                   ? {
@@ -184,7 +184,7 @@ const Storefront = ({ setCompletion }) => {
                         actualData.attributes.location.address || "",
                       addressLine2:
                         actualData.attributes.location.addressLine2 || "",
-                      city: actualData.attributes.location.city || "",
+                      // city: actualData.attributes.location.city || "",
                       state: actualData.attributes.location.state || "",
                       country:
                         actualData.attributes.location.country || "India",
@@ -349,8 +349,8 @@ const Storefront = ({ setCompletion }) => {
       cta_url: formData.ctaUrl || "",
       tagline: formData.attributes?.tagline || "",
       currency: formData.currency || "INR",
+      city: formData.location?.city || "",
       location: {
-        city: formData.location?.city || "",
         state: formData.location?.state || "",
         address: formData.location?.addressLine1 || "",
         country: formData.location?.country || "India",

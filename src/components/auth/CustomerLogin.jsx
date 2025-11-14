@@ -9,7 +9,6 @@ import { useLoader } from "../context/LoaderContext";
 import userApi from "../../services/api/userApi";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-// axios removed: not used in auth-code flow
 
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
