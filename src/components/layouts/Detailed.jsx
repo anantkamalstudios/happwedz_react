@@ -60,9 +60,6 @@ const Detailed = () => {
     setShowPricingModal(true);
   };
 
-  /**
-   * DYNAMIC AMENITIES/FEATURES based on vendor type (Venue or Photographer)
-   */
   const getVendorFeatures = (data) => {
     if (!data || !data.attributes) return [];
 
@@ -70,7 +67,6 @@ const Detailed = () => {
     const amenities = [];
     const vendorType = attributes.vendor_type;
 
-    // --- Vendor-Agnostic Policies ---
     if (attributes.payment_terms) {
       amenities.push({
         icon: <FaCalendarAlt />,
@@ -83,7 +79,6 @@ const Detailed = () => {
         name: `Travel: ${attributes.travel_info}`,
       });
     }
-    // HappyWedz tenure shown under Services & Offerings
     if (attributes.happywedz_since || attributes.HappyWedz) {
       const sinceValue = attributes.happywedz_since || attributes.HappyWedz;
       amenities.push({

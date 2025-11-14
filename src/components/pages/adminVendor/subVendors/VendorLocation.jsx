@@ -2,12 +2,12 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const VendorLocation = ({ formData, setFormData, onSave }) => {
+  const city = formData.city || "";
   const location = formData.location || {
     addressLine1: "",
     addressLine2: "",
-    city: "",
     state: "",
-    country: "India", // default
+    country: "India",
     pincode: "",
     lat: "",
     lng: "",
@@ -20,10 +20,9 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
     location.country || "India"
   );
   const [cities, setCities] = useState([]);
-  const [cityInput, setCityInput] = useState(location.city || "");
+  const [cityInput, setCityInput] = useState(city || "");
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Fetch all countries
   useEffect(() => {
     axios.get("https://restcountries.com/v3.1/all?fields=name").then((res) => {
       const sorted = res.data
