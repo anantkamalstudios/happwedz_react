@@ -9,7 +9,6 @@ const messagesApi = {
   },
 
   createConversation: async (payload) => {
-    // payload: { vendorId, requestId? }
     const res = await axiosInstance.post(`${BASE}/conversations`, payload);
     return res.data;
   },
@@ -23,7 +22,6 @@ const messagesApi = {
   },
 
   sendMessage: async (conversationId, payload) => {
-    // payload can be string or object
     const body =
       typeof payload === "string" ? { message: payload } : payload || {};
     const res = await axiosInstance.post(

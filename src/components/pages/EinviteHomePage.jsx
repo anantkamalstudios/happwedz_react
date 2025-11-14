@@ -14,7 +14,7 @@ const EinviteHomePage = () => {
       title: "Wedding E-Invitations",
       description: "Beautiful digital wedding invitation cards",
       color: "#ff6b9d",
-      image: "./images/einvite/wedding-card.jpg",
+      image: "./images/einvite/invite.jpg",
     },
     {
       id: "video",
@@ -28,7 +28,7 @@ const EinviteHomePage = () => {
       title: "Save the Date",
       description: "Save the date card templates",
       color: "#10b981",
-      image: "./images/einvite/save-the-date.jpg",
+      image: "./images/einvite/std.jpg",
     },
   ];
 
