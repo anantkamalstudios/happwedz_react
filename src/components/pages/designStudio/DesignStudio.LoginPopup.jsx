@@ -46,15 +46,10 @@ export default function LoginPopup({ isOpen, onClose }) {
     }
   };
 
-  // Handler for Google Identity credential (id_token) flow
   const handleGoogleCredential = async (credentialResponse) => {
     try {
       setLoading(true);
       const tokenId = credentialResponse?.credential;
-      console.log(
-        "DesignStudio Google credentialResponse:",
-        credentialResponse
-      );
       if (!tokenId) {
         toast.error("Google did not return an ID token (credential).");
         return;

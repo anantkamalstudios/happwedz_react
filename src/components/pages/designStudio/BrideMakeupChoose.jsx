@@ -98,7 +98,6 @@ const BrideMakeupChoose = () => {
           userInfo.type = "jewellary";
           localStorage.setItem("userInfo", JSON.stringify(userInfo));
         }}
-        comingSoon
       />
 
       <SectionCard

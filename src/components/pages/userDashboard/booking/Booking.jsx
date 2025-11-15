@@ -145,8 +145,6 @@ const Booking = () => {
     filterStatus === "all"
       ? bookings
       : bookings.filter((b) => b.status === filterStatus);
-
-  console.log("bookings", filteredBookings);
   return (
     <div className="user-booking-container">
       <div className="user-booking-header">

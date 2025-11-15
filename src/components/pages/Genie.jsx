@@ -1,630 +1,794 @@
-// import React, { useState } from "react";
-// import { Container, Row, Col, Card, Button, Modal } from "react-bootstrap";
-// import {
-//   FaWhatsapp,
-//   FaCheck,
-//   FaCalendarAlt,
-//   FaMapMarkerAlt,
-//   FaUsers,
-//   FaTags,
-//   FaHandshake,
-//   FaHeadset,
-//   FaFileContract,
-//   FaEnvelope,
-//   FaGift,
-// } from "react-icons/fa";
+// import React, { useEffect, useRef, useState } from "react";
+// import { useSelector } from "react-redux";
 
 // const Genie = () => {
-//   const [selectedPackage, setSelectedPackage] = useState(null);
-//   const [showModal, setShowModal] = useState(false);
+//   /* ---------- State ---------- */
+//   const [messages, setMessages] = useState([]);
+//   const [inputValue, setInputValue] = useState("");
+//   const [budget, setBudget] = useState("0");
+//   const [guests, setGuests] = useState("0");
+//   const [city, setCity] = useState("");
+//   const [currentQuestion, setCurrentQuestion] = useState("budget");
+//   const [isLoading, setIsLoading] = useState(false);
+//   const [sessionId] = useState(
+//     () => "sess" + Math.random().toString(36).substring(2, 11)
+//   );
 
-//   const handlePackageSelect = (pkg) => {
-//     setSelectedPackage(pkg);
-//     setShowModal(true);
+//   const messagesContainerRef = useRef(null);
+
+//   function getIdFromToken(token) {
+//     try {
+//       const payload = token.split(".")[1]; // middle part of JWT
+//       const decoded = JSON.parse(atob(payload)); // decode base64 → JSON
+//       return decoded.id || decoded.userId || null;
+//     } catch (err) {
+//       console.error("Invalid token", err);
+//       return null;
+//     }
+//   }
+
+//   const tokenId = useSelector((store) => store.auth.token);
+//   const userId = getIdFromToken(tokenId);
+
+//   const callChatApi = async (query) => {
+//     if (!query)
+//       return {
+//         response: { summary: "Please enter a valid query", results: [] },
+//       };
+
+//     setIsLoading(true);
+//     try {
+//       console.log("Calling API with query:", query);
+//       const response = await fetch("http://192.168.1.15:5000/api/user_chat", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Accept: "application/json",
+//           token: `Bearer ${tokenId}`,
+//         },
+//         body: JSON.stringify({
+//           session_id: sessionId,
+//           user_query: query,
+//           user_id: userId,
+//         }),
+//       });
+
+//       if (!response.ok) {
+//         const errorData = await response.json().catch(() => ({}));
+//         console.error("API Error:", {
+//           status: response.status,
+//           statusText: response.statusText,
+//           errorData,
+//         });
+//         return {
+//           response: {
+//             summary: `Sorry, there was an error (${response.status}): ${response.statusText}`,
+//             results: [],
+//           },
+//         };
+//       }
+
+//       const data = await response.json();
+//       console.log("API Response:", data);
+//       return data;
+//     } catch (error) {
+//       console.error("API Call Error:", error);
+//       return {
+//         response: {
+//           summary:
+//             "I'm having trouble connecting to the server. Please try again later.",
+//           results: [],
+//         },
+//       };
+//     } finally {
+//       setIsLoading(false);
+//     }
 //   };
 
-//   const handleCloseModal = () => {
-//     setShowModal(false);
-//     setSelectedPackage(null);
+//   /* ---------- Welcome message ---------- */
+//   useEffect(() => {
+//     setTimeout(() => {
+//       setMessages([
+//         {
+//           type: "ai",
+//           text: "Hey there! I'm your Wedding Genie. Let's plan your dream wedding, step by step. Start by telling me — what's your approximate budget?",
+//         },
+//       ]);
+//     }, 400);
+//   }, []);
+
+//   /* ---------- Auto-scroll ---------- */
+//   useEffect(() => {
+//     const el = messagesContainerRef.current;
+//     if (el) {
+//       requestAnimationFrame(() => {
+//         el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+//       });
+//     }
+//   }, [messages]);
+
+//   function getIdFromToken(token) {
+//     try {
+//       const payload = token.split(".")[1];
+//       const decoded = JSON.parse(atob(payload));
+//       return decoded.id || decoded.userId || null;
+//     } catch (err) {
+//       console.error("Invalid token", err);
+//       return null;
+//     }
+//   }
+
+//   const formatResponse = (data) => {
+//     if (!data?.response) return "Sorry, something went wrong.";
+
+//     const { summary = "", results = [] } = data.response;
+//     let txt = summary;
+
+//     if (results.length) {
+//       txt += "\n\n**Options:**\n";
+//       results.forEach((r, i) => {
+//         txt += `${i + 1}. **${r.name}** – ${r.type} in ${r.location} (Rating: ${
+//           r.rating ?? "N/A"
+//         })\n`;
+//         (r.why_consider || []).forEach((w) => (txt += `   • ${w}\n`));
+//       });
+//     }
+//     return txt;
 //   };
 
-//   const packages = [
-//     {
-//       id: 1,
-//       title: "Destination Wedding Package",
-//       description:
-//         "Perfect for all your destination wedding venue and vendor needs.",
-//       price: "₹ 10",
-//       crossPrice: "₹ 4999",
-//       validity: "30 days",
-//       features: [
-//         "Find venues with all-inclusive pricing (rooms, 3 meals, and event spaces), with available dates and quotes that fit your budget.",
-//         "Get personalized vendor recommendations for photographers, decorators, planners, caterers, makeup artists, and more",
-//         "Enjoy up to two meetings (virtual or in-person) for expert assistance",
-//         "Benefit from top-tier price negotiations",
-//         "Continuous support through follow-ups and virtual assistance until booking is finalized",
-//         "Professional vetting of vendor contracts",
-//         "Choose a free digital invite or enjoy 50% off Video invites",
-//       ],
-//       icon: <FaMapMarkerAlt className="hw-text-primary" size={25} />,
-//     },
-//     {
-//       id: 2,
-//       title: "City Wedding Package",
-//       description: "Ideal for hometown or local wedding planning.",
-//       price: "₹ 100",
-//       crossPrice: "₹ 4999",
-//       validity: "60 days",
-//       features: [
-//         "Resolve venue suggestions with date availability and quotes tailored to your budget and location",
-//         "Get expert vendor recommendations in any 5 categories of your choice",
-//         "One video meeting for personalized assistance",
-//         "Benefit from the best price negotiations",
-//         "Ongoing virtual support until the booking is finalized",
-//         "Enjoy 20% off on Video invites",
-//       ],
-//       icon: <FaUsers className="hw-text-primary" size={25} />,
-//     },
-//     {
-//       id: 3,
-//       title: "Single Wedding Service",
-//       description: "Ideal for venue booking or single wedding service",
-//       price: "₹ 1000",
-//       crossPrice: "₹ 4999",
-//       validity: "45 days",
-//       features: [
-//         "Tailored suggestions for venues or vendors (based on your selection), customized to your budget and preferred location (One city)",
-//         "Expert price negotiations to ensure the best deals",
-//         "Ongoing virtual support until your booking is confirmed",
-//       ],
-//       icon: <FaHandshake className="hw-text-primary" size={25} />,
-//     },
-//   ];
+//   const handleSendMessage = async () => {
+//     if (!inputValue.trim() || isLoading) return;
+
+//     const userMsg = inputValue.trim();
+//     setMessages((p) => [...p, { type: "user", text: userMsg }]);
+//     setInputValue("");
+
+//     if (currentQuestion === "budget") {
+//       const num = userMsg.match(/\d+/);
+//       if (num) {
+//         setBudget(num[0]);
+//         setTimeout(() => {
+//           setMessages((p) => [
+//             ...p,
+//             {
+//               type: "ai",
+//               text: `Great! Your budget of ₹${num[0]} has been noted. Now, how many guests are you planning to invite?`,
+//             },
+//           ]);
+//           setCurrentQuestion("guests");
+//         }, 800);
+//       } else {
+//         setTimeout(() => {
+//           setMessages((p) => [
+//             ...p,
+//             { type: "ai", text: "Please give a number, e.g. 50000" },
+//           ]);
+//         }, 800);
+//       }
+//       return;
+//     }
+
+//     if (currentQuestion === "guests") {
+//       const num = userMsg.match(/\d+/);
+//       if (num) {
+//         setGuests(num[0]);
+//         setTimeout(() => {
+//           setMessages((p) => [
+//             ...p,
+//             {
+//               type: "ai",
+//               text: `Perfect! ${num[0]} guests noted. Which city are you planning your wedding in?`,
+//             },
+//           ]);
+//           setCurrentQuestion("city");
+//         }, 800);
+//       } else {
+//         setTimeout(() => {
+//           setMessages((p) => [
+//             ...p,
+//             { type: "ai", text: "Please provide a number, e.g. 200" },
+//           ]);
+//         }, 800);
+//       }
+//       return;
+//     }
+
+//     if (currentQuestion === "city") {
+//       setCity(userMsg);
+//       setTimeout(() => {
+//         setMessages((p) => [
+//           ...p,
+//           {
+//             type: "ai",
+//             text: `Wonderful! ${userMsg} is a great choice! Your summary is updated. Ask me anything else!`,
+//           },
+//         ]);
+//         setCurrentQuestion("general");
+//       }, 800);
+//       return;
+//     }
+
+//     try {
+//       const apiData = await callChatApi(userMsg);
+//       const aiText = formatResponse(apiData);
+//       setMessages((p) => [...p, { type: "ai", text: aiText }]);
+//     } catch (error) {
+//       console.error("Error in handleSendMessage:", error);
+//       setMessages((p) => [
+//         ...p,
+//         {
+//           type: "ai",
+//           text: "I'm sorry, I encountered an error. Please try again.",
+//         },
+//       ]);
+//     }
+//   };
+
+//   const handleKeyPress = (e) => {
+//     if (e.key === "Enter") handleSendMessage();
+//   };
 
 //   return (
-//     <div className="genie-service-page">
-//       {/* Header Section */}
-//       <header className="genie-header py-5">
-//         <Container>
-//           <Row className="align-items-center">
-//             <Col lg={6}>
-//               <div className="mb-4">
-//                 <h1 className="display-4 fw-bold">
-//                   <span className="hw-text-primary">HW</span> Genie
-//                 </h1>
-//                 <h2 className="h3 mb-3">Virtual Planning Service</h2>
-//                 <p className="lead">
-//                   The smart way to find venues & vendors for your wedding
-//                 </p>
-//               </div>
-//             </Col>
-//             <Col lg={6}>
-//               <img
-//                 src="https://testimage.wedmegood.com/resized-nw/1900X/uploads/Genie_Banner_Web.jpg"
-//                 alt="HW Genie Service"
-//                 className="img-fluid rounded shadow"
-//               />
-//             </Col>
-//           </Row>
-//         </Container>
-//       </header>
+//     <div
+//       style={{
+//         minHeight: "100vh",
+//         background:
+//           "radial-gradient(circle at 80% 50%, rgba(137, 188, 255, 0.32) 0%,rgba(137, 188, 255, 0.1) 15%,rgba(238, 174, 202, 0.2) 21%, rgba(238, 174, 202, 0.1) 100%",
+//       }}
+//     >
+//       <div className="container-fluid">
+//         <div
+//           className="row"
+//           style={{ minHeight: "calc(100vh - clamp(60px, 10vw, 200px))" }}
+//         >
+//           {/* Sidebar – unchanged */}
+//           <div
+//             className="col-md-3 col-lg-2 p-4"
+//             style={{
+//               backgroundColor: "#fff",
+//               boxShadow: "2px 0 10px rgba(0,0,0,0.05)",
+//               minHeight: "100vh",
+//             }}
+//           >
+//             <div className="mb-4">
+//               <h4
+//                 style={{
+//                   color: "#d946ef",
+//                   fontWeight: "bold",
+//                   fontSize: "24px",
+//                 }}
+//               >
+//                 HappyWedz AI
+//               </h4>
+//             </div>
 
-//       {/* Features Section */}
-//       <section className="features-section py-5 bg-light">
-//         <Container>
-//           <Row>
-//             <Col md={4} className="text-center mb-4">
-//               <div className="feature-icon mx-auto mb-3">
-//                 <FaUsers size="2.5rem" className="hw-text-primary" />
-//               </div>
-//               <h4>Tailored Vendor Picks</h4>
-//               <p className="text-muted">
-//                 Personalized recommendations based on your preferences
-//               </p>
-//             </Col>
-//             <Col md={4} className="text-center mb-4">
-//               <div className="feature-icon mx-auto mb-3">
-//                 <FaTags size="2.5rem" className="hw-text-primary" />
-//               </div>
-//               <h4>Best Deals</h4>
-//               <p className="text-muted">
-//                 Get the most value with our negotiation expertise
-//               </p>
-//             </Col>
-//             <Col md={4} className="text-center mb-4">
-//               <div className="feature-icon mx-auto mb-3">
-//                 <FaHeadset size="2.5rem" className="hw-text-primary" />
-//               </div>
-//               <h4>Expert Help & Support</h4>
-//               <p className="text-muted">
-//                 Guidance from wedding planning experts
-//               </p>
-//             </Col>
-//           </Row>
-//         </Container>
-//       </section>
+//             <div className="mb-4">
+//               <h6
+//                 style={{
+//                   fontWeight: "600",
+//                   marginBottom: "20px",
+//                   display: "flex",
+//                   alignItems: "center",
+//                   gap: "8px",
+//                 }}
+//               >
+//                 Summary
+//               </h6>
 
-//       {/* Contact Section */}
-//       <section className="contact-section py-5">
-//         <Container>
-//           <Row className="justify-content-center">
-//             <Col lg={8} className="text-center">
-//               <div className="contact-card p-4 bg-primary text-white rounded shadow">
-//                 <h3 className="mb-3">Have Questions?</h3>
-//                 <p className="mb-3">Connect with our genie experts on</p>
-//                 <div className="d-flex align-items-center justify-content-center">
-//                   <FaWhatsapp size="1.5rem" className="me-2" />
-//                   <a
-//                     href="https://wa.me/91882665276"
-//                     className="text-white h5 mb-0 text-decoration-none"
+//               {["Budget", "Guests", "City"].map((label, i) => {
+//                 const value = [budget, guests, city][i];
+//                 return (
+//                   <div
+//                     key={label}
+//                     className="mb-3"
+//                     style={{ display: "flex", justifyContent: "space-between" }}
 //                   >
-//                     +91882665276 (Whatsapp only)
-//                   </a>
-//                 </div>
-//               </div>
-//             </Col>
-//           </Row>
-//         </Container>
-//       </section>
-
-//       {/* Packages Section */}
-//       <section className="packages-section py-5">
-//         <Container>
-//           <Row className="justify-content-center mb-5">
-//             <Col lg={8} className="text-center">
-//               <h2 className="section-title mb-3">Select Package</h2>
-//               <p className="lead">HW Genie can help out!</p>
-//             </Col>
-//           </Row>
-
-//           <Row>
-//             {packages.map((pkg) => (
-//               <Col lg={4} md={6} className="mb-4" key={pkg.id}>
-//                 <Card className="package-card h-100 shadow-sm border-0">
-//                   <Card.Body className="p-4">
-//                     <div className="text-center mb-4">
-//                       {/* Icon + Price Row */}
-//                       <div className="d-flex flex-column align-items-center mb-3">
-//                         {/* Icon */}
-//                         <div className="package-icon mb-2">{pkg.icon}</div>
-
-//                         {/* Price */}
-//                         <div className="price-section d-flex flex-column align-items-center">
-//                           <span
-//                             className="fw-bold"
-//                             style={{
-//                               fontSize: "20px",
-//                               color: "var(--primary-color)",
-//                             }}
-//                           >
-//                             {pkg.price}
-//                           </span>
-//                           <span
-//                             className="text-muted"
-//                             style={{
-//                               textDecoration: "line-through",
-//                               fontSize: "14px",
-//                             }}
-//                           >
-//                             {pkg.crossPrice}
-//                           </span>
-//                         </div>
-//                       </div>
-
-//                       {/* Title + Description (unchanged) */}
-//                       <div>
-//                         <h4
-//                           className="card-title mb-2 text-center justify-content-center"
-//                           style={{ margin: 0 }}
-//                         >
-//                           {pkg.title}
-//                         </h4>
-//                         <p className="text-muted mb-0 text-center">
-//                           {pkg.description}
-//                         </p>
-//                       </div>
-//                     </div>
-
-//                     <ul className="features-list list-unstyled mb-4">
-//                       {pkg.features.map((feature, index) => (
-//                         <li key={index} className="mb-2">
-//                           <FaCheck
-//                             size="0.8rem"
-//                             className="text-success me-2"
-//                           />
-//                           <small>{feature}</small>
-//                         </li>
-//                       ))}
-//                     </ul>
-
-//                     <div className="package-meta d-flex justify-content-between mb-4">
-//                       <div>
-//                         <small className="text-muted">
-//                           Offer valid for {pkg.validity}
-//                         </small>
-//                       </div>
-//                     </div>
-
-//                     <Button
-//                       variant="primary"
-//                       className="w-100"
-//                       onClick={() => handlePackageSelect(pkg)}
+//                     <label
+//                       style={{
+//                         fontSize: "14px",
+//                         fontWeight: "500",
+//                         marginBottom: "8px",
+//                       }}
 //                     >
-//                       Continue &gt;
-//                     </Button>
-//                   </Card.Body>
-//                 </Card>
-//               </Col>
-//             ))}
-//           </Row>
-//         </Container>
-//       </section>
+//                       {label}
+//                     </label>
+//                     <span
+//                       style={{
+//                         display: "inline-block",
+//                         minWidth: "clamp(60px, 80px, 100px)",
+//                         height: "30px",
+//                         lineHeight: "30px",
+//                         textAlign: "center",
+//                         backgroundColor: "#fce7f3",
+//                         color: "#d946ef",
+//                         borderRadius: "20px",
+//                         fontSize: "14px",
+//                         fontWeight: "500",
+//                         transition: "all 0.3s ease",
+//                         padding: "0 5px",
+//                       }}
+//                     >
+//                       {value}
+//                     </span>
+//                   </div>
+//                 );
+//               })}
+//             </div>
 
-//       {/* Package Selection Modal */}
-//       <Modal show={showModal} onHide={handleCloseModal} size="xl" centered>
-//         <Modal.Header closeButton>
-//           <Modal.Title>Genie Booking Assistance</Modal.Title>
-//         </Modal.Header>
-//         <Modal.Body>
-//           {selectedPackage && (
-//             <Container>
-//               <Row>
-//                 {/* Left Side - Form */}
-//                 <Col md={7}>
-//                   <form>
-//                     <div className="mb-3">
-//                       <label className="form-label">Full name*</label>
-//                       <input
-//                         type="text"
-//                         className="form-control"
-//                         placeholder="Enter your name"
-//                       />
-//                     </div>
-//                     <Row>
-//                       <Col md={6}>
-//                         <div className="mb-3">
-//                           <label className="form-label">Email address*</label>
-//                           <input
-//                             type="email"
-//                             className="form-control"
-//                             placeholder="Enter your email"
-//                           />
-//                         </div>
-//                       </Col>
-//                       <Col md={6}>
-//                         <div className="mb-3">
-//                           <label className="form-label">Mobile number*</label>
-//                           <input
-//                             type="tel"
-//                             className="form-control"
-//                             placeholder="+91"
-//                           />
-//                         </div>
-//                       </Col>
-//                     </Row>
-//                     <Row>
-//                       <Col md={6}>
-//                         <div className="mb-3">
-//                           <label className="form-label">
-//                             Function date (From)*
-//                           </label>
-//                           <input
-//                             type="date"
-//                             className="form-control rounded-0"
-//                           />
-//                         </div>
-//                       </Col>
+//             <div>
+//               <h6
+//                 style={{
+//                   fontWeight: "600",
+//                   marginBottom: "20px",
+//                   display: "flex",
+//                   alignItems: "center",
+//                   gap: "8px",
+//                 }}
+//               >
+//                 Checklist
+//               </h6>
+//               <div style={{ fontSize: "14px", color: "#666" }}>
+//                 Venue - Delhi Club
+//               </div>
+//             </div>
+//           </div>
 
-//                       <Col md={6}>
-//                         <div className="mb-3">
-//                           <label className="form-label">
-//                             Function date (To)*
-//                           </label>
-//                           <input
-//                             type="date"
-//                             className="form-control rounded-0"
-//                           />
-//                         </div>
-//                       </Col>
-//                     </Row>
+//           {/* Main Chat */}
+//           <div className="col-md-9 col-lg-10 p-0">
+//             <div
+//               style={{
+//                 height: "82vh",
+//                 display: "flex",
+//                 flexDirection: "column",
+//               }}
+//             >
+//               <div
+//                 style={{
+//                   padding: "30px",
+//                   textAlign: "center",
+//                   background: "transparent",
+//                 }}
+//               >
+//                 <div style={{ fontSize: "32px", marginBottom: "10px" }}>
+//                   Magic
+//                 </div>
+//                 <h3 style={{ color: "#d946ef", fontWeight: "600", margin: 0 }}>
+//                   Ask our AI anything
+//                 </h3>
+//               </div>
 
-//                     <Row>
-//                       <Col md={12}>
-//                         <div className="mb-3">
-//                           <label className="form-label">Wedding city*</label>
-//                           <input
-//                             type="text"
-//                             className="form-control rounded-0"
-//                             placeholder="Wedding city"
-//                           />
-//                         </div>
-//                       </Col>
-//                     </Row>
-//                   </form>
-//                 </Col>
+//               <div
+//                 className="no-scrollbar"
+//                 ref={messagesContainerRef}
+//                 style={{
+//                   flex: 1,
+//                   overflowY: "auto",
+//                   padding: "20px 40px",
+//                   display: "flex",
+//                   flexDirection: "column",
+//                   gap: "20px",
+//                   scrollbarWidth: "none",
+//                   msOverflowStyle: "none",
+//                 }}
+//               >
+//                 <div
+//                   style={{
+//                     textAlign: "center",
+//                     opacity: "0.15",
+//                     fontSize: "48px",
+//                     fontWeight: "bold",
+//                     color: "#fff",
+//                     marginBottom: "20px",
+//                     display: "flex",
+//                     alignItems: "center",
+//                     justifyContent: "center",
+//                     gap: "15px",
+//                   }}
+//                 >
+//                   <span>HAPPYWEDZ</span>
+//                 </div>
 
-//                 {/* Right Side - Checkout Summary */}
-//                 <Col md={5}>
-//                   <Card className="border-0 shadow-sm checkout-card">
-//                     <Card.Body>
-//                       <div className="d-flex justify-content-between align-items-center mb-3">
-//                         <h6 className="mb-0">
-//                           <FaTags className="me-2 text-danger" /> All Coupons
-//                         </h6>
-//                         <a
-//                           href="#"
-//                           className="small text-decoration-none hw-text-primary"
-//                         >
-//                           View All &gt;
-//                         </a>
-//                       </div>
-//                       <div className="input-group mb-3">
-//                         <input
-//                           type="text"
-//                           className="form-control"
-//                           placeholder="Enter Coupon code"
-//                         />
-//                         <button className="btn btn-dark">APPLY</button>
-//                       </div>
-
-//                       <div className="mb-3">
-//                         <small className="text-muted">
-//                           {selectedPackage.title}
-//                         </small>
-//                         <h5 className="fw-bold mb-0">
-//                           {selectedPackage.price}
-//                         </h5>
-//                       </div>
-//                       <Button
-//                         variant="danger"
-//                         className="w-100 fw-bold py-2"
-//                         onClick={() => {
-//                           alert("Proceed to Razorpay Checkout");
+//                 {messages.map((msg, idx) => (
+//                   <div
+//                     key={idx}
+//                     style={{
+//                       display: "flex",
+//                       justifyContent:
+//                         msg.type === "user" ? "flex-end" : "flex-start",
+//                       marginBottom: "15px",
+//                     }}
+//                   >
+//                     <div
+//                       style={{
+//                         maxWidth: "70%",
+//                         display: "flex",
+//                         flexDirection: "column",
+//                         gap: "5px",
+//                       }}
+//                     >
+//                       <div
+//                         style={{
+//                           fontSize: "11px",
+//                           fontWeight: "600",
+//                           color: msg.type === "user" ? "#d946ef" : "#9333ea",
+//                           textTransform: "uppercase",
+//                           letterSpacing: "0.5px",
+//                           paddingLeft: msg.type === "user" ? "0" : "10px",
+//                           paddingRight: msg.type === "user" ? "10px" : "0",
+//                           textAlign: msg.type === "user" ? "right" : "left",
 //                         }}
 //                       >
-//                         {selectedPackage.price} – Continue
-//                       </Button>
-//                     </Card.Body>
-//                   </Card>
-//                 </Col>
-//               </Row>
-//               <Container className="border-2 bg-light p-4">
-//                 {selectedPackage && (
-//                   <div>
-//                     <p className="lead">{selectedPackage.description}</p>
-//                     <h6 className="mb-3">Package Includes:</h6>
-//                     <ul className="list-unstyled">
-//                       {selectedPackage.features.map((feature, index) => (
-//                         <li key={index} className="mb-2">
-//                           <FaCheck
-//                             size="0.8rem"
-//                             className="text-success me-2"
-//                           />
-//                           {feature}
-//                         </li>
-//                       ))}
-//                     </ul>
-//                     <p className="text-muted">
-//                       Offer valid for {selectedPackage.validity}
-//                     </p>
+//                         {msg.type === "user" ? "USER" : "OUR AI"}
+//                       </div>
+//                       <div
+//                         style={{
+//                           padding: "15px 20px",
+//                           borderRadius: "10px",
+//                           backgroundColor: "#fff",
+//                           boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+//                           fontSize: "15px",
+//                           lineHeight: "1.6",
+//                           color: "#333",
+//                           whiteSpace: "pre-line",
+//                         }}
+//                       >
+//                         {msg.text}
+//                       </div>
+//                     </div>
 //                   </div>
-//                 )}
-//               </Container>
-//             </Container>
-//           )}
-//         </Modal.Body>
-//       </Modal>
+//                 ))}
+//               </div>
 
-//       <style jsx>{`
-//         .genie-service-page {
-//           font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-//         }
+//               <div
+//                 style={{
+//                   padding: "20px 40px 50px",
+//                   backgroundColor: "transparent",
+//                 }}
+//               >
+//                 <div
+//                   style={{
+//                     position: "relative",
+//                     maxWidth: "900px",
+//                     margin: "0 auto",
+//                   }}
+//                 >
+//                   <input
+//                     type="text"
+//                     className="form-control"
+//                     placeholder="Ask me anything about your projects"
+//                     value={inputValue}
+//                     onChange={(e) => setInputValue(e.target.value)}
+//                     onKeyDown={handleKeyPress}
+//                     style={{
+//                       padding: "15px 60px 15px 20px",
+//                       border: "2px solid #C31162",
+//                       fontSize: "15px",
+//                       backgroundColor: "#fff",
+//                       boxShadow: "0 4px 15px rgba(217, 70, 239, 0.15)",
+//                     }}
+//                   />
+//                   <button
+//                     onClick={handleSendMessage}
+//                     style={{
+//                       position: "absolute",
+//                       right: "8px",
+//                       top: "50%",
+//                       transform: "translateY(-50%)",
+//                       background: "transparent",
+//                       border: "none",
+//                       borderRadius: "50%",
+//                       width: "40px",
+//                       height: "40px",
+//                       display: "flex",
+//                       alignItems: "center",
+//                       justifyContent: "center",
+//                       cursor: "pointer",
+//                       transition: "transform 0.2s",
+//                     }}
+//                     onMouseOver={(e) =>
+//                       (e.currentTarget.style.transform =
+//                         "translateY(-50%) scale(1.05)")
+//                     }
+//                     onMouseOut={(e) =>
+//                       (e.currentTarget.style.transform =
+//                         "translateY(-50%) scale(1)")
+//                     }
+//                   >
+//                     <svg
+//                       width="30"
+//                       height="30"
+//                       viewBox="0 0 24 24"
+//                       fill="none"
+//                       stroke="#C31162"
+//                       strokeWidth="2"
+//                     >
+//                       <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+//                     </svg>
+//                   </button>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
 
-//         .genie-header {
-//           background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-//         }
+// // export default Genie;
+// import React, { useEffect, useRef, useState } from "react";
+// import { useSelector } from "react-redux";
 
-//         .feature-icon {
-//           width: 80px;
-//           height: 80px;
-//           display: flex;
-//           align-items: center;
-//           justify-content: center;
-//           background-color: #f8f9fa;
-//           border-radius: 50%;
-//         }
+// const Genie = () => {
+//   const [messages, setMessages] = useState([]);
+//   const [inputValue, setInputValue] = useState("");
+//   const [isLoading, setIsLoading] = useState(false);
 
-//         .contact-card {
-//           background: linear-gradient(135deg, #ff8d9aff 0%, #f5576cff 100%);
-//         }
+//   const messagesRef = useRef(null);
+//   const token = useSelector((state) => state.auth.token);
 
-//         .section-title {
-//           position: relative;
-//           padding-bottom: 15px;
-//         }
+//   const sessionId = useRef("sess_" + Date.now()).current;
 
-//         .section-title:after {
-//           content: "";
-//           position: absolute;
-//           bottom: 0;
-//           left: 50%;
-//           transform: translateX(-50%);
-//           width: 60px;
-//           height: 3px;
-//           background-color: #4e54c8;
-//         }
+//   // Decode JWT
+//   const decodeToken = (token) => {
+//     try {
+//       if (!token) return null;
+//       const payload = token.split(".")[1];
+//       return JSON.parse(atob(payload))?.id || null;
+//     } catch {
+//       return null;
+//     }
+//   };
 
-//         .package-card {
-//           transition: transform 0.3s, box-shadow 0.3s;
-//           border-radius: 12px;
-//         }
+//   const userId = decodeToken(token);
 
-//         .package-card:hover {
-//           transform: translateY(-5px);
-//           box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
-//         }
+//   useEffect(() => {
+//     setMessages([
+//       {
+//         type: "ai",
+//         text: "Hi! I’m your Wedding Genie ✨ Ask me anything about wedding planning!",
+//       },
+//     ]);
+//   }, []);
 
-//         .package-icon {
-//           width: 70px;
-//           height: 70px;
-//           display: flex;
-//           align-items: center;
-//           justify-content: center;
-//           background-color: #f0f5ff;
-//           border-radius: 50%;
-//         }
+//   useEffect(() => {
+//     const el = messagesRef.current;
+//     if (el) {
+//       el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+//     }
+//   }, [messages]);
 
-//         .features-list li {
-//           font-size: 0.9rem;
-//         }
-//         .checkout-card {
-//           background: #fff5f6;
-//           border-radius: 12px;
-//         }
-//         .checkout-card h5 {
-//           color: #d63384;
-//         }
-//         .form-control {
-//           border-radius: 0;
-//         }
-//       `}</style>
+//   const callChatApi = async (query) => {
+//     setIsLoading(true);
+
+//     try {
+//       const res = await fetch("http://192.168.1.15:5000/api/user_chat", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: token ? `Bearer ${token}` : "",
+//         },
+//         body: JSON.stringify({
+//           session_id: sessionId,
+//           user_query: query,
+//           user_id: userId,
+//         }),
+//       });
+
+//       const data = await res.json();
+//       return (
+//         data?.response?.summary ||
+//         data?.response ||
+//         data?.answer ||
+//         "I couldn’t understand that!"
+//       );
+//     } catch (err) {
+//       return "⚠️ Server error — Please try again later.";
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   const handleSend = async () => {
+//     if (!inputValue.trim() || isLoading) return;
+
+//     const msgText = inputValue.trim();
+//     setInputValue("");
+
+//     setMessages((prev) => [...prev, { type: "user", text: msgText }]);
+
+//     const reply = await callChatApi(msgText);
+//     setMessages((prev) => [...prev, { type: "ai", text: reply }]);
+//   };
+
+//   const handleEnter = (e) => {
+//     if (e.key === "Enter") handleSend();
+//   };
+
+//   return (
+//     <div
+//       className="container-fluid"
+//       style={{ minHeight: "100vh", background: "#F2E9FB" }}
+//     >
+//       <div className="row justify-content-center">
+//         <div
+//           className="col-lg-8 col-md-10 p-0 d-flex flex-column"
+//           style={{ minHeight: "100vh" }}
+//         >
+//           {/* Header */}
+//           <div className="p-3 text-center">
+//             <h3 style={{ color: "#A3047A" }}>Wedding Genie 💬✨</h3>
+//             <p style={{ opacity: 0.7 }}>Ask anything about your wedding!</p>
+//           </div>
+
+//           {/* Messages */}
+//           <div
+//             ref={messagesRef}
+//             className="flex-grow-1 p-3"
+//             style={{
+//               overflowY: "auto",
+//               background: "#FFF",
+//               borderTop: "2px solid #A3047A",
+//               borderBottom: "2px solid #A3047A",
+//             }}
+//           >
+//             {messages.map((m, i) => (
+//               <div
+//                 key={i}
+//                 style={{
+//                   display: "flex",
+//                   justifyContent: m.type === "user" ? "flex-end" : "flex-start",
+//                   marginBottom: 12,
+//                 }}
+//               >
+//                 <div
+//                   style={{
+//                     background: m.type === "user" ? "#FFD4ED" : "#E4DAFF",
+//                     padding: "12px 16px",
+//                     borderRadius: 12,
+//                     maxWidth: "70%",
+//                     whiteSpace: "pre-line",
+//                   }}
+//                 >
+//                   {m.text}
+//                 </div>
+//               </div>
+//             ))}
+
+//             {isLoading && (
+//               <div style={{ color: "#7A1FA2", fontStyle: "italic" }}>
+//                 Genie is typing...
+//               </div>
+//             )}
+//           </div>
+
+//           {/* Input */}
+//           <div className="p-3 bg-white">
+//             <div className="input-group">
+//               <input
+//                 type="text"
+//                 className="form-control"
+//                 value={inputValue}
+//                 placeholder="Ask anything…"
+//                 onKeyDown={handleEnter}
+//                 onChange={(e) => setInputValue(e.target.value)}
+//                 style={{ borderColor: "#A3047A" }}
+//               />
+//               <button
+//                 className="btn"
+//                 onClick={handleSend}
+//                 style={{ background: "#A3047A", color: "white" }}
+//               >
+//                 Send 🚀
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
 //     </div>
 //   );
 // };
 
 // export default Genie;
-
 import React, { useEffect, useRef, useState } from "react";
+import { LuSendHorizontal } from "react-icons/lu";
+import { useSelector } from "react-redux";
 
 const Genie = () => {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    {
+      type: "ai",
+      text: "Hey there! I'm your Wedding Genie. Ask me anything! 💜✨",
+    },
+  ]);
   const [inputValue, setInputValue] = useState("");
-  const [budget, setBudget] = useState("0");
-  const [guests, setGuests] = useState("0");
-  const [city, setCity] = useState("");
-  const [currentQuestion, setCurrentQuestion] = useState("budget"); 
+  const [isLoading, setIsLoading] = useState(false);
 
+  const messagesContainerRef = useRef(null);
 
-const messagesContainerRef = useRef(null);
+  const tokenId = useSelector((store) => store.auth.token);
 
-useEffect(()=>{
-  setTimeout(()=>{
-    setMessages([
+  function getIdFromToken(token) {
+    try {
+      const payload = token.split(".")[1];
+      const decoded = JSON.parse(atob(payload));
+      return decoded.id || decoded.userId || null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  const userId = getIdFromToken(tokenId);
+
+  const callChatApi = async (query) => {
+    if (!query) return;
+
+    setIsLoading(true);
+
+    try {
+      const res = await fetch("http://192.168.1.15:5000/api/user_chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          session_id: "session-1",
+          user_query: query,
+          user_id: userId,
+        }),
+      });
+
+      const data = await res.json();
+      return {
+        summary: data?.response?.summary || "No response received.",
+        results: data?.response?.results || null,
+      };
+    } catch (err) {
+      console.error("API ERROR:", err);
+      return {
+        summary: "⚠️ Server not responding. Try again later.",
+        results: null,
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const el = messagesContainerRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, [messages]);
+
+  const handleSendMessage = async () => {
+    if (!inputValue.trim() || isLoading) return;
+
+    const userMsg = inputValue.trim();
+    setMessages((prev) => [...prev, { type: "user", text: userMsg }]);
+    setInputValue("");
+
+    const apiResponse = await callChatApi(userMsg);
+
+    setMessages((prev) => [
+      ...prev,
       {
         type: "ai",
-        text: "👋 Hey there! I'm your Wedding Genie. Let's plan your dream wedding, step by step. Start by telling me — what's your approximate budget? ",
+        text: apiResponse.summary,
+        results: apiResponse.results,
       },
     ]);
-  }, 400)
-},[])
-
-useEffect(() => {
-  const el = messagesContainerRef.current;
-  if (!el) return;
-  requestAnimationFrame(() => {
-    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-  });
-}, [messages]);
-
-  const handleSendMessage = () => {
-    if (inputValue.trim()) {
-      const userMessage = inputValue.trim();
-      setMessages([...messages, { type: "user", text: userMessage }]);
-
-
-      if (currentQuestion === "budget") {
-        const budgetValue = userMessage.match(/\d+/);
-        if (budgetValue) {
-          setBudget(budgetValue[0]);
-          setTimeout(() => {
-            setMessages((prev) => [
-              ...prev,
-              {
-                type: "ai",
-                text: `Great! Your budget of ₹${budgetValue[0]} has been noted. 📝 Now, how many guests are you planning to invite? 👥`,
-              },
-            ]);
-            setCurrentQuestion("guests");
-          }, 1000);
-        } else {
-          setTimeout(() => {
-            setMessages((prev) => [
-              ...prev,
-              {
-                type: "ai",
-                text: "I didn't catch a number there. Could you please tell me your budget in numbers? For example: 50000 or 100000",
-              },
-            ]);
-          }, 1000);
-        }
-      }
-      else if (currentQuestion === "guests") {
-        const guestsValue = userMessage.match(/\d+/);
-        if (guestsValue) {
-          setGuests(guestsValue[0]);
-          setTimeout(() => {
-            setMessages((prev) => [
-              ...prev,
-              {
-                type: "ai",
-                text: `Perfect! ${guestsValue[0]} guests noted. 🎉 Which city are you planning your wedding in? 🏙️`,
-              },
-            ]);
-            setCurrentQuestion("city");
-          }, 1000);
-        } else {
-          setTimeout(() => {
-            setMessages((prev) => [
-              ...prev,
-              {
-                type: "ai",
-                text: "Please provide the number of guests you're expecting. For example: 200 or 500 👥",
-              },
-            ]);
-          }, 1000);
-        }
-      }
-
-      else if (currentQuestion === "city") {
-        setCity(userMessage);
-        setTimeout(() => {
-          setMessages((prev) => [
-            ...prev,
-            {
-              type: "ai",
-              text: `Wonderful! ${userMessage} is a great choice for a wedding! 💒 Your wedding summary has been updated. What else would you like to know or plan? 🎊`,
-            },
-          ]);
-          setCurrentQuestion("general");
-        }, 1000);
-      }
-      else {
-        setTimeout(() => {
-          setMessages((prev) => [
-            ...prev,
-            {
-              type: "ai",
-              text: "That's great! I'm here to help you plan your perfect wedding. Feel free to ask me anything about venues, catering, decorations, or any other wedding-related questions! 💐",
-            },
-          ]);
-        }, 1000);
-      }
-
-      setInputValue("");
-    }
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleSendMessage();
-    }
+    if (e.key === "Enter") handleSendMessage();
   };
+
   return (
     <div
       style={{
         minHeight: "100vh",
         background:
-          "radial-gradient(circle at 80% 50%, rgba(137, 188, 255, 0.32) 0%,rgba(137, 188, 255, 0.1) 15%,rgba(238, 174, 202, 0.2) 21%, rgba(238, 174, 202, 0.1) 100%",
+          "radial-gradient(circle at 80% 50%, rgba(137, 188, 255, 0.32) 0%,rgba(137, 188, 255, 0.1) 15%,rgba(238, 174, 202, 0.2) 21%, rgba(238, 174, 202, 0.1) 100%)",
       }}
     >
       <div className="container-fluid">
@@ -632,7 +796,7 @@ useEffect(() => {
           className="row"
           style={{ minHeight: "calc(100vh - clamp(60px, 10vw, 200px))" }}
         >
-          {/* Sidebar */}
+          {/* Sidebar (UI unchanged) */}
           <div
             className="col-md-3 col-lg-2 p-4"
             style={{
@@ -641,158 +805,17 @@ useEffect(() => {
               minHeight: "100vh",
             }}
           >
-            {/* Logo */}
-            <div className="mb-4">
-              <h4
-                style={{
-                  color: "#d946ef",
-                  fontWeight: "bold",
-                  fontSize: "24px",
-                }}
-              >
-                « HappyWedz AI
-              </h4>
-            </div>
+            <h4 style={{ color: "#d946ef", fontWeight: "bold" }}>
+              « HappyWedz AI
+            </h4>
 
-            {/* Summary Section */}
-            <div className="mb-4">
-              <h6
-                style={{
-                  fontWeight: "600",
-                  marginBottom: "20px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                ✨ Summary
-              </h6>
-
-              <div
-                className="mb-3"
-                style={{ display: "flex", justifyContent: "space-between" }}
-              >
-                <label
-                  style={{
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    marginBottom: "8px",
-                  }}
-                >
-                  Budget
-                </label>
-                <span
-                  style={{
-                    display: "inline-block",
-                    minWidth: "clamp(60px, 80px, 100px)",
-                    height: "30px",
-                    lineHeight: "30px",
-                    textAlign: "center",
-                    backgroundColor: "#fce7f3",
-                    color: "#d946ef",
-                    borderRadius: "20px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    transition: "all 0.3s ease",
-                    padding: "0 5px",
-                  }}
-                >
-                  {budget}
-                </span>
-              </div>
-
-              <div
-                className="mb-3"
-                style={{ display: "flex", justifyContent: "space-between" }}
-              >
-                <label
-                  style={{
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    marginBottom: "8px",
-                  }}
-                >
-                  Guests
-                </label>
-                <span
-                  style={{
-                    display: "inline-block",
-                    minWidth: "clamp(60px, 80px, 100px)",
-                    height: "30px",
-                    lineHeight: "30px",
-                    textAlign: "center",
-                    backgroundColor: "#fce7f3",
-                    color: "#d946ef",
-                    borderRadius: "20px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    transition: "all 0.3s ease",
-                    padding: "0 5px",
-                  }}
-                >
-                  {guests}
-                </span>
-              </div>
-
-              <div
-                className="mb-3"
-                style={{ display: "flex", justifyContent: "space-between" }}
-              >
-                <label
-                  style={{
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    marginBottom: "8px",
-                  }}
-                >
-                  City
-                </label>
-                <span
-                  style={{
-                    display: "inline-block",
-                    minWidth: "clamp(60px, 80px, 100px)",
-                    height: "30px",
-                    lineHeight: "30px",
-                    textAlign: "center",
-                    backgroundColor: "#fce7f3",
-                    color: "#d946ef",
-                    borderRadius: "20px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    transition: "all 0.3s ease",
-                    padding: "0 5px",
-                  }}
-                >
-                  {city}
-                </span>
-              </div>
-            </div>
-
-            {/* Checklist Section */}
-            <div>
-              <h6
-                style={{
-                  fontWeight: "600",
-                  marginBottom: "20px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                ✨ Checklist
-              </h6>
-              <div
-                style={{
-                  fontSize: "14px",
-                  color: "#666",
-                }}
-              >
-                Venue - Delhi Club
-              </div>
+            <h6 style={{ marginTop: "40px" }}>✨ Summary</h6>
+            <div style={{ fontSize: "14px", color: "#666", marginTop: "10px" }}>
+              Ask anything to begin…
             </div>
           </div>
 
-          {/* Main Content */}
+          {/* Chat Section */}
           <div className="col-md-9 col-lg-10 p-0">
             <div
               style={{
@@ -801,37 +824,20 @@ useEffect(() => {
                 flexDirection: "column",
               }}
             >
-              {/* Header */}
               <div
                 style={{
                   padding: "30px",
                   textAlign: "center",
-                  background: "transparent",
                 }}
               >
-                <div
-                  style={{
-                    fontSize: "32px",
-                    marginBottom: "10px",
-                  }}
-                >
-                  ✨
-                </div>
-                <h3
-                  style={{
-                    color: "#d946ef",
-                    fontWeight: "600",
-                    margin: 0,
-                  }}
-                >
-                  Ask our AI anything
+                <h3 style={{ color: "#d946ef", fontWeight: "600" }}>
+                  Ask our AI anything 💬✨
                 </h3>
               </div>
 
-              {/* Chat Messages */}
               <div
-                className="no-scrollbar"
                 ref={messagesContainerRef}
+                className="no-scrollbar"
                 style={{
                   flex: 1,
                   overflowY: "auto",
@@ -839,28 +845,8 @@ useEffect(() => {
                   display: "flex",
                   flexDirection: "column",
                   gap: "20px",
-                  scrollbarWidth: "none",
-                  msOverflowStyle: "none",
                 }}
               >
-                {/* Watermark */}
-                <div
-                  style={{
-                    textAlign: "center",
-                    opacity: "0.15",
-                    fontSize: "48px",
-                    fontWeight: "bold",
-                    color: "#fff",
-                    marginBottom: "20px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "15px",
-                  }}
-                >
-                  <span>HAPPYWEDZ</span>
-                </div>
-
                 {messages.map((msg, index) => (
                   <div
                     key={index}
@@ -868,57 +854,130 @@ useEffect(() => {
                       display: "flex",
                       justifyContent:
                         msg.type === "user" ? "flex-end" : "flex-start",
-                      marginBottom: "15px",
                     }}
                   >
                     <div
                       style={{
                         maxWidth: "70%",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "5px",
+                        background: "#fff",
+                        padding: "15px 20px",
+                        borderRadius: "10px",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                        color: "#333",
+                        whiteSpace: "pre-line",
                       }}
                     >
-                      <div
-                        style={{
-                          fontSize: "11px",
-                          fontWeight: "600",
-                          color: msg.type === "user" ? "#d946ef" : "#9333ea",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.5px",
-                          paddingLeft: msg.type === "user" ? "0" : "10px",
-                          paddingRight: msg.type === "user" ? "10px" : "0",
-                          textAlign: msg.type === "user" ? "right" : "left",
-                        }}
-                      >
-                        {msg.type === "user" ? "USER" : "OUR AI"}
-                      </div>
-                      <div
-                        style={{
-                          padding: "15px 20px",
-                          borderRadius: "10px",
-                          backgroundColor:
-                            msg.type === "user" ? "#fff" : "#fff",
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                          fontSize: "15px",
-                          lineHeight: "1.6",
-                          color: "#333",
-                        }}
-                      >
-                        {msg.text}
-                      </div>
+                      {msg.text}
+
+                      {msg.results && msg.results.length > 0 && (
+                        <div
+                          style={{
+                            marginTop: "15px",
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: "12px",
+                          }}
+                        >
+                          {msg.results.map((result, idx) => (
+                            <div
+                              key={idx}
+                              style={{
+                                background: "#f9f9f9",
+                                padding: "15px",
+                                borderRadius: "10px",
+                                border: "1px solid #f0f0f0",
+                                flex: "1 1 calc(33.333% - 12px)",
+                                minWidth: "250px",
+                                boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontWeight: "600",
+                                  color: "#d946ef",
+                                  marginBottom: "8px",
+                                  fontSize: "15px",
+                                }}
+                              >
+                                {result.name}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: "13px",
+                                  color: "#666",
+                                  marginBottom: "5px",
+                                }}
+                              >
+                                📍 {result.location}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: "13px",
+                                  color: "#888",
+                                  marginBottom: "8px",
+                                }}
+                              >
+                                {result.type}
+                              </div>
+                              {result.rating > 0 && (
+                                <div
+                                  style={{
+                                    fontSize: "13px",
+                                    color: "#666",
+                                    marginBottom: "10px",
+                                  }}
+                                >
+                                  ⭐ {result.rating}
+                                </div>
+                              )}
+                              {result.why_consider &&
+                                result.why_consider.length > 0 && (
+                                  <div style={{ marginTop: "10px" }}>
+                                    <div
+                                      style={{
+                                        fontSize: "12px",
+                                        fontWeight: "600",
+                                        color: "#555",
+                                        marginBottom: "6px",
+                                      }}
+                                    >
+                                      Why consider:
+                                    </div>
+                                    <ul
+                                      style={{
+                                        margin: "0",
+                                        paddingLeft: "18px",
+                                        fontSize: "12px",
+                                        color: "#666",
+                                        lineHeight: "1.5",
+                                      }}
+                                    >
+                                      {result.why_consider.map((reason, i) => (
+                                        <li
+                                          key={i}
+                                          style={{ marginBottom: "4px" }}
+                                        >
+                                          {reason}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
+
+                {isLoading && (
+                  <div style={{ color: "#d946ef" }}>Thinking… ✨</div>
+                )}
               </div>
 
-              {/* Input Area */}
-              <div
-                style={{
-                  padding: "20px 40px 50px",
-                  backgroundColor: "transparent",
-                }}
-              >
+              {/* Input */}
+              <div style={{ padding: "20px 40px 50px" }}>
                 <div
                   style={{
                     position: "relative",
@@ -928,16 +987,15 @@ useEffect(() => {
                 >
                   <input
                     type="text"
-                    className="form-control"
-                    placeholder="Ask me anything about your projects"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyPress}
+                    placeholder="Ask me anything..."
+                    className="form-control"
                     style={{
                       padding: "15px 60px 15px 20px",
                       border: "2px solid #C31162",
                       fontSize: "15px",
-                      backgroundColor: "#fff",
                       boxShadow: "0 4px 15px rgba(217, 70, 239, 0.15)",
                     }}
                   />
@@ -945,39 +1003,15 @@ useEffect(() => {
                     onClick={handleSendMessage}
                     style={{
                       position: "absolute",
-                      right: "8px",
+                      right: "10px",
                       top: "50%",
                       transform: "translateY(-50%)",
                       background: "transparent",
                       border: "none",
-                      borderRadius: "50%",
-                      width: "40px",
-                      height: "40px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
                       cursor: "pointer",
-                      transition: "transform 0.2s",
                     }}
-                    onMouseOver={(e) =>
-                      (e.currentTarget.style.transform =
-                        "translateY(-50%) scale(1.05)")
-                    }
-                    onMouseOut={(e) =>
-                      (e.currentTarget.style.transform =
-                        "translateY(-50%) scale(1)")
-                    }
                   >
-                    <svg
-                      width="30"
-                      height="30"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#C31162"
-                      strokeWidth="2"
-                    >
-                      <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
-                    </svg>
+                    <LuSendHorizontal size={24} style={{ color: "#ed1147" }} />
                   </button>
                 </div>
               </div>

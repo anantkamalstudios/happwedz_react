@@ -3,6 +3,7 @@ import { FiUpload, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const BusinessClaimForm = ({ setShowClaimForm }) => {
   const { user, userToken: token } = useSelector((state) => state.auth);
@@ -57,12 +58,68 @@ const BusinessClaimForm = ({ setShowClaimForm }) => {
     }));
   };
 
+  const validateText = (value) => {
+    return value === "" || /^[a-zA-Z\s.,'-]*$/.test(value);
+  };
+
+  const validateNumber = (value) => {
+    return value === "" || /^\d*$/.test(value);
+  };
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    if (type === "checkbox" || type === "file") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      }));
+      return;
+    }
+    let isValid = true;
+    let errorMessage = "";
+    const textFields = [
+      "businessName",
+      "registeredAddress",
+      "claimantFullName",
+      "claimantRole",
+      "category",
+    ];
+    if (textFields.includes(name)) {
+      isValid = validateText(value);
+      if (!isValid) {
+        errorMessage = "This field should only contain letters";
+      }
+    }
+    const numberFields = ["registrationNumber"];
+    if (numberFields.includes(name)) {
+      isValid = validateNumber(value);
+      if (!isValid) {
+        errorMessage = "This field should only contain numbers";
+      }
+    }
+    const phoneFields = ["phoneNumber", "claimantMobile"];
+    if (phoneFields.includes(name)) {
+      isValid = validateNumber(value) && value.length <= 10;
+      if (!isValid) {
+        errorMessage = "Please enter a valid 10-digit number";
+      }
+    }
+    // const emailFields = ["emailAddress", "claimantEmail"];
+    // if (emailFields.includes(name)) {
+    //   isValid = validateEmail(value);
+    //   if (!isValid) {
+    //     errorMessage = "Please enter a valid email address";
+    //   }
+    // }
+    if (isValid || value === "") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    } else if (errorMessage) {
+      toast.error(errorMessage);
+      return;
+    }
   };
 
   const handleFileChange = (e, fileKey) => {
@@ -73,11 +130,51 @@ const BusinessClaimForm = ({ setShowClaimForm }) => {
     }));
   };
 
+  const validateForm = () => {
+    const requiredFields = {
+      businessName: "Business Name",
+      registeredAddress: "Registered Address",
+      phoneNumber: "Business Phone Number",
+      emailAddress: "Business Email",
+      claimantFullName: "Claimant Full Name",
+      claimantMobile: "Claimant Mobile Number",
+    };
+    for (const [field, label] of Object.entries(requiredFields)) {
+      if (!formData[field] || formData[field].trim() === "") {
+        toast.error(`${label} is required`);
+        return false;
+      }
+    }
+    if (formData.phoneNumber.length !== 10) {
+      toast.error("Business Phone Number must be exactly 10 digits");
+      return false;
+    }
+
+    if (formData.claimantMobile.length !== 10) {
+      toast.error("Claimant Mobile Number must be exactly 10 digits");
+      return false;
+    }
+
+    if (!validateEmail(formData.emailAddress)) {
+      toast.error("Please enter a valid business email address");
+      return false;
+    }
+
+    if (formData.claimantEmail && !validateEmail(formData.claimantEmail)) {
+      toast.error("Please enter a valid claimant email address");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!token || !user) {
-      alert("Please login to submit the claim form");
+      toast.error("Please login to submit the claim form");
+      return;
+    }
+    if (!validateForm()) {
       return;
     }
 
@@ -108,7 +205,7 @@ const BusinessClaimForm = ({ setShowClaimForm }) => {
       );
 
       if (response.ok) {
-        alert("Form submitted successfully!");
+        toast.error("Form submitted successfully!");
         setFormData({
           businessName: "",
           registeredAddress: "",
@@ -141,11 +238,13 @@ const BusinessClaimForm = ({ setShowClaimForm }) => {
           businessPhoto: null,
         });
       } else {
-        alert("Failed to submit form. Please try again.");
+        toast.error("Failed to submit form. Please try again.");
+        return;
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("An error occurred. Please try again.");
+      toast.error("An error occurred. Please try again.");
+      return;
     }
   };
 
@@ -194,7 +293,7 @@ const BusinessClaimForm = ({ setShowClaimForm }) => {
                 onClick={() => toggleSection("policyholder")}
               >
                 <h2 className="claim-business-section-title">
-                  Policyholder Information
+                  Business Information
                 </h2>
                 {expandedSections.policyholder ? (
                   <FiChevronUp />

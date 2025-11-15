@@ -58,8 +58,6 @@ const MapView = ({ subVenuesData = [], section }) => {
   const [loading, setLoading] = useState(true);
   const isMounted = useRef(true);
 
-  console.log(subVenuesData, "subVenuesData from mapping");
-
   useEffect(() => {
     isMounted.current = true;
     const run = async () => {

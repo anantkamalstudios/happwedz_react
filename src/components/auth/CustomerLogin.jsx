@@ -28,7 +28,6 @@ const CustomerLogin = () => {
     try {
       showLoader();
       const tokenId = credentialResponse?.credential;
-      console.log("Google credential response:", credentialResponse);
       if (!tokenId) {
         toast.error("Google did not return an ID token (credential).");
         return;

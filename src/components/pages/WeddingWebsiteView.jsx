@@ -187,8 +187,6 @@ const WeddingWebsiteView = () => {
     };
   };
 
-  console.log("websiteData", websiteData);
-
   const normalizedData = normalizeWebsiteData(websiteData);
   return (
     <div className="wedding-website-view">
