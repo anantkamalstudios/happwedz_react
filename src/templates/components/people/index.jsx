@@ -13,10 +13,13 @@ import bride8 from "../../images/groomsmen-bridesmaid/8.jpg";
 import "./style.css";
 
 const People = (props) => {
-  console.log(props);
   return (
     <section id="people">
-      <div className={`groomsmen-bridesmaid-area section-padding ${props.guest || ""}`}>
+      <div
+        className={`groomsmen-bridesmaid-area section-padding ${
+          props.guest || ""
+        }`}
+      >
         <Sectiontitle section={"Groomsmen & Bridesmaid"} />
         <div className="container">
           <div className="groomsmen-bridesmaid-area-menu">

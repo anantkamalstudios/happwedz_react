@@ -127,7 +127,6 @@ const Wishlist = () => {
       );
 
       const result = await response.json();
-      console.log(result.message);
       if (!result.success) {
         setWishlist(originalWishlist);
         console.error("Failed to remove item from wishlist:", result.message);

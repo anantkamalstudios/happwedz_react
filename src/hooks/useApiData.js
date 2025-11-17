@@ -29,34 +29,15 @@ const useApiData = (
     total: 0,
     totalPages: 0,
   });
-  
-  console.log('useApiData - Initial State:', {
-    section,
-    slug,
-    city,
-    vendorType,
-    initialPage,
-    initialLimit,
-    currentState: { data, loading, error, pagination }
-  });
+
   const abortRef = useRef(null);
   const cacheRef = useRef(new Map());
 
   const memoizedFilters = useMemo(() => filters, [JSON.stringify(filters)]);
 
-  useEffect(() => {
-    console.log('useApiData - State updated:', {
-      data: data,
-      loading: loading,
-      error: error,
-      pagination: pagination
-    });
-  }, [data, loading, error, pagination]);
-
   const fetchData = useCallback(
     async (page = initialPage, limit = initialLimit) => {
       if (!section || (!slug && !vendorType)) {
-        console.log('useApiData - Missing required parameters');
         setData([]);
         setLoading(false);
         return;
@@ -66,7 +47,6 @@ const useApiData = (
       setError(null);
 
       try {
-        console.log('useApiData - Starting fetch with params:', { page, limit });
         const subCategory = slug
           ? slug
               .replace(/-{2,}/g, " / ")
@@ -191,25 +171,10 @@ const useApiData = (
         }
 
         const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
-        console.log('useApiData - Constructed API URL:', apiUrl);
-        console.log('useApiData - Request filters:', {
-          price: { minPrice, maxPrice },
-          capacity: { minCapacity, maxCapacity },
-          foodPrice: { minFoodPrice, maxFoodPrice },
-          rooms: { minRooms, maxRooms },
-          rating: { minRating, maxRating },
-          reviews: { minReviews, maxReviews },
-          otherFilters: nonPriceFilters
-        });
 
         const cacheKey = apiUrl;
         if (cacheRef.current.has(cacheKey)) {
-          console.log('useApiData - Using cached data for:', cacheKey);
           const cached = cacheRef.current.get(cacheKey);
-          console.log('useApiData - Cached data:', {
-            data: cached.data,
-            pagination: cached.pagination
-          });
           setData(cached.data);
           setPagination(cached.pagination);
           setLoading(false);
@@ -221,7 +186,6 @@ const useApiData = (
         }
         const controller = new AbortController();
         abortRef.current = controller;
-        console.log("[useApiData] Fetching:", apiUrl);
         const timeoutId = setTimeout(() => controller.abort(), 20000);
         const response = await fetch(apiUrl, { signal: controller.signal });
         clearTimeout(timeoutId);
@@ -231,15 +195,12 @@ const useApiData = (
         }
 
         const result = await response.json();
-        console.log('useApiData - Raw API response:', result);
-        
+
         const itemsRaw = Array.isArray(result)
           ? result
           : Array.isArray(result.data)
           ? result.data
           : [];
-          
-        console.log('useApiData - Extracted items:', itemsRaw);
 
         if (Array.isArray(result)) {
           const total = itemsRaw.length;
@@ -247,7 +208,6 @@ const useApiData = (
           const pagedItems = itemsRaw.slice(start, start + limit);
           const transformed = transformApiData(pagedItems);
           const transformedData = transformApiData(pagedItems);
-          console.log('useApiData - Transformed data:', transformedData);
           setData(transformed);
           const nextPagination = {
             page,
@@ -261,7 +221,6 @@ const useApiData = (
             total,
             totalPages: Math.ceil(total / limit),
           };
-          console.log('useApiData - Pagination data:', paginationData);
           setPagination(nextPagination);
           cacheRef.current.set(cacheKey, {
             data: transformed,
@@ -270,7 +229,6 @@ const useApiData = (
         } else {
           const transformed = transformApiData(itemsRaw);
           const transformedData = transformApiData(itemsRaw);
-          console.log('useApiData - Transformed data:', transformedData);
           setData(transformed);
           if (result.pagination) {
             const nextPagination = {
@@ -285,7 +243,7 @@ const useApiData = (
               total: result.pagination.total || 0,
               totalPages: result.pagination.totalPages || 0,
             };
-            console.log('useApiData - Pagination data:', paginationData);
+            "useApiData - Pagination data:", paginationData;
             setPagination(nextPagination);
             cacheRef.current.set(cacheKey, {
               data: transformed,
@@ -315,15 +273,12 @@ const useApiData = (
   );
 
   const refetch = useCallback(() => {
-    console.log('useApiData - Refetching data');
     fetchData(pagination.page, pagination.limit);
   }, [fetchData, pagination.page, pagination.limit]);
 
   const goToPage = useCallback(
     (page) => {
-      console.log('useApiData - goToPage called with page:', page);
       if (page < 1 || page > pagination.totalPages) {
-        console.log('useApiData - Invalid page number:', page);
         return;
       }
       fetchData(page);
@@ -332,7 +287,6 @@ const useApiData = (
   );
 
   const nextPage = useCallback(() => {
-    console.log('useApiData - Next page called');
     if (pagination.page < pagination.totalPages) {
       goToPage(pagination.page + 1);
     }

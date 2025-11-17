@@ -335,11 +335,9 @@ const UserProfile = ({ user, token }) => {
         if (res.status < 200 || res.status >= 300) {
           throw new Error("Failed to save profile");
         }
-        console.log("hellow orld");
 
         if (res.data?.user) {
           const updatedUser = res?.data?.user;
-          console.log(updatedUser);
 
           dispatch(
             setCredentials({

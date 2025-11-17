@@ -26,6 +26,7 @@ import TopRatedVendors from "./components/pages/TopRatedVendors";
 import CareersPage from "./components/pages/CareersPage";
 import DestinationWeddingDetailPage from "./components/pages/DestinationWeddingDetailPage";
 import BusinessClaimForm from "./components/pages/BusinessClaimForm";
+import { ToastContainer } from "react-toastify";
 // import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 
 const Home = lazy(() => import("./components/pages/Home"));
@@ -223,6 +224,7 @@ function App() {
   return (
     <LoaderProvider>
       <Suspense fallback={<Loader />}>
+        <ToastContainer />
         <ToastProvider>
           <Routes>
             <Route path="/preview/:id" element={<TemplatePreviewPage />} />

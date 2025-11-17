@@ -233,7 +233,6 @@ const Messages = () => {
       } catch (e) {
         if (!isMounted) return;
         setError(e.message || "Failed to load conversations");
-        console.log(e.response || "Failed to load conversations");
       } finally {
         if (isMounted) setLoadingConversations(false);
       }

@@ -202,7 +202,8 @@ const BusinessDetails = ({ formData, setFormData }) => {
           // Append all fields except profileImage (we'll append the file separately)
           Object.entries(payload).forEach(([key, value]) => {
             // Skip null/undefined values and the profileImage key (we handle file separately)
-            if (value === null || value === undefined || key === "profileImage") return;
+            if (value === null || value === undefined || key === "profileImage")
+              return;
             // Convert numbers to strings for FormData, keep strings as-is (including empty strings)
             const formValue = typeof value === "number" ? String(value) : value;
             formDataObj.append(key, formValue);
@@ -415,7 +416,8 @@ const BusinessDetails = ({ formData, setFormData }) => {
           <label className="form-label">Profile Image</label>
           <div className="d-flex align-items-center gap-3">
             <div style={{ width: 96, height: 96, flex: "0 0 96px" }}>
-              {profileImagePreview && typeof profileImagePreview === "string" ? (
+              {profileImagePreview &&
+              typeof profileImagePreview === "string" ? (
                 <img
                   src={profileImagePreview}
                   alt="Profile preview"
@@ -427,12 +429,17 @@ const BusinessDetails = ({ formData, setFormData }) => {
                     border: "1px solid #e5e7eb",
                   }}
                   onError={(e) => {
-                    // If image fails to load, log error and hide image
-                    console.error("Failed to load profile image:", profileImagePreview);
+                    console.error(
+                      "Failed to load profile image:",
+                      profileImagePreview
+                    );
                     e.target.style.display = "none";
                   }}
                   onLoad={() => {
-                    console.log("Profile image loaded successfully:", profileImagePreview);
+                    console.log(
+                      "Profile image loaded successfully:",
+                      profileImagePreview
+                    );
                   }}
                 />
               ) : (

@@ -65,6 +65,7 @@ const RealWeddings = ({ onPostClick }) => {
     "Intimate & Minimalist",
     "Modern & Stylish",
     "International",
+    "Classic",
     "Others",
   ];
 
@@ -216,7 +217,6 @@ const RealWeddings = ({ onPostClick }) => {
         const response = await axios.get(
           `${API_BASE_URL}/real-wedding-culture/public`
         );
-        console.log(response);
         if (response.data && response.data.cultures) {
           setCultures(response?.data?.cultures);
         } else {
@@ -239,7 +239,6 @@ const RealWeddings = ({ onPostClick }) => {
   };
 
   const filteredWeddings = weddings.filter((wedding) => {
-    // Only show weddings with status "publish"
     const isPublished = wedding.status === "published";
 
     const matchesSearch =

@@ -1613,13 +1613,22 @@ const Header = () => {
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                    onClick={() => toggleMobileSubmenu("venues")}
+                    // onClick={() => toggleMobileSubmenu("venues")}
                   >
-                    <span className="fw-semibold">Venues</span>
+                    <span
+                      className="fw-semibold"
+                      onClick={() => navigate("/venues")}
+                    >
+                      Venues
+                    </span>
                     {mobileSubmenu === "venues" ? (
-                      <FaChevronDown />
+                      <FaChevronDown
+                        onClick={() => toggleMobileSubmenu("venues")}
+                      />
                     ) : (
-                      <FaChevronRight />
+                      <FaChevronRight
+                        onClick={() => toggleMobileSubmenu("venues")}
+                      />
                     )}
                   </button>
                   {mobileSubmenu === "venues" && (
@@ -1704,13 +1713,23 @@ const Header = () => {
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                    onClick={() => toggleMobileSubmenu("vendors")}
+                    // onClick={() => toggleMobileSubmenu("vendors")}
                   >
-                    <span className="fw-semibold">Vendors</span>
+                    <span
+                      className="fw-semibold"
+                      role="button"
+                      onClick={() => navigate("/vendors")}
+                    >
+                      Vendors
+                    </span>
                     {mobileSubmenu === "vendors" ? (
-                      <FaChevronDown />
+                      <FaChevronDown
+                        onClick={() => toggleMobileSubmenu("vendors")}
+                      />
                     ) : (
-                      <FaChevronRight />
+                      <FaChevronRight
+                        onClick={() => toggleMobileSubmenu("vendors")}
+                      />
                     )}
                   </button>
                   {mobileSubmenu === "vendors" && (
@@ -1755,13 +1774,23 @@ const Header = () => {
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                    onClick={() => toggleMobileSubmenu("photography")}
+                    // onClick={() => toggleMobileSubmenu("photography")}
                   >
-                    <span className="fw-semibold">Photography</span>
+                    <span
+                      className="fw-semibold"
+                      role="button"
+                      onClick={() => navigate("/photography")}
+                    >
+                      Photography
+                    </span>
                     {mobileSubmenu === "photography" ? (
-                      <FaChevronDown />
+                      <FaChevronDown
+                        onClick={() => toggleMobileSubmenu("photography")}
+                      />
                     ) : (
-                      <FaChevronRight />
+                      <FaChevronRight
+                        onClick={() => toggleMobileSubmenu("photography")}
+                      />
                     )}
                   </button>
                   {mobileSubmenu === "photography" && (
@@ -1800,13 +1829,23 @@ const Header = () => {
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                    onClick={() => toggleMobileSubmenu("einvites")}
+                    // onClick={() => toggleMobileSubmenu("einvites")}
                   >
-                    <span className="fw-semibold">E-Invites</span>
+                    <span
+                      className="fw-semibold"
+                      role="button"
+                      onClick={() => navigate("/einvites")}
+                    >
+                      E-Invites
+                    </span>
                     {mobileSubmenu === "einvites" ? (
-                      <FaChevronDown />
+                      <FaChevronDown
+                        onClick={() => toggleMobileSubmenu("einvites")}
+                      />
                     ) : (
-                      <FaChevronRight />
+                      <FaChevronRight
+                        onClick={() => toggleMobileSubmenu("einvites")}
+                      />
                     )}
                   </button>
                   {mobileSubmenu === "einvites" && (
@@ -1829,13 +1868,23 @@ const Header = () => {
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                    onClick={() => toggleMobileSubmenu("blog")}
+                    // onClick={() => toggleMobileSubmenu("blog")}
                   >
-                    <span className="fw-semibold">Blog</span>
+                    <span
+                      className="fw-semibold"
+                      role="button"
+                      onClick={() => navigate("/blog")}
+                    >
+                      Blog
+                    </span>
                     {mobileSubmenu === "blog" ? (
-                      <FaChevronDown />
+                      <FaChevronDown
+                        onClick={() => toggleMobileSubmenu("blog")}
+                      />
                     ) : (
-                      <FaChevronRight />
+                      <FaChevronRight
+                        onClick={() => toggleMobileSubmenu("blog")}
+                      />
                     )}
                   </button>
                   {mobileSubmenu === "blog" && (
@@ -1901,15 +1950,22 @@ const Header = () => {
 
                 {/* Real Wedding */}
                 <li className="mb-2">
-                  <button
-                    className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                    onClick={() => toggleMobileSubmenu("real-wedding")}
-                  >
-                    <span className="fw-semibold">Real Wedding</span>
+                  <button className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light">
+                    <span
+                      className="fw-semibold"
+                      role="button"
+                      onClick={() => navigate("real-wedding")}
+                    >
+                      Real Wedding
+                    </span>
                     {mobileSubmenu === "real-wedding" ? (
-                      <FaChevronDown />
+                      <FaChevronDown
+                        onClick={() => toggleMobileSubmenu("real-wedding")}
+                      />
                     ) : (
-                      <FaChevronRight />
+                      <FaChevronRight
+                        onClick={() => toggleMobileSubmenu("real-wedding")}
+                      />
                     )}
                   </button>
                   {mobileSubmenu === "real-wedding" && (
@@ -2017,18 +2073,6 @@ const Header = () => {
                     style={{ maxHeight: "35px", cursor: "pointer" }}
                   />
                 </div>
-                {/* <Link
-                  to="/try"
-                  state={{ title: "Try" }}
-                  onClick={handleMobileLinkClick}
-                >
-                  <img
-                    src="/images/header/tryimg.png"
-                    alt="Design Studio"
-                    className="img-fluid"
-                    style={{ maxHeight: "40px", cursor: "pointer" }}
-                  />
-                </Link> */}
               </div>
             </div>
           </div>

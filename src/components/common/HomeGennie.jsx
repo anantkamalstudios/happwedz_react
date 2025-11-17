@@ -662,6 +662,7 @@ const HomeGennie = () => {
               width: "100%",
               objectFit: "cover",
             }}
+            loading="lazy"
           />
         </button>
       )}

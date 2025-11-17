@@ -201,17 +201,9 @@ const RealWeddingForm = ({ user, token }) => {
   }, []);
 
   const nextStep = () => {
-    console.log(
-      "Next clicked. Current step:",
-      currentStep,
-      "Total steps:",
-      steps.length
-    );
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
-      console.log("Moving to step:", currentStep + 1);
     } else {
-      console.log("Already on last step, cannot go next");
     }
   };
 
@@ -250,7 +242,6 @@ const RealWeddingForm = ({ user, token }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Form submitted on step:", currentStep);
 
     if (currentStep !== steps.length - 1) {
       console.error(
@@ -580,9 +571,6 @@ const VenueSearchInput = ({ onSelectVenue }) => {
 
       const response = await axios.get(apiUrl);
       const results = response.data?.data || [];
-
-      console.log("Venue search results:", results);
-      console.log("Venue API URL:", apiUrl);
 
       setSearchResults(results);
       if (results.length > 0) {
@@ -1184,9 +1172,6 @@ const VendorCreator = ({ vendorTypes = [], onAdd }) => {
 
       const response = await axios.get(apiUrl);
       const results = response.data?.data || [];
-
-      console.log("Search results:", results);
-      console.log("API URL:", apiUrl);
 
       setSearchResults(results);
       if (results.length > 0) {
@@ -1865,4 +1850,3 @@ const HighlightsAndCreditsStep = ({
 };
 
 export default RealWeddingForm;
-

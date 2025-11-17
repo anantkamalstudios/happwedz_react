@@ -17,8 +17,6 @@ const MasonryImageSection = () => {
     loadPhotos();
   }, []);
 
-  console.log(allPhotos, "photos");
-
   useEffect(() => {
     if (allPhotos && allPhotos.length > 0) {
       const transformedImages = allPhotos
