@@ -240,11 +240,10 @@ const Wishlist = () => {
           </div>
 
           {/* Vendors Grid - 2 columns per row */}
-          <div className="row g-4">
+          <div className="row g-6">
             {filteredWishlist.map((vendor) => (
               <div key={vendor.vendor_services_id} className="col-md-6">
                 <div className="wishlist-card-container">
-                  {/* Image Section with Remove Button */}
                   <div className="wishlist-image-wrapper">
                     <img
                       src={vendor.image}

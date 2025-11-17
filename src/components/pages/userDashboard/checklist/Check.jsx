@@ -6,6 +6,7 @@ import {
   FaPrint,
   FaCalendarAlt,
   FaHeart,
+  FaTimes,
 } from "react-icons/fa";
 import { FiCheck, FiTrash, FiLink, FiEdit, FiClock } from "react-icons/fi";
 import axiosInstance from "../../../../services/api/axiosInstance";
@@ -19,6 +20,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import ChecklistPDF from "./ChecklistPDF";
+import { FaSpinner } from "react-icons/fa6";
 
 const CATEGORY_API =
   "https://happywedz.com/api/vendor-types/with-subcategories/all";
@@ -57,6 +59,9 @@ const Check = () => {
   const [timeOptions, setTimeOptions] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [editingId, setEditingId] = useState(null);
+  const [editingText, setEditingText] = useState("");
+  const [updateLoading, setUpdateLoading] = useState(false);
 
   const fetchChecklists = async () => {
     if (!userId || !token) return;
@@ -230,14 +235,36 @@ const Check = () => {
     }
   };
 
-  const handleEdit = (id) => {
-    Swal.fire({
-      icon: "info",
-      text: `Edit functionality for task ID: ${id} is not yet implemented.`,
-      confirmButtonText: "OK",
-      confirmButtonColor: "#C31162",
-      timer: 3000,
-    });
+  const handleEdit = (id, currentText) => {
+    setEditingId(id);
+    setEditingText(currentText);
+  };
+
+  const saveEdit = async () => {
+    if (!editingText.trim()) {
+      setError("Task name cannot be empty.");
+      return;
+    }
+
+    setUpdateLoading(true);
+    try {
+      await axiosInstance.put(`/new-checklist/update/${editingId}`, {
+        text: editingText,
+      });
+      setEditingId(null);
+      setEditingText("");
+      setRefresh((prev) => !prev);
+    } catch (err) {
+      console.error("Error updating checklist:", err);
+      setError("Failed to update task.");
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingText("");
   };
 
   const toggleStatus = async (id, currentStatus) => {
@@ -277,477 +304,12 @@ const Check = () => {
 
   return (
     <>
-      <style>{`
-        .checklist-container {
-          background: linear-gradient(135deg, #fdf2f8 0%, #fff1f2 100%);
-          min-height: 100vh;
-          padding: 2.5rem 0;
-        }
-
-        .stat-card {
-          background: white;
-          height: auto;
-          border-radius: 16px;
-          padding: 1.75rem;
-          box-shadow: 0 4px 20px rgba(195, 17, 98, 0.08);
-          border: none;
-          transition: all 0.3s ease;
-          margin-bottom: 1.5rem;
-        }
-
-        .stat-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 8px 30px rgba(195, 17, 98, 0.15);
-        }
-
-        .stat-card-header {
-          background: linear-gradient(135deg, #C31162 0%, #e91e8c 100%);
-          color: white;
-          border-radius: 12px;
-          padding: 1.25rem;
-          margin-bottom: 1.5rem;
-          font-weight: 600;
-          font-size: 0.95rem;
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-        }
-
-        .status-item {
-          background: #fafafa;
-          border: none;
-          border-radius: 12px;
-          padding: 1.25rem;
-          margin-bottom: 0.75rem;
-          transition: all 0.3s ease;
-        }
-
-        .status-item:hover {
-          background: #f5f5f5;
-          transform: translateX(5px);
-        }
-
-        .status-badge {
-          font-size: 1rem;
-          padding: 0.5rem 1rem;
-          border-radius: 20px;
-          font-weight: 600;
-        }
-
-        .badge-pending {
-          background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-          color: white;
-        }
-
-        .badge-completed {
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-          color: white;
-        }
-
-        .date-input-group {
-          position: relative;
-          margin-bottom: 1.25rem;
-        }
-
-        .date-input-group label {
-          font-weight: 600;
-          color: #374151;
-          margin-bottom: 0.5rem;
-          font-size: 0.9rem;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
-
-        .date-input-group input {
-          border: 2px solid #e5e7eb;
-          border-radius: 10px;
-          padding: 0.75rem;
-          transition: all 0.3s ease;
-          font-size: 0.95rem;
-        }
-
-        .date-input-group input:focus {
-          border-color: #C31162;
-          box-shadow: 0 0 0 3px rgba(195, 17, 98, 0.1);
-          outline: none;
-        }
-
-        .days-countdown {
-          background: linear-gradient(135deg, #C31162 0%, #e91e8c 100%);
-          color: white;
-          border-radius: 12px;
-          padding: 1.5rem;
-          text-align: center;
-          margin-top: 1.5rem;
-        }
-
-        .days-countdown .days-number {
-          font-size: 2.5rem;
-          font-weight: 700;
-          display: block;
-          line-height: 1;
-        }
-
-        .days-countdown .days-text {
-          font-size: 0.9rem;
-          opacity: 0.9;
-          margin-top: 0.5rem;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-        }
-
-        .main-card {
-          background: white;
-          border-radius: 16px;
-          box-shadow: 0 4px 20px rgba(195, 17, 98, 0.08);
-          overflow: hidden;
-        }
-
-        .main-card-header {
-          background: linear-gradient(135deg, #ffffff 0%, #fdf2f8 100%);
-          padding: 1.75rem 2rem;
-          border-bottom: 2px solid #fce7f3;
-        }
-
-        .main-card-header h5 {
-          color: #C31162;
-          font-weight: 700;
-          font-size: 1.5rem;
-          margin: 0;
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-        }
-
-        .header-actions .btn {
-          border-radius: 10px;
-          padding: 0.6rem 1.25rem;
-          font-weight: 600;
-          transition: all 0.3s ease;
-          border: 2px solid #e5e7eb;
-          color: #374151;
-          background: white;
-        }
-
-        .header-actions .btn:hover {
-          background: #C31162;
-          border-color: #C31162;
-          color: white;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(195, 17, 98, 0.3);
-        }
-
-        .progress-section {
-          background: #fafafa;
-          border-radius: 12px;
-          padding: 1.5rem;
-          margin-bottom: 1.5rem;
-        }
-
-        .progress-section h6 {
-          color: #374151;
-          font-weight: 600;
-          margin-bottom: 1rem;
-        }
-
-        .progress-bar-wrapper {
-          background: #e5e7eb;
-          border-radius: 20px;
-          height: 12px;
-          overflow: hidden;
-          margin-bottom: 0.75rem;
-        }
-
-        .progress-bar-fill {
-          background: linear-gradient(90deg, #C31162 0%, #e91e8c 100%);
-          height: 100%;
-          transition: width 0.6s ease;
-          border-radius: 20px;
-        }
-
-        .progress-stats {
-          display: flex;
-          justify-content: space-between;
-          font-size: 0.9rem;
-          color: #6b7280;
-        }
-
-        .add-task-card {
-          background: linear-gradient(135deg, #fdf2f8 0%, #ffffff 100%);
-          border: 2px solid #fce7f3;
-          border-radius: 14px;
-          padding: 1.75rem;
-          margin-bottom: 2rem;
-        }
-
-        .add-task-card h6 {
-          color: #C31162;
-          font-weight: 700;
-          margin-bottom: 1.5rem;
-          font-size: 1.1rem;
-        }
-
-        .form-select, .form-control {
-          border: 2px solid #e5e7eb;
-          border-radius: 10px;
-          padding: 0.75rem;
-          transition: all 0.3s ease;
-          font-size: 0.95rem;
-        }
-
-        .form-select:focus, .form-control:focus {
-          border-color: #C31162;
-          box-shadow: 0 0 0 3px rgba(195, 17, 98, 0.1);
-          outline: none;
-        }
-
-        .btn-add-task {
-          background: linear-gradient(135deg, #C31162 0%, #e91e8c 100%);
-          border: none;
-          border-radius: 10px;
-          padding: 0.75rem 1.5rem;
-          font-weight: 600;
-          color: white;
-          transition: all 0.3s ease;
-          height: 100%;
-        }
-
-        .btn-add-task:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(195, 17, 98, 0.4);
-          background: linear-gradient(135deg, #a80f51 0%, #d1177a 100%);
-        }
-
-        .time-info {
-          background: white;
-          border: 2px solid #fce7f3;
-          border-radius: 10px;
-          padding: 1rem;
-          margin-top: 1rem;
-        }
-
-        .time-info label {
-          font-weight: 600;
-          color: #C31162;
-          display: block;
-          margin-bottom: 0.5rem;
-        }
-
-        .time-info ul {
-          margin: 0;
-          padding-left: 1.25rem;
-        }
-
-        .time-info li {
-          color: #6b7280;
-          font-size: 0.9rem;
-          margin-bottom: 0.25rem;
-        }
-
-        .checklist-table {
-          margin-bottom: 0;
-        }
-
-        .checklist-table thead {
-          background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
-        }
-
-        .checklist-table thead th {
-          color: #C31162;
-          font-weight: 700;
-          text-transform: uppercase;
-          font-size: 0.85rem;
-          letter-spacing: 0.5px;
-          padding: 1.25rem 1rem;
-          border: none;
-        }
-
-        .checklist-table tbody tr {
-          transition: all 0.3s ease;
-          border-bottom: 1px solid #f3f4f6;
-        }
-
-        .checklist-table tbody tr:hover {
-          background: #fdf2f8;
-          // transform: scale(1.01);
-        }
-
-        .checklist-table tbody td {
-          padding: 1.25rem 1rem;
-          vertical-align: middle;
-        }
-
-        .status-icon {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          margin: 0 auto;
-        }
-
-        .status-icon.completed {
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-          color: white;
-        }
-
-        .status-icon.pending {
-          background: #f3f4f6;
-          color: #9ca3af;
-          border: 2px solid #e5e7eb;
-        }
-
-        .status-icon:hover {
-          transform: scale(1.15);
-        }
-
-        .category-link {
-          color: #C31162;
-          text-decoration: none;
-          font-weight: 600;
-          transition: all 0.3s ease;
-          display: inline-flex;
-          align-items: center;
-          gap: 0.35rem;
-        }
-
-        .category-link:hover {
-          color: #a80f51;
-          text-decoration: underline;
-        }
-
-        .days-badge {
-          background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-          color: white;
-          padding: 0.35rem 0.75rem;
-          border-radius: 20px;
-          font-size: 0.8rem;
-          font-weight: 600;
-          display: inline-flex;
-          align-items: center;
-          gap: 0.35rem;
-        }
-
-        .action-btn {
-          border: 2px solid #e5e7eb;
-          background: white;
-          padding: 0.5rem 0.75rem;
-          border-radius: 8px;
-          transition: all 0.3s ease;
-          color: #6b7280;
-        }
-
-        .action-btn:hover.btn-edit {
-          border-color: #C31162;
-          background: #C31162;
-          color: white;
-        }
-
-        .action-btn:hover.btn-delete {
-          border-color: #ef4444;
-          background: #ef4444;
-          color: white;
-        }
-
-        .pagination {
-          margin-top: 2rem;
-        }
-
-        .pagination .page-link {
-          border: 2px solid #e5e7eb;
-          color: #6b7280;
-          border-radius: 8px;
-          margin: 0 0.25rem;
-          padding: 0.5rem 0.85rem;
-          font-weight: 600;
-          transition: all 0.3s ease;
-        }
-
-        .pagination .page-link:hover {
-          background: #fdf2f8;
-          border-color: #C31162;
-          color: #C31162;
-        }
-
-        .pagination .page-item.active .page-link {
-          background: linear-gradient(135deg, #C31162 0%, #e91e8c 100%);
-          border-color: #C31162;
-          color: white;
-        }
-
-        .alert-custom {
-          border-radius: 12px;
-          border: none;
-          padding: 1rem 1.25rem;
-          margin-bottom: 1.5rem;
-        }
-
-        .alert-danger {
-          background: #fee2e2;
-          color: #991b1b;
-        }
-
-        .alert-info {
-          background: #dbeafe;
-          color: #1e40af;
-        }
-
-        .spinner-custom {
-          color: #C31162;
-          width: 3rem;
-          height: 3rem;
-        }
-
-        .empty-state {
-          text-align: center;
-          padding: 3rem 1rem;
-          color: #9ca3af;
-        }
-
-        .empty-state svg {
-          font-size: 4rem;
-          margin-bottom: 1rem;
-          opacity: 0.5;
-        }
-
-        @media (max-width: 768px) {
-          .checklist-container {
-            padding: 1.5rem 0;
-          }
-
-          .stat-card, .main-card {
-            border-radius: 12px;
-          }
-
-          .main-card-header h5 {
-            font-size: 1.25rem;
-          }
-
-          .header-actions {
-            flex-direction: column;
-            gap: 0.5rem;
-            width: 100%;
-          }
-
-          .header-actions .btn {
-            width: 100%;
-          }
-        }
-      `}</style>
-
       <div className="checklist-container">
         <div className="container">
           <div className="row">
             {/* Sidebar */}
             <div className="col-lg-4 mb-4">
-              {/* Status Card */}
-              <div className="stat-card">
+              <div className="stat-card border border-black">
                 <div className="stat-card-header">
                   <FiClock size={20} />
                   <span>Task Status</span>
@@ -756,7 +318,7 @@ const Check = () => {
                   <span style={{ fontWeight: "600", color: "#374151" }}>
                     Pending Tasks
                   </span>
-                  <span className="status-badge badge-pending">
+                  <span className="status-badge text-danger">
                     {checklists.filter((c) => c.status === "pending").length}
                   </span>
                 </div>
@@ -764,14 +326,12 @@ const Check = () => {
                   <span style={{ fontWeight: "600", color: "#374151" }}>
                     Completed Tasks
                   </span>
-                  <span className="status-badge badge-completed">
-                    {completedCount}
-                  </span>
+                  <span className="status-badge">{completedCount}</span>
                 </div>
               </div>
 
               {/* Wedding Dates Card */}
-              <div className="stat-card">
+              <div className="stat-card border border-black">
                 <div className="stat-card-header">
                   <FaCalendarAlt size={18} />
                   <span>Wedding Timeline</span>
@@ -841,30 +401,42 @@ const Check = () => {
                     Wedding Checklist
                   </h5>
                   <div className="header-actions d-flex gap-2">
-                    <PDFDownloadLink
-                      document={
-                        <ChecklistPDF
-                          items={
-                            distributedTasks && distributedTasks.length > 0
-                              ? distributedTasks
-                              : checklists
-                          }
-                          categories={categories}
-                          meta={{
-                            userName: user?.name || user?.email || "User",
-                            generatedAt: new Date(),
-                          }}
-                        />
-                      }
-                      fileName={`checklist-${userId || "user"}.pdf`}
-                    >
-                      {({ loading }) => (
-                        <button className="btn">
-                          <FaDownload className="me-1" />
-                          {loading ? "Preparing..." : "Download"}
-                        </button>
-                      )}
-                    </PDFDownloadLink>
+                    {(distributedTasks && distributedTasks.length > 0) ||
+                    (checklists && checklists.length > 0) ? (
+                      <PDFDownloadLink
+                        document={
+                          <ChecklistPDF
+                            items={
+                              distributedTasks && distributedTasks.length > 0
+                                ? distributedTasks
+                                : checklists
+                            }
+                            categories={categories}
+                            meta={{
+                              userName: user?.name || user?.email || "User",
+                              generatedAt: new Date(),
+                            }}
+                          />
+                        }
+                        fileName={`checklist-${userId || "user"}.pdf`}
+                      >
+                        {({ loading }) => (
+                          <button className="btn">
+                            <FaDownload className="me-1" />
+                            {loading ? "Preparing..." : "Download"}
+                          </button>
+                        )}
+                      </PDFDownloadLink>
+                    ) : (
+                      <button
+                        className="btn"
+                        disabled
+                        title="No tasks to download"
+                      >
+                        <FaDownload className="me-1" />
+                        Download
+                      </button>
+                    )}
                     {/* <button className="btn">
                       <FaPrint className="me-1" /> Print
                     </button> */}
@@ -950,7 +522,7 @@ const Check = () => {
                       </div>
                       <div className="col-md-2 mb-3">
                         <button
-                          className="btn btn-add-task w-100"
+                          className="btn-outline-primary"
                           onClick={addChecklist}
                         >
                           <FaPlus className="me-1" />
@@ -1012,23 +584,37 @@ const Check = () => {
                                     )}
                                   </div>
                                 </td>
-                                <td
-                                  style={{
-                                    textDecoration:
-                                      item.status === "completed"
-                                        ? "line-through"
-                                        : "none",
-                                    color:
-                                      item.status === "completed"
-                                        ? "#9ca3af"
-                                        : "#374151",
-                                    fontWeight:
-                                      item.status === "completed"
-                                        ? "400"
-                                        : "600",
-                                  }}
-                                >
-                                  {item.text}
+                                <td>
+                                  {editingId === item.id ? (
+                                    <input
+                                      type="text"
+                                      className="form-control form-control-sm"
+                                      value={editingText}
+                                      onChange={(e) =>
+                                        setEditingText(e.target.value)
+                                      }
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    <span
+                                      style={{
+                                        textDecoration:
+                                          item.status === "completed"
+                                            ? "line-through"
+                                            : "none",
+                                        color:
+                                          item.status === "completed"
+                                            ? "#9ca3af"
+                                            : "#374151",
+                                        fontWeight:
+                                          item.status === "completed"
+                                            ? "400"
+                                            : "600",
+                                      }}
+                                    >
+                                      {item.text}
+                                    </span>
+                                  )}
                                 </td>
                                 <td>
                                   {(() => {
@@ -1037,13 +623,7 @@ const Check = () => {
                                     );
                                     return (
                                       <div className="d-flex align-items-center gap-2 flex-wrap">
-                                        <Link
-                                          to={`/category/${subcategory?.category?.id}`}
-                                          className="category-link"
-                                        >
-                                          {subcategory?.name || "N/A"}
-                                          <FiLink size={12} />
-                                        </Link>
+                                        {subcategory?.name || "N/A"}
                                         {subcategory?.required_days && (
                                           <span className="days-badge">
                                             <FiClock size={12} />
@@ -1067,18 +647,53 @@ const Check = () => {
                                 </td>
                                 <td>
                                   <div className="d-flex gap-2 justify-content-center">
-                                    <button
-                                      className="btn p-2 w-25 border rounded-circle"
-                                      onClick={() => handleEdit(item.id)}
-                                    >
-                                      <FiEdit size={15} />
-                                    </button>
-                                    <button
-                                      className="btn p-2 w-25 border rounded-circle"
-                                      onClick={() => deleteChecklist(item.id)}
-                                    >
-                                      <FiTrash size={15} />
-                                    </button>
+                                    {editingId === item.id ? (
+                                      <>
+                                        <button
+                                          className="btn btn-success btn-sm d-flex align-items-center justify-content-center"
+                                          onClick={saveEdit}
+                                          disabled={updateLoading}
+                                          style={{ width: 32, height: 32 }}
+                                        >
+                                          {updateLoading ? (
+                                            <FaSpinner
+                                              className="spin"
+                                              size={14}
+                                            />
+                                          ) : (
+                                            <FaCheck size={14} />
+                                          )}
+                                        </button>
+
+                                        <button
+                                          className="btn btn-secondary btn-sm d-flex align-items-center justify-content-center"
+                                          onClick={cancelEdit}
+                                          disabled={updateLoading}
+                                          style={{ width: 32, height: 32 }}
+                                        >
+                                          <FaTimes size={14} />
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <button
+                                          className="btn p-2 w-25 border rounded-circle"
+                                          onClick={() =>
+                                            handleEdit(item.id, item.text)
+                                          }
+                                        >
+                                          <FiEdit size={15} />
+                                        </button>
+                                        <button
+                                          className="btn p-2 w-25 border rounded-circle"
+                                          onClick={() =>
+                                            deleteChecklist(item.id)
+                                          }
+                                        >
+                                          <FiTrash size={15} />
+                                        </button>
+                                      </>
+                                    )}
                                   </div>
                                 </td>
                               </tr>
@@ -1111,20 +726,14 @@ const Check = () => {
                     </>
                   ) : (
                     <div className="empty-state">
-                      <FaHeart
+                      <img
+                        src="/images/userDashboard/no-task-available.png"
+                        alt="No tasks"
                         style={{
-                          fontSize: "4rem",
-                          opacity: 0.3,
-                          color: "#C31162",
+                          width: "30%",
+                          opacity: 0.7,
                         }}
                       />
-                      <h5 style={{ color: "#6b7280", marginTop: "1rem" }}>
-                        No tasks yet
-                      </h5>
-                      <p style={{ color: "#9ca3af" }}>
-                        Start planning your dream wedding by adding your first
-                        task!
-                      </p>
                     </div>
                   )}
                 </div>

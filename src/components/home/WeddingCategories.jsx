@@ -144,7 +144,7 @@ const WeddingCategories = ({ onSelect }) => {
                                         .replace(/\s+/g, "-")}`
                                 }
                                 className="badge rounded-0 primary-light-bg text-dark fs-12 px-3 py-2"
-                                style={{textDecoration:"none"}}
+                                style={{ textDecoration: "none" }}
                               >
                                 {it}
                               </Link>

@@ -1107,7 +1107,10 @@ const Detailed = () => {
         backdrop={true}
       >
         <Modal.Body>
-          <BusinessClaimForm setShowClaimForm={setShowClaimForm} />
+          <BusinessClaimForm
+            setShowClaimForm={setShowClaimForm}
+            vendorServiceId={venueData?.id}
+          />
         </Modal.Body>
       </Modal>
     </div>
