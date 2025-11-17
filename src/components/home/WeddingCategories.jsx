@@ -80,7 +80,7 @@ const WeddingCategories = ({ onSelect }) => {
                 aria-expanded={isExpanded}
                 aria-label={`Open ${cat.title} category`}
               >
-                <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div className="shadow-sm border-0 rounded-4 overflow-hidden">
                   <div className="ratio ratio-4x3 position-relative">
                     <img
                       src={cat.imageSrc}

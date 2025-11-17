@@ -8,7 +8,10 @@ import { useVendorType } from "../../hooks/useVendorType";
 import { useHome } from "../../hooks/useHome";
 import herosection from "../../assets/Hero_2.jpg";
 
-const RotatingWordHeadline = ({ words = ["Unique", "Dreamy", "Perfect"], titleTemplate = "Find Your _ Wedding Vendor" }) => {
+const RotatingWordHeadline = ({
+  words = ["Unique", "Dreamy", "Perfect"],
+  titleTemplate = "Find Your _ Wedding Vendor",
+}) => {
   const [index, setIndex] = useState(0);
   const [animating, setAnimating] = useState(true);
   useEffect(() => {
@@ -46,7 +49,14 @@ const Herosection = () => {
   const navigate = useNavigate();
   const reduxLocation = useSelector((s) => s.location.selectedLocation);
   const { vendorTypes, loading } = useVendorType();
-  const { heroData, vendorCategories, cities, loadingHero, loadingCities, getCurrentBackgroundImage } = useHome();
+  const {
+    heroData,
+    vendorCategories,
+    cities,
+    loadingHero,
+    loadingCities,
+    getCurrentBackgroundImage,
+  } = useHome();
 
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedCity, setSelectedCity] = useState("Pune");
@@ -54,7 +64,8 @@ const Herosection = () => {
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
 
-  const toSlug = (t) => t?.replace(/\s+/g, "-").replace(/[^A-Za-z0-9\-]/g, "") || "";
+  const toSlug = (t) =>
+    t?.replace(/\s+/g, "-").replace(/[^A-Za-z0-9\-]/g, "") || "";
   const formatName = (n) => n.replace(/\band\b/gi, "&");
 
   useEffect(() => {
@@ -81,8 +92,12 @@ const Herosection = () => {
         .split(" ")
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
         .join(" ");
-      const cityParam = selectedCity ? `&city=${encodeURIComponent(selectedCity)}` : "";
-      navigate(`/vendors/all?vendorType=${encodeURIComponent(formatted)}${cityParam}`);
+      const cityParam = selectedCity
+        ? `&city=${encodeURIComponent(selectedCity)}`
+        : "";
+      navigate(
+        `/vendors/all?vendorType=${encodeURIComponent(formatted)}${cityParam}`
+      );
     }
   };
 
@@ -106,10 +121,13 @@ const Herosection = () => {
           <Col lg={10}>
             <RotatingWordHeadline
               words={heroData?.typewriter_words || ["Dream"]}
-              titleTemplate={heroData?.title || "Discover Your _ Wedding Vendor"}
+              titleTemplate={
+                heroData?.title || "Discover Your _ Wedding Vendor"
+              }
             />
             <p className="lead mb-4">
-              {heroData?.subtitle || "Discover top-rated wedding vendors with countless reliable reviews."}
+              {heroData?.subtitle ||
+                "Discover top-rated wedding vendors with countless reliable reviews."}
             </p>
           </Col>
         </Row>
@@ -131,7 +149,11 @@ const Herosection = () => {
                   }}
                 >
                   <span>Find Vendors in {reduxLocation}</span>
-                  {showDropdown ? <MdExpandLess size={24} /> : <MdExpandMore size={24} />}
+                  {showDropdown ? (
+                    <MdExpandLess size={24} />
+                  ) : (
+                    <MdExpandMore size={24} />
+                  )}
                 </button>
                 {showDropdown && (
                   <div
@@ -151,15 +173,35 @@ const Herosection = () => {
                       animation: "slideDown 0.3s ease-out",
                     }}
                   >
-                    <div style={{ padding: "1.5rem", columnCount: 4, columnGap: "1.5rem" }} className="dropdown-grid">
+                    <div
+                      style={{
+                        padding: "1.5rem",
+                        columnCount: 4,
+                        columnGap: "1.5rem",
+                      }}
+                      className="dropdown-grid"
+                    >
                       {vendorCategories.map((cat, i) => (
-                        <div key={cat.id || i} style={{ breakInside: "avoid", marginBottom: "1.5rem" }}>
-                          <div className="fw-bold text-uppercase mb-2" style={{ color: "#e83581", fontSize: "14px" }}>
+                        <div
+                          key={cat.id || i}
+                          style={{
+                            breakInside: "avoid",
+                            marginBottom: "1.5rem",
+                          }}
+                        >
+                          <div
+                            className="fw-bold text-uppercase mb-2"
+                            style={{ color: "#e83581", fontSize: "14px" }}
+                          >
                             {cat.name}
                           </div>
                           {Array.isArray(cat.subcategories) &&
                             cat.subcategories.map((sub, j) => (
-                              <li key={sub.id || j} className="mb-1" style={{ listStyle: "none" }}>
+                              <li
+                                key={sub.id || j}
+                                className="mb-1"
+                                style={{ listStyle: "none" }}
+                              >
                                 <Link
                                   to={`/vendors/${toSlug(sub.name)}`}
                                   style={{
@@ -193,9 +235,15 @@ const Herosection = () => {
                       style={{ fontSize: "14px", padding: "0.5rem 0.75rem" }}
                     >
                       <option>All Categories</option>
-                      {vendorTypes.length
-                        ? vendorTypes.map((c) => <option key={c.id}>{c.name}</option>)
-                        : <option disabled>{loading ? "Loading..." : "No categories found"}</option>}
+                      {vendorTypes.length ? (
+                        vendorTypes.map((c) => (
+                          <option key={c.id}>{c.name}</option>
+                        ))
+                      ) : (
+                        <option disabled>
+                          {loading ? "Loading..." : "No categories found"}
+                        </option>
+                      )}
                     </Form.Select>
                   </Col>
                   <Col xs={12} md={5}>
@@ -205,13 +253,19 @@ const Herosection = () => {
                       onChange={(e) => setSelectedCity(e.target.value)}
                       style={{ fontSize: "14px", padding: "0.5rem 0.75rem" }}
                     >
-                      {loadingCities
-                        ? <option>Loading cities...</option>
-                        : cities.map((city) => <option key={city}>{city}</option>)}
+                      {loadingCities ? (
+                        <option>Loading cities...</option>
+                      ) : (
+                        cities.map((city) => <option key={city}>{city}</option>)
+                      )}
                     </Form.Select>
                   </Col>
                   <Col xs={12} md={2} className="d-grid">
-                    <Button variant="none" className="btn-primary fw-semibold fs-12" type="submit">
+                    <Button
+                      variant="none"
+                      className="btn-primary fw-semibold fs-12"
+                      type="submit"
+                    >
                       FIND VENDOR
                     </Button>
                   </Col>
@@ -223,7 +277,10 @@ const Herosection = () => {
         {heroData?.description && (
           <Row className="justify-content-center mt-3">
             <Col lg={10} className="text-center">
-              <p className="small text-white-50 mb-0" style={{ fontSize: "14px" }}>
+              <p
+                className="small text-white-50 mb-0"
+                style={{ fontSize: "14px" }}
+              >
                 {heroData.description}
               </p>
             </Col>

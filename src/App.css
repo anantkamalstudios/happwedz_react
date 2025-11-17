@@ -487,8 +487,8 @@ body {
 }
 
 .tool-icon-img {
-  width: 100px;
-  height: 100px;
+  width: 60px;
+  height: 60px;
   object-fit: contain;
   display: block;
   transition: transform 0.6s ease;
@@ -500,8 +500,8 @@ body {
 }
 
 .tool-card-icon-wrapper {
-  width: 100px;
-  height: 100px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -18153,13 +18153,16 @@ input:checked + .slider:before {
 
 /* Hero Section */
 .einvite-hero-section {
-  background: linear-gradient(90deg, #c75b7a, #d88ca5);
+  /* background: linear-gradient(90deg, #c75b7a, #d88ca5); */
+  background-image: url("/images/einvite/e-invitation-card.png");
   position: relative;
   min-height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
 }
 
 .einvite-hero-overlay {
@@ -18174,7 +18177,7 @@ input:checked + .slider:before {
 .einvite-hero-title {
   font-size: 5rem;
   font-weight: bold;
-  color: #fff;
+  color: #c31162;
   letter-spacing: 1px;
 }
 

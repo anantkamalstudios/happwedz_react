@@ -1375,7 +1375,7 @@ const Header = () => {
       id: "real-wedding",
       slug: "real-wedding",
       label: "Real wedding",
-      img: "/images/userDashboard/real-wedding-img.svg",
+      img: "/images/userDashboard/real-wedding-img1.png",
     },
     {
       id: "user-profile",

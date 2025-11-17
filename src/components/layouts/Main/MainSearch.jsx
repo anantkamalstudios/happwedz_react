@@ -33,28 +33,28 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
           baseSectionRaw === "vendor"
             ? "vendors"
             : baseSectionRaw === "venue"
-              ? "venues"
-              : baseSectionRaw;
+            ? "venues"
+            : baseSectionRaw;
 
         const effectiveSection =
           baseSection === "venues" || baseSection === "vendors"
             ? baseSection
             : section &&
-              (["venues", "vendors", "venue", "vendor"].includes(
+              ["venues", "vendors", "venue", "vendor"].includes(
                 section.toLowerCase()
-              ))
-              ? (section.toLowerCase() === "vendor"
-                ? "vendors"
-                : section.toLowerCase() === "venue"
-                  ? "venues"
-                  : section.toLowerCase())
-              : location.pathname.includes("/venues") ||
-                location.pathname.includes("/venue")
-                ? "venues"
-                : location.pathname.includes("/vendors") ||
-                  location.pathname.includes("/vendor")
-                  ? "vendors"
-                  : null;
+              )
+            ? section.toLowerCase() === "vendor"
+              ? "vendors"
+              : section.toLowerCase() === "venue"
+              ? "venues"
+              : section.toLowerCase()
+            : location.pathname.includes("/venues") ||
+              location.pathname.includes("/venue")
+            ? "venues"
+            : location.pathname.includes("/vendors") ||
+              location.pathname.includes("/vendor")
+            ? "vendors"
+            : null;
 
         const normalizeType = (t) => {
           const v = (t || "").toLowerCase();
@@ -68,9 +68,9 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
         );
         if (!matched && effectiveSection) {
           matched = dataInfo.find((item) =>
-            (item?.navbar?.type || "").toLowerCase().includes(
-              effectiveSection === "venues" ? "venue" : "vendor"
-            )
+            (item?.navbar?.type || "")
+              .toLowerCase()
+              .includes(effectiveSection === "venues" ? "venue" : "vendor")
           );
         }
         setHeroInfo(matched || null);
@@ -408,7 +408,7 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
         `}
       </style>
 
-      <div className="container py-4 py-md-5">
+      <div className="container py-4 py-md-5" style={{ height: "330px" }}>
         <Row className="align-items-center g-4 g-lg-5">
           <Col xs={12} lg={6}>
             <div className="pe-lg-4">
@@ -439,7 +439,7 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
                   }}
                 >
                   <div
-                    className="search-input-focus d-flex align-items-center flex-grow-1 px-3 py-2 bg-white position-relative"
+                    className="search-input-focus d-flex align-items-center flex-grow-1 px-3 py-1 bg-white position-relative"
                     style={{
                       border: "2px solid #e5e7eb",
                       borderRadius: "12px",
@@ -647,11 +647,11 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
                     heroInfo?.image
                   }
                   alt="Search showcase"
-                  className="w-100"
+                  className="w-100 h-100"
                   style={{ objectFit: "cover" }}
                   onError={(e) => {
                     e.currentTarget.src = "logo-no-bg.png";
-                    e.currentTarget.style.objectFit = "contain";
+                    e.currentTarget.style.objectFit = "cover";
                   }}
                 />
               </div>
