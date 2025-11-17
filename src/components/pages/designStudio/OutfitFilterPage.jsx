@@ -1000,7 +1000,7 @@ import {
 } from "react-compare-slider";
 import axios from "axios";
 
-const buttons = ["Shades", "Compare", "Complete Look"];
+const buttons = ["Outfit", "Compare", "Complete Look"];
 const BASE_API = "https://www.happywedz.com/ai";
 const CATALOG_API = `${BASE_API}/api/catalog/items`;
 const TRYON_CLOTHES_API = `${BASE_API}/api/tryon/clothes`;
@@ -1011,7 +1011,7 @@ export default function FiltersPageOutfit() {
   const [appliedOutfit, setAppliedOutfit] = useState(null);
 
   const selfieInputRef = useRef(null);
-  const originalBlobUrlRef = useRef(null); // New ref to track and revoke blob URLs for original image
+  const originalBlobUrlRef = useRef(null);
 
   const [originalUrl, setOriginalUrl] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -1073,7 +1073,6 @@ export default function FiltersPageOutfit() {
         category = "outfit";
       }
 
-      // Map 'jewellary' to 'jewelry' for the API call
       const apiCategory = category === "jewellary" ? "jewelry" : category;
       console.log("Calling API with category:", apiCategory);
 

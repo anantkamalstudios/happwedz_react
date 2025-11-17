@@ -80,7 +80,7 @@ const WeddingCategories = ({ onSelect }) => {
                 aria-expanded={isExpanded}
                 aria-label={`Open ${cat.title} category`}
               >
-                <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div className="shadow-sm border-0 rounded-4 overflow-hidden">
                   <div className="ratio ratio-4x3 position-relative">
                     <img
                       src={cat.imageSrc}
@@ -144,7 +144,7 @@ const WeddingCategories = ({ onSelect }) => {
                                         .replace(/\s+/g, "-")}`
                                 }
                                 className="badge rounded-0 primary-light-bg text-dark fs-12 px-3 py-2"
-                                style={{textDecoration:"none"}}
+                                style={{ textDecoration: "none" }}
                               >
                                 {it}
                               </Link>

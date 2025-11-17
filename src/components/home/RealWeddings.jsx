@@ -8,17 +8,17 @@ const RealWeddings = () => {
   const images = [
     {
       id: 1,
-      url: "images/home/realWedding3.png",
+      url: "images/home/home-realwedding3.jpg",
       alt: "Wedding rings with pink roses",
     },
     {
       id: 2,
-      url: "images/home/realWedding2.png",
+      url: "images/home/home-realwedding2.jpg",
       alt: "Bridal party in pink dresses",
     },
     {
       id: 3,
-      url: "images/home/realWedding1.png",
+      url: "images/home/home-realwedding1.jpg",
       alt: "Elegant wedding table setting",
     },
     {

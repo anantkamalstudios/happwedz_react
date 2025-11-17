@@ -75,7 +75,7 @@ const tabs = [
     slug: "real-wedding",
     label: "Real wedding",
     icon: <FaUserFriends />,
-    img: "/images/userDashboard/real-wedding-img.svg",
+    img: "/images/userDashboard/real-wedding-img1.png",
   },
   {
     id: "user-profile",

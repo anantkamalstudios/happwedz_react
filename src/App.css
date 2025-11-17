@@ -487,8 +487,8 @@ body {
 }
 
 .tool-icon-img {
-  width: 100px;
-  height: 100px;
+  width: 60px;
+  height: 60px;
   object-fit: contain;
   display: block;
   transition: transform 0.6s ease;
@@ -500,8 +500,8 @@ body {
 }
 
 .tool-card-icon-wrapper {
-  width: 100px;
-  height: 100px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -3241,7 +3241,7 @@ body {
   color: #7f8c8d;
   margin: 0;
 }
- 
+
 .lead-badge {
   background-color: #007bff;
   color: #fff;
@@ -3250,7 +3250,7 @@ body {
   border-radius: 12px;
   font-weight: 500;
 }
- 
+
 .lead-message {
   font-size: 13px;
   color: #555;
@@ -3261,11 +3261,11 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
- 
+
 .lw-stats-row {
   --radius: 16px;
 }
- 
+
 .lw-stats-card {
   border-radius: var(--radius);
   background: #fff;
@@ -3283,7 +3283,7 @@ body {
 .lw-stats-body {
   padding: 1.25rem 1.5rem;
 }
- 
+
 .lw-stats-icon {
   background: #f1f5f9;
   padding: 0.6rem;
@@ -3298,24 +3298,24 @@ body {
 .lw-stats-card:hover .lw-stats-icon {
   background: #e2e8f0;
 }
- 
+
 .lw-stats-pending {
-  border-top: 4px solid #fbbf24; 
+  border-top: 4px solid #fbbf24;
 }
 
 .lw-stats-booked {
-  border-top: 4px solid #22c55e;  
+  border-top: 4px solid #22c55e;
 }
 
 .lw-stats-declined {
-  border-top: 4px solid #ef4444;  
+  border-top: 4px solid #ef4444;
 }
 
 .lw-stats-empty {
   border-top: 4px solid #cbd5e1;
   opacity: 0.7;
 }
- 
+
 .lw-stats-card p {
   color: #64748b;
   font-weight: 500;
@@ -3325,12 +3325,12 @@ body {
   font-size: 1.8rem;
   color: #0f172a;
 }
- 
+
 .lw-stats-card small {
   color: #94a3b8;
   font-weight: 500;
 }
- 
+
 @media (max-width: 576px) {
   .lw-stats-card {
     border-radius: 12px;
@@ -3345,7 +3345,6 @@ body {
     border-radius: 10px;
   }
 }
-
 
 /* Footer */
 .lead-footer {
@@ -18154,13 +18153,16 @@ input:checked + .slider:before {
 
 /* Hero Section */
 .einvite-hero-section {
-  background: linear-gradient(90deg, #c75b7a, #d88ca5);
+  /* background: linear-gradient(90deg, #c75b7a, #d88ca5); */
+  background-image: url("/images/einvite/e-invitation-card.png");
   position: relative;
   min-height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
 }
 
 .einvite-hero-overlay {
@@ -18175,7 +18177,7 @@ input:checked + .slider:before {
 .einvite-hero-title {
   font-size: 5rem;
   font-weight: bold;
-  color: #fff;
+  color: #c31162;
   letter-spacing: 1px;
 }
 
