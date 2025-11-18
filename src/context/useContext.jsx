@@ -17,7 +17,7 @@ export const MyProvider = ({ children }) => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedCategoryName, setSelectedCategoryName] = useState("All");
   const [displayPhotos, setDisplayPhotos] = useState([]);
-  const [sortBy, setSortBy] = useState("recent"); // 'recent' or 'trending'
+  const [sortBy, setSortBy] = useState("recent");
 
   useEffect(() => {
     fetchTypes();
@@ -42,15 +42,13 @@ export const MyProvider = ({ children }) => {
       photos = photosByType || [];
     }
 
-    // Sort photos based on sortBy state
     if (sortBy === "recent" && photos.length > 0) {
       photos = [...photos].sort((a, b) => {
         const dateA = new Date(a.createdAt);
         const dateB = new Date(b.createdAt);
-        return dateB - dateA; // Most recent first
+        return dateB - dateA;
       });
     }
-    // Add more sort options here if needed (trending, etc.)
 
     setDisplayPhotos(photos);
   }, [allPhotos, photosByType, selectedCategory, sortBy]);

@@ -14,7 +14,6 @@ const Navbar = ({ storefrontCompletion }) => {
   const [activeTab, setActiveTab] = useState("home");
   const [storedCompletion, setStoredCompletion] = useState(0);
 
-  // Load completion percentage from localStorage when component mounts
   useEffect(() => {
     const stored = localStorage.getItem("storefrontCompletion");
     if (stored) {
@@ -22,7 +21,6 @@ const Navbar = ({ storefrontCompletion }) => {
     }
   }, []);
 
-  // Update stored completion when prop changes
   useEffect(() => {
     if (storefrontCompletion !== undefined) {
       setStoredCompletion(storefrontCompletion);
@@ -83,7 +81,7 @@ const Navbar = ({ storefrontCompletion }) => {
     <div className="adminNav">
       <div className="wrapper tabs-container py-2 px-3 px-lg-5 mt-3 vendor-dashboard-navbar">
         <div className="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
-          <div className="d-flex gap-3 gap-lg-4 flex-wrap justify-content-center justify-content-lg-start ">
+          <div className="d-flex gap-3 gap-lg-4 flex-wrap justify-content-center justify-content-lg-start">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
