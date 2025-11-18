@@ -27,7 +27,6 @@ const Home = () => {
   return (
     <div style={{ position: "relative" }}>
       <Herosection />
-      {/* <StatisticsSection /> */}
       <WeddingCategories />
       <CtaPanel
         logo={logo}
@@ -74,7 +73,7 @@ const Home = () => {
       <HowItWorksSection />
       <AppDownloadSection />
       <MetroCities />
-      <div
+      {/* <div
         style={{
           position: "fixed",
           bottom: "10vh",
@@ -83,7 +82,7 @@ const Home = () => {
         }}
       >
         <HomeGennie />
-      </div>
+      </div> */}
     </div>
   );
 };

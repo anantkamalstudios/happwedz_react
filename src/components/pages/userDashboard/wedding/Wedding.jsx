@@ -10,7 +10,8 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import CtaPanel from "../../../../components/home/CtaPanel";
 import logo from "../../../../../public/happywed_white.png";
-import image from "../../../../../public/images/home/try.png";
+import image from "../../../../../public/images/home/1.jpg";
+import bigleafcta1 from "../../../../../public/images/home/bigleafcta1.jpg";
 import VenueVendorComponent from "./VenueVendorComponent";
 import UpComingTask from "../wedding/UpcomingTask";
 import EInvites from "./EInviteCard";
@@ -247,7 +248,7 @@ const Wedding = () => {
           <div className="row g-0">
             <div className="col-md-4 position-relative">
               <img
-                src="/images/userDashboard/home-wedding-image.avif"
+                src="/images/userDashboard/home-wedding-image.jpg"
                 alt="Wedding"
                 className="img-fluid h-100 w-100 rounded-5 object-fit-cover"
               />
@@ -337,8 +338,9 @@ const Wedding = () => {
             subHeading="Try Virtual Makeup & Grooming Looks for Your Big Day"
             link="/try"
             title="Create Your Look !"
-            subtitle="Experience How You'll Look on Your Wedding Day with AI-Powered Virtual Makeover"
+            subtitle="Experience How You'll Look in Your Wedding Day with AI-Powered Virtual Makeover."
             btnName="Try Virtual Look"
+            background={bigleafcta1}
           />
         </section>
 

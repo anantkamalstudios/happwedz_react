@@ -10,7 +10,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-const DEFAULT_CENTER = [22.3511148, 78.6677428]; // India centroid
+const DEFAULT_CENTER = [22.3511148, 78.6677428];
 const DEFAULT_ZOOM = 5;
 
 function FitBounds({ points }) {
@@ -58,7 +58,6 @@ const MapView = ({ subVenuesData = [], section }) => {
   const [loading, setLoading] = useState(true);
   const isMounted = useRef(true);
 
-  // Build geocode tasks for each venue
   useEffect(() => {
     isMounted.current = true;
     const run = async () => {

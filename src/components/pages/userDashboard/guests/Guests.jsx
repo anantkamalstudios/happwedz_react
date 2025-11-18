@@ -182,7 +182,6 @@ const Guests = () => {
         (selectedStatus === "All" || g.status === selectedStatus) &&
         g.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    // Group guests by their group property
     return filtered.reduce((acc, guest) => {
       const groupName = guest.group || "Other";
       if (!acc[groupName]) {
@@ -193,16 +192,6 @@ const Guests = () => {
     }, {});
   }, [guests, selectedGroup, selectedStatus, searchTerm]);
 
-  const filteredGuests = guests.filter(
-    (g) =>
-      g && // Add a check to ensure the guest object exists
-      (selectedGroup === "All" || g.group === selectedGroup) &&
-      (selectedStatus === "All" || g.status === selectedStatus) &&
-      g.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -228,9 +217,7 @@ const Guests = () => {
     }
 
     try {
-      // Check if userId is a Firebase UID (string) or backend ID (number)
       const userIdToSend = isNaN(userId) ? userId : parseInt(userId, 10);
-
       const res = await axiosInstance.post(
         "https://happywedz.com/api/guestlist",
         {
@@ -243,15 +230,12 @@ const Guests = () => {
       if (res.data?.success && res.data.guest) {
         setGuests((prev) => [res.data.guest, ...prev]);
       }
-      setNewGuestForm(initialGuestFormState); // Reset form state
-      // setRefresh(prev => !prev); // No longer needed, we are updating state directly
+      setNewGuestForm(initialGuestFormState);
       setShowAddGuestForm(false);
     } catch (err) {
       const errorMessage =
         err.response?.data?.message ||
         "An error occurred while adding the guest.";
-
-      // Check if it's a token validation error
       if (
         errorMessage.includes("Token invalid") ||
         errorMessage.includes("token")
@@ -274,7 +258,7 @@ const Guests = () => {
       await axiosInstance.put(`https://happywedz.com/api/guestlist/${id}`, {
         [field]: value,
       });
-      setRefresh((prev) => !prev); // Trigger re-fetch
+      setRefresh((prev) => !prev); ch
     } catch (err) {
       console.error("Update Guest Error:", err);
     }
@@ -283,14 +267,12 @@ const Guests = () => {
   const deleteGuestAPI = async (id) => {
     if (!axiosInstance) return;
     if (!window.confirm("Are you sure?")) return;
-    // Optimistically update the UI
     setGuests((prevGuests) => prevGuests.filter((guest) => guest.id !== id));
     try {
       await axiosInstance.delete(`https://happywedz.com/api/guestlist/${id}`);
-      // No need to refetch, the optimistic update is sufficient
     } catch (err) {
       console.error("Delete Guest Error:", err);
-      setRefresh((prev) => !prev); // Re-fetch to revert if the delete fails
+      setRefresh((prev) => !prev);
     }
   };
 
@@ -315,7 +297,6 @@ const Guests = () => {
     message += `Adults: ${adultsCount} | Children: ${childrenCount}\n\n`;
     message += `*Guest Details:*\n\n`;
 
-    // Group all guests by group (not filtered)
     const allGroupedGuests = guests.reduce((acc, guest) => {
       const groupName = guest.group || "Other";
       if (!acc[groupName]) {
@@ -334,9 +315,8 @@ const Guests = () => {
         if (guest.companions > 0)
           message += ` | Companions: ${guest.companions}`;
         if (guest.seat_number) message += ` | Seat: ${guest.seat_number}`;
-        message += ` | Type: ${guest.type || "Adult"} | Menu: ${
-          guest.menu || "Veg"
-        }`;
+        message += ` | Type: ${guest.type || "Adult"} | Menu: ${guest.menu || "Veg"
+          }`;
         message += `\n`;
       });
       message += `\n`;
@@ -372,9 +352,6 @@ const Guests = () => {
         setShowMessageOptions(false);
         return;
       }
-
-      // Format phone number for WhatsApp (remove spaces, dashes, plus signs, and parentheses)
-      // WhatsApp requires international format: country code + number (no +, spaces, or special chars)
       let phoneNumber = userPhone
         .replace(/\s+/g, "")
         .replace(/-/g, "")
@@ -383,12 +360,10 @@ const Guests = () => {
         .replace(/\)/g, "")
         .replace(/\./g, "");
 
-      // Remove leading 0 if present (some countries use leading 0 for local numbers)
       if (phoneNumber.startsWith("0")) {
         phoneNumber = phoneNumber.substring(1);
       }
 
-      // Validate phone number (should contain only digits)
       if (!/^\d+$/.test(phoneNumber)) {
         Swal.fire({
           icon: "error",
@@ -560,406 +535,454 @@ const Guests = () => {
 
   return (
     <div className="wgl-container">
-      {/* Header & Stats */}
-      <div className="wgl-header">
-        <h1 className="wgl-title">Guest List</h1>
-        <div className="wgl-stats-container">
-          <div className="wgl-stat-card">
-            <h2 className="wgl-stat-number">{guests.length}</h2>
-            <p className="wgl-stat-label">Guests</p>
-          </div>
-          <div className="wgl-stat-card">
-            <h2 className="wgl-stat-number">{adultsCount}</h2>
-            <p className="wgl-stat-label">Adults</p>
-            <p className="wgl-stat-sublabel">Children: {childrenCount}</p>
-          </div>
-          <div className="wgl-stat-card">
-            <h2 className="wgl-stat-number">{attendingCount}</h2>
-            <p className="wgl-stat-label">Attending</p>
-            <div className="wgl-status-sublabels">
-              <span className="wgl-status-sublabel">
-                Pending: {pendingCount}
-              </span>
-              <span className="wgl-status-sublabel">
-                Not Attending: {declinedCount}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Controls */}
-      <div className="wgl-controls">
-        <div className="wgl-search-container">
-          <FaSearch className="wgl-search-icon" />
-          <input
-            type="text"
-            className="wgl-search-input"
-            placeholder="Search guests..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
-          />
-        </div>
-        <div className="wgl-button-group">
-          <button
-            className="wgl-button wgl-button-primary"
-            onClick={() => {
-              setShowAddGuestForm(!showAddGuestForm);
-              setShowAddGroupForm(false);
-              setShowMessageOptions(false);
-            }}
-          >
-            <FaUserPlus className="wgl-button-icon" /> Add Guest
-          </button>
-          <button
-            className="wgl-button wgl-button-secondary"
-            onClick={() => {
-              setShowAddGroupForm(!showAddGroupForm);
-              setShowAddGuestForm(false);
-              setShowMessageOptions(false);
-            }}
-          >
-            <FaUsers className="wgl-button-icon" /> Create Group
-          </button>
-          <div className="wgl-message-dropdown">
-            <button
-              className="wgl-button wgl-button-secondary"
-              onClick={() => {
-                setShowMessageOptions(!showMessageOptions);
-                setShowAddGuestForm(false);
-                setShowAddGroupForm(false);
-              }}
-            >
-              <FaEnvelope className="wgl-button-icon" /> Send Message
-              <FaChevronDown className="wgl-dropdown-icon" />
-            </button>
-            {showMessageOptions && (
-              <div className="wgl-dropdown-menu">
-                <button onClick={() => sendMessage("Email")}>Email</button>
-                <button onClick={() => redirectToEinviteCards()}>
-                  Einvite Cards
-                </button>
-                <button onClick={() => sendMessage("WhatsApp")}>
-                  WhatsApp
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Email Modal */}
-          <EmailModal
-            show={showEmailModal}
-            onClose={() => setShowEmailModal(false)}
-            onSend={handleSendGuestListEmail}
-            sending={sendingEmail}
-            userEmail={userEmail}
-            userName={userName}
-          />
-          <button
-            className="wgl-button wgl-button-secondary"
-            onClick={handleDownload}
-          >
-            <FaDownload className="wgl-button-icon" /> Download
-          </button>
-          {/* <button
-            className="wgl-button wgl-button-secondary"
-            onClick={handlePrint}
-          >
-            <FaPrint className="wgl-button-icon" /> Print
-          </button> */}
-        </div>
-      </div>
-
-      {/* Add Guest Form */}
-      {showAddGuestForm && (
-        <div className="wgl-add-form card shadow-sm mb-4">
-          <div className="card-body p-4">
-            <h3 className="wgl-form-title card-title mb-4">Add New Guest</h3>
-            {formError && (
-              <div className="alert alert-danger small p-2">{formError}</div>
-            )}
-            <div className="row g-3">
-              <div className="col-md-4">
-                <label className="form-label">Guest Name</label>
-                <input
-                  name="name"
-                  className="form-control"
-                  placeholder="e.g., John Doe"
-                  value={newGuestForm.name}
-                  onChange={handleFormChange}
-                />
-              </div>
-              <div className="col-md-4">
-                <label className="form-label">Guest Email</label>
-                <input
-                  name="email"
-                  type="email"
-                  className="form-control"
-                  placeholder=""
-                  value={newGuestForm.email}
-                  onChange={handleFormChange}
-                />
-              </div>
-              <div className="col-md-4">
-                <label className="form-label">Companions</label>
-                <input
-                  name="companions"
-                  type="number"
-                  className="form-control"
-                  placeholder="e.g., 2"
-                  value={newGuestForm.companions}
-                  onChange={handleFormChange}
-                />
-              </div>
-              <div className="col-md-4">
-                <label className="form-label">Group</label>
-                <select
-                  name="group"
-                  className="form-select"
-                  value={newGuestForm.group}
-                  onChange={handleFormChange}
-                >
-                  <option value="Other">Other</option>
-                  {availableGroups.map((group) => (
-                    <option key={group} value={group}>
-                      {group}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-md-4">
-                <label className="form-label">Type</label>
-                <select
-                  name="type"
-                  className="form-select"
-                  value={newGuestForm.type}
-                  onChange={handleFormChange}
-                >
-                  {typeOptions.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-md-4">
-                <label className="form-label">Menu Preference</label>
-                <select
-                  name="menu"
-                  className="form-select"
-                  value={newGuestForm.menu}
-                  onChange={handleFormChange}
-                >
-                  {menuOptions.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-md-4">
-                <label className="form-label">Seat Number</label>
-                <input
-                  name="seat_number"
-                  className="form-control"
-                  placeholder="e.g., A12"
-                  value={newGuestForm.seat_number}
-                  onChange={handleFormChange}
-                />
-              </div>
-            </div>
-            <div className="wgl-form-actions mt-4 d-flex justify-content-end gap-2">
-              <button
-                className="btn btn-light"
-                onClick={() => setShowAddGuestForm(false)}
+      <div className="row">
+        <div className="col-md-3">
+          <div className="d-flex flex-column gap-3">
+            <div className="position-relative">
+              <label className="form-label fw-medium text-black mb-1 fs-26 py-3">Group</label>
+              <select
+                className="form-select form-select-sm border-2 py-2 primary-text"
+                style={{
+                  cursor: 'pointer',
+                  borderRadius: '0px',
+                  borderColor: '#ed1173',
+                }}
+                value={selectedGroup}
+                onChange={(e) => {
+                  setSelectedGroup(e.target.value);
+                  setCurrentPage(1);
+                }}
               >
-                Cancel
-              </button>
-              <button className="btn btn-primary" onClick={addGuestAPI}>
-                Save Guest
-              </button>
+                <option value="All">All Groups</option>
+                <option value="Other">Other</option>
+                {availableGroups.map((group) => (
+                  <option key={group} value={group}>
+                    {group}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="position-relative">
+              <label className="form-label fw-medium text-black mb-1 fs-26 py-3">Status</label>
+              <select
+                className="form-select form-select-sm border-2 py-2 primary-text"
+                style={{
+                  cursor: 'pointer',
+                  borderRadius: '0px',
+                  borderColor: '#ed1173',
+                }}
+                value={selectedStatus}
+                onChange={(e) => {
+                  setSelectedStatus(e.target.value);
+                  setCurrentPage(1);
+                }}
+              >
+                <option value="All">All Statuses</option>
+                {statusOptions.map((s) => (
+                  <option key={s}>{s}</option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
-      )}
 
-      {/* Add Group Form */}
-      {showAddGroupForm && (
-        <div className="wgl-add-form">
-          <h3 className="wgl-form-title">Create New Group</h3>
-          <input
-            name="newGroupName"
-            className="wgl-form-input"
-            placeholder="Group Name"
-            value={newGroupName}
-            onChange={(e) => setNewGroupName(e.target.value)}
-          />
-          <div className="wgl-form-actions">
-            <button
-              className="wgl-button wgl-button-cancel"
-              onClick={() => setShowAddGroupForm(false)}
-            >
-              Cancel
-            </button>
-            <button
-              className="wgl-button wgl-button-save"
-              onClick={() => {
-                if (!newGroupName.trim()) {
-                  Swal.fire({
-                    icon: "error",
-                    text: "Please enter a group name",
-                    confirmButtonColor: "#C31162",
-                  });
-                  return;
-                }
-
-                // Save group to localStorage
-                saveGroupToLocalStorage(newGroupName);
-
-                Swal.fire({
-                  icon: "success",
-                  text: `Group "${newGroupName}" created successfully`,
-                  timer: 3000,
-                  confirmButtonText: "OK",
-                  confirmButtonColor: "#C31162",
-                });
-
-                setShowAddGroupForm(false);
-                setNewGroupName("");
-              }}
-            >
-              Create Group
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Filters */}
-      <div className="wgl-filter-container">
-        <div className="wgl-filter-group">
-          <label className="wgl-filter-label">Group:</label>
-          <select
-            className="wgl-filter-select"
-            value={selectedGroup}
-            onChange={(e) => {
-              setSelectedGroup(e.target.value);
-              setCurrentPage(1);
-            }}
-          >
-            <option value="All">All Groups</option>
-            <option value="Other">Other</option>
-            {availableGroups.map((group) => (
-              <option key={group} value={group}>
-                {group}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="wgl-filter-group">
-          <label className="wgl-filter-label">Status:</label>
-          <select
-            className="wgl-filter-select"
-            value={selectedStatus}
-            onChange={(e) => {
-              setSelectedStatus(e.target.value);
-              setCurrentPage(1);
-            }}
-          >
-            <option value="All">All Statuses</option>
-            {statusOptions.map((s) => (
-              <option key={s}>{s}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Guest Table */}
-      <div className="wgl-guest-list" ref={printRef}>
-        {Object.keys(filteredAndGroupedGuests).length > 0 ? (
-          Object.entries(filteredAndGroupedGuests).map(
-            ([groupName, groupGuests]) => (
-              <div key={groupName} className="wgl-guest-group-section mb-5">
-                <h4 className="wgl-group-title p-2">
-                  {groupName} ({groupGuests.length})
-                </h4>
-                <table className="wgl-guest-table">
-                  <thead>
-                    <tr>
-                      <th className="wgl-table-header">Guest</th>
-                      <th className="wgl-table-header">Status</th>
-                      <th className="wgl-table-header">Companions</th>
-                      <th className="wgl-table-header">Seat</th>
-                      <th className="wgl-table-header">Type</th>
-                      <th className="wgl-table-header">Menu</th>
-                      <th className="wgl-table-header">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {groupGuests.map((g) => (
-                      <tr key={g.id} className="wgl-guest-row">
-                        <td className="wgl-guest-name">{g.name}</td>
-                        <td className="wgl-guest-status">
-                          <select
-                            className={`wgl-status-select wgl-status-${g.status.toLowerCase()}`}
-                            value={g.status}
-                            onChange={(e) =>
-                              updateGuestField(g.id, "status", e.target.value)
-                            }
-                          >
-                            {statusOptions.map((s) => (
-                              <option key={s}>{s}</option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="wgl-guest-companions">{g.companions}</td>
-                        <td className="wgl-guest-seat">{g.seat_number}</td>
-                        <td className="wgl-guest-type">
-                          <select
-                            value={g.type}
-                            onChange={(e) =>
-                              updateGuestField(g.id, "type", e.target.value)
-                            }
-                          >
-                            {typeOptions.map((t) => (
-                              <option key={t}>{t}</option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="wgl-guest-menu">
-                          <select
-                            value={g.menu}
-                            onChange={(e) =>
-                              updateGuestField(g.id, "menu", e.target.value)
-                            }
-                          >
-                            {menuOptions.map((m) => (
-                              <option key={m}>{m}</option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="wgl-guest-actions">
-                          <button
-                            className="wgl-action-button wgl-action-delete"
-                            onClick={() => deleteGuestAPI(g.id)}
-                          >
-                            <FaTrash />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+        <div className="col-md-9">
+          <div className="wgl-header">
+            <h1 className="wgl-title">Guest List</h1>
+            <div className="wgl-stats-container">
+              <div className="wgl-stat-card">
+                <h2 className="wgl-stat-number">{guests.length}</h2>
+                <p className="wgl-stat-label">Guests</p>
               </div>
-            )
-          )
-        ) : (
-          <div className="wgl-empty-state">
-            <p>No guests found matching your criteria</p>
+              <div className="wgl-stat-card">
+                <h2 className="wgl-stat-number">{adultsCount}</h2>
+                <p className="wgl-stat-label">Adults</p>
+                <p className="wgl-stat-sublabel">Children: {childrenCount}</p>
+              </div>
+              <div className="wgl-stat-card">
+                <h2 className="wgl-stat-number">{attendingCount}</h2>
+                <p className="wgl-stat-label">Attending</p>
+                <div className="wgl-status-sublabels">
+                  <span className="wgl-status-sublabel">
+                    Pending: {pendingCount}
+                  </span>
+                  <span className="wgl-status-sublabel">
+                    Not Attending: {declinedCount}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
-        )}
+
+
+
+          <div className="wgl-controls">
+            <div className="wgl-search-container">
+              <FaSearch className="wgl-search-icon" />
+              <input
+                type="text"
+                className="wgl-search-input"
+                placeholder="Search guests..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
+            <div className="wgl-button-group">
+              <button
+                className="wgl-button wgl-button-primary"
+                onClick={() => {
+                  setShowAddGuestForm(!showAddGuestForm);
+                  setShowAddGroupForm(false);
+                  setShowMessageOptions(false);
+                }}
+              >
+                <FaUserPlus className="wgl-button-icon" /> Add Guest
+              </button>
+              <button
+                className="wgl-button wgl-button-secondary"
+                onClick={() => {
+                  setShowAddGroupForm(!showAddGroupForm);
+                  setShowAddGuestForm(false);
+                  setShowMessageOptions(false);
+                }}
+              >
+                <FaUsers className="wgl-button-icon" /> Create Group
+              </button>
+              <div className="wgl-message-dropdown">
+                <button
+                  className="wgl-button wgl-button-secondary"
+                  onClick={() => {
+                    setShowMessageOptions(!showMessageOptions);
+                    setShowAddGuestForm(false);
+                    setShowAddGroupForm(false);
+                  }}
+                >
+                  <FaEnvelope className="wgl-button-icon" /> Send Message
+                  <FaChevronDown className="wgl-dropdown-icon" />
+                </button>
+                {showMessageOptions && (
+                  <div className="wgl-dropdown-menu">
+                    <button onClick={() => sendMessage("Email")}>Email</button>
+                    <button onClick={() => redirectToEinviteCards()}>
+                      Einvite Cards
+                    </button>
+                    <button onClick={() => sendMessage("WhatsApp")}>
+                      WhatsApp
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Email Modal */}
+              <EmailModal
+                show={showEmailModal}
+                onClose={() => setShowEmailModal(false)}
+                onSend={handleSendGuestListEmail}
+                sending={sendingEmail}
+                userEmail={userEmail}
+                userName={userName}
+              />
+              <button
+                className="wgl-button wgl-button-secondary"
+                onClick={handleDownload}
+              >
+                <FaDownload className="wgl-button-icon" /> Download
+              </button>
+            </div>
+          </div>
+
+
+          {showAddGuestForm && (
+            <div className="wgl-add-form card shadow-sm mb-4">
+              <div className="card-body p-4">
+                <h3 className="wgl-form-title card-title mb-4">Add New Guest</h3>
+                {formError && (
+                  <div className="alert alert-danger small p-2">{formError}</div>
+                )}
+                <div className="row g-3">
+                  <div className="col-md-4">
+                    <label className="form-label">Guest Name</label>
+                    <input
+                      name="name"
+                      className="form-control"
+                      placeholder="e.g., John Doe"
+                      value={newGuestForm.name}
+                      onChange={handleFormChange}
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label">Guest Email</label>
+                    <input
+                      name="email"
+                      type="email"
+                      className="form-control"
+                      placeholder=""
+                      value={newGuestForm.email}
+                      onChange={handleFormChange}
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label">Companions</label>
+                    <input
+                      name="companions"
+                      type="number"
+                      className="form-control"
+                      placeholder="e.g., 2"
+                      value={newGuestForm.companions}
+                      onChange={handleFormChange}
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label">Group</label>
+                    <select
+                      name="group"
+                      className="form-select"
+                      value={newGuestForm.group}
+                      onChange={handleFormChange}
+                    >
+                      <option value="Other">Other</option>
+                      {availableGroups.map((group) => (
+                        <option key={group} value={group}>
+                          {group}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label">Type</label>
+                    <select
+                      name="type"
+                      className="form-select"
+                      value={newGuestForm.type}
+                      onChange={handleFormChange}
+                    >
+                      {typeOptions.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label">Menu Preference</label>
+                    <select
+                      name="menu"
+                      className="form-select"
+                      value={newGuestForm.menu}
+                      onChange={handleFormChange}
+                    >
+                      {menuOptions.map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label">Seat Number</label>
+                    <input
+                      name="seat_number"
+                      className="form-control"
+                      placeholder="e.g., A12"
+                      value={newGuestForm.seat_number}
+                      onChange={handleFormChange}
+                    />
+                  </div>
+                </div>
+                <div className="wgl-form-actions mt-4 d-flex justify-content-end gap-2">
+                  <button
+                    className="btn btn-light"
+                    onClick={() => setShowAddGuestForm(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button className="btn btn-primary" onClick={addGuestAPI}>
+                    Save Guest
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+
+          {showAddGroupForm && (
+            <div className="wgl-add-form">
+              <h3 className="wgl-form-title">Create New Group</h3>
+              <input
+                name="newGroupName"
+                className="wgl-form-input"
+                placeholder="Group Name"
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
+              />
+              <div className="wgl-form-actions">
+                <button
+                  className="wgl-button wgl-button-cancel"
+                  onClick={() => setShowAddGroupForm(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="wgl-button wgl-button-save"
+                  onClick={() => {
+                    if (!newGroupName.trim()) {
+                      Swal.fire({
+                        icon: "error",
+                        text: "Please enter a group name",
+                        confirmButtonColor: "#C31162",
+                      });
+                      return;
+                    }
+
+                    // Save group to localStorage
+                    saveGroupToLocalStorage(newGroupName);
+
+                    Swal.fire({
+                      icon: "success",
+                      text: `Group "${newGroupName}" created successfully`,
+                      timer: 3000,
+                      confirmButtonText: "OK",
+                      confirmButtonColor: "#C31162",
+                    });
+
+                    setShowAddGroupForm(false);
+                    setNewGroupName("");
+                  }}
+                >
+                  Create Group
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Old Group Filter */}
+          {/* <div className="wgl-filter-container">
+            <div className="wgl-filter-group">
+              <label className="wgl-filter-label">Group:</label>
+              <select
+                className="wgl-filter-select"
+                value={selectedGroup}
+                onChange={(e) => {
+                  setSelectedGroup(e.target.value);
+                  setCurrentPage(1);
+                }}
+              >
+                <option value="All">All Groups</option>
+                <option value="Other">Other</option>
+                {availableGroups.map((group) => (
+                  <option key={group} value={group}>
+                    {group}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="wgl-filter-group">
+              <label className="wgl-filter-label">Status:</label>
+              <select
+                className="wgl-filter-select"
+                value={selectedStatus}
+                onChange={(e) => {
+                  setSelectedStatus(e.target.value);
+                  setCurrentPage(1);
+                }}
+              >
+                <option value="All">All Statuses</option>
+                {statusOptions.map((s) => (
+                  <option key={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+          </div> */}
+
+
+          <div className="wgl-guest-list" ref={printRef}>
+            {Object.keys(filteredAndGroupedGuests).length > 0 ? (
+              Object.entries(filteredAndGroupedGuests).map(
+                ([groupName, groupGuests]) => (
+                  <div key={groupName} className="wgl-guest-group-section mb-5">
+                    <h4 className="wgl-group-title p-2">
+                      {groupName} ({groupGuests.length})
+                    </h4>
+                    <table className="wgl-guest-table">
+                      <thead>
+                        <tr>
+                          <th className="wgl-table-header">Guest</th>
+                          <th className="wgl-table-header">Status</th>
+                          <th className="wgl-table-header">Companions</th>
+                          <th className="wgl-table-header">Seat</th>
+                          <th className="wgl-table-header">Type</th>
+                          <th className="wgl-table-header">Menu</th>
+                          <th className="wgl-table-header">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {groupGuests.map((g) => (
+                          <tr key={g.id} className="wgl-guest-row">
+                            <td className="wgl-guest-name">{g.name}</td>
+                            <td className="wgl-guest-status">
+                              <select
+                                className={`wgl-status-select wgl-status-${g.status.toLowerCase()}`}
+                                value={g.status}
+                                onChange={(e) =>
+                                  updateGuestField(g.id, "status", e.target.value)
+                                }
+                              >
+                                {statusOptions.map((s) => (
+                                  <option key={s}>{s}</option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="wgl-guest-companions">{g.companions}</td>
+                            <td className="wgl-guest-seat">{g.seat_number}</td>
+                            <td className="wgl-guest-type">
+                              <select
+                                value={g.type}
+                                onChange={(e) =>
+                                  updateGuestField(g.id, "type", e.target.value)
+                                }
+                              >
+                                {typeOptions.map((t) => (
+                                  <option key={t}>{t}</option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="wgl-guest-menu">
+                              <select
+                                value={g.menu}
+                                onChange={(e) =>
+                                  updateGuestField(g.id, "menu", e.target.value)
+                                }
+                              >
+                                {menuOptions.map((m) => (
+                                  <option key={m}>{m}</option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="wgl-guest-actions">
+                              <button
+                                className="wgl-action-button wgl-action-delete"
+                                onClick={() => deleteGuestAPI(g.id)}
+                              >
+                                <FaTrash />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )
+              )
+            ) : (
+              <div className="wgl-empty-state">
+                <p>No guests found matching your criteria</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

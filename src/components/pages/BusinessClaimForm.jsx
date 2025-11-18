@@ -1,155 +1,28 @@
-import React, { useState } from "react";
+import React from "react";
 import { FiUpload, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
-import { useSelector } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
+import useClaimForm from "../../hooks/useClaimForm";
 
-const BusinessClaimForm = ({ setShowClaimForm }) => {
-  const { user, userToken: token } = useSelector((state) => state.auth);
+const BusinessClaimForm = ({ setShowClaimForm, vendorServiceId = null }) => {
   const location = useLocation();
   const isOnClaimPage = location.pathname === "/claim-your-buisness";
 
-  const [expandedSections, setExpandedSections] = useState({
-    policyholder: true,
-    owner: true,
-    proof: true,
-    additional: true,
-    declaration: true,
-  });
+  const {
+    formData,
+    files,
+    expandedSections,
+    loading,
+    submitting,
+    vendorData,
+    handleInputChange,
+    handleFileChange,
+    handleSubmit,
+    toggleSection,
+    setFiles,
+  } = useClaimForm(vendorServiceId);
 
-  const [formData, setFormData] = useState({
-    businessName: "",
-    registeredAddress: "",
-    phoneNumber: "",
-    emailAddress: "",
-    website: "",
-    category: "",
-    registrationNumber: "",
-    claimantFullName: "",
-    claimantRole: "",
-    claimantMobile: "",
-    claimantEmail: "",
-    businessDescription: "",
-    facebookLink: "",
-    instagramLink: "",
-    linkedinLink: "",
-    additionalDocuments: "",
-    contactMethod: "",
-    dateSigned: "",
-    agreed: false,
-  });
-
-  const [files, setFiles] = useState({
-    aadharCard: null,
-    panCard: null,
-    shopLicense: null,
-    udyamCertificate: null,
-    gstCertificate: null,
-    otherRegistration: null,
-    addressProof: null,
-    businessPhoto: null,
-  });
-
-  const toggleSection = (section) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleFileChange = (e, fileKey) => {
-    const file = e.target.files[0];
-    setFiles((prev) => ({
-      ...prev,
-      [fileKey]: file,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!token || !user) {
-      alert("Please login to submit the claim form");
-      return;
-    }
-
-    const formDataToSend = new FormData();
-
-    Object.keys(formData).forEach((key) => {
-      formDataToSend.append(key, formData[key]);
-    });
-
-    Object.keys(files).forEach((key) => {
-      if (files[key]) {
-        formDataToSend.append(key, files[key]);
-      }
-    });
-
-    formDataToSend.append("userId", user.id);
-
-    try {
-      const response = await fetch(
-        "https://happywedz.com/api/claim-your-buisness",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formDataToSend,
-        }
-      );
-
-      if (response.ok) {
-        alert("Form submitted successfully!");
-        setFormData({
-          businessName: "",
-          registeredAddress: "",
-          phoneNumber: "",
-          emailAddress: "",
-          website: "",
-          category: "",
-          registrationNumber: "",
-          claimantFullName: "",
-          claimantRole: "",
-          claimantMobile: "",
-          claimantEmail: "",
-          businessDescription: "",
-          facebookLink: "",
-          instagramLink: "",
-          linkedinLink: "",
-          additionalDocuments: "",
-          contactMethod: "",
-          dateSigned: "",
-          agreed: false,
-        });
-        setFiles({
-          aadharCard: null,
-          panCard: null,
-          shopLicense: null,
-          udyamCertificate: null,
-          gstCertificate: null,
-          otherRegistration: null,
-          addressProof: null,
-          businessPhoto: null,
-        });
-      } else {
-        alert("Failed to submit form. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      alert("An error occurred. Please try again.");
-    }
-  };
-
-  const FileUploadBox = ({ label, fileKey, helpText }) => (
+  const FileUploadBox = ({ label, fileKey, helpText, multiple = false }) => (
     <div className="col-md-6 mb-4">
       <div className="claim-business-upload-box">
         <input
@@ -157,6 +30,7 @@ const BusinessClaimForm = ({ setShowClaimForm }) => {
           id={fileKey}
           className="claim-business-file-input"
           onChange={(e) => handleFileChange(e, fileKey)}
+          multiple={multiple}
         />
         <label htmlFor={fileKey} className="claim-business-upload-label">
           <FiUpload className="claim-business-upload-icon" />
@@ -164,11 +38,28 @@ const BusinessClaimForm = ({ setShowClaimForm }) => {
         </label>
         <small className="claim-business-help-text">{helpText}</small>
         {files[fileKey] && (
-          <div className="claim-business-file-name">{files[fileKey].name}</div>
+          <div className="claim-business-file-name">
+            {Array.isArray(files[fileKey])
+              ? `${files[fileKey].length} file(s) selected`
+              : files[fileKey].name}
+          </div>
         )}
       </div>
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="container">
+        <div className="claim-business-card text-center">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p className="mt-3">Loading vendor details...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -179,12 +70,22 @@ const BusinessClaimForm = ({ setShowClaimForm }) => {
             Please take a moment to fill out this form in complete detail.
           </p>
 
-          <div
-            style={{ position: "absolute", top: 10, right: 10 }}
-            onClick={() => setShowClaimForm(false)}
-          >
-            <IoClose size={30} style={{ color: "#000", cursor: "pointer" }} />
-          </div>
+          {vendorData && (
+            <div className="alert alert-info mb-3">
+              <strong>Claiming Business:</strong>{" "}
+              {vendorData.vendor?.businessName ||
+                vendorData.attributes?.vendor_name}
+            </div>
+          )}
+
+          {setShowClaimForm && (
+            <div
+              style={{ position: "absolute", top: 10, right: 10 }}
+              onClick={() => setShowClaimForm(false)}
+            >
+              <IoClose size={30} style={{ color: "#000", cursor: "pointer" }} />
+            </div>
+          )}
 
           <div>
             {/* Policyholder Information */}
@@ -194,7 +95,7 @@ const BusinessClaimForm = ({ setShowClaimForm }) => {
                 onClick={() => toggleSection("policyholder")}
               >
                 <h2 className="claim-business-section-title">
-                  Policyholder Information
+                  Business Information
                 </h2>
                 {expandedSections.policyholder ? (
                   <FiChevronUp />
@@ -379,11 +280,6 @@ const BusinessClaimForm = ({ setShowClaimForm }) => {
                       helpText="Attach file size of your document should not exceed 50MB"
                     />
                     <FileUploadBox
-                      label="Upload Other Business Registration Document file"
-                      fileKey="otherRegistration"
-                      helpText="Attach file size of your document should not exceed 50MB"
-                    />
-                    <FileUploadBox
                       label="Upload Proof of Business Address file"
                       fileKey="addressProof"
                       helpText="Attach file size of your document should not exceed 50MB"
@@ -456,14 +352,12 @@ const BusinessClaimForm = ({ setShowClaimForm }) => {
                         onChange={handleInputChange}
                       />
                     </div>
-                    <div className="col-md-6 mb-3">
-                      <input
-                        type="text"
-                        className="claim-business-input"
-                        placeholder="Additional Documents or Links (optional / URL)"
-                        name="additionalDocuments"
-                        value={formData.additionalDocuments}
-                        onChange={handleInputChange}
+                    <div className="col-md-12 mb-3">
+                      <FileUploadBox
+                        label="Upload Additional Documents (Multiple files allowed)"
+                        fileKey="additionalDocuments"
+                        helpText="You can select multiple files. Each file should not exceed 50MB"
+                        multiple={true}
                       />
                     </div>
                     <div className="col-md-6 mb-3">
@@ -523,13 +417,40 @@ const BusinessClaimForm = ({ setShowClaimForm }) => {
                       <label className="claim-business-label">
                         Policyholder's Signature:
                       </label>
+                      <input
+                        type="file"
+                        id="signatureUpload"
+                        className="claim-business-file-input"
+                        onChange={(e) => handleFileChange(e, "signature")}
+                        accept="image/*"
+                        style={{ display: "none" }}
+                      />
                       <button
                         type="button"
                         className="claim-business-signature-btn"
+                        onClick={() =>
+                          document.getElementById("signatureUpload").click()
+                        }
                       >
                         <span className="claim-business-signature-icon">✎</span>
-                        Add Signature
+                        {files.signature ? "Change Signature" : "Add Signature"}
                       </button>
+                      {files.signature && (
+                        <div className="mt-2">
+                          <small className="claim-business-file-name">
+                            {files.signature.name}
+                          </small>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-link text-danger ms-2"
+                            onClick={() =>
+                              setFiles((prev) => ({ ...prev, signature: null }))
+                            }
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
                     </div>
                     <div className="col-md-6 mb-3">
                       <label className="claim-business-label">
@@ -552,8 +473,20 @@ const BusinessClaimForm = ({ setShowClaimForm }) => {
               type="button"
               className="claim-business-submit-btn"
               onClick={handleSubmit}
+              disabled={submitting}
             >
-              Submit
+              {submitting ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                  Submitting...
+                </>
+              ) : (
+                "Submit"
+              )}
             </button>
 
             {!isOnClaimPage && (

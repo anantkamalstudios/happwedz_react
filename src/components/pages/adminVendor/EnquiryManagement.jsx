@@ -18,6 +18,7 @@ import {
   ChevronRight,
   TrendingUp,
   BarChart3,
+  SearchIcon,
 } from "lucide-react";
 
 import { useSelector } from "react-redux";
@@ -38,6 +39,8 @@ const EnquiryManagement = () => {
   const [filter, setFilter] = useState("all");
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const { addToast } = useToast();
+  const [searchMail, setSearchEmail] = useState("");
+  const [filteredLeads, setFilteredLeads] = useState([]);
 
   const [stats, setStats] = useState({
     pending: 0,
@@ -92,11 +95,40 @@ const EnquiryManagement = () => {
     }
   };
 
+  const handleSearchMail = (e) => {
+    const searchValue = e.target.value;
+    setSearchEmail(searchValue);
+
+    if (!searchValue.trim()) {
+      setFilteredLeads(leads);
+      return;
+    }
+
+    const filtered = leads.filter(
+      (lead) =>
+        lead.request?.user?.name
+          ?.toLowerCase()
+          .includes(searchValue.toLowerCase()) ||
+        lead.request?.user?.email
+          ?.toLowerCase()
+          .includes(searchValue.toLowerCase()) ||
+        lead.request?.service?.name
+          ?.toLowerCase()
+          .includes(searchValue.toLowerCase())
+    );
+
+    setFilteredLeads(filtered);
+  };
+
   useEffect(() => {
     if (vendorToken) {
       fetchInbox();
     }
   }, [vendorToken, filter]);
+
+  useEffect(() => {
+    setFilteredLeads(leads);
+  }, [leads]);
 
   const handleAction = async (lead, action) => {
     const inboxId = lead.id;
@@ -263,90 +295,74 @@ const EnquiryManagement = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="row mb-4">
+        <div className="row mb-4 lw-stats-row">
           <div className="col-lg-3 col-md-6 mb-3">
-            <div
-              className="card border-0 shadow-sm"
-              style={{
-                // background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                borderRadius: "16px",
-              }}
-            >
-              <div className="card-body text-dark">
+            <div className="lw-stats-card lw-stats-pending">
+              <div className="lw-stats-body">
                 <div className="d-flex justify-content-between align-items-start">
                   <div>
-                    <p className="mb-1 small">Pending</p>
+                    <p className="mb-1 small text-muted">Pending</p>
                     <h3 className="mb-0 fw-bold">{stats.pending}</h3>
                   </div>
-                  <div className="bg-white bg-opacity-25 p-2 rounded">
-                    <MessageCircleReply size={24} />
+                  <div className="lw-stats-icon">
+                    <MessageCircleReply size={22} />
                   </div>
                 </div>
                 <div className="mt-2">
-                  <small className="text-white-50">
+                  <small className="text-muted d-flex align-items-center gap-1">
                     <TrendingUp size={12} /> This month
                   </small>
                 </div>
               </div>
             </div>
           </div>
+
           <div className="col-lg-3 col-md-6 mb-3">
-            <div
-              className="card border-0 shadow-sm"
-              style={{
-                borderRadius: "16px",
-              }}
-            >
-              <div className="card-body text-dark">
+            <div className="lw-stats-card lw-stats-booked">
+              <div className="lw-stats-body">
                 <div className="d-flex justify-content-between align-items-start">
                   <div>
-                    <p className="mb-1 small">Booked</p>
+                    <p className="mb-1 small text-muted">Booked</p>
                     <h3 className="mb-0 fw-bold">{stats.booked}</h3>
                   </div>
-                  <div className="bg-white bg-opacity-25 p-2 rounded">
-                    <Calendar size={24} />
+                  <div className="lw-stats-icon">
+                    <Calendar size={22} />
                   </div>
                 </div>
                 <div className="mt-2">
-                  <small className="text-white-50">
+                  <small className="text-muted d-flex align-items-center gap-1">
                     <TrendingUp size={12} /> This month
                   </small>
                 </div>
               </div>
             </div>
           </div>
+
           <div className="col-lg-3 col-md-6 mb-3">
-            <div
-              className="card border-0 shadow-sm"
-              style={{
-                // background: "",
-                borderRadius: "16px",
-              }}
-            >
-              <div className="card-body text-dark">
+            <div className="lw-stats-card lw-stats-declined">
+              <div className="lw-stats-body">
                 <div className="d-flex justify-content-between align-items-start">
                   <div>
-                    <p className="mb-1  small">Declined</p>
+                    <p className="mb-1 small text-muted">Declined</p>
                     <h3 className="mb-0 fw-bold">{stats.declined}</h3>
                   </div>
-                  <div className="bg-white bg-opacity-25 p-2 rounded">
-                    <Archive size={24} />
+                  <div className="lw-stats-icon">
+                    <Archive size={22} />
                   </div>
                 </div>
                 <div className="mt-2">
-                  <small className="text-white-50">This month</small>
+                  <small className="text-muted">This month</small>
                 </div>
               </div>
             </div>
           </div>
+
           <div className="col-lg-3 col-md-6 mb-3">
-            <div
-              className="card border-0 shadow-sm"
-              // style={{
-              //   background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-              //   borderRadius: "16px",
-              // }}
-            ></div>
+            {/* <div className="lw-stats-card lw-stats-empty">
+              <div className="lw-stats-body text-center text-muted">
+                <small></small>
+              </div>
+            </div> */}
           </div>
         </div>
 
@@ -507,151 +523,138 @@ const EnquiryManagement = () => {
                         style={{
                           maxHeight: "calc(100vh - 50px)",
                           overflowY: "auto",
+                          overflowX: "hidden",
                         }}
                       >
-                        {leads.map((lead) => (
+                        <div className="w-100 px-4">
                           <div
-                            key={lead.id}
-                            className={`card mb-3 border-0 ${
-                              selectedLead?.id === lead.id
-                                ? "shadow"
-                                : "shadow-sm"
-                            }`}
-                            role="button"
-                            onClick={() => handleLeadClick(lead)}
                             style={{
-                              borderRadius: "16px",
-                              borderLeft: `4px solid ${
-                                statuses.find(
-                                  (s) => s.id === lead.request?.status
-                                )?.color || "#95a5a6"
-                              }`,
-                              background:
-                                selectedLead?.id === lead.id ? "" : "#fff",
-                              transition: "all 0.3s ease",
-                              transform:
-                                selectedLead?.id === lead.id
-                                  ? "scale(1.02)"
-                                  : "scale(1)",
+                              width: "100%",
+                              border: "2px solid #d1d5db",
+                              borderRadius: "20px",
+                              padding: "6px 12px",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "10px",
                             }}
                           >
-                            <div className="card-body p-3 ">
-                              <div className="d-flex justify-content-between align-items-start mb-2">
-                                <div className="d-flex align-items-center gap-2">
-                                  <div
-                                    className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
-                                    style={{
-                                      width: "40px",
-                                      height: "40px",
-                                      background: "#e91e63",
-                                      fontSize: "16px",
-                                    }}
-                                  >
+                            <span
+                              style={{ color: "#6b7280", fontSize: "18px" }}
+                            >
+                              <SearchIcon />
+                            </span>
+                            <input
+                              type="text"
+                              value={searchMail}
+                              onChange={handleSearchMail}
+                              placeholder="Search here"
+                              style={{
+                                width: "100%",
+                                border: "none",
+                                outline: "none",
+                                fontSize: "15px",
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {filteredLeads.map((lead) => {
+                          const statusObj = statuses.find(
+                            (s) => s.id === lead.request?.status
+                          );
+                          return (
+                            <div
+                              key={lead.id}
+                              className={`lead-card card border-0 ${
+                                selectedLead?.id === lead.id ? "active" : ""
+                              }`}
+                              role="button"
+                              onClick={() => handleLeadClick(lead)}
+                              style={{
+                                borderLeft: `4px solid ${
+                                  statusObj?.color || "#95a5a6"
+                                }`,
+                                background:
+                                  selectedLead?.id === lead.id
+                                    ? "#fafafa"
+                                    : "#fff",
+                              }}
+                            >
+                              <div className="lead-card-body">
+                                <div className="lead-header">
+                                  <div className="lead-avatar">
                                     {lead.request?.user?.name?.charAt(0) || "?"}
                                   </div>
-                                  <div>
+                                  <div className="lead-info">
                                     <h6
-                                      className={`mb-0 ${
-                                        !lead.isRead ? "fw-bold" : "fw-semibold"
+                                      className={`lead-name ${
+                                        !lead.isRead ? "fw-bold" : ""
                                       }`}
-                                      style={{ fontSize: "14px" }}
                                     >
                                       {lead.request?.user?.name || "No Name"}
                                     </h6>
-                                    <small className="text-muted">
+                                    <p className="lead-email">
                                       {lead.request?.user?.email}
-                                    </small>
+                                    </p>
+                                  </div>
+                                  {!lead.isRead && (
+                                    <span className="lead-badge">New</span>
+                                  )}
+                                </div>
+
+                                <p className="lead-message">
+                                  {lead.request?.message || "No message"}
+                                </p>
+
+                                <div className="lead-footer">
+                                  <span
+                                    className="lead-status"
+                                    style={{
+                                      backgroundColor: `${statusObj?.color}20`,
+                                      color: statusObj?.color,
+                                    }}
+                                  >
+                                    {statusObj?.name}
+                                  </span>
+                                  <div className="lead-date">
+                                    <Calendar size={13} className="me-1" />
+                                    {new Date(
+                                      lead.request?.eventDate
+                                    ).toLocaleDateString("en-IN", {
+                                      month: "short",
+                                      day: "numeric",
+                                    })}
                                   </div>
                                 </div>
-                                {!lead.isRead && (
-                                  <span
-                                    className="badge bg-primary rounded-pill"
-                                    style={{ fontSize: "10px" }}
-                                  >
-                                    New
-                                  </span>
-                                )}
-                              </div>
-                              <p
-                                className="text-muted mb-2 small"
-                                style={{
-                                  display: "-webkit-box",
-                                  WebkitLineClamp: "2",
-                                  WebkitBoxOrient: "vertical",
-                                  overflow: "hidden",
-                                }}
-                              >
-                                {lead.request?.message || "No message"}
-                              </p>
-                              <div className="d-flex justify-content-between align-items-center">
-                                <span
-                                  className="badge rounded-pill px-3 py-1"
-                                  style={{
-                                    backgroundColor: `${
-                                      statuses.find(
-                                        (s) => s.id === lead.request?.status
-                                      )?.color
-                                    }20`,
-                                    color: statuses.find(
-                                      (s) => s.id === lead.request?.status
-                                    )?.color,
-                                    fontSize: "11px",
-                                  }}
-                                >
-                                  {
-                                    statuses.find(
-                                      (s) => s.id === lead.request?.status
-                                    )?.name
-                                  }
-                                </span>
-                                <small className="text-muted">
-                                  <Calendar size={12} className="me-1" />
-                                  {new Date(
-                                    lead.request?.eventDate
-                                  ).toLocaleDateString("en-IN", {
-                                    month: "short",
-                                    day: "numeric",
-                                  })}
-                                </small>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
                 </div>
 
                 {/* Lead Detail */}
-                <div
-                  className="col-md-5 col-lg-6"
-                  style={{ background: "#fafbfc" }}
-                >
-                  <div className="p-4 h-100">
+                <div className="col-md-5 col-lg-6 lw-panel">
+                  <div className="lw-container p-4 h-100">
                     {selectedLead ? (
                       <>
-                        {/* Header */}
-                        <div className="mb-4">
+                        {/* Header Section */}
+                        <div className="lw-header mb-4">
                           <div className="d-flex align-items-start gap-3 mb-3">
-                            <div
-                              className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
-                              style={{
-                                width: "60px",
-                                height: "60px",
-                                background: "#e91e63",
-                                fontSize: "24px",
-                              }}
-                            >
+                            <div className="lw-avatar">
                               {selectedLead.request?.user?.name?.charAt(0) ||
                                 "?"}
                             </div>
+
                             <div className="flex-grow-1">
-                              <h4 className="mb-1 fw-bold">
+                              <h4 className="lw-name mb-1 fw-bold">
                                 {selectedLead.request?.user?.name}
                               </h4>
                               <div className="d-flex flex-column gap-1">
-                                <div className="d-flex align-items-center text-muted small">
-                                  <Mail size={14} className="me-2" />
+                                <div className="lw-contact small">
+                                  <Mail size={14} className="me-2 text-muted" />
                                   <a
                                     href={`mailto:${selectedLead.request?.user?.email}`}
                                     className="text-decoration-none text-muted"
@@ -659,8 +662,11 @@ const EnquiryManagement = () => {
                                     {selectedLead.request?.user?.email}
                                   </a>
                                 </div>
-                                <div className="d-flex align-items-center text-muted small">
-                                  <Phone size={14} className="me-2" />
+                                <div className="lw-contact small">
+                                  <Phone
+                                    size={14}
+                                    className="me-2 text-muted"
+                                  />
                                   <span>
                                     {selectedLead.request?.user?.phone}
                                   </span>
@@ -670,7 +676,7 @@ const EnquiryManagement = () => {
 
                             <div className="d-flex gap-2">
                               <button
-                                className="btn btn-outline-secondary btn-sm rounded-pill"
+                                className="btn btn-outline-light btn-sm lw-btn-action"
                                 onClick={() =>
                                   handleAction(
                                     selectedLead,
@@ -680,93 +686,72 @@ const EnquiryManagement = () => {
                                   )
                                 }
                               >
-                                {/* <Archive size={14} className="me-1" /> */}
                                 {selectedLead.isArchived
                                   ? "Unarchive"
                                   : "Archive"}
                               </button>
                               <button
-                                className="btn btn-outline-secondary btn-sm rounded-pill"
+                                className="btn btn-outline-light btn-sm lw-btn-action"
                                 onClick={() =>
                                   handleDeleteEmail(selectedLead.id)
                                 }
                               >
-                                {" "}
                                 Delete
                               </button>
                             </div>
                           </div>
 
-                          {/* Meta Info Cards */}
-                          <div className="row g-2">
+                          {/* Meta Cards */}
+                          <div className="row g-3">
                             <div className="col-6">
-                              <div
-                                className="card border-0 shadow-sm"
-                                style={{
-                                  borderRadius: "12px",
-                                  background: "#fff",
-                                }}
-                              >
-                                <div className="card-body p-3">
-                                  <div className="d-flex align-items-center gap-2 mb-1">
-                                    <Calendar
-                                      size={16}
-                                      className="text-primary"
-                                    />
-                                    <small className="text-muted">
-                                      Event Date
-                                    </small>
-                                  </div>
-                                  <div className="fw-semibold">
-                                    {new Date(
-                                      selectedLead.request.eventDate
-                                    ).toLocaleDateString("en-IN", {
-                                      day: "numeric",
-                                      month: "long",
-                                      year: "numeric",
-                                    })}
-                                  </div>
+                              <div className="lw-card">
+                                <div className="d-flex align-items-center gap-2 mb-1">
+                                  <Calendar
+                                    size={16}
+                                    className="text-primary"
+                                  />
+                                  <small className="text-muted">
+                                    Event Date
+                                  </small>
+                                </div>
+                                <div className="fw-semibold">
+                                  {new Date(
+                                    selectedLead.request.eventDate
+                                  ).toLocaleDateString("en-IN", {
+                                    day: "numeric",
+                                    month: "long",
+                                    year: "numeric",
+                                  })}
                                 </div>
                               </div>
                             </div>
                             <div className="col-6">
-                              <div
-                                className="card border-0 shadow-sm"
-                                style={{
-                                  borderRadius: "12px",
-                                  background: "#fff",
-                                }}
-                              >
-                                <div className="card-body p-3">
-                                  <div className="d-flex align-items-center gap-2 mb-1">
-                                    <Clock size={16} className="text-info" />
-                                    <small className="text-muted">
-                                      Received
-                                    </small>
-                                  </div>
-                                  <div className="fw-semibold">
-                                    {new Date(
-                                      selectedLead.createdAt
-                                    ).toLocaleDateString("en-IN", {
-                                      day: "numeric",
-                                      month: "short",
-                                    })}
-                                  </div>
+                              <div className="lw-card">
+                                <div className="d-flex align-items-center gap-2 mb-1">
+                                  <Clock size={16} className="text-info" />
+                                  <small className="text-muted">Received</small>
+                                </div>
+                                <div className="fw-semibold">
+                                  {new Date(
+                                    selectedLead.createdAt
+                                  ).toLocaleDateString("en-IN", {
+                                    day: "numeric",
+                                    month: "short",
+                                  })}
                                 </div>
                               </div>
                             </div>
                           </div>
                         </div>
 
-                        {/* Status Badge */}
+                        {/* Status */}
                         <div className="mb-4">
                           <span
-                            className="badge rounded-pill px-4 py-2"
+                            className="lw-status badge rounded-pill px-4 py-2"
                             style={{
                               backgroundColor: statuses.find(
                                 (s) => s.id === selectedLead.request.status
                               )?.color,
-                              fontSize: "13px",
                             }}
                           >
                             {
@@ -778,41 +763,30 @@ const EnquiryManagement = () => {
                         </div>
 
                         {/* Message */}
-                        <div className="mb-4">
+                        <div className="lw-message mb-4">
                           <h6 className="fw-bold mb-3">Message</h6>
-                          <div
-                            className="card border-0 shadow-sm"
-                            style={{ borderRadius: "16px", background: "#fff" }}
-                          >
-                            <div className="card-body p-4">
-                              <p className="mb-0" style={{ lineHeight: "1.8" }}>
-                                {selectedLead.request.message ||
-                                  "No message provided."}
-                              </p>
-                            </div>
+                          <div className="lw-card lw-msg-card">
+                            <p className="mb-0">
+                              {selectedLead.request.message ||
+                                "No message provided."}
+                            </p>
                           </div>
                         </div>
 
                         {/* Actions */}
-                        <div>
+                        <div className="lw-actions">
                           <h6 className="fw-bold mb-3">Update Status</h6>
                           <div className="d-flex flex-wrap gap-2 mb-3">
                             {statuses.map((status) => (
                               <button
                                 key={status.id}
-                                className="btn btn-sm rounded-pill"
+                                className={`lw-status-btn btn btn-sm rounded-pill ${
+                                  selectedLead.request.status === status.id
+                                    ? "active"
+                                    : ""
+                                }`}
                                 style={{
-                                  background:
-                                    selectedLead.request.status === status.id
-                                      ? status.color
-                                      : `${status.color}20`,
-                                  color:
-                                    selectedLead.request.status === status.id
-                                      ? "#fff"
-                                      : status.color,
-                                  border: "none",
-                                  fontWeight: "600",
-                                  padding: "8px 20px",
+                                  "--lw-color": status.color,
                                 }}
                                 onClick={() =>
                                   handleAction(selectedLead, status.id)
@@ -822,25 +796,16 @@ const EnquiryManagement = () => {
                               </button>
                             ))}
                           </div>
+
                           <button
-                            className="btn text-white fw-semibold"
-                            style={{
-                              background: "#e91e63",
-                              border: "none",
-                              borderRadius: "8px",
-                              padding: "8px 16px",
-                              fontSize: "14px",
-                              width: "35%",
-                            }}
+                            className="lw-reply-btn btn text-white fw-semibold"
                             onClick={() => {
-                              if (selectedLead) {
-                                setShowQuoteModal(true);
-                              } else {
+                              if (selectedLead) setShowQuoteModal(true);
+                              else
                                 addToast(
                                   "Please select a lead to reply to.",
                                   "warning"
                                 );
-                              }
                             }}
                           >
                             <MessageCircleReply size={18} className="me-2" />
@@ -850,16 +815,8 @@ const EnquiryManagement = () => {
                       </>
                     ) : (
                       !loading && (
-                        <div className="h-100 d-flex flex-column align-items-center justify-content-center text-center">
-                          <div
-                            className="rounded-circle d-flex align-items-center justify-content-center mb-3"
-                            style={{
-                              width: "80px",
-                              height: "80px",
-                              background:
-                                "linear-gradient(135deg, #667eea20 0%, #764ba220 100%)",
-                            }}
-                          >
+                        <div className="lw-empty h-100 d-flex flex-column align-items-center justify-content-center text-center">
+                          <div className="lw-empty-icon">
                             <MailOpen size={40} className="text-muted" />
                           </div>
                           <h5 className="fw-bold mb-2">Select an Enquiry</h5>

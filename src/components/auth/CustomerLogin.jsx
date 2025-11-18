@@ -9,7 +9,6 @@ import { useLoader } from "../context/LoaderContext";
 import userApi from "../../services/api/userApi";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-// axios removed: not used in auth-code flow
 
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
@@ -23,13 +22,12 @@ const CustomerLogin = () => {
   const dispatch = useDispatch();
   const { showLoader, hideLoader } = useLoader();
 
-  const from = location.state?.from?.pathname || "/";
+  const from = location.state?.from || "/";
 
   const handleGoogleCredential = async (credentialResponse) => {
     try {
       showLoader();
       const tokenId = credentialResponse?.credential;
-      console.log("Google credential response:", credentialResponse);
       if (!tokenId) {
         toast.error("Google did not return an ID token (credential).");
         return;

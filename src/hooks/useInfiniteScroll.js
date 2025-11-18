@@ -89,6 +89,11 @@ const useInfiniteScroll = (
         roomsParsed = Number.isNaN(n) ? null : n;
       }
 
+      // Parse latitude and longitude from attributes
+      const latitude = parseFloat(attributes.latitude || attributes.Latitude || '');
+      const longitude = parseFloat(attributes.longitude || attributes.Longitude || '');
+      const hasValidCoordinates = !isNaN(latitude) && !isNaN(longitude);
+
       return {
         id,
         name:
@@ -96,6 +101,12 @@ const useInfiniteScroll = (
           attributes.Name ||
           vendor.businessName ||
           "Unknown Vendor",
+        location: {
+          lat: hasValidCoordinates ? latitude : null,
+          lng: hasValidCoordinates ? longitude : null,
+          address: attributes.address || attributes.Address || '',
+          city: attributes.city || vendor.city || ''
+        },
         subtitle: attributes.subtitle || "",
         tagline: attributes.tagline || "",
         description:

@@ -28,7 +28,6 @@ const UploadSelfiePage = () => {
     try {
       if (!err) return "Upload failed. Please try again.";
 
-      // Prefer Axios-style response payloads
       const resp = err.response || err?.request?.response;
       if (resp) {
         const data =
@@ -47,7 +46,6 @@ const UploadSelfiePage = () => {
           return resp.statusText;
       }
 
-      // When the error text embeds JSON: e.g., "HTTP 400: { \"error\": \"...\" }"
       if (typeof err.message === "string") {
         const jsonMatch = err.message.match(/{[\s\S]*}/);
         if (jsonMatch) {
@@ -57,7 +55,6 @@ const UploadSelfiePage = () => {
             if (parsed?.message) return String(parsed.message);
           } catch {}
         }
-        // Strip leading prefixes like "HTTP 400:" and return the remainder if present
         const colonIdx = err.message.indexOf(":");
         if (colonIdx !== -1 && colonIdx + 1 < err.message.length) {
           const after = err.message.slice(colonIdx + 1).trim();
@@ -107,6 +104,11 @@ const UploadSelfiePage = () => {
     } else {
       document.body.style.overflow = "auto";
     }
+    
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
   }, [showGuide]);
 
   const handlePick = () => setShowGuide(true);
@@ -114,6 +116,15 @@ const UploadSelfiePage = () => {
   const instructionSets = {
     bride: {
       makeup: [
+        {
+          src: "/images/try/staightFace.png",
+          text: "Look straight at the camera",
+        },
+        { src: "/images/try/putHairBack.png", text: "Put hair back" },
+        { src: "/images/try/removeGlasses.png", text: "Remove Glasses" },
+        { src: "/images/try/planeBg.png", text: "Use plain background" },
+      ],
+      jewellary: [
         {
           src: "/images/try/staightFace.png",
           text: "Look straight at the camera",
@@ -209,7 +220,7 @@ const UploadSelfiePage = () => {
       //   return;
       // }
       try {
-        if (type === "outfit") {
+        if (type === "outfit" || type === "jewellary") {
           setShowGuide(false);
           setUploading(true);
           const localUrl = URL.createObjectURL(file);
@@ -309,7 +320,7 @@ const UploadSelfiePage = () => {
     const blob = await (await fetch(dataUrl)).blob();
     const file = new File([blob], "selfie.jpg", { type: "image/jpeg" });
     try {
-      if (type === "outfit") {
+      if (type === "outfit" || type === "jewellary") {
         setShowGuide(false);
         navigate("/try/outfit-filters");
         return;
@@ -318,7 +329,11 @@ const UploadSelfiePage = () => {
       const imageId = res?.data?.id || res?.id || res?.image_id;
       sessionStorage.setItem("try_uploaded_image_id", imageId);
       setShowGuide(false);
-      navigate(type === "outfit" ? "/try/outfit-filters" : "/try/filters");
+      navigate(
+        type === "outfit" || type === "jewellary"
+          ? "/try/outfit-filters"
+          : "/try/filters"
+      );
     } catch (e) {
       console.error("Camera upload error:", e);
       const msg = getErrorMessage(e);
@@ -559,7 +574,7 @@ const UploadSelfiePage = () => {
                       </button>
                     </div>
                   )}
-                  {type === "outfit" && (
+                  {(type === "outfit" || type === "jewellary") && (
                     <div className="d-grid">
                       <button
                         className="btn w-100"

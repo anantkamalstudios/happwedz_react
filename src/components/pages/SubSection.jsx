@@ -29,7 +29,15 @@ const SubSection = () => {
   const [show, setShow] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
 
-  const [view, setView] = useState("images");
+  const storageKey = useMemo(
+    () => `viewMode:${section}:${slug || "all"}`,
+    [section, slug]
+  );
+
+  const [view, setView] = useState(() => {
+    const saved = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
+    return saved || "images";
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [activeFilters, setActiveFilters] = useState({});
@@ -90,9 +98,7 @@ const SubSection = () => {
   const handleFiltersChange = (filters) => {
     setActiveFilters(filters);
   };
-
-  // Reset filters when navigating to a different section/slug (route change)
-  // This ensures API calls use fresh filters (not previous route's filters)
+ 
   useEffect(() => {
     setActiveFilters({});
   }, [section, slug]);
@@ -104,6 +110,21 @@ const SubSection = () => {
     }
     setSelectedCity(reduxLocation);
   }, [cityFromQuery, reduxLocation]);
+ 
+  useEffect(() => {
+    const saved = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
+    if (saved && saved !== view) {
+      setView(saved);
+    }
+  }, [storageKey]);
+ 
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(storageKey, view);
+      }
+    } catch (e) {}
+  }, [view, storageKey]);
 
   const dataToSend = useMemo(() => {
     if (section === "photography") {

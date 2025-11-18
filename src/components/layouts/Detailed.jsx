@@ -60,9 +60,6 @@ const Detailed = () => {
     setShowPricingModal(true);
   };
 
-  /**
-   * DYNAMIC AMENITIES/FEATURES based on vendor type (Venue or Photographer)
-   */
   const getVendorFeatures = (data) => {
     if (!data || !data.attributes) return [];
 
@@ -70,7 +67,6 @@ const Detailed = () => {
     const amenities = [];
     const vendorType = attributes.vendor_type;
 
-    // --- Vendor-Agnostic Policies ---
     if (attributes.payment_terms) {
       amenities.push({
         icon: <FaCalendarAlt />,
@@ -83,7 +79,6 @@ const Detailed = () => {
         name: `Travel: ${attributes.travel_info}`,
       });
     }
-    // HappyWedz tenure shown under Services & Offerings
     if (attributes.happywedz_since || attributes.HappyWedz) {
       const sinceValue = attributes.happywedz_since || attributes.HappyWedz;
       amenities.push({
@@ -420,57 +415,6 @@ const Detailed = () => {
     fetchVenueData();
   }, [id]);
 
-  // Fetch latest profile views (used to reflect increments from other users)
-  // const fetchProfileViews = async (vendorId) => {
-  //   try {
-  //     const res = await axios.get(
-  //       `${API_BASE_URL}/api/vendor/profile-views/${vendorId}`
-  //     );
-  //     const count = res?.data?.vendor?.profileViews ?? null;
-  //     if (count !== null) {
-  //       setProfileViews(count);
-  //       setVenueData((prev) => ({
-  //         ...prev,
-  //         vendor: {
-  //           ...(prev?.vendor || {}),
-  //           profileViews: count,
-  //         },
-  //       }));
-  //     }
-  //   } catch (err) {
-  //     // ignore silently
-  //     console.debug("fetchProfileViews failed:", err?.message || err);
-  //   }
-  // };
-
-  // Periodically refresh profile views and when page becomes visible again
-  // useEffect(() => {
-  //   let intervalId;
-  //   const tryStart = () => {
-  //     const vid = venueData?.vendor_id || venueData?.vendor?.id;
-  //     if (vid) {
-  //       // initial fetch
-  //       fetchProfileViews(vid);
-  //       // start polling every 30s
-  //       intervalId = setInterval(() => fetchProfileViews(vid), 30000);
-  //     }
-  //   };
-
-  //   const handleVisibility = () => {
-  //     if (document.visibilityState === "visible") {
-  //       const vid = venueData?.vendor_id || venueData?.vendor?.id;
-  //       if (vid) fetchProfileViews(vid);
-  //     }
-  //   };
-
-  //   tryStart();
-  //   document.addEventListener("visibilitychange", handleVisibility);
-  //   return () => {
-  //     if (intervalId) clearInterval(intervalId);
-  //     document.removeEventListener("visibilitychange", handleVisibility);
-  //   };
-  // }, [venueData]);
-
   const [_faqList, _setFaqList] = useState([]);
 
   useEffect(() => {
@@ -520,8 +464,6 @@ const Detailed = () => {
     });
   }, []);
 
-  // Loading, Error, No Data state checks remain the same...
-
   if (loading) {
     return (
       <div className="venue-detail-page">
@@ -536,7 +478,6 @@ const Detailed = () => {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="venue-detail-page">
@@ -565,7 +506,6 @@ const Detailed = () => {
     );
   }
 
-  // Helper function to handle database array values
   function _parseDbValue(value) {
     if (
       typeof value === "string" &&
@@ -585,7 +525,6 @@ const Detailed = () => {
     return [value].filter((v) => v);
   }
 
-  // Determine if it is a venue based on key attributes
   const isVenue = !!(
     venueData.attributes?.veg_price ||
     venueData.attributes?.catering_policy ||
@@ -593,7 +532,6 @@ const Detailed = () => {
     venueData.attributes?.vendor_type?.toLowerCase().includes("venue")
   );
 
-  // Clean up location display
   const displayLocation = isVenue
     ? venueData.attributes?.address ||
       venueData.attributes?.city ||
@@ -603,7 +541,6 @@ const Detailed = () => {
       venueData.vendor?.city ||
       "Location not specified";
 
-  // Create activeVendor from API data
   const activeVendor = {
     id: id,
     name:
@@ -1170,7 +1107,10 @@ const Detailed = () => {
         backdrop={true}
       >
         <Modal.Body>
-          <BusinessClaimForm setShowClaimForm={setShowClaimForm} />
+          <BusinessClaimForm
+            setShowClaimForm={setShowClaimForm}
+            vendorServiceId={venueData?.id}
+          />
         </Modal.Body>
       </Modal>
     </div>

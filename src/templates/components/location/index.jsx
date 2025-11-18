@@ -140,8 +140,6 @@ const Location = (props) => {
     setActiveModal(activeModal === index ? null : index);
   };
 
-  console.log("location data ", props);
-
   return (
     <div id="event" className="event-section section-padding">
       <Sectiontitle section={"When & Where"} />

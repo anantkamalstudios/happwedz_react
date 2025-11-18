@@ -29,6 +29,7 @@ const useApiData = (
     total: 0,
     totalPages: 0,
   });
+
   const abortRef = useRef(null);
   const cacheRef = useRef(new Map());
 
@@ -48,12 +49,12 @@ const useApiData = (
       try {
         const subCategory = slug
           ? slug
-            .replace(/-{2,}/g, " / ")
-            .replace(/-/g, " ")
-            .replace(/\s*\/\s*/g, " / ")
-            .replace(/\s{2,}/g, " ")
-            .replace(/\b\w/g, (l) => l.toUpperCase())
-            .trim()
+              .replace(/-{2,}/g, " / ")
+              .replace(/-/g, " ")
+              .replace(/\s*\/\s*/g, " / ")
+              .replace(/\s{2,}/g, " ")
+              .replace(/\b\w/g, (l) => l.toUpperCase())
+              .trim()
           : null;
 
         const params = new URLSearchParams();
@@ -68,7 +69,11 @@ const useApiData = (
         const selectedSubcats = extractVenueSubCategories(memoizedFilters);
         if (selectedSubcats && selectedSubcats.trim().length > 0) {
           params.append("subCategory", selectedSubcats);
-        } else if (!vendorType && subCategory && subCategory.toLowerCase() !== "all") {
+        } else if (
+          !vendorType &&
+          subCategory &&
+          subCategory.toLowerCase() !== "all"
+        ) {
           params.append("subCategory", subCategory);
         }
 
@@ -85,7 +90,8 @@ const useApiData = (
         }
 
         // Extract capacity filters and add as minCapacity/maxCapacity
-        const { minCapacity, maxCapacity } = extractCapacityFilters(memoizedFilters);
+        const { minCapacity, maxCapacity } =
+          extractCapacityFilters(memoizedFilters);
         if (minCapacity !== null && minCapacity !== undefined) {
           params.append("minCapacity", minCapacity.toString());
         }
@@ -94,7 +100,8 @@ const useApiData = (
         }
 
         // Extract food price per plate
-        const { minFoodPrice, maxFoodPrice } = extractFoodPriceFilters(memoizedFilters);
+        const { minFoodPrice, maxFoodPrice } =
+          extractFoodPriceFilters(memoizedFilters);
         if (minFoodPrice !== null && minFoodPrice !== undefined) {
           params.append("minFoodPrice", minFoodPrice.toString());
         }
@@ -121,7 +128,8 @@ const useApiData = (
         }
 
         // Extract reviews
-        const { minReviews, maxReviews } = extractReviewFilters(memoizedFilters);
+        const { minReviews, maxReviews } =
+          extractReviewFilters(memoizedFilters);
         if (minReviews !== null && minReviews !== undefined) {
           params.append("minReviews", minReviews.toString());
         }
@@ -178,7 +186,6 @@ const useApiData = (
         }
         const controller = new AbortController();
         abortRef.current = controller;
-        console.log("[useApiData] Fetching:", apiUrl);
         const timeoutId = setTimeout(() => controller.abort(), 20000);
         const response = await fetch(apiUrl, { signal: controller.signal });
         clearTimeout(timeoutId);
@@ -188,19 +195,27 @@ const useApiData = (
         }
 
         const result = await response.json();
+
         const itemsRaw = Array.isArray(result)
           ? result
           : Array.isArray(result.data)
-            ? result.data
-            : [];
+          ? result.data
+          : [];
 
         if (Array.isArray(result)) {
           const total = itemsRaw.length;
           const start = (page - 1) * limit;
           const pagedItems = itemsRaw.slice(start, start + limit);
           const transformed = transformApiData(pagedItems);
+          const transformedData = transformApiData(pagedItems);
           setData(transformed);
           const nextPagination = {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+          };
+          const paginationData = {
             page,
             limit,
             total,
@@ -213,6 +228,7 @@ const useApiData = (
           });
         } else {
           const transformed = transformApiData(itemsRaw);
+          const transformedData = transformApiData(itemsRaw);
           setData(transformed);
           if (result.pagination) {
             const nextPagination = {
@@ -221,6 +237,13 @@ const useApiData = (
               total: result.pagination.total || 0,
               totalPages: result.pagination.totalPages || 0,
             };
+            const paginationData = {
+              page: result.pagination.page || page,
+              limit: result.pagination.limit || limit,
+              total: result.pagination.total || 0,
+              totalPages: result.pagination.totalPages || 0,
+            };
+            "useApiData - Pagination data:", paginationData;
             setPagination(nextPagination);
             cacheRef.current.set(cacheKey, {
               data: transformed,
@@ -255,11 +278,12 @@ const useApiData = (
 
   const goToPage = useCallback(
     (page) => {
-      if (page >= 1 && page <= pagination.totalPages) {
-        fetchData(page, pagination.limit);
+      if (page < 1 || page > pagination.totalPages) {
+        return;
       }
+      fetchData(page);
     },
-    [fetchData, pagination.limit, pagination.totalPages]
+    [fetchData, pagination.totalPages]
   );
 
   const nextPage = useCallback(() => {
@@ -308,8 +332,8 @@ const transformApiData = (items) => {
 
     const portfolioUrls = attributes.Portfolio
       ? attributes.Portfolio.split("|")
-        .map((url) => url.trim())
-        .filter((url) => url)
+          .map((url) => url.trim())
+          .filter((url) => url)
       : [];
     const gallery = media.length > 0 ? media : portfolioUrls;
     const firstImage = gallery.length > 0 ? gallery[0] : null;
@@ -380,10 +404,10 @@ const transformApiData = (items) => {
         : null,
       starting_price: !isVenue
         ? photoPackage ||
-        photoVideoPackage ||
-        attributes.PriceRange ||
-        attributes.price ||
-        null
+          photoVideoPackage ||
+          attributes.PriceRange ||
+          attributes.price ||
+          null
         : null,
 
       address: attributes.address || attributes.Address || "",

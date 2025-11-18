@@ -64,7 +64,11 @@ export const useVendors = (options = {}) => {
         } else if (response && Array.isArray(response.data)) {
           items = response.data;
           paginationData = response.pagination || response.meta || null;
-        } else if (response && response.success && Array.isArray(response.data)) {
+        } else if (
+          response &&
+          response.success &&
+          Array.isArray(response.data)
+        ) {
           items = response.data;
           paginationData = response.pagination || response.meta || null;
         } else {

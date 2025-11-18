@@ -91,7 +91,6 @@ const Storefront = ({ setCompletion }) => {
 
             if (actualData.media) {
               if (Array.isArray(actualData.media)) {
-                // media: ["/uploads/x.jpg", "https://.../y.png"]
                 gallery = actualData.media.map((item) =>
                   typeof item === "string"
                     ? item
@@ -177,6 +176,7 @@ const Storefront = ({ setCompletion }) => {
                         actualData.attributes.contact.inquiryEmail || "",
                     }
                   : {},
+                city: actualData.attributes.city || "",
 
                 location: actualData.attributes.location
                   ? {
@@ -184,7 +184,7 @@ const Storefront = ({ setCompletion }) => {
                         actualData.attributes.location.address || "",
                       addressLine2:
                         actualData.attributes.location.addressLine2 || "",
-                      city: actualData.attributes.location.city || "",
+                      // city: actualData.attributes.location.city || "",
                       state: actualData.attributes.location.state || "",
                       country:
                         actualData.attributes.location.country || "India",
@@ -349,8 +349,8 @@ const Storefront = ({ setCompletion }) => {
       cta_url: formData.ctaUrl || "",
       tagline: formData.attributes?.tagline || "",
       currency: formData.currency || "INR",
+      city: formData.location?.city || "",
       location: {
-        city: formData.location?.city || "",
         state: formData.location?.state || "",
         address: formData.location?.addressLine1 || "",
         country: formData.location?.country || "India",
@@ -730,25 +730,9 @@ const Storefront = ({ setCompletion }) => {
     { id: "photos", label: "Photos", icon: <IoCameraOutline size={20} /> },
     { id: "videos", label: "Videos", icon: <IoVideocamOutline size={20} /> },
     {
-      id: "vendor-pricing",
-      label: "Pricing & Packages",
-      icon: <MdCurrencyRupee size={20} />,
-    },
-    {
       id: "vendor-facilities",
       label: "Facilities & Features",
       icon: <IoCheckmarkCircleOutline size={20} />,
-    },
-    { id: "promotions", label: "Promotions", icon: <CiBullhorn size={20} /> },
-    {
-      id: "vendor-policies",
-      label: "Policies & Terms",
-      icon: <HiOutlineDocument size={20} />,
-    },
-    {
-      id: "vendor-availability",
-      label: "Availability & Slots",
-      icon: <MdOutlineEventAvailable size={20} />,
     },
     // Only show Menus if vendorTypeName is allowed
     ...(allowedMenuTypes.includes(normalizedVendorTypeName)
@@ -760,16 +744,34 @@ const Storefront = ({ setCompletion }) => {
           },
         ]
       : []),
+
+    { id: "promotions", label: "Promotions", icon: <CiBullhorn size={20} /> },
+    {
+      id: "vendor-policies",
+      label: "Policies & Terms",
+      icon: <HiOutlineDocument size={20} />,
+    },
+    {
+      id: "vendor-availability",
+      label: "Availability & Slots",
+      icon: <MdOutlineEventAvailable size={20} />,
+    },
+
     // {
     //   id: "social",
     //   label: "Social Media",
     //   icon: <FaShareAlt size={20} />,
     // },
 
+    // {
+    //   id: "vendor-marketing",
+    //   label: "Marketing & CTA",
+    //   icon: <GoGift size={20} />,
+    // },
     {
-      id: "vendor-marketing",
-      label: "Marketing & CTA",
-      icon: <GoGift size={20} />,
+      id: "vendor-pricing",
+      label: "Pricing & Packages",
+      icon: <MdCurrencyRupee size={20} />,
     },
   ];
 
@@ -873,6 +875,7 @@ const Storefront = ({ setCompletion }) => {
             setFormData={setFormData}
             onSave={handleSave}
             onShowSuccess={showSuccessModal}
+            onSubmit={handleSubmit}
           />
         );
       case "vendor-facilities":
@@ -920,16 +923,16 @@ const Storefront = ({ setCompletion }) => {
       //       onShowSuccess={showSuccessModal}
       //     />
       //   );
-      case "vendor-marketing":
-        return (
-          <VendorMarketing
-            formData={formData}
-            setFormData={setFormData}
-            onSave={handleSave}
-            onShowSuccess={showSuccessModal}
-            onSubmit={handleSubmit}
-          />
-        );
+      // case "vendor-marketing":
+      //   return (
+      //     <VendorMarketing
+      //       formData={formData}
+      //       setFormData={setFormData}
+      //       onSave={handleSave}
+      //       onShowSuccess={showSuccessModal}
+      //       onSubmit={handleSubmit}
+      //     />
+      //   );
       default:
         return (
           <div className="p-3 border rounded bg-white">

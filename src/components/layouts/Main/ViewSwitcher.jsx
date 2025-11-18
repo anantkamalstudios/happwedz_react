@@ -1,6 +1,7 @@
 import React from "react";
 import { CiCircleList, CiGrid41 } from "react-icons/ci";
 import { FaList, FaTh } from "react-icons/fa";
+import { FaRegMap } from "react-icons/fa6";
 
 const ViewSwitcher = ({ view, setView }) => {
   return (
@@ -17,6 +18,12 @@ const ViewSwitcher = ({ view, setView }) => {
           className={view === "list" ? "switch-btn active" : "switch-btn"}
         >
           <CiCircleList className="me-1" /> LIST
+        </button>
+        <button
+          onClick={() => setView("map")}
+          className={view === "map" ? "switch-btn active" : "switch-btn"}
+        >
+          <FaRegMap className="me-1" /> MAP
         </button>
       </div>
     </div>

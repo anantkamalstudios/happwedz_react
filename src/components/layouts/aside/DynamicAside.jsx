@@ -33,14 +33,12 @@ const DynamicAside = ({ view, setView, section, onFiltersChange }) => {
   // Track previous filter key to detect route changes
   const prevFilterKeyRef = useRef(filterKey);
 
-  // Clear filters when navigating to a different route (key changes)
+
   useEffect(() => {
     if (prevFilterKeyRef.current !== null && prevFilterKeyRef.current !== filterKey) {
-      // Route changed - clear filters for the old key in Redux
+
       dispatch(clearFiltersByKey({ key: prevFilterKeyRef.current }));
 
-      // IMPORTANT: Also notify parent to clear filters in SubSection
-      // This ensures API calls don't use old filters from previous route
       if (onFiltersChange) {
         onFiltersChange({});
       }

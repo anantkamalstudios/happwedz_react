@@ -5,7 +5,7 @@ import { BiSort } from "react-icons/bi";
 import { TbArrowsSort } from "react-icons/tb";
 import { FiHash } from "react-icons/fi";
 
-const SortSection = ({ category, onCategoryChange, onSearchChange }) => { 
+const SortSection = ({ category, onCategoryChange, onSearchChange, sortBy, onSortChange }) => { 
   return (
     <Container>
       <Row className="align-items-center justify-content-between mb-3">
@@ -16,12 +16,18 @@ const SortSection = ({ category, onCategoryChange, onSearchChange }) => {
         >
           <span className="fw-semibold">Sort by:</span>
 
-          <button className="btn  btn-sm d-flex align-items-center gap-1">
+          <button 
+            className={`btn btn-sm d-flex align-items-center gap-1 ${sortBy === 'recent' ? 'btn-primary' : 'btn-outline-secondary'}`}
+            onClick={() => onSortChange('recent')}
+          >
             <BiSort />
             Recent
           </button>
 
-          <button className="btn btn-sm d-flex align-items-center gap-1">
+          <button 
+            className={`btn btn-sm d-flex align-items-center gap-1 ${sortBy === 'trending' ? 'btn-primary' : 'btn-outline-secondary'}`}
+            onClick={() => onSortChange('trending')}
+          >
             <TbArrowsSort />
             Trending
           </button>
