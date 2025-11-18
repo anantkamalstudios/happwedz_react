@@ -47,10 +47,17 @@ const useInfiniteScroll = (
 
       const portfolioUrls = attributes.Portfolio
         ? attributes.Portfolio.split("|")
-          .map((url) => url.trim())
-          .filter((url) => url)
+            .map((url) => url.trim())
+            .filter((url) => url)
         : [];
-      const gallery = media.length > 0 ? media : portfolioUrls;
+      const normalizeUrl = (u) => {
+        if (!u) return null;
+        if (/^https?:\/\//i.test(u)) return u;
+        return `${IMAGE_BASE_URL}${u.startsWith("/") ? u : "/" + u}`;
+      };
+      const gallery = (media.length > 0 ? media : portfolioUrls)
+        .map(normalizeUrl)
+        .filter(Boolean);
       const firstImage = gallery.length > 0 ? gallery[0] : null;
 
       const vendorTypeName =
@@ -90,8 +97,12 @@ const useInfiniteScroll = (
       }
 
       // Parse latitude and longitude from attributes
-      const latitude = parseFloat(attributes.latitude || attributes.Latitude || '');
-      const longitude = parseFloat(attributes.longitude || attributes.Longitude || '');
+      const latitude = parseFloat(
+        attributes.latitude || attributes.Latitude || ""
+      );
+      const longitude = parseFloat(
+        attributes.longitude || attributes.Longitude || ""
+      );
       const hasValidCoordinates = !isNaN(latitude) && !isNaN(longitude);
 
       return {
@@ -101,12 +112,8 @@ const useInfiniteScroll = (
           attributes.Name ||
           vendor.businessName ||
           "Unknown Vendor",
-        location: {
-          lat: hasValidCoordinates ? latitude : null,
-          lng: hasValidCoordinates ? longitude : null,
-          address: attributes.address || attributes.Address || '',
-          city: attributes.city || vendor.city || ''
-        },
+        lat: hasValidCoordinates ? latitude : null,
+        lng: hasValidCoordinates ? longitude : null,
         subtitle: attributes.subtitle || "",
         tagline: attributes.tagline || "",
         description:
@@ -128,10 +135,10 @@ const useInfiniteScroll = (
           : null,
         starting_price: !isVenue
           ? photoPackage ||
-          photoVideoPackage ||
-          attributes.PriceRange ||
-          attributes.price ||
-          null
+            photoVideoPackage ||
+            attributes.PriceRange ||
+            attributes.price ||
+            null
           : null,
 
         address: attributes.address || attributes.Address || "",
@@ -188,12 +195,12 @@ const useInfiniteScroll = (
       try {
         const subCategory = slug
           ? slug
-            .replace(/-{2,}/g, " / ")
-            .replace(/-/g, " ")
-            .replace(/\s*\/\s*/g, " / ")
-            .replace(/\s{2,}/g, " ")
-            .replace(/\b\w/g, (l) => l.toUpperCase())
-            .trim()
+              .replace(/-{2,}/g, " / ")
+              .replace(/-/g, " ")
+              .replace(/\s*\/\s*/g, " / ")
+              .replace(/\s{2,}/g, " ")
+              .replace(/\b\w/g, (l) => l.toUpperCase())
+              .trim()
           : null;
 
         const params = new URLSearchParams();
@@ -208,7 +215,11 @@ const useInfiniteScroll = (
         const selectedSubcats = extractVenueSubCategories(filtersRef.current);
         if (selectedSubcats && selectedSubcats.trim().length > 0) {
           params.append("subCategory", selectedSubcats);
-        } else if (!vendorType && subCategory && subCategory.toLowerCase() !== "all") {
+        } else if (
+          !vendorType &&
+          subCategory &&
+          subCategory.toLowerCase() !== "all"
+        ) {
           params.append("subCategory", subCategory);
         }
 
@@ -225,7 +236,9 @@ const useInfiniteScroll = (
         }
 
         // Extract capacity filters and add as minCapacity/maxCapacity
-        const { minCapacity, maxCapacity } = extractCapacityFilters(filtersRef.current);
+        const { minCapacity, maxCapacity } = extractCapacityFilters(
+          filtersRef.current
+        );
         if (minCapacity !== null && minCapacity !== undefined) {
           params.append("minCapacity", minCapacity.toString());
         }
@@ -234,7 +247,9 @@ const useInfiniteScroll = (
         }
 
         // Extract food price per plate
-        const { minFoodPrice, maxFoodPrice } = extractFoodPriceFilters(filtersRef.current);
+        const { minFoodPrice, maxFoodPrice } = extractFoodPriceFilters(
+          filtersRef.current
+        );
         if (minFoodPrice !== null && minFoodPrice !== undefined) {
           params.append("minFoodPrice", minFoodPrice.toString());
         }
@@ -252,7 +267,9 @@ const useInfiniteScroll = (
         }
 
         // Extract rating
-        const { minRating, maxRating } = extractRatingFilters(filtersRef.current);
+        const { minRating, maxRating } = extractRatingFilters(
+          filtersRef.current
+        );
         if (minRating !== null && minRating !== undefined) {
           params.append("minRating", minRating.toString());
         }
@@ -261,7 +278,9 @@ const useInfiniteScroll = (
         }
 
         // Extract reviews
-        const { minReviews, maxReviews } = extractReviewFilters(filtersRef.current);
+        const { minReviews, maxReviews } = extractReviewFilters(
+          filtersRef.current
+        );
         if (minReviews !== null && minReviews !== undefined) {
           params.append("minReviews", minReviews.toString());
         }
@@ -341,8 +360,8 @@ const useInfiniteScroll = (
         const itemsRaw = Array.isArray(result)
           ? result
           : Array.isArray(result.data)
-            ? result.data
-            : [];
+          ? result.data
+          : [];
 
         const transformed = transformApiData(itemsRaw);
 

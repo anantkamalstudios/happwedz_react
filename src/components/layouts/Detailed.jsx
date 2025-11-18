@@ -32,7 +32,6 @@ import axios from "axios";
 const API_BASE_URL = "https://happywedz.com";
 import Swal from "sweetalert2";
 
-// Helper function to capitalize the first letter of each word
 const capitalizeWords = (str) => {
   if (!str) return "";
   return str.replace(/^(.)|\s+(.)/g, (c) => c.toUpperCase());
@@ -542,7 +541,7 @@ const Detailed = () => {
       "Location not specified";
 
   const activeVendor = {
-    id: venueData.vendor_id,
+    id: id,
     name:
       venueData.attributes?.vendor_name ||
       venueData.vendor?.vendor_name ||
@@ -552,6 +551,8 @@ const Detailed = () => {
     reviews: venueData.attributes?.review_count || 0,
     image: mainImage || "/images/default-vendor.jpg",
   };
+
+  console.log("AB", activeVendor);
 
   return (
     <div className="venue-detail-page">

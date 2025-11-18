@@ -30,6 +30,7 @@ const ReviewModalFlow = ({ vendor }) => {
     }
   }, [vendor]);
 
+  console.log("vendor=>", vendor);
   // ADDED: Function to handle "Read More" click
   const handleReadMoreClick = (review) => {
     setSelectedReview(review);
@@ -87,88 +88,6 @@ const ReviewModalFlow = ({ vendor }) => {
 
       {/* Review Carousel */}
       {reviews.length > 0 ? (
-        // <Carousel interval={null} indicators={false}>
-        //   {groupedReviews.map((group, index) => (
-        //     <Carousel.Item key={index}>
-        //       <div
-        //         className="d-flex justify-content-start gap-4 flex-wrap"
-        //         style={{ position: "relative", zIndex: 2 }}
-        //       >
-        //         {group.map((review) => (
-        //           <Card
-        //             key={review.id}
-        //             className="shadow-sm border rounded-3"
-        //             style={{ width: "250px" }}
-        //           >
-        //             <Card.Body>
-        //               <div className="d-flex align-items-center mb-3">
-        //                 {review.user?.image ? (
-        //                   <img
-        //                     src={review.user.image}
-        //                     alt={review.user.firstName}
-        //                     className="rounded-circle me-3"
-        //                     width={50}
-        //                     height={50}
-        //                   />
-        //                 ) : (
-        //                   <div
-        //                     className="rounded-circle bg-secondary text-white d-flex justify-content-center align-items-center me-3"
-        //                     style={{ width: 50, height: 50 }}
-        //                   >
-        //                     {review.user?.name
-        //                       ? review.user.name.charAt(0)
-        //                       : "U"}
-        //                   </div>
-        //                 )}
-        //                 <div>
-        //                   <h6 className="mb-0 fw-bold">
-        //                     {review.user?.name || "Anonymous"}
-        //                   </h6>
-        //                   <small className="text-muted">
-        //                     Sent on{" "}
-        //                     {new Date(review.createdAt).toLocaleDateString()}
-        //                   </small>
-        //                 </div>
-        //               </div>
-
-        //               <div className="d-flex align-items-start mb-2">
-        //                 {Array.from({ length: 5 }).map((_, i) => (
-        //                   <FaStar
-        //                     key={i}
-        //                     className="me-1"
-        //                     color={
-        //                       i < review.rating_quality ? "#ffc107" : "#e4e5e9"
-        //                     }
-        //                   />
-        //                 ))}
-        //                 <strong className="ms-2">
-        //                   {review.rating_quality.toFixed(1)}
-        //                 </strong>
-        //               </div>
-
-        //               <h6 className="fw-semibold mb-1">{review.title}</h6>
-        //               <p
-        //                 className="text-muted mb-2"
-        //                 style={{ fontSize: "14px" }}
-        //               >
-        //                 {review.comment.length > 120
-        //                   ? review.comment.slice(0, 120) + "..."
-        //                   : review.comment}
-        //               </p>
-        //               <a
-        //                 className="fw-semibold text-decoration-none"
-        //                 onClick={() => handleReadMoreClick(review)}
-        //                 style={{ cursor: "pointer" }}
-        //               >
-        //                 Read more
-        //               </a>
-        //             </Card.Body>
-        //           </Card>
-        //         ))}
-        //       </div>
-        //     </Carousel.Item>
-        //   ))}
-        // </Carousel>
         <Carousel
           interval={2500}
           indicators={true}

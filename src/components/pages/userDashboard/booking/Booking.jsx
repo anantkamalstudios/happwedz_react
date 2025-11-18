@@ -205,7 +205,13 @@ const Booking = () => {
       ) : filteredBookings.length === 0 ? (
         <div className="user-booking-empty">
           <div className="user-booking-empty-icon">
-            <CiBookmarkCheck />
+            <img
+              src="/images/no-booking.png"
+              alt=""
+              className="img-fluid"
+              width={200}
+              height={200}
+            />
           </div>
           <h3 className="user-booking-empty-title">No Bookings Found</h3>
           <p className="user-booking-empty-text">
@@ -238,7 +244,7 @@ const Booking = () => {
                             />
                             <Badge
                               bg="none"
-                              className={`user-booking-status-badge user-booking-status-${item.status}`}
+                              className={`fs-10 user-booking-status-badge user-booking-status-${item.status}`}
                             >
                               {getStatusIcon(item.status)}
                               <span className="ms-1">{item.status}</span>
@@ -352,7 +358,7 @@ const Booking = () => {
                             <Button
                               variant="danger"
                               size="sm"
-                              className="user-booking-cancel-btn"
+                              className="user-booking-cancel-btn fs-10"
                               onClick={() =>
                                 handleCancelRequest(item.requestId || item.id)
                               }

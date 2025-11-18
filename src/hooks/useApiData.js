@@ -335,7 +335,12 @@ const transformApiData = (items) => {
           .map((url) => url.trim())
           .filter((url) => url)
       : [];
-    const gallery = media.length > 0 ? media : portfolioUrls;
+    const normalizeUrl = (u) => {
+      if (!u) return null;
+      if (/^https?:\/\//i.test(u)) return u;
+      return `${IMAGE_BASE_URL}${u.startsWith('/') ? u : '/' + u}`;
+    };
+    const gallery = (media.length > 0 ? media : portfolioUrls).map(normalizeUrl).filter(Boolean);
     const firstImage = gallery.length > 0 ? gallery[0] : null;
 
     const vendorTypeName =
@@ -376,6 +381,14 @@ const transformApiData = (items) => {
       roomsParsed = Number.isNaN(n) ? null : n;
     }
 
+    const latitude = parseFloat(
+      attributes.latitude || attributes.Latitude || ""
+    );
+    const longitude = parseFloat(
+      attributes.longitude || attributes.Longitude || ""
+    );
+    const hasValidCoordinates = !isNaN(latitude) && !isNaN(longitude);
+
     return {
       id,
       name:
@@ -391,7 +404,8 @@ const transformApiData = (items) => {
         attributes.description ||
         "",
       slug: attributes.slug || "",
-
+      lat: hasValidCoordinates ? latitude : null,
+      lng: hasValidCoordinates ? longitude : null,
       image: firstImage,
       gallery,
       videos: [],

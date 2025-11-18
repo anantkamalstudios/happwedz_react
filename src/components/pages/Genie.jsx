@@ -863,7 +863,7 @@
 //               }}
 //             >
 //               <img
-//                 src="./gennie-logo.png"
+//                 src="/gennie-logo.png"
 //                 alt="gennie-logo"
 //                 style={{ height: "100%" }}
 //               />
@@ -1164,7 +1164,7 @@
 //                           alignSelf: "flex-end",
 //                         }}
 //                       >
-//                         <img src="./gennie-logo.png" alt="" />
+//                         <img src="/gennie-logo.png" alt="" />
 //                       </div>
 //                     )}
 //                     <div
@@ -1387,7 +1387,7 @@
 //                       }}
 //                     >
 //                       <img
-//                         src="./gennie-logo.png"
+//                         src="/gennie-logo.png"
 //                         alt=""
 //                         style={{ height: "100%" }}
 //                       />
@@ -1689,7 +1689,7 @@ const Genie = () => {
               }}
             >
               <img
-                src="./gennie-logo.png"
+                src="/gennie-logo.png"
                 alt="gennie-logo"
                 style={{ height: "100%" }}
               />

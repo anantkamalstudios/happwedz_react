@@ -35,7 +35,8 @@ const SubSection = () => {
   );
 
   const [view, setView] = useState(() => {
-    const saved = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
+    const saved =
+      typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
     return saved || "images";
   });
   const [searchQuery, setSearchQuery] = useState("");
@@ -98,7 +99,7 @@ const SubSection = () => {
   const handleFiltersChange = (filters) => {
     setActiveFilters(filters);
   };
- 
+
   useEffect(() => {
     setActiveFilters({});
   }, [section, slug]);
@@ -110,14 +111,15 @@ const SubSection = () => {
     }
     setSelectedCity(reduxLocation);
   }, [cityFromQuery, reduxLocation]);
- 
+
   useEffect(() => {
-    const saved = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
+    const saved =
+      typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
     if (saved && saved !== view) {
       setView(saved);
     }
   }, [storageKey]);
- 
+
   useEffect(() => {
     try {
       if (typeof window !== "undefined") {
@@ -205,6 +207,16 @@ const SubSection = () => {
     );
   }
 
+  if (view === "map") {
+    return (
+      <MapView
+        subVenuesData={dataToSend}
+        section={section}
+        onClose={() => setView("images")}
+      />
+    );
+  }
+
   if (loading && dataToSend.length === 0) {
     return <Loader />;
   }
@@ -268,7 +280,6 @@ const SubSection = () => {
                 handleShow={handleShow}
               />
             )}
-
             {view === "map" && (
               <MapView subVenuesData={dataToSend} section={section} />
             )}

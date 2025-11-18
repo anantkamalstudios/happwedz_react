@@ -150,7 +150,7 @@ const HomeGennie = () => {
           onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
           <img
-            src="./gennie-logo.png"
+            src="/gennie-logo.png"
             alt="logo"
             style={{
               height: "100%",
@@ -238,7 +238,7 @@ const HomeGennie = () => {
                   }}
                 >
                   <img
-                    src="./gennie-logo.png"
+                    src="/gennie-logo.png"
                     alt="logo"
                     style={{
                       height: "100%",
@@ -316,7 +316,7 @@ const HomeGennie = () => {
                     }}
                   >
                     <img
-                      src="./gennie-logo.png"
+                      src="/gennie-logo.png"
                       alt="logo"
                       style={{
                         height: "100%",
@@ -474,7 +474,7 @@ const HomeGennie = () => {
                     }}
                   >
                     <img
-                      src="./gennie-logo.png"
+                      src="/gennie-logo.png"
                       alt="logo"
                       style={{
                         height: "100%",
@@ -622,7 +622,7 @@ const HomeGennie = () => {
                   }}
                 >
                   <img
-                    src="./gennie-logo.png"
+                    src="/gennie-logo.png"
                     alt="logo"
                     style={{
                       height: "100%",
