@@ -4,6 +4,7 @@ import Header from "./Header";
 import Footer from "./Footer";
 import { MyProvider } from "../../context/useContext";
 import HomeGennie from "../common/HomeGennie";
+import { FilterProvider } from "../../context/realWedding.context";
 
 export default function MainLayout() {
   const params = useParams();
@@ -11,6 +12,7 @@ export default function MainLayout() {
   return (
     <>
       <MyProvider>
+        <FilterProvider >
         <Header />
         <main style={{ minHeight: "70vh" }}>
           <Outlet />
@@ -28,6 +30,7 @@ export default function MainLayout() {
           </div>
         )}
         <Footer />
+        </FilterProvider>
       </MyProvider>
     </>
   );

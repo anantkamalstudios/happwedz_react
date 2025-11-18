@@ -1013,6 +1013,13 @@ export default function FiltersPageOutfit() {
   const selfieInputRef = useRef(null);
   const originalBlobUrlRef = useRef(null);
 
+  const typeOfCategory = getCategoryFromStorage();
+  const buttons = [
+    typeOfCategory === "outfit" ? "Outfit" : "Jewellery",
+    "Compare",
+    "Complete Look",
+  ];
+
   const [originalUrl, setOriginalUrl] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isCompareMode, setIsCompareMode] = useState(false);
@@ -1048,7 +1055,7 @@ export default function FiltersPageOutfit() {
     }
   };
 
-  const getCategoryFromStorage = () => {
+  function getCategoryFromStorage() {
     try {
       const userInfoStr = localStorage.getItem("userInfo");
       if (userInfoStr) {
@@ -1059,7 +1066,7 @@ export default function FiltersPageOutfit() {
       console.error("Error parsing userInfo from localStorage:", error);
     }
     return null;
-  };
+  }
 
   const fetchProducts = async () => {
     try {
@@ -1082,8 +1089,10 @@ export default function FiltersPageOutfit() {
 
       console.log("API Response:", response.data);
 
-      if (response.data?.ok && Array.isArray(response.data.items)) {
-        setProductList(response.data.items);
+      if (Array.isArray(response.data.items)) {
+        setProductList(response?.data?.items);
+        console.log(productList, "product list from jewellary");
+
         console.log("Products loaded:", response.data.items.length);
       } else {
         console.error("Invalid response format:", response.data);
@@ -1119,7 +1128,7 @@ export default function FiltersPageOutfit() {
       }
     };
   }, []);
-
+  
   const pollForResult = async (
     sessionId,
     apiUrl,
@@ -1723,7 +1732,8 @@ export default function FiltersPageOutfit() {
         <div style={{ width: "100%" }}>
           {(() => {
             switch (activeBtn) {
-              case "Shades":
+              case "Outfit":
+              case "Jewellery":
                 return (
                   <div style={{ position: "relative", width: "100%" }}>
                     <div

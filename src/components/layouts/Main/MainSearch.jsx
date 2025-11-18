@@ -21,6 +21,66 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
   const { section } = useParams();
   const [heroInfo, setHeroInfo] = useState([]);
 
+  // useEffect(() => {
+  //   const fetchHeroInfo = async () => {
+  //     try {
+  //       const response = await axios.get("/api/hero-sections");
+  //       const dataInfo = response.data;
+
+  //       const pathSegments = location.pathname.split("/").filter(Boolean);
+  //       const baseSectionRaw = pathSegments[0]?.toLowerCase();
+  //       const baseSection =
+  //         baseSectionRaw === "vendor"
+  //           ? "vendors"
+  //           : baseSectionRaw === "venue"
+  //           ? "venues"
+  //           : baseSectionRaw;
+
+  //       const effectiveSection =
+  //         baseSection === "venues" || baseSection === "vendors"
+  //           ? baseSection
+  //           : section &&
+  //             ["venues", "vendors", "venue", "vendor"].includes(
+  //               section.toLowerCase()
+  //             )
+  //           ? section.toLowerCase() === "vendor"
+  //             ? "vendors"
+  //             : section.toLowerCase() === "venue"
+  //             ? "venues"
+  //             : section.toLowerCase()
+  //           : location.pathname.includes("/venues") ||
+  //             location.pathname.includes("/venue")
+  //           ? "venues"
+  //           : location.pathname.includes("/vendors") ||
+  //             location.pathname.includes("/vendor")
+  //           ? "vendors"
+  //           : null;
+
+  //       const normalizeType = (t) => {
+  //         const v = (t || "").toLowerCase();
+  //         if (v.includes("venue")) return "venues";
+  //         if (v.includes("vendor")) return "vendors";
+  //         return v || null;
+  //       };
+
+  //       let matched = dataInfo.find(
+  //         (item) => normalizeType(item?.navbar?.type) === effectiveSection
+  //       );
+  //       if (!matched && effectiveSection) {
+  //         matched = dataInfo.find((item) =>
+  //           (item?.navbar?.type || "")
+  //             .toLowerCase()
+  //             .includes(effectiveSection === "venues" ? "venue" : "vendor")
+  //         );
+  //       }
+  //       setHeroInfo(matched || null);
+  //     } catch (error) {
+  //       console.error("Error fetching hero info:", error);
+  //     }
+  //   };
+  //   fetchHeroInfo();
+  // }, [section, location.pathname]);
+
   useEffect(() => {
     const fetchHeroInfo = async () => {
       try {
@@ -28,56 +88,90 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
         const dataInfo = response.data;
 
         const pathSegments = location.pathname.split("/").filter(Boolean);
+
+        // 1) Detect base section from main route (/vendor, /venue, /photography etc.)
         const baseSectionRaw = pathSegments[0]?.toLowerCase();
-        const baseSection =
-          baseSectionRaw === "vendor"
-            ? "vendors"
-            : baseSectionRaw === "venue"
-            ? "venues"
-            : baseSectionRaw;
 
-        const effectiveSection =
-          baseSection === "venues" || baseSection === "vendors"
-            ? baseSection
-            : section &&
-              ["venues", "vendors", "venue", "vendor"].includes(
-                section.toLowerCase()
-              )
-            ? section.toLowerCase() === "vendor"
-              ? "vendors"
-              : section.toLowerCase() === "venue"
-              ? "venues"
-              : section.toLowerCase()
-            : location.pathname.includes("/venues") ||
-              location.pathname.includes("/venue")
-            ? "venues"
-            : location.pathname.includes("/vendors") ||
-              location.pathname.includes("/vendor")
-            ? "vendors"
-            : null;
+        const baseSection = (() => {
+          if (baseSectionRaw === "vendor") return "vendors";
+          if (baseSectionRaw === "venue") return "venues";
 
+          if (
+            ["photographer", "photography", "photos", "photo"].includes(
+              baseSectionRaw
+            )
+          )
+            return "photography";
+
+          return baseSectionRaw;
+        })();
+
+        // Helper to normalize all possible inputs
         const normalizeType = (t) => {
           const v = (t || "").toLowerCase();
+
           if (v.includes("venue")) return "venues";
           if (v.includes("vendor")) return "vendors";
+          if (
+            v.includes("photo") ||
+            v.includes("graphy") ||
+            v.includes("photographer")
+          )
+            return "photography";
+
           return v || null;
         };
 
+        // 2) Derive final section priority
+        const effectiveSection = (() => {
+          const sec = section?.toLowerCase();
+
+          if (["venue", "venues"].includes(sec)) return "venues";
+          if (["vendor", "vendors"].includes(sec)) return "vendors";
+          if (["photography", "photographer", "photo", "photos"].includes(sec))
+            return "photography";
+
+          // Check pathname fallbacks
+          if (
+            location.pathname.includes("/venues") ||
+            location.pathname.includes("/venue")
+          )
+            return "venues";
+
+          if (
+            location.pathname.includes("/vendors") ||
+            location.pathname.includes("/vendor")
+          )
+            return "vendors";
+
+          if (
+            location.pathname.includes("/photography") ||
+            location.pathname.includes("/photo") ||
+            location.pathname.includes("/photographer")
+          )
+            return "photography";
+
+          return baseSection || null;
+        })();
+
+        // 3) Match API item
         let matched = dataInfo.find(
           (item) => normalizeType(item?.navbar?.type) === effectiveSection
         );
+
+        // fallback partial include
         if (!matched && effectiveSection) {
           matched = dataInfo.find((item) =>
-            (item?.navbar?.type || "")
-              .toLowerCase()
-              .includes(effectiveSection === "venues" ? "venue" : "vendor")
+            (item?.navbar?.type || "").toLowerCase().includes(effectiveSection)
           );
         }
+
         setHeroInfo(matched || null);
       } catch (error) {
         console.error("Error fetching hero info:", error);
       }
     };
+
     fetchHeroInfo();
   }, [section, location.pathname]);
 

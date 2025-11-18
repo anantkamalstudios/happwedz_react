@@ -105,7 +105,13 @@
 
 import React from "react";
 
-const VendorPricing = ({ formData, setFormData, onSave, onShowSuccess }) => {
+const VendorPricing = ({
+  formData,
+  setFormData,
+  onSave,
+  onShowSuccess,
+  onSubmit,
+}) => {
   const handleNestedInputChange = (subSection, field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -319,9 +325,14 @@ const VendorPricing = ({ formData, setFormData, onSave, onShowSuccess }) => {
           </div>
         </div>
 
-        <button className="btn btn-primary mt-2" onClick={handleSave}>
-          Save Pricing Details
-        </button>
+        <div style={{ display: "flex", gap: "5px", width: "50%" }}>
+          <button className="btn btn-primary mt-2" onClick={handleSave}>
+            Save Pricing Details
+          </button>
+          <button className="btn btn-primary mt-2" onClick={onSubmit}>
+            Submit All Details
+          </button>
+        </div>
       </div>
     </div>
   );

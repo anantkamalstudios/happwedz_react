@@ -8,24 +8,34 @@ import {
 } from "react-icons/fa";
 import { BsExclamationTriangle } from "react-icons/bs";
 import { API_BASE_URL } from "../../../config/constants";
+import { useFilter } from "../../../context/realWedding.context";
 
 const RealWeddings = ({ onPostClick }) => {
+  const {
+    searchTerm,
+    setSearchTerm,
+    selectCity,
+    setSelectCity,
+    selectedCulture,
+    setSelectedCulture,
+    selectedTheme,
+    setSelectedTheme,
+    cities,
+    cultures,
+    themes,
+    clearFilters,
+  } = useFilter();
+
   const token = localStorage.getItem("token");
-  const [searchTerm, setSearchTerm] = useState("");
   const [weddings, setWeddings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const filterRef = useRef(null);
-  const [city, setCity] = useState([]);
-  const [selectedCity, setSelectedCity] = useState("All Cities");
-  const [selectedCulture, setSelectedCulture] = useState("All Cultures");
-  const [selectedTheme, setSelectedTheme] = useState("All Themes");
-  const [cultures, setCultures] = useState([]);
   const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
   const [isCultureDropdownOpen, setIsCultureDropdownOpen] = useState(false);
   const [citySearchTerm, setCitySearchTerm] = useState("");
+  const filterRef = useRef(null);
   const cityDropdownRef = useRef(null);
   const themeDropdownRef = useRef(null);
   const cultureDropdownRef = useRef(null);
@@ -58,31 +68,14 @@ const RealWeddings = ({ onPostClick }) => {
     };
   }, []);
 
-  const themes = [
-    "Destination",
-    "Grand & Luxurious",
-    "Pocket Friendly Stunners",
-    "Intimate & Minimalist",
-    "Modern & Stylish",
-    "International",
-    "Classic",
-    "Others",
-  ];
-
-  const filteredCities = city.filter((c) =>
-    c.toLowerCase().includes(citySearchTerm.toLowerCase())
-  );
-
-  const filteredThemes = themes.filter((theme) =>
-    theme.toLowerCase().includes(selectedTheme.toLowerCase())
-  );
-
-  const filteredCultures = cultures.filter((culture) =>
-    culture.name.toLowerCase().includes(selectedCulture.toLowerCase())
-  );
+  const filteredCities = useMemo(() => {
+    return cities.filter((city) =>
+      city.toLowerCase().includes(citySearchTerm.toLowerCase())
+    );
+  }, [cities, citySearchTerm]);
 
   const handleCitySelect = (selected) => {
-    setSelectedCity(selected);
+    setSelectCity(selected);
     setCurrentPage(1);
     setIsCityDropdownOpen(false);
     setCitySearchTerm("");
@@ -181,105 +174,49 @@ const RealWeddings = ({ onPostClick }) => {
     fetchWeddings();
   }, []);
 
-  const [cities, setCities] = useState([]);
-
-  const fetchCities = useMemo(
-    () => async () => {
-      try {
-        if (cities.length === 0) {
-          const response = await axios.post(
-            "https://countriesnow.space/api/v0.1/countries/cities",
-            { country: "India" }
-          );
-          if (response.data?.data) {
-            const sortedCities = response.data.data.sort((a, b) =>
-              a.localeCompare(b)
-            );
-            setCities(sortedCities);
-            setCity(sortedCities);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching cities:", error);
-      }
-    },
-    [cities.length]
-  );
-
-  useEffect(() => {
-    fetchCities();
-  }, [fetchCities]);
-
-  useEffect(() => {
-    const fetchCultures = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(
-          `${API_BASE_URL}/real-wedding-culture/public`
-        );
-        if (response.data && response.data.cultures) {
-          setCultures(response?.data?.cultures);
-        } else {
-          setCultures([]);
-        }
-        setError(null);
-      } catch (err) {
-        setError("Failed to fetch wedding stories. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCultures();
-  }, []);
-
   const scrollToFilters = () => {
     if (filterRef.current) {
       filterRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
-  const filteredWeddings = weddings.filter((wedding) => {
-    const isPublished = wedding.status === "published";
+  const filteredWeddings = useMemo(() => {
+    return weddings.filter((wedding) => {
+      const isPublished = wedding.status === "published";
+      if (!isPublished) return false;
 
-    const matchesSearch =
-      wedding.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      wedding.city?.toLowerCase().includes(searchTerm.toLowerCase());
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch =
+        searchTerm === "" ||
+        wedding.title?.toLowerCase().includes(searchLower) ||
+        wedding.city?.toLowerCase().includes(searchLower);
 
-    const cityMatch =
-      selectedCity === "All Cities" ||
-      (wedding.city &&
-        wedding.city.toLowerCase() === selectedCity.toLowerCase());
+      const cityMatch =
+        selectCity === "All Cities" ||
+        (wedding.city &&
+          wedding.city.toLowerCase() === selectCity.toLowerCase());
 
-    const culture =
-      selectedCulture === "All Cultures" ||
-      wedding.culture?.toLowerCase() === selectedCulture.toLowerCase();
+      const cultureMatch =
+        selectedCulture === "All Cultures" ||
+        (wedding.culture &&
+          wedding.culture.toLowerCase() === selectedCulture.toLowerCase());
 
-    const theme = (() => {
-      if (selectedTheme === "All Themes") return true;
-      const wt = wedding.themes;
-      if (!wt) return false;
-      if (Array.isArray(wt)) return wt.includes(selectedTheme);
-      try {
-        return String(wt).toLowerCase() === String(selectedTheme).toLowerCase();
-      } catch (e) {
-        return false;
-      }
-    })();
+      const themeMatch =
+        selectedTheme === "All Themes" ||
+        (Array.isArray(wedding.themes)
+          ? wedding.themes.includes(selectedTheme)
+          : String(wedding.themes || "").toLowerCase() ===
+            selectedTheme.toLowerCase());
 
-    return isPublished && matchesSearch && cityMatch && culture && theme;
-  });
+      return matchesSearch && cityMatch && cultureMatch && themeMatch;
+    });
+  }, [weddings, searchTerm, selectCity, selectedCulture, selectedTheme]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, selectedCity, selectedCulture, selectedTheme]);
+  }, [searchTerm, selectCity, selectedCulture, selectedTheme]);
 
-  const clearFilters = () => {
-    setSearchTerm("");
-    setSelectedCity("All Cities");
-    setSelectedCulture("All Cultures");
-    setSelectedTheme("All Themes");
-    setCurrentPage(1);
-  };
+  // Clear filters will use the one from context
 
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
@@ -406,7 +343,7 @@ const RealWeddings = ({ onPostClick }) => {
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {selectedCity}
+                  {selectCity}
                 </span>
                 {isCityDropdownOpen ? <FaChevronUp /> : <FaChevronDown />}
               </button>
@@ -476,13 +413,13 @@ const RealWeddings = ({ onPostClick }) => {
                         padding: "10px 16px",
                         cursor: "pointer",
                         backgroundColor:
-                          selectedCity === "All Cities"
+                          selectCity === "All Cities"
                             ? "#f8e3ee"
                             : "transparent",
                         color:
-                          selectedCity === "All Cities" ? "#C31162" : "#333",
+                          selectCity === "All Cities" ? "#C31162" : "#333",
                         fontWeight:
-                          selectedCity === "All Cities" ? "500" : "normal",
+                          selectCity === "All Cities" ? "500" : "normal",
                         "&:hover": {
                           backgroundColor: "#f9f9f9",
                         },
@@ -499,10 +436,10 @@ const RealWeddings = ({ onPostClick }) => {
                             padding: "10px 16px",
                             cursor: "pointer",
                             backgroundColor:
-                              selectedCity === city ? "#f8e3ee" : "transparent",
-                            color: selectedCity === city ? "#C31162" : "#333",
+                              selectCity === city ? "#f8e3ee" : "transparent",
+                            color: selectCity === city ? "#C31162" : "#333",
                             fontWeight:
-                              selectedCity === city ? "500" : "normal",
+                              selectCity === city ? "500" : "normal",
                             "&:hover": {
                               backgroundColor: "#f9f9f9",
                             },
@@ -796,7 +733,7 @@ const RealWeddings = ({ onPostClick }) => {
             </p>
             <div className="d-flex gap-2">
               {(searchTerm !== "" ||
-                selectedCity !== "All Cities" ||
+                selectCity !== "All Cities" ||
                 selectedCulture !== "All Cultures" ||
                 selectedTheme !== "All Themes") && (
                 <button

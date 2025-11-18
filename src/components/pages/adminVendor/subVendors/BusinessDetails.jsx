@@ -108,7 +108,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
       let imageUrl = candidate;
       if (imageUrl && typeof imageUrl === "string") {
         // Fix the URL path if it has /src/uploads/ instead of /uploads/
-        imageUrl = imageUrl.replace(/\/src\/uploads\//g, "/uploads/");
+        imageUrl = imageUrl.replace(/\/src\/uploads\//g, "/src/uploads/");
       } else {
         imageUrl = null;
       }

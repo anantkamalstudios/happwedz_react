@@ -22,7 +22,7 @@ const CustomerLogin = () => {
   const dispatch = useDispatch();
   const { showLoader, hideLoader } = useLoader();
 
-  const from = location.state?.from?.pathname || "/";
+  const from = location.state?.from || "/";
 
   const handleGoogleCredential = async (credentialResponse) => {
     try {

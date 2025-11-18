@@ -1227,6 +1227,7 @@ import {
 } from "react-icons/fa";
 import axios from "axios";
 import usePhotography from "../../hooks/usePhotography";
+import { useFilter } from "../../context/realWedding.context";
 
 const Header = () => {
   const dispatch = useDispatch();
@@ -1238,6 +1239,13 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSubmenu, setMobileSubmenu] = useState(null);
   const navigate = useNavigate();
+  const {
+    setSelectCity,
+    setSelectedCulture,
+    setSelectedTheme,
+    cultures,
+    themes,
+  } = useFilter();
 
   const formatName = (name) => name.replace(/\band\b/gi, "&");
 
@@ -1276,24 +1284,24 @@ const Header = () => {
   ];
 
   const byCity = ["Mumbai", "Bangalore", "Pune", "Kolkata", "Jaipur", "Others"];
-  const byCulture = [
-    "Maharashtrian",
-    "Punjabi / Sikh",
-    "Bengali",
-    "Gujarati",
-    "Marwari",
-    "Telugu",
-    "Others",
-  ];
-  const byTheme = [
-    "Destination",
-    "Grand & Luxurious",
-    "Pocket Friendly Stunners",
-    "Intimate & Minimalist",
-    "Modern & Stylish",
-    "International",
-    "Others",
-  ];
+  // const byCulture = [
+  //   "Maharashtrian",
+  //   "Punjabi / Sikh",
+  //   "Bengali",
+  //   "Gujarati",
+  //   "Marwari",
+  //   "Telugu",
+  //   "Others",
+  // ];
+  // const byTheme = [
+  //   "Destination",
+  //   "Grand & Luxurious",
+  //   "Pocket Friendly Stunners",
+  //   "Intimate & Minimalist",
+  //   "Modern & Stylish",
+  //   "International",
+  //   "Others",
+  // ];
 
   const handleLogout = () => {
     if (isVendorLoggedIn) {
@@ -1545,7 +1553,7 @@ const Header = () => {
                 <LocationModalWithCategories />
                 <div>
                   <Link
-                    to="/try"
+                    // to="/try"
                     state={{ title: "Try" }}
                     onClick={handleMobileLinkClick}
                   >
@@ -1987,26 +1995,32 @@ const Header = () => {
                       <h6 className="fw-bold small text-uppercase primary-text mt-3 mb-2">
                         By Culture
                       </h6>
-                      {byCulture.map((culture, index) => (
+                      {cultures.map((culture, index) => (
                         <Link
                           key={index}
                           to="/real-wedding"
                           className="d-block py-2 text-decoration-none text-dark small"
-                          onClick={handleMobileLinkClick}
+                          onClick={() => {
+                            navigate("/real-wedding");
+                            setSelectedCulture(culture);
+                          }}
                         >
-                          {culture}
+                          {culture.name}
                         </Link>
                       ))}
 
                       <h6 className="fw-bold small text-uppercase primary-text mt-3 mb-2">
                         By Theme
                       </h6>
-                      {byTheme.map((theme, index) => (
+                      {themes.map((theme, index) => (
                         <Link
                           key={index}
                           to="/real-wedding"
                           className="d-block py-2 text-decoration-none text-dark small"
-                          onClick={handleMobileLinkClick}
+                          onClick={() => {
+                            navigate("/real-wedding");
+                            setSelectedTheme(theme);
+                          }}
                         >
                           {theme}
                         </Link>
@@ -2126,7 +2140,7 @@ const Header = () => {
                       />
 
                       <Link
-                        to="/try"
+                        // to="/try"
                         state={{ title: "Try" }}
                         title="Try Design Studio"
                       >
@@ -2861,6 +2875,7 @@ const Header = () => {
                                               textDecoration: " none",
                                               color: "#212529",
                                             }}
+                                            onClick={() => setSelectCity(city)}
                                           >
                                             {city}
                                           </Link>
@@ -2874,7 +2889,7 @@ const Header = () => {
                                       By Culture
                                     </h6>
                                     <ul className="list-unstyled mb-0 mt-2">
-                                      {byCulture.map((culture, index) => (
+                                      {cultures.map((culture, index) => (
                                         <li
                                           key={index}
                                           className="dropdown-link small d-block mb-2"
@@ -2885,8 +2900,11 @@ const Header = () => {
                                               textDecoration: " none",
                                               color: "#212529",
                                             }}
+                                            onClick={() =>
+                                              setSelectedTheme(culture.name)
+                                            }
                                           >
-                                            {culture}
+                                            {culture.name}
                                           </Link>
                                         </li>
                                       ))}
@@ -2898,7 +2916,7 @@ const Header = () => {
                                       By Theme
                                     </h6>
                                     <ul className="list-unstyled mb-0 mt-2">
-                                      {byTheme.map((theme, index) => (
+                                      {themes.map((theme, index) => (
                                         <li
                                           key={index}
                                           className="dropdown-link small d-block mb-2"
@@ -2909,6 +2927,9 @@ const Header = () => {
                                               textDecoration: " none",
                                               color: "#212529",
                                             }}
+                                            onClick={() =>
+                                              setSelectedTheme(theme)
+                                            }
                                           >
                                             {theme}
                                           </Link>

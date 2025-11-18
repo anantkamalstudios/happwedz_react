@@ -21,7 +21,7 @@ const ReviewModalFlow = ({ vendor }) => {
   // Fetch reviews
   useEffect(() => {
     if (vendor?.id) {
-      fetch(`${API_BASE_URL}/reviews/vendor/${vendor.id}`)
+      fetch(`${API_BASE_URL}/reviews/${vendor.id}`)
         .then((res) => res.json())
         .then((data) => {
           if (data.success) setReviews(data.reviews);

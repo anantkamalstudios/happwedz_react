@@ -18,6 +18,7 @@ import {
   ChevronRight,
   TrendingUp,
   BarChart3,
+  SearchIcon,
 } from "lucide-react";
 
 import { useSelector } from "react-redux";
@@ -38,6 +39,8 @@ const EnquiryManagement = () => {
   const [filter, setFilter] = useState("all");
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const { addToast } = useToast();
+  const [searchMail, setSearchEmail] = useState("");
+  const [filteredLeads, setFilteredLeads] = useState([]);
 
   const [stats, setStats] = useState({
     pending: 0,
@@ -92,11 +95,40 @@ const EnquiryManagement = () => {
     }
   };
 
+  const handleSearchMail = (e) => {
+    const searchValue = e.target.value;
+    setSearchEmail(searchValue);
+
+    if (!searchValue.trim()) {
+      setFilteredLeads(leads);
+      return;
+    }
+
+    const filtered = leads.filter(
+      (lead) =>
+        lead.request?.user?.name
+          ?.toLowerCase()
+          .includes(searchValue.toLowerCase()) ||
+        lead.request?.user?.email
+          ?.toLowerCase()
+          .includes(searchValue.toLowerCase()) ||
+        lead.request?.service?.name
+          ?.toLowerCase()
+          .includes(searchValue.toLowerCase())
+    );
+
+    setFilteredLeads(filtered);
+  };
+
   useEffect(() => {
     if (vendorToken) {
       fetchInbox();
     }
   }, [vendorToken, filter]);
+
+  useEffect(() => {
+    setFilteredLeads(leads);
+  }, [leads]);
 
   const handleAction = async (lead, action) => {
     const inboxId = lead.id;
@@ -494,7 +526,39 @@ const EnquiryManagement = () => {
                           overflowX: "hidden",
                         }}
                       >
-                        {leads.map((lead) => {
+                        <div className="w-100 px-4">
+                          <div
+                            style={{
+                              width: "100%",
+                              border: "2px solid #d1d5db",
+                              borderRadius: "20px",
+                              padding: "6px 12px",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "10px",
+                            }}
+                          >
+                            <span
+                              style={{ color: "#6b7280", fontSize: "18px" }}
+                            >
+                              <SearchIcon />
+                            </span>
+                            <input
+                              type="text"
+                              value={searchMail}
+                              onChange={handleSearchMail}
+                              placeholder="Search here"
+                              style={{
+                                width: "100%",
+                                border: "none",
+                                outline: "none",
+                                fontSize: "15px",
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {filteredLeads.map((lead) => {
                           const statusObj = statuses.find(
                             (s) => s.id === lead.request?.status
                           );
