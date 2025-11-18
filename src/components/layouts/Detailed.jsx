@@ -605,7 +605,7 @@ const Detailed = () => {
 
   // Create activeVendor from API data
   const activeVendor = {
-    id: venueData.vendor_id,
+    id: id,
     name:
       venueData.attributes?.vendor_name ||
       venueData.vendor?.vendor_name ||

@@ -311,3 +311,167 @@ ${name}`;
     </div>
   );
 }
+
+
+// import React, { useState, useEffect } from "react";
+// import { useSelector } from "react-redux";
+// import axios from "axios";
+// import Swal from "sweetalert2";
+// import "bootstrap/dist/css/bootstrap.min.css";
+
+// export default function ReviewRequestForm() {
+//   const { vendor, token } = useSelector((state) => state.vendorAuth) || {};
+//   const [bookedLeads, setBookedLeads] = useState([]);
+//   const [selectedInboxId, setSelectedInboxId] = useState("");
+//   const [selectedLead, setSelectedLead] = useState(null);
+//   const [message, setMessage] = useState("");
+//   const [loading, setLoading] = useState(false);
+
+//   const vendorId = vendor?.id || vendor?.vendorId;
+
+//   useEffect(() => {
+//     if (!token) return;
+//     const fetchBooked = async () => {
+//       try {
+//         const res = await axios.get(
+//           "https://happywedz.com/api/inbox?filter=booked",
+//           {
+//             headers: { Authorization: `Bearer ${token}` },
+//           }
+//         );
+//         setBookedLeads(res.data.inbox || []);
+//       } catch (err) {
+//         console.error("Fetch Booked Leads Error:", err);
+//       }
+//     };
+//     fetchBooked();
+//   }, [token]);
+
+//   const handleSelectChange = (e) => {
+//     const inboxId = e.target.value;
+//     setSelectedInboxId(inboxId);
+//     const lead = bookedLeads.find((item) => item.id == inboxId);
+//     setSelectedLead(lead);
+
+//     if (lead) {
+//       const user = lead.request?.user;
+//       const eventDate = lead.request?.eventDate;
+
+//       setMessage(
+//         `Hi ${user?.name || ""},\n\n` +
+//         `Thank you for choosing ${vendor?.businessName} for your event on ${eventDate}.\n` +
+//         `We would love to hear your feedback on our services!\n\n` +
+//         `Please review us on HappyWedz.\n\n` +
+//         `Thanks & Regards,\n${vendor?.businessName}`
+//       );
+//     }
+//   };
+
+//   const handleSend = async () => {
+//     if (!selectedLead) {
+//       return Swal.fire({
+//         icon: "error",
+//         text: "Please select a booked customer",
+//       });
+//     }
+
+//     setLoading(true);
+//     try {
+//       await axios.post(
+//         "https://happywedz.com/api/reviews/send-review-request",
+//         {
+//           requestId: selectedLead.requestId,
+//           message,
+//         },
+//         {
+//           headers: { Authorization: `Bearer ${token}` },
+//         }
+//       );
+
+//       Swal.fire({
+//         icon: "success",
+//         text: "Review Request Sent Successfully!",
+//       });
+
+//       setSelectedInboxId("");
+//       setSelectedLead(null);
+//       setMessage("");
+//     } catch (err) {
+//       Swal.fire({
+//         icon: "error",
+//         text: "Failed to send review request.",
+//       });
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <div className="container py-4" style={{ maxWidth: "650px" }}>
+//       <div className="card shadow p-4">
+//         <h4 className="mb-3">Send Review Request</h4>
+
+//         {/* Select from Booked Leads */}
+//         <div className="mb-3">
+//           <label className="form-label fw-semibold">Select Customer</label>
+//           <select
+//             className="form-select"
+//             value={selectedInboxId}
+//             onChange={handleSelectChange}
+//           >
+//             <option value="">-- Select Booked Customer --</option>
+//             {bookedLeads.map((item) => (
+//               <option key={item.id} value={item.id}>
+//                 {item.request?.user?.name} - {item.request?.eventDate}
+//               </option>
+//             ))}
+//           </select>
+//         </div>
+
+//         {/* Display auto-filled fields */}
+//         {selectedLead && (
+//           <>
+//             <div className="mb-3">
+//               <label className="form-label fw-semibold">Customer Name</label>
+//               <input
+//                 type="text"
+//                 className="form-control"
+//                 value={selectedLead.request.user.name}
+//                 readOnly
+//               />
+//             </div>
+
+//             <div className="mb-3">
+//               <label className="form-label fw-semibold">Email</label>
+//               <input
+//                 type="email"
+//                 className="form-control"
+//                 value={selectedLead.request.user.email}
+//                 readOnly
+//               />
+//             </div>
+//           </>
+//         )}
+
+//         {/* Editable Message */}
+//         <div className="mb-3">
+//           <label className="form-label fw-semibold">Message</label>
+//           <textarea
+//             className="form-control"
+//             rows="8"
+//             value={message}
+//             onChange={(e) => setMessage(e.target.value)}
+//           ></textarea>
+//         </div>
+
+//         <button
+//           className="btn btn-danger w-100"
+//           disabled={loading}
+//           onClick={handleSend}
+//         >
+//           {loading ? "Sending..." : "Send Review Request"}
+//         </button>
+//       </div>
+//     </div>
+//   );
+// }
