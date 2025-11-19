@@ -20,7 +20,7 @@ import couple2 from "../images/couple/img-1.jpg";
 const Homepage3 = ({ data }) => {
   return (
     <div>
-      <Navbar />
+      <Navbar brideData={data?.brideData} groomData={data?.groomData} />
       <BackgroundVideo
         images={data?.sliderImages}
         weddingDate={data?.weddingDate}

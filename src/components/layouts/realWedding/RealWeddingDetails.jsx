@@ -185,7 +185,7 @@ export default function WeddingPage({ post, onBackClick }) {
             post.highlightPhotos.map((src, i) => (
               <div className="col-6 col-md-3" key={i}>
                 <img
-                  src={"https://happywedzbackend.happywedz.com/" + src}
+                  src={src}
                   className="img-fluid rounded"
                   style={{
                     objectFit: "cover",
@@ -291,7 +291,7 @@ export default function WeddingPage({ post, onBackClick }) {
               >
                 <Card.Img
                   variant="top"
-                  src={"https://happywedzbackend.happywedz.com/" + photo}
+                  src={photo}
                   alt={`Highlight ${index + 1}`}
                   style={{
                     width: "100%",

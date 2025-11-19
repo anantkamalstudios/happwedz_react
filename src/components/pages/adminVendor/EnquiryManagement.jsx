@@ -280,7 +280,6 @@ const EnquiryManagement = () => {
   const statuses = useMemo(
     () => [
       { id: "pending", name: "Pending", color: "#f39c12" },
-      // { id: "replied", name: "Replied", color: "#3498db" },
       { id: "booked", name: "Booked", color: "#27ae60" },
       { id: "declined", name: "Declined", color: "#e74c3c" },
     ],
@@ -372,7 +371,9 @@ const EnquiryManagement = () => {
                   </div>
                 </div>
                 <div className="mt-2">
-                  <small className="text-muted">This month</small>
+                  <small className="text-muted d-flex align-items-center gap-1">
+                    <TrendingUp size={12} /> This month
+                  </small>
                 </div>
               </div>
             </div>

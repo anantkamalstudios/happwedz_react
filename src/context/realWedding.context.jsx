@@ -5,7 +5,6 @@ import { API_BASE_URL } from "../config/constants";
 const FilterContext = createContext();
 
 export const FilterProvider = ({ children }) => {
-  // GLOBAL STATES
   const [searchTerm, setSearchTerm] = useState("");
   const [selectCity, setSelectCity] = useState("All Cities");
   const [selectedCulture, setSelectedCulture] = useState("All Cultures");
@@ -25,9 +24,6 @@ export const FilterProvider = ({ children }) => {
     "Others",
   ];
 
-  // --------------------------
-  //  FETCH CITIES
-  // --------------------------
   const fetchCities = useMemo(
     () => async () => {
       try {
@@ -53,9 +49,6 @@ export const FilterProvider = ({ children }) => {
     fetchCities();
   }, [fetchCities]);
 
-  // --------------------------
-  //  FETCH CULTURES
-  // --------------------------
   useEffect(() => {
     const fetchCultures = async () => {
       try {
@@ -72,9 +65,6 @@ export const FilterProvider = ({ children }) => {
     fetchCultures();
   }, []);
 
-  // --------------------------
-  //  CLEAR FILTERS
-  // --------------------------
   const clearFilters = () => {
     setSearchTerm("");
     setSelectCity("All Cities");

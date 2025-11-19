@@ -89,6 +89,13 @@ class HeroMain extends Component {
       ? this.props.sliderImages
       : [];
 
+    const weddingDate = this.props.weddingDate;
+    const formatted = new Date(weddingDate).toLocaleDateString("en-US", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+
     return (
       <Slider {...settings}>
         {images.map((img, index) => (
@@ -132,7 +139,7 @@ class HeroMain extends Component {
                   <h2>Save Our Date</h2>
                 </div>
                 <div className="slide-text">
-                  <p>25 December 2019</p>
+                  <p>{formatted}</p>
                 </div>
                 <Animated>
                   <div className="animated-circle"></div>

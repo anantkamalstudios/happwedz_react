@@ -1,7 +1,7 @@
 import React from "react";
-import Header from '../Header';
+import Header from "../Header";
 
-export default function Navbar() {
+export default function Navbar({ brideData, groomData }) {
   const [scroll, setScroll] = React.useState(0);
 
   const handleScroll = () => setScroll(document.documentElement.scrollTop);
@@ -11,11 +11,12 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const className = scroll > 80 ? "fixed-navbar animated fadeInDown active" : "fixed-navbar";
+  const className =
+    scroll > 80 ? "fixed-navbar animated fadeInDown active" : "fixed-navbar";
 
   return (
     <div className={className}>
-        <Header />
+      <Header brideData={brideData} groomData={groomData} />
     </div>
-  ); 
+  );
 }

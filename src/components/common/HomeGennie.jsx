@@ -143,7 +143,7 @@ const HomeGennie = () => {
             alignItems: "center",
             justifyContent: "center",
             cursor: "pointer",
-            zIndex: 50,
+            zIndex: 9999,
             transition: "transform 0.3s ease",
           }}
           onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}

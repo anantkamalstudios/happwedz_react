@@ -5,7 +5,7 @@ import "react-sticky-header/styles.css";
 import MobileMenu from "../MobileMenu";
 import "./style.css";
 
-const Header = () => {
+const Header = ({ brideData, groomData }) => {
   return (
     <div className="Header_root">
       <div className="header">
@@ -14,7 +14,9 @@ const Header = () => {
             <div className="col-lg-3">
               <div className="logo">
                 <h2>
-                  <Link to="/home">David & Aliza</Link>
+                  <Link to="/home">
+                    {groomData.title} & {brideData.title}
+                  </Link>
                 </h2>
               </div>
             </div>
