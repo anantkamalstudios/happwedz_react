@@ -45,6 +45,11 @@ const Storefront = ({ setCompletion }) => {
   const [photoDrafts, setPhotoDrafts] = useState([]);
   const [videoDrafts, setVideoDrafts] = useState([]);
   const [vendorTypeName, setVendorTypeName] = useState("");
+  // Persist active tab per-vendor so refresh/navigation keeps you on the same section
+  const storageKey = React.useMemo(
+    () => (vendor?.id ? `storefrontActiveTab_${vendor.id}` : "storefrontActiveTab"),
+    [vendor?.id]
+  );
 
   const fetchServiceData = useCallback(async () => {
     if (vendor?.id && token) {
@@ -705,6 +710,17 @@ const Storefront = ({ setCompletion }) => {
     localStorage.setItem("storefrontCompletion", percentage.toString());
   }, [calculateCompletion, setCompletion]);
 
+  // Helper to set active tab and persist selection
+  const handleSetActive = useCallback(
+    (id) => {
+      setActive(id);
+      try {
+        localStorage.setItem(storageKey, id);
+      } catch (_) {}
+    },
+    [storageKey]
+  );
+
   const menuItems = [
     {
       id: "business",
@@ -774,6 +790,22 @@ const Storefront = ({ setCompletion }) => {
       icon: <MdCurrencyRupee size={20} />,
     },
   ];
+
+  // Restore stored active tab once menu items are known/updated
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(storageKey);
+      const ids = new Set(menuItems.map((m) => m.id));
+      if (stored && ids.has(stored)) {
+        if (active !== stored) setActive(stored);
+      } else if (!ids.has(active)) {
+        setActive("business");
+      }
+    } catch (_) {
+      if (active !== "business") setActive("business");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageKey, normalizedVendorTypeName]);
 
   const renderContent = () => {
     switch (active) {
@@ -952,7 +984,7 @@ const Storefront = ({ setCompletion }) => {
             {menuItems.map((item) => (
               <Nav.Link
                 key={item.id}
-                onClick={() => setActive(item.id)}
+                onClick={() => handleSetActive(item.id)}
                 className={`d-flex align-items-center gap-2 sidebar-nav-item ${
                   active === item.id ? "active" : ""
                 }`}
