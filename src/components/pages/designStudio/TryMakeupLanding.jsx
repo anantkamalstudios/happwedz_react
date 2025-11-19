@@ -9,6 +9,7 @@ const PolicyModal = ({ open, onClose, onAgree }) => {
   const [agreeTwo, setAgreeTwo] = useState(false);
 
   const allAgreed = agreeOne && agreeTwo;
+  const { type } = JSON.parse(localStorage.getItem("userInfo"));
 
   if (!open) return null;
 
@@ -101,9 +102,13 @@ const PolicyModal = ({ open, onClose, onAgree }) => {
               className="fs-14 text-justify"
               style={{ fontWeight: "400", color: "#fff" }}
             >
-              I consent to the use of my image to apply virtual makeup filters
-              (blush, lipstick, etc.) and agree to the use of AI processing as
-              described.
+              I consent to the use of my image to apply virtual{" "}
+              {type === "makeup"
+                ? "makeup filters (blush, lipstick, etc.)"
+                : type === "jewellary"
+                ? "jewellery filters"
+                : "dress filters"}{" "}
+              and agree to the use of AI processing as described.
             </label>
           </div>
           {/* Checkbox 2 */}

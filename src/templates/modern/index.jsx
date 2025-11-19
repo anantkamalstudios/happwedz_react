@@ -19,7 +19,7 @@ import WeddingPartyComponent from "../components/Modern People/WeddingPartyCompo
 const Homepage2 = ({ data }) => {
   return (
     <div>
-      <Navbar />
+      <Navbar brideData={data?.brideData} groomData={data?.groomData} />
       <PreviewHero
         images={data?.sliderImages}
         coupleNames={{

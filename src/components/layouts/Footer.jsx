@@ -255,7 +255,7 @@ const Footer = () => {
           <div className="col-12 col-md-6">
             <div className="d-flex gap-3 align-items-start pt-2">
               <a
-                href="https://facebook.com"
+                href="https://facebook.com/happywedz"
                 aria-label="Facebook"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -267,7 +267,7 @@ const Footer = () => {
                 ></i>
               </a>
               <a
-                href="https://instagram.com"
+                href="https://instagram.com/happywedz/"
                 aria-label="Instagram"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -300,7 +300,7 @@ const Footer = () => {
               </a>
 
               <a
-                href="https://youtube.com"
+                href="https://youtube.com/@HappyWedz"
                 aria-label="YouTube"
                 target="_blank"
                 rel="noopener noreferrer"

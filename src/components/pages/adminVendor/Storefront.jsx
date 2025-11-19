@@ -49,7 +49,6 @@ const Storefront = ({ setCompletion }) => {
   const fetchServiceData = useCallback(async () => {
     if (vendor?.id && token) {
       try {
-        // Clear localStorage for new vendor to prevent data leakage
         const lastVendorId = localStorage.getItem("lastVendorId");
         if (lastVendorId && lastVendorId !== vendor.id.toString()) {
           localStorage.removeItem("vendorFormData");

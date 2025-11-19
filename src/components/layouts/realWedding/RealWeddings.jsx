@@ -8,7 +8,7 @@ import {
 } from "react-icons/fa";
 import { BsExclamationTriangle } from "react-icons/bs";
 import { API_BASE_URL } from "../../../config/constants";
-import { useFilter } from "../../../context/realWedding.context";
+import { useFilter } from "../../../context/realWedding.context.jsx";
 
 const RealWeddings = ({ onPostClick }) => {
   const {
@@ -416,8 +416,7 @@ const RealWeddings = ({ onPostClick }) => {
                           selectCity === "All Cities"
                             ? "#f8e3ee"
                             : "transparent",
-                        color:
-                          selectCity === "All Cities" ? "#C31162" : "#333",
+                        color: selectCity === "All Cities" ? "#C31162" : "#333",
                         fontWeight:
                           selectCity === "All Cities" ? "500" : "normal",
                         "&:hover": {
@@ -438,8 +437,7 @@ const RealWeddings = ({ onPostClick }) => {
                             backgroundColor:
                               selectCity === city ? "#f8e3ee" : "transparent",
                             color: selectCity === city ? "#C31162" : "#333",
-                            fontWeight:
-                              selectCity === city ? "500" : "normal",
+                            fontWeight: selectCity === city ? "500" : "normal",
                             "&:hover": {
                               backgroundColor: "#f9f9f9",
                             },

@@ -18,8 +18,11 @@ import Footer from "../components/footer";
 const Homepage = ({ data }) => {
   return (
     <div>
-      <Navbar />
-      <HeroMain sliderImages={data?.sliderImages} />
+      <Navbar brideData={data?.brideData} groomData={data?.groomData} />
+      <HeroMain
+        sliderImages={data?.sliderImages}
+        weddingDate={data?.weddingDate}
+      />
       <Saveday saveday={"s2"} weddingDate={data?.weddingDate} />
       <Couple
         couple={"s2"}
