@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import "leaflet/dist/leaflet.css";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import L from "leaflet";
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "/images/location.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
 
 const VendorLocation = ({ formData, setFormData, onSave }) => {
   const city = formData.city || "";
@@ -9,8 +20,8 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
     state: "",
     country: "India",
     pincode: "",
-    lat: "",
-    lng: "",
+    latitude: "",
+    longitude: "",
     landmark: "",
     serviceAreas: [],
   };
@@ -22,6 +33,11 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
   const [cities, setCities] = useState([]);
   const [cityInput, setCityInput] = useState(city || "");
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [markerPos, setMarkerPos] = useState(() => {
+    const lat = parseFloat(location.latitude);
+    const lng = parseFloat(location.longitude);
+    return isFinite(lat) && isFinite(lng) ? { lat, lng } : null;
+  });
 
   useEffect(() => {
     axios.get("https://restcountries.com/v3.1/all?fields=name").then((res) => {
@@ -61,6 +77,29 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
       },
     }));
   };
+
+  const DEFAULT_CENTER = [22.3511148, 78.6677428];
+  const DEFAULT_ZOOM = 5;
+  const SELECTED_ZOOM = 13;
+
+  const ClickMarker = () => {
+    useMapEvents({
+      click(e) {
+        const { lat, lng } = e.latlng;
+        setMarkerPos({ lat, lng });
+        handleInputChange("latitude", String(lat));
+        handleInputChange("longitude", String(lng));
+      },
+    });
+    return markerPos ? <Marker position={[markerPos.lat, markerPos.lng]} /> : null;
+  };
+
+  // Keep marker in sync if user types coords manually
+  useEffect(() => {
+    const lat = parseFloat(location.latitude);
+    const lng = parseFloat(location.longitude);
+    if (isFinite(lat) && isFinite(lng)) setMarkerPos({ lat, lng });
+  }, [location.latitude, location.longitude]);
 
   // Filter cities for suggestions
   const filteredCities = cities.filter((c) =>
@@ -192,8 +231,8 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
               type="number"
               step="any"
               className="form-control"
-              value={location.lat}
-              onChange={(e) => handleInputChange("lat", e.target.value)}
+              value={location.latitude}
+              onChange={(e) => handleInputChange("latitude", e.target.value)}
               placeholder="Enter latitude"
             />
           </div>
@@ -205,10 +244,31 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
               type="number"
               step="any"
               className="form-control"
-              value={location.lng}
-              onChange={(e) => handleInputChange("lng", e.target.value)}
+              value={location.longitude}
+              onChange={(e) => handleInputChange("longitude", e.target.value)}
               placeholder="Enter longitude"
             />
+          </div>
+          <div className="col-12 mb-2">
+            <div className="fw-semibold mb-2">Pick on Map</div>
+            <div style={{ height: 320 }}>
+              <MapContainer
+                center={
+                  markerPos
+                    ? [markerPos.lat, markerPos.lng]
+                    : DEFAULT_CENTER
+                }
+                zoom={markerPos ? SELECTED_ZOOM : DEFAULT_ZOOM}
+                scrollWheelZoom={true}
+                style={{ height: "100%", width: "100%" }}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <ClickMarker />
+              </MapContainer>
+            </div>
           </div>
         </div>
         <button className="btn btn-primary mt-2" onClick={onSave}>

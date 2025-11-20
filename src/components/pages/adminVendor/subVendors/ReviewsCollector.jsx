@@ -453,6 +453,7 @@ export default function ReviewRequestForm() {
         `https://happywedz.com/api/reviews/send-review-request/${requestId}`,
         {
           message,
+          reviewLink: reviewUrl,
         },
         {
           headers: { Authorization: `Bearer ${token}` },

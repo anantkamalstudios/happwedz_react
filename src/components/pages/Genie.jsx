@@ -1516,9 +1516,7 @@ const Genie = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
-  const [sessionId] = useState(
-    () => "sess_" + Math.random().toString(36).substring(2, 10)
-  );
+  const [sessionId, setSessionId] = useState(null);
 
   const messagesContainerRef = useRef(null);
   const { token, user } = useSelector((store) => store.auth);
@@ -1554,20 +1552,21 @@ const Genie = () => {
     setIsLoading(true);
 
     try {
-      const res = await fetch("http://192.168.1.15:5000/api/user_chat", {
+      const payload = { user_query: query, user_id: userId };
+      if (sessionId) payload.session_id = sessionId;
+
+      const res = await fetch("http://192.168.1.25:5000/api/user_chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({
-          session_id: sessionId,
-          user_query: query,
-          user_id: userId,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
+      if (data?.session_id) setSessionId(data.session_id);
       return {
         summary: data?.response?.summary || "No response received.",
         results: data?.response?.results || null,

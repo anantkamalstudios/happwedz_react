@@ -181,6 +181,8 @@ const Storefront = ({ setCompletion }) => {
                     }
                   : {},
                 city: actualData.attributes.city || "",
+                latitude: actualData.attributes.latitude || "",
+                longitude: actualData.attributes.longitude || "",
 
                 location: actualData.attributes.location
                   ? {
@@ -193,9 +195,9 @@ const Storefront = ({ setCompletion }) => {
                       country:
                         actualData.attributes.location.country || "India",
                       pincode: actualData.attributes.location.pincode || "",
-                      lat: actualData.attributes.location.lat || "",
-                      lng: actualData.attributes.location.lng || "",
-                      landmark: actualData.attributes.location.landmark || "",
+                      latitude: actualData.attributes.latitude || "",
+                      longitude: actualData.attributes.longitude || "",
+                      
                       serviceAreas:
                         actualData.attributes.location.serviceAreas || [],
                     }
@@ -354,13 +356,15 @@ const Storefront = ({ setCompletion }) => {
       tagline: formData.attributes?.tagline || "",
       currency: formData.currency || "INR",
       city: formData.location?.city || "",
+      latitude: formData.location?.latitude || "",
+      longitude: formData.location?.longitude || "",
       location: {
         state: formData.location?.state || "",
         address: formData.location?.addressLine1 || "",
         country: formData.location?.country || "India",
         pincode: formData.location?.pincode || "",
-        lat: formData.location?.lat || "",
-        lng: formData.location?.lng || "",
+        // latitude: formData.location?.latitude || "",
+        // longitude: formData.location?.longitude || "",
       },
       packages: formData.packages || [],
       subtitle: formData.attributes?.subtitle || "",
