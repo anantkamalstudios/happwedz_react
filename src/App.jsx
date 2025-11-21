@@ -27,6 +27,7 @@ import CareersPage from "./components/pages/CareersPage";
 import DestinationWeddingDetailPage from "./components/pages/DestinationWeddingDetailPage";
 import BusinessClaimForm from "./components/pages/BusinessClaimForm";
 import { ToastContainer } from "react-toastify";
+import PublicWeddingView from "./components/pages/WeddingPublicView";
 // import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 
 const Home = lazy(() => import("./components/pages/Home"));
@@ -236,6 +237,11 @@ function App() {
             <Route
               path="/wedding-website/:id"
               element={<WeddingWebsiteView />}
+            />
+
+            <Route
+              path="/wedding/:websiteUrl"
+              element={<PublicWeddingView />}
             />
 
             <Route element={<MainLayout />}>

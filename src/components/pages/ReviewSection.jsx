@@ -14,7 +14,6 @@ const ReviewModalFlow = ({ vendor }) => {
 
   const [reviews, setReviews] = useState([]);
 
-  // ADDED: State for the review detail modal
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
 
@@ -30,8 +29,6 @@ const ReviewModalFlow = ({ vendor }) => {
     }
   }, [vendor]);
 
-  console.log("vendor=>", vendor);
-  // ADDED: Function to handle "Read More" click
   const handleReadMoreClick = (review) => {
     setSelectedReview(review);
     setShowDetailModal(true);

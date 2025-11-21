@@ -217,6 +217,15 @@ const VendorLogin = () => {
                   Sign up
                 </Link>
               </p>
+              <p className="text-muted">
+                Are you a user?{" "}
+                <Link
+                  to="/customer-login"
+                  className="text-decoration-none wedding-link fw-semibold"
+                >
+                  Log in
+                </Link>
+              </p>
             </div>
           </Form>
         </div>

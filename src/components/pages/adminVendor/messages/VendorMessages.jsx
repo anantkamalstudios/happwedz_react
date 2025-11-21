@@ -70,6 +70,7 @@ const VendorMessages = () => {
   ]);
   const [vendorImage, setVendorImage] = useState(null);
   const [userImages, setUserImages] = useState({}); // userId -> image URL
+  const [userNames, setUserNames] = useState({}); // userId -> name
   const [userLastActive, setUserLastActive] = useState({}); // userId -> lastActiveAt
   const scrollRef = useRef(null);
 
@@ -165,15 +166,19 @@ const VendorMessages = () => {
           )
         );
         const map = {};
+        const nameMap = {};
         const lastActiveMap = {};
         fetched.forEach(({ id, data }) => {
           if (data) {
             map[id] = data.profileImage || null;
+            nameMap[id] =
+              data.name || data.fullName || data.username || data.email || "Customer";
             lastActiveMap[id] = data.lastActiveAt || null;
           }
         });
         if (!isMounted) return;
         setUserImages(map);
+        setUserNames(nameMap);
         setUserLastActive(lastActiveMap);
         setConversations(list);
         if (list.length > 0 && !activeConversationId) {
@@ -377,13 +382,13 @@ const VendorMessages = () => {
                   >
                     <div className="d-flex align-items-center overflow-hidden">
                       <Avatar
-                        name={"Customer"}
+                        name={userNames[c.userId] || "Customer"}
                         imageUrl={userImages[c.userId]}
                         size={40}
                       />
                       <div className="ms-3">
                         <div className="d-flex align-items-center">
-                          <div className="fw-bold me-2">Customer</div>
+                          <div className="fw-bold me-2">{userNames[c.userId] || "Customer"}</div>
                           {c.vendorUnreadCount > 0 && (
                             <span className="badge bg-primary rounded-pill">
                               {c.vendorUnreadCount}
@@ -415,8 +420,8 @@ const VendorMessages = () => {
                     {/* Show customer's presence when a conversation is selected */}
                     {activeConversation?.userId &&
                     isOnline(userLastActive[activeConversation.userId])
-                      ? "Customer Online"
-                      : `Customer last seen ${formatTime(
+                      ? `${userNames[activeConversation.userId] || "Customer"} Online`
+                      : `${userNames[activeConversation?.userId] || "Customer"} last seen ${formatTime(
                           userLastActive[activeConversation?.userId] ||
                             activeConversation?.lastMessageAt ||
                             new Date().toISOString()
@@ -457,14 +462,14 @@ const VendorMessages = () => {
                         <div className="d-flex align-items-start">
                           <div className="me-2">
                             <Avatar
-                              name={"Customer"}
+                              name={userNames[m.userId] || "Customer"}
                               imageUrl={userImages[m.userId]}
                               size={36}
                             />
                           </div>
                           <div>
                             <div className="msg-time mb-1 small">
-                              Customer • {formatTime(m.time)}
+                              {(userNames[m.userId] || "Customer")} • {formatTime(m.time)}
                             </div>
                             <div className="msg-bubble msg-user">{m.text}</div>
                           </div>

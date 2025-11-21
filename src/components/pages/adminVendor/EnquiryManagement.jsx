@@ -42,11 +42,10 @@ const EnquiryManagement = () => {
   const [searchMail, setSearchEmail] = useState("");
   const [filteredLeads, setFilteredLeads] = useState([]);
 
-  const [stats, setStats] = useState({
-    pending: 0,
-    booked: 0,
-    discarded: 0,
-  });
+  // Global stats across all enquiries (not affected by current filter)
+  const [globalStats, setGlobalStats] = useState({ pending: 0, booked: 0, declined: 0 });
+  // Filtered stats (optional, not shown in the header cards anymore)
+  const [stats, setStats] = useState({ pending: 0, booked: 0, declined: 0 });
 
   const fetchInbox = async () => {
     setLoading(true);
@@ -71,13 +70,11 @@ const EnquiryManagement = () => {
         archived: data.archivedCount || 0,
       });
 
+      // Update stats for the current filtered view (not shown in header cards)
       setStats({
-        booked: fetchedLeads.filter((l) => l.request?.status === "booked")
-          .length,
-        declined: fetchedLeads.filter((l) => l.request?.status === "declined")
-          .length,
-        pending: fetchedLeads.filter((l) => l.request?.status === "pending")
-          .length,
+        booked: fetchedLeads.filter((l) => l.request?.status === "booked").length,
+        declined: fetchedLeads.filter((l) => l.request?.status === "declined").length,
+        pending: fetchedLeads.filter((l) => l.request?.status === "pending").length,
       });
 
       if (
@@ -93,6 +90,23 @@ const EnquiryManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Fetch global stats regardless of the active filter
+  const fetchGlobalStats = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/inbox`, {
+        headers: { Authorization: `Bearer ${vendorToken}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch global stats");
+      const data = await res.json();
+      const allLeads = Array.isArray(data.inbox) ? data.inbox : [];
+      setGlobalStats({
+        booked: allLeads.filter((l) => l.request?.status === "booked").length,
+        declined: allLeads.filter((l) => l.request?.status === "declined").length,
+        pending: allLeads.filter((l) => l.request?.status === "pending").length,
+      });
+    } catch (_) {}
   };
 
   const handleSearchMail = (e) => {
@@ -125,6 +139,13 @@ const EnquiryManagement = () => {
       fetchInbox();
     }
   }, [vendorToken, filter]);
+
+  // Load global stats on login/token change
+  useEffect(() => {
+    if (vendorToken) {
+      fetchGlobalStats();
+    }
+  }, [vendorToken]);
 
   useEffect(() => {
     setFilteredLeads(leads);
@@ -259,7 +280,6 @@ const EnquiryManagement = () => {
   const statuses = useMemo(
     () => [
       { id: "pending", name: "Pending", color: "#f39c12" },
-      // { id: "replied", name: "Replied", color: "#3498db" },
       { id: "booked", name: "Booked", color: "#27ae60" },
       { id: "declined", name: "Declined", color: "#e74c3c" },
     ],
@@ -302,7 +322,7 @@ const EnquiryManagement = () => {
                 <div className="d-flex justify-content-between align-items-start">
                   <div>
                     <p className="mb-1 small text-muted">Pending</p>
-                    <h3 className="mb-0 fw-bold">{stats.pending}</h3>
+                    <h3 className="mb-0 fw-bold">{globalStats.pending}</h3>
                   </div>
                   <div className="lw-stats-icon">
                     <MessageCircleReply size={22} />
@@ -323,7 +343,7 @@ const EnquiryManagement = () => {
                 <div className="d-flex justify-content-between align-items-start">
                   <div>
                     <p className="mb-1 small text-muted">Booked</p>
-                    <h3 className="mb-0 fw-bold">{stats.booked}</h3>
+                    <h3 className="mb-0 fw-bold">{globalStats.booked}</h3>
                   </div>
                   <div className="lw-stats-icon">
                     <Calendar size={22} />
@@ -344,26 +364,22 @@ const EnquiryManagement = () => {
                 <div className="d-flex justify-content-between align-items-start">
                   <div>
                     <p className="mb-1 small text-muted">Declined</p>
-                    <h3 className="mb-0 fw-bold">{stats.declined}</h3>
+                    <h3 className="mb-0 fw-bold">{globalStats.declined}</h3>
                   </div>
                   <div className="lw-stats-icon">
                     <Archive size={22} />
                   </div>
                 </div>
                 <div className="mt-2">
-                  <small className="text-muted">This month</small>
+                  <small className="text-muted d-flex align-items-center gap-1">
+                    <TrendingUp size={12} /> This month
+                  </small>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="col-lg-3 col-md-6 mb-3">
-            {/* <div className="lw-stats-card lw-stats-empty">
-              <div className="lw-stats-body text-center text-muted">
-                <small></small>
-              </div>
-            </div> */}
-          </div>
+        
         </div>
 
         {/* Main Content */}

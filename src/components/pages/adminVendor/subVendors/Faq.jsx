@@ -8,25 +8,36 @@ function Faq({ formData, setFormData, onSave }) {
   const [answers, setAnswers] = useState(formData.faqs || {});
 
   useEffect(() => {
-    if (vendor?.vendor_type_id) { 
-    } 
+    if (!vendor?.id) return;
+
     async function fetchAnswers() {
-      if (vendor?.id) {
-        try {
-          const res = await fetch(`/faq-answers/${vendor.id}`);
-          if (res.ok) {
-            const data = await res.json(); 
-            const answerMap = {};
-            data.forEach((a) => {
-              answerMap[a.faqQuestionId] = a.answer;
-            });
-            setAnswers(answerMap);
+      try {
+        const res = await fetch(`https://happywedz.com/api/faq-answers/${vendor.id}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const answerMap = {};
+        (Array.isArray(data) ? data : []).forEach((a) => {
+          const qid = a.faqQuestionId ?? a.faq_question_id ?? a.faq_questionid;
+          if (qid == null) return;
+
+          let val = a.answer;
+          if (typeof val === "string") {
+            const s = val.trim();
+            if ((s.startsWith("{") && s.endsWith("}")) || (s.startsWith("[") && s.endsWith("]"))) {
+              try {
+                val = JSON.parse(s);
+              } catch {}
+            }
           }
-        } catch (err) { 
-        }
+          answerMap[qid] = val;
+        });
+        setAnswers(answerMap);
+      } catch (err) {
+        // silent fail
       }
     }
-    fetchAnswers(); 
+
+    fetchAnswers();
   }, [vendor?.id]);
 
   useEffect(() => {
