@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Herosection from "../home/Herosection";
 import WeddingCategories from "../home/WeddingCategories";
 import StatisticsSection from "../home/StatisticsSection";
@@ -23,37 +23,100 @@ import HomeGennie from "../common/HomeGennie";
 import bigleafcta1 from "../../../public/images/home/bigleafcta1.jpg";
 import bigleafcta5 from "../../../public/images/home/bigleafcta5.jpg";
 import bigleaf from "../../../public/images/home/bigleaf.png";
+import cmsApi from "../../services/api/cmsApi";
 const Home = () => {
+  const [designBanner, setDesignBanner] = useState(null);
+  const [einviteBanner, setEinviteBanner] = useState(null);
+  const [realWeddingData, setRealWeddingData] = useState(null);
+  const [couplesSaysData, setCouplesSaysData] = useState(null);
+  const normalizeUrl = (u) => {
+    if (!u || typeof u !== "string") return null;
+    const cleaned = u.replace(/`/g, "").trim();
+    try {
+      return encodeURI(cleaned);
+    } catch {
+      return cleaned;
+    }
+  };
+  useEffect(() => {
+    const run = async () => {
+      try {
+        const ds = await cmsApi.designStudioBanner.getBanner();
+        setDesignBanner(ds?.data || null);
+      } catch {}
+      try {
+        const ei = await cmsApi.einviteBanner.getBanner();
+        setEinviteBanner(ei?.data || null);
+      } catch {}
+      try {
+        const rw = await cmsApi.realWeddingPhoto.getData();
+        setRealWeddingData(rw || null);
+      } catch {}
+      try {
+        const cs = await cmsApi.whatCouplesSays.getData();
+        setCouplesSaysData(cs?.data || null);
+      } catch {}
+    };
+    run();
+  }, []);
   return (
     <div style={{ position: "relative" }}>
       <Herosection />
       <WeddingCategories />
       <CtaPanel
-        logo={logo}
-        img={image}
-        heading="Design Studio"
-        subHeading="Try Virtual Makeup & Grooming Looks for Your Big Day"
-        link="/try"
-        title="Create Your Look !"
-        subtitle="Experience How You'll Look in Your Wedding Day with AI-Powered Virtual Makeover."
-        btnName="Try Virtual Look"
-        background={bigleafcta1}
+        logo={normalizeUrl(designBanner?.logo) || logo}
+        img={normalizeUrl(designBanner?.mainImage) || image}
+        heading={designBanner?.heading || "Design Studio_"}
+        subHeading={
+          designBanner?.subheading ||
+          "Try Virtual Makeup & Grooming Looks for Your Big Day_"
+        }
+        link={`/${(designBanner?.btnRedirect || "try").replace(/^\/+/, "")}`}
+        title={designBanner?.title || "Create Your Look !"}
+        subtitle={
+          designBanner?.description ||
+          "Experience How You'll Look in Your Wedding Day with AI-Powered Virtual Makeover."
+        }
+        btnName={designBanner?.btnName || "Try Virtual Look"}
+        background={normalizeUrl(designBanner?.bgImage) || bigleafcta1}
       />
       <PlanningToolsCTA />
       <MansoryImageSection />
       <VenueSlider />
       <CtaPanel
-        logo={logo}
-        img={einviteImage}
-        heading="E-INVITES"
-        subHeading="Create Stunning Digital Wedding Invitations That Wow"
-        title="Design Beautiful E-Invites with Our Easy-to-Use Editor !"
-        subtitle="Discover curated options that fit your style, budget and location. Search and compare instantly."
-        link="/einvites"
-        btnName="Create Your E-Invite"
-        background={bigleafcta5}
+        logo={normalizeUrl(einviteBanner?.logo) || logo}
+        img={normalizeUrl(einviteBanner?.mainImage) || einviteImage}
+        heading={einviteBanner?.heading || "E-INVITES"}
+        subHeading={
+          einviteBanner?.subheading ||
+          "Create Stunning Digital Wedding Invitations That Wow"
+        }
+        title={
+          einviteBanner?.title ||
+          "Design Beautiful E-Invites with Our Easy-to-Use Editor !"
+        }
+        subtitle={
+          einviteBanner?.description ||
+          "Discover curated options that fit your style, budget and location. Search and compare instantly."
+        }
+        link={`/${(einviteBanner?.btnRedirect || "einvites").replace(
+          /^\/+/,
+          ""
+        )}`}
+        btnName={einviteBanner?.btnName || "Create Your E-Invite"}
+        background={normalizeUrl(einviteBanner?.bgImage) || bigleafcta5}
       />
-      <RealWeddings />
+      <RealWeddings
+        icon={normalizeUrl(realWeddingData?.icon)}
+        title={realWeddingData?.title}
+        subtitle={realWeddingData?.subtitle}
+        btnName={realWeddingData?.btnName}
+        redirectUrl={realWeddingData?.redirectUrl}
+        images={(Array.isArray(realWeddingData?.images)
+          ? realWeddingData.images
+          : []
+        ).map(normalizeUrl)}
+      />
       {/* <FeaturedVendorsSection /> */}
 
       {/* <TestimonialsSection /> */}
@@ -67,7 +130,19 @@ const Home = () => {
         link="/matrimonial"
         btnName="Start Your Journey"
       /> */}
-      <MainTestimonial />
+      <MainTestimonial
+        heading={couplesSaysData?.heading}
+        subHeading={couplesSaysData?.subHeading}
+        mainImage={normalizeUrl(couplesSaysData?.mainImage)}
+        sections={
+          Array.isArray(couplesSaysData?.sections)
+            ? couplesSaysData.sections.map((s) => ({
+                ...s,
+                img: normalizeUrl(s.img),
+              }))
+            : []
+        }
+      />
       <BlogInspirationTeasers />
       {/* <NewsletterSection /> */}
       <HowItWorksSection />

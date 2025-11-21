@@ -31,6 +31,18 @@ const CustomerRegister = () => {
   const navigate = useNavigate();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const auth = useSelector((state) => state.auth);
+  const [signInCms, setSignInCms] = useState(null);
+  const normalizeUrl = (u) =>
+    typeof u === "string" ? u.replace(/`/g, "").trim() : null;
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("https://happywedz.com/api/sign-in-cms");
+        const data = await res.json();
+        setSignInCms(data?.data || data || null);
+      } catch {}
+    })();
+  }, []);
 
   useEffect(() => {
     axios
@@ -287,26 +299,33 @@ const CustomerRegister = () => {
         <div
           className="col-lg-5 d-none d-lg-block position-relative"
           style={{
-            background:
-              "linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop') center/cover",
+            background: signInCms?.image
+              ? `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('${normalizeUrl(
+                  signInCms?.image
+                )}') center/cover`
+              : "linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop') center/cover",
             minHeight: "600px",
           }}
         >
           <div className="position-absolute bottom-0 start-0 p-5 text-white">
             <h2 className="display-5 fw-light mb-3">
-              Your Perfect Wedding Starts Here
+              {signInCms?.heading || "Your Perfect Wedding Starts Here"}
             </h2>
             <p className="mb-0">
-              Join thousands of couples who planned their dream wedding with us
+              {signInCms?.subheading ||
+                "Join thousands of couples who planned their dream wedding with us"}
             </p>
           </div>
         </div>
 
         <div className="col-lg-7 p-5">
           <div className="text-center mb-5">
-            <h2 className="fw-bold text-dark mb-2">Wedding Registration</h2>
+            <h2 className="fw-bold text-dark mb-2">
+              {signInCms?.title || "Wedding Registration"}
+            </h2>
             <p className="text-muted">
-              Create your account to start planning your special day
+              {signInCms?.description ||
+                "Create your account to start planning your special day"}
             </p>
           </div>
 

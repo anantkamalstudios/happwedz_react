@@ -2,42 +2,60 @@ import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
 
-const RealWeddings = () => {
+const RealWeddings = ({
+  icon,
+  title,
+  subtitle,
+  btnName,
+  redirectUrl,
+  images: apiImages = [],
+}) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const images = [
-    {
-      id: 1,
-      url: "images/home/home-realwedding3.jpg",
-      alt: "Wedding rings with pink roses",
-    },
-    {
-      id: 2,
-      url: "images/home/home-realwedding2.jpg",
-      alt: "Bridal party in pink dresses",
-    },
-    {
-      id: 3,
-      url: "images/home/home-realwedding1.jpg",
-      alt: "Elegant wedding table setting",
-    },
-    {
-      id: 4,
-      url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=400&fit=crop",
-      alt: "Wedding ceremony",
-    },
-    {
-      id: 5,
-      url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=400&fit=crop",
-      alt: "Wedding bouquet",
-    },
-  ];
+  const normalizeUrl = (u) =>
+    typeof u === "string" ? u.replace(/`/g, "").trim() : u;
+  const images =
+    Array.isArray(apiImages) && apiImages.length > 0
+      ? apiImages
+          .map(normalizeUrl)
+          .map((url, idx) => ({
+            id: idx + 1,
+            url,
+            alt: title || "Real Wedding",
+          }))
+      : [
+          {
+            id: 1,
+            url: "images/home/home-realwedding3.jpg",
+            alt: "Wedding rings with pink roses",
+          },
+          {
+            id: 2,
+            url: "images/home/home-realwedding2.jpg",
+            alt: "Bridal party in pink dresses",
+          },
+          {
+            id: 3,
+            url: "images/home/home-realwedding1.jpg",
+            alt: "Elegant wedding table setting",
+          },
+          {
+            id: 4,
+            url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=400&fit=crop",
+            alt: "Wedding ceremony",
+          },
+          {
+            id: 5,
+            url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=400&fit=crop",
+            alt: "Wedding bouquet",
+          },
+        ];
 
   useEffect(() => {
+    const total = Math.max(images.length - 2, 1);
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % (images.length - 2));
+      setCurrentSlide((prev) => (prev + 1) % total);
     }, 3000);
-
     return () => clearInterval(interval);
   }, [images.length]);
 
@@ -66,7 +84,7 @@ const RealWeddings = () => {
             <div className="card-body p-5 d-flex flex-column justify-content-center">
               <div className="mb-4">
                 <img
-                  src="/images/home/Flower.png"
+                  src={normalizeUrl(icon) || "/images/home/Flower.png"}
                   alt="flower"
                   className="w-20 h-20"
                 />
@@ -77,21 +95,27 @@ const RealWeddings = () => {
                 className="display-5 fw-bold mb-3"
                 style={{ color: "#2c2c2c", lineHeight: "1.2" }}
               >
-                Real Wedding
-                <br />
-                Photos
+                {title || (
+                  <>
+                    Real Wedding
+                    <br />
+                    Photos
+                  </>
+                )}
               </h1>
 
               {/* Subtitle */}
-              <p className="text-muted fs-6 mb-4">Real Wedding Stories</p>
+              <p className="text-muted fs-6 mb-4">
+                {subtitle || "Real Wedding Stories"}
+              </p>
 
               {/* See More Button */}
               <Link
-                to="/real-wedding"
+                to={`/${(redirectUrl || "real-wedding").replace(/^\/+/, "")}`}
                 className="btn btn-link p-0 fw-bold text-decoration-none d-flex align-items-center align-self-start"
                 style={{ color: "#e91e63", fontSize: "1.1rem" }}
               >
-                SEE MORE
+                {btnName || "SEE MORE"}
                 <svg
                   width="24"
                   height="24"

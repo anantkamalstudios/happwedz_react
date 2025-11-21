@@ -19,14 +19,15 @@ const BlogLists = ({ onPostClick }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedCity, setSelectedCity] = useState("");
   const [imageErrors, setImageErrors] = useState({});
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [allBlogs, setAllBlogs] = useState([]);
   const blogsPerPage = 6;
 
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await fetch(
-          "https://happywedz.com/api/blog-deatils/all"
-        );
+        const response = await fetch("https://happywedz.com/api/blogs/all");
         const data = await response.json();
 
         let apiBlogs = [];
@@ -49,6 +50,7 @@ const BlogLists = ({ onPostClick }) => {
           }));
         }
         setBlogs(apiBlogs);
+        setAllBlogs(apiBlogs);
       } catch (err) {
         console.error("Error fetching blogs:", err);
       }
@@ -56,6 +58,51 @@ const BlogLists = ({ onPostClick }) => {
 
     fetchBlogs();
   }, []);
+
+  useEffect(() => {
+    const q = searchTerm.trim();
+    if (q.length < 2) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+    setIsSearching(true);
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const params = new URLSearchParams({ q, limit: "10", offset: "0" });
+        const res = await fetch(
+          `https://happywedz.com/api/blogs/search?${params.toString()}`,
+          { signal: controller.signal }
+        );
+        const json = await res.json();
+        const results = Array.isArray(json?.data?.results)
+          ? json.data.results
+          : [];
+        const mapped = results.map((b) => ({
+          id: b.id,
+          title: b.title || "Untitled",
+          shortDescription: b.shortDescription || "",
+          image:
+            typeof b.image === "string"
+              ? b.image.replace(/`/g, "").trim()
+              : b.image,
+          author: b.author || "",
+          postDate: b.postDate || "",
+          readTime: "5 min read",
+        }));
+        setSearchResults(mapped);
+      } catch (e) {
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [searchTerm]);
 
   const filteredBlogs = blogs.filter((blog) => {
     const titleMatch = blog.title
@@ -156,6 +203,19 @@ const BlogLists = ({ onPostClick }) => {
       .replace(/(^-|-$)/g, "");
   };
 
+  const incrementSearch = async (id) => {
+    const blogId = parseInt(id, 10);
+    if (Number.isNaN(blogId)) return;
+    try {
+      await fetch(
+        `https://happywedz.com/api/blogs/${blogId}/increment-search`,
+        {
+          method: "POST",
+        }
+      );
+    } catch {}
+  };
+
   return (
     <div
       style={{
@@ -191,166 +251,175 @@ const BlogLists = ({ onPostClick }) => {
 
             {/* Blog Cards */}
             <div className="row g-4">
-              {currentBlogs.map((blog) => (
-                <div key={blog.id} className="col-md-6">
-                  <div
-                    className="card h-100 border-0"
-                    style={{
-                      cursor: "pointer",
-                      transition: "transform 0.3s, box-shadow 0.3s",
-                      boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "translateY(-5px)";
-                      e.currentTarget.style.boxShadow =
-                        "0 4px 20px rgba(0,0,0,0.15)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow =
-                        "0 2px 12px rgba(0,0,0,0.08)";
-                    }}
-                    onClick={() => onPostClick(blog.id)}
-                  >
-                    {/* Image Section */}
+              {(searchResults.length > 0 ? searchResults : currentBlogs).map(
+                (blog) => (
+                  <div key={blog.id} className="col-md-6">
                     <div
+                      className="card h-100 border-0"
                       style={{
-                        height: "240px",
-                        overflow: "hidden",
-                        position: "relative",
+                        cursor: "pointer",
+                        transition: "transform 0.3s, box-shadow 0.3s",
+                        boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-5px)";
+                        e.currentTarget.style.boxShadow =
+                          "0 4px 20px rgba(0,0,0,0.15)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow =
+                          "0 2px 12px rgba(0,0,0,0.08)";
+                      }}
+                      onClick={() => {
+                        if (
+                          searchResults.length > 0 &&
+                          searchTerm.trim().length >= 2
+                        )
+                          incrementSearch(blog.id);
+                        onPostClick(blog.id);
                       }}
                     >
-                      {Array.isArray(blog.image) && blog.image.length > 1 ? (
-                        <div className="row g-0" style={{ height: "100%" }}>
-                          <div className="col-6">
-                            <img
-                              src={getImageUrl(
-                                blog.image[0],
-                                imageErrors[`${blog.id}-0`]
-                              )}
-                              alt={blog.title}
-                              onError={(e) =>
-                                handleImageError(
-                                  e,
-                                  `${blog.id}-0`,
-                                  blog.image[0]
-                                )
-                              }
-                              style={{
-                                width: "100%",
-                                height: "240px",
-                                objectFit: "cover",
-                              }}
-                            />
-                          </div>
-                          <div className="col-6">
-                            <img
-                              src={getImageUrl(
-                                blog.image[1],
-                                imageErrors[`${blog.id}-1`]
-                              )}
-                              alt={blog.title}
-                              onError={(e) =>
-                                handleImageError(
-                                  e,
-                                  `${blog.id}-1`,
-                                  blog.image[1]
-                                )
-                              }
-                              style={{
-                                width: "100%",
-                                height: "240px",
-                                objectFit: "cover",
-                              }}
-                            />
-                          </div>
-                        </div>
-                      ) : (
-                        <img
-                          src={getImageUrl(
-                            blog.image,
-                            imageErrors[`${blog.id}-main`]
-                          )}
-                          className="card-img-top"
-                          alt={blog.title}
-                          onError={(e) =>
-                            handleImageError(e, `${blog.id}-main`, blog.image)
-                          }
-                          style={{
-                            width: "100%",
-                            height: "240px",
-                            objectFit: "cover",
-                          }}
-                        />
-                      )}
-                    </div>
-
-                    <div className="card-body d-flex flex-column">
-                      {/* Title */}
-                      <h5
-                        className="card-title mb-3"
+                      {/* Image Section */}
+                      <div
                         style={{
-                          fontFamily: '"Playfair Display", serif',
-                          fontSize: "1.25rem",
-                          fontWeight: "600",
-                          lineHeight: "1.4",
-                          color: "#2c3e50",
+                          height: "240px",
+                          overflow: "hidden",
+                          position: "relative",
                         }}
                       >
-                        {blog.title}
-                      </h5>
-
-                      {/* Meta Info - Centered */}
-                      <div
-                        className="text-center mb-3"
-                        style={{ fontSize: "0.85rem", color: "#666" }}
-                      >
-                        <span className="me-2">
-                          <User
-                            size={14}
-                            className="me-1"
-                            style={{ marginTop: "-2px" }}
+                        {Array.isArray(blog.image) && blog.image.length > 1 ? (
+                          <div className="row g-0" style={{ height: "100%" }}>
+                            <div className="col-6">
+                              <img
+                                src={getImageUrl(
+                                  blog.image[0],
+                                  imageErrors[`${blog.id}-0`]
+                                )}
+                                alt={blog.title}
+                                onError={(e) =>
+                                  handleImageError(
+                                    e,
+                                    `${blog.id}-0`,
+                                    blog.image[0]
+                                  )
+                                }
+                                style={{
+                                  width: "100%",
+                                  height: "240px",
+                                  objectFit: "cover",
+                                }}
+                              />
+                            </div>
+                            <div className="col-6">
+                              <img
+                                src={getImageUrl(
+                                  blog.image[1],
+                                  imageErrors[`${blog.id}-1`]
+                                )}
+                                alt={blog.title}
+                                onError={(e) =>
+                                  handleImageError(
+                                    e,
+                                    `${blog.id}-1`,
+                                    blog.image[1]
+                                  )
+                                }
+                                style={{
+                                  width: "100%",
+                                  height: "240px",
+                                  objectFit: "cover",
+                                }}
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <img
+                            src={getImageUrl(
+                              blog.image,
+                              imageErrors[`${blog.id}-main`]
+                            )}
+                            className="card-img-top"
+                            alt={blog.title}
+                            onError={(e) =>
+                              handleImageError(e, `${blog.id}-main`, blog.image)
+                            }
+                            style={{
+                              width: "100%",
+                              height: "240px",
+                              objectFit: "cover",
+                            }}
                           />
-                          BY {blog.author || "Admin"}
-                        </span>
-                        <span className="me-2">|</span>
-                        <span className="me-2">
-                          <Calendar
-                            size={14}
-                            className="me-1"
-                            style={{ marginTop: "-2px" }}
-                          />
-                          {formatDate(blog.postDate)}
-                        </span>
-                        <span className="me-2">|</span>
-                        <span>
-                          <Clock
-                            size={14}
-                            className="me-1"
-                            style={{ marginTop: "-2px" }}
-                          />
-                          {blog.readTime}
-                        </span>
+                        )}
                       </div>
 
-                      {/* Description */}
-                      <p
-                        className="card-text text-muted flex-grow-1"
-                        style={{
-                          fontSize: "0.9rem",
-                          lineHeight: "1.6",
-                        }}
-                      >
-                        {blog.shortDescription?.substring(0, 120)}...
-                      </p>
+                      <div className="card-body d-flex flex-column">
+                        {/* Title */}
+                        <h5
+                          className="card-title mb-3"
+                          style={{
+                            fontFamily: '"Playfair Display", serif',
+                            fontSize: "1.25rem",
+                            fontWeight: "600",
+                            lineHeight: "1.4",
+                            color: "#2c3e50",
+                          }}
+                        >
+                          {blog.title}
+                        </h5>
+
+                        {/* Meta Info - Centered */}
+                        <div
+                          className="text-center mb-3"
+                          style={{ fontSize: "0.85rem", color: "#666" }}
+                        >
+                          <span className="me-2">
+                            <User
+                              size={14}
+                              className="me-1"
+                              style={{ marginTop: "-2px" }}
+                            />
+                            BY {blog.author || "Admin"}
+                          </span>
+                          <span className="me-2">|</span>
+                          <span className="me-2">
+                            <Calendar
+                              size={14}
+                              className="me-1"
+                              style={{ marginTop: "-2px" }}
+                            />
+                            {formatDate(blog.postDate)}
+                          </span>
+                          <span className="me-2">|</span>
+                          <span>
+                            <Clock
+                              size={14}
+                              className="me-1"
+                              style={{ marginTop: "-2px" }}
+                            />
+                            {blog.readTime}
+                          </span>
+                        </div>
+
+                        {/* Description */}
+                        <p
+                          className="card-text text-muted flex-grow-1"
+                          style={{
+                            fontSize: "0.9rem",
+                            lineHeight: "1.6",
+                          }}
+                        >
+                          {blog.shortDescription?.substring(0, 120)}...
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              )}
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && (
+            {searchResults.length === 0 && totalPages > 1 && (
               <nav className="mt-5">
                 <ul className="pagination justify-content-center">
                   <li

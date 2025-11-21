@@ -19,9 +19,7 @@ const BlogsCarousel = () => {
     const fetchBlogs = async () => {
       try {
         showLoader();
-        const response = await fetch(
-          "https://happywedz.com/api/blog-deatils/all"
-        );
+        const response = await fetch("https://happywedz.com/api/blogs/all");
         const result = await response.json();
 
         // Map API fields to component fields

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Form, Button } from "react-bootstrap";
 import { useDispatch } from "react-redux";
@@ -23,6 +23,18 @@ const CustomerLogin = () => {
   const { showLoader, hideLoader } = useLoader();
 
   const from = location.state?.from || "/";
+  const [loginCms, setLoginCms] = useState(null);
+  const normalizeUrl = (u) =>
+    typeof u === "string" ? u.replace(/`/g, "").trim() : null;
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("https://happywedz.com/api/login-cms");
+        const data = await res.json();
+        setLoginCms(data?.data || data || null);
+      } catch {}
+    })();
+  }, []);
 
   const handleGoogleCredential = async (credentialResponse) => {
     try {
@@ -111,19 +123,37 @@ const CustomerLogin = () => {
     <div className="container wedding-login-container min-vh-100 d-flex align-items-center justify-content-center my-5">
       <ToastContainer position="top-center" autoClose={3000} />
       <div className="row w-100 shadow-lg rounded-4 overflow-hidden">
-        <div className="col-lg-6 d-none d-lg-block p-0 position-relative">
+        <div
+          className="col-lg-6 d-none d-lg-block p-0 position-relative"
+          style={{
+            ...(loginCms?.image
+              ? {
+                  backgroundImage: `url(${normalizeUrl(loginCms?.image)})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  minHeight: "600px",
+                }
+              : {}),
+          }}
+        >
           <div className="wedding-image-overlay position-absolute w-100 h-100"></div>
           <div className="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center text-white p-5">
             <h2
               className="display-4 fw-light mb-4"
               style={{ fontFamily: "'Playfair Display', serif" }}
             >
-              Create Your <span className="gold-text">Dream Wedding</span>
+              {loginCms?.heading ? (
+                loginCms.heading
+              ) : (
+                <>
+                  Create Your <span className="gold-text">Dream Wedding</span>
+                </>
+              )}
             </h2>
             <div className="divider mx-auto my-4"></div>
             <p className="lead text-center">
-              "The best thing to hold onto in life is each other. Plan your
-              perfect day with us."
+              {loginCms?.subheading ||
+                "The best thing to hold onto in life is each other. Plan your perfect day with us."}
             </p>
           </div>
         </div>
@@ -131,10 +161,18 @@ const CustomerLogin = () => {
         <div className="col-lg-6 bg-white p-4 p-md-5 d-flex flex-column justify-content-center">
           <div className="text-center mb-4">
             <h2 className="fw-light mb-2" style={{ color: "#8a5a76" }}>
-              Welcome to <span className="primary-text fw-bold">HappyWedz</span>
+              {loginCms?.title ? (
+                loginCms.title
+              ) : (
+                <>
+                  Welcome to{" "}
+                  <span className="primary-text fw-bold">HappyWedz</span>
+                </>
+              )}
             </h2>
             <p className="text-muted">
-              Sign in to access your wedding planning dashboard
+              {loginCms?.description ||
+                "Sign in to access your wedding planning dashboard"}
             </p>
           </div>
 

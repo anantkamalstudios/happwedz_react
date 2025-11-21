@@ -62,7 +62,7 @@ const BlogDetails = ({ blogId, onBackClick }) => {
       try {
         showLoader();
         const response = await fetch(
-          `https://happywedz.com/api/blog-deatils/${blogId}`
+          `https://happywedz.com/api/blogs/${blogId}`
         );
         const result = await response.json();
 

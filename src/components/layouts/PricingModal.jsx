@@ -41,13 +41,12 @@ const PricingModal = ({ show, handleClose, vendorId }) => {
       };
       fetchVendorDetails();
     } else {
-      setVendorDetails(null); // Reset when modal is closed or no vendorId
+      setVendorDetails(null);
     }
   }, [vendorId, show]);
 
   useEffect(() => {
     if (user) {
-      // Pre-fill form if user is logged in
       setFormData((prev) => ({
         ...prev,
         firstName: user.firstName || "",
