@@ -359,7 +359,7 @@ const Detailed = () => {
                 );
                 try {
                   sessionStorage.setItem(sessionKey, Date.now().toString());
-                } catch { }
+                } catch {}
                 if (incRes?.data?.vendor?.profileViews !== undefined) {
                   setVenueData((prev) => ({
                     ...prev,
@@ -534,12 +534,12 @@ const Detailed = () => {
 
   const displayLocation = isVenue
     ? venueData.attributes?.address ||
-    venueData.attributes?.city ||
-    "Location not specified"
+      venueData.attributes?.city ||
+      "Location not specified"
     : venueData.attributes?.address ||
-    venueData.attributes?.city ||
-    venueData.vendor?.city ||
-    "Location not specified";
+      venueData.attributes?.city ||
+      venueData.vendor?.city ||
+      "Location not specified";
 
   // Prefer precise coordinates if present
   const latRaw =
@@ -553,13 +553,14 @@ const Detailed = () => {
   const mapSrc = hasCoords
     ? `https://maps.google.com/maps?q=${lat},${lng}&t=&z=13&ie=UTF8&iwloc=&output=embed`
     : `https://maps.google.com/maps?q=${encodeURIComponent(
-      displayLocation
-    )}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+        displayLocation
+      )}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
 
   const activeVendor = {
     id: id,
     name:
       venueData.attributes?.vendor_name ||
+      venueData.attributes?.name ||
       venueData.vendor?.vendor_name ||
       "Unknown Vendor",
     location: displayLocation,
@@ -616,11 +617,13 @@ const Detailed = () => {
                   {images.map((img, idx) => (
                     <SwiperSlide key={idx}>
                       <div
-                        className={`thumbnail-item ${mainImage === img ? "active" : ""
-                          } ${hoveredIndex !== null && hoveredIndex !== idx
+                        className={`thumbnail-item ${
+                          mainImage === img ? "active" : ""
+                        } ${
+                          hoveredIndex !== null && hoveredIndex !== idx
                             ? "blurred"
                             : ""
-                          }`}
+                        }`}
                         onClick={() => setMainImage(img)}
                         onMouseEnter={() => setHoveredIndex(idx)}
                         onMouseLeave={() => setHoveredIndex(null)}
@@ -650,6 +653,7 @@ const Detailed = () => {
               <h3 className="details-section-title fw-bold">
                 About{" "}
                 {venueData.attributes?.vendor_name ||
+                  venueData.attributes?.name ||
                   venueData.attributes?.Name}
               </h3>
               {venueData.attributes?.about_us ? (
@@ -688,8 +692,9 @@ const Detailed = () => {
                       key={index}
                     >
                       <div
-                        className={`amenity-item d-flex align-items-center ${item.name.startsWith("-") ? "ms-4" : ""
-                          }`}
+                        className={`amenity-item d-flex align-items-center ${
+                          item.name.startsWith("-") ? "ms-4" : ""
+                        }`}
                       >
                         {item.icon && (
                           <div
@@ -712,7 +717,6 @@ const Detailed = () => {
                 )}
               </Row>
             </div>
-
 
             {/* FaqQuestionAnswer Detailed */}
 
@@ -784,89 +788,103 @@ const Detailed = () => {
             </div> */}
 
             <div className="my-4 border p-3 rounded">
-  <h5 className="my-4">Frequently Asked Questions</h5>
+              <h5 className="my-4">Frequently Asked Questions</h5>
 
-  {faqList.length > 0 ? (
-    <>
-      {(showAllFaqs ? faqList : faqList.slice(0, 5)).map((ques, index) => {
-        // Parse the answer to handle different data types
-        const parseAnswer = (answer) => {
-          if (answer == null) return [];
-          
-          // If it's already an array, return it
-          if (Array.isArray(answer)) {
-            return answer.filter(item => item != null && item !== "");
-          }
-          
-          // If it's an object (like {"0": "200", "1": "600"})
-          if (typeof answer === "object") {
-            const values = Object.values(answer).filter(v => v != null && v !== "");
-            
-            // If it's a range (2 values), join with hyphen
-            if (values.length === 2) {
-              return [`${values[0]} - ${values[1]}`];
-            }
-            // Single value from object
-            if (values.length === 1) {
-              return values;
-            }
-            return values;
-          }
-          
-          // For primitive values (string, number)
-          const strValue = String(answer).trim();
-          return strValue ? [strValue] : [];
-        };
+              {faqList.length > 0 ? (
+                <>
+                  {(showAllFaqs ? faqList : faqList.slice(0, 5)).map(
+                    (ques, index) => {
+                      // Parse the answer to handle different data types
+                      const parseAnswer = (answer) => {
+                        if (answer == null) return [];
 
-        const answers = parseAnswer(ques.ans);
-        const isSingleAnswer = answers.length === 1;
+                        // If it's already an array, return it
+                        if (Array.isArray(answer)) {
+                          return answer.filter(
+                            (item) => item != null && item !== ""
+                          );
+                        }
 
-        // Skip if no valid answers
-        if (answers.length === 0) return null;
+                        // If it's an object (like {"0": "200", "1": "600"})
+                        if (typeof answer === "object") {
+                          const values = Object.values(answer).filter(
+                            (v) => v != null && v !== ""
+                          );
 
-        return (
-          <div className="w-100 rounded border-bottom" key={index}>
-            <div className="p-2">
-              <p className="fw-semibold mb-1">{ques.text}</p>
+                          // If it's a range (2 values), join with hyphen
+                          if (values.length === 2) {
+                            return [`${values[0]} - ${values[1]}`];
+                          }
+                          // Single value from object
+                          if (values.length === 1) {
+                            return values;
+                          }
+                          return values;
+                        }
 
-              {isSingleAnswer ? (
-                <p className="text-muted">{answers[0]}</p>
-              ) : (
-                <div className="row">
-                  {answers.map((answer, idx) => (
-                    <div
-                      className="col-md-4 d-flex align-items-start mb-2"
-                      key={idx}
-                    >
-                      <i
-                        className="fa-solid fa-check me-2"
-                        style={{ color: "#f44e4e", marginTop: "4px" }}
-                      ></i>
-                      <span className="text-muted">{answer}</span>
+                        // For primitive values (string, number)
+                        const strValue = String(answer).trim();
+                        return strValue ? [strValue] : [];
+                      };
+
+                      const answers = parseAnswer(ques.ans);
+                      const isSingleAnswer = answers.length === 1;
+
+                      // Skip if no valid answers
+                      if (answers.length === 0) return null;
+
+                      return (
+                        <div
+                          className="w-100 rounded border-bottom"
+                          key={index}
+                        >
+                          <div className="p-2">
+                            <p className="fw-semibold mb-1">{ques.text}</p>
+
+                            {isSingleAnswer ? (
+                              <p className="text-muted">{answers[0]}</p>
+                            ) : (
+                              <div className="row">
+                                {answers.map((answer, idx) => (
+                                  <div
+                                    className="col-md-4 d-flex align-items-start mb-2"
+                                    key={idx}
+                                  >
+                                    <i
+                                      className="fa-solid fa-check me-2"
+                                      style={{
+                                        color: "#f44e4e",
+                                        marginTop: "4px",
+                                      }}
+                                    ></i>
+                                    <span className="text-muted">{answer}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    }
+                  )}
+
+                  {faqList.length > 5 && (
+                    <div className="text-center mt-3">
+                      <button
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={() => setShowAllFaqs(!showAllFaqs)}
+                      >
+                        {showAllFaqs ? "Show Less" : "Read More"}
+                      </button>
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-muted">
+                  No FAQ information available for this vendor.
+                </p>
               )}
             </div>
-          </div>
-        );
-      })}
-
-      {faqList.length > 5 && (
-        <div className="text-center mt-3">
-          <button
-            className="btn btn-outline-primary btn-sm"
-            onClick={() => setShowAllFaqs(!showAllFaqs)}
-          >
-            {showAllFaqs ? "Show Less" : "Read More"}
-          </button>
-        </div>
-      )}
-    </>
-  ) : (
-    <p className="text-muted">No FAQ information available for this vendor.</p>
-  )}
-</div>
 
             <div className="py-2">
               <ReviewSection vendor={activeVendor} />
@@ -967,12 +985,13 @@ const Detailed = () => {
                     <h2 className="fw-bold fs-30">
                       {venueData?.attributes?.vendor_name ||
                         venueData?.attributes?.Name ||
+                        venueData?.attributes?.name ||
                         "Vendor Name"}
                     </h2>
                   </div>
                   <div className="d-flex align-items-center my-2">
                     <FaLocationDot className="me-1" size={15} color="black" />
-                    <span>{displayLocation}</span>
+                    <span>{venueData?.attributes?.city}</span>
                   </div>
                   <div className="d-flex justify-content-between align-items-center">
                     <div className="rating-badge">
@@ -1014,8 +1033,8 @@ const Detailed = () => {
                       <div className="price-value fs-4 fw-bold">
                         {venueData.attributes?.veg_price
                           ? `₹ ${parseInt(
-                            venueData.attributes.veg_price.replace(/,/g, "")
-                          ).toLocaleString()} onwards`
+                              venueData.attributes.veg_price.replace(/,/g, "")
+                            ).toLocaleString()} onwards`
                           : "Contact for pricing"}
                       </div>
                       <h4 className="price-title fw-bold mt-3">
@@ -1024,11 +1043,11 @@ const Detailed = () => {
                       <div className="price-value fs-4 fw-bold">
                         {venueData.attributes?.non_veg_price
                           ? `₹ ${parseInt(
-                            venueData.attributes.non_veg_price.replace(
-                              /,/g,
-                              ""
-                            )
-                          ).toLocaleString()} onwards`
+                              venueData.attributes.non_veg_price.replace(
+                                /,/g,
+                                ""
+                              )
+                            ).toLocaleString()} onwards`
                           : "Contact for pricing"}
                       </div>
                       <p className="price-note text-muted mt-2">
@@ -1047,11 +1066,11 @@ const Detailed = () => {
                         {venueData.attributes?.vendor_type === "Makeup"
                           ? "Makeup Package (Starting)"
                           : venueData.attributes?.vendor_type === "Photography"
-                            ? "Photography Package (Starting)"
-                            : venueData.attributes?.vendor_type ===
-                              "Music And Dance"
-                              ? "Pricing Range"
-                              : ""}
+                          ? "Photography Package (Starting)"
+                          : venueData.attributes?.vendor_type ===
+                            "Music And Dance"
+                          ? "Pricing Range"
+                          : ""}
                       </h4>
 
                       <div className="price-value fs-4 fw-bold">
@@ -1060,19 +1079,19 @@ const Detailed = () => {
                         </h4>
                         ₹{" "}
                         {venueData.attributes?.PriceRange ||
-                          venueData.attributes.starting_price
+                        venueData.attributes.starting_price
                           ? venueData.attributes.PriceRange.replace(
-                            "Rs.",
-                            ""
-                          ).trim() || venueData.attributes.starting_price
+                              "Rs.",
+                              ""
+                            ).trim() || venueData.attributes.starting_price
                           : venueData.attributes.photo_package_price
-                            ? `₹${parseInt(
+                          ? `₹${parseInt(
                               venueData.attributes.photo_package_price.replace(
                                 /,/g,
                                 ""
                               )
                             ).toLocaleString()} onwards`
-                            : "Contact for pricing"}
+                          : "Contact for pricing"}
                       </div>
                       {venueData.attributes?.photo_video_package_price && (
                         <>
