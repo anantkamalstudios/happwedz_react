@@ -31,6 +31,7 @@ import { FaqQuestions } from "../pages/adminVendor/subVendors/FaqData";
 import axios from "axios";
 const API_BASE_URL = "https://happywedz.com";
 import Swal from "sweetalert2";
+import SectionTabs from "./SectionTabs";
 
 const capitalizeWords = (str) => {
   if (!str) return "";
@@ -378,7 +379,7 @@ const Detailed = () => {
                 );
                 try {
                   sessionStorage.setItem(sessionKey, Date.now().toString());
-                } catch {}
+                } catch { }
                 if (incRes?.data?.vendor?.profileViews !== undefined) {
                   setVenueData((prev) => ({
                     ...prev,
@@ -553,12 +554,12 @@ const Detailed = () => {
 
   const displayLocation = isVenue
     ? venueData.attributes?.address ||
-      venueData.attributes?.city ||
-      "Location not specified"
+    venueData.attributes?.city ||
+    "Location not specified"
     : venueData.attributes?.address ||
-      venueData.attributes?.city ||
-      venueData.vendor?.city ||
-      "Location not specified";
+    venueData.attributes?.city ||
+    venueData.vendor?.city ||
+    "Location not specified";
 
   // Prefer precise coordinates if present
   const latRaw =
@@ -572,8 +573,8 @@ const Detailed = () => {
   const mapSrc = hasCoords
     ? `https://maps.google.com/maps?q=${lat},${lng}&t=&z=13&ie=UTF8&iwloc=&output=embed`
     : `https://maps.google.com/maps?q=${encodeURIComponent(
-        displayLocation
-      )}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+      displayLocation
+    )}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
 
   const activeVendor = {
     id: id,
@@ -591,6 +592,14 @@ const Detailed = () => {
   // Aliases to match JSX usage
   const faqList = _faqList || [];
   const parseDbValue = _parseDbValue;
+
+  // Smooth scroll to section by id
+  const scrollToSection = (sectionId) => {
+    const el = document.getElementById(sectionId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   return (
     <div className="venue-detail-page">
@@ -636,13 +645,11 @@ const Detailed = () => {
                   {images.map((img, idx) => (
                     <SwiperSlide key={idx}>
                       <div
-                        className={`thumbnail-item ${
-                          mainImage === img ? "active" : ""
-                        } ${
-                          hoveredIndex !== null && hoveredIndex !== idx
+                        className={`thumbnail-item ${mainImage === img ? "active" : ""
+                          } ${hoveredIndex !== null && hoveredIndex !== idx
                             ? "blurred"
                             : ""
-                        }`}
+                          }`}
                         onClick={() => setMainImage(img)}
                         onMouseEnter={() => setHoveredIndex(idx)}
                         onMouseLeave={() => setHoveredIndex(null)}
@@ -668,7 +675,10 @@ const Detailed = () => {
               </div>
             )}
 
-            <div className="venue-description mb-5">
+            {/* In-page navigation */}
+            <SectionTabs scrollToSection={scrollToSection} />
+
+            <div id="about" className="venue-description mb-5">
               <h3 className="details-section-title fw-bold">
                 About{" "}
                 {venueData.attributes?.vendor_name ||
@@ -711,9 +721,8 @@ const Detailed = () => {
                       key={index}
                     >
                       <div
-                        className={`amenity-item d-flex align-items-center ${
-                          item.name.startsWith("-") ? "ms-4" : ""
-                        }`}
+                        className={`amenity-item d-flex align-items-center ${item.name.startsWith("-") ? "ms-4" : ""
+                          }`}
                       >
                         {item.icon && (
                           <div
@@ -739,7 +748,7 @@ const Detailed = () => {
 
             {/* FaqQuestionAnswer Detailed */}
 
-            <div className="my-4 border p-3 rounded">
+            <div id="faq" className="my-4 border p-3 rounded">
               <h5 className="my-4">Frequently Asked Questions</h5>
 
               {faqList.length > 0 ? (
@@ -838,10 +847,34 @@ const Detailed = () => {
               )}
             </div>
 
-            <div className="py-2">
+            <div id="reviews" className="py-2">
               <ReviewSection vendor={activeVendor} />
             </div>
+            <div id="map" className="venue-map mt-4 pt-3 border-top">
+              <div
+                className="mb-2 fw-semibold text-dark"
+                style={{ fontSize: "1.05rem" }}
+              >
+                View Location
+              </div>
 
+              {/* Show map by coordinates when available; fallback to text location */}
+              <iframe
+                src={mapSrc}
+                width="100%"
+                height="450"
+                style={{
+                  border: 0,
+                  borderRadius: "12px",
+                  boxShadow: "0 4px 10px rgba(0, 0, 0, 0.15)",
+                  cursor: "grab",
+                }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Vendor Location Map"
+              ></iframe>
+            </div>
             {/* Testimonials */}
             {/* <div className="testimonials mb-5">
               <h3 className="details-section-title fw-bold">
@@ -898,7 +931,7 @@ const Detailed = () => {
               <div className="venue-info">
                 <div className="mb-3">
                   <div className="d-flex">
-                    <h2 className="fw-bold fs-30">
+                    <h2 className="fw-bold fs-20">
                       {venueData?.attributes?.vendor_name ||
                         venueData?.attributes?.Name ||
                         venueData?.attributes?.name ||
@@ -907,7 +940,7 @@ const Detailed = () => {
                   </div>
                   <div className="d-flex align-items-center my-2">
                     <FaLocationDot className="me-1" size={15} color="black" />
-                    <span>{venueData?.attributes?.city}</span>
+                    <span>{venueData?.attributes?.address || venueData?.attributes?.city}</span>
                   </div>
                   <div className="d-flex justify-content-between align-items-center">
                     <div className="rating-badge">
@@ -944,26 +977,26 @@ const Detailed = () => {
                   {isVenue ? (
                     <>
                       <h4 className="price-title fw-bold">
-                        Veg Starting Price (Per Plate)
+                        Veg Starting Price
                       </h4>
                       <div className="price-value fs-4 fw-bold">
                         {venueData.attributes?.veg_price
                           ? `₹ ${parseInt(
-                              venueData.attributes.veg_price.replace(/,/g, "")
-                            ).toLocaleString()} onwards`
+                            venueData.attributes.veg_price.replace(/,/g, "")
+                          ).toLocaleString()} onwards`
                           : "Contact for pricing"}
                       </div>
                       <h4 className="price-title fw-bold mt-3">
-                        Non-Veg Starting Price (Per Plate)
+                        Non-Veg Starting Price 
                       </h4>
                       <div className="price-value fs-4 fw-bold">
                         {venueData.attributes?.non_veg_price
                           ? `₹ ${parseInt(
-                              venueData.attributes.non_veg_price.replace(
-                                /,/g,
-                                ""
-                              )
-                            ).toLocaleString()} onwards`
+                            venueData.attributes.non_veg_price.replace(
+                              /,/g,
+                              ""
+                            )
+                          ).toLocaleString()} onwards`
                           : "Contact for pricing"}
                       </div>
                       <p className="price-note text-muted mt-2">
@@ -982,11 +1015,11 @@ const Detailed = () => {
                         {venueData.attributes?.vendor_type === "Makeup"
                           ? "Makeup Package (Starting)"
                           : venueData.attributes?.vendor_type === "Photography"
-                          ? "Photography Package (Starting)"
-                          : venueData.attributes?.vendor_type ===
-                            "Music And Dance"
-                          ? "Pricing Range"
-                          : ""}
+                            ? "Photography Package (Starting)"
+                            : venueData.attributes?.vendor_type ===
+                              "Music And Dance"
+                              ? "Pricing Range"
+                              : ""}
                       </h4>
 
                       <div className="price-value fs-4 fw-bold">
@@ -995,19 +1028,19 @@ const Detailed = () => {
                         </h4>
                         ₹{" "}
                         {venueData.attributes?.PriceRange ||
-                        venueData.attributes.starting_price
+                          venueData.attributes.starting_price
                           ? venueData.attributes.PriceRange.replace(
-                              "Rs.",
-                              ""
-                            ).trim() || venueData.attributes.starting_price
+                            "Rs.",
+                            ""
+                          ).trim() || venueData.attributes.starting_price
                           : venueData.attributes.photo_package_price
-                          ? `₹${parseInt(
+                            ? `₹${parseInt(
                               venueData.attributes.photo_package_price.replace(
                                 /,/g,
                                 ""
                               )
                             ).toLocaleString()} onwards`
-                          : "Contact for pricing"}
+                            : "Contact for pricing"}
                       </div>
                       {venueData.attributes?.photo_video_package_price && (
                         <>
@@ -1059,31 +1092,7 @@ const Detailed = () => {
                 </div>
               </div>
 
-              <div className="venue-map mt-4 pt-3 border-top">
-                <div
-                  className="mb-2 fw-semibold text-dark"
-                  style={{ fontSize: "1.05rem" }}
-                >
-                  View Location
-                </div>
 
-                {/* Show map by coordinates when available; fallback to text location */}
-                <iframe
-                  src={mapSrc}
-                  width="100%"
-                  height="350"
-                  style={{
-                    border: 0,
-                    borderRadius: "12px",
-                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.15)",
-                    cursor: "grab",
-                  }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Vendor Location Map"
-                ></iframe>
-              </div>
             </div>
           </Col>
         </Row>

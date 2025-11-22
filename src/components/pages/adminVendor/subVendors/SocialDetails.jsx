@@ -7,11 +7,25 @@ import {
 } from "react-icons/fa6";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-export default function SocialDetails() {
+
+export default function SocialDetails({ formData, setFormData, onSave, onShowSuccess }) {
+  const handleChange = (name, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      attributes: { ...(prev?.attributes || {}), [name]: value },
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (onSave) await onSave();
+    if (onShowSuccess) onShowSuccess();
+  };
+
   return (
     <div className="container mt-4">
       <h5 className="mb-3">Add Your Professional Links</h5>
-      <form className="row g-3">
+      <form className="row g-3" onSubmit={handleSubmit}>
         {/* Facebook */}
         <div className="col-md-6">
           <label className="form-label">Facebook</label>
@@ -20,9 +34,11 @@ export default function SocialDetails() {
               <FaFacebookF />
             </span>
             <input
-              type="text"
+              type="url"
               className="form-control"
-              placeholder="facebook.com/username"
+              placeholder="https://facebook.com/yourpage"
+              value={formData?.attributes?.facebook_link || ""}
+              onChange={(e) => handleChange("facebook_link", e.target.value)}
             />
           </div>
         </div>
@@ -35,42 +51,65 @@ export default function SocialDetails() {
               <FaInstagram />
             </span>
             <input
-              type="text"
+              type="url"
               className="form-control"
-              placeholder="instagram.com/username"
+              placeholder="https://instagram.com/yourprofile"
+              value={formData?.attributes?.instagram_link || ""}
+              onChange={(e) => handleChange("instagram_link", e.target.value)}
             />
           </div>
         </div>
 
+        {/* <div className="col-md-6">
+          <label className="form-label">Website</label>
+          <div className="input-group">
+            <span className="input-group-text bg-primary text-white">
+              <i className="fa-solid fa-globe"></i>
+            </span>
+            <input
+              type="url"
+              className="form-control"
+              placeholder="https://yourwebsite.com"
+              value={formData?.attributes?.website || ""}
+              onChange={(e) => handleChange("website", e.target.value)}
+            />
+          </div>
+        </div> */}
+
+
         {/* X (Twitter) */}
-        <div className="col-md-6">
+        {/* <div className="col-md-6">
           <label className="form-label">X (Twitter)</label>
           <div className="input-group">
             <span className="input-group-text bg-dark text-white">
               <FaXTwitter />
             </span>
             <input
-              type="text"
+              type="url"
               className="form-control"
-              placeholder="x.com/username"
+              placeholder="https://x.com/yourhandle"
+              value={formData?.attributes?.twitter_link || ""}
+              onChange={(e) => handleChange("twitter_link", e.target.value)}
             />
           </div>
-        </div>
+        </div> */}
 
         {/* Pinterest */}
-        <div className="col-md-6">
+        {/* <div className="col-md-6">
           <label className="form-label">Pinterest</label>
           <div className="input-group">
             <span className="input-group-text bg-danger text-white">
               <FaPinterestP />
             </span>
             <input
-              type="text"
+              type="url"
               className="form-control"
-              placeholder="pinterest.com/username"
+              placeholder="https://pinterest.com/yourprofile"
+              value={formData?.attributes?.pinterest_link || ""}
+              onChange={(e) => handleChange("pinterest_link", e.target.value)}
             />
           </div>
-        </div>
+        </div> */}
 
         {/* Save button */}
         <div className="col-12">

@@ -597,9 +597,8 @@ const TryLanding = () => {
       <div className="try-first-page-container">
         {/* Hero Section */}
         <div
-          className={`try-first-page-hero ${
-            isLoaded ? "try-first-page-loaded" : ""
-          }`}
+          className={`try-first-page-hero ${isLoaded ? "try-first-page-loaded" : ""
+            }`}
         >
           <div
             style={{
@@ -664,21 +663,39 @@ const TryLanding = () => {
                   >
                     Makeup, Jewellary & Outfits in One Place
                   </p>
-                  <button
+                  {/* <button
                     style={{
                       background: "linear-gradient(to right, #E83580, #821E48)",
                       color: "#fff",
-                      border: "2px solid #C31162",
+                      border: "2px solid #e9277fff",
                       padding: "0.5rem 0",
                       fontWeight: "500",
                       borderRadius: "10px",
                       fontSize: "1.5rem",
                       width: "100%",
                     }}
-                    onClick={handleGetStarted}
+                    // onClick={handleGetStarted}
+                  >
+                    Get Started
+                  </button> */}
+                  <button
+                    disabled
+                    style={{
+                      background: "linear-gradient(to right, #E83580, #821E48)",
+                      color: "#fff",
+                      border: "2px solid #e9277fff",
+                      padding: "0.5rem 0",
+                      fontWeight: "500",
+                      borderRadius: "10px",
+                      fontSize: "1.5rem",
+                      width: "100%",
+                      opacity: 0.6,            
+                      cursor: "not-allowed",   
+                    }}
                   >
                     Get Started
                   </button>
+
                 </div>
               </div>
 
@@ -742,9 +759,8 @@ const TryLanding = () => {
                             }}
                             onError={(e) => {
                               e.target.style.display = "none";
-                              e.target.parentElement.innerHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; color: white; font-size: 24px;">Image ${
-                                index + 1
-                              }</div>`;
+                              e.target.parentElement.innerHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; color: white; font-size: 24px;">Image ${index + 1
+                                }</div>`;
                             }}
                           />
                         </div>

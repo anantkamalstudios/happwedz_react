@@ -340,7 +340,7 @@ const Header = () => {
                 <LocationModalWithCategories />
                 <div>
                   <Link
-                    // to="/try"
+                    to="/try"
                     state={{ title: "Try" }}
                     onClick={handleMobileLinkClick}
                   >
@@ -927,7 +927,7 @@ const Header = () => {
                       />
 
                       <Link
-                        // to="/try"
+                        to="/try"
                         state={{ title: "Try" }}
                         title="Try Design Studio"
                       >

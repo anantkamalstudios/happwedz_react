@@ -24,6 +24,7 @@ import { PiPhoneCall } from "react-icons/pi";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import { HiOutlineDocument } from "react-icons/hi2";
 import { MdCurrencyRupee, MdOutlineEventAvailable } from "react-icons/md";
+import { PiShareNetworkDuotone } from "react-icons/pi";
 
 import {
   IoCameraOutline,
@@ -36,6 +37,8 @@ import VendorMenus from "./subVendors/VendorMenus";
 import vendorServicesApi from "../../../services/api/vendorServicesApi";
 import { name } from "dayjs/locale/en.js";
 import Swal from "sweetalert2";
+import PreferredVendors from "./subVendors/PreferredVendors";
+import SocialDetails from "./subVendors/SocialDetails";
 
 const Storefront = ({ setCompletion }) => {
   const [active, setActive] = useState("business");
@@ -441,6 +444,11 @@ const Storefront = ({ setCompletion }) => {
       delivery_time: formData.delivery_time || "",
       decor_policy: formData.decorPolicy || "",
       area: formData.area || "",
+      // Social links
+      facebook_link: formData.attributes?.facebook_link || "",
+      instagram_link: formData.attributes?.instagram_link || "",
+      twitter_link: formData.attributes?.twitter_link || "",
+      pinterest_link: formData.attributes?.pinterest_link || "",
       // Always include menus if present in attributes
       ...(Array.isArray(formData.attributes?.menus)
         ? { menus: formData.attributes.menus }
@@ -460,6 +468,12 @@ const Storefront = ({ setCompletion }) => {
               url.startsWith("/uploads/") ? IMAGE_BASE_URL + url : url
             )
         : formData.attributes?.video || [],
+      // Preferred vendors selection
+      preferred_vendors:
+        formData.attributes?.preferred_vendors ||
+        formData.preferredVendors ||
+        formData.preferred_vendor_ids ||
+        [],
     };
 
     // Remove undefined keys
@@ -653,7 +667,8 @@ const Storefront = ({ setCompletion }) => {
         id: "vendor-basic",
         fields: ["attributes.vendor_name", "attributes.tagline"],
       },
-      { id: "faq", fields: ["attributes.faq"] },
+      // FAQ handled specially below
+      { id: "faq", fields: [] },
       {
         id: "vendor-contact",
         fields: ["contact.contactName", "contact.phone", "contact.email"],
@@ -685,16 +700,31 @@ const Storefront = ({ setCompletion }) => {
 
     let completed = 0;
     sections.forEach((section) => {
-      const hasData = section.fields.some((field) => {
-        if (field === "photoDrafts") return photoDrafts.length > 0;
-        if (field === "videoDrafts") return videoDrafts.length > 0;
-        const keys = field.split(".");
-        let value = formData;
-        for (const key of keys) {
-          value = value?.[key];
+      let hasData = false;
+      if (section.id === "faq") {
+        // Count FAQ completed only if at least one non-empty answer exists
+        const faqs = formData?.faqs;
+        if (faqs && typeof faqs === "object") {
+          hasData = Object.values(faqs).some((ans) => {
+            if (ans == null) return false;
+            if (Array.isArray(ans)) return ans.filter(Boolean).length > 0;
+            if (typeof ans === "object") return Object.keys(ans).length > 0;
+            const s = String(ans).trim();
+            return s.length > 0;
+          });
         }
-        return value && value !== "" && value !== null && value !== undefined;
-      });
+      } else {
+        hasData = section.fields.some((field) => {
+          if (field === "photoDrafts") return photoDrafts.length > 0;
+          if (field === "videoDrafts") return videoDrafts.length > 0;
+          const keys = field.split(".");
+          let value = formData;
+          for (const key of keys) {
+            value = value?.[key];
+          }
+          return value && value !== "" && value !== null && value !== undefined;
+        });
+      }
       if (hasData) completed++;
     });
 
@@ -750,6 +780,9 @@ const Storefront = ({ setCompletion }) => {
     },
     { id: "photos", label: "Photos", icon: <IoCameraOutline size={20} /> },
     { id: "videos", label: "Videos", icon: <IoVideocamOutline size={20} /> },
+    { id: "preferred-vendors", label: "Preferred Vendors", icon: <IoCheckmarkCircleOutline size={20} /> },
+    { id: "social", label: "Social Network", icon: <PiShareNetworkDuotone size={20} /> },
+    
     {
       id: "vendor-facilities",
       label: "Facilities & Features",
@@ -927,6 +960,24 @@ const Storefront = ({ setCompletion }) => {
       case "vendor-policies":
         return (
           <VendorPolicies
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+            onShowSuccess={showSuccessModal}
+          />
+        );
+      case "social":
+        return (
+          <SocialDetails
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+            onShowSuccess={showSuccessModal}
+          />
+        );
+      case "preferred-vendors":
+        return (
+          <PreferredVendors
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}

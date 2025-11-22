@@ -405,7 +405,7 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
         overflow: "visible",
         background:
           "linear-gradient(135deg, rgba(255, 114, 134, 0.08) 0%, rgba(137, 62, 247, 0.08) 100%)",
-        zIndex: 99,
+        zIndex: 1000,
         position: "relative",
       }}
     >
@@ -585,7 +585,7 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
                       maxHeight: "400px",
                       overflowY: "auto",
                       overflowX: "hidden",
-                      zIndex: 1000,
+                      zIndex: 1100,
                       border: "1px solid #e5e7eb",
                     }}
                   >

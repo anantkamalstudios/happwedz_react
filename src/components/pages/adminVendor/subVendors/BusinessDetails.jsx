@@ -585,28 +585,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
             onChange={handleAttributeChange}
           />
         </div>
-        <div className="mb-3 mt-3">
-          <label className="form-label">Facebook Link</label>
-          <input
-            name="facebook_link"
-            type="url"
-            className="form-control"
-            placeholder="Facebook profile/page URL"
-            value={formData.attributes?.facebook_link || ""}
-            onChange={handleAttributeChange}
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Instagram Link</label>
-          <input
-            name="instagram_link"
-            type="url"
-            className="form-control"
-            placeholder="Instagram profile URL"
-            value={formData.attributes?.instagram_link || ""}
-            onChange={handleAttributeChange}
-          />
-        </div>
+        {/* Social links moved to Social Network section */}
         <div className="mb-3">
           <input
             name="vendor_type_id"

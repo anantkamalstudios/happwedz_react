@@ -2168,7 +2168,7 @@ body {
 .venue-map {
   border-radius: 12px;
   overflow: hidden;
-  height: 200px;
+  height: 500px;
 }
 
 .map-placeholder {
