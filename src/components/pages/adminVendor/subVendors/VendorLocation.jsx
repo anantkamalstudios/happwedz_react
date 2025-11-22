@@ -13,10 +13,9 @@ L.Icon.Default.mergeOptions({
 });
 
 const VendorLocation = ({ formData, setFormData, onSave }) => {
-  const city = formData.city || "";
+  const city = (formData.location && formData.location.city) || formData.city || "";
   const location = formData.location || {
-    addressLine1: "",
-    addressLine2: "",
+    address: "",
     state: "",
     country: "India",
     pincode: "",
@@ -32,6 +31,12 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
   );
   const [cities, setCities] = useState([]);
   const [cityInput, setCityInput] = useState(city || "");
+  
+  // Keep city input in sync when formData updates from API or navigation
+  useEffect(() => {
+    const nextCity = (formData.location && formData.location.city) || formData.city || "";
+    setCityInput(nextCity);
+  }, [formData.location?.city, formData.city]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [markerPos, setMarkerPos] = useState(() => {
     const lat = parseFloat(location.latitude);
@@ -71,6 +76,8 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
+      // Keep root city in sync for backward compatibility when city changes
+      ...(field === "city" ? { city: value } : {}),
       location: {
         ...prev.location,
         [field]: value,
@@ -113,15 +120,15 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
         <div className="row">
           {/* Address Line 1 */}
           <div className="col-12 mb-3">
-            <label className="form-label fw-semibold">Address Line 1 *</label>
+            <label className="form-label fw-semibold">Address *</label>
             <input
               type="text"
               className="form-control"
-              value={location.addressLine1}
+              value={location.address}
               onChange={(e) =>
-                handleInputChange("addressLine1", e.target.value)
+                handleInputChange("address", e.target.value)
               }
-              placeholder="Enter address line 1"
+              placeholder="Enter address"
             />
           </div>
 

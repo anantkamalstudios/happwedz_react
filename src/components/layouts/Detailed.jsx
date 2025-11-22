@@ -108,6 +108,25 @@ const Detailed = () => {
           name: `Decor: ${capitalizeWords(attributes.decor_policy)}`,
         });
       }
+      if (attributes.dJ_policy) {
+        amenities.push({
+          icon: <FaStar />,
+          name: `DJ: ${capitalizeWords(attributes.dJ_policy)}`,
+        });
+      }
+      if (attributes.space) {
+        amenities.push({
+          icon: <FaStar />,
+          name: `Space: ${capitalizeWords(attributes.space)}`,
+        });
+      }
+
+      if (attributes.outside_alcohol) {
+        amenities.push({
+          icon: <FaStar />,
+          name: `Outside Alcohol: ${capitalizeWords(attributes.outside_alcohol)}`,
+        });
+      }
 
       // --- Alcohol Policy ---
       let alcoholStatus = attributes.alcohol_policy
@@ -720,73 +739,6 @@ const Detailed = () => {
 
             {/* FaqQuestionAnswer Detailed */}
 
-            {/* <div className="my-4 border p-3 rounded">
-              <h5 className="my-4">Frequently Asked Questions</h5>
-
-              {faqList.length > 0 ? (
-                <>
-                  {(showAllFaqs ? faqList : faqList.slice(0, 5)).map((ques, index) => {
-                    const raw = parseDbValue(ques.ans);
-                    const answers = Array.isArray(raw)
-                      ? raw
-                      : raw != null
-                        ? [raw]
-                        : [];
-                    const first = answers[0];
-                    const firstStr =
-                      typeof first === "string" ? first : String(first ?? "");
-
-                    return (
-                      <div className="w-100 rounded border-bottom" key={index}>
-                        <div className="p-2">
-                          <p className="fw-semibold mb-1">{ques.text}</p>
-
-                          {answers.length === 1 &&
-                            firstStr &&
-                            !firstStr.includes("{") ? (
-                            <p className="text-muted">{firstStr}</p>
-                          ) : (
-                            <div className="row">
-                              {answers.map(
-                                (a, idx) =>
-                                  a != null && (
-                                    <div
-                                      className="col-md-4 d-flex align-items-start mb-2"
-                                      key={idx}
-                                    >
-                                      <i
-                                        className="fa-solid fa-check me-2"
-                                        style={{ color: "#f44e4e", marginTop: "4px" }}
-                                      ></i>
-                                      <span className="text-muted">
-                                        {typeof a === "string" ? a : String(a)}
-                                      </span>
-                                    </div>
-                                  )
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {faqList.length > 5 && (
-                    <div className="text-center mt-3">
-                      <button
-                        className="btn btn-outline-primary btn-sm"
-                        onClick={() => setShowAllFaqs(!showAllFaqs)}
-                      >
-                        {showAllFaqs ? "Show Less" : "Read More"}
-                      </button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <p className="text-muted">No FAQ information available for this vendor.</p>
-              )}
-            </div> */}
-
             <div className="my-4 border p-3 rounded">
               <h5 className="my-4">Frequently Asked Questions</h5>
 
@@ -891,11 +843,11 @@ const Detailed = () => {
             </div>
 
             {/* Testimonials */}
-            <div className="testimonials mb-5">
+            {/* <div className="testimonials mb-5">
               <h3 className="details-section-title fw-bold">
                 What Couples Say
               </h3>
-              {/* Simplified testimonial structure for brevity, assuming standard 2 columns */}
+             
               <Row>
                 <Col md={6}>
                   <div className="testimonial-card p-4 border rounded mb-3">
@@ -915,43 +867,7 @@ const Detailed = () => {
                     </p>
                   </div>
 
-                  {/* Additional Pricing & Platform Info */}
-                  {/* <div className="mb-3">
-                    {venueData.attributes?.PriceRange && (
-                      <div className="text-muted">
-                        <span className="fw-semibold text-black me-1">
-                          Price Range:
-                        </span>
-                        {venueData.attributes.PriceRange}
-                      </div>
-                    )}
-                    {venueData.attributes?.photo_package_price && (
-                      <div className="text-muted">
-                        <span className="fw-semibold text-black me-1">
-                          Photo Package:
-                        </span>
-                        {venueData.attributes.photo_package_price}
-                      </div>
-                    )}
-                    {venueData.attributes?.photo_video_package_price && (
-                      <div className="text-muted">
-                        <span className="fw-semibold text-black me-1">
-                          Photo + Video:
-                        </span>
-                        {venueData.attributes.photo_video_package_price}
-                      </div>
-                    )}
-                    {(venueData.attributes?.happywedz_since ||
-                      venueData.attributes?.HappyWedz) && (
-                        <div className="text-muted">
-                          <span className="fw-semibold text-black me-1">
-                            HappyWedz:
-                          </span>
-                          {venueData.attributes.happywedz_since ||
-                            venueData.attributes.HappyWedz}
-                        </div>
-                      )}
-                  </div> */}
+                 
                 </Col>
                 <Col md={6}>
                   <div className="testimonial-card p-4 border rounded mb-3">
@@ -971,7 +887,7 @@ const Detailed = () => {
                   </div>
                 </Col>
               </Row>
-            </div>
+            </div> */}
           </Col>
 
           <Col lg={4} className="ps-lg-5">

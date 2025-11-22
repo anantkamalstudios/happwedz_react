@@ -181,16 +181,16 @@ const Storefront = ({ setCompletion }) => {
                     }
                   : {},
                 city: actualData.attributes.city || "",
-                latitude: actualData.attributes.latitude || "",
-                longitude: actualData.attributes.longitude || "",
+                // latitude: actualData.attributes.latitude || "",
+                // longitude: actualData.attributes.longitude || "",
+                // address:actualData.attributes.address || "",
 
                 location: actualData.attributes.location
                   ? {
-                      addressLine1:
-                        actualData.attributes.location.address || "",
-                      addressLine2:
-                        actualData.attributes.location.addressLine2 || "",
-                      // city: actualData.attributes.location.city || "",
+                      address:
+                        actualData.attributes.address || "",
+                      
+                      city: actualData.attributes.city || "",
                       state: actualData.attributes.location.state || "",
                       country:
                         actualData.attributes.location.country || "India",
@@ -335,6 +335,7 @@ const Storefront = ({ setCompletion }) => {
         formData.attributes?.Name ||
         formData.attributes?.businessName ||
         formData.attributes?.vendor_name ||
+
         "",
       slug: formData.attributes?.slug || "",
       tags: formData.tags || [],
@@ -358,13 +359,14 @@ const Storefront = ({ setCompletion }) => {
       city: formData.location?.city || "",
       latitude: formData.location?.latitude || "",
       longitude: formData.location?.longitude || "",
+      address: formData.location?.address || "",
+      
       location: {
         state: formData.location?.state || "",
-        address: formData.location?.addressLine1 || "",
+        // address: formData.location?.addressLine1 || "",
         country: formData.location?.country || "India",
         pincode: formData.location?.pincode || "",
-        // latitude: formData.location?.latitude || "",
-        // longitude: formData.location?.longitude || "",
+       
       },
       packages: formData.packages || [],
       subtitle: formData.attributes?.subtitle || "",
