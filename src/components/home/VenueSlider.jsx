@@ -135,6 +135,7 @@ const VenueSlider = () => {
                       alt={venue.name}
                       className="venues-slider-image"
                       onError={(e) => {
+                        
                         e.target.src =
                           "https://via.placeholder.com/400x300?text=No+Image";
                       }}

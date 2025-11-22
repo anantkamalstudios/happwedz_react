@@ -663,7 +663,7 @@ const TryLanding = () => {
                   >
                     Makeup, Jewellary & Outfits in One Place
                   </p>
-                  {/* <button
+                   <button
                     style={{
                       background: "linear-gradient(to right, #E83580, #821E48)",
                       color: "#fff",
@@ -674,27 +674,11 @@ const TryLanding = () => {
                       fontSize: "1.5rem",
                       width: "100%",
                     }}
-                    // onClick={handleGetStarted}
+                     onClick={handleGetStarted}
                   >
                     Get Started
-                  </button> */}
-                  <button
-                    disabled
-                    style={{
-                      background: "linear-gradient(to right, #E83580, #821E48)",
-                      color: "#fff",
-                      border: "2px solid #e9277fff",
-                      padding: "0.5rem 0",
-                      fontWeight: "500",
-                      borderRadius: "10px",
-                      fontSize: "1.5rem",
-                      width: "100%",
-                      opacity: 0.6,            
-                      cursor: "not-allowed",   
-                    }}
-                  >
-                    Get Started
-                  </button>
+                  </button> 
+                  
 
                 </div>
               </div>
