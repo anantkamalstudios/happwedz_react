@@ -32,6 +32,7 @@ import axios from "axios";
 const API_BASE_URL = "https://happywedz.com";
 import Swal from "sweetalert2";
 import SectionTabs from "./SectionTabs";
+import { TbView360Number } from "react-icons/tb";
 
 const capitalizeWords = (str) => {
   if (!str) return "";
@@ -47,10 +48,13 @@ const Detailed = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mainImage, setMainImage] = useState("");
+  const [mainVideo, setMainVideo] = useState(null);
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [favorites, setFavorites] = useState({});
   const [wishlistIds, setWishlistIds] = useState(new Set());
   const [images, setImages] = useState([]);
+  const [videos, setVideos] = useState([]);
+  const [mediaTab, setMediaTab] = useState("gallery"); // 'gallery' | 'video'
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [selectedVendorId, setSelectedVendorId] = useState(null);
   const [showClaimForm, setShowClaimForm] = useState(false);
@@ -423,6 +427,17 @@ const Detailed = () => {
           setMainImage("/images/default-vendor.jpg");
         }
 
+        // Handle videos if provided
+        const videoList = Array.isArray(data.attributes?.video)
+          ? data.attributes.video.filter(Boolean)
+          : [];
+        setVideos(videoList);
+        if (videoList.length > 0) {
+          setMainVideo(videoList[0]);
+        } else {
+          setMainVideo(null);
+        }
+
         setError(null);
       } catch (err) {
         console.error("Error fetching vendor data:", err);
@@ -606,18 +621,107 @@ const Detailed = () => {
       <Container className="py-5">
         <Row>
           <Col lg={8}>
-            <div className="main-image-container mb-4">
-              {mainImage ? (
-                <img
-                  src={mainImage}
-                  alt={venueData.attributes?.vendor_name || "Main Vendor"}
-                  className="main-image rounded-lg"
-                  style={{ width: "100%", height: "500px", objectFit: "cover" }}
-                />
+            <div className="main-image-container mb-4 position-relative">
+              {mediaTab === "gallery" ? (
+                mainImage ? (
+                  <img
+                    src={mainImage}
+                    alt={venueData.attributes?.vendor_name || "Main Vendor"}
+                    className="main-image rounded-lg"
+                    style={{ width: "100%", height: "500px", objectFit: "cover" }}
+                  />
+                ) : (
+                  <div className="main-image rounded-lg d-flex align-items-center justify-content-center bg-light">
+                    <p className="text-muted">No image available</p>
+                  </div>
+                )
               ) : (
-                <div className="main-image rounded-lg d-flex align-items-center justify-content-center bg-light">
-                  <p className="text-muted">No image available</p>
-                </div>
+                mainVideo ? (
+                  <video
+                    src={mainVideo}
+                    controls
+                    className="rounded-lg"
+                    style={{ width: "100%", height: "500px", objectFit: "cover", backgroundColor: "#000" }}
+                  />
+                ) : (
+                  <div className="main-image rounded-lg d-flex align-items-center justify-content-center bg-light">
+                    <p className="text-muted">No video available</p>
+                  </div>
+                )
+              )}
+              {/* In-image media toggle */}
+             <div
+  className="position-absolute d-flex align-items-center"
+  style={{
+    top: "12px",
+    left: "60px",
+    background: "#fff",
+    color: "#000",
+    borderRadius: "999px",
+    padding: "4px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+    zIndex: 2,
+    gap: "6px",
+  }}
+>
+  <button
+    type="button"
+    className="btn btn-sm"
+    onClick={() => setMediaTab("gallery")}
+    style={{
+      background: mediaTab === "gallery" ? "#f2f2f2" : "#fff",
+      color: "#000",
+      border: mediaTab === "gallery" ? "2px solid #000" : "1px solid #e5e5e5",
+      padding: "2px 10px",
+      height: "28px",
+      lineHeight: 1,
+      borderRadius: "999px",
+    }}
+  >
+    Gallery
+  </button>
+
+  <button
+    type="button"
+    className="btn btn-sm"
+    onClick={() => setMediaTab("video")}
+    disabled={videos.length === 0}
+    title={videos.length === 0 ? "No videos available" : ""}
+    style={{
+      background: mediaTab === "video" ? "#f2f2f2" : "#fff",
+      color: "#000",
+      border: mediaTab === "video" ? "2px solid #000" : "1px solid #e5e5e5",
+      padding: "2px 10px",
+      height: "28px",
+      lineHeight: 1,
+      opacity: videos.length === 0 ? 0.5 : 1,
+      cursor: videos.length === 0 ? "not-allowed" : "pointer",
+      borderRadius: "999px",
+    }}
+  >
+    Video
+  </button>
+</div>
+
+              {isVenue && (
+                <button
+                  className="btn btn-light position-absolute rounded-circle border-0 shadow-sm"
+                  style={{
+                    top: "12px",
+                    left: "12px",
+                    width: "36px",
+                    height: "36px",
+                    padding: "0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                >
+                  <TbView360Number className="text-dark" size={18} />
+                </button>
               )}
               <button className="favorite-btn" onClick={handleFavoriteToggle}>
                 {isFavorite(id) ? (
@@ -628,51 +732,64 @@ const Detailed = () => {
               </button>
             </div>
 
-            {images.length > 0 && (
-              <div className="thumbnail-gallery mb-5">
-                <Swiper
-                  modules={[Autoplay]}
-                  spaceBetween={10}
-                  slidesPerView={4}
-                  autoplay={{
-                    delay: 3000,
-                    disableOnInteraction: false,
-                  }}
-                  loop={images.length > 4}
-                  grabCursor={true}
-                  freeMode={true}
-                >
-                  {images.map((img, idx) => (
-                    <SwiperSlide key={idx}>
-                      <div
-                        className={`thumbnail-item ${mainImage === img ? "active" : ""
-                          } ${hoveredIndex !== null && hoveredIndex !== idx
-                            ? "blurred"
-                            : ""
+            {mediaTab === "gallery" ? (
+              images.length > 0 && (
+                <div className="thumbnail-gallery mb-5">
+                  <Swiper
+                    modules={[Autoplay]}
+                    spaceBetween={10}
+                    slidesPerView={4}
+                    autoplay={{
+                      delay: 3000,
+                      disableOnInteraction: false,
+                    }}
+                    loop={images.length > 4}
+                    grabCursor={true}
+                    freeMode={true}
+                  >
+                    {images.map((img, idx) => (
+                      <SwiperSlide key={idx}>
+                        <div
+                          className={`thumbnail-item ${mainImage === img ? "active" : ""} ${
+                            hoveredIndex !== null && hoveredIndex !== idx ? "blurred" : ""
                           }`}
-                        onClick={() => setMainImage(img)}
-                        onMouseEnter={() => setHoveredIndex(idx)}
-                        onMouseLeave={() => setHoveredIndex(null)}
-                      >
-                        <img
-                          src={img}
-                          alt={`Thumbnail ${idx + 1}`}
-                          className="img-fluid rounded"
-                          style={{
-                            cursor: "pointer",
-                            height: "100%",
-                            objectFit: "cover",
-                          }}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "/images/imageNotFound.jpg";
-                          }}
-                        />
-                      </div>
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-              </div>
+                          onClick={() => setMainImage(img)}
+                          onMouseEnter={() => setHoveredIndex(idx)}
+                          onMouseLeave={() => setHoveredIndex(null)}
+                        >
+                          <img
+                            src={img}
+                            alt={`Thumbnail ${idx + 1}`}
+                            className="img-fluid rounded"
+                            style={{ cursor: "pointer", height: "100%", objectFit: "cover" }}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "/images/imageNotFound.jpg";
+                            }}
+                          />
+                        </div>
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                </div>
+              )
+            ) : (
+              videos.length > 0 && (
+                <div className="mb-5">
+                  <div className="d-flex gap-2 flex-wrap">
+                    {videos.map((vid, idx) => (
+                      <video
+                        key={idx}
+                        src={vid}
+                        muted
+                        onClick={() => setMainVideo(vid)}
+                        className={`rounded ${mainVideo === vid ? "border border-primary" : ""}`}
+                        style={{ width: "160px", height: "100px", objectFit: "cover", backgroundColor: "#000", cursor: "pointer" }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )
             )}
 
             {/* In-page navigation */}

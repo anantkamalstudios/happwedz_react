@@ -36,6 +36,7 @@ import ListView from "../layouts/Main/ListView";
 import UserPrivateRoute from "../routes/UserPrivateRoute";
 import DynamicAside from "../layouts/aside/DynamicAside";
 import { useMemo } from "react";
+import MapView from "../layouts/Main/MapView";
 
 const MainSection = () => {
   const { section } = useParams();
@@ -123,6 +124,14 @@ const MainSection = () => {
           setView={setView}
           onFiltersChange={setVenueFilters}
         />
+
+        {view === "map" && (
+          <MapView
+            subVenuesData={data}
+            section="venues"
+            onClose={() => setView("images")}
+          />
+        )}
 
         {data.length > 0 && (
           <div className="container-fluid">

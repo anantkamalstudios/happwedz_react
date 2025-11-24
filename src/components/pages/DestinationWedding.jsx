@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import DestinationHero from "./DestinationHero"
 import ImageCarousel from "./ImageCarousel";
 import DestinationWeddingLocation from "./DestinationWeddingLocation";
 import DestinationWeddingRealStories from "./DestinationWeddingRealStories";
@@ -40,6 +41,10 @@ const DestinationWedding = () => {
       <section>
         <div className="container py-5">
           <div className="col-12 d-flex flex-column flex-lg-row gap-4">
+           
+             <div className="col-6 d-flex justify-content-center align-items-center">
+              <ImageCarousel />
+            </div>
             <div className="col-6 text-center mt-4">
               <h1 className="mb-4">Destination Weddings</h1>
               <div>
@@ -64,9 +69,7 @@ const DestinationWedding = () => {
                 </p>
               </div>
             </div>
-            <div className="col-6 d-flex justify-content-center align-items-center">
-              <ImageCarousel />
-            </div>
+           
           </div>
         </div>
       </section>

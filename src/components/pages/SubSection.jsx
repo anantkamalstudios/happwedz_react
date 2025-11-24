@@ -23,7 +23,13 @@ const SubSection = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const vendorType = searchParams.get("vendorType");
-  const cityFromQuery = searchParams.get("city");
+  const stateCity = location.state?.city;
+  const stateMinRating = location.state?.minRating;
+  const cityFromQuery = stateCity || searchParams.get("city");
+  const minRatingFromQuery =
+    stateMinRating !== undefined && stateMinRating !== null
+      ? String(stateMinRating)
+      : searchParams.get("minRating");
   const title = slug ? toTitleCase(slug) : "";
 
   const [show, setShow] = useState(false);
@@ -41,7 +47,12 @@ const SubSection = () => {
   });
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [activeFilters, setActiveFilters] = useState({});
+  const [activeFilters, setActiveFilters] = useState(() => {
+    if (minRatingFromQuery) {
+      return { Rating: [`${minRatingFromQuery}+`] };
+    }
+    return {};
+  });
 
   const {
     typesWithCategories,
@@ -101,8 +112,12 @@ const SubSection = () => {
   };
 
   useEffect(() => {
-    setActiveFilters({});
-  }, [section, slug]);
+    if (minRatingFromQuery) {
+      setActiveFilters({ Rating: [`${minRatingFromQuery}+`] });
+    } else {
+      setActiveFilters({});
+    }
+  }, [section, slug, minRatingFromQuery]);
 
   useEffect(() => {
     if (cityFromQuery && cityFromQuery !== "all") {

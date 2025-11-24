@@ -267,7 +267,7 @@ const Settings = () => {
                       <Form.Check type="switch" defaultChecked />
                     </div>
                   </div>
-                  <div className="notification-item">
+                  {/* <div className="notification-item">
                     <div className="switch-wrapper">
                       <div>
                         <h6 className="mb-1">Booking Requests</h6>
@@ -277,8 +277,8 @@ const Settings = () => {
                       </div>
                       <Form.Check type="switch" defaultChecked />
                     </div>
-                  </div>
-                  <div className="notification-item">
+                  </div> */}
+                  {/* <div className="notification-item">
                     <div className="switch-wrapper">
                       <div>
                         <h6 className="mb-1">Payment Confirmations</h6>
@@ -288,8 +288,8 @@ const Settings = () => {
                       </div>
                       <Form.Check type="switch" defaultChecked />
                     </div>
-                  </div>
-                  <div className="notification-item">
+                  </div> */}
+                  {/* <div className="notification-item">
                     <div className="switch-wrapper">
                       <div>
                         <h6 className="mb-1">Marketing Updates</h6>
@@ -299,16 +299,16 @@ const Settings = () => {
                       </div>
                       <Form.Check type="switch" />
                     </div>
-                  </div>
+                  </div> */}
                   <div className="d-flex justify-content-end">
-                    <Button
+                    {/* <Button
                       variant="primary"
                       className="folder-item"
                       onClick={handleSave}
                     >
                       <FiSave className="me-2" />
                       Save Preferences
-                    </Button>
+                    </Button> */}
                   </div>
                 </Card.Body>
               </Card>

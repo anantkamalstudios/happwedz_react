@@ -1,6 +1,6 @@
 
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import dayjs from "dayjs";
 import "dayjs/locale/en";
 import { Calendar, Check, X, Clock } from "lucide-react";
@@ -60,6 +60,7 @@ const VendorAvailabilityCalendar = ({
     unavailable: 0,
     total: 0,
   });
+  const lastSentSelectedRef = useRef(null);
 
   // Calculate summary stats
   useEffect(() => {
@@ -80,7 +81,7 @@ const VendorAvailabilityCalendar = ({
     setStats({ available, unavailable, total });
   }, [monthsDays]);
 
-  // Notify parent whenever monthsDays change
+  // Notify parent when selected dates actually change
   useEffect(() => {
     const selectedDates = [];
     monthsDays.forEach((m) =>
@@ -89,29 +90,16 @@ const VendorAvailabilityCalendar = ({
           selectedDates.push(d.date.format("YYYY-MM-DD"));
       })
     );
-    if (onAvailabilityChange) onAvailabilityChange(selectedDates);
+    const signature = JSON.stringify(selectedDates);
+    if (lastSentSelectedRef.current !== signature) {
+      lastSentSelectedRef.current = signature;
+      if (onAvailabilityChange) onAvailabilityChange(selectedDates);
+    }
   }, [monthsDays, onAvailabilityChange]);
 
   useEffect(() => {
-    // Build a set of currently selected dates from monthsDays
-    const current = new Set();
-    monthsDays.forEach((m) =>
-      m.days.forEach((d) => {
-        if (d && !d.isPast && d.available)
-          current.add(d.date.format("YYYY-MM-DD"));
-      })
-    );
-    const next = new Set(initialAvailableDates || []);
-    // If equal, skip rebuilding to prevent loops
-    if (current.size === next.size) {
-      let equal = true;
-      current.forEach((v) => {
-        if (!next.has(v)) equal = false;
-      });
-      if (equal) return;
-    }
     setMonthsDays(getMonthsDays(initialAvailableDates));
-  }, [initialAvailableDates, monthsDays]);
+  }, [initialAvailableDates]);
 
 
   // Toggle single date

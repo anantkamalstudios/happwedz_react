@@ -66,7 +66,7 @@ const VendorMessages = () => {
   const [quickReplies] = useState([
     "Hello 👋",
     "Thanks for reaching out!",
-    "Share quote",
+ 
   ]);
   const [vendorImage, setVendorImage] = useState(null);
   const [userImages, setUserImages] = useState({}); // userId -> image URL
@@ -391,7 +391,7 @@ const VendorMessages = () => {
                           <div className="fw-bold me-2">{userNames[c.userId] || "Customer"}</div>
                           {c.vendorUnreadCount > 0 && (
                             <span className="badge bg-primary rounded-pill">
-                              {c.vendorUnreadCount}
+                              {/* {c.vendorUnreadCount} */}
                             </span>
                           )}
                         </div>

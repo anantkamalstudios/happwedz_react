@@ -111,24 +111,28 @@ const GridView = ({ subVenuesData, handleShow }) => {
                     }}
                   />
 
-                  <button
-                    className="btn btn-light position-absolute rounded-circle border-0 shadow-sm"
-                    style={{
-                      top: "12px",
-                      left: "12px",
-                      width: "36px",
-                      height: "36px",
-                      padding: "0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                  >
-                    <TbView360Number className="text-dark" size={18} />
-                  </button>
+                  {(((venue.vendor_type || "").toLowerCase().includes("venue")) ||
+                    venue.vegPrice !== null ||
+                    venue.nonVegPrice !== null) && (
+                    <button
+                      className="btn btn-light position-absolute rounded-circle border-0 shadow-sm"
+                      style={{
+                        top: "12px",
+                        left: "12px",
+                        width: "36px",
+                        height: "36px",
+                        padding: "0",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
+                      <TbView360Number className="text-dark" size={18} />
+                    </button>
+                  )}
 
                   <button
                     className="btn btn-light position-absolute rounded-circle border-0 shadow-sm"
@@ -195,7 +199,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                       className="text-muted mb-3"
                       style={{ fontSize: "13px" }}
                     >
-                      {venue.city || venue.location || "Location not available"}
+                      {venue.city || venue.address || "Location not available"}
                     </div>
 
                     {/* Price Row - show veg/non-veg for venues, else starting price */}
