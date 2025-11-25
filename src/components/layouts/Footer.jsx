@@ -326,8 +326,7 @@ const Footer = () => {
 
         <div className="text-center small  ">
           <p style={{ color: "#fff" }}>
-            &copy; {new Date().getFullYear()} HappWedz Studios. All rights
-            reserved.
+            &copy; {new Date().getFullYear()} HappyWedz Technologies Pvt. Ltd. All rights reserved.
           </p>
         </div>
       </div>

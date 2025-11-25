@@ -739,7 +739,7 @@ const Header = () => {
                     className="btn w-100 text-start p-3 border-0 bg-light fw-semibold text-dark"
                     onClick={handleMobileLinkClick}
                   >
-                    Genie
+                    ShaadiAI
                   </Link>
                 </li>
 
@@ -1609,7 +1609,7 @@ const Header = () => {
                               id="photoDropdown"
                               role="button"
                             >
-                              Genie
+                              ShaadiAI
                             </Link>
                           </div>
                         </li>

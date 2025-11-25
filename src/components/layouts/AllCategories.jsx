@@ -62,7 +62,7 @@ const AllCategories = ({ onSelect }) => {
   return (
     <div className="container py-5 wcg-grid">
       <div className="d-flex align-items-center justify-content-between mb-3">
-        <h3 className="fw-bold mb-0 text-dark fs-40">Explore by Category</h3>
+        <h3 className="fw-bold mb-0 text-dark fs-24">Explore by Category</h3>
       </div>
 
       <div className="row g-3 g-md-4">
@@ -118,13 +118,13 @@ const AllCategories = ({ onSelect }) => {
                         key={idx}
                         className="badge rounded-0 px-3 py-2 primary-light-bg text-dark"
                       >
-                        {it}
+                        {/* {it} */}
                       </span>
                     ))}
 
                     {remaining > 0 && (
                       <span className="text-decoration-underline primary-text px-3 py-2 fs-12 text-end">
-                        +{remaining} more
+                        {/* +{remaining} more */}
                       </span>
                     )}
                   </div>

@@ -27,7 +27,7 @@ const AppDownloadSection = () => {
 
             <div className="d-flex flex-wrap justify-content-center gap-4">
               <a
-                href="https://play.google.com/store/apps/details?id=com.wedmegood.wmgapp"
+                // href="https://play.google.com/store/apps/details?id=com.wedmegood.wmgapp"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -42,7 +42,7 @@ const AppDownloadSection = () => {
                 />
               </a>
               <a
-                href="https://apps.apple.com/in/app/wedmegood/id919447453"
+                // href="https://apps.apple.com/in/app/wedmegood/id919447453"
                 target="_blank"
                 rel="noopener noreferrer"
               >

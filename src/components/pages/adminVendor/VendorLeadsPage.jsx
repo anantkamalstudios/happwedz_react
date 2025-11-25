@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useToast } from "../../layouts/toasts/Toast";
 import Swal from "sweetalert2";
+import QuotationModal from "./QuotationModal";
 
 const API_BASE_URL = "https://happywedz.com";
 
@@ -10,15 +11,8 @@ export default function VendorLeadsPage() {
   const [exporting, setExporting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [activeRow, setActiveRow] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    price: "",
-    service: "",
-    date: "",
-    message: "",
-  });
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
   const { token: vendorToken } = useSelector((state) => state.vendorAuth);
   const { addToast } = useToast();
 
@@ -66,17 +60,20 @@ export default function VendorLeadsPage() {
     fetchLeads();
   }, [vendorToken]);
 
-  // prevent background scroll when modal open
-  useEffect(() => {
-    document.body.style.overflow = showModal ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [showModal]);
+  // QuotationModal manages its own scroll lock
 
   const openModal = (row) => {
-    setActiveRow(row);
-    setShowModal(true);
+    // Map VendorLeads row to the structure expected by QuotationModal
+    // QuotationModal expects: lead.request.id and lead.request.user.id
+    const mapped = {
+      id: row.id,
+      request: {
+        id: row.id,
+        user: { id: row.userId },
+      },
+    };
+    setSelectedLead(mapped);
+    setShowQuoteModal(true);
   };
 
   const exportToCSV = () => {
@@ -164,70 +161,14 @@ export default function VendorLeadsPage() {
     }
   };
 
-  const closeModal = () => {
-    setShowModal(false);
-    setActiveRow(null);
-    setFormData({ price: "", service: "", date: "", message: "" });
+  const closeQuoteModal = () => {
+    setShowQuoteModal(false);
+    setSelectedLead(null);
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((p) => ({ ...p, [name]: value }));
-  };
+  // Form handling moved to QuotationModal
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!activeRow) return;
-
-    setSubmitting(true);
-    setError(null);
-
-    try {
-      if (!vendorToken) throw new Error("Authentication token not found.");
-
-      const payload = {
-        price: formData.price,
-        services: formData.service,
-        validTill: formData.date,
-        message: formData.message,
-        userId: activeRow.userId,
-      };
-
-      const response = await fetch(
-        `${API_BASE_URL}/api/request-pricing/requests/${activeRow.id}/quotation`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${vendorToken}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || "Failed to send quotation.");
-      }
-      addToast("Quotation sent successfully!", "success");
-
-      // alert(result.message || "Quotation sent successfully!");
-      closeModal();
-    } catch (err) {
-      // alert(`Error: ${err.message}`);
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: `Error: ${err.message}`,
-        confirmButtonText: "OK",
-        confirmButtonColor: "#ed1173",
-        timer: "3000",
-      });
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  // Submission handled by QuotationModal
 
   return (
     <div className="container my-5">
@@ -311,104 +252,13 @@ export default function VendorLeadsPage() {
         </table>
       </div>
 
-      {/* React-controlled modal */}
-      {showModal && (
-        <>
-          <div className="custom-backdrop" onClick={closeModal}></div>
-
-          <div className="custom-modal" role="dialog" aria-modal="true">
-            <div
-              className="modal-content custom-modal-card"
-              style={{ borderRadius: "15px" }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="modal-header custom-modal-header">
-                <div className="text-center w-100 mb-4">
-                  <h5 className="modal-title mb-0 text-danger">Quotations</h5>
-                  <small className="text-light d-block text-dark">
-                    Fill up details
-                  </small>
-                </div>
-                <button
-                  type="button"
-                  className="close-circle"
-                  onClick={closeModal}
-                  aria-label="Close"
-                >
-                  &times;
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmit}>
-                <div className="modal-body">
-                  <div className="mb-3">
-                    <label className="form-label">Price</label>
-                    <input
-                      name="price"
-                      value={formData.price}
-                      onChange={handleChange}
-                      type="number"
-                      className="form-control"
-                      placeholder="0"
-                      required
-                    />
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Services</label>
-                    <input
-                      name="service"
-                      value={formData.service}
-                      onChange={handleChange}
-                      type="text"
-                      className="form-control"
-                      placeholder="Service Name"
-                      required
-                    />
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Valid Till Date</label>
-                    <input
-                      name="date"
-                      value={formData.date}
-                      onChange={handleChange}
-                      type="date"
-                      className="form-control"
-                      required
-                    />
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Message</label>
-                    <textarea
-                      name="message"
-                      value={formData.message}
-                      onChange={handleChange}
-                      className="form-control"
-                      rows="5"
-                      maxLength="2000"
-                      placeholder="Your Message"
-                    />
-                    <div className="form-text text-end">
-                      Max. 2000 characters
-                    </div>
-                  </div>
-                </div>
-
-                <div className="modal-footer border-0 p-3">
-                  <button
-                    type="submit"
-                    className="btn btn-pink w-100"
-                    disabled={submitting}
-                  >
-                    {submitting ? "Sending..." : "Send"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </>
+      {selectedLead && (
+        <QuotationModal
+          show={showQuoteModal}
+          onClose={closeQuoteModal}
+          lead={selectedLead}
+          vendorToken={vendorToken}
+        />
       )}
     </div>
   );

@@ -164,7 +164,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                   >
                     {/* Title and Rating Row */}
                     <div className="d-flex justify-content-between align-items-start mb-2">
-                      <Card.Title className="mb-0 fw-bold text-dark fs-20">
+                      <Card.Title className="mb-0 fw-bold text-dark fs-16">
                         {venue.name || "Venue Name"}
                       </Card.Title>
                       <div className="d-flex align-items-center gap-1 flex-shrink-0 ms-2">
