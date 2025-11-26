@@ -11,6 +11,7 @@ const AllCategories = ({ onSelect }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedIndex, setExpandedIndex] = useState(-1);
+
   const navigate = useNavigate();
   const reduxLocation = useSelector((state) => state.location.selectedLocation);
 
@@ -136,10 +137,17 @@ const AllCategories = ({ onSelect }) => {
                       onClick={(e) => {
                         e.stopPropagation();
                         if (onSelect) onSelect(cat);
-                        if (cat.title) {
-                          const encoded = encodeURIComponent(cat.title);
-                          const cityParam = reduxLocation ? `&city=${encodeURIComponent(reduxLocation)}` : '';
-                          navigate(`/vendors/all?vendorType=${encoded}${cityParam}`);
+                        const title = (cat.title || "").toLowerCase();
+                        const cityParam = reduxLocation
+                          ? `?city=${encodeURIComponent(reduxLocation)}`
+                          : "";
+                        if (title === "venues") {
+                          navigate(`/venues${cityParam}`);
+                        } else {
+                          const slug = (
+                            cat.slug || title.replace(/\s+/g, "-")
+                          ).toLowerCase();
+                          navigate(`/vendor/${slug}${cityParam}`);
                         }
                       }}
                     >
@@ -149,20 +157,21 @@ const AllCategories = ({ onSelect }) => {
 
                   {isExpanded && (
                     <div className="wcg-subcats mt-3">
-                      <div className="row g-2">
+                      <div className="d-flex flex-wrap justify-content-start gap-2">
                         {cat.items.map((it, idx) => (
-                          <div key={idx} className="col-6 flex-wrap">
+                          <div key={idx} className="">
                             <Link
                               to={
                                 cat.title.toLowerCase() === "venues"
                                   ? `/venues/${it
-                                    .toLowerCase()
-                                    .replace(/\s+/g, "-")}${reduxLocation ? `?city=${encodeURIComponent(reduxLocation)}` : ''}`
+                                      .toLowerCase()
+                                      .replace(/\s+/g, "-")}`
                                   : `/vendor/${it
-                                    .toLowerCase()
-                                    .replace(/\s+/g, "-")}${reduxLocation ? `?city=${encodeURIComponent(reduxLocation)}` : ''}`
+                                      .toLowerCase()
+                                      .replace(/\s+/g, "-")}`
                               }
-                              className="badge rounded-0 primary-light-bg text-dark fs-14"
+                              className="badge rounded-0 primary-light-bg text-dark fs-12 px-3 py-2"
+                              style={{ textDecoration: "none" }}
                             >
                               {it}
                             </Link>

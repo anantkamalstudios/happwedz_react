@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { BsStars } from "react-icons/bs";
 import { FaAngleRight } from "react-icons/fa6";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaEdit } from "react-icons/fa";
 import { LuSendHorizontal } from "react-icons/lu";
 import { MdChatBubbleOutline } from "react-icons/md";
 import { useSelector } from "react-redux";
@@ -10,7 +10,7 @@ const Genie = () => {
   const [messages, setMessages] = useState([
     {
       type: "ai",
-      text: "Hey there! I'm your Wedding Genie. Ask me anything!",
+      // text: "Hey there! I'm your Wedding ShaadiAI. Ask me anything!",
     },
   ]);
   const [inputValue, setInputValue] = useState("");
@@ -56,7 +56,7 @@ const Genie = () => {
       setLoadingSessions(true);
       try {
         const res = await fetch(
-          `http://shaadiai.happywedz.com/api/sessions/${userId}`,
+          `https://shaadiai.happywedz.com/api/sessions/${userId}`,
           {
             headers: {
               Accept: "application/json",
@@ -79,7 +79,7 @@ const Genie = () => {
   const loadChatHistory = async (sid) => {
     try {
       const res = await fetch(
-        `http://shaadiai.happywedz.com/api/chat_history?session_id=${encodeURIComponent(
+        `https://shaadiai.happywedz.com/api/chat_history?session_id=${encodeURIComponent(
           sid
         )}`,
         {
@@ -97,8 +97,10 @@ const Genie = () => {
         }
         // assistant content may be object with summary/results/message
         const c = it.content || {};
-        const summary = typeof c === "string" ? c : c.summary || c.message || "";
-        const results = typeof c === "object" && Array.isArray(c.results) ? c.results : null;
+        const summary =
+          typeof c === "string" ? c : c.summary || c.message || "";
+        const results =
+          typeof c === "object" && Array.isArray(c.results) ? c.results : null;
         return { type: "ai", text: summary, results };
       });
       setMessages(mapped);
@@ -116,7 +118,7 @@ const Genie = () => {
       const payload = { user_query: query, user_id: userId };
       if (sessionId) payload.session_id = sessionId;
 
-      const res = await fetch("http://shaadiai.happywedz.com/api/user_chat", {
+      const res = await fetch("https://shaadiai.happywedz.com/api/user_chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -188,6 +190,18 @@ const Genie = () => {
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") handleSendMessage();
+  };
+
+  const handleNewChat = () => {
+    setSessionId(null);
+    setMessages([
+      {
+        // type: "ai",
+        // text: "Hey there! I'm your Wedding ShaadiAI. Ask me anything!",
+      },
+    ]);
+    setInputValue("");
+    if (isMobile) setShowSidebar(false);
   };
 
   const headerHeight = "clamp(60px, 10vw, 200px)";
@@ -263,13 +277,15 @@ const Genie = () => {
                 marginTop: "30px",
                 display: "flex",
                 alignItems: "center",
-                gap: "10px",
+                gap: "8px",
                 fontSize: "20px",
                 color: "#d63384",
                 cursor: "pointer",
               }}
+              onClick={handleNewChat}
             >
-              <span>Previous history 7 Days</span>
+              <FaEdit size={16} style={{ marginRight: "4px" }} />
+              <span style={{ fontWeight: "500" }}>New Chat</span>
             </div>
 
             <div
@@ -298,18 +314,28 @@ const Genie = () => {
             </div>
             {/* Sessions List */}
             <div style={{ marginTop: "20px" }}>
-              <h6
+              <div
                 style={{
-                  color: "#d63384",
-                  fontSize: "16px",
-                  fontWeight: "600",
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
+                  justifyContent: "space-between",
                 }}
               >
-                Sessions
-              </h6>
+                <h6
+                  style={{
+                    color: "#d63384",
+                    fontSize: "16px",
+                    fontWeight: "600",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    margin: 0,
+                  }}
+                >
+                  <span>Previous history</span>
+                </h6>
+              </div>
               <div style={{ maxHeight: "40vh", overflowY: "auto" }}>
                 {loadingSessions ? (
                   <div className="text-muted small">Loading sessions...</div>

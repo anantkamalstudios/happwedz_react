@@ -735,7 +735,7 @@ const Header = () => {
                 {/* Genie */}
                 <li className="mb-2">
                   <Link
-                    to="/genie"
+                    to="/shaadi-ai"
                     className="btn w-100 text-start p-3 border-0 bg-light fw-semibold text-dark"
                     onClick={handleMobileLinkClick}
                   >
@@ -1069,6 +1069,7 @@ const Header = () => {
                                           title: "Get the HappyWedz App",
                                           desc: "Plan your wedding on the go with the HappyWedz app.",
                                           image: "/images/header/playstore.png",
+                                          route:"https://play.google.com/store/apps/details?id=com.happy.happy_weds_vendors"
                                         },
                                         {
                                           title: "Happywedz Website",
@@ -1604,7 +1605,7 @@ const Header = () => {
                           <div className="dropdown-wrapper">
                             <Link
                               className="nav-link text-white fs-18"
-                              to="/genie"
+                              to="/shaadi-ai"
                               state={{ title: "Genie" }}
                               id="photoDropdown"
                               role="button"

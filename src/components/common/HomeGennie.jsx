@@ -1,13 +1,26 @@
+const handleNewChat = () => {
+  setSessionId(null);
+  setMessages([
+    {
+      type: "ai",
+      // text: "Hi! I am ShaadiAI 👋\n\nHow can I help you plan your dream wedding today?",
+    },
+  ]);
+  setInputValue("");
+};
 import React, { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Menu, Plus, SendHorizonal } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaChevronLeft } from "react-icons/fa6";
 
 const HomeGennie = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [sessionId, setSessionId] = useState(null);
 
   const messageContainerRef = useRef(null);
   const getIdFromToken = (token) => {
@@ -22,27 +35,38 @@ const HomeGennie = () => {
   const tokenId = localStorage.getItem("token");
   const userId = getIdFromToken(tokenId);
 
+  const handleOpenClick = () => {
+    if (tokenId) {
+      setIsChatOpen(true);
+    } else {
+      navigate("/customer-login", { state: { from: location } });
+    }
+  };
+
   const callChatApi = async (query) => {
     if (!query) return null;
 
     try {
-      const res = await fetch("http://192.168.1.15:5000/api/user_chat", {
+      const payload = { user_query: query, user_id: userId };
+      if (sessionId) payload.session_id = sessionId;
+
+      const res = await fetch("https://shaadiai.happywedz.com/api/user_chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
+          ...(tokenId ? { Authorization: `Bearer ${tokenId}` } : {}),
         },
-        body: JSON.stringify({
-          session_id: "session-1",
-          user_query: query,
-          user_id: userId,
-        }),
+        body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const raw = await res.json();
+      const wrapped = raw?.data ? raw.data : raw;
+      if (wrapped?.session_id) setSessionId(wrapped.session_id);
+      const response = wrapped?.response || {};
       return {
-        summary: data?.response?.summary || "No response received.",
-        results: data?.response?.results || null,
+        summary: response?.summary || "No response received.",
+        results: Array.isArray(response?.results) ? response.results : null,
       };
     } catch (err) {
       console.error("API ERROR:", err);
@@ -69,7 +93,7 @@ const HomeGennie = () => {
         setMessages([
           {
             type: "ai",
-            text: "Hi! I am Genie 👋\n\nHow can I help you plan your dream wedding today?",
+            // text: "Hi! I am ShaadiAI 👋\n\nHow can I help you plan your dream wedding today?",
           },
         ]);
       }, 800);
@@ -127,15 +151,16 @@ const HomeGennie = () => {
     >
       {!isChatOpen && (
         <button
-          onClick={() => setIsChatOpen(true)}
+          onClick={handleOpenClick}
           style={{
             position: "fixed",
             bottom: "32px",
             right: "32px",
-            width: "64px",
-            height: "64px",
+            width: "74px",
+            height: "74px",
             borderRadius: "50%",
-            background: "linear-gradient(135deg, #ec4899 0%, #9333ea 100%)",
+            // background: "linear-gradient(135deg, #ec4899 0%, #9333ea 100%)",
+            background: "white",
             border: "none",
             boxShadow:
               "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
@@ -145,20 +170,34 @@ const HomeGennie = () => {
             cursor: "pointer",
             zIndex: 9999,
             transition: "transform 0.3s ease",
+            overflow: "hidden",
           }}
           onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
           onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
-          <img
-            src="/gennie-logo.png"
-            alt="logo"
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
             style={{
               height: "100%",
               width: "100%",
               objectFit: "cover",
             }}
-            loading="lazy"
-          />
+          >
+            <source src="/shadi.mp4" type="video/mp4" />
+            <img
+              src="/images/logo.png"
+              alt="logo"
+              style={{
+                height: "100%",
+                width: "100%",
+                objectFit: "cover",
+              }}
+              loading="lazy"
+            />
+          </video>
         </button>
       )}
 
@@ -261,7 +300,7 @@ const HomeGennie = () => {
                 </div>
               </div>
               <Link
-                to="/genie"
+                to="/shaadi-ai"
                 style={{
                   border: "none",
                   borderRadius: "50%",
@@ -316,7 +355,7 @@ const HomeGennie = () => {
                     }}
                   >
                     <img
-                      src="/gennie-logo.png"
+                      src="/shaadi.jpg"
                       alt="logo"
                       style={{
                         height: "100%",
@@ -332,7 +371,7 @@ const HomeGennie = () => {
                       marginBottom: "8px",
                     }}
                   >
-                    Welcome to Wedding Genie! ✨
+                    Welcome to Wedding ShaadiAI! ✨
                   </h3>
                   <p style={{ fontSize: "14px", color: "#ec4899" }}>
                     Let's plan your dream wedding together
@@ -696,6 +735,7 @@ const HomeGennie = () => {
                   flexShrink: 0,
                   transition: "background-color 0.2s",
                 }}
+                onClick={handleNewChat}
                 onMouseEnter={(e) =>
                   (e.currentTarget.style.backgroundColor = "#fbcfe8")
                 }

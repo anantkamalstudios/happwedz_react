@@ -118,15 +118,15 @@ const WeddingCategories = ({ onSelect }) => {
                         key={idx}
                         className="badge rounded-0 px-3 py-2 primary-light-bg text-dark"
                       >
-                        {it}
+                        {/* {it} */}
                       </span>
                     ))}
-
+                    {/* 
                     {remaining > 0 && (
                       <span className="text-decoration-underline primary-text px-3 py-2 fs-12 text-end">
                         {!isExpanded ? `+${remaining} More` : "Hide"}
                       </span>
-                    )}
+                    )} */}
 
                     {isExpanded && (
                       <div className="wcg-subcats mt-3">
@@ -137,11 +137,11 @@ const WeddingCategories = ({ onSelect }) => {
                                 to={
                                   cat.title.toLowerCase() === "venues"
                                     ? `/venues/${it
-                                        .toLowerCase()
-                                        .replace(/\s+/g, "-")}`
+                                      .toLowerCase()
+                                      .replace(/\s+/g, "-")}`
                                     : `/vendor/${it
-                                        .toLowerCase()
-                                        .replace(/\s+/g, "-")}`
+                                      .toLowerCase()
+                                      .replace(/\s+/g, "-")}`
                                 }
                                 className="badge rounded-0 primary-light-bg text-dark fs-12 px-3 py-2"
                                 style={{ textDecoration: "none" }}
@@ -162,9 +162,12 @@ const WeddingCategories = ({ onSelect }) => {
                       onClick={(e) => {
                         e.stopPropagation();
                         if (onSelect) onSelect(cat);
-                        if (cat.title) {
-                          const encoded = encodeURIComponent(cat.title);
-                          navigate(`/vendors/all?vendorType=${encoded}`);
+                        const title = (cat.title || "").toLowerCase();
+                        if (title === "venues") {
+                          navigate(`/venues`);
+                        } else {
+                          const slug = (cat.slug || title.replace(/\s+/g, "-")).toLowerCase();
+                          navigate(`/vendor/${slug}`);
                         }
                       }}
                     >

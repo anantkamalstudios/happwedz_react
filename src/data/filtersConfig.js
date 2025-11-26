@@ -66,7 +66,7 @@ const FILTER_CONFIG = {
   venues: {
     "venue Type": [
       "Banquet Halls",
-      "lawn",
+      "Marriage Garden / lawns",
       "Wedding Farmhouses",
       "Wedding Resorts",
       "Destination Wedding Venues",
@@ -76,6 +76,7 @@ const FILTER_CONFIG = {
     capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
     "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
     rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
+    rooms: ["<10", "10-20", "20-30", "30-40", "40-50", "50-100", "100+"],
   },
 
   "banquet-halls": {
@@ -309,8 +310,6 @@ const FILTER_CONFIG = {
     rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
     "review Count": ["<5 reviews", "5+ reviews", "15+ reviews", "30+ reviews"],
     award: ["users' choice awards winner"],
-    rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
-    "review Count": ["<5 reviews", "5+ reviews", "15+ reviews", "30+ reviews"],
   },
 
   "sangeet-choreographers": {

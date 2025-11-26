@@ -20,6 +20,12 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
   const searchRef = useRef(null);
   const { section } = useParams();
   const [heroInfo, setHeroInfo] = useState([]);
+  const cleanMediaUrl = (m) => {
+    if (!m) return null;
+    if (typeof m === "string") return m.replace(/[`"']/g, "").trim();
+    if (typeof m === "object" && m.url) return String(m.url).trim();
+    return null;
+  };
 
   // useEffect(() => {
   //   const fetchHeroInfo = async () => {
@@ -620,7 +626,7 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
                                 <img
                                   src={
                                     result.attributes?.image_url ||
-                                    result.media?.[0]?.url ||
+                                    cleanMediaUrl(result.media?.[0]) ||
                                     "/images/imageNotFound.jpg"
                                   }
                                   alt={

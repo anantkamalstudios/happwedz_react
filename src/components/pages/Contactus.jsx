@@ -619,11 +619,7 @@ const Contactus = () => {
                     }}
                   />
                 </a>
-                <a
-                  href="https://apps.apple.com/in/app/wedmegood/id919447453"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a href="" target="_blank" rel="noopener noreferrer">
                   <img
                     src="/images/cta/appstore.svg"
                     alt="Apple Store"

@@ -327,6 +327,13 @@ const VenueSwiper = () => {
     return `${BACKEND_BASE_URL}/uploads/${clean}`;
   };
 
+  const cleanMediaUrl = (m) => {
+    if (!m) return null;
+    if (typeof m === "string") return m.replace(/[`"']/g, "").trim();
+    if (typeof m === "object" && m.url) return String(m.url).trim();
+    return null;
+  };
+
   useEffect(() => {
     const fetchVenues = async () => {
       try {
@@ -343,7 +350,8 @@ const VenueSwiper = () => {
               item.attributes?.vendor_name ||
               item.vendor?.businessName ||
               "Venue",
-            image: item.attributes?.image_url || item.media?.[0]?.url || null,
+            image:
+              item.attributes?.image_url || cleanMediaUrl(item.media?.[0]) || null,
             rating: item.attributes?.rating || 0,
             review_count: item.attributes?.review_count || 0,
             location: item.attributes?.city || item.vendor?.city || "Location",

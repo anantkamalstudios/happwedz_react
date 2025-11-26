@@ -17,7 +17,7 @@ export default function MainLayout() {
           <main style={{ minHeight: "70vh" }}>
             <Outlet />
           </main>
-          {params.section !== "genie" && (
+          {params.section !== "shaadi-ai" && (
             <div
               style={{
                 position: "fixed",
