@@ -105,7 +105,6 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
           </div>
 
           {/* Slug (auto-generated, disabled) */}
-     
 
           {/* Tagline */}
           {/* <div className="col-md-6 mb-3">
@@ -135,7 +134,7 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
 
           {/* Description */}
           <div className="col-12 mb-3">
-            <label className="form-label fw-semibold">Description</label>
+            <label className="form-label fw-semibold">About US</label>
             <SummernoteEditor
               value={formData.attributes?.about_us || ""}
               onChange={(val) =>

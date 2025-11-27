@@ -560,6 +560,24 @@ const EmailModal = ({
                   padding: "4px",
                 }}
               />
+              <button
+                onClick={() => handleAddEmailButton("to")}
+                disabled={!currentInput.trim()}
+                style={{
+                  marginLeft: "8px",
+                  padding: "6px 10px",
+                  backgroundColor: currentInput.trim() ? "#C31162" : "#e5e7eb",
+                  color: currentInput.trim() ? "#fff" : "#6b7280",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: currentInput.trim() ? "pointer" : "not-allowed",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                }}
+                title="Add email"
+              >
+                Add
+              </button>
             </div>
             {emailError && toEmails.length === 0 && (
               <div

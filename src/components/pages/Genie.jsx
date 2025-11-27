@@ -20,6 +20,7 @@ const Genie = () => {
   const [sessionId, setSessionId] = useState(null);
   const [sessions, setSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const messagesContainerRef = useRef(null);
   const { token, user } = useSelector((store) => store.auth);
@@ -67,7 +68,8 @@ const Genie = () => {
         const raw = await res.json();
         const data = Array.isArray(raw?.data) ? raw.data : [];
         setSessions(data);
-      } catch (_) {
+      } catch (err) {
+        console.error(err);
         setSessions([]);
       } finally {
         setLoadingSessions(false);
@@ -104,7 +106,8 @@ const Genie = () => {
         return { type: "ai", text: summary, results };
       });
       setMessages(mapped);
-    } catch (_) {
+    } catch (err) {
+      console.error(err);
       // ignore
     }
   };
@@ -388,13 +391,20 @@ const Genie = () => {
           )}
 
           {/* CHAT SECTION */}
-          <div className="col-12 col-md-9 p-0">
+          <div
+            className="col-12 col-md-9 p-0"
+            style={{
+              height: contentHeight,
+              overflowY: "auto",
+            }}
+          >
             <div
               style={{
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
                 minHeight: contentHeight,
+                position: "relative",
               }}
             >
               {/* Hamburger menu - only on mobile */}
@@ -454,12 +464,12 @@ const Genie = () => {
                   textAlign: "center",
                 }}
               >
-                <p>
+                {/* <p>
                   <BsStars size={30} style={{ color: "#C31162" }} />
                 </p>
                 <h3 style={{ color: "#C31162", fontWeight: "600" }}>
                   Ask our AI anything
-                </h3>
+                </h3> */}
               </div>
 
               <div

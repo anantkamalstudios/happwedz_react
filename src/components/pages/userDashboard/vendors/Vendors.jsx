@@ -64,8 +64,9 @@ const Vendors = () => {
     fetchBookings();
   }, [token]);
 
-  const handleFindClick = (categoryPath) => {
-    navigate(categoryPath);
+  const handleFindClick = (vendorTypeName) => {
+    const encoded = encodeURIComponent(vendorTypeName);
+    navigate(`/vendors/all?vendorType=${encoded}`);
   };
 
   const toSlug = (text) =>
@@ -205,9 +206,7 @@ const Vendors = () => {
                       </div>
                     ) : (
                       <button
-                        onClick={() =>
-                          handleFindClick(`/vendors/${toSlug(category.name)}`)
-                        }
+                        onClick={() => handleFindClick(category.name)}
                         style={{
                           display: "flex",
                           alignItems: "center",

@@ -102,7 +102,15 @@ const BlogsCarousel = () => {
               >
                 {/* Image */}
                 <div className="blogs-card-image p-2">
-                  <img src={blog.img} alt={blog.title} />
+                  <img
+                    src={blog.img}
+                    alt={blog.title}
+                    style={{
+                      width: "100%",
+                      maxHeight: "500px",
+                      objectFit: "contain",
+                    }}
+                  />
                 </div>
 
                 {/* Content */}

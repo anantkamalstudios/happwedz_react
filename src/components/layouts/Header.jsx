@@ -1069,7 +1069,8 @@ const Header = () => {
                                           title: "Get the HappyWedz App",
                                           desc: "Plan your wedding on the go with the HappyWedz app.",
                                           image: "/images/header/playstore.png",
-                                          route:"https://play.google.com/store/apps/details?id=com.happy.happy_weds_vendors"
+                                          route:
+                                            "https://play.google.com/store/apps/details?id=com.happy.happy_weds_vendors",
                                         },
                                         {
                                           title: "Happywedz Website",
@@ -1442,7 +1443,7 @@ const Header = () => {
                         </li>
 
                         {/* E-Invites Dropdown */}
-                        <li
+                        {/* <li
                           className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
                           onMouseEnter={() => setOpenMenu("einvites")}
                           onMouseLeave={() => setOpenMenu(null)}
@@ -1489,6 +1490,93 @@ const Header = () => {
                                       ))}
                                     </ul>
                                   </div>
+                                  <div></div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </li> */}
+                        <li
+                          className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
+                          onMouseEnter={() => setOpenMenu("einvites")}
+                          onMouseLeave={() => setOpenMenu(null)}
+                        >
+                          <div className="dropdown-wrapper">
+                            <Link
+                              className="nav-link dropdown-toggle text-white fs-18"
+                              to="/einvites"
+                              state={{ title: "E-Invites" }}
+                              id="einvitesDropdown"
+                              role="button"
+                              onClick={() => setOpenMenu(null)}
+                            >
+                              E-Invites
+                            </Link>
+
+                            <div
+                              className="dropdown-menu mega-dropdown w-75 shadow border-0 mt-0 p-4 rounded-0"
+                              style={{
+                                display:
+                                  openMenu === "einvites" ? "block" : "none",
+                              }}
+                              onClick={() => setOpenMenu(null)}
+                            >
+                              <div className="container p-0">
+                                <div className="row align-items-start">
+                                  {/* LEFT SIDE MENU */}
+                                  <div className="col-md-6">
+                                    <h6 className="fw-semibold mb-3 primary-text text-uppercase">
+                                      E-Invitation Categories
+                                    </h6>
+                                    <ul className="list-unstyled m-0 p-0">
+                                      {einviteCategories.map((sub, j) => (
+                                        <li key={j} className="mb-2">
+                                          <Link
+                                            to={`/einvites/category/${sub.cardType}`}
+                                            className="dropdown-link small d-block"
+                                          >
+                                            {formatName(sub.title)}
+                                          </Link>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+
+                                  {/* RIGHT SIDE IMAGES */}
+                                  <div className="col-md-6">
+                                    <div className="d-flex gap-2 justify-content-between">
+                                      <img
+                                        src="/e-card1.jpg"
+                                        alt=""
+                                        className="rounded"
+                                        style={{
+                                          width: "32%",
+                                          height: "100px",
+                                          objectFit: "cover",
+                                        }}
+                                      />
+                                      <img
+                                        src="/e-card20.png"
+                                        alt=""
+                                        className="rounded"
+                                        style={{
+                                          width: "32%",
+                                          height: "100px",
+                                          objectFit: "cover",
+                                        }}
+                                      />
+                                      <img
+                                        src="/e-card3.jpg"
+                                        alt=""
+                                        className="rounded"
+                                        style={{
+                                          width: "32%",
+                                          height: "100px",
+                                          objectFit: "cover",
+                                        }}
+                                      />
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -1522,7 +1610,7 @@ const Header = () => {
                             >
                               <div className="container">
                                 <div className="row">
-                                  <div className="col-12 col-md-4">
+                                  <div className="col-12 col-md-3">
                                     <div className="fw-bold primary-text text-uppercase">
                                       Browse by Category
                                     </div>
@@ -1547,7 +1635,7 @@ const Header = () => {
                                     </ul>
                                   </div>
 
-                                  <div className="col-12 col-md-4">
+                                  <div className="col-12 col-md-3">
                                     <h6 className="primary-text fw-bold">
                                       Popular Sections
                                     </h6>
@@ -1571,7 +1659,7 @@ const Header = () => {
                                     </ul>
                                   </div>
 
-                                  <div className="col-12 col-md-4">
+                                  <div className="col-12 col-md-3">
                                     <h6 className="primary-text fw-bold">
                                       Most Searched Blogs
                                     </h6>
@@ -1593,6 +1681,29 @@ const Header = () => {
                                         </li>
                                       ))}
                                     </ul>
+                                  </div>
+                                  <div className="col-12 col-md-3 d-flex flex-column align-items-center">
+                                    {/* Top Image */}
+                                    <img
+                                      src="/blog1.jpg"
+                                      alt="Top"
+                                      style={{
+                                        width: "100%",
+                                        height: "auto",
+                                        marginBottom: "10px",
+                                        borderRadius: "10px",
+                                      }}
+                                    />
+
+                                    <img
+                                      src="/blog2.jpg"
+                                      alt="Bottom"
+                                      style={{
+                                        width: "100%",
+                                        height: "auto",
+                                        borderRadius: "10px",
+                                      }}
+                                    />
                                   </div>
                                 </div>
                               </div>
@@ -1645,7 +1756,7 @@ const Header = () => {
                             >
                               <div className="container">
                                 <div className="row">
-                                  <div className="col-12 col-md-4">
+                                  <div className="col-12 col-md-3">
                                     <div className="fw-bold primary-text text-uppercase">
                                       By City
                                     </div>
@@ -1670,7 +1781,7 @@ const Header = () => {
                                     </ul>
                                   </div>
 
-                                  <div className="col-12 col-md-4">
+                                  <div className="col-12 col-md-3">
                                     <h6 className="primary-text fw-bold">
                                       By Culture
                                     </h6>
@@ -1697,7 +1808,7 @@ const Header = () => {
                                     </ul>
                                   </div>
 
-                                  <div className="col-12 col-md-4">
+                                  <div className="col-12 col-md-3">
                                     <h6 className="primary-text fw-bold">
                                       By Theme
                                     </h6>
@@ -1722,6 +1833,29 @@ const Header = () => {
                                         </li>
                                       ))}
                                     </ul>
+                                  </div>
+                                  <div className="col-12 col-md-3 d-flex flex-column align-items-center">
+                                    {/* Top Image */}
+                                    <img
+                                      src="/realweding1.jpg"
+                                      alt="Top"
+                                      style={{
+                                        width: "100%",
+                                        height: "auto",
+                                        marginBottom: "10px",
+                                        borderRadius: "10px",
+                                      }}
+                                    />
+
+                                    <img
+                                      src="/realweding2.jpg"
+                                      alt="Bottom"
+                                      style={{
+                                        width: "100%",
+                                        height: "auto",
+                                        borderRadius: "10px",
+                                      }}
+                                    />
                                   </div>
                                 </div>
                               </div>

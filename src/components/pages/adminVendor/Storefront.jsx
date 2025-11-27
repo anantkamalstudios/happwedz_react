@@ -50,7 +50,8 @@ const Storefront = ({ setCompletion }) => {
   const [vendorTypeName, setVendorTypeName] = useState("");
   // Persist active tab per-vendor so refresh/navigation keeps you on the same section
   const storageKey = React.useMemo(
-    () => (vendor?.id ? `storefrontActiveTab_${vendor.id}` : "storefrontActiveTab"),
+    () =>
+      vendor?.id ? `storefrontActiveTab_${vendor.id}` : "storefrontActiveTab",
     [vendor?.id]
   );
 
@@ -190,9 +191,8 @@ const Storefront = ({ setCompletion }) => {
 
                 location: actualData.attributes.location
                   ? {
-                      address:
-                        actualData.attributes.address || "",
-                      
+                      address: actualData.attributes.address || "",
+
                       city: actualData.attributes.city || "",
                       state: actualData.attributes.location.state || "",
                       country:
@@ -200,7 +200,7 @@ const Storefront = ({ setCompletion }) => {
                       pincode: actualData.attributes.location.pincode || "",
                       latitude: actualData.attributes.latitude || "",
                       longitude: actualData.attributes.longitude || "",
-                      
+
                       serviceAreas:
                         actualData.attributes.location.serviceAreas || [],
                     }
@@ -338,7 +338,6 @@ const Storefront = ({ setCompletion }) => {
         formData.attributes?.Name ||
         formData.attributes?.businessName ||
         formData.attributes?.vendor_name ||
-
         "",
       slug: formData.attributes?.slug || "",
       tags: formData.tags || [],
@@ -363,13 +362,12 @@ const Storefront = ({ setCompletion }) => {
       latitude: formData.location?.latitude || "",
       longitude: formData.location?.longitude || "",
       address: formData.location?.address || "",
-      
+
       location: {
         state: formData.location?.state || "",
         // address: formData.location?.addressLine1 || "",
         country: formData.location?.country || "India",
         pincode: formData.location?.pincode || "",
-       
       },
       packages: formData.packages || [],
       subtitle: formData.attributes?.subtitle || "",
@@ -780,9 +778,17 @@ const Storefront = ({ setCompletion }) => {
     },
     { id: "photos", label: "Photos", icon: <IoCameraOutline size={20} /> },
     { id: "videos", label: "Videos", icon: <IoVideocamOutline size={20} /> },
-    { id: "preferred-vendors", label: "Preferred Vendors", icon: <IoCheckmarkCircleOutline size={20} /> },
-    { id: "social", label: "Social Network", icon: <PiShareNetworkDuotone size={20} /> },
-    
+    {
+      id: "preferred-vendors",
+      label: "Preferred Vendors",
+      icon: <IoCheckmarkCircleOutline size={20} />,
+    },
+    {
+      id: "social",
+      label: "Social Network",
+      icon: <PiShareNetworkDuotone size={20} />,
+    },
+
     {
       id: "vendor-facilities",
       label: "Facilities & Features",
