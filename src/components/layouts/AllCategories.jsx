@@ -193,6 +193,7 @@
 // export default AllCategories;
 
 import React, { useState, useEffect } from "react";
+import FILTER_CONFIG from "../../data/filtersConfig";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -329,8 +330,13 @@ const AllCategories = ({ onSelect }) => {
                         e.stopPropagation();
                         if (onSelect) onSelect(cat);
                         if (cat.title) {
-                          const encoded = encodeURIComponent(cat.title);
-                          navigate(`/vendors/all?vendorType=${encoded}`);
+                          const slug = cat.slug;
+                          if (FILTER_CONFIG[slug]) {
+                            navigate(`/vendor/${slug}`);
+                          } else {
+                            const encoded = encodeURIComponent(cat.title);
+                            navigate(`/vendors/all?vendorType=${encoded}`);
+                          }
                         }
                       }}
                     >

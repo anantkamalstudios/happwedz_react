@@ -173,19 +173,17 @@ const ChecklistPDF = ({ items = [], categories = [], meta = {} }) => {
                 style={[
                   styles.cell,
                   styles.wTask,
-                  item.status === "completed" ? styles.taskCompleted : styles.taskActive,
+                  item.status === "completed"
+                    ? styles.taskCompleted
+                    : styles.taskActive,
                 ]}
               >
                 {item.text}
               </Text>
               <View style={[styles.cell, styles.wCategory, styles.categoryRow]}>
-                {(() => {
-                  const meta = getCategoryMeta(
-                    categories,
-                    item.vendor_subcategory_id
-                  );
-                  return <Text>{meta.name}</Text>;
-                })()}
+                <Text>
+                  {getCategoryMeta(categories, item.vendor_subcategory_id).name}
+                </Text>
               </View>
               <Text style={[styles.cell, styles.wDays]}>
                 {item.days_assigned === 0 || item.days_assigned > 0

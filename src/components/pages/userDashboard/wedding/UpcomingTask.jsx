@@ -11,6 +11,8 @@ const UpComingTask = () => {
   const [loading, setLoading] = useState(true);
   const [animatingTasks, setAnimatingTasks] = useState({});
   const [removingTasks, setRemovingTasks] = useState({});
+  const [statusMessage, setStatusMessage] = useState("");
+  const [messageType, setMessageType] = useState("success");
 
   const token = useSelector((state) => state.auth.token);
   const user = useSelector((state) => state.auth.user);
@@ -95,9 +97,15 @@ const UpComingTask = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      setStatusMessage("✓ Task marked as completed!");
+      setMessageType("success");
+      setTimeout(() => setStatusMessage(""), 3000);
       setRefresh((prev) => !prev);
     } catch (error) {
       console.error("Failed to update task status:", error);
+      setStatusMessage("✗ Failed to update task. Please try again.");
+      setMessageType("error");
+      setTimeout(() => setStatusMessage(""), 3000);
       setRefresh((prev) => !prev);
     }
   };
@@ -144,6 +152,22 @@ const UpComingTask = () => {
   return (
     <div style={{ padding: "2rem" }}>
       <h1 style={{ marginBottom: "1.5rem" }}>Upcoming tasks</h1>
+      {statusMessage && (
+        <div
+          className={`alert alert-${
+            messageType === "success" ? "success" : "danger"
+          } alert-dismissible fade show`}
+          role="alert"
+          style={{ marginBottom: "1.5rem" }}
+        >
+          {statusMessage}
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setStatusMessage("")}
+          />
+        </div>
+      )}
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {tasks.slice(0, 3).map((task, index) => (
           <div

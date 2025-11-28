@@ -48,24 +48,32 @@ const Herosection = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const reduxLocation = useSelector((s) => s.location.selectedLocation);
-  const { vendorTypes, loading } = useVendorType();
+  const { _vendorTypes, _loading } = useVendorType();
   const {
     heroData,
     vendorCategories,
     cities,
-    loadingHero,
-    loadingCities,
+    _loadingHero,
+    _loadingCities,
     getCurrentBackgroundImage,
   } = useHome();
 
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
-  const [selectedCity, setSelectedCity] = useState("Pune");
+  const [selectedCity, setSelectedCity] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
 
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [citySearch, setCitySearch] = useState("");
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const cityDropdownRef = useRef(null);
+  const cityInputRef = useRef(null);
+  const categoryDropdownRef = useRef(null);
+  const categoryButtonRef = useRef(null);
+
   const toSlug = (t) =>
-    t?.replace(/\s+/g, "-").replace(/[^A-Za-z0-9\-]/g, "") || "";
+    t?.replace(/\s+/g, "-").replace(/[^A-Za-z0-9-]/g, "") || "";
   const formatName = (n) => n.replace(/\band\b/gi, "&");
 
   useEffect(() => {
@@ -81,6 +89,39 @@ const Herosection = () => {
     if (showDropdown) document.addEventListener("mousedown", handleOutside);
     return () => document.removeEventListener("mousedown", handleOutside);
   }, [showDropdown]);
+
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (
+        cityDropdownRef.current &&
+        !cityDropdownRef.current.contains(e.target) &&
+        cityInputRef.current &&
+        !cityInputRef.current.contains(e.target)
+      )
+        setShowCityDropdown(false);
+    };
+    if (showCityDropdown) document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, [showCityDropdown]);
+
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (
+        categoryDropdownRef.current &&
+        !categoryDropdownRef.current.contains(e.target) &&
+        categoryButtonRef.current &&
+        !categoryButtonRef.current.contains(e.target)
+      )
+        setShowCategoryDropdown(false);
+    };
+    if (showCategoryDropdown)
+      document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, [showCategoryDropdown]);
+
+  const filteredCities = cities.filter((city) =>
+    city.toLowerCase().includes(citySearch.toLowerCase())
+  );
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -125,7 +166,7 @@ const Herosection = () => {
                 heroData?.title || "Discover Your _ Wedding Vendor"
               }
             />
-            <p className="lead mb-4">
+            <p className="lead mb-4 fs-20">
               {heroData?.subtitle ||
                 "Discover top-rated wedding vendors with countless reliable reviews."}
             </p>
@@ -209,7 +250,7 @@ const Herosection = () => {
                                     color: "#333",
                                     textDecoration: "none",
                                     display: "block",
-                                    padding: "4px 0",
+                                    padding: "0.75rem 1rem",
                                     transition: "color 0.2s",
                                   }}
                                   onClick={() => setShowDropdown(false)}
@@ -227,38 +268,198 @@ const Herosection = () => {
             ) : (
               <Form className="search-form" onSubmit={handleSearch}>
                 <Row className="g-3">
-                  <Col xs={12} md={5}>
-                    <Form.Select
-                      className="form-control-lg"
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                      style={{ fontSize: "14px", padding: "0.5rem 0.75rem" }}
+                  <Col xs={12} md={5} className="position-relative">
+                    <button
+                      ref={categoryButtonRef}
+                      type="button"
+                      className="btn-light w-100 fw-semibold d-flex justify-content-between align-items-center"
+                      onClick={() =>
+                        setShowCategoryDropdown(!showCategoryDropdown)
+                      }
+                      style={{
+                        fontSize: "14px",
+                        padding: "0.75rem 1rem",
+                        backgroundColor: "white",
+                        border: "1px solid #ddd",
+                        color: "#333",
+                        borderRadius: "6px",
+                      }}
                     >
-                      <option>All Categories</option>
-                      {vendorTypes.length ? (
-                        vendorTypes.map((c) => (
-                          <option key={c.id}>{c.name}</option>
-                        ))
+                      <span>{selectedCategory}</span>
+                      {showCategoryDropdown ? (
+                        <MdExpandLess size={18} />
                       ) : (
-                        <option disabled>
-                          {loading ? "Loading..." : "No categories found"}
-                        </option>
+                        <MdExpandMore size={18} />
                       )}
-                    </Form.Select>
+                    </button>
+                    {showCategoryDropdown && (
+                      <div
+                        ref={categoryDropdownRef}
+                        style={{
+                          position: "absolute",
+                          top: "calc(100% + 4px)",
+                          left: 0,
+                          right: 0,
+                          backgroundColor: "white",
+                          borderRadius: "6px",
+                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                          maxHeight: "300px",
+                          overflowY: "auto",
+                          zIndex: 999,
+                          border: "1px solid #ddd",
+                        }}
+                      >
+                        <div style={{ padding: "0.5rem 0" }}>
+                          <div
+                            style={{
+                              padding: "0.75rem 1rem",
+                              color: "#333",
+                              cursor: "pointer",
+                              borderBottom: "1px solid #eee",
+                            }}
+                            onClick={() => {
+                              setSelectedCategory("All Categories");
+                              setShowCategoryDropdown(false);
+                            }}
+                            onMouseEnter={(e) =>
+                              (e.target.style.backgroundColor = "#f5f5f5")
+                            }
+                            onMouseLeave={(e) =>
+                              (e.target.style.backgroundColor = "white")
+                            }
+                          >
+                            All Categories
+                          </div>
+                          {vendorCategories.map((cat) => (
+                            <div
+                              key={cat.id}
+                              style={{
+                                padding: "0.75rem 1rem",
+                                color: "#333",
+                                cursor: "pointer",
+                                borderBottom: "1px solid #eee",
+                              }}
+                              onClick={() => {
+                                setSelectedCategory(cat.name);
+                                setShowCategoryDropdown(false);
+                              }}
+                              onMouseEnter={(e) =>
+                                (e.target.style.backgroundColor = "#f5f5f5")
+                              }
+                              onMouseLeave={(e) =>
+                                (e.target.style.backgroundColor = "white")
+                              }
+                            >
+                              {cat.name}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </Col>
-                  <Col xs={12} md={5}>
-                    <Form.Select
-                      className="form-control-lg"
-                      value={selectedCity}
-                      onChange={(e) => setSelectedCity(e.target.value)}
-                      style={{ fontSize: "14px", padding: "0.5rem 0.75rem" }}
+                  <Col xs={12} md={5} className="position-relative">
+                    <div
+                      ref={cityInputRef}
+                      style={{
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
                     >
-                      {loadingCities ? (
-                        <option>Loading cities...</option>
-                      ) : (
-                        cities.map((city) => <option key={city}>{city}</option>)
-                      )}
-                    </Form.Select>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={citySearch}
+                        onChange={(e) => {
+                          setCitySearch(e.target.value);
+                          setShowCityDropdown(true);
+                        }}
+                        placeholder="Search city..."
+                        style={{
+                          fontSize: "14px",
+                          padding: "0.75rem 1rem",
+                          paddingRight: "2.5rem",
+                          borderRadius: "6px",
+                          border: "1px solid #ddd",
+                        }}
+                        onFocus={() => setShowCityDropdown(true)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCityDropdown(!showCityDropdown)}
+                        style={{
+                          position: "absolute",
+                          right: "8px",
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          padding: "0",
+                        }}
+                      >
+                        {showCityDropdown ? (
+                          <MdExpandLess size={18} />
+                        ) : (
+                          <MdExpandMore size={18} />
+                        )}
+                      </button>
+                    </div>
+                    {showCityDropdown && (
+                      <div
+                        ref={cityDropdownRef}
+                        style={{
+                          position: "absolute",
+                          top: "calc(100% + 4px)",
+                          left: 0,
+                          right: 0,
+                          backgroundColor: "white",
+                          borderRadius: "6px",
+                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                          maxHeight: "300px",
+                          overflowY: "auto",
+                          zIndex: 999,
+                          border: "1px solid #ddd",
+                        }}
+                      >
+                        <div style={{ padding: "0.5rem 0" }}>
+                          {filteredCities.length > 0 ? (
+                            filteredCities.map((city) => (
+                              <div
+                                key={city}
+                                style={{
+                                  padding: "0.75rem 1rem",
+                                  color: "#333",
+                                  cursor: "pointer",
+                                  borderBottom: "1px solid #eee",
+                                }}
+                                onClick={() => {
+                                  setCitySearch(city);
+                                  setSelectedCity(city);
+                                  setShowCityDropdown(false);
+                                }}
+                                onMouseEnter={(e) =>
+                                  (e.target.style.backgroundColor = "#f5f5f5")
+                                }
+                                onMouseLeave={(e) =>
+                                  (e.target.style.backgroundColor = "white")
+                                }
+                              >
+                                {city}
+                              </div>
+                            ))
+                          ) : (
+                            <div
+                              style={{
+                                padding: "1rem",
+                                color: "#999",
+                                textAlign: "center",
+                              }}
+                            >
+                              No cities found
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </Col>
                   <Col xs={12} md={2} className="d-grid">
                     <Button

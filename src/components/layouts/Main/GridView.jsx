@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Card, Container } from "react-bootstrap";
 import { FaStar, FaHeart, FaRegHeart } from "react-icons/fa";
+import { FaMapMarkerAlt } from "react-icons/fa";
 import { TbView360Number } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
@@ -111,7 +112,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                     }}
                   />
 
-                  {(((venue.vendor_type || "").toLowerCase().includes("venue")) ||
+                  {((venue.vendor_type || "").toLowerCase().includes("venue") ||
                     venue.vegPrice !== null ||
                     venue.nonVegPrice !== null) && (
                     <button
@@ -164,7 +165,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                   >
                     {/* Title and Rating Row */}
                     <div className="d-flex justify-content-between align-items-start mb-2">
-                      <Card.Title className="mb-0 fw-bold text-dark fs-16">
+                      <Card.Title className="mb-0 fw-bold text-dark fs-18">
                         {venue.name || "Venue Name"}
                       </Card.Title>
                       <div className="d-flex align-items-center gap-1 flex-shrink-0 ms-2">
@@ -196,9 +197,10 @@ const GridView = ({ subVenuesData, handleShow }) => {
 
                     {/* Location */}
                     <div
-                      className="text-muted mb-3"
-                      style={{ fontSize: "13px" }}
+                      className="text-muted mb-3 d-flex align-items-center"
+                      style={{ fontSize: "14px" }}
                     >
+                      <FaMapMarkerAlt className="me-1" />
                       {venue.city || venue.address || "Location not available"}
                     </div>
 

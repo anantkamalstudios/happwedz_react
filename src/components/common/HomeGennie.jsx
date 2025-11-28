@@ -3,7 +3,7 @@ const handleNewChat = () => {
   setMessages([
     {
       type: "ai",
-      // text: "Hi! I am ShaadiAI 👋\n\nHow can I help you plan your dream wedding today?",
+      text: "Hi! I am ShaadiAI 👋\n\nHow can I help you plan your dream wedding today?",
     },
   ]);
   setInputValue("");
@@ -93,7 +93,7 @@ const HomeGennie = () => {
         setMessages([
           {
             type: "ai",
-            // text: "Hi! I am ShaadiAI 👋\n\nHow can I help you plan your dream wedding today?",
+            text: "Hi! I am ShaadiAI 👋\n\nHow can I help you plan your dream wedding today?",
           },
         ]);
       }, 800);
@@ -168,7 +168,7 @@ const HomeGennie = () => {
             alignItems: "center",
             justifyContent: "center",
             cursor: "pointer",
-            zIndex: 9999,
+            zIndex: 999,
             transition: "transform 0.3s ease",
             overflow: "hidden",
           }}

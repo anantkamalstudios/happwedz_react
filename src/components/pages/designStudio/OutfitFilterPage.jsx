@@ -1128,7 +1128,7 @@ export default function FiltersPageOutfit() {
       }
     };
   }, []);
-  
+
   const pollForResult = async (
     sessionId,
     apiUrl,
@@ -1692,7 +1692,7 @@ export default function FiltersPageOutfit() {
                             borderRadius: 8,
                           }}
                         >
-                          Upload Selfie
+                          Upload Image
                         </button>
                       </div>
                     </div>

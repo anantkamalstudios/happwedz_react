@@ -28,6 +28,21 @@ const FILTER_CONFIG = {
     "review Count": ["<5 reviews", "5+ reviews", "15+ reviews", "30+ reviews"],
   },
 
+  makeup: {
+    "price Bridal Makeup": [
+      "12,000",
+      "12,000-16,000",
+      "16,000-20,000",
+      "20,000-25,000",
+      "25,000+",
+    ],
+    "price Engagement": ["12,000", "12,000-18,000", "18,000-25,000", "25,000+"],
+    specialty: ["north indian", "south indian", "bengali", "muslim", "marathi"],
+    "travels To Venue": ["travels to venue", "doesn't travel to venue"],
+    rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
+    "review Count": ["<5 reviews", "5+ reviews", "15+ reviews", "30+ reviews"],
+  },
+
   "wedding-planners": {
     prices: ["<200,000", "200,000-300,000", "300,000-500,000", "500,000+"],
     rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
