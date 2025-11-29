@@ -36,6 +36,7 @@ import ListView from "../layouts/Main/ListView";
 import UserPrivateRoute from "../routes/UserPrivateRoute";
 import DynamicAside from "../layouts/aside/DynamicAside";
 import { useMemo } from "react";
+import MapView from "../layouts/Main/MapView";
 
 const MainSection = () => {
   const { section } = useParams();
@@ -43,17 +44,15 @@ const MainSection = () => {
   const [selectedCity, setSelectedCity] = useState(reduxLocation);
   const [show, setShow] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-  
-  const storageKey = useMemo(
-    () => `viewMode:${section}:main`,
-    [section]
-  );
+
+  const storageKey = useMemo(() => `viewMode:${section}:main`, [section]);
 
   const [view, setView] = useState(() => {
-    const saved = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
+    const saved =
+      typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
     return saved || "images";
   });
-  
+
   const [photos, setPhotos] = useState([]);
   const [heroInfo, setHeroInfo] = useState([]);
   const [venueFilters, setVenueFilters] = useState({});
@@ -83,7 +82,8 @@ const MainSection = () => {
   }, [reduxLocation]);
 
   useEffect(() => {
-    const saved = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
+    const saved =
+      typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
     if (saved && saved !== view) {
       setView(saved);
     }
@@ -123,6 +123,14 @@ const MainSection = () => {
           setView={setView}
           onFiltersChange={setVenueFilters}
         />
+
+        {view === "map" && (
+          <MapView
+            subVenuesData={data}
+            section="venues"
+            onClose={() => setView("images")}
+          />
+        )}
 
         {data.length > 0 && (
           <div className="container-fluid">
@@ -295,7 +303,7 @@ const MainSection = () => {
   //   );
   // }
 
-  if (section === "genie") {
+  if (section === "shaadi-ai") {
     return (
       <>
         <UserPrivateRoute>

@@ -185,10 +185,12 @@ const RealWeddings = ({ onPostClick }) => {
       const isPublished = wedding.status === "published";
       if (!isPublished) return false;
 
-      const searchLower = searchTerm.toLowerCase();
+      const searchLower = (searchTerm || "").toLowerCase();
       const matchesSearch =
-        searchTerm === "" ||
+        searchLower === "" ||
         wedding.title?.toLowerCase().includes(searchLower) ||
+        wedding.brideName?.toLowerCase().includes(searchLower) ||
+        wedding.groomName?.toLowerCase().includes(searchLower) ||
         wedding.city?.toLowerCase().includes(searchLower);
 
       const cityMatch =

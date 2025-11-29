@@ -25,10 +25,11 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
         vendor_type_id: vendor.vendor_type_id,
         attributes: {
           ...prev.attributes,
-          Name: prev.attributes?.Name || vendor.businessName || "",
+          businessName:
+            prev.attributes?.businessName || vendor.businessName || "",
           slug: prev.attributes?.slug || "",
-          tagline: prev.attributes?.tagline || "",
-          subtitle: prev.attributes?.subtitle || "",
+          // tagline: prev.attributes?.tagline || "",
+          // subtitle: prev.attributes?.subtitle || "",
           about_us: prev.attributes?.about_us || "",
         },
         status: prev.status || vendor.status || "draft",
@@ -66,7 +67,7 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
     setFormData((prev) => {
       let updatedAttributes = { ...prev.attributes, [name]: value };
       // Auto-generate slug from name (kebab-case, no user id)
-      if (name === "name") {
+      if (name === "businessName") {
         const slugBase = value
           .toLowerCase()
           .trim()
@@ -92,11 +93,11 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
           {/* Vendor Name */}
           <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">
-              Vendor Buisness Name
+              Vendor Business Name
             </label>
             <input
               type="text"
-              name="name"
+              name="businessName"
               className="form-control"
               value={formData.attributes?.businessName || ""}
               onChange={handleAttributeChange}
@@ -105,20 +106,9 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
           </div>
 
           {/* Slug (auto-generated, disabled) */}
-          {/* <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Slug</label>
-            <input
-              type="text"
-              name="slug"
-              className="form-control"
-              value={formData.attributes?.slug || ""}
-              disabled
-              placeholder="vendor-name-slug"
-            />
-          </div> */}
 
           {/* Tagline */}
-          <div className="col-md-6 mb-3">
+          {/* <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">Tagline</label>
             <input
               type="text"
@@ -130,7 +120,7 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
             />
           </div>
 
-          {/* Subtitle */}
+       
           <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">Subtitle</label>
             <input
@@ -141,11 +131,11 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
               onChange={handleAttributeChange}
               placeholder="Brief subtitle"
             />
-          </div>
+          </div> */}
 
           {/* Description */}
           <div className="col-12 mb-3">
-            <label className="form-label fw-semibold">Description</label>
+            <label className="form-label fw-semibold">About US</label>
             <SummernoteEditor
               value={formData.attributes?.about_us || ""}
               onChange={(val) =>
@@ -199,7 +189,7 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
           </div>
 
           {/* Status */}
-          <div className="col-md-6 mb-3">
+          {/* <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">Status</label>
             <select
               name="status"
@@ -211,7 +201,7 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
               <option value="published">Published</option>
               <option value="archived">Archived</option>
             </select>
-          </div>
+          </div> */}
         </div>
         <button type="button" className="btn btn-primary mt-2" onClick={onSave}>
           Save Basic Info

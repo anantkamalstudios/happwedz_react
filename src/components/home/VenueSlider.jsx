@@ -12,14 +12,11 @@ const VenueSlider = () => {
   const [activeFilter, setActiveFilter] = useState("Top Rated");
 
   // Fetch 9 venues from API
-  const { data: venues, loading, error } = useApiData(
-    "venues",
-    null,
-    null,
-    "Venues",
-    1,
-    9
-  );
+  const {
+    data: venues,
+    loading,
+    error,
+  } = useApiData("venues", null, null, "Venues", 1, 9);
 
   const filterOptions = [
     { name: "Top Rated", slug: "top-rated" },
@@ -89,8 +86,9 @@ const VenueSlider = () => {
           <Link
             key={index}
             onClick={() => setActiveFilter(filter.name)}
-            className={`venues-slider-filter-btn ${activeFilter === filter.name ? "active" : ""
-              }`}
+            className={`venues-slider-filter-btn ${
+              activeFilter === filter.name ? "active" : ""
+            }`}
             to={`/${filter.slug}`}
             style={{ textDecoration: "none" }}
           >
@@ -121,7 +119,6 @@ const VenueSlider = () => {
               : `${IMAGE_BASE_URL}${venue.image}`
             : "/images/imageNotFound.jpg";
 
-
           return (
             <SwiperSlide key={venue.id}>
               <div className="venues-slider-card shadow-sm">
@@ -135,8 +132,7 @@ const VenueSlider = () => {
                       alt={venue.name}
                       className="venues-slider-image"
                       onError={(e) => {
-                        e.target.src =
-                          "https://via.placeholder.com/400x300?text=No+Image";
+                        e.target.src = "";
                       }}
                     />
                     <button
@@ -147,7 +143,9 @@ const VenueSlider = () => {
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
                         fill={favorites.includes(venue.id) ? "#e91e63" : "none"}
-                        stroke={favorites.includes(venue.id) ? "#e91e63" : "white"}
+                        stroke={
+                          favorites.includes(venue.id) ? "#e91e63" : "white"
+                        }
                         strokeWidth="2"
                         className="venues-slider-heart-icon"
                       >

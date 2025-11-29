@@ -20,6 +20,12 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
   const searchRef = useRef(null);
   const { section } = useParams();
   const [heroInfo, setHeroInfo] = useState([]);
+  const cleanMediaUrl = (m) => {
+    if (!m) return null;
+    if (typeof m === "string") return m.replace(/[`"']/g, "").trim();
+    if (typeof m === "object" && m.url) return String(m.url).trim();
+    return null;
+  };
 
   // useEffect(() => {
   //   const fetchHeroInfo = async () => {
@@ -405,7 +411,7 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
         overflow: "visible",
         background:
           "linear-gradient(135deg, rgba(255, 114, 134, 0.08) 0%, rgba(137, 62, 247, 0.08) 100%)",
-        zIndex: 99,
+
         position: "relative",
       }}
     >
@@ -585,7 +591,7 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
                       maxHeight: "400px",
                       overflowY: "auto",
                       overflowX: "hidden",
-                      zIndex: 1000,
+                      zIndex: 1100,
                       border: "1px solid #e5e7eb",
                     }}
                   >
@@ -620,7 +626,7 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
                                 <img
                                   src={
                                     result.attributes?.image_url ||
-                                    result.media?.[0]?.url ||
+                                    cleanMediaUrl(result.media?.[0]) ||
                                     "/images/imageNotFound.jpg"
                                   }
                                   alt={

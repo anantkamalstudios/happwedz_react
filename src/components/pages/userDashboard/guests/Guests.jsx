@@ -43,6 +43,7 @@ const Guests = () => {
   const [showAddGroupForm, setShowAddGroupForm] = useState(false);
   const [showMessageOptions, setShowMessageOptions] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [, setCurrentPage] = useState(1);
   const printRef = useRef();
   const navigate = useNavigate();
 
@@ -57,7 +58,7 @@ const Guests = () => {
   const typeOptions = ["Adult", "Child"];
   const menuOptions = ["Veg", "NonVeg", "All"];
 
-  const handlePrint = () => {
+  const _handlePrint = () => {
     if (!printRef.current) {
       Swal.fire({
         icon: "error",
@@ -169,7 +170,7 @@ const Guests = () => {
     }
   };
 
-  const uniqueGroups = [
+  const _uniqueGroups = [
     "All",
     ...new Set(guests.map((g) => g.group || "Other")),
   ];
@@ -192,7 +193,6 @@ const Guests = () => {
     }, {});
   }, [guests, selectedGroup, selectedStatus, searchTerm]);
 
-
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setNewGuestForm((prev) => ({ ...prev, [name]: value }));
@@ -205,8 +205,13 @@ const Guests = () => {
       return;
     }
 
+    if (!newGuestForm.email || !newGuestForm.email.trim()) {
+      setFormError("Email is required.");
+      return;
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (newGuestForm.email && !emailRegex.test(newGuestForm.email)) {
+    if (!emailRegex.test(newGuestForm.email.trim())) {
       setFormError("Please enter a valid email address.");
       return;
     }
@@ -258,7 +263,7 @@ const Guests = () => {
       await axiosInstance.put(`https://happywedz.com/api/guestlist/${id}`, {
         [field]: value,
       });
-      setRefresh((prev) => !prev); ch
+      setRefresh((prev) => !prev);
     } catch (err) {
       console.error("Update Guest Error:", err);
     }
@@ -315,8 +320,9 @@ const Guests = () => {
         if (guest.companions > 0)
           message += ` | Companions: ${guest.companions}`;
         if (guest.seat_number) message += ` | Seat: ${guest.seat_number}`;
-        message += ` | Type: ${guest.type || "Adult"} | Menu: ${guest.menu || "Veg"
-          }`;
+        message += ` | Type: ${guest.type || "Adult"} | Menu: ${
+          guest.menu || "Veg"
+        }`;
         message += `\n`;
       });
       message += `\n`;
@@ -539,13 +545,15 @@ const Guests = () => {
         <div className="col-md-3">
           <div className="d-flex flex-column gap-3">
             <div className="position-relative">
-              <label className="form-label fw-medium text-black mb-1 fs-26 py-3">Group</label>
+              <label className="form-label fw-medium text-black mb-1 fs-26 py-3">
+                Group
+              </label>
               <select
                 className="form-select form-select-sm border-2 py-2 primary-text"
                 style={{
-                  cursor: 'pointer',
-                  borderRadius: '0px',
-                  borderColor: '#ed1173',
+                  cursor: "pointer",
+                  borderRadius: "0px",
+                  borderColor: "#ed1173",
                 }}
                 value={selectedGroup}
                 onChange={(e) => {
@@ -563,13 +571,15 @@ const Guests = () => {
               </select>
             </div>
             <div className="position-relative">
-              <label className="form-label fw-medium text-black mb-1 fs-26 py-3">Status</label>
+              <label className="form-label fw-medium text-black mb-1 fs-26 py-3">
+                Status
+              </label>
               <select
                 className="form-select form-select-sm border-2 py-2 primary-text"
                 style={{
-                  cursor: 'pointer',
-                  borderRadius: '0px',
-                  borderColor: '#ed1173',
+                  cursor: "pointer",
+                  borderRadius: "0px",
+                  borderColor: "#ed1173",
                 }}
                 value={selectedStatus}
                 onChange={(e) => {
@@ -613,8 +623,6 @@ const Guests = () => {
               </div>
             </div>
           </div>
-
-
 
           <div className="wgl-controls">
             <div className="wgl-search-container">
@@ -694,13 +702,16 @@ const Guests = () => {
             </div>
           </div>
 
-
           {showAddGuestForm && (
             <div className="wgl-add-form card shadow-sm mb-4">
               <div className="card-body p-4">
-                <h3 className="wgl-form-title card-title mb-4">Add New Guest</h3>
+                <h3 className="wgl-form-title card-title mb-4">
+                  Add New Guest
+                </h3>
                 {formError && (
-                  <div className="alert alert-danger small p-2">{formError}</div>
+                  <div className="alert alert-danger small p-2">
+                    {formError}
+                  </div>
                 )}
                 <div className="row g-3">
                   <div className="col-md-4">
@@ -807,7 +818,6 @@ const Guests = () => {
             </div>
           )}
 
-
           {showAddGroupForm && (
             <div className="wgl-add-form">
               <h3 className="wgl-form-title">Create New Group</h3>
@@ -897,7 +907,6 @@ const Guests = () => {
             </div>
           </div> */}
 
-
           <div className="wgl-guest-list" ref={printRef}>
             {Object.keys(filteredAndGroupedGuests).length > 0 ? (
               Object.entries(filteredAndGroupedGuests).map(
@@ -927,7 +936,11 @@ const Guests = () => {
                                 className={`wgl-status-select wgl-status-${g.status.toLowerCase()}`}
                                 value={g.status}
                                 onChange={(e) =>
-                                  updateGuestField(g.id, "status", e.target.value)
+                                  updateGuestField(
+                                    g.id,
+                                    "status",
+                                    e.target.value
+                                  )
                                 }
                               >
                                 {statusOptions.map((s) => (
@@ -935,7 +948,9 @@ const Guests = () => {
                                 ))}
                               </select>
                             </td>
-                            <td className="wgl-guest-companions">{g.companions}</td>
+                            <td className="wgl-guest-companions">
+                              {g.companions}
+                            </td>
                             <td className="wgl-guest-seat">{g.seat_number}</td>
                             <td className="wgl-guest-type">
                               <select

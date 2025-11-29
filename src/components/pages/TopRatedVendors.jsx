@@ -1,62 +1,67 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const TopRatedVendors = () => {
   const weddingLists = [
     {
       title: "20 Best Banquet halls in Chattarpur",
-      slug: "best-banquet-halls-chattarpur",
+      subCategory: "Banquet Halls",
+      city: "Chattarpur",
     },
     {
       title: "10 Best Farmhouses in Chattarpur",
-      slug: "best-farmhouses-chattarpur",
+      subCategory: "Farmhouses",
+      city: "Chattarpur",
     },
     {
-      title: "Best 20 Wedding photographers in Gurgaon",
-      slug: "best-wedding-photographers-gurgaon",
+      title: "Best 20 Wedding Resorts in Gurgaon",
+      subCategory: "Wedding Resorts",
+      city: "Gurgaon",
     },
     {
       title: "10 Best poolside wedding venues in Delhi NCR",
-      slug: "best-poolside-wedding-venues-delhi-ncr",
+      subCategory: "Poolside Wedding Venues",
+      city: "Delhi NCR",
     },
     {
       title: "10 Best pre wedding venues in Delhi NCR",
-      slug: "best-pre-wedding-venues-delhi-ncr",
+      subCategory: "Pre Wedding Venues",
+      city: "Delhi NCR",
     },
     {
       title: "20 Best banquet halls in Delhi NCR",
-      slug: "best-banquet-halls-delhi-ncr",
+      subCategory: "Banquet Halls",
+      city: "Delhi NCR",
     },
     {
       title: "10 Best 5 Star hotels in Delhi NCR for Weddings",
-      slug: "best-5-star-hotels-weddings-delhi-ncr",
-    },
-    {
-      title: "20 Best rated Candid Photographers in Delhi",
-      slug: "best-rated-candid-photographers-delhi",
+      subCategory: "5 Star Wedding Hotels",
+      city: "Delhi NCR",
     },
     {
       title: "Best marriage halls in Bangalore",
-      slug: "best-marriage-halls-bangalore",
+      subCategory: "Marriage Halls",
+      city: "Bangalore",
     },
     {
       title: "20 Best banquet halls in Mumbai",
-      slug: "best-banquet-halls-mumbai",
+      subCategory: "Banquet Halls",
+      city: "Mumbai",
     },
     {
       title: "10 Best Terrace Wedding Venues in Delhi NCR",
-      slug: "best-terrace-wedding-venues-delhi-ncr",
-    },
-    {
-      title: "14 Best rated destination wedding photographers for Goa",
-      slug: "best-destination-wedding-photographers-goa",
+      subCategory: "Terrace Wedding Venues",
+      city: "Delhi NCR",
     },
     {
       title: "15 Best banquet halls in South delhi",
-      slug: "best-banquet-halls-south-delhi",
+      subCategory: "Banquet Halls",
+      city: "South Delhi",
     },
     {
       title: "Best Pre-wedding venues in Bangalore (Engagement / Sangeet)",
-      slug: "best-pre-wedding-venues-bangalore",
+      subCategory: "Pre Wedding Venues",
+      city: "Bangalore",
     },
   ];
 
@@ -75,24 +80,29 @@ const TopRatedVendors = () => {
           marginTop: "20px",
         }}
       >
-        {weddingLists.map((item, index) => (
+        {weddingLists.map((item, index) => {
+          const slugified = item.subCategory
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "");
+          const to = `/venues/${slugified}`;
+          return (
           <div
             key={index}
             style={{
               marginBottom: "10px",
             }}
           >
-            <a
-              href={`/wedding-lists/${item.slug}`}
-              style={{
-                textDecoration: "none",
-                color: "#C31162",
-              }}
+            <Link
+              to={to}
+              state={{ city: item.city, minRating: 4 }}
+              style={{ textDecoration: "none", color: "#C31162" }}
             >
               {item.title}
-            </a>
+            </Link>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

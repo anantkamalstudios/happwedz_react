@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Card, Container } from "react-bootstrap";
 import { FaStar, FaHeart, FaRegHeart } from "react-icons/fa";
+import { FaMapMarkerAlt } from "react-icons/fa";
 import { TbView360Number } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
@@ -111,24 +112,28 @@ const GridView = ({ subVenuesData, handleShow }) => {
                     }}
                   />
 
-                  <button
-                    className="btn btn-light position-absolute rounded-circle border-0 shadow-sm"
-                    style={{
-                      top: "12px",
-                      left: "12px",
-                      width: "36px",
-                      height: "36px",
-                      padding: "0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                  >
-                    <TbView360Number className="text-dark" size={18} />
-                  </button>
+                  {((venue.vendor_type || "").toLowerCase().includes("venue") ||
+                    venue.vegPrice !== null ||
+                    venue.nonVegPrice !== null) && (
+                    <button
+                      className="btn btn-light position-absolute rounded-circle border-0 shadow-sm"
+                      style={{
+                        top: "12px",
+                        left: "12px",
+                        width: "36px",
+                        height: "36px",
+                        padding: "0",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
+                      <TbView360Number className="text-dark" size={18} />
+                    </button>
+                  )}
 
                   <button
                     className="btn btn-light position-absolute rounded-circle border-0 shadow-sm"
@@ -160,7 +165,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
                   >
                     {/* Title and Rating Row */}
                     <div className="d-flex justify-content-between align-items-start mb-2">
-                      <Card.Title className="mb-0 fw-bold text-dark fs-20">
+                      <Card.Title className="mb-0 fw-bold text-dark fs-18">
                         {venue.name || "Venue Name"}
                       </Card.Title>
                       <div className="d-flex align-items-center gap-1 flex-shrink-0 ms-2">
@@ -192,10 +197,11 @@ const GridView = ({ subVenuesData, handleShow }) => {
 
                     {/* Location */}
                     <div
-                      className="text-muted mb-3"
-                      style={{ fontSize: "13px" }}
+                      className="text-muted mb-3 d-flex align-items-center"
+                      style={{ fontSize: "14px" }}
                     >
-                      {venue.city || venue.location || "Location not available"}
+                      <FaMapMarkerAlt className="me-1" />
+                      {venue.city || venue.address || "Location not available"}
                     </div>
 
                     {/* Price Row - show veg/non-veg for venues, else starting price */}

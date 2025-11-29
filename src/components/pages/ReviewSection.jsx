@@ -19,15 +19,24 @@ const ReviewModalFlow = ({ vendor }) => {
 
   // Fetch reviews
   useEffect(() => {
-    if (vendor?.id) {
-      fetch(`${API_BASE_URL}/reviews/${vendor.id}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) setReviews(data.reviews);
-        })
-        .catch((err) => console.error("Failed to load reviews:", err));
-    }
-  }, [vendor]);
+    if (!vendor?.id) return;
+
+    const controller = new AbortController();
+    fetch(`${API_BASE_URL}/reviews/${vendor.id}`, { signal: controller.signal })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setReviews(data.reviews);
+      })
+      .catch((err) => {
+        if (err?.name !== "AbortError") {
+          console.error("Failed to load reviews:", err);
+        }
+      });
+
+    return () => controller.abort();
+  }, [vendor?.id]);
+
+  
 
   const handleReadMoreClick = (review) => {
     setSelectedReview(review);
@@ -55,19 +64,19 @@ const ReviewModalFlow = ({ vendor }) => {
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-          <h3 className="fw-bold mb-2">Reviews of {vendor?.businessName}</h3>
+          <h3 className="fw-bold mb-2 fs-22">Reviews of {vendor?.name || vendor?.businessName || vendor?.Name} </h3>
           <div className="d-flex align-items-center mb-1">
             <FaStar className="text-warning me-2" size={22} />
-            <h4 className="mb-0 fw-bold">
+            <h4 className="mb-0 fw-bold fs-14">
               {reviews.length > 0
                 ? (
                     reviews.reduce((sum, r) => sum + r.rating_quality, 0) /
                     reviews.length
                   ).toFixed(1)
                 : "0.0"}{" "}
-              <span className="text-dark fw-normal">Excellent</span>
+              <span className="text-dark fw-normal fs-14">Excellent</span>
             </h4>
-            <span className="text-muted ms-2">• {reviews.length} Reviews</span>
+            <span className="text-muted ms-2 fs-14">• {reviews.length} Reviews</span>
           </div>
         </div>
 

@@ -128,14 +128,18 @@ const ListView = ({ subVenuesData, handleShow }) => {
                     }}
                   />
 
-                  <button
-                    className="btn btn-light rounded-circle position-absolute top-0 start-0 m-2"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                  >
-                    <TbView360Number className="text-dark" />
-                  </button>
+                  {(((venue.vendor_type || "").toLowerCase().includes("venue")) ||
+                    venue.vegPrice !== null ||
+                    venue.nonVegPrice !== null) && (
+                    <button
+                      className="btn btn-light rounded-circle position-absolute top-0 start-0 m-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
+                      <TbView360Number className="text-dark" />
+                    </button>
+                  )}
 
                   <button
                     className="btn btn-light rounded-circle position-absolute top-0 end-0 m-2"

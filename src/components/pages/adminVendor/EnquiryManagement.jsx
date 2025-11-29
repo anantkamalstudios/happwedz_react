@@ -43,7 +43,11 @@ const EnquiryManagement = () => {
   const [filteredLeads, setFilteredLeads] = useState([]);
 
   // Global stats across all enquiries (not affected by current filter)
-  const [globalStats, setGlobalStats] = useState({ pending: 0, booked: 0, declined: 0 });
+  const [globalStats, setGlobalStats] = useState({
+    pending: 0,
+    booked: 0,
+    declined: 0,
+  });
   // Filtered stats (optional, not shown in the header cards anymore)
   const [stats, setStats] = useState({ pending: 0, booked: 0, declined: 0 });
 
@@ -72,9 +76,12 @@ const EnquiryManagement = () => {
 
       // Update stats for the current filtered view (not shown in header cards)
       setStats({
-        booked: fetchedLeads.filter((l) => l.request?.status === "booked").length,
-        declined: fetchedLeads.filter((l) => l.request?.status === "declined").length,
-        pending: fetchedLeads.filter((l) => l.request?.status === "pending").length,
+        booked: fetchedLeads.filter((l) => l.request?.status === "booked")
+          .length,
+        declined: fetchedLeads.filter((l) => l.request?.status === "declined")
+          .length,
+        pending: fetchedLeads.filter((l) => l.request?.status === "pending")
+          .length,
       });
 
       if (
@@ -103,7 +110,8 @@ const EnquiryManagement = () => {
       const allLeads = Array.isArray(data.inbox) ? data.inbox : [];
       setGlobalStats({
         booked: allLeads.filter((l) => l.request?.status === "booked").length,
-        declined: allLeads.filter((l) => l.request?.status === "declined").length,
+        declined: allLeads.filter((l) => l.request?.status === "declined")
+          .length,
         pending: allLeads.filter((l) => l.request?.status === "pending").length,
       });
     } catch (_) {}
@@ -192,18 +200,26 @@ const EnquiryManagement = () => {
       setLeads((prevLeads) =>
         prevLeads.map((l) => {
           if (l.id !== inboxId) return l;
-
-          let updatedLead = { ...l };
-
+          const updatedLead = { ...l };
           if (isReadAction) updatedLead.isRead = true;
           if (isArchiveAction) updatedLead.isArchived = action === "archive";
           if (isStatusAction) {
             updatedLead.request = { ...updatedLead.request, status: action };
           }
-
           return updatedLead;
         })
       );
+
+      setSelectedLead((prev) => {
+        if (!prev || prev.id !== inboxId) return prev;
+        const next = { ...prev };
+        if (isReadAction) next.isRead = true;
+        if (isArchiveAction) next.isArchived = action === "archive";
+        if (isStatusAction) {
+          next.request = { ...next.request, status: action };
+        }
+        return next;
+      });
 
       if (
         isArchiveAction &&
@@ -378,8 +394,6 @@ const EnquiryManagement = () => {
               </div>
             </div>
           </div>
-
-        
         </div>
 
         {/* Main Content */}

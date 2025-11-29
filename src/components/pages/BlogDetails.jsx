@@ -209,7 +209,7 @@ const BlogDetails = ({ blogId, onBackClick }) => {
                     style={{
                       width: "100%",
                       maxHeight: "500px",
-                      objectFit: "cover",
+                      objectFit: "contain",
                       boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                     }}
                   />

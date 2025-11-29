@@ -31,6 +31,8 @@ import { FaqQuestions } from "../pages/adminVendor/subVendors/FaqData";
 import axios from "axios";
 const API_BASE_URL = "https://happywedz.com";
 import Swal from "sweetalert2";
+import SectionTabs from "./SectionTabs";
+import { TbView360Number } from "react-icons/tb";
 
 const capitalizeWords = (str) => {
   if (!str) return "";
@@ -46,10 +48,13 @@ const Detailed = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mainImage, setMainImage] = useState("");
+  const [mainVideo, setMainVideo] = useState(null);
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [favorites, setFavorites] = useState({});
   const [wishlistIds, setWishlistIds] = useState(new Set());
   const [images, setImages] = useState([]);
+  const [videos, setVideos] = useState([]);
+  const [mediaTab, setMediaTab] = useState("gallery"); // 'gallery' | 'video'
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [selectedVendorId, setSelectedVendorId] = useState(null);
   const [showClaimForm, setShowClaimForm] = useState(false);
@@ -108,6 +113,25 @@ const Detailed = () => {
           name: `Decor: ${capitalizeWords(attributes.decor_policy)}`,
         });
       }
+      if (attributes.dJ_policy) {
+        amenities.push({
+          icon: <FaStar />,
+          name: `DJ: ${capitalizeWords(attributes.dJ_policy)}`,
+        });
+      }
+      if (attributes.space) {
+        amenities.push({
+          icon: <FaStar />,
+          name: `Space: ${capitalizeWords(attributes.space)}`,
+        });
+      }
+
+      if (attributes.outside_alcohol) {
+        amenities.push({
+          icon: <FaStar />,
+          name: `Outside Alcohol: ${capitalizeWords(attributes.outside_alcohol)}`,
+        });
+      }
 
       // --- Alcohol Policy ---
       let alcoholStatus = attributes.alcohol_policy
@@ -139,7 +163,7 @@ const Detailed = () => {
       if (attributes.rooms) {
         amenities.push({
           icon: <FaBed />,
-          name: `${attributes.rooms} Accommodation Rooms`,
+          name: `Total Rooms:${attributes.rooms}`,
         });
       }
 
@@ -192,21 +216,16 @@ const Detailed = () => {
         });
       }
 
-      // Offerings
-      if (attributes.offerings) {
-        const services = attributes.offerings
+      // Offerings (render as a single amenity with value list)
+      const offeringsRaw = attributes.offerings || attributes.Offerings;
+      if (offeringsRaw) {
+        const services = offeringsRaw
           .split(",")
           .map((s) => s.trim())
           .filter((s) => s);
         if (services.length > 0) {
-          amenities.push({ icon: <FaStar />, name: `Key Offerings:` });
-          services.slice(0, 5).forEach((service) => {
-            // List top 5 services
-            amenities.push({
-              icon: null,
-              name: `- ${capitalizeWords(service)}`,
-            });
-          });
+          const top = services.slice(0, 5).map((s) => capitalizeWords(s));
+          amenities.push({ icon: <FaStar />, name: `Offerings: ${top.join(", ")}` });
         }
       }
     }
@@ -359,7 +378,7 @@ const Detailed = () => {
                 );
                 try {
                   sessionStorage.setItem(sessionKey, Date.now().toString());
-                } catch {}
+                } catch { }
                 if (incRes?.data?.vendor?.profileViews !== undefined) {
                   setVenueData((prev) => ({
                     ...prev,
@@ -401,6 +420,17 @@ const Detailed = () => {
           }
         } else {
           setMainImage("/images/default-vendor.jpg");
+        }
+
+        // Handle videos if provided
+        const videoList = Array.isArray(data.attributes?.video)
+          ? data.attributes.video.filter(Boolean)
+          : [];
+        setVideos(videoList);
+        if (videoList.length > 0) {
+          setMainVideo(videoList[0]);
+        } else {
+          setMainVideo(null);
         }
 
         setError(null);
@@ -534,12 +564,12 @@ const Detailed = () => {
 
   const displayLocation = isVenue
     ? venueData.attributes?.address ||
-      venueData.attributes?.city ||
-      "Location not specified"
+    venueData.attributes?.city ||
+    "Location not specified"
     : venueData.attributes?.address ||
-      venueData.attributes?.city ||
-      venueData.vendor?.city ||
-      "Location not specified";
+    venueData.attributes?.city ||
+    venueData.vendor?.city ||
+    "Location not specified";
 
   // Prefer precise coordinates if present
   const latRaw =
@@ -553,8 +583,8 @@ const Detailed = () => {
   const mapSrc = hasCoords
     ? `https://maps.google.com/maps?q=${lat},${lng}&t=&z=13&ie=UTF8&iwloc=&output=embed`
     : `https://maps.google.com/maps?q=${encodeURIComponent(
-        displayLocation
-      )}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+      displayLocation
+    )}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
 
   const activeVendor = {
     id: id,
@@ -573,23 +603,120 @@ const Detailed = () => {
   const faqList = _faqList || [];
   const parseDbValue = _parseDbValue;
 
+  // Smooth scroll to section by id
+  const scrollToSection = (sectionId) => {
+    const el = document.getElementById(sectionId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   return (
     <div className="venue-detail-page">
       <Container className="py-5">
         <Row>
           <Col lg={8}>
-            <div className="main-image-container mb-4">
-              {mainImage ? (
-                <img
-                  src={mainImage}
-                  alt={venueData.attributes?.vendor_name || "Main Vendor"}
-                  className="main-image rounded-lg"
-                  style={{ width: "100%", height: "500px", objectFit: "cover" }}
-                />
+            <div className="main-image-container mb-4 position-relative">
+              {mediaTab === "gallery" ? (
+                mainImage ? (
+                  <img
+                    src={mainImage}
+                    alt={venueData.attributes?.vendor_name || "Main Vendor"}
+                    className="main-image rounded-lg"
+                    style={{ width: "100%", height: "500px", objectFit: "cover" }}
+                  />
+                ) : (
+                  <div className="main-image rounded-lg d-flex align-items-center justify-content-center bg-light">
+                    <p className="text-muted">No image available</p>
+                  </div>
+                )
               ) : (
-                <div className="main-image rounded-lg d-flex align-items-center justify-content-center bg-light">
-                  <p className="text-muted">No image available</p>
-                </div>
+                mainVideo ? (
+                  <video
+                    src={mainVideo}
+                    controls
+                    className="rounded-lg"
+                    style={{ width: "100%", height: "500px", objectFit: "cover", backgroundColor: "#000" }}
+                  />
+                ) : (
+                  <div className="main-image rounded-lg d-flex align-items-center justify-content-center bg-light">
+                    <p className="text-muted">No video available</p>
+                  </div>
+                )
+              )}
+              {/* In-image media toggle */}
+              <div
+                className="position-absolute d-flex align-items-center"
+                style={{
+                  top: "12px",
+                  left: "60px",
+                  background: "#fff",
+                  color: "#000",
+                  borderRadius: "999px",
+                  padding: "4px",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                  zIndex: 2,
+                  gap: "6px",
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  onClick={() => setMediaTab("gallery")}
+                  style={{
+                    background: mediaTab === "gallery" ? "#f2f2f2" : "#fff",
+                    color: "#000",
+                    border: mediaTab === "gallery" ? "2px solid #000" : "1px solid #e5e5e5",
+                    padding: "2px 10px",
+                    height: "28px",
+                    lineHeight: 1,
+                    borderRadius: "999px",
+                  }}
+                >
+                  Gallery
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  onClick={() => setMediaTab("video")}
+                  disabled={videos.length === 0}
+                  title={videos.length === 0 ? "No videos available" : ""}
+                  style={{
+                    background: mediaTab === "video" ? "#f2f2f2" : "#fff",
+                    color: "#000",
+                    border: mediaTab === "video" ? "2px solid #000" : "1px solid #e5e5e5",
+                    padding: "2px 10px",
+                    height: "28px",
+                    lineHeight: 1,
+                    opacity: videos.length === 0 ? 0.5 : 1,
+                    cursor: videos.length === 0 ? "not-allowed" : "pointer",
+                    borderRadius: "999px",
+                  }}
+                >
+                  Video
+                </button>
+              </div>
+
+              {isVenue && (
+                <button
+                  className="btn btn-light position-absolute rounded-circle border-0 shadow-sm"
+                  style={{
+                    top: "12px",
+                    left: "12px",
+                    width: "36px",
+                    height: "36px",
+                    padding: "0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                >
+                  <TbView360Number className="text-dark" size={18} />
+                </button>
               )}
               <button className="favorite-btn" onClick={handleFavoriteToggle}>
                 {isFavorite(id) ? (
@@ -600,57 +727,70 @@ const Detailed = () => {
               </button>
             </div>
 
-            {images.length > 0 && (
-              <div className="thumbnail-gallery mb-5">
-                <Swiper
-                  modules={[Autoplay]}
-                  spaceBetween={10}
-                  slidesPerView={4}
-                  autoplay={{
-                    delay: 3000,
-                    disableOnInteraction: false,
-                  }}
-                  loop={images.length > 4}
-                  grabCursor={true}
-                  freeMode={true}
-                >
-                  {images.map((img, idx) => (
-                    <SwiperSlide key={idx}>
-                      <div
-                        className={`thumbnail-item ${
-                          mainImage === img ? "active" : ""
-                        } ${
-                          hoveredIndex !== null && hoveredIndex !== idx
-                            ? "blurred"
-                            : ""
-                        }`}
-                        onClick={() => setMainImage(img)}
-                        onMouseEnter={() => setHoveredIndex(idx)}
-                        onMouseLeave={() => setHoveredIndex(null)}
-                      >
-                        <img
-                          src={img}
-                          alt={`Thumbnail ${idx + 1}`}
-                          className="img-fluid rounded"
-                          style={{
-                            cursor: "pointer",
-                            height: "100%",
-                            objectFit: "cover",
-                          }}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "/images/imageNotFound.jpg";
-                          }}
-                        />
-                      </div>
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-              </div>
+            {mediaTab === "gallery" ? (
+              images.length > 0 && (
+                <div className="thumbnail-gallery mb-5">
+                  <Swiper
+                    modules={[Autoplay]}
+                    spaceBetween={10}
+                    slidesPerView={4}
+                    autoplay={{
+                      delay: 3000,
+                      disableOnInteraction: false,
+                    }}
+                    loop={images.length > 4}
+                    grabCursor={true}
+                    freeMode={true}
+                  >
+                    {images.map((img, idx) => (
+                      <SwiperSlide key={idx}>
+                        <div
+                          className={`thumbnail-item ${mainImage === img ? "active" : ""} ${hoveredIndex !== null && hoveredIndex !== idx ? "blurred" : ""
+                            }`}
+                          onClick={() => setMainImage(img)}
+                          onMouseEnter={() => setHoveredIndex(idx)}
+                          onMouseLeave={() => setHoveredIndex(null)}
+                        >
+                          <img
+                            src={img}
+                            alt={`Thumbnail ${idx + 1}`}
+                            className="img-fluid rounded"
+                            style={{ cursor: "pointer", height: "100%", objectFit: "cover" }}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "/images/imageNotFound.jpg";
+                            }}
+                          />
+                        </div>
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                </div>
+              )
+            ) : (
+              videos.length > 0 && (
+                <div className="mb-5">
+                  <div className="d-flex gap-2 flex-wrap">
+                    {videos.map((vid, idx) => (
+                      <video
+                        key={idx}
+                        src={vid}
+                        muted
+                        onClick={() => setMainVideo(vid)}
+                        className={`rounded ${mainVideo === vid ? "border border-primary" : ""}`}
+                        style={{ width: "160px", height: "100px", objectFit: "cover", backgroundColor: "#000", cursor: "pointer" }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )
             )}
 
-            <div className="venue-description mb-5">
-              <h3 className="details-section-title fw-bold">
+            {/* In-page navigation */}
+            <SectionTabs scrollToSection={scrollToSection} />
+
+            <div id="about" className="venue-description mb-5">
+              <h3 className="details-section-title fw-bold fs-22">
                 About{" "}
                 {venueData.attributes?.vendor_name ||
                   venueData.attributes?.name ||
@@ -658,7 +798,7 @@ const Detailed = () => {
               </h3>
               {venueData.attributes?.about_us ? (
                 <div
-                  className="description-text text-black"
+                  className="description-text text-black fs-14"
                   style={{ textAlign: "justify" }}
                   dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(
@@ -681,33 +821,38 @@ const Detailed = () => {
 
             {/* DYNAMIC AMENITIES / SERVICES */}
             <div className="venue-amenities mb-5">
-              {/* <h3 className="details-section-title fw-bold">
-                {isVenue ? "Amenities & Services" : "Services & Policies"}
-              </h3> */}
               <Row>
                 {getVendorFeatures(venueData).length > 0 ? (
-                  getVendorFeatures(venueData).map((item, index) => (
-                    <Col
-                      md={isVenue || item.name.startsWith("-") ? 12 : 6}
-                      key={index}
-                    >
-                      <div
-                        className={`amenity-item d-flex align-items-center ${
-                          item.name.startsWith("-") ? "ms-4" : ""
-                        }`}
+                  getVendorFeatures(venueData).map((item, index) => {
+                    const raw = item.name || "";
+                    const isSub = raw.startsWith("-");
+                    const trimmed = isSub ? raw.replace(/^\-\s*/, "").trim() : raw.trim();
+                    const [labelPart, ...rest] = trimmed.split(":");
+                    const label = (labelPart || "").trim();
+                    const value = rest.join(":").trim();
+
+                    return (
+                      <Col
+                        key={index}
+                        md={isSub ? 12 : 4}
+                        sm={isSub ? 12 : 6}
+                        xs={12}
+                        className={isSub ? "" : "mb-3"}
                       >
-                        {item.icon && (
-                          <div
-                            className="amenity-icon me-2"
-                            style={{ fontSize: "1.2rem" }}
-                          >
-                            {item.icon}
+                        <div className={`amenity-item ${isSub ? "ms-4" : ""}`}>
+                          <div className="d-flex flex-column">
+                            <span className="fw-semibold text-dark">{label}</span>
+                            {value && (
+                              <span className="text-muted small mt-1">{value}</span>
+                            )}
+                            {!value && !label && (
+                              <span className="text-muted small">{trimmed}</span>
+                            )}
                           </div>
-                        )}
-                        <span className="text-black">{item.name}</span>
-                      </div>
-                    </Col>
-                  ))
+                        </div>
+                      </Col>
+                    );
+                  })
                 ) : (
                   <Col>
                     <p className="text-muted">
@@ -720,127 +865,54 @@ const Detailed = () => {
 
             {/* FaqQuestionAnswer Detailed */}
 
-            {/* <div className="my-4 border p-3 rounded">
-              <h5 className="my-4">Frequently Asked Questions</h5>
+            <div id="faq" className="my-4 border p-3 rounded">
+              <h5 className="my-4 fs-16">Frequently Asked Questions</h5>
 
-              {faqList.length > 0 ? (
-                <>
-                  {(showAllFaqs ? faqList : faqList.slice(0, 5)).map((ques, index) => {
-                    const raw = parseDbValue(ques.ans);
-                    const answers = Array.isArray(raw)
-                      ? raw
-                      : raw != null
-                        ? [raw]
-                        : [];
-                    const first = answers[0];
-                    const firstStr =
-                      typeof first === "string" ? first : String(first ?? "");
-
-                    return (
-                      <div className="w-100 rounded border-bottom" key={index}>
-                        <div className="p-2">
-                          <p className="fw-semibold mb-1">{ques.text}</p>
-
-                          {answers.length === 1 &&
-                            firstStr &&
-                            !firstStr.includes("{") ? (
-                            <p className="text-muted">{firstStr}</p>
-                          ) : (
-                            <div className="row">
-                              {answers.map(
-                                (a, idx) =>
-                                  a != null && (
-                                    <div
-                                      className="col-md-4 d-flex align-items-start mb-2"
-                                      key={idx}
-                                    >
-                                      <i
-                                        className="fa-solid fa-check me-2"
-                                        style={{ color: "#f44e4e", marginTop: "4px" }}
-                                      ></i>
-                                      <span className="text-muted">
-                                        {typeof a === "string" ? a : String(a)}
-                                      </span>
-                                    </div>
-                                  )
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
+              {(() => {
+                // Helper to parse various answer shapes into a string array
+                const parseAnswer = (answer) => {
+                  if (answer == null) return [];
+                  if (Array.isArray(answer)) {
+                    return answer.filter((item) => item != null && item !== "");
+                  }
+                  if (typeof answer === "object") {
+                    const values = Object.values(answer).filter(
+                      (v) => v != null && v !== ""
                     );
-                  })}
+                    if (values.length === 2) return [`${values[0]} - ${values[1]}`];
+                    if (values.length === 1) return values;
+                    return values;
+                  }
+                  const strValue = String(answer).trim();
+                  return strValue ? [strValue] : [];
+                };
 
-                  {faqList.length > 5 && (
-                    <div className="text-center mt-3">
-                      <button
-                        className="btn btn-outline-primary btn-sm"
-                        onClick={() => setShowAllFaqs(!showAllFaqs)}
-                      >
-                        {showAllFaqs ? "Show Less" : "Read More"}
-                      </button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <p className="text-muted">No FAQ information available for this vendor.</p>
-              )}
-            </div> */}
+                // Only include FAQs with at least one non-empty answer
+                const validFaqs = (faqList || []).filter(
+                  (q) => parseAnswer(q.ans).length > 0
+                );
 
-            <div className="my-4 border p-3 rounded">
-              <h5 className="my-4">Frequently Asked Questions</h5>
+                if (validFaqs.length === 0) {
+                  return (
+                    <p className="text-muted">
+                      No FAQ information available for this vendor.
+                    </p>
+                  );
+                }
 
-              {faqList.length > 0 ? (
-                <>
-                  {(showAllFaqs ? faqList : faqList.slice(0, 5)).map(
-                    (ques, index) => {
-                      // Parse the answer to handle different data types
-                      const parseAnswer = (answer) => {
-                        if (answer == null) return [];
+                const listToShow = showAllFaqs
+                  ? validFaqs
+                  : validFaqs.slice(0, 5);
 
-                        // If it's already an array, return it
-                        if (Array.isArray(answer)) {
-                          return answer.filter(
-                            (item) => item != null && item !== ""
-                          );
-                        }
-
-                        // If it's an object (like {"0": "200", "1": "600"})
-                        if (typeof answer === "object") {
-                          const values = Object.values(answer).filter(
-                            (v) => v != null && v !== ""
-                          );
-
-                          // If it's a range (2 values), join with hyphen
-                          if (values.length === 2) {
-                            return [`${values[0]} - ${values[1]}`];
-                          }
-                          // Single value from object
-                          if (values.length === 1) {
-                            return values;
-                          }
-                          return values;
-                        }
-
-                        // For primitive values (string, number)
-                        const strValue = String(answer).trim();
-                        return strValue ? [strValue] : [];
-                      };
-
+                return (
+                  <>
+                    {listToShow.map((ques, index) => {
                       const answers = parseAnswer(ques.ans);
                       const isSingleAnswer = answers.length === 1;
-
-                      // Skip if no valid answers
-                      if (answers.length === 0) return null;
-
                       return (
-                        <div
-                          className="w-100 rounded border-bottom"
-                          key={index}
-                        >
+                        <div className="w-100 rounded border-bottom fs-14" key={index}>
                           <div className="p-2">
                             <p className="fw-semibold mb-1">{ques.text}</p>
-
                             {isSingleAnswer ? (
                               <p className="text-muted">{answers[0]}</p>
                             ) : (
@@ -852,10 +924,7 @@ const Detailed = () => {
                                   >
                                     <i
                                       className="fa-solid fa-check me-2"
-                                      style={{
-                                        color: "#f44e4e",
-                                        marginTop: "4px",
-                                      }}
+                                      style={{ color: "#f44e4e", marginTop: "4px" }}
                                     ></i>
                                     <span className="text-muted">{answer}</span>
                                   </div>
@@ -865,113 +934,52 @@ const Detailed = () => {
                           </div>
                         </div>
                       );
-                    }
-                  )}
+                    })}
 
-                  {faqList.length > 5 && (
-                    <div className="text-center mt-3">
-                      <button
-                        className="btn btn-outline-primary btn-sm"
-                        onClick={() => setShowAllFaqs(!showAllFaqs)}
-                      >
-                        {showAllFaqs ? "Show Less" : "Read More"}
-                      </button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <p className="text-muted">
-                  No FAQ information available for this vendor.
-                </p>
-              )}
+                    {validFaqs.length > 5 && (
+                      <div className="text-center mt-3">
+                        <button
+                          className="btn btn-outline-primary btn-sm"
+                          onClick={() => setShowAllFaqs(!showAllFaqs)}
+                        >
+                          {showAllFaqs ? "Show Less" : "Read More"}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
 
-            <div className="py-2">
+            <div id="reviews" className="py-2">
               <ReviewSection vendor={activeVendor} />
             </div>
+            <div id="map" className="venue-map mt-4 pt-3 border-top">
+              <div
+                className="mb-2 fw-semibold text-dark fs-16"
+                style={{ fontSize: "1.05rem" }}
+              >
+                View Location
+              </div>
 
-            {/* Testimonials */}
-            <div className="testimonials mb-5">
-              <h3 className="details-section-title fw-bold">
-                What Couples Say
-              </h3>
-              {/* Simplified testimonial structure for brevity, assuming standard 2 columns */}
-              <Row>
-                <Col md={6}>
-                  <div className="testimonial-card p-4 border rounded mb-3">
-                    <div className="rating mb-2">
-                      <FaStar className="text-warning" />
-                      <FaStar className="text-warning" />
-                      <FaStar className="text-warning" />
-                      <FaStar className="text-warning" />
-                      <FaStar className="text-warning" />
-                    </div>
-                    <p className="testimonial-text text-muted">
-                      "Excellent service! Highly recommend this vendor for
-                      making our day special."
-                    </p>
-                    <p className="testimonial-author fw-semibold text-black">
-                      - Happy Couple, 2024
-                    </p>
-                  </div>
-
-                  {/* Additional Pricing & Platform Info */}
-                  {/* <div className="mb-3">
-                    {venueData.attributes?.PriceRange && (
-                      <div className="text-muted">
-                        <span className="fw-semibold text-black me-1">
-                          Price Range:
-                        </span>
-                        {venueData.attributes.PriceRange}
-                      </div>
-                    )}
-                    {venueData.attributes?.photo_package_price && (
-                      <div className="text-muted">
-                        <span className="fw-semibold text-black me-1">
-                          Photo Package:
-                        </span>
-                        {venueData.attributes.photo_package_price}
-                      </div>
-                    )}
-                    {venueData.attributes?.photo_video_package_price && (
-                      <div className="text-muted">
-                        <span className="fw-semibold text-black me-1">
-                          Photo + Video:
-                        </span>
-                        {venueData.attributes.photo_video_package_price}
-                      </div>
-                    )}
-                    {(venueData.attributes?.happywedz_since ||
-                      venueData.attributes?.HappyWedz) && (
-                        <div className="text-muted">
-                          <span className="fw-semibold text-black me-1">
-                            HappyWedz:
-                          </span>
-                          {venueData.attributes.happywedz_since ||
-                            venueData.attributes.HappyWedz}
-                        </div>
-                      )}
-                  </div> */}
-                </Col>
-                <Col md={6}>
-                  <div className="testimonial-card p-4 border rounded mb-3">
-                    <div className="rating mb-2">
-                      <FaStar className="text-warning" />
-                      <FaStar className="text-warning" />
-                      <FaStar className="text-warning" />
-                      <FaStar className="text-warning" />
-                      <FaStar className="text-warning" />
-                    </div>
-                    <p className="testimonial-text text-muted">
-                      "Professional and attentive. Everything was flawless!"
-                    </p>
-                    <p className="testimonial-author fw-semibold text-black">
-                      - Another Happy Couple, 2023
-                    </p>
-                  </div>
-                </Col>
-              </Row>
+              {/* Show map by coordinates when available; fallback to text location */}
+              <iframe
+                src={mapSrc}
+                width="100%"
+                height="450"
+                style={{
+                  border: 0,
+                  borderRadius: "12px",
+                  boxShadow: "0 4px 10px rgba(0, 0, 0, 0.15)",
+                  cursor: "grab",
+                }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Vendor Location Map"
+              ></iframe>
             </div>
+            
           </Col>
 
           <Col lg={4} className="ps-lg-5">
@@ -982,16 +990,16 @@ const Detailed = () => {
               <div className="venue-info">
                 <div className="mb-3">
                   <div className="d-flex">
-                    <h2 className="fw-bold fs-30">
+                    <h2 className="fw-bold fs-22">
                       {venueData?.attributes?.vendor_name ||
                         venueData?.attributes?.Name ||
                         venueData?.attributes?.name ||
                         "Vendor Name"}
                     </h2>
                   </div>
-                  <div className="d-flex align-items-center my-2">
+                  <div className="d-flex align-items-center my-2 fs-14">
                     <FaLocationDot className="me-1" size={15} color="black" />
-                    <span>{venueData?.attributes?.city}</span>
+                    <span>{venueData?.attributes?.address || venueData?.attributes?.city}</span>
                   </div>
                   <div className="d-flex justify-content-between align-items-center">
                     <div className="rating-badge">
@@ -1027,32 +1035,32 @@ const Detailed = () => {
                 <div className="pricing mb-4">
                   {isVenue ? (
                     <>
-                      <h4 className="price-title fw-bold">
-                        Veg Starting Price (Per Plate)
+                      <h4 className="price-title fw-bold fs-16">
+                        Veg Starting Price
                       </h4>
-                      <div className="price-value fs-4 fw-bold">
+                      <div className="price-value fw-bold fs-16">
                         {venueData.attributes?.veg_price
                           ? `₹ ${parseInt(
-                              venueData.attributes.veg_price.replace(/,/g, "")
-                            ).toLocaleString()} onwards`
+                            venueData.attributes.veg_price.replace(/,/g, "")
+                          ).toLocaleString()} onwards`
                           : "Contact for pricing"}
                       </div>
-                      <h4 className="price-title fw-bold mt-3">
-                        Non-Veg Starting Price (Per Plate)
+                      <h4 className="price-title fw-bold mt-3 fs-16">
+                        Non-Veg Starting Price
                       </h4>
-                      <div className="price-value fs-4 fw-bold">
+                      <div className="price-value fs-16 fw-semibold">
                         {venueData.attributes?.non_veg_price
                           ? `₹ ${parseInt(
-                              venueData.attributes.non_veg_price.replace(
-                                /,/g,
-                                ""
-                              )
-                            ).toLocaleString()} onwards`
+                            venueData.attributes.non_veg_price.replace(
+                              /,/g,
+                              ""
+                            )
+                          ).toLocaleString()} onwards`
                           : "Contact for pricing"}
                       </div>
-                      <p className="price-note text-muted mt-2">
+                      {/* <p className="price-note text-muted mt-2">
                         Price per plate, exclusive of taxes.
-                      </p>
+                      </p> */}
                     </>
                   ) : (
                     <>
@@ -1062,43 +1070,43 @@ const Detailed = () => {
                           ? "Makeup Package (Starting)"
                           : "Photography Package (Starting)"}
                       </h4> */}
-                      <h4 className="price-title fw-bold">
+                      <h4 className="price-title fw-bold ">
                         {venueData.attributes?.vendor_type === "Makeup"
                           ? "Makeup Package (Starting)"
                           : venueData.attributes?.vendor_type === "Photography"
-                          ? "Photography Package (Starting)"
-                          : venueData.attributes?.vendor_type ===
-                            "Music And Dance"
-                          ? "Pricing Range"
-                          : ""}
+                            ? "Photography Package (Starting)"
+                            : venueData.attributes?.vendor_type ===
+                              "Music And Dance"
+                              ? "Pricing Range"
+                              : ""}
                       </h4>
 
-                      <div className="price-value fs-4 fw-bold">
+                      <div className="price-value fs-16 fw-bold">
                         <h4 className="price-title fw-bold mt-3">
                           Pricing Range (Starting)
                         </h4>
                         ₹{" "}
                         {venueData.attributes?.PriceRange ||
-                        venueData.attributes.starting_price
+                          venueData.attributes.starting_price
                           ? venueData.attributes.PriceRange.replace(
-                              "Rs.",
-                              ""
-                            ).trim() || venueData.attributes.starting_price
+                            "Rs.",
+                            ""
+                          ).trim() || venueData.attributes.starting_price
                           : venueData.attributes.photo_package_price
-                          ? `₹${parseInt(
+                            ? `₹${parseInt(
                               venueData.attributes.photo_package_price.replace(
                                 /,/g,
                                 ""
                               )
                             ).toLocaleString()} onwards`
-                          : "Contact for pricing"}
+                            : "Contact for pricing"}
                       </div>
                       {venueData.attributes?.photo_video_package_price && (
                         <>
                           <h4 className="price-title fw-bold mt-3">
                             Photo + Video Package (Starting)
                           </h4>
-                          <div className="price-value fs-4 fw-bold">
+                          <div className="price-value fs-16 fw-bold">
                             ₹{" "}
                             {venueData.attributes.photo_video_package_price.replace(
                               "Rs.",
@@ -1118,7 +1126,7 @@ const Detailed = () => {
 
                 <div>
                   <button
-                    className="btn btn-primary w-100 py-2 fs-5 mt-2 rounded-4"
+                    className="btn btn-primary w-100 py-2 fs-14 mt-2 rounded-4"
                     onClick={() => setShowClaimForm(true)}
                   >
                     Claim Your Business
@@ -1132,7 +1140,7 @@ const Detailed = () => {
                 <div className="margin-b-50 d-flex h-center cursor-pointer">
                   <div style={{ width: "100%" }}>
                     <button
-                      className="btn btn-primary w-100 py-2 fs-5 rounded-4"
+                      className="btn btn-primary w-100 py-2 fs-14 rounded-4"
                       onClick={() =>
                         handleShowPricingModal(venueData.vendor_id)
                       }
@@ -1143,31 +1151,7 @@ const Detailed = () => {
                 </div>
               </div>
 
-              <div className="venue-map mt-4 pt-3 border-top">
-                <div
-                  className="mb-2 fw-semibold text-dark"
-                  style={{ fontSize: "1.05rem" }}
-                >
-                  View Location
-                </div>
 
-                {/* Show map by coordinates when available; fallback to text location */}
-                <iframe
-                  src={mapSrc}
-                  width="100%"
-                  height="350"
-                  style={{
-                    border: 0,
-                    borderRadius: "12px",
-                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.15)",
-                    cursor: "grab",
-                  }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Vendor Location Map"
-                ></iframe>
-              </div>
             </div>
           </Col>
         </Row>

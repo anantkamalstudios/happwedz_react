@@ -28,6 +28,21 @@ const FILTER_CONFIG = {
     "review Count": ["<5 reviews", "5+ reviews", "15+ reviews", "30+ reviews"],
   },
 
+  makeup: {
+    "price Bridal Makeup": [
+      "12,000",
+      "12,000-16,000",
+      "16,000-20,000",
+      "20,000-25,000",
+      "25,000+",
+    ],
+    "price Engagement": ["12,000", "12,000-18,000", "18,000-25,000", "25,000+"],
+    specialty: ["north indian", "south indian", "bengali", "muslim", "marathi"],
+    "travels To Venue": ["travels to venue", "doesn't travel to venue"],
+    rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
+    "review Count": ["<5 reviews", "5+ reviews", "15+ reviews", "30+ reviews"],
+  },
+
   "wedding-planners": {
     prices: ["<200,000", "200,000-300,000", "300,000-500,000", "500,000+"],
     rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
@@ -66,7 +81,7 @@ const FILTER_CONFIG = {
   venues: {
     "venue Type": [
       "Banquet Halls",
-      "lawn",
+      "Marriage Garden / lawns",
       "Wedding Farmhouses",
       "Wedding Resorts",
       "Destination Wedding Venues",
@@ -76,6 +91,7 @@ const FILTER_CONFIG = {
     capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
     "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
     rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
+    rooms: ["<10", "10-20", "20-30", "30-40", "40-50", "50-100", "100+"],
   },
 
   "banquet-halls": {
@@ -309,8 +325,6 @@ const FILTER_CONFIG = {
     rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
     "review Count": ["<5 reviews", "5+ reviews", "15+ reviews", "30+ reviews"],
     award: ["users' choice awards winner"],
-    rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
-    "review Count": ["<5 reviews", "5+ reviews", "15+ reviews", "30+ reviews"],
   },
 
   "sangeet-choreographers": {

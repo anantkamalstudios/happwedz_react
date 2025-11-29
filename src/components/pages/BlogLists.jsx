@@ -347,7 +347,7 @@ const BlogLists = ({ onPostClick }) => {
                             style={{
                               width: "100%",
                               height: "240px",
-                              objectFit: "cover",
+                              objectFit: "contain",
                             }}
                           />
                         )}
