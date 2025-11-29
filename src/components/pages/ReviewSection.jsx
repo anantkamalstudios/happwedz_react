@@ -36,8 +36,6 @@ const ReviewModalFlow = ({ vendor }) => {
     return () => controller.abort();
   }, [vendor?.id]);
 
-  
-
   const handleReadMoreClick = (review) => {
     setSelectedReview(review);
     setShowDetailModal(true);
@@ -64,7 +62,13 @@ const ReviewModalFlow = ({ vendor }) => {
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-          <h3 className="fw-bold mb-2 fs-22">Reviews of {vendor?.name || vendor?.businessName || vendor?.Name} </h3>
+          <h3 className="fw-bold mb-2 fs-22">
+            Reviews of{" "}
+            {vendor?.attributes?.name ||
+              vendor?.name ||
+              vendor?.businessName ||
+              vendor?.Name}{" "}
+          </h3>
           <div className="d-flex align-items-center mb-1">
             <FaStar className="text-warning me-2" size={22} />
             <h4 className="mb-0 fw-bold fs-14">
@@ -76,7 +80,9 @@ const ReviewModalFlow = ({ vendor }) => {
                 : "0.0"}{" "}
               <span className="text-dark fw-normal fs-14">Excellent</span>
             </h4>
-            <span className="text-muted ms-2 fs-14">• {reviews.length} Reviews</span>
+            <span className="text-muted ms-2 fs-14">
+              • {reviews.length} Reviews
+            </span>
           </div>
         </div>
 

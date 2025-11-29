@@ -10,7 +10,7 @@ const Genie = () => {
   const [messages, setMessages] = useState([
     {
       type: "ai",
-      // text: "Hey there! I'm your Wedding ShaadiAI. Ask me anything!",
+      text: "Hey there! I'm your Wedding ShaadiAI. Ask me anything!",
     },
   ]);
   const [inputValue, setInputValue] = useState("");
@@ -260,35 +260,46 @@ const Genie = () => {
 
             <div
               style={{
-                width: "50px",
-                height: "50px",
-                borderRadius: "50%",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
+                justifyContent: "space-between",
+                marginBottom: "20px",
               }}
             >
-              <img
-                src="/gennie-logo.png"
-                alt="gennie-logo"
-                style={{ height: "100%" }}
-              />
-            </div>
+              <div
+                style={{
+                  width: "50px",
+                  height: "50px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <img
+                  src="/gennie-logo.png"
+                  alt="gennie-logo"
+                  style={{ height: "100%" }}
+                />
+              </div>
 
-            <div
-              style={{
-                marginTop: "30px",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                fontSize: "20px",
-                color: "#d63384",
-                cursor: "pointer",
-              }}
-              onClick={handleNewChat}
-            >
-              <FaEdit size={16} style={{ marginRight: "4px" }} />
-              <span style={{ fontWeight: "500" }}>New Chat</span>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  fontSize: "16px",
+                  color: "#d63384",
+                  cursor: "pointer",
+                  padding: "8px 12px",
+                  borderRadius: "20px",
+                  backgroundColor: "rgba(214, 51, 132, 0.1)",
+                }}
+                onClick={handleNewChat}
+              >
+                <FaEdit size={14} style={{ marginRight: "4px" }} />
+                <span style={{ fontWeight: "600" }}>New Chat</span>
+              </div>
             </div>
 
             <div

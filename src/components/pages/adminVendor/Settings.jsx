@@ -49,6 +49,27 @@ const Settings = () => {
     }
   }, [vendor]);
 
+  // Toggle notifications on/off (sends review_notifications flag)
+  const toggleNotifications = async (enabled) => {
+    try {
+      const response = await fetch(
+        "https://happywedz.com/api/vendor/notification-settings",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ review_notifications: enabled }),
+        }
+      );
+      const data = await response.json();
+      // simple feedback in console and show success alert briefly
+      console.log(data.message);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
+    } catch (err) {
+      console.error("Failed to toggle notifications:", err);
+    }
+  };
+
   const handleSave = () => {
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 3000); // You can add API call logic here
@@ -264,7 +285,11 @@ const Settings = () => {
                           Get notified when someone leaves a review
                         </small>
                       </div>
-                      <Form.Check type="switch" defaultChecked />
+                      <Form.Check
+                        type="switch"
+                        defaultChecked
+                        onChange={(e) => toggleNotifications(e.target.checked)}
+                      />
                     </div>
                   </div>
                   {/* <div className="notification-item">

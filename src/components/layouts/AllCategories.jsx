@@ -330,13 +330,8 @@ const AllCategories = ({ onSelect }) => {
                         e.stopPropagation();
                         if (onSelect) onSelect(cat);
                         if (cat.title) {
-                          const slug = cat.slug;
-                          if (FILTER_CONFIG[slug]) {
-                            navigate(`/vendor/${slug}`);
-                          } else {
-                            const encoded = encodeURIComponent(cat.title);
-                            navigate(`/vendors/all?vendorType=${encoded}`);
-                          }
+                          const encoded = encodeURIComponent(cat.title);
+                          navigate(`/vendors/all?vendorType=${encoded}`);
                         }
                       }}
                     >

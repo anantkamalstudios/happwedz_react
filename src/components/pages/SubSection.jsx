@@ -256,6 +256,7 @@ const SubSection = () => {
             view={view}
             setView={setView}
             onFiltersChange={handleFiltersChange}
+            vendorType={vendorType}
           />
 
           <InfiniteScroll

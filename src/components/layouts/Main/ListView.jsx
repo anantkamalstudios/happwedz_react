@@ -104,147 +104,167 @@ const ListView = ({ subVenuesData, handleShow }) => {
   return (
     <Container>
       <Row>
-        {filteredVenues.map((venue) => (
-          <Col xs={12} key={venue.id}>
-            <Card
-              className="p-3 mb-4 border-0 shadow-lg rounded-5 overflow-hidden"
-              onClick={() => navigate(`/details/info/${venue.id}`)}
-              style={{ cursor: "pointer" }}
-            >
-              <Row className="g-0">
-                <Col md={4} className="position-relative">
-                  <Card.Img
-                    src={
-                      hoveredImages[venue.id] ||
-                      venue.image ||
-                      "/images/imageNotFound.jpg"
-                    }
-                    alt={venue.name}
-                    className="img-fluid rounded-5 object-fit-cover"
-                    style={{ height: "200px", width: "100%" }}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "/images/imageNotFound.jpg";
-                    }}
-                  />
+        {/* Main list: take 9/12 on md+ screens to leave space for right sidebar */}
+        <Col xs={12} md={12}>
+          <Row>
+            {filteredVenues.map((venue) => (
+              <Col xs={12} key={venue.id}>
+                <Card
+                  className="p-3 mb-4 border-0 shadow-lg rounded-5 overflow-hidden"
+                  onClick={() => navigate(`/details/info/${venue.id}`)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <Row className="g-0">
+                    <Col md={4} className="position-relative">
+                      <Card.Img
+                        src={
+                          hoveredImages[venue.id] ||
+                          venue.image ||
+                          "/images/imageNotFound.jpg"
+                        }
+                        alt={venue.name}
+                        className="img-fluid rounded-5 object-fit-cover"
+                        style={{ height: "200px", width: "100%" }}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "/images/imageNotFound.jpg";
+                        }}
+                      />
 
-                  {(((venue.vendor_type || "").toLowerCase().includes("venue")) ||
-                    venue.vegPrice !== null ||
-                    venue.nonVegPrice !== null) && (
-                    <button
-                      className="btn btn-light rounded-circle position-absolute top-0 start-0 m-2"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                    >
-                      <TbView360Number className="text-dark" />
-                    </button>
-                  )}
-
-                  <button
-                    className="btn btn-light rounded-circle position-absolute top-0 end-0 m-2"
-                    onClick={(e) => handleWishlistToggle(venue, e)}
-                  >
-                    {isFavorite(venue.id) ? (
-                      <FaHeart className="text-danger" />
-                    ) : (
-                      <FaRegHeart className="text-dark" />
-                    )}
-                  </button>
-
-                  {venue.gallery?.length > 0 && (
-                    <div className="d-flex mt-2 px-2">
-                      {venue.gallery.slice(0, 3).map((thumb, i) => (
-                        <img
-                          key={i}
-                          src={thumb || "/images/imageNotFound.jpg"}
-                          alt="thumb"
-                          className="rounded-2 me-2 object-fit-cover"
-                          style={{
-                            height: "50px",
-                            width: "70px",
-                            cursor: "pointer",
+                      {((venue.vendor_type || "")
+                        .toLowerCase()
+                        .includes("venue") ||
+                        venue.vegPrice !== null ||
+                        venue.nonVegPrice !== null) && (
+                        <button
+                          className="btn btn-light rounded-circle position-absolute top-0 start-0 m-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
                           }}
-                          onMouseEnter={() => handleThumbEnter(venue.id, thumb)}
-                          onMouseLeave={() => handleThumbLeave(venue.id)}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "/images/imageNotFound.jpg";
+                        >
+                          <TbView360Number className="text-dark" />
+                        </button>
+                      )}
+
+                      <button
+                        className="btn btn-light rounded-circle position-absolute top-0 end-0 m-2"
+                        onClick={(e) => handleWishlistToggle(venue, e)}
+                      >
+                        {isFavorite(venue.id) ? (
+                          <FaHeart className="text-danger" />
+                        ) : (
+                          <FaRegHeart className="text-dark" />
+                        )}
+                      </button>
+
+                      {venue.gallery?.length > 0 && (
+                        <div className="d-flex mt-2 px-2">
+                          {venue.gallery.slice(0, 3).map((thumb, i) => (
+                            <img
+                              key={i}
+                              src={thumb || "/images/imageNotFound.jpg"}
+                              alt="thumb"
+                              className="rounded-2 me-2 object-fit-cover"
+                              style={{
+                                height: "50px",
+                                width: "70px",
+                                cursor: "pointer",
+                              }}
+                              onMouseEnter={() =>
+                                handleThumbEnter(venue.id, thumb)
+                              }
+                              onMouseLeave={() => handleThumbLeave(venue.id)}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "/images/imageNotFound.jpg";
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </Col>
+
+                    <Col md={8} className="p-3 d-flex flex-column">
+                      <Link className="text-decoration-none">
+                        <div className="d-flex justify-content-between align-items-start">
+                          <h4 className="fw-bold mb-1 primary-text">
+                            {venue.name}
+                          </h4>
+                        </div>
+
+                        <p className="text-muted small mb-1">
+                          {" "}
+                          <IoLocationOutline className="me-2" />
+                          {venue.location}
+                        </p>
+
+                        <p className="fw-semibold text-dark mb-2">
+                          <FaIndianRupeeSign size={14} />{" "}
+                          {(
+                            venue?.vegPrice ||
+                            venue?.nonVegPrice ||
+                            venue?.starting_price ||
+                            "Contact For Price"
+                          )
+                            ?.replace(/rs\.?/i, "")
+                            ?.trim()}
+                        </p>
+
+                        <div className="d-flex align-items-center mb-2">
+                          <FaStar className="text-warning me-1" />
+                          <span>{venue.rating || "5.0"}</span>
+                          <span className="text-muted ms-1">
+                            ({venue.reviews} reviews)
+                          </span>
+                        </div>
+
+                        <div
+                          className="text-muted small mb-2"
+                          style={{
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 3,
+                            WebkitBoxOrient: "vertical",
+                            lineHeight: "1.5",
+                          }}
+                          dangerouslySetInnerHTML={{
+                            __html: DOMPurify.sanitize(venue.description || ""),
                           }}
                         />
-                      ))}
-                    </div>
-                  )}
-                </Col>
+                      </Link>
+                      <div className="mt-auto text-end">
+                        <Button
+                          variant="danger"
+                          className="btn-primary"
+                          onClick={() => handleShow(venue.id)}
+                        >
+                          Send Message
+                        </Button>
+                      </div>
+                    </Col>
+                  </Row>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </Col>
 
-                <Col md={8} className="p-3 d-flex flex-column">
-                  <Link
-                    // to={`/details/info/${venue.id}`}
-                    className="text-decoration-none"
-                  >
-                    <div className="d-flex justify-content-between align-items-start">
-                      <h4 className="fw-bold mb-1 primary-text">
-                        {venue.name}
-                      </h4>
-                      {/* <Badge bg="danger">Handpicked</Badge> */}
-                    </div>
-
-                    <p className="text-muted small mb-1">
-                      {" "}
-                      <IoLocationOutline className="me-2" />
-                      {venue.location}
-                    </p>
-
-                    <p className="fw-semibold text-dark mb-2">
-                      <FaIndianRupeeSign size={14} />{" "}
-                      {(
-                        venue?.vegPrice ||
-                        venue?.nonVegPrice ||
-                        venue?.starting_price ||
-                        "Contact For Price"
-                      )
-                        ?.replace(/rs\.?/i, "")
-                        ?.trim()}
-                      {/* <small>per day</small> */}
-                    </p>
-
-                    <div className="d-flex align-items-center mb-2">
-                      <FaStar className="text-warning me-1" />
-                      <span>{venue.rating || "5.0"}</span>
-                      <span className="text-muted ms-1">
-                        ({venue.reviews} reviews)
-                      </span>
-                    </div>
-
-                    <div
-                      className="text-muted small mb-2"
-                      style={{
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        display: "-webkit-box",
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: "vertical",
-                        lineHeight: "1.5",
-                      }}
-                      dangerouslySetInnerHTML={{
-                        __html: DOMPurify.sanitize(venue.description || ""),
-                      }}
-                    />
-                  </Link>
-                  <div className="mt-auto text-end">
-                    <Button
-                      variant="danger"
-                      className="btn-primary"
-                      onClick={() => handleShow(venue.id)}
-                    >
-                      Send Message
-                    </Button>
-                  </div>
-                </Col>
-              </Row>
+        {/* Right sidebar: vertical stacked ad cards */}
+        {/* <Col xs={12} md={3} className="mt-4 mt-md-0">
+          <div className="d-flex flex-column gap-3">
+            <Card className="p-3 border-0 shadow-sm rounded-4">
+              <div
+                style={{
+                  height: 300,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              ></div>
             </Card>
-          </Col>
-        ))}
+          </div>
+        </Col> */}
       </Row>
     </Container>
   );
