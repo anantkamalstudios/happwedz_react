@@ -46,7 +46,7 @@ const Contactus = () => {
   };
 
   const styles = {
-    container: {
+    mainContainer: {
       backgroundColor: "#fff",
       minHeight: "100vh",
       padding: "40px 20px",
@@ -71,7 +71,7 @@ const Contactus = () => {
       maxWidth: "40%",
       padding: "0 15px",
     },
-    card: {
+    formCard: {
       backgroundColor: "white",
       boxShadow:
         "rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px",
@@ -226,7 +226,7 @@ const Contactus = () => {
       width: "100%",
       height: "auto",
     },
-    container: {
+    contactCardsContainer: {
       width: "100%",
       maxWidth: "1200px",
       margin: "0 auto",
@@ -252,7 +252,7 @@ const Contactus = () => {
       gap: "24px",
       marginBottom: "40px",
     },
-    card: {
+    contactCard: {
       backgroundColor: "white",
       borderRadius: "2px",
       padding: "24px",
@@ -384,13 +384,13 @@ const Contactus = () => {
   };
 
   return (
-    <div style={styles.container}>
+    <div style={styles.mainContainer}>
       <style>{mobileStyles}</style>
       <div style={styles.mainWrapper}>
         <div style={styles.row}>
           {/* Left Column - Contact Form */}
           <div style={styles.leftCol} className="left-col">
-            <div style={styles.card}>
+            <div style={styles.formCard}>
               <h2 className="fs-40 fw-bold dark-pink-text text-center d-flex justify-content-center">
                 CONTACT US
               </h2>
@@ -467,7 +467,7 @@ const Contactus = () => {
             </div>
 
             {/* Vendors Section */}
-            <div style={styles.container}>
+            <div style={styles.contactCardsContainer}>
               <div style={styles.header}>
                 <h2 style={styles.mainTitle}>Get In Touch</h2>
                 <p style={styles.subtitle}>We'd love to hear from you</p>
@@ -477,7 +477,7 @@ const Contactus = () => {
                 {contactCards.map((card, index) => (
                   <div
                     key={index}
-                    style={styles.card}
+                    style={styles.contactCard}
                     onMouseEnter={(e) => handleCardHover(e, true)}
                     onMouseLeave={(e) => handleCardHover(e, false)}
                   >
