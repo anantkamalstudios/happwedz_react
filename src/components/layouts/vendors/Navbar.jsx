@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { FaGift, FaStore, FaEnvelope, FaStar, FaCog } from "react-icons/fa";
 import { LiaHomeSolid } from "react-icons/lia";
 import { FaRegStar } from "react-icons/fa";
@@ -7,10 +8,12 @@ import { GoMail } from "react-icons/go";
 import { IoSettingsOutline } from "react-icons/io5";
 import { IoStorefrontOutline } from "react-icons/io5";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import vendorServicesApi from "../../../services/api/vendorServicesApi";
 
-const Navbar = ({ storefrontCompletion }) => {
+const Navbar = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { token, vendor } = useSelector((state) => state.vendorAuth || {});
   const [activeTab, setActiveTab] = useState("home");
   const [storedCompletion, setStoredCompletion] = useState(0);
 
@@ -21,11 +24,89 @@ const Navbar = ({ storefrontCompletion }) => {
     }
   }, []);
 
+  // Fetch storefront completion from backend API
   useEffect(() => {
-    if (storefrontCompletion !== undefined) {
-      setStoredCompletion(storefrontCompletion);
-    }
-  }, [storefrontCompletion]);
+    const fetchCompletion = async () => {
+      // First, get the service ID from vendor ID if needed
+      let serviceId = localStorage.getItem("vendorServiceId");
+
+      if (!serviceId && vendor?.id && token) {
+        // Fetch service ID using vendor ID
+        serviceId = await vendorServicesApi.getServiceIdByVendorId(
+          vendor.id,
+          token
+        );
+        if (serviceId) {
+          localStorage.setItem("vendorServiceId", serviceId.toString());
+        }
+      }
+
+      if (!serviceId || !token) return;
+
+      try {
+        const response = await fetch(
+          `https://happywedz.com/api/vendor-services/${serviceId}/storefront-completion`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("Navbar API response status:", response.status);
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Navbar completion data:", data);
+
+          // Handle both response formats and coerce to a safe numeric value
+          let completionValue = undefined;
+          if (data && typeof data === "object") {
+            if (
+              data.service &&
+              typeof data.service === "object" &&
+              data.service.storefront_completion !== undefined
+            ) {
+              completionValue = Number(data.service.storefront_completion);
+            } else if (data.storefront_completion !== undefined) {
+              completionValue = Number(data.storefront_completion);
+            }
+          }
+
+          if (!Number.isFinite(completionValue)) {
+            console.log(
+              "Navbar: invalid completion value, defaulting to 0",
+              completionValue
+            );
+            completionValue = 0;
+          }
+
+          // Clamp to 0..100
+          completionValue = Math.max(
+            0,
+            Math.min(100, Math.round(completionValue))
+          );
+
+          console.log(
+            "Setting storefront completion in Navbar:",
+            completionValue
+          );
+          setStoredCompletion(completionValue);
+          localStorage.setItem(
+            "storefrontCompletion",
+            completionValue.toString()
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch storefront completion:", error);
+        // Fall back to localStorage if API fails
+        const stored = localStorage.getItem("storefrontCompletion");
+        if (stored) {
+          setStoredCompletion(parseInt(stored, 10));
+        }
+      }
+    };
+    fetchCompletion();
+  }, [vendor?.id, token]);
 
   const tabs = [
     {
@@ -159,11 +240,7 @@ const Navbar = ({ storefrontCompletion }) => {
                     >
                       <div
                         style={{
-                          width: `${
-                            storefrontCompletion !== undefined
-                              ? storefrontCompletion
-                              : storedCompletion
-                          }%`,
+                          width: `${storedCompletion}%`,
                           height: "100%",
                           background: "#f12d85",
                           transition: "width 250ms ease",
@@ -179,10 +256,7 @@ const Navbar = ({ storefrontCompletion }) => {
                         textAlign: "right",
                       }}
                     >
-                      {storefrontCompletion !== undefined
-                        ? storefrontCompletion
-                        : storedCompletion}
-                      %
+                      {storedCompletion}%
                     </span>
                   </div>
                 </div>

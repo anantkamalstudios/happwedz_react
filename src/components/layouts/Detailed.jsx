@@ -129,7 +129,9 @@ const Detailed = () => {
       if (attributes.outside_alcohol) {
         amenities.push({
           icon: <FaStar />,
-          name: `Outside Alcohol: ${capitalizeWords(attributes.outside_alcohol)}`,
+          name: `Outside Alcohol: ${capitalizeWords(
+            attributes.outside_alcohol
+          )}`,
         });
       }
 
@@ -225,7 +227,10 @@ const Detailed = () => {
           .filter((s) => s);
         if (services.length > 0) {
           const top = services.slice(0, 5).map((s) => capitalizeWords(s));
-          amenities.push({ icon: <FaStar />, name: `Offerings: ${top.join(", ")}` });
+          amenities.push({
+            icon: <FaStar />,
+            name: `Offerings: ${top.join(", ")}`,
+          });
         }
       }
     }
@@ -378,7 +383,7 @@ const Detailed = () => {
                 );
                 try {
                   sessionStorage.setItem(sessionKey, Date.now().toString());
-                } catch { }
+                } catch {}
                 if (incRes?.data?.vendor?.profileViews !== undefined) {
                   setVenueData((prev) => ({
                     ...prev,
@@ -564,12 +569,12 @@ const Detailed = () => {
 
   const displayLocation = isVenue
     ? venueData.attributes?.address ||
-    venueData.attributes?.city ||
-    "Location not specified"
+      venueData.attributes?.city ||
+      "Location not specified"
     : venueData.attributes?.address ||
-    venueData.attributes?.city ||
-    venueData.vendor?.city ||
-    "Location not specified";
+      venueData.attributes?.city ||
+      venueData.vendor?.city ||
+      "Location not specified";
 
   // Prefer precise coordinates if present
   const latRaw =
@@ -583,8 +588,8 @@ const Detailed = () => {
   const mapSrc = hasCoords
     ? `https://maps.google.com/maps?q=${lat},${lng}&t=&z=13&ie=UTF8&iwloc=&output=embed`
     : `https://maps.google.com/maps?q=${encodeURIComponent(
-      displayLocation
-    )}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+        displayLocation
+      )}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
 
   const activeVendor = {
     id: id,
@@ -623,26 +628,33 @@ const Detailed = () => {
                     src={mainImage}
                     alt={venueData.attributes?.vendor_name || "Main Vendor"}
                     className="main-image rounded-lg"
-                    style={{ width: "100%", height: "500px", objectFit: "cover" }}
+                    style={{
+                      width: "100%",
+                      height: "500px",
+                      objectFit: "cover",
+                    }}
                   />
                 ) : (
                   <div className="main-image rounded-lg d-flex align-items-center justify-content-center bg-light">
                     <p className="text-muted">No image available</p>
                   </div>
                 )
+              ) : mainVideo ? (
+                <video
+                  src={mainVideo}
+                  controls
+                  className="rounded-lg"
+                  style={{
+                    width: "100%",
+                    height: "500px",
+                    objectFit: "cover",
+                    backgroundColor: "#000",
+                  }}
+                />
               ) : (
-                mainVideo ? (
-                  <video
-                    src={mainVideo}
-                    controls
-                    className="rounded-lg"
-                    style={{ width: "100%", height: "500px", objectFit: "cover", backgroundColor: "#000" }}
-                  />
-                ) : (
-                  <div className="main-image rounded-lg d-flex align-items-center justify-content-center bg-light">
-                    <p className="text-muted">No video available</p>
-                  </div>
-                )
+                <div className="main-image rounded-lg d-flex align-items-center justify-content-center bg-light">
+                  <p className="text-muted">No video available</p>
+                </div>
               )}
               {/* In-image media toggle */}
               <div
@@ -666,7 +678,10 @@ const Detailed = () => {
                   style={{
                     background: mediaTab === "gallery" ? "#f2f2f2" : "#fff",
                     color: "#000",
-                    border: mediaTab === "gallery" ? "2px solid #000" : "1px solid #e5e5e5",
+                    border:
+                      mediaTab === "gallery"
+                        ? "2px solid #000"
+                        : "1px solid #e5e5e5",
                     padding: "2px 10px",
                     height: "28px",
                     lineHeight: 1,
@@ -685,7 +700,10 @@ const Detailed = () => {
                   style={{
                     background: mediaTab === "video" ? "#f2f2f2" : "#fff",
                     color: "#000",
-                    border: mediaTab === "video" ? "2px solid #000" : "1px solid #e5e5e5",
+                    border:
+                      mediaTab === "video"
+                        ? "2px solid #000"
+                        : "1px solid #e5e5e5",
                     padding: "2px 10px",
                     height: "28px",
                     lineHeight: 1,
@@ -727,74 +745,86 @@ const Detailed = () => {
               </button>
             </div>
 
-            {mediaTab === "gallery" ? (
-              images.length > 0 && (
-                <div className="thumbnail-gallery mb-5">
-                  <Swiper
-                    modules={[Autoplay]}
-                    spaceBetween={10}
-                    slidesPerView={4}
-                    autoplay={{
-                      delay: 3000,
-                      disableOnInteraction: false,
-                    }}
-                    loop={images.length > 4}
-                    grabCursor={true}
-                    freeMode={true}
-                  >
-                    {images.map((img, idx) => (
-                      <SwiperSlide key={idx}>
-                        <div
-                          className={`thumbnail-item ${mainImage === img ? "active" : ""} ${hoveredIndex !== null && hoveredIndex !== idx ? "blurred" : ""
+            {mediaTab === "gallery"
+              ? images.length > 0 && (
+                  <div className="thumbnail-gallery mb-5">
+                    <Swiper
+                      modules={[Autoplay]}
+                      spaceBetween={10}
+                      slidesPerView={4}
+                      autoplay={{
+                        delay: 3000,
+                        disableOnInteraction: false,
+                      }}
+                      loop={images.length > 4}
+                      grabCursor={true}
+                      freeMode={true}
+                    >
+                      {images.map((img, idx) => (
+                        <SwiperSlide key={idx}>
+                          <div
+                            className={`thumbnail-item ${
+                              mainImage === img ? "active" : ""
+                            } ${
+                              hoveredIndex !== null && hoveredIndex !== idx
+                                ? "blurred"
+                                : ""
                             }`}
-                          onClick={() => setMainImage(img)}
-                          onMouseEnter={() => setHoveredIndex(idx)}
-                          onMouseLeave={() => setHoveredIndex(null)}
-                        >
-                          <img
-                            src={img}
-                            alt={`Thumbnail ${idx + 1}`}
-                            className="img-fluid rounded"
-                            style={{ cursor: "pointer", height: "100%", objectFit: "cover" }}
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src = "/images/imageNotFound.jpg";
-                            }}
-                          />
-                        </div>
-                      </SwiperSlide>
-                    ))}
-                  </Swiper>
-                </div>
-              )
-            ) : (
-              videos.length > 0 && (
-                <div className="mb-5">
-                  <div className="d-flex gap-2 flex-wrap">
-                    {videos.map((vid, idx) => (
-                      <video
-                        key={idx}
-                        src={vid}
-                        muted
-                        onClick={() => setMainVideo(vid)}
-                        className={`rounded ${mainVideo === vid ? "border border-primary" : ""}`}
-                        style={{ width: "160px", height: "100px", objectFit: "cover", backgroundColor: "#000", cursor: "pointer" }}
-                      />
-                    ))}
+                            onClick={() => setMainImage(img)}
+                            onMouseEnter={() => setHoveredIndex(idx)}
+                            onMouseLeave={() => setHoveredIndex(null)}
+                          >
+                            <img
+                              src={img}
+                              alt={`Thumbnail ${idx + 1}`}
+                              className="img-fluid rounded"
+                              style={{
+                                cursor: "pointer",
+                                height: "100%",
+                                objectFit: "cover",
+                              }}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "/images/imageNotFound.jpg";
+                              }}
+                            />
+                          </div>
+                        </SwiperSlide>
+                      ))}
+                    </Swiper>
                   </div>
-                </div>
-              )
-            )}
+                )
+              : videos.length > 0 && (
+                  <div className="mb-5">
+                    <div className="d-flex gap-2 flex-wrap">
+                      {videos.map((vid, idx) => (
+                        <video
+                          key={idx}
+                          src={vid}
+                          muted
+                          onClick={() => setMainVideo(vid)}
+                          className={`rounded ${
+                            mainVideo === vid ? "border border-primary" : ""
+                          }`}
+                          style={{
+                            width: "160px",
+                            height: "100px",
+                            objectFit: "cover",
+                            backgroundColor: "#000",
+                            cursor: "pointer",
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
 
             {/* In-page navigation */}
             <SectionTabs scrollToSection={scrollToSection} />
 
             <div id="about" className="venue-description mb-5">
               <h3 className="details-section-title fw-bold fs-22">
-                About{" "}
-                {venueData.attributes?.vendor_name ||
-                  venueData.attributes?.name ||
-                  venueData.attributes?.Name}
+                About {venueData.attributes?.name || venueData.attributes?.Name}
               </h3>
               {venueData.attributes?.about_us ? (
                 <div
@@ -826,7 +856,9 @@ const Detailed = () => {
                   getVendorFeatures(venueData).map((item, index) => {
                     const raw = item.name || "";
                     const isSub = raw.startsWith("-");
-                    const trimmed = isSub ? raw.replace(/^\-\s*/, "").trim() : raw.trim();
+                    const trimmed = isSub
+                      ? raw.replace(/^\-\s*/, "").trim()
+                      : raw.trim();
                     const [labelPart, ...rest] = trimmed.split(":");
                     const label = (labelPart || "").trim();
                     const value = rest.join(":").trim();
@@ -841,12 +873,18 @@ const Detailed = () => {
                       >
                         <div className={`amenity-item ${isSub ? "ms-4" : ""}`}>
                           <div className="d-flex flex-column">
-                            <span className="fw-semibold text-dark">{label}</span>
+                            <span className="fw-semibold text-dark">
+                              {label}
+                            </span>
                             {value && (
-                              <span className="text-muted small mt-1">{value}</span>
+                              <span className="text-muted small mt-1">
+                                {value}
+                              </span>
                             )}
                             {!value && !label && (
-                              <span className="text-muted small">{trimmed}</span>
+                              <span className="text-muted small">
+                                {trimmed}
+                              </span>
                             )}
                           </div>
                         </div>
@@ -879,7 +917,8 @@ const Detailed = () => {
                     const values = Object.values(answer).filter(
                       (v) => v != null && v !== ""
                     );
-                    if (values.length === 2) return [`${values[0]} - ${values[1]}`];
+                    if (values.length === 2)
+                      return [`${values[0]} - ${values[1]}`];
                     if (values.length === 1) return values;
                     return values;
                   }
@@ -910,7 +949,10 @@ const Detailed = () => {
                       const answers = parseAnswer(ques.ans);
                       const isSingleAnswer = answers.length === 1;
                       return (
-                        <div className="w-100 rounded border-bottom fs-14" key={index}>
+                        <div
+                          className="w-100 rounded border-bottom fs-14"
+                          key={index}
+                        >
                           <div className="p-2">
                             <p className="fw-semibold mb-1">{ques.text}</p>
                             {isSingleAnswer ? (
@@ -924,7 +966,10 @@ const Detailed = () => {
                                   >
                                     <i
                                       className="fa-solid fa-check me-2"
-                                      style={{ color: "#f44e4e", marginTop: "4px" }}
+                                      style={{
+                                        color: "#f44e4e",
+                                        marginTop: "4px",
+                                      }}
                                     ></i>
                                     <span className="text-muted">{answer}</span>
                                   </div>
@@ -952,7 +997,7 @@ const Detailed = () => {
             </div>
 
             <div id="reviews" className="py-2">
-              <ReviewSection vendor={activeVendor} />
+              <ReviewSection vendor={venueData || activeVendor} />
             </div>
             <div id="map" className="mt-4 pt-3 border-top">
               <div
@@ -990,15 +1035,17 @@ const Detailed = () => {
                 <div className="mb-3">
                   <div className="d-flex">
                     <h2 className="fw-bold fs-22">
-                      {venueData?.attributes?.vendor_name ||
+                      {venueData?.attributes?.name ||
                         venueData?.attributes?.Name ||
-                        venueData?.attributes?.name ||
                         "Vendor Name"}
                     </h2>
                   </div>
                   <div className="d-flex align-items-center my-2 fs-14">
                     <FaLocationDot className="me-1" size={15} color="black" />
-                    <span>{venueData?.attributes?.address || venueData?.attributes?.city}</span>
+                    <span>
+                      {venueData?.attributes?.address ||
+                        venueData?.attributes?.city}
+                    </span>
                   </div>
                   <div className="d-flex justify-content-between align-items-center">
                     <div className="rating-badge">
@@ -1040,8 +1087,8 @@ const Detailed = () => {
                       <div className="price-value fw-bold fs-16">
                         {venueData.attributes?.veg_price
                           ? `₹ ${parseInt(
-                            venueData.attributes.veg_price.replace(/,/g, "")
-                          ).toLocaleString()} onwards`
+                              venueData.attributes.veg_price.replace(/,/g, "")
+                            ).toLocaleString()} onwards`
                           : "Contact for pricing"}
                       </div>
                       <h4 className="price-title fw-bold mt-3 fs-16">
@@ -1050,11 +1097,11 @@ const Detailed = () => {
                       <div className="price-value fs-16 fw-semibold">
                         {venueData.attributes?.non_veg_price
                           ? `₹ ${parseInt(
-                            venueData.attributes.non_veg_price.replace(
-                              /,/g,
-                              ""
-                            )
-                          ).toLocaleString()} onwards`
+                              venueData.attributes.non_veg_price.replace(
+                                /,/g,
+                                ""
+                              )
+                            ).toLocaleString()} onwards`
                           : "Contact for pricing"}
                       </div>
                       {/* <p className="price-note text-muted mt-2">
@@ -1073,11 +1120,11 @@ const Detailed = () => {
                         {venueData.attributes?.vendor_type === "Makeup"
                           ? "Makeup Package (Starting)"
                           : venueData.attributes?.vendor_type === "Photography"
-                            ? "Photography Package (Starting)"
-                            : venueData.attributes?.vendor_type ===
-                              "Music And Dance"
-                              ? "Pricing Range"
-                              : ""}
+                          ? "Photography Package (Starting)"
+                          : venueData.attributes?.vendor_type ===
+                            "Music And Dance"
+                          ? "Pricing Range"
+                          : ""}
                       </h4>
 
                       <div className="price-value fs-16 fw-bold">
@@ -1086,19 +1133,19 @@ const Detailed = () => {
                         </h4>
                         ₹{" "}
                         {venueData.attributes?.PriceRange ||
-                          venueData.attributes.starting_price
+                        venueData.attributes.starting_price
                           ? venueData.attributes.PriceRange.replace(
-                            "Rs.",
-                            ""
-                          ).trim() || venueData.attributes.starting_price
+                              "Rs.",
+                              ""
+                            ).trim() || venueData.attributes.starting_price
                           : venueData.attributes.photo_package_price
-                            ? `₹${parseInt(
+                          ? `₹${parseInt(
                               venueData.attributes.photo_package_price.replace(
                                 /,/g,
                                 ""
                               )
                             ).toLocaleString()} onwards`
-                            : "Contact for pricing"}
+                          : "Contact for pricing"}
                       </div>
                       {venueData.attributes?.photo_video_package_price && (
                         <>
@@ -1149,8 +1196,6 @@ const Detailed = () => {
                   </div>
                 </div>
               </div>
-
-
             </div>
           </Col>
         </Row>

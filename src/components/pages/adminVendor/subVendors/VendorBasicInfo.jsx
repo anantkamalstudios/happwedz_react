@@ -27,7 +27,20 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
           ...prev.attributes,
           businessName:
             prev.attributes?.businessName || vendor.businessName || "",
-          slug: prev.attributes?.slug || "",
+          // Keep a canonical `Name` in attributes for API compatibility
+          Name:
+            prev.attributes?.Name ||
+            prev.attributes?.businessName ||
+            vendor.businessName ||
+            "",
+          // Sync to lowercase `name` key for API storage
+          name:
+            prev.attributes?.name ||
+            prev.attributes?.businessName ||
+            vendor.businessName ||
+            "",
+          // Prefill slug from previous attributes or vendor if available
+          slug: prev.attributes?.slug || vendor.slug || "",
           // tagline: prev.attributes?.tagline || "",
           // subtitle: prev.attributes?.subtitle || "",
           about_us: prev.attributes?.about_us || "",
@@ -73,6 +86,10 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
           .trim()
           .replace(/\s+/g, "-")
           .replace(/[^a-z0-9-]/g, "");
+        // Keep legacy `Name` attribute in sync with `businessName` for API
+        updatedAttributes.Name = value;
+        // Also sync to lowercase `name` key for API
+        updatedAttributes.name = value;
         updatedAttributes.slug = slugBase;
       }
       return { ...prev, attributes: updatedAttributes };

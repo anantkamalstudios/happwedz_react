@@ -338,9 +338,11 @@ const transformApiData = (items) => {
     const normalizeUrl = (u) => {
       if (!u) return null;
       if (/^https?:\/\//i.test(u)) return u;
-      return `${IMAGE_BASE_URL}${u.startsWith('/') ? u : '/' + u}`;
+      return `${IMAGE_BASE_URL}${u.startsWith("/") ? u : "/" + u}`;
     };
-    const gallery = (media.length > 0 ? media : portfolioUrls).map(normalizeUrl).filter(Boolean);
+    const gallery = (media.length > 0 ? media : portfolioUrls)
+      .map(normalizeUrl)
+      .filter(Boolean);
     const firstImage = gallery.length > 0 ? gallery[0] : null;
 
     const vendorTypeName =
@@ -392,9 +394,9 @@ const transformApiData = (items) => {
     return {
       id,
       name:
-        attributes.vendor_name ||
-        attributes.Name ||
+        attributes.name ||
         vendor.businessName ||
+        attributes.Name ||
         "Unknown Vendor",
       subtitle: attributes.subtitle || "",
       tagline: attributes.tagline || "",

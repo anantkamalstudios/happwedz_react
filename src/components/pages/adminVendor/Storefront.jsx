@@ -290,6 +290,45 @@ const Storefront = ({ setCompletion }) => {
     fetchServiceData();
   }, [fetchServiceData]);
 
+  // Fetch and load storefront completion from backend
+  useEffect(() => {
+    const fetchStorefrontCompletion = async () => {
+      if (!formData.id || !token) return;
+
+      try {
+        const response = await fetch(
+          `https://happywedz.com/api/vendor-services/${formData.id}/storefront-completion`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+        console.log("Storefront completion response:", data);
+
+        if (response.ok && data?.service?.storefront_completion !== undefined) {
+          const completion = data.service.storefront_completion;
+          localStorage.setItem("storefrontCompletion", completion.toString());
+          console.log("Stored storefrontCompletion:", completion);
+        }
+      } catch (error) {
+        console.error("Error fetching storefront completion:", error);
+      }
+    };
+
+    fetchStorefrontCompletion();
+  }, [formData.id, token]);
+
+  // Persist service ID to localStorage so Navbar can access it
+  useEffect(() => {
+    if (formData.id) {
+      localStorage.setItem("vendorServiceId", formData.id.toString());
+    }
+  }, [formData.id]);
+
   const handleSave = async () => {
     localStorage.setItem("vendorFormData", JSON.stringify(formData));
     if (formData.id) {
@@ -334,10 +373,10 @@ const Storefront = ({ setCompletion }) => {
   const buildAttributes = () => {
     const attrs = {
       tnc: formData.tnc,
-      Name:
-        formData.attributes?.Name ||
+      name:
         formData.attributes?.businessName ||
-        formData.attributes?.vendor_name ||
+        formData.attributes?.name ||
+        formData.attributes?.Name ||
         "",
       slug: formData.attributes?.slug || "",
       tags: formData.tags || [],
@@ -741,7 +780,32 @@ const Storefront = ({ setCompletion }) => {
     if (setCompletion) setCompletion(percentage);
     // Also save to localStorage so it persists across navigation
     localStorage.setItem("storefrontCompletion", percentage.toString());
-  }, [calculateCompletion, setCompletion]);
+
+    // Send completion percentage to backend API
+    const sendCompletionToBackend = async () => {
+      if (!formData.id || !token) return;
+      try {
+        const response = await fetch(
+          `https://happywedz.com/api/vendor-services/${formData.id}/storefront-completion`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ completion: percentage }),
+          }
+        );
+        if (!response.ok) {
+          console.warn("Failed to update storefront completion on backend");
+        }
+      } catch (error) {
+        console.error("Error sending storefront completion to backend:", error);
+      }
+    };
+
+    sendCompletionToBackend();
+  }, [calculateCompletion, setCompletion, formData.id, token]);
 
   // Helper to set active tab and persist selection
   const handleSetActive = useCallback(

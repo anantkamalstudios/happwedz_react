@@ -2,11 +2,21 @@
 import React, { useMemo, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { selectAppliedFilters, setAppliedFilters, clearFiltersByKey } from "../../../redux/filterSlice";
+import {
+  selectAppliedFilters,
+  setAppliedFilters,
+  clearFiltersByKey,
+} from "../../../redux/filterSlice";
 import TopFilter from "./TopFilter";
 import useFilters from "../../../hooks/useFilters";
 
-const DynamicAside = ({ view, setView, section, onFiltersChange }) => {
+const DynamicAside = ({
+  view,
+  setView,
+  section,
+  onFiltersChange,
+  vendorType,
+}) => {
   const dispatch = useDispatch();
   const { slug } = useParams();
   const {
@@ -16,7 +26,7 @@ const DynamicAside = ({ view, setView, section, onFiltersChange }) => {
     clearFilters,
     isFilterActive,
     getActiveCount,
-  } = useFilters({ section, slug });
+  } = useFilters({ section, slug: vendorType || slug });
 
   // Get the filter key
   const filterKey = useMemo(() => {
@@ -33,10 +43,11 @@ const DynamicAside = ({ view, setView, section, onFiltersChange }) => {
   // Track previous filter key to detect route changes
   const prevFilterKeyRef = useRef(filterKey);
 
-
   useEffect(() => {
-    if (prevFilterKeyRef.current !== null && prevFilterKeyRef.current !== filterKey) {
-
+    if (
+      prevFilterKeyRef.current !== null &&
+      prevFilterKeyRef.current !== filterKey
+    ) {
       dispatch(clearFiltersByKey({ key: prevFilterKeyRef.current }));
 
       if (onFiltersChange) {

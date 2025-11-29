@@ -564,9 +564,7 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
                                     cleanMediaUrl(result.media?.[0]) ||
                                     "/images/imageNotFound.jpg"
                                   }
-                                  alt={
-                                    result.attributes?.vendor_name || "Vendor"
-                                  }
+                                  alt={result.attributes?.name || "Vendor"}
                                   className="result-image"
                                   style={{
                                     width: "64px",
@@ -587,7 +585,7 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
                                     color: "#1f2937",
                                   }}
                                 >
-                                  {result.attributes?.vendor_name ||
+                                  {result.attributes?.name ||
                                     result.vendor?.businessName ||
                                     "Vendor"}
                                 </h6>

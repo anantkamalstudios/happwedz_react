@@ -18,9 +18,12 @@ const useFilters = ({ section, slug }) => {
   const [error, setError] = useState(null);
 
   const key = useMemo(() => {
+    // Normalize the key so query params like `?vendorType=Photographers`
+    // match the keys in `filtersConfig` (e.g. `photographers`).
     if (section === "venues" && !slug) return "venues";
-    if (slug) return slug;
-    return section || "";
+    const raw = slug || section || "";
+    // lowercase, trim, replace spaces with hyphens to match FILTER_CONFIG keys
+    return String(raw).toLowerCase().trim().replace(/\s+/g, "-");
   }, [section, slug]);
 
   // Get active filters from Redux
