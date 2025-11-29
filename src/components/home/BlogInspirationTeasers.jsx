@@ -65,12 +65,12 @@ const BlogsCarousel = () => {
             alt="inspiredTeaser"
             className="w-20 h-20"
           />
-          <h2 className="blogs-carousel-heading fw-bold mb-4 display-5 primary-text">
+          <h3 className="blogs-carousel-heading fw-bold mb-2 fs-26 primary-text">
             Inspiration Teasers
-          </h2>
-          <p className="fs-26 mb-3" data-aos="fade-up" data-aos-delay="50">
+          </h3>
+          <h6 className=" mb-3" data-aos="fade-up" data-aos-delay="50">
             Discover the latest trends, tips, and real wedding stories
-          </p>
+          </h6>
         </div>
 
         <Swiper
@@ -119,14 +119,13 @@ const BlogsCarousel = () => {
                     <span className="blogs-category">{blog.category}</span>
                     <FiArrowUpRight size={20} className="blogs-title-icon" />
                   </div>
-                  <h5 className="blogs-title">{blog.title}</h5>
-                  <p className="blogs-desc">
+                  <h5 className="blogs-title fs-16">{blog.title}</h5>
+                  <p className="blogs-desc fs-14">
                     {blog.desc && blog.desc.length > 120
                       ? blog.desc.slice(0, 120) + "..."
                       : blog.desc}
                   </p>
 
-                  {/* Footer */}
                   <div className="mt-auto">
                     <div className="d-flex align-items-center">
                       <img
@@ -141,10 +140,10 @@ const BlogsCarousel = () => {
                         height="40"
                       />
                       <div className="d-flex flex-column">
-                        <span className="fw-semibold text-dark">
+                        <span className="fw-semibold text-dark fs-14">
                           {blog.author}
                         </span>
-                        <small className="text-muted">{blog.date}</small>
+                        <small className="text-muted fs-12">{blog.date}</small>
                       </div>
                     </div>
                   </div>

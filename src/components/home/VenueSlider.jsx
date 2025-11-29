@@ -4,6 +4,7 @@ import { Autoplay } from "swiper/modules";
 import "swiper/css";
 import { Link } from "react-router-dom";
 import useApiData from "../../hooks/useApiData";
+import { CiStar } from "react-icons/ci";
 
 const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
 
@@ -37,9 +38,21 @@ const VenueSlider = () => {
     return (
       <div className="venues-slider-container">
         <div className="venues-slider-header">
-          <h2 className="venues-slider-title">Pick your Venue</h2>
-          <Link to="/venues" className="venues-slider-see-more">
+          <h3>Pick your Venue</h3>
+          <Link to="/venues" className="see-more-link fs-18">
             SEE MORE
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
           </Link>
         </div>
         <div className="text-center py-5">
@@ -56,7 +69,7 @@ const VenueSlider = () => {
     return (
       <div className="venues-slider-container">
         <div className="venues-slider-header">
-          <h2 className="venues-slider-title">Pick your Venue</h2>
+          <h3>Pick your Venue</h3>
         </div>
         <div className="text-center py-5 text-danger">
           <p>Failed to load venues. Please try again later.</p>
@@ -73,10 +86,22 @@ const VenueSlider = () => {
   return (
     <div className="venues-slider-container">
       {/* Header */}
-      <div className="venues-slider-header">
-        <h2 className="venues-slider-title">Pick your Venue</h2>
-        <Link to="/venues" className="venues-slider-see-more">
+      <div className="venues-slider-header d-flex justify-content-between align-items-end">
+        <h3>Pick your Venue</h3>
+        <Link to="/venues" className="see-more-link">
           SEE MORE
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
         </Link>
       </div>
 
@@ -132,7 +157,7 @@ const VenueSlider = () => {
                       alt={venue.name}
                       className="venues-slider-image"
                       onError={(e) => {
-                        e.target.src = "";
+                        e.target.src = "/images/imageNotFound.jpg";
                       }}
                     />
                     <button
@@ -155,19 +180,13 @@ const VenueSlider = () => {
                   </div>
 
                   <div className="venues-slider-content">
-                    <h5 className="venues-slider-name">{venue.name}</h5>
-                    <div className="venues-slider-rating">
-                      <svg
-                        className="venues-slider-star"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                      </svg>
+                    <h5 className="fs-16 text-black">{venue.name}</h5>
+                    <div className="venues-slider-rating d-flex align-items-center gap-1">
+                      <CiStar color="orange" />
                       <span className="venues-slider-rating-number">
                         {venue.rating || 0}
                       </span>
-                      <span className="venues-slider-review-count">
+                      <span className="venues-slider-review-count text-muted">
                         ({venue.reviews || venue.review_count || 0} reviews)
                       </span>
                     </div>

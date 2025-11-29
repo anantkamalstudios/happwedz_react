@@ -4,20 +4,19 @@ import { useNavigate } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Carousel, Button, Card, Modal } from "react-bootstrap";
+import { Button, Card, Modal } from "react-bootstrap";
 
 const API_BASE_URL = "https://happywedz.com/api";
 
-const ReviewModalFlow = ({ vendor }) => {
+const ReviewSection = ({ vendor }) => {
   const { user, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
   const [reviews, setReviews] = useState([]);
-
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
+  const [showAllReviews, setShowAllReviews] = useState(false);
 
-  // Fetch reviews
   useEffect(() => {
     if (!vendor?.id) return;
 
@@ -27,16 +26,10 @@ const ReviewModalFlow = ({ vendor }) => {
       .then((data) => {
         if (data.success) setReviews(data.reviews);
       })
-      .catch((err) => {
-        if (err?.name !== "AbortError") {
-          console.error("Failed to load reviews:", err);
-        }
-      });
+      .catch(() => { });
 
     return () => controller.abort();
   }, [vendor?.id]);
-
-  
 
   const handleReadMoreClick = (review) => {
     setSelectedReview(review);
@@ -44,47 +37,98 @@ const ReviewModalFlow = ({ vendor }) => {
   };
 
   const handleWriteReviewClick = () => {
-    if (!user || !token) {
-      navigate("/customer-login");
-    } else {
-      navigate(`/write-review/${vendor.id}`);
-    }
+    if (!user || !token) navigate("/customer-login");
+    else navigate(`/write-review/${vendor.id}`);
   };
 
-  const chunkReviews = (arr, size) => {
-    const result = [];
-    for (let i = 0; i < arr.length; i += size)
-      result.push(arr.slice(i, i + size));
-    return result;
+  const calculateAverageRating = (field) => {
+    if (reviews.length === 0) return 0;
+    const sum = reviews.reduce((acc, review) => acc + (review[field] || 0), 0);
+    return (sum / reviews.length).toFixed(1);
   };
-  const groupedReviews = chunkReviews(reviews, 3);
+
+  const overallRating =
+    reviews.length > 0
+      ? (
+        reviews.reduce((sum, r) => sum + r.rating_quality, 0) /
+        reviews.length
+      ).toFixed(1)
+      : "0.0";
+
+  const ratingCategories = [
+    { label: "Quality of service", field: "rating_quality", value: calculateAverageRating("rating_quality"), icon: "/images/review/quality.png" },
+    { label: "Responsiveness", field: "rating_responsiveness", value: calculateAverageRating("rating_responsiveness"), icon: "/images/review/responsiveness.png" },
+    { label: "Professionalism", field: "rating_professionalism", value: calculateAverageRating("rating_professionalism"), icon: "/images/review/professionalism.png" },
+    { label: "Value", field: "rating_value", value: calculateAverageRating("rating_value"), icon: "/images/review/value.png" },
+    { label: "Flexibility", field: "rating_flexibility", value: calculateAverageRating("rating_flexibility"), icon: "/images/review/flexibility.png" },
+  ];
+
+  const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 6);
+
+  const getRatingDistribution = () => {
+    const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    reviews.forEach((review) => {
+      const rating = Math.round(review.rating_quality);
+      if (rating >= 1 && rating <= 5) {
+        distribution[rating]++;
+      }
+    });
+    return distribution;
+  };
+
+  const ratingDistribution = getRatingDistribution();
 
   return (
     <div className="container my-5">
-      {/* Header */}
+      {/* <div className="row mb-5">
+        <div className="col-12">
+          <div className="d-flex align-items-center justify-content-between mb-4">
+            <div className="d-flex align-items-center gap-2">
+              <FaStar size={28} />
+              <h2 className="mb-0 fw-bold" style={{ fontSize: "26px" }}>
+                {overallRating} · {reviews.length} review{reviews.length !== 1 ? "s" : ""}
+              </h2>
+            </div>
+            <Button
+              className="btn-dark rounded-3 px-4 py-2 fw-semibold"
+              style={{ fontSize: "16px" }}
+              onClick={handleWriteReviewClick}
+            >
+              Write a review
+            </Button>
+          </div>
+        </div>
+      </div> */}
+
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-          <h3 className="fw-bold mb-2 fs-22">Reviews of {vendor?.name || vendor?.businessName || vendor?.Name} </h3>
+          <h3 className="fw-bold mb-2 fs-22">
+            Reviews of{" "}
+            {vendor?.attributes?.name ||
+              vendor?.name ||
+              vendor?.businessName ||
+              vendor?.Name}{" "}
+          </h3>
           <div className="d-flex align-items-center mb-1">
             <FaStar className="text-warning me-2" size={22} />
             <h4 className="mb-0 fw-bold fs-14">
               {reviews.length > 0
                 ? (
-                    reviews.reduce((sum, r) => sum + r.rating_quality, 0) /
-                    reviews.length
-                  ).toFixed(1)
+                  reviews.reduce((sum, r) => sum + r.rating_quality, 0) /
+                  reviews.length
+                ).toFixed(1)
                 : "0.0"}{" "}
               <span className="text-dark fw-normal fs-14">Excellent</span>
             </h4>
-            <span className="text-muted ms-2 fs-14">• {reviews.length} Reviews</span>
+            <span className="text-muted ms-2 fs-14">
+              • {reviews.length} Reviews
+            </span>
           </div>
         </div>
 
         <div className="d-flex align-items-center">
           <Button
-            color="#ed1173"
-            className="fw-semibold"
-            style={{ fontSize: "14px", padding: "8px 20px", minWidth: "140px" }}
+            className="btn-outline-primary"
             onClick={handleWriteReviewClick}
           >
             Write a review
@@ -92,203 +136,243 @@ const ReviewModalFlow = ({ vendor }) => {
         </div>
       </div>
 
-      {/* Review Carousel */}
       {reviews.length > 0 ? (
-        <Carousel
-          interval={2500}
-          indicators={true}
-          controls={true}
-          pause="hover"
-          wrap={true}
-          className="reviews-carousel"
-          style={{ position: "relative" }}
-        >
-          {groupedReviews.map((group, index) => (
-            <Carousel.Item key={index}>
-              <div
-                className="d-flex justify-content-start gap-4 flex-wrap"
-                style={{ position: "relative", zIndex: 2 }}
-              >
-                {group.map((review) => (
-                  <Card
-                    key={review.id}
-                    className="shadow-sm border rounded-3"
-                    style={{ width: "250px", height: "250px" }}
-                  >
-                    <Card.Body>
-                      <div className="d-flex align-items-center mb-3">
-                        {review.user?.image ? (
-                          <img
-                            src={review.user.image}
-                            alt={review.user.firstName}
-                            className="rounded-circle me-3"
-                            width={50}
-                            height={50}
-                          />
-                        ) : (
-                          <div
-                            className="rounded-circle bg-secondary text-white d-flex justify-content-center align-items-center me-3"
-                            style={{ width: 50, height: 50 }}
-                          >
-                            {review.user?.name
-                              ? review.user.name.charAt(0)
-                              : "U"}
-                          </div>
-                        )}
-                        <div>
-                          <h6 className="mb-0 fw-bold">
-                            {review.user?.name || "Anonymous"}
-                          </h6>
-                          <small className="text-muted">
-                            Sent on{" "}
-                            {new Date(review.createdAt).toLocaleDateString()}
-                          </small>
-                        </div>
-                      </div>
-
-                      <div className="d-flex align-items-start mb-2">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <FaStar
-                            key={i}
-                            className="me-1"
-                            color={
-                              i < review.rating_quality ? "#ffc107" : "#e4e5e9"
-                            }
-                          />
-                        ))}
-                        <strong className="ms-2">
-                          {review.rating_quality.toFixed(1)}
-                        </strong>
-                      </div>
-
-                      <h6 className="fw-semibold mb-1">
-                        {review.title.length > 40
-                          ? review.title.slice(0, 40) + "..."
-                          : review.title}
-                      </h6>
-                      <p
-                        className="text-muted mb-2"
-                        style={{ fontSize: "14px" }}
-                      >
-                        {review.comment.length > 120
-                          ? review.comment.slice(0, 120) + "..."
-                          : review.comment}
-                      </p>
-                      <a
-                        className="fw-semibold text-decoration-none"
-                        onClick={() => handleReadMoreClick(review)}
-                        style={{ cursor: "pointer" }}
-                      >
-                        Read more
-                      </a>
-                    </Card.Body>
-                  </Card>
+        <>
+          <div className="row mb-5 justify-content-between border-bottom pb-4">
+            <div className="col-md-4 mb-4 mb-md-0">
+              <div className="d-flex flex-column gap-3">
+                {[5, 4, 3, 2, 1].map((rating) => (
+                  <div key={rating} className="d-flex align-items-center gap-3">
+                    <span className="text-dark" style={{ fontSize: "14px", minWidth: "12px" }}>{rating}</span>
+                    <div className="flex-grow-1 position-relative" style={{ height: "6px", backgroundColor: "#e0e0e0", borderRadius: "4px" }}>
+                      <div
+                        style={{
+                          position: "absolute",
+                          left: 0,
+                          top: 0,
+                          height: "100%",
+                          width: reviews.length > 0 ? `${(ratingDistribution[rating] / reviews.length) * 100}%` : "0%",
+                          backgroundColor: "#222",
+                          borderRadius: "4px",
+                        }}
+                      />
+                    </div>
+                  </div>
                 ))}
               </div>
-            </Carousel.Item>
-          ))}
-        </Carousel>
+            </div>
+
+            <div className="col-md-8 mb-4 mb-md-0 px-4">
+              <div className="row g-4">
+                {ratingCategories.map((category, index) => (
+                  <div key={index} className="col-md-6 col-lg-6">
+                    <div className="d-flex flex-column">
+                      <div className="d-flex align-items-center justify-content-between mb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <img
+                            src={category.icon}
+                            alt={category.label}
+                            style={{ width: "24px", height: "24px", objectFit: "contain" }}
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                            }}
+                          />
+                          <span className="text-dark" style={{ fontSize: "14px", fontWeight: "500" }}>{category.label}</span>
+                        </div>
+                        <span className="text-dark fw-semibold" style={{ fontSize: "14px" }}>{category.value}</span>
+                      </div>
+                      <div className="position-relative" style={{ height: "4px", backgroundColor: "#e0e0e0", borderRadius: "4px" }}>
+                        <div
+                          style={{
+                            position: "absolute",
+                            left: 0,
+                            top: 0,
+                            height: "100%",
+                            width: `${(category.value / 5) * 100}%`,
+                            backgroundColor: "#222",
+                            borderRadius: "4px",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="row g-4 mb-4">
+            {displayedReviews.map((review) => (
+              <div key={review.id} className="col-md-6 col-lg-6">
+                <div className="h-100">
+                  <div className="d-flex align-items-start gap-3 mb-3">
+                    <img
+                      src={review.user?.image || "/images/no-image.png"}
+                      alt={review.user?.name || "User"}
+                      className="rounded-circle"
+                      style={{ width: "48px", height: "48px", objectFit: "cover" }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/images/no-image.png";
+                      }}
+                    />
+                    <div className="flex-grow-1">
+                      <h6 className="mb-0 fw-semibold" style={{ fontSize: "16px" }}>{review.user?.name || "Anonymous"}</h6>
+                      <p className="mb-0 text-muted" style={{ fontSize: "14px" }}>
+                        {new Date(review.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="d-flex align-items-center gap-1 mb-3">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <FaStar key={i} size={12} color={i < review.rating_quality ? "#ff9114" : "#e0e0e0"} />
+                    ))}
+                  </div>
+
+                  <p className="text-dark mb-2" style={{ fontSize: "14px", lineHeight: "1.6" }}>
+                    {review.comment.length > 180 ? review.comment.slice(0, 180) + "..." : review.comment}
+                  </p>
+
+                  {review.comment.length > 180 && (
+                    <button
+                      className="btn btn-link p-0 text-dark fw-semibold text-decoration-underline"
+                      style={{ fontSize: "14px" }}
+                      onClick={() => handleReadMoreClick(review)}
+                    >
+                      Show more
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {reviews.length > 6 && (
+            <div className="mb-4">
+              <button
+                className="btn btn-outline-dark rounded-3 px-4 py-2 fw-semibold"
+                style={{ fontSize: "16px", border: "1px solid #222" }}
+                onClick={() => setShowAllReviews(!showAllReviews)}
+              >
+                {showAllReviews ? "Show less" : `Show all ${reviews.length} reviews`}
+              </button>
+            </div>
+          )}
+        </>
       ) : (
-        <p className="text-muted text-center mt-4">
-          No reviews yet. Be the first to write one!
-        </p>
+        <div className="text-center py-5">
+          <FaStar size={48} className="text-muted mb-3" />
+          <p className="text-muted mb-4" style={{ fontSize: "16px" }}>No reviews yet</p>
+          <Button className="btn-dark rounded-3 px-4 py-2 fw-semibold" style={{ fontSize: "16px" }} onClick={handleWriteReviewClick}>
+            Write a review
+          </Button>
+        </div>
       )}
 
-      {/* Review Details Modal */}
-      <Modal
-        show={showDetailModal}
-        onHide={() => setShowDetailModal(false)}
-        centered
-        size="lg"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title className="fw-semibold">Review Details</Modal.Title>
+      <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} centered size="lg">
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="fw-bold" style={{ fontSize: "22px" }}>Review</Modal.Title>
         </Modal.Header>
 
-        <Modal.Body>
+        <Modal.Body className="px-4 py-4">
           {selectedReview && (
-            <div className="p-3">
-              <h6 className="fw-bold mb-1">
-                {selectedReview.user?.name || "Anonymous"}
-              </h6>
-              <small className="text-muted">
-                Sent on{" "}
-                {new Date(selectedReview.createdAt).toLocaleDateString()}
-              </small>
-              <h5 className="fw-bold my-3">{selectedReview.title}</h5>
-              <p className="text-muted" style={{ lineHeight: "1.6" }}>
+            <div>
+              <div className="d-flex align-items-start gap-3 mb-4">
+                <img
+                  src={selectedReview.user?.image || "/images/no-image.png"}
+                  alt={selectedReview.user?.name || "User"}
+                  className="rounded-circle"
+                  style={{ width: "56px", height: "56px", objectFit: "cover" }}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/images/no-image.png";
+                  }}
+                />
+                <div className="flex-grow-1">
+                  <h6 className="mb-0 fw-bold" style={{ fontSize: "18px" }}>{selectedReview.user?.name || "Anonymous"}</h6>
+                  <p className="mb-0 text-muted" style={{ fontSize: "14px" }}>
+                    {new Date(selectedReview.createdAt).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              <div className="d-flex align-items-center gap-1 mb-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <FaStar key={i} size={16} color={i < selectedReview.rating_quality ? "#222" : "#e0e0e0"} />
+                ))}
+                <span className="ms-2 fw-semibold" style={{ fontSize: "16px" }}>{selectedReview.rating_quality.toFixed(1)}</span>
+              </div>
+
+              {selectedReview.title && (
+                <h5 className="fw-bold mb-3" style={{ fontSize: "18px" }}>{selectedReview.title}</h5>
+              )}
+
+              <p className="text-dark mb-4" style={{ fontSize: "16px", lineHeight: "1.7" }}>
                 {selectedReview.comment}
               </p>
 
-              <div className="border rounded p-3 bg-light mb-4">
-                <div className="d-flex justify-content-between mb-2">
-                  <span>Quality of service</span>
-                  <span>
-                    <FaStar color="#ffc107" /> {selectedReview.rating_quality}
-                  </span>
-                </div>
-                <div className="d-flex justify-content-between mb-2">
-                  <span>Response time</span>
-                  <span>
-                    <FaStar color="#ffc107" />{" "}
-                    {selectedReview.rating_responsiveness}
-                  </span>
-                </div>
-                <div className="d-flex justify-content-between mb-2">
-                  <span>Professionalism</span>
-                  <span>
-                    <FaStar color="#ffc107" />{" "}
-                    {selectedReview.rating_professionalism}
-                  </span>
-                </div>
-                <div className="d-flex justify-content-between mb-2">
-                  <span>Value</span>
-                  <span>
-                    <FaStar color="#ffc107" /> {selectedReview.rating_value}
-                  </span>
-                </div>
-                <div className="d-flex justify-content-between">
-                  <span>Flexibility</span>
-                  <span>
-                    <FaStar color="#ffc107" />{" "}
-                    {selectedReview.rating_flexibility}
-                  </span>
+              <div className="border-top pt-4 mb-4">
+                <h6 className="fw-semibold mb-3" style={{ fontSize: "16px" }}>Rating breakdown</h6>
+                <div className="row g-3">
+                  {[
+                    { label: "Quality of service", key: "rating_quality" },
+                    { label: "Responsiveness", key: "rating_responsiveness" },
+                    { label: "Professionalism", key: "rating_professionalism" },
+                    { label: "Value", key: "rating_value" },
+                    { label: "Flexibility", key: "rating_flexibility" },
+                  ].map((item) => (
+                    <div className="col-6" key={item.key}>
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <span style={{ fontSize: "14px" }}>{item.label}</span>
+                        <span className="fw-semibold" style={{ fontSize: "14px" }}>{selectedReview[item.key].toFixed(1)}</span>
+                      </div>
+                      <div
+                        className="position-relative"
+                        style={{ height: "4px", backgroundColor: "#e0e0e0", borderRadius: "4px" }}
+                      >
+                        <div
+                          style={{
+                            position: "absolute",
+                            left: 0,
+                            top: 0,
+                            height: "100%",
+                            width: `${(selectedReview[item.key] / 5) * 100}%`,
+                            backgroundColor: "#222",
+                            borderRadius: "4px",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* Media */}
-              <div className="mb-4">
-                <strong className="d-block mb-2">Media:</strong>
-                <div className="d-flex flex-wrap">
-                  {selectedReview.media && selectedReview.media.length > 0 ? (
-                    selectedReview.media.map((imgUrl, idx) => (
+              {selectedReview.media && selectedReview.media.length > 0 && (
+                <div className="mb-4">
+                  <h6 className="fw-semibold mb-3" style={{ fontSize: "16px" }}>Photos</h6>
+                  <div className="d-flex flex-wrap gap-2">
+                    {selectedReview.media.map((imgUrl, idx) => (
                       <img
                         key={idx}
                         src={imgUrl}
                         alt="review"
-                        style={{
-                          width: 90,
-                          height: 90,
-                          objectFit: "cover",
-                          marginRight: 8,
-                          marginBottom: 8,
-                          borderRadius: 8,
-                          border: "1px solid #e0e0e0",
-                        }}
+                        className="rounded"
+                        style={{ width: "120px", height: "120px", objectFit: "cover", cursor: "pointer" }}
                       />
-                    ))
-                  ) : (
-                    <span className="text-muted">No images</span>
-                  )}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {selectedReview.vendor_reply && (
-                <div className="bg-light border rounded p-3 mt-4">
-                  <h6 className="text-uppercase text-muted fw-semibold mb-2">
-                    Vendor's Reply:
-                  </h6>
-                  <p className="mb-0" style={{ whiteSpace: "pre-line" }}>
+                <div className="border rounded p-3 mt-4" style={{ backgroundColor: "#f7f7f7" }}>
+                  <h6 className="fw-semibold mb-2" style={{ fontSize: "16px" }}>Response from {vendor?.name || "vendor"}</h6>
+                  <p className="mb-0" style={{ fontSize: "14px", whiteSpace: "pre-line" }}>
                     {selectedReview.vendor_reply}
                   </p>
                 </div>
@@ -297,8 +381,8 @@ const ReviewModalFlow = ({ vendor }) => {
           )}
         </Modal.Body>
 
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
+        <Modal.Footer className="border-0 pt-0">
+          <Button variant="light" className="rounded-3 px-4 py-2" style={{ fontSize: "14px" }} onClick={() => setShowDetailModal(false)}>
             Close
           </Button>
         </Modal.Footer>
@@ -307,4 +391,4 @@ const ReviewModalFlow = ({ vendor }) => {
   );
 };
 
-export default ReviewModalFlow;
+export default ReviewSection;

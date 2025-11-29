@@ -160,7 +160,7 @@ const UserDashboardNavbar = () => {
               </div>
             </div>
             <span
-              className="mt-2"
+              className="mt-2 fs-16"
               style={{
                 fontWeight: activeTab === tab.id ? "600" : "400",
               }}

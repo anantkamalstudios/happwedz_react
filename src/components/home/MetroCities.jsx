@@ -19,17 +19,17 @@ const MetroCities = () => {
 
   return (
     <div className="container my-5">
-      <h3 className="mb-4 text-center">Wedding Venues By Location</h3>
+      <h4 className="mb-4 text-center fs-20">Wedding Venues By Location</h4>
 
       <div className="mt-5 metro-cities-container">
         {Object.entries(citiesData).map(([state, venues]) => (
           <div key={state} className="mb-4 break-inside-avoid">
-            <h5 className="fw-bold">{state}</h5>
+            <p className="fw-bold fs-16">{state}</p>
             <ul className="list-unstyled mt-3">
               {venues.map((venue, index) => (
                 <li
                   key={index}
-                  className="lh-lg mb-1"
+                  className="lh-lg mb-1 fs-14"
                   style={{ fontSize: "15px", cursor: "pointer" }}
                   onClick={() => handleCityClick(venue)}
                 >

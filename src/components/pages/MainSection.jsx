@@ -94,7 +94,7 @@ const MainSection = () => {
       if (typeof window !== "undefined") {
         localStorage.setItem(storageKey, view);
       }
-    } catch (e) {}
+    } catch (e) { }
   }, [view, storageKey]);
 
   const handleShow = (id) => {
@@ -198,14 +198,12 @@ const MainSection = () => {
   if (section === "photography") {
     return (
       <div className="container">
-        {/* <MainSearch title="Photography" /> */}
-        <h1 className="mt-5 fw-bold primary-text">
-          Explore Stunning Wedding Photos.
-        </h1>
-        <p>
-          Discover the latest trends, creative ideas, and timeless inspiration
-          for your perfect wedding day.
-        </p>
+        <h3 className="mt-5 fw-bold primary-text h2">
+          Every Smile, Every Tear, Every Moment — Perfectly Captured
+        </h3>
+        <h6>
+          Find the latest trends and heartfelt inspiration to shape your perfect wedding story
+        </h6>
         <TopSlider
           onCategorySelect={(id, name) => {
             setSelectedCategory(id);

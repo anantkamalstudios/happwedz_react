@@ -439,8 +439,8 @@ const LocationModalWithAPI = () => {
 
   const filterCities = searchTerm.trim()
     ? cities.filter((city) =>
-        city.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      city.toLowerCase().includes(searchTerm.toLowerCase())
+    )
     : [];
 
   const handleCityClick = (city) => {
@@ -454,8 +454,7 @@ const LocationModalWithAPI = () => {
 
     setTimeout(() => {
       navigate(
-        `/vendors/all${
-          city !== "All Cities" ? `?city=${encodeURIComponent(city)}` : ""
+        `/vendors/all${city !== "All Cities" ? `?city=${encodeURIComponent(city)}` : ""
         }`
       );
     }, 300);
@@ -492,7 +491,7 @@ const LocationModalWithAPI = () => {
             {selectedLocation ? (
               <span className="fw-medium">{selectedLocation}</span>
             ) : (
-              <span className="text-dark">Select Location</span>
+              <span className="text-dark fs-14">Select Location</span>
             )}
           </span>
 
@@ -541,7 +540,7 @@ const LocationModalWithAPI = () => {
               placeholder="Search City, State..."
               value={searchTerm}
               onChange={handleSearchChange}
-              className=" p-3"
+              className="p-2 fs-14"
             />
           </div>
 
@@ -590,7 +589,7 @@ const LocationModalWithAPI = () => {
                     <div key={city} className="mb-2">
                       <a
                         href="#"
-                        className="text-dark text-decoration-none d-block"
+                        className="text-dark text-decoration-none d-block fs-14"
                         onClick={(e) => {
                           e.preventDefault();
                           handleCityClick(city);
@@ -617,7 +616,7 @@ const LocationModalWithAPI = () => {
                     <div key={city} className="mb-2">
                       <a
                         href="#"
-                        className="text-dark text-decoration-none d-block"
+                        className="text-dark text-decoration-none d-block fs-14"
                         onClick={(e) => {
                           e.preventDefault();
                           handleCityClick(city);
@@ -638,7 +637,7 @@ const LocationModalWithAPI = () => {
                     <div key={city} className="mb-2">
                       <a
                         href="#"
-                        className="text-dark text-decoration-none d-block"
+                        className="text-dark text-decoration-none d-block fs-14"
                         onClick={(e) => {
                           e.preventDefault();
                           handleCityClick(city);
@@ -664,7 +663,7 @@ const LocationModalWithAPI = () => {
                     <div key={state} className="mb-2">
                       <a
                         href="#"
-                        className="text-dark text-decoration-none d-block"
+                        className="text-dark text-decoration-none d-block fs-14"
                         onClick={(e) => {
                           e.preventDefault();
                           handleCityClick(state);
@@ -682,7 +681,7 @@ const LocationModalWithAPI = () => {
                     <div key={city} className="mb-2">
                       <a
                         href="#"
-                        className="text-dark text-decoration-none d-block"
+                        className="text-dark text-decoration-none d-block fs-14"
                         onClick={(e) => {
                           e.preventDefault();
                           handleCityClick(city);

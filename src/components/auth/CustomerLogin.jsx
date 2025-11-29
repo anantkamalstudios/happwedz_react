@@ -32,7 +32,7 @@ const CustomerLogin = () => {
         const res = await fetch("https://happywedz.com/api/login-cms");
         const data = await res.json();
         setLoginCms(data?.data || data || null);
-      } catch {}
+      } catch { }
     })();
   }, []);
 
@@ -120,7 +120,7 @@ const CustomerLogin = () => {
   };
 
   return (
-    <div className="container wedding-login-container min-vh-100 d-flex align-items-center justify-content-center my-5">
+    <div className="container min-vh-100 d-flex align-items-center justify-content-center my-5">
       <ToastContainer position="top-center" autoClose={3000} />
       <div className="row w-100 shadow-lg rounded-4 overflow-hidden">
         <div
@@ -128,11 +128,11 @@ const CustomerLogin = () => {
           style={{
             ...(loginCms?.image
               ? {
-                  backgroundImage: `url(${normalizeUrl(loginCms?.image)})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  minHeight: "600px",
-                }
+                backgroundImage: `url(${normalizeUrl(loginCms?.image)})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                minHeight: "600px",
+              }
               : {}),
           }}
         >
@@ -160,7 +160,7 @@ const CustomerLogin = () => {
 
         <div className="col-lg-6 bg-white p-4 p-md-5 d-flex flex-column justify-content-center">
           <div className="text-center mb-4">
-            <h2 className="fw-light mb-2" style={{ color: "#8a5a76" }}>
+            <h3 className="mb-2" style={{ color: "#8a5a76" }}>
               {loginCms?.title ? (
                 loginCms.title
               ) : (
@@ -169,8 +169,8 @@ const CustomerLogin = () => {
                   <span className="primary-text fw-bold">HappyWedz</span>
                 </>
               )}
-            </h2>
-            <p className="text-muted">
+            </h3>
+            <p className="text-muted fs-14">
               {loginCms?.description ||
                 "Sign in to access your wedding planning dashboard"}
             </p>

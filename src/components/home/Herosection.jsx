@@ -207,6 +207,7 @@ const Herosection = () => {
                       right: 0,
                       backgroundColor: "white",
                       borderRadius: "12px",
+                      fontSize: "14px",
                       boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
                       maxHeight: "500px",
                       overflowY: "auto",
@@ -246,7 +247,7 @@ const Herosection = () => {
                                 <Link
                                   to={`/vendors/${toSlug(sub.name)}`}
                                   style={{
-                                    fontSize: "13px",
+                                    fontSize: "14px",
                                     color: "#333",
                                     textDecoration: "none",
                                     display: "block",
@@ -285,7 +286,7 @@ const Herosection = () => {
                         borderRadius: "6px",
                       }}
                     >
-                      <span>{selectedCategory}</span>
+                      <span style={{ fontSize: "14px" }}>{selectedCategory}</span>
                       {showCategoryDropdown ? (
                         <MdExpandLess size={18} />
                       ) : (
@@ -300,6 +301,7 @@ const Herosection = () => {
                           top: "calc(100% + 4px)",
                           left: 0,
                           right: 0,
+                          fontSize: "14px",
                           backgroundColor: "white",
                           borderRadius: "6px",
                           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
@@ -312,6 +314,7 @@ const Herosection = () => {
                         <div style={{ padding: "0.5rem 0" }}>
                           <div
                             style={{
+                              fontSize: "14px",
                               padding: "0.75rem 1rem",
                               color: "#333",
                               cursor: "pointer",
@@ -334,6 +337,7 @@ const Herosection = () => {
                             <div
                               key={cat.id}
                               style={{
+                                fontSize: "14px",
                                 padding: "0.75rem 1rem",
                                 color: "#333",
                                 cursor: "pointer",
@@ -417,6 +421,7 @@ const Herosection = () => {
                           maxHeight: "300px",
                           overflowY: "auto",
                           zIndex: 999,
+                          fontSize: "14px",
                           border: "1px solid #ddd",
                         }}
                       >

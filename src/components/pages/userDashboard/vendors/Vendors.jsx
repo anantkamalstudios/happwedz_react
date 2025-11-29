@@ -82,7 +82,7 @@ const Vendors = () => {
   return (
     <div className="vendors-container">
       <div className="vendors-header">
-        <h1>My Vendors</h1>
+        <h3>My Vendors</h3>
         <div className="vendors-stats">
           <div className="stat-box">
             <span className="stat-number">{vendors.booked}</span>
@@ -158,7 +158,7 @@ const Vendors = () => {
                       />
                     </div>
 
-                    <h3
+                    <h6
                       style={{
                         position: "absolute",
                         top: "50%",
@@ -166,7 +166,6 @@ const Vendors = () => {
                         transform: "translate(-50%, -50%)",
                         color: "#fff",
                         fontWeight: "600",
-                        fontSize: "1rem",
                         textAlign: "center",
                         textShadow: "0 2px 4px rgba(0,0,0,0.6)",
                         margin: 0,
@@ -176,7 +175,7 @@ const Vendors = () => {
                       }}
                     >
                       {category.name}
-                    </h3>
+                    </h6>
                   </div>
 
                   <div

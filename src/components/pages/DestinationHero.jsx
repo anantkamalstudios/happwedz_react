@@ -139,18 +139,13 @@ export default function WeddingHero() {
 
       <section className="hero-section">
         <div className="hero-overlay"></div>
-        
+
         <div className="hero-content">
-  
-          
+
+
           <h1 className="hero-title">
-            Destination Wedding<br />
-            Organizer For Your Happy Day
+            Crafting Unforgettable Destination Weddings for Your Happy Day
           </h1>
-          
-         
-          
-          
         </div>
       </section>
     </div>

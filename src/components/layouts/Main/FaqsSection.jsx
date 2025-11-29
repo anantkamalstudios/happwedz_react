@@ -3,15 +3,17 @@ import { Container, Row, Col } from "react-bootstrap";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { useFaqFrontend } from "../../../hooks/useFaq";
 
-const FaqsSection = ({ navbarId = null }) => {
+const FaqsSection = ({ navbarId = null, customFaqs = null }) => {
   const [activeIndex, setActiveIndex] = useState(null);
-  const { faqs, loading, error } = useFaqFrontend(navbarId);
+  const { faqs: fetchedFaqs, loading, error } = useFaqFrontend(navbarId);
+
+  const faqs = customFaqs || fetchedFaqs;
 
   const toggleFAQ = (index) => {
     setActiveIndex(activeIndex === index ? null : index);
   };
 
-  if (loading) {
+  if (!customFaqs && loading) {
     return (
       <div className="faq-section container my-5">
         <h2 className="text-center mb-4 faq-heading">
@@ -22,7 +24,7 @@ const FaqsSection = ({ navbarId = null }) => {
     );
   }
 
-  if (error) {
+  if (!customFaqs && error) {
     return (
       <div className="faq-section container my-5">
         <h2 className="text-center mb-4 faq-heading">
@@ -46,9 +48,8 @@ const FaqsSection = ({ navbarId = null }) => {
             onClick={() => toggleFAQ(index)}
           >
             <div className="faq-header d-flex justify-content-between align-items-center">
-              <h5 className="faq-question">{`${index + 1}. ${
-                faq.question
-              }`}</h5>
+              <h5 className="faq-question">{`${index + 1}. ${faq.question
+                }`}</h5>
               <span className="faq-icon">
                 {activeIndex === index ? "−" : "+"}
               </span>

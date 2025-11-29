@@ -43,19 +43,19 @@ const Home = () => {
       try {
         const ds = await cmsApi.designStudioBanner.getBanner();
         setDesignBanner(ds?.data || null);
-      } catch {}
+      } catch { }
       try {
         const ei = await cmsApi.einviteBanner.getBanner();
         setEinviteBanner(ei?.data || null);
-      } catch {}
+      } catch { }
       try {
         const rw = await cmsApi.realWeddingPhoto.getData();
         setRealWeddingData(rw || null);
-      } catch {}
+      } catch { }
       try {
         const cs = await cmsApi.whatCouplesSays.getData();
         setCouplesSaysData(cs?.data || null);
-      } catch {}
+      } catch { }
     };
     run();
   }, []);
@@ -66,7 +66,7 @@ const Home = () => {
       <CtaPanel
         logo={normalizeUrl(designBanner?.logo) || logo}
         img={normalizeUrl(designBanner?.mainImage) || image}
-        heading={designBanner?.heading || "Design Studio_"}
+        heading={designBanner?.heading || "Design Studio"}
         subHeading={
           designBanner?.subheading ||
           "Try Virtual Makeup & Grooming Looks for Your Big Day_"
@@ -137,9 +137,9 @@ const Home = () => {
         sections={
           Array.isArray(couplesSaysData?.sections)
             ? couplesSaysData.sections.map((s) => ({
-                ...s,
-                img: normalizeUrl(s.img),
-              }))
+              ...s,
+              img: normalizeUrl(s.img),
+            }))
             : []
         }
       />

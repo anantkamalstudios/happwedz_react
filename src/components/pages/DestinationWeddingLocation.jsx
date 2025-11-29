@@ -28,30 +28,169 @@ const DestinationWeddingLayout = ({
         {
           id: 1,
           url: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&h=300&fit=crop",
-          alt: "Beach wedding setup",
-          title: "Goa",
-          description: "Goa is extremely popular for destination weddings, and it's really not rocket science to guess why! If you have been dreaming of a beach wedding ever since you were a kid, then this is where you have to be!",
+          alt: "Udaipur Wedding",
+          title: "Udaipur",
+          subtitle: "The Royal City of Lakes",
+          description: "Known as the City of Lakes, Udaipur is one of India’s most luxurious wedding destinations. With royal palaces, grand heritage hotels, and scenic lakes, Udaipur offers a fairytale-like setting for couples who dream of a regal celebration.",
+          bestSeason: "October to March",
+          averageCost: "₹35 Lakhs – ₹60 Lakhs",
+          weddingStyles: [
+            "Royal Palace Weddings",
+            "Luxury Heritage Weddings",
+            "Lake View Weddings",
+            "Traditional Rajasthani Weddings"
+          ]
         },
         {
           id: 2,
-          url: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=400&h=300&fit=crop",
-          alt: "Beach wedding ceremony",
-          title: "Mumbai",
-          description: "Mumbai is extremely popular for destination weddings, and it's really not rocket science to guess why! If you have been dreaming of a beach wedding ever since you were a kid, then this is where you have to be!",
+          url: "https://images.unsplash.com/photo-1599059521744-8b898c628e9a?w=400&h=300&fit=crop",
+          alt: "Jaipur Wedding",
+          title: "Jaipur",
+          subtitle: "The Royal Pink City",
+          description: "Jaipur is known for its grand forts, colourful culture, and iconic palaces, making it one of India’s most preferred destinations for royal and heritage-style weddings. The city blends timeless Rajasthani traditions with luxurious hospitality.",
+          bestSeason: "November to February",
+          averageCost: "₹30 Lakhs – ₹55 Lakhs",
+          weddingStyles: [
+            "Heritage Weddings",
+            "Fort Weddings",
+            "Cultural Rajasthani Weddings",
+            "Grand Traditional Ceremonies"
+          ]
         },
         {
           id: 3,
-          url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=300&fit=crop",
-          alt: "Tropical wedding",
-          title: "UK",
-          description: "Uk is extremely popular for destination weddings, and it's really not rocket science to guess why! If you have been dreaming of a beach wedding ever since you were a kid, then this is where you have to be!",
+          url: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=400&h=300&fit=crop",
+          alt: "Goa Wedding",
+          title: "Goa",
+          subtitle: "India’s Beach Wedding Capital",
+          description: "Goa is the ultimate choice for couples who dream of a relaxed, romantic, and picture-perfect beach wedding. With its golden sandy beaches, turquoise waters, swaying palm trees, and lively atmosphere, Goa creates a magical setting.",
+          bestSeason: "November to February",
+          averageCost: "₹30 Lakhs – ₹50 Lakhs",
+          weddingStyles: [
+            "Beach Weddings",
+            "Sunset Weddings",
+            "Intimate Weddings",
+            "Tropical Theme Weddings",
+            "Resort Poolside Ceremonies",
+            "Boho & Minimalist Beach Celebrations"
+          ]
         },
         {
           id: 4,
-          url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=300&fit=crop",
-          alt: "Tropical wedding",
-          title: "Dubai",
-          description: "Dubai is extremely popular for destination weddings, and it's really not rocket science to guess why! If you have been dreaming of a beach wedding ever since you were a kid, then this is where you have to be!",
+          url: "https://images.unsplash.com/photo-1605218427368-35b017402d7d?w=400&h=300&fit=crop",
+          alt: "Kerala Wedding",
+          title: "Kerala",
+          subtitle: "God’s Own Country",
+          description: "Kerala is a dream wedding location for couples who want a serene, nature-filled, and soulful celebration. The calm backwaters, lush coconut groves, misty tea plantations, and scenic beaches create a peaceful and romantic ambience.",
+          bestSeason: "September to March",
+          averageCost: "₹25 Lakhs – ₹45 Lakhs",
+          weddingStyles: [
+            "Backwater Weddings",
+            "Nature-Themed Weddings",
+            "Houseboat Ceremonies",
+            "Simple Elegant South Indian Weddings",
+            "Resort Garden Weddings"
+          ]
+        },
+        {
+          id: 5,
+          url: "https://images.unsplash.com/photo-1587588354456-ae376af71a25?w=400&h=300&fit=crop",
+          alt: "Jodhpur Wedding",
+          title: "Jodhpur",
+          subtitle: "The Blue City",
+          description: "Jodhpur is one of India’s most iconic wedding locations, known for its grand forts, deep blue houses, and breathtaking desert landscapes. The city’s majestic palaces and royal heritage create a regal atmosphere.",
+          bestSeason: "October to March",
+          averageCost: "₹30 Lakhs – ₹55 Lakhs",
+          weddingStyles: [
+            "Royal Palace Weddings",
+            "Fort Weddings",
+            "Desert Weddings",
+            "Cultural Rajasthani Weddings",
+            "Traditional Grand Ceremonies"
+          ]
+        },
+        {
+          id: 6,
+          url: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?w=400&h=300&fit=crop",
+          alt: "Andaman Wedding",
+          title: "Andaman & Nicobar Islands",
+          subtitle: "Island Paradise",
+          description: "The Andaman & Nicobar Islands offer one of the most exotic and peaceful wedding experiences in India. With crystal-clear turquoise waters, soft white sand beaches, and lush tropical greenery, it creates a picture-perfect backdrop.",
+          bestSeason: "November to April",
+          averageCost: "₹20 Lakhs – ₹40 Lakhs",
+          weddingStyles: [
+            "Island Beach Weddings",
+            "Intimate Seaside Ceremonies",
+            "Minimalist Tropical Weddings",
+            "Sunset Beach Mandap Weddings",
+            "Private Resort Weddings"
+          ]
+        },
+        {
+          id: 7,
+          url: "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=400&h=300&fit=crop",
+          alt: "Rishikesh Wedding",
+          title: "Rishikesh & Mussoorie",
+          subtitle: "Hilltop Serenity",
+          description: "Rishikesh and Mussoorie are perfect for couples who want a soulful, peaceful, and nature-centric wedding. Rishikesh offers spiritual riverside settings, while Mussoorie provides stunning mountain views.",
+          bestSeason: "March to June & September to November",
+          averageCost: "₹15 Lakhs – ₹35 Lakhs",
+          weddingStyles: [
+            "Hilltop Weddings",
+            "Riverside Ceremonies",
+            "Spiritual and Traditional Weddings",
+            "Nature-Themed Weddings",
+            "Intimate Mountain Weddings"
+          ]
+        },
+        {
+          id: 8,
+          url: "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=400&h=300&fit=crop",
+          alt: "Agra Wedding",
+          title: "Agra",
+          subtitle: "City of the Taj Mahal",
+          description: "Agra is synonymous with eternal love, thanks to the iconic Taj Mahal. This historic city offers a romantic and heritage-rich setting that adds a sense of grandeur and meaning to your big day.",
+          bestSeason: "October to March",
+          averageCost: "₹20 Lakhs – ₹40 Lakhs",
+          weddingStyles: [
+            "Heritage Weddings",
+            "Luxury Hotel Weddings",
+            "Mughal-Themed Weddings",
+            "Romantic Ceremonies Inspired by the Taj Mahal"
+          ]
+        },
+        {
+          id: 9,
+          url: "https://images.unsplash.com/photo-1516815231560-8f41ec531527?w=400&h=300&fit=crop",
+          alt: "Shimla Wedding",
+          title: "Shimla & Manali",
+          subtitle: "Snowy & Mountain View Weddings",
+          description: "Shimla and Manali offer dreamy, cosy, and scenic wedding experiences. Pine forests, snow-capped peaks, cool weather, and charming hill resorts create a picture-perfect romantic setting.",
+          bestSeason: "March to June & December to February",
+          averageCost: "₹15 Lakhs – ₹30 Lakhs",
+          weddingStyles: [
+            "Snow Weddings",
+            "Mountain Retreat Ceremonies",
+            "Winter-Themed Weddings",
+            "Intimate Nature Weddings"
+          ]
+        },
+        {
+          id: 10,
+          url: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop",
+          alt: "Mumbai Wedding",
+          title: "Mumbai, Alibaug & Lonavala",
+          subtitle: "Modern Luxury & Convenience",
+          description: "These locations combine luxury, accessibility, and stunning natural surroundings. Mumbai offers premium hotel venues, Alibaug delivers serene beaches, and Lonavala provides lush green hills.",
+          bestSeason: "October to March",
+          averageCost: "₹25 Lakhs – ₹50 Lakhs",
+          weddingStyles: [
+            "Luxury Resort Weddings",
+            "Beachside Weddings",
+            "Hill Retreat Weddings",
+            "Modern Contemporary Celebrations",
+            "Poolside Cocktail & Sangeet Events"
+          ]
         },
       ];
 
@@ -99,9 +238,30 @@ const DestinationWeddingLayout = ({
                     <h3 className="card-title">
                       {image.title}
                     </h3>
+                    {image.subtitle && (
+                      <h4 style={{ fontSize: '16px', color: '#d81b60', marginBottom: '10px', fontWeight: '600' }}>
+                        {image.subtitle}
+                      </h4>
+                    )}
                     <p className="card-description">
                       {image.description}
                     </p>
+
+                    <div style={{ marginBottom: '15px', fontSize: '14px' }}>
+                      <p style={{ margin: '5px 0' }}><strong>Best Season:</strong> {image.bestSeason}</p>
+                      <p style={{ margin: '5px 0' }}><strong>Average Cost:</strong> {image.averageCost}</p>
+                      {image.weddingStyles && (
+                        <div style={{ marginTop: '10px' }}>
+                          <strong>Wedding Styles:</strong>
+                          <ul style={{ paddingLeft: '20px', marginTop: '5px', color: '#666' }}>
+                            {image.weddingStyles.map((style, i) => (
+                              <li key={i}>{style}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+
                     <button className="card-button" onClick={() => navigate(`/destination-wedding/${(image.title || '').toLowerCase()}`)}>
                       See Details
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -178,6 +338,7 @@ const DestinationWeddingLayout = ({
           position: relative;
           overflow: visible;
           margin-left: -50px;
+          z-index: 1;
         }
 
         .cards-wrapper {
@@ -199,6 +360,8 @@ const DestinationWeddingLayout = ({
           overflow: hidden;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
           transition: transform 0.3s ease, box-shadow 0.3s ease;
+          display: flex;
+          flex-direction: column;
         }
 
         .card:hover {
@@ -210,6 +373,7 @@ const DestinationWeddingLayout = ({
           width: 100%;
           height: 200px;
           overflow: hidden;
+          flex-shrink: 0;
         }
 
         .card-image img {
@@ -225,13 +389,16 @@ const DestinationWeddingLayout = ({
 
         .card-content {
           padding: 20px;
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
         }
 
         .card-title {
           color: #d81b60;
           font-size: 24px;
           font-weight: bold;
-          margin: 0 0 12px 0;
+          margin: 0 0 5px 0;
           font-family: Georgia, serif;
         }
 
@@ -239,7 +406,7 @@ const DestinationWeddingLayout = ({
           color: #666;
           font-size: 14px;
           line-height: 1.6;
-          margin: 0 0 20px 0;
+          margin: 0 0 15px 0;
         }
 
         .card-button {
@@ -255,6 +422,8 @@ const DestinationWeddingLayout = ({
           align-items: center;
           gap: 8px;
           transition: all 0.3s ease;
+          margin-top: auto;
+          width: fit-content;
         }
 
         .card-button:hover {

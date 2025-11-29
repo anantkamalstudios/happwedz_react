@@ -16,10 +16,10 @@ const AppDownloadSection = () => {
       <div className="container d-none d-lg-flex align-items-center justify-content-center">
         <div className="col-lg-6">
           <div className="rounded-3 ">
-            <h4 className="fw-bold mb-3">
+            <h6 className="fw-bold mb-3 fs-20 text-center">
               Download The HappyWedz Mobile App Today
-            </h4>
-            <p className="mb-4 text-muted">
+            </h6>
+            <p className="mb-4 fs-14">
               Plan your wedding on the go with the easy-to-use HappyWedz app.
               Discover top vendors, get wedding inspiration, and manage
               everything in one place.

@@ -155,14 +155,14 @@ const HowItWorksSection = () => {
         <div className="container">
           <div className="text-center">
             {/* <button className="cta-button">Start Planning Your Wedding</button> */}
-            <h2 className="fw-bold text-dark mb-3">HappyWedz Works</h2>
-            <p
-              className="h6 text-muted mb-3"
+            <h3 className="fw-bold text-dark mb-2">HappyWedz Works</h3>
+            <h6
+              className="text-muted mb-3"
               data-aos="fade-up"
               data-aos-delay="50"
             >
               Start Planning Your Wedding
-            </p>
+            </h6>
           </div>
 
           <div className="steps-container mt-5">
@@ -187,9 +187,9 @@ const HowItWorksSection = () => {
 
                 <span className="step-icon">{step.icon}</span>
 
-                <h3 className="step-title">{step.title}</h3>
+                <p className="step-title fs-16">{step.title}</p>
 
-                <p className="step-description">{step.description}</p>
+                <p className="step-description fs-14">{step.description}</p>
 
                 {index < steps.length - 1 && (
                   <div className="step-arrow">

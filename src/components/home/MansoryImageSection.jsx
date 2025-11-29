@@ -69,20 +69,20 @@ const MasonryImageSection = () => {
             alt="inspiredTeaser"
             className="w-20 h-20"
           />
-          <h2 className="blogs-carousel-heading fw-bold mb-4 display-5 primary-text">
+          <h3 className="fw-bold mb-2 display-5 primary-text">
             Wedding Gallery
-          </h2>
-          <p className="fs-26 mb-3" data-aos="fade-up" data-aos-delay="50">
+          </h3>
+          <h5 className="mb-3" data-aos="fade-up" data-aos-delay="50">
             Get inspired by our collection of beautiful wedding moments
-          </p>
+          </h5>
         </div>
 
         <div className="gallery-container">
-          <Link to="/photography" className="see-more-link">
+          <Link to="/photography" className="see-more-link fs-14">
             SEE MORE
             <svg
-              width="20"
-              height="20"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"

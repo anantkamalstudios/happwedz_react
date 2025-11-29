@@ -17,39 +17,39 @@ const RealWeddings = ({
   const images =
     Array.isArray(apiImages) && apiImages.length > 0
       ? apiImages
-          .map(normalizeUrl)
-          .map((url, idx) => ({
-            id: idx + 1,
-            url,
-            alt: title || "Real Wedding",
-          }))
+        .map(normalizeUrl)
+        .map((url, idx) => ({
+          id: idx + 1,
+          url,
+          alt: title || "Real Wedding",
+        }))
       : [
-          {
-            id: 1,
-            url: "images/home/home-realwedding3.jpg",
-            alt: "Wedding rings with pink roses",
-          },
-          {
-            id: 2,
-            url: "images/home/home-realwedding2.jpg",
-            alt: "Bridal party in pink dresses",
-          },
-          {
-            id: 3,
-            url: "images/home/home-realwedding1.jpg",
-            alt: "Elegant wedding table setting",
-          },
-          {
-            id: 4,
-            url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=400&fit=crop",
-            alt: "Wedding ceremony",
-          },
-          {
-            id: 5,
-            url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=400&fit=crop",
-            alt: "Wedding bouquet",
-          },
-        ];
+        {
+          id: 1,
+          url: "images/home/home-realwedding3.jpg",
+          alt: "Wedding rings with pink roses",
+        },
+        {
+          id: 2,
+          url: "images/home/home-realwedding2.jpg",
+          alt: "Bridal party in pink dresses",
+        },
+        {
+          id: 3,
+          url: "images/home/home-realwedding1.jpg",
+          alt: "Elegant wedding table setting",
+        },
+        {
+          id: 4,
+          url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=400&fit=crop",
+          alt: "Wedding ceremony",
+        },
+        {
+          id: 5,
+          url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=400&fit=crop",
+          alt: "Wedding bouquet",
+        },
+      ];
 
   useEffect(() => {
     const total = Math.max(images.length - 2, 1);
@@ -91,8 +91,8 @@ const RealWeddings = ({
               </div>
 
               {/* Main Title */}
-              <h1
-                className="display-5 fw-bold mb-3"
+              <h2
+                className="fw-bold mb-3"
                 style={{ color: "#2c2c2c", lineHeight: "1.2" }}
               >
                 {title || (
@@ -102,10 +102,10 @@ const RealWeddings = ({
                     Photos
                   </>
                 )}
-              </h1>
+              </h2>
 
               {/* Subtitle */}
-              <p className="text-muted fs-6 mb-4">
+              <p className="text-muted fs-16 mb-4">
                 {subtitle || "Real Wedding Stories"}
               </p>
 
@@ -154,9 +154,8 @@ const RealWeddings = ({
                   style={{
                     width: "100%",
                     height: "100%",
-                    transform: `translateZ(${index * 0}px) scale(${
-                      1 - index * 0.02
-                    })`,
+                    transform: `translateZ(${index * 0}px) scale(${1 - index * 0.02
+                      })`,
                     zIndex: images.length - index,
                     transition: "all 0.6s ease-in-out",
                   }}

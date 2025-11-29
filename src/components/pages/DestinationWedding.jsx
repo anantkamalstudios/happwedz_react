@@ -42,22 +42,13 @@ const DestinationWedding = () => {
       <DestinationHero />
       <section>
         <div className="container">
-
-
-
           <ImageCarousel />
-
-
-
-
         </div>
       </section>
 
       <section>
         <DestinationWeddingLocation />
       </section>
-
-
       <section>
         <DestinationWeddingPlanningIdeas />
         <DestinationWeddingRealStories />

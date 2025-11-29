@@ -12,8 +12,8 @@ const MainTestimonial = ({ heading, subHeading, mainImage, sections = [] }) => {
         <div className="col-md-6 d-flex align-items-center justify-content-center overflow-hidden">
           <div className="custom-testimonial-box text-start shadow p-4 overflow-hidden">
             <div className="p-3">
-              <h2 className="custom-heading fs-48 fw-bold">{safeHeading}</h2>
-              <p className="custom-subtext fs-18">{safeSubHeading}</p>
+              <h3 className="custom-heading fw-bold">{safeHeading}</h3>
+              <p className="custom-subtext fs-16">{safeSubHeading}</p>
             </div>
             <div className="custom-floral-graphic">
               {/* {mainImage && (
@@ -41,11 +41,11 @@ const MainTestimonial = ({ heading, subHeading, mainImage, sections = [] }) => {
                   className="custom-image real-image"
                 />
                 <div className="custom-testimonial-card shadow">
-                  <h5 className="mb-1">{s.title || "Happy Couple"}</h5>
+                  <h6 className="mb-1">{s.title || "Happy Couple"}</h6>
                   <div className="custom-stars">
                     {"★".repeat(Math.max(1, Math.min(5, s.stars || 5)))}
                   </div>
-                  <p className="mb-0 small">{s.description || ""}</p>
+                  <p className="mb-0 small fs-14">{s.description || ""}</p>
                 </div>
               </div>
             ))

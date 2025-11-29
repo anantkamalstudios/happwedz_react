@@ -12,20 +12,13 @@ const VenueInfoSection = () => {
               Find the Perfect Wedding Venue with HappyWedz
             </h2>
             <p>
-              Every bride dreams of saying “I do” in a stunning setting—whether
-              it’s an intimate celebration at a chic resort, a grand reception
-              in a luxurious hotel, or a cozy gathering in a small yet beautiful
-              banquet hall. At Happy Wedz, we bring you a wide range of wedding
-              venues to match every couple’s vision and budget.
+              Every bride dreams of saying “I do” in the perfect setting — whether it’s a romantic outdoor lawn, a luxurious 5-star banquet, a cozy boutique resort, or a breathtaking destination venue. At HappyWedz, we help you discover the best wedding venues across India, tailored to your style, budget, and guest preferences.
             </p>
             <p>
-              From dreamy destination weddings in <strong>Kashmir</strong> or{" "}
-              <strong>Kanyakumari </strong>
-              to elegant celebrations in your own city, we’ve got thousands of
-              venue options for you. Whether you’re searching for a poolside
-              spot for your mehendi, a lush green lawn for your cocktail party,
-              or a spacious hall for your wedding day, HappyWedz makes
-              venue-hunting simple and stress-free.
+              Whether you're planning a grand reception in Jaipur, a beachside ceremony in Goa, an intimate celebration in your own city, or a dreamy destination wedding from Kashmir to Kanyakumari, HappyWedz brings you thousands of verified venues to choose from.
+            </p>
+            <p>
+              From poolside mehendi spots to lush green lawns, open-air terraces, royal palaces, ballrooms, and elegant banquet halls — venue hunting becomes effortless with HappyWedz.
             </p>
           </Col>
         </Row>
@@ -38,37 +31,40 @@ const VenueInfoSection = () => {
             </h3>
             <ol>
               <li>
-                <strong>Budget:</strong> Stick to your budget and explore venues
-                that give you the best value without compromising on services.
+                <strong>Budget</strong>
+                <br />
+                Choose a venue that fits your budget while offering good amenities. Compare prices, inclusions, and package details to get maximum value.
               </li>
               <li>
-                <strong>Location:</strong> If you’re marrying in your hometown,
-                pick a venue that’s easily accessible. For destination weddings,
-                research thoroughly—check hotel photos, banquet areas, and
-                amenities before finalizing.
+                <strong>Location</strong>
+                <br />
+                For hometown weddings, pick a venue with easy accessibility for guests.
+                <br />
+                For destination weddings, check hotel photos, banquet areas, surroundings, and reviews before finalizing.
               </li>
               <li>
-                <strong>Services & Facilities:</strong> Look for great
-                hospitality—food options, décor, 24x7 service, parking, and
-                Wi-Fi.
+                <strong>Services & Facilities</strong>
+                <br />
+                Look for quality hospitality, catering options, décor support, 24/7 assistance, valet parking, Wi-Fi, and accommodation if required.
               </li>
               <li>
-                <strong>Banquet & Capacity:</strong> Ensure the venue fits your
-                guest list and matches your event’s ambiance.
+                <strong>Banquet Type & Capacity</strong>
+                <br />
+                Ensure the venue comfortably fits your guest list and aligns with your preferred wedding style — indoor, outdoor, or hybrid.
               </li>
               <li>
-                <strong>In-house Vendors:</strong> Many venues provide catering,
-                décor, DJs, and planners—saving time and money.
+                <strong>In-house Vendors</strong>
+                <br />
+                Many venues include catering, décor, DJs, sound, and support staff. This saves time, effort, and often lowers the total cost.
               </li>
               <li>
-                <strong>Payment Terms:</strong> Clarify advance requirements and
-                settlement timelines to avoid last-minute stress.
+                <strong>Payment Terms & Policies</strong>
+                <br />
+                Always check advance payments, cancellation rules, and settlement timelines to avoid last-minute issues.
               </li>
             </ol>
-            <p>
-              A well-chosen venue sets the tone for your celebration. With the
-              right place, your wedding becomes unforgettable, but the wrong
-              choice can turn things stressful—so plan wisely!
+            <p className="mt-4">
+              A well-selected venue sets the entire mood for your celebration. The right venue elevates your wedding, while the wrong choice can add stress — so choose wisely with HappyWedz!
             </p>
           </Col>
         </Row>
@@ -76,29 +72,40 @@ const VenueInfoSection = () => {
         {/* More Than Venues */}
         <Row className="mb-5">
           <Col lg={10} className="mx-auto">
-            <h3 className="fw-semibold mb-3">More Than Just Venues</h3>
+            <h3 className="fw-semibold mb-3">More Than Just Venues – Your Complete Wedding Marketplace</h3>
             <p>
-              At HappyWedz, you can do much more than find your perfect wedding
-              venue. Explore and book photographers, bridal makeup artists,
-              décor specialists, wedding planners, and other vendors with ease.
-              Browse real photos, read reviews, compare prices, and connect with
-              your shortlisted vendors directly.
+              At HappyWedz, you can plan your entire wedding in one place.
             </p>
             <p>
-              And for convenience on the go, download the{" "}
-              <strong>HappyWedz Wedding Planning App</strong> (available on
-              Android & iOS) to manage all your wedding needs anytime, anywhere.
+              Explore and book:
+            </p>
+            <ul className="list-unstyled">
+              <li>✔ Wedding photographers</li>
+              <li>✔ Bridal makeup artists</li>
+              <li>✔ Mehendi artists</li>
+              <li>✔ Decorators & floral stylists</li>
+              <li>✔ Wedding planners & event managers</li>
+              <li>✔ Caterers, DJs, choreographers & more</li>
+            </ul>
+            <p>
+              Browse real photos, view verified reviews, compare prices, and contact your shortlisted vendors instantly — all on one trusted platform.
             </p>
           </Col>
         </Row>
 
-        {/* Closing */}
+        {/* App Section */}
         <Row>
-          <Col lg={10} className="mx-auto text-center">
-            <h4 className="fw-bold text-success">
-              With HappyWedz, planning your dream wedding has never been this
-              simple!
-            </h4>
+          <Col lg={10} className="mx-auto">
+            <h3 className="fw-semibold mb-3">Plan Anytime, Anywhere with the HappyWedz App</h3>
+            <p>
+              Take complete control of your wedding planning with the HappyWedz Wedding Planning App (Android & iOS).
+            </p>
+            <p>
+              Search vendors, shortlist venues, track bookings, compare packages, and manage your entire wedding journey on the go.
+            </p>
+            <p className="fw-bold text-success mt-3">
+              With HappyWedz, planning your dream wedding has never been this simple — or this beautiful.
+            </p>
           </Col>
         </Row>
       </Container>
@@ -109,21 +116,37 @@ const VenueInfoSection = () => {
           text-align: justify;
           font-size: 1rem;
           line-height: 1.7;
+          color: #444;
         }
         .venue-info-section ol {
           padding-left: 1.2rem;
         }
-        .venue-info-section h2, 
-        .venue-info-section h3, 
-        .venue-info-section h4 {
+        .venue-info-section ol li {
+          margin-bottom: 1.5rem;
+        }
+        .venue-info-section h2 {
           color: #e83581;
+          font-size: 2.5rem;
+        }
+        .venue-info-section h3 {
+          color: #e83581;
+          font-size: 1.75rem;
+          margin-top: 1.5rem;
+        }
+        .venue-info-section strong {
+          color: #333;
+          font-weight: 600;
+        }
+        .list-unstyled li {
+          margin-bottom: 0.5rem;
+          padding-left: 0.5rem;
         }
         @media (max-width: 767px) {
           .venue-info-section h2 {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
           }
           .venue-info-section h3 {
-            font-size: 1.25rem;
+            font-size: 1.4rem;
           }
         }
       `}</style>

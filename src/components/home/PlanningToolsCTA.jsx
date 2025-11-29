@@ -9,23 +9,11 @@ const PlanningToolsCTA = () => {
       <section className="planning-tools-section px-3 py-3">
         <div className="container">
           <div className="text-center mb-6">
-            <h3 className="fw-bold mb-4 display-5 primary-text">
-              Plan Your Perfect Day
-            </h3>
-            <p className="fs-26 mb-3" data-aos="fade-up" data-aos-delay="50">
+            <h3 className="fw-bold mb-2 primary-text">Plan Your Perfect Day</h3>
+            <h5 className="mb-3" data-aos="fade-up" data-aos-delay="50">
               Streamline your wedding planning with our intuitive tools and
               resources
-            </p>
-            {/* <div
-              className="divider mx-auto mb-4"
-              data-aos="fade-up"
-              data-aos-delay="100"
-            ></div> */}
-            <p
-              className="text-muted lead"
-              data-aos="fade-up"
-              data-aos-delay="150"
-            ></p>
+            </h5>
           </div>
 
           <div className="row g-5 justify-content-center">
@@ -48,14 +36,14 @@ const PlanningToolsCTA = () => {
                     />
                   </div>
 
-                  <h3 className="h5 fw-normal mb-3">{tool.title}</h3>
-                  <p className="text-muted mb-4">{tool.description}</p>
+                  <h5 className="h5 fw-normal mb-3">{tool.title}</h5>
+                  <p className="text-muted mb-4 fs-14">{tool.description}</p>
 
                   {/* Button always bottom-right */}
                   <div className="mt-auto d-flex justify-content-end">
                     <Link
                       to={`/user-dashboard/${tool.url}`}
-                      className="btn btn-link  d-flex justify-content-end text-decoration-none p-0 wedding-link d-flex align-items-center gap-2 text-decoration-underline"
+                      className="btn btn-link fs-14 d-flex justify-content-end text-decoration-none p-0 wedding-link d-flex align-items-center gap-2 text-decoration-underline"
                     >
                       Explore Tool
                       <HiArrowRight size={18} />

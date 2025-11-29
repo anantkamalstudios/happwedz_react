@@ -27,66 +27,6 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
     return null;
   };
 
-  // useEffect(() => {
-  //   const fetchHeroInfo = async () => {
-  //     try {
-  //       const response = await axios.get("/api/hero-sections");
-  //       const dataInfo = response.data;
-
-  //       const pathSegments = location.pathname.split("/").filter(Boolean);
-  //       const baseSectionRaw = pathSegments[0]?.toLowerCase();
-  //       const baseSection =
-  //         baseSectionRaw === "vendor"
-  //           ? "vendors"
-  //           : baseSectionRaw === "venue"
-  //           ? "venues"
-  //           : baseSectionRaw;
-
-  //       const effectiveSection =
-  //         baseSection === "venues" || baseSection === "vendors"
-  //           ? baseSection
-  //           : section &&
-  //             ["venues", "vendors", "venue", "vendor"].includes(
-  //               section.toLowerCase()
-  //             )
-  //           ? section.toLowerCase() === "vendor"
-  //             ? "vendors"
-  //             : section.toLowerCase() === "venue"
-  //             ? "venues"
-  //             : section.toLowerCase()
-  //           : location.pathname.includes("/venues") ||
-  //             location.pathname.includes("/venue")
-  //           ? "venues"
-  //           : location.pathname.includes("/vendors") ||
-  //             location.pathname.includes("/vendor")
-  //           ? "vendors"
-  //           : null;
-
-  //       const normalizeType = (t) => {
-  //         const v = (t || "").toLowerCase();
-  //         if (v.includes("venue")) return "venues";
-  //         if (v.includes("vendor")) return "vendors";
-  //         return v || null;
-  //       };
-
-  //       let matched = dataInfo.find(
-  //         (item) => normalizeType(item?.navbar?.type) === effectiveSection
-  //       );
-  //       if (!matched && effectiveSection) {
-  //         matched = dataInfo.find((item) =>
-  //           (item?.navbar?.type || "")
-  //             .toLowerCase()
-  //             .includes(effectiveSection === "venues" ? "venue" : "vendor")
-  //         );
-  //       }
-  //       setHeroInfo(matched || null);
-  //     } catch (error) {
-  //       console.error("Error fetching hero info:", error);
-  //     }
-  //   };
-  //   fetchHeroInfo();
-  // }, [section, location.pathname]);
-
   useEffect(() => {
     const fetchHeroInfo = async () => {
       try {
@@ -512,17 +452,12 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
         <Row className="align-items-center g-4 g-lg-5">
           <Col xs={12} lg={6}>
             <div className="pe-lg-4">
-              <h1
+              <h3
                 className="mb-3"
-                style={{
-                  fontSize: "2.1rem",
-                  fontWeight: 800,
-                  color: "#2e2e2e",
-                }}
               >
                 {dynamicTitle}
-              </h1>
-              <p className="text-muted mb-4">{placeholders.subtitle}</p>
+              </h3>
+              <p className="text-muted mb-4 fs-16">{placeholders.subtitle}</p>
               {/* <p className="text-muted mb-4">{heroInfo?.subtitle}</p> */}
 
               <Form

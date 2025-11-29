@@ -92,10 +92,10 @@ const Footer = () => {
             </Link>
 
             <p
+              className="fs-14"
               style={{
                 marginTop: "20px",
                 maxWidth: "85%",
-                fontSize: "15px",
                 lineHeight: "1.8",
               }}
             >
@@ -106,12 +106,12 @@ const Footer = () => {
           </div>
 
           <div style={{ flex: "1 1 20%", color: "#fff" }}>
-            <h6 className="footer-title">Plan Your Wedding</h6>
+            <h6 className="footer-title fs-16">Plan Your Wedding</h6>
             <ul className="footer-list">
-              <li>
+              <li className="fs-14">
                 <Link to="/user-dashboard/my-wedding">Start Planning</Link>
               </li>
-              <li>
+              <li className="fs-14">
                 <Link
                   to="/vendors"
                   onClick={() =>
@@ -121,7 +121,7 @@ const Footer = () => {
                   Search By Vendor
                 </Link>
               </li>
-              <li>
+              <li className="fs-14">
                 <Link
                   to="/vendors"
                   onClick={() =>
@@ -131,10 +131,10 @@ const Footer = () => {
                   Search By City
                 </Link>
               </li>
-              <li>
+              <li className="fs-14">
                 <Link to="/top-rated">Top Rated Vendors</Link>
               </li>
-              <li>
+              <li className="fs-14">
                 <Link to="/destination-wedding">Destination Wedding</Link>
               </li>
             </ul>
@@ -142,18 +142,18 @@ const Footer = () => {
 
           {/* === INSPIRATION & IDEAS === */}
           <div style={{ flex: "1 1 20%" }}>
-            <h6 className="footer-title">Inspiration & Ideas</h6>
+            <h6 className="footer-title fs-16">Inspiration & Ideas</h6>
             <ul className="footer-list">
-              <li>
+              <li className="fs-14">
                 <Link to="/blog">Wedding Blog</Link>
               </li>
-              <li>
+              <li className="fs-14">
                 <Link to="/photography">Wedding Inspiration Gallery</Link>
               </li>
-              <li>
+              <li className="fs-14">
                 <Link to="/real-wedding">Real Wedding</Link>
               </li>
-              <li>
+              <li className="fs-14">
                 <Link to="/user-dashboard/real-wedding">
                   Submit Your Wedding
                 </Link>
@@ -163,9 +163,9 @@ const Footer = () => {
 
           {/* === BRIDAL & GROOM FASHION === */}
           <div style={{ flex: "1 1 20%" }}>
-            <h6 className="footer-title">Bridal & Groom Fashion</h6>
+            <h6 className="footer-title fs-16">Bridal & Groom Fashion</h6>
             <ul className="footer-list" style={{ color: "#fff" }}>
-              <li>
+              <li className="fs-14">
                 <a
                   onClick={() => handleCategoryClick("Wedding Card Designs")}
                   style={{ cursor: "pointer" }}
@@ -173,7 +173,7 @@ const Footer = () => {
                   Wedding Card Designs
                 </a>
               </li>
-              <li>
+              <li className="fs-14">
                 <a
                   onClick={() => handleCategoryClick("Outfit")}
                   style={{ cursor: "pointer" }}
@@ -181,7 +181,7 @@ const Footer = () => {
                   Outfit
                 </a>
               </li>
-              <li>
+              <li className="fs-14">
                 <a
                   onClick={() => handleCategoryClick("Bridal Makeup & Hair")}
                   style={{ cursor: "pointer" }}
@@ -189,7 +189,7 @@ const Footer = () => {
                   Bridal Makeup &amp; Hair
                 </a>
               </li>
-              <li>
+              <li className="fs-14">
                 <a
                   onClick={() => handleCategoryClick("Groom Wear")}
                   style={{ cursor: "pointer" }}
@@ -197,7 +197,7 @@ const Footer = () => {
                   Groom Wear
                 </a>
               </li>
-              <li>
+              <li className="fs-14">
                 <a
                   onClick={() => handleCategoryClick("Jewellery & Accessories")}
                   style={{ cursor: "pointer" }}
@@ -210,21 +210,21 @@ const Footer = () => {
 
           {/* === COMPANY === */}
           <div style={{ flex: "1 1 20%" }}>
-            <h6 className="footer-title">Company</h6>
+            <h6 className="footer-title fs-16">Company</h6>
             <ul className="footer-list">
-              <li>
+              <li className="fs-14">
                 <Link to="/about-us">About HappyWedz</Link>
               </li>
-              <li>
+              <li className="fs-14">
                 <Link to="/careers">Careers</Link>
               </li>
-              <li>
+              <li className="fs-14">
                 <Link to="/contact-us">Contact Us</Link>
               </li>
-              <li>
+              <li className="fs-14">
                 <Link to="/sitemap">Site Map</Link>
               </li>
-              <li>
+              <li className="fs-14">
                 <Link to="/einvites">Wedding Invitation Maker</Link>
               </li>
             </ul>
@@ -238,14 +238,14 @@ const Footer = () => {
             <ul className="footer-list list-unstyled d-flex flex-wrap pt-3">
               <li className="me-3">
                 {" "}
-                <Link to="/terms" className="me-3">
+                <Link to="/terms" className="me-3 fs-16">
                   Terms&Condition
                 </Link>
               </li>
 
               <li className="me-3">
                 {" "}
-                <Link to="/cancellation" className="me-3">
+                <Link to="/cancellation" className="me-3 fs-16">
                   Cancellation Policy
                 </Link>
               </li>
@@ -324,7 +324,7 @@ const Footer = () => {
 
         <hr className="my-4 opacity-50" style={{ background: "#fff" }} />
 
-        <div className="text-center small  ">
+        <div className="text-center fs-14">
           <p style={{ color: "#fff" }}>
             &copy; {new Date().getFullYear()} HappyWedz Technologies Pvt. Ltd. All rights reserved.
           </p>

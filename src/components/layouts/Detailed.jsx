@@ -894,7 +894,7 @@ const Detailed = () => {
 
                 if (validFaqs.length === 0) {
                   return (
-                    <p className="text-muted">
+                    <p className="text-muted fs-14">
                       No FAQ information available for this vendor.
                     </p>
                   );
@@ -937,9 +937,9 @@ const Detailed = () => {
                     })}
 
                     {validFaqs.length > 5 && (
-                      <div className="text-center mt-3">
+                      <div className="text-start mt-3">
                         <button
-                          className="btn btn-outline-primary btn-sm"
+                          className="btn btn-link p-0 text-dark fw-semibold text-decoration-underline"
                           onClick={() => setShowAllFaqs(!showAllFaqs)}
                         >
                           {showAllFaqs ? "Show Less" : "Read More"}
@@ -954,12 +954,12 @@ const Detailed = () => {
             <div id="reviews" className="py-2">
               <ReviewSection vendor={activeVendor} />
             </div>
-            <div id="map" className="venue-map mt-4 pt-3 border-top">
+            <div id="map" className="mt-4 pt-3 border-top">
               <div
                 className="mb-2 fw-semibold text-dark fs-16"
                 style={{ fontSize: "1.05rem" }}
               >
-                View Location
+                <span>{venueData?.attributes?.address || venueData?.attributes?.city}</span>
               </div>
 
               {/* Show map by coordinates when available; fallback to text location */}
@@ -979,7 +979,6 @@ const Detailed = () => {
                 title="Vendor Location Map"
               ></iframe>
             </div>
-            
           </Col>
 
           <Col lg={4} className="ps-lg-5">
