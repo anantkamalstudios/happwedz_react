@@ -287,7 +287,7 @@ const HomeGennie = () => {
                   />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <h2
+                  <h5
                     style={{
                       fontWeight: 600,
                       fontSize: "18px",
@@ -296,7 +296,7 @@ const HomeGennie = () => {
                     }}
                   >
                     Ask our AI anything
-                  </h2>
+                  </h5>
                 </div>
               </div>
               <Link

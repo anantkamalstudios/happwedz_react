@@ -1245,8 +1245,8 @@ export default function FiltersPageOutfit() {
     if (!originalImageRef.current) {
       Swal.fire({
         icon: "info",
-        title: "Selfie required",
-        text: "Please upload your selfie first.",
+        title: "Image required",
+        text: "Please upload your image first.",
       }).then(() => {
         selfieInputRef.current?.click();
       });
@@ -1681,7 +1681,7 @@ export default function FiltersPageOutfit() {
                       }}
                     >
                       <div style={{ textAlign: "center" }}>
-                        <p>No selfie found. Please upload a selfie.</p>
+                        <p>No Image found. Please upload a Image.</p>
                         <button
                           onClick={() => selfieInputRef.current?.click()}
                           style={{
@@ -1712,7 +1712,30 @@ export default function FiltersPageOutfit() {
                       }}
                     >
                       {/* <Loader /> */}
-                      <div style={{ padding: 12 }}>Applying Outfit...</div>
+                      {/* <div style={{ padding: 12 }}>Applying Outfit...</div> */}
+                      <div style={{ padding: 12 }}>
+  <div className="spinner"></div>
+</div>
+
+<style>
+{`
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #ccc;
+  border-top-color: #000;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+`}
+</style>
+
                     </div>
                   )}
                 </div>

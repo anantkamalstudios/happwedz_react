@@ -10,6 +10,8 @@ import { IoLocationOutline } from "react-icons/io5";
 import { TbView360Number } from "react-icons/tb";
 import { toggleWishlist } from "../../../redux/authSlice";
 import DOMPurify from "dompurify";
+import { fetchVendorTypesWithSubcategoriesApi } from "../../../services/api/vendorTypesWithSubcategoriesApi";
+import { IMAGE_BASE_URL } from "../../../config/constants";
 
 const ListView = ({ subVenuesData, handleShow }) => {
   const dispatch = useDispatch();
@@ -18,7 +20,16 @@ const ListView = ({ subVenuesData, handleShow }) => {
   const [hoveredImages, setHoveredImages] = useState({});
   const [favorites, setFavorites] = useState({});
   const [wishlistIds, setWishlistIds] = useState(new Set());
+  const [vendorTypes, setVendorTypes] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadVendorTypes = async () => {
+      const types = await fetchVendorTypesWithSubcategoriesApi();
+      setVendorTypes(types || []);
+    };
+    loadVendorTypes();
+  }, []);
 
   useEffect(() => {
     if (!token) {
@@ -105,7 +116,7 @@ const ListView = ({ subVenuesData, handleShow }) => {
     <Container>
       <Row>
         {/* Main list: take 9/12 on md+ screens to leave space for right sidebar */}
-        <Col xs={12} md={12}>
+        <Col xs={12} md={9}>
           <Row>
             {filteredVenues.map((venue) => (
               <Col xs={12} key={venue.id}>
@@ -252,20 +263,63 @@ const ListView = ({ subVenuesData, handleShow }) => {
         </Col>
 
         {/* Right sidebar: vertical stacked ad cards */}
-        {/* <Col xs={12} md={3} className="mt-4 mt-md-0">
+        <Col xs={12} md={3} className="mt-4 mt-md-0">
           <div className="d-flex flex-column gap-3">
-            <Card className="p-3 border-0 shadow-sm rounded-4">
-              <div
-                style={{
-                  height: 300,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              ></div>
-            </Card>
+            {vendorTypes
+              .filter((vt) => {
+                // If no data, maybe show nothing or default?
+                // Try to match based on the first item in subVenuesData
+                if (!subVenuesData || subVenuesData.length === 0) return false;
+                const currentType =
+                  subVenuesData[0].vendor_type || subVenuesData[0].vendorType;
+                if (!currentType) return false;
+                return (
+                  vt.name.toLowerCase() === currentType.toString().toLowerCase()
+                );
+              })
+              .map((venueType) => (
+                <Card
+                  key={venueType.id}
+                  className="p-3 border-0 shadow-sm rounded-4"
+                >
+                  {/* Hero Image */}
+                  {venueType.hero_image && (
+                    <div className="mb-3">
+                      <img
+                        src={
+                          venueType.hero_image.startsWith("/uploads")
+                            ? `${IMAGE_BASE_URL}${venueType.hero_image}`
+                            : venueType.hero_image
+                        }
+                        alt={venueType.name}
+                        className="img-fluid rounded-4 w-100 object-fit-cover"
+                        style={{ height: "200px" }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Subcategories List */}
+                  <h5 className="fw-bold mb-3">{venueType.name}</h5>
+                  <div className="d-flex flex-column gap-2">
+                    {venueType.subcategories?.map((sub) => (
+                      <div
+                        key={sub.id}
+                        className="p-2 rounded-3 bg-light cursor-pointer hover-shadow transition-all"
+                        // style={{ cursor: "pointer" }}
+                        onClick={() => {
+                          // Navigate or filter logic here
+                          // For now, just logging or maybe navigating to a filtered page if exists
+                          // navigate(`/venues?subcategory=${sub.id}`);
+                        }}
+                      >
+                        <span className="fw-medium">{sub.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              ))}
           </div>
-        </Col> */}
+        </Col>
       </Row>
     </Container>
   );

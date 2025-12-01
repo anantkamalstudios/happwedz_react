@@ -45,7 +45,7 @@ export default function WeddingPage({ post, onBackClick }) {
       <div
         className="position-relative text-center text-white"
         style={{
-          backgroundImage: `url(https://happywedzbackend.happywedz.com/${post.coverPhoto})`,
+          backgroundImage: `url(${post.coverPhoto})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           height: "500px",
@@ -54,18 +54,16 @@ export default function WeddingPage({ post, onBackClick }) {
         <div
           className="position-absolute top-50 start-50 translate-middle p-4 d-flex flex-column align-items-center justify-content-center gap-4"
           style={{
-            // backgroundColor: "rgba(253, 7, 93, 0.4)",
-            backgroundColor: "#C31162",
-            opacity: "0.3",
             borderRadius: "8px",
             minWidth: "1000px",
             minHeight: "350px",
+            backgroundColor: "rgba(109, 106, 106, 0.3)", // Transparent background
           }}
         >
           <h1
             className="fw-bold display-5 text-white"
             style={{
-              color: "white",
+              color: "#fff",
               fontSize: "5rem",
               letterSpacing: "1px",
               wordSpacing: "5px",
@@ -85,7 +83,17 @@ export default function WeddingPage({ post, onBackClick }) {
                 }}
               />
               ...
-              <a className="text-warning fw-bold">Read More</a>
+              <button
+                type="button"
+                className="text-decoration-none  p-0 ms-2"
+                onClick={() =>
+                  document
+                    .getElementById("love-story")
+                    ?.scrollIntoView({ behavior: "smooth" })
+                }
+              >
+                Read More
+              </button>
             </p>
           )}
         </div>
@@ -187,6 +195,7 @@ export default function WeddingPage({ post, onBackClick }) {
                 <img
                   src={src}
                   className="img-fluid rounded"
+                  loading="lazy"
                   style={{
                     objectFit: "cover",
                     width: "100%",
@@ -203,7 +212,7 @@ export default function WeddingPage({ post, onBackClick }) {
       </div>
 
       {/* Love story */}
-      <Container className="my-5">
+      <Container className="my-5" id="love-story">
         {/* Inline animation CSS */}
         <style>
           {`
@@ -292,6 +301,7 @@ export default function WeddingPage({ post, onBackClick }) {
                 <Card.Img
                   variant="top"
                   src={photo}
+                  loading="lazy"
                   alt={`Highlight ${index + 1}`}
                   style={{
                     width: "100%",
@@ -436,33 +446,6 @@ export default function WeddingPage({ post, onBackClick }) {
           </Col>
         </Row>
       </Container>
-
-      {/* <div className="container mb-5">
-        <h4 className="mb-3 fw-semibold">Tagged Vendors</h4>
-        <div className="row g-4">
-          {post.vendors && post.vendors.length > 0 ? (
-            post.vendors.map((vendor, i) => (
-              <div className="col-12 col-md-3" key={i}>
-                <div className="card border-0 shadow-sm h-100">
-                  <img
-                    src="https://picsum.photos/400/250"
-                    className="card-img-top"
-                    alt={vendor.name}
-                  />
-                  <div className="card-body text-center">
-                    <h6 className="mb-1" style={{ fontSize: "1.3rem" }}>
-                      {vendor.name}
-                    </h6>
-                    <p className="text-muted small mb-0">{vendor.type}</p>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-muted">No vendors tagged</p>
-          )}
-        </div>
-      </div> */}
 
       {/* Tagged Vendors */}
       <Container className="container mb-5">

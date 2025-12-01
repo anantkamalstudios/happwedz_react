@@ -488,7 +488,7 @@ const FiltersPage = () => {
               />
             </div>
             <div
-              className="d-flex gap-20 justify-content-between"
+              className="d-flex gap-2 justify-content-end"
               style={{
                 position: "absolute",
                 top: 10,
@@ -839,69 +839,72 @@ const FiltersPage = () => {
                   }}
                 />
               </div>
-              <div
-                onClick={async () => {
-                  if (activeBtn === "Shades") {
-                    // Remove last applied in sequence
-                    if (appliedOrder.length === 0) return;
-                    const lastCat = appliedOrder[appliedOrder.length - 1];
-                    handleRemoveProduct(lastCat);
-                    return;
-                  }
-                  if (activeBtn === "Complete Look") {
-                    Swal.fire({
-                      title: "Warning",
-                      text: "Are you sure you want to reset all applied Products ?",
-                      icon: "warning",
-                      showCancelButton: true,
-                      confirmButtonColor: "#ed1173",
-                      cancelButtonColor: "#ed1173",
-                      cancelButtonText: "Cancel",
-                      confirmButtonText: "Reset",
-                    }).then((result) => {
-                      if (result.isConfirmed) {
-                        setPreviewUrl(uploadedPreview);
+              {activeBtn !== "Compare" && (
+                <div
+                  onClick={async () => {
+                    if (activeBtn === "Shades") {
+                      // Remove last applied in sequence
+                      if (appliedOrder.length === 0) return;
+                      const lastCat = appliedOrder[appliedOrder.length - 1];
+                      handleRemoveProduct(lastCat);
+                      return;
+                    }
+                    if (activeBtn === "Complete Look") {
+                      Swal.fire({
+                        title: "Warning",
+                        text: "Are you sure you want to reset all applied Products ?",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#ed1173",
+                        cancelButtonColor: "#ed1173",
+                        cancelButtonText: "Cancel",
+                        confirmButtonText: "Reset",
+                      }).then((result) => {
+                        if (result.isConfirmed) {
+                          setPreviewUrl(uploadedPreview);
 
-                        try {
-                          sessionStorage.removeItem("finalLookImage");
-                          sessionStorage.removeItem("finalLookFilters");
-                        } catch {}
-                        try {
-                          setAppliedProducts && setAppliedProducts({});
-                          setAppliedOrder && setAppliedOrder([]);
-                        } catch {}
-                        try {
-                          setExpandedProductId && setExpandedProductId(null);
-                        } catch {}
-                        try {
-                          setExpandedCatIdx && setExpandedCatIdx(null);
-                        } catch {}
-                        try {
-                          setShowProductDetails && setShowProductDetails(false);
-                        } catch {}
+                          try {
+                            sessionStorage.removeItem("finalLookImage");
+                            sessionStorage.removeItem("finalLookFilters");
+                          } catch {}
+                          try {
+                            setAppliedProducts && setAppliedProducts({});
+                            setAppliedOrder && setAppliedOrder([]);
+                          } catch {}
+                          try {
+                            setExpandedProductId && setExpandedProductId(null);
+                          } catch {}
+                          try {
+                            setExpandedCatIdx && setExpandedCatIdx(null);
+                          } catch {}
+                          try {
+                            setShowProductDetails &&
+                              setShowProductDetails(false);
+                          } catch {}
 
-                        // Exit compare mode if active
-                        try {
-                          setIsCompareMode && setIsCompareMode(false);
-                        } catch {}
-                        try {
-                          setCompareImageUrl && setCompareImageUrl(null);
-                        } catch {}
-                      }
-                    });
-                  }
-                }}
-              >
-                <MdRestartAlt
-                  size={30}
-                  style={{
-                    color: "#fff",
-                    backgroundColor: "#C31162",
-                    borderRadius: "100%",
-                    padding: "5px",
+                          // Exit compare mode if active
+                          try {
+                            setIsCompareMode && setIsCompareMode(false);
+                          } catch {}
+                          try {
+                            setCompareImageUrl && setCompareImageUrl(null);
+                          } catch {}
+                        }
+                      });
+                    }
                   }}
-                />
-              </div>
+                >
+                  <MdRestartAlt
+                    size={30}
+                    style={{
+                      color: "#fff",
+                      backgroundColor: "#C31162",
+                      borderRadius: "100%",
+                      padding: "5px",
+                    }}
+                  />
+                </div>
+              )}
               <div
                 title="Delete"
                 onClick={async () => {

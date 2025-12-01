@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useToast } from "../../layouts/toasts/Toast";
 import Swal from "sweetalert2";
@@ -23,12 +24,80 @@ export default function VendorLeadsPage() {
       setRows([]);
       return;
     }
+    // Read possible date filter from query params (passed from HomeAdmin)
+    const location = window.location; // fallback
+    try {
+      // prefer react-router location if available
+    } catch {}
+
+    const params = new URLSearchParams(window.location.search);
+    const dateFilterParam = params.get("dateFilter");
+    const customStartParam = params.get("customStart");
+    const customEndParam = params.get("customEnd");
+
+    const computeRange = () => {
+      const now = new Date();
+      let start = null;
+      let end = null;
+
+      if (dateFilterParam === "this_week") {
+        const day = now.getDay();
+        const diff = day === 0 ? 6 : day - 1;
+        start = new Date(now);
+        start.setDate(now.getDate() - diff);
+        start.setHours(0, 0, 0, 0);
+        end = new Date(now);
+        end.setHours(23, 59, 59, 999);
+      } else if (dateFilterParam === "this_month") {
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        start.setHours(0, 0, 0, 0);
+        end = new Date(now);
+        end.setHours(23, 59, 59, 999);
+      } else if (dateFilterParam === "last_month") {
+        const firstOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastMonthEnd = new Date(firstOfThisMonth.getTime() - 1);
+        start = new Date(
+          lastMonthEnd.getFullYear(),
+          lastMonthEnd.getMonth(),
+          1
+        );
+        start.setHours(0, 0, 0, 0);
+        end = new Date(
+          lastMonthEnd.getFullYear(),
+          lastMonthEnd.getMonth(),
+          lastMonthEnd.getDate()
+        );
+        end.setHours(23, 59, 59, 999);
+      } else if (
+        dateFilterParam === "custom" &&
+        customStartParam &&
+        customEndParam
+      ) {
+        start = new Date(customStartParam);
+        start.setHours(0, 0, 0, 0);
+        end = new Date(customEndParam);
+        end.setHours(23, 59, 59, 999);
+      }
+
+      return { start, end };
+    };
+
+    const getRowDateValue = (row) => {
+      return (
+        row.createdAt ||
+        row.created_at ||
+        row.eventDate ||
+        row.event_date ||
+        row.date ||
+        row.addedAt ||
+        null
+      );
+    };
 
     const fetchLeads = async () => {
       try {
         setLoading(true);
         setError(null);
-
         const response = await fetch(
           `${API_BASE_URL}/api/request-pricing/vendor/dashboard`,
           {
@@ -39,17 +108,29 @@ export default function VendorLeadsPage() {
         if (!response.ok) throw new Error("Failed to fetch leads.");
 
         const data = await response.json();
-        // Check for a 'leads' property in the response object first.
+        let items = [];
         if (data && Array.isArray(data.requests)) {
-          setRows(data.requests);
+          items = data.requests;
         } else if (data && Array.isArray(data.leads)) {
-          setRows(data.leads); // Keep old fallbacks just in case
+          items = data.leads;
         } else if (data && Array.isArray(data.data)) {
-          // Fallback for { data: [...] }
-          setRows(data.data);
+          items = data.data;
         } else if (Array.isArray(data)) {
-          // Fallback for a direct array [...]
-          setRows(data);
+          items = data;
+        }
+
+        // Apply date filtering if a dateFilter param was provided
+        const { start, end } = computeRange();
+        if (start && end) {
+          const filtered = items.filter((r) => {
+            const dVal = getRowDateValue(r);
+            if (!dVal) return false;
+            const t = new Date(dVal).getTime();
+            return t >= start.getTime() && t <= end.getTime();
+          });
+          setRows(filtered);
+        } else {
+          setRows(items);
         }
       } catch (err) {
         setError(err.message);
