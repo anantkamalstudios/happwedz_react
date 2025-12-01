@@ -335,6 +335,7 @@ export default function FavouriteListPopup({
           <div style={{ padding: "0 20px 20px 20px" }}>
             <button
               onClick={() => setShowEmailPopUp(true)}
+              disabled={true}
               style={{
                 width: "100%",
                 background: "#d81b60",
@@ -346,6 +347,7 @@ export default function FavouriteListPopup({
                 fontWeight: "600",
                 cursor: "pointer",
                 textTransform: "capitalize",
+                opacity: 0.5,
               }}
             >
               Email Favourite

@@ -258,10 +258,10 @@ const Storefront = ({ setCompletion }) => {
                   actualData.attributes.happywedz_since ||
                   actualData.attributes.HappyWedz ||
                   "",
-                HappyWedz:
-                  actualData.attributes.HappyWedz ||
-                  actualData.attributes.happywedz_since ||
-                  "",
+                // HappyWedz:
+                //   actualData.attributes.HappyWedz ||
+                //   actualData.attributes.happywedz_since ||
+                //   "",
                 travel_info: actualData.attributes.travel_info || "",
                 offerings: actualData.attributes.offerings || "",
                 delivery_time: actualData.attributes.delivery_time || "",
@@ -419,7 +419,10 @@ const Storefront = ({ setCompletion }) => {
       about_us: formData.attributes?.about_us || "",
       is_featured: !!formData.isFeatured,
       price_range: formData.priceRange || { min: "", max: "" },
-      PriceRange: formData.PriceRange || "",
+      PriceRange:
+        formData.priceRange?.min && formData.priceRange?.max
+          ? `${formData.priceRange.min} - ${formData.priceRange.max}`
+          : formData.PriceRange || "",
       primary_cta: formData.primaryCTA || "enquire",
       sort_weight: formData.sortWeight
         ? Number(formData.sortWeight)
@@ -474,8 +477,8 @@ const Storefront = ({ setCompletion }) => {
       non_veg_price: formData.non_veg_price || "",
       photo_package_price: formData.photo_package_price || "",
       photo_video_package_price: formData.photo_video_package_price || "",
-      happywedz_since: formData.happywedz_since || formData.HappyWedz || "",
-      HappyWedz: formData.HappyWedz || formData.happywedz_since || "",
+      happywedz_since: formData.happywedz_since || "",
+      // HappyWedz: formData.HappyWedz || formData.happywedz_since || "",
       travel_info: formData.travel_info || "",
       offerings: formData.offerings || "",
       delivery_time: formData.delivery_time || "",
@@ -1016,6 +1019,7 @@ const Storefront = ({ setCompletion }) => {
             onSave={handleSave}
             onShowSuccess={showSuccessModal}
             onSubmit={handleSubmit}
+            vendorTypeName={vendorTypeName}
           />
         );
       case "vendor-facilities":

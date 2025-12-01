@@ -23,30 +23,6 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
       <div className="p-3 border rounded bg-white">
         <h6 className="mb-3 fw-bold">Facilities & Features</h6>
         <div className="row">
-          {/* <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Minimum Capacity</label>
-            <input
-              type="number"
-              className="form-control"
-              value={capacity.min}
-              onChange={(e) =>
-                handleNestedInputChange("capacity", "min", e.target.value)
-              }
-              placeholder="Minimum capacity"
-            />
-          </div> */}
-          {/* <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Maximum Capacity</label>
-            <input
-              type="number"
-              className="form-control"
-              value={capacity.max}
-              onChange={(e) =>
-                handleNestedInputChange("capacity", "max", e.target.value)
-              }
-              placeholder="Maximum capacity"
-            />
-          </div> */}
           <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">Number of Rooms</label>
             <input
@@ -138,21 +114,73 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
             />
           </div>
           <div className="col-md-6 mb-3">
+            <label className="form-label fw-semibold">
+              Offerings (comma-separated)
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              value={formData.offerings || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  offerings: e.target.value,
+                }))
+              }
+              placeholder="e.g. Wedding, Pre-Wedding, Portrait"
+            />
+          </div>
+
+          {/* Delivery Time (for Photographers/Other Vendors) */}
+          <div className="col-md-6 mb-3">
+            <label className="form-label fw-semibold">
+              Delivery Time (for Photographers)
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              value={formData.delivery_time || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  delivery_time: e.target.value,
+                }))
+              }
+              placeholder="e.g. 2-3 weeks"
+            />
+          </div>
+          {/* Travel Info */}
+          <div className="col-md-6 mb-3">
+            <label className="form-label fw-semibold">Travel Info</label>
+            <input
+              type="text"
+              className="form-control"
+              value={formData.travel_info || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  travel_info: e.target.value,
+                }))
+              }
+              placeholder="e.g. Travel within city, All over India"
+            />
+          </div>
+          <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">HappyWedz Since</label>
             <input
               type="text"
               className="form-control"
-              value={formData.happywedz_since || formData.HappyWedz || ""}
+              value={formData.happywedz_since || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
                   happywedz_since: e.target.value,
-                  HappyWedz: e.target.value,
                 }))
               }
               placeholder="e.g. 2020"
             />
           </div>
+
           <div className="col-12 mb-3">
             <label className="form-label fw-semibold">
               Area / Capacity Details (e.g., Lawn 200 Seating | 50 Floating)

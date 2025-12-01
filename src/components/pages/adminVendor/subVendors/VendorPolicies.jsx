@@ -58,18 +58,6 @@ const VendorPolicies = ({ formData, setFormData, onSave }) => {
             />
           </div>
 
-          {/* Travel Info */}
-          <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Travel Info</label>
-            <input
-              type="text"
-              className="form-control"
-              value={formData.travel_info || ""}
-              onChange={(e) => handleInputChange("travel_info", e.target.value)}
-              placeholder="e.g. Travel within city, All over India"
-            />
-          </div>
-
           {/* Terms & Conditions */}
           <div className="col-12 mb-3">
             <label className="form-label fw-semibold">Terms & Conditions</label>

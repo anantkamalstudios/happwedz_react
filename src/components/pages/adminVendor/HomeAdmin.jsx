@@ -496,9 +496,9 @@ const HomeAdmin = () => {
       <div className="page-header mb-4">
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center align-items-start gap-3">
           <div>
-            <h2 className="page-title">
+            <h4 className="page-title">
               Leads, Impressions & Profile Views Dashboard
-            </h2>
+            </h4>
             <p className="text-muted mb-0">
               Track your business growth and engagement
             </p>
@@ -565,10 +565,6 @@ const HomeAdmin = () => {
                 </Button>
               </div>
             )}
-
-            {/* <Button variant="primary">
-              <FiDownload className="me-1" /> Export
-            </Button> */}
           </div>
         </div>
       </div>
@@ -577,14 +573,14 @@ const HomeAdmin = () => {
       <Row className="mb-4">
         {Object.entries(statsData).map(([key, data]) => {
           const cardContent = (
-            <Card className="stat-card h-100">
+            <Card className="stat-card h-90">
               <Card.Body>
                 <div className="d-flex justify-content-between align-items-start">
                   <div>
-                    <h6 className="text-uppercase text-muted mb-1">
+                    <span className="text-uppercase text-muted mb-1">
                       {data.title}
-                    </h6>
-                    <h3 className="mb-0">{data.value}</h3>
+                    </span>
+                    <h5 className="pt-4">{data.value}</h5>
                   </div>
                   <div
                     className={`icon-circle bg-${
@@ -594,9 +590,6 @@ const HomeAdmin = () => {
                     {data.icon}
                   </div>
                 </div>
-                {/* <p className="text-muted mb-0 mt-3">
-                  <small>Daily avg: {data.daily_avg}</small>
-                </p> */}
               </Card.Body>
             </Card>
           );
@@ -605,7 +598,13 @@ const HomeAdmin = () => {
             <Col xl={3} md={6} key={key} className="mb-4">
               {key === "leads" ? (
                 <Link
-                  to="/vendor-dashboard/total-leads"
+                  to={`/vendor-dashboard/total-leads?dateFilter=${dateFilter}${
+                    dateFilter === "custom" && customStart && customEnd
+                      ? `&customStart=${encodeURIComponent(
+                          customStart
+                        )}&customEnd=${encodeURIComponent(customEnd)}`
+                      : ""
+                  }`}
                   style={{ textDecoration: "none" }}
                 >
                   {cardContent}

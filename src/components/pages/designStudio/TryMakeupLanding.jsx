@@ -104,7 +104,7 @@ const PolicyModal = ({ open, onClose, onAgree }) => {
             >
               I consent to the use of my image to apply virtual{" "}
               {type === "makeup"
-                ? "makeup filters (blush, lipstick, etc.)"
+                ? "makeup filters"
                 : type === "jewellary"
                 ? "jewellery filters"
                 : "dress filters"}{" "}

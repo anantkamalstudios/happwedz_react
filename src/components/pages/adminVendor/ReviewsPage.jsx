@@ -148,7 +148,7 @@ const ReviewsPage = () => {
       return (
         <div>
           <div className="text-center mb-4">
-            <h1>Review Collector</h1>
+            <h3>Review Collector</h3>
             <p>Send requests and collect reviews from your clients</p>
           </div>
           <ReviewsCollector />
@@ -160,7 +160,7 @@ const ReviewsPage = () => {
       return (
         <div>
           <div className="text-center mb-5">
-            <h1>Wedding Reviews</h1>
+            <h3>Wedding Reviews</h3>
             <p>Real experiences from real couples</p>
           </div>
           {loading ? (

@@ -321,8 +321,8 @@ const EnquiryManagement = () => {
           <div className="col-12">
             <div className="d-flex justify-content-between align-items-center">
               <div>
-                <h2 className="text-dark mb-1 fw-bold">Enquiry Management</h2>
-                <p className="text-muted mb-0">
+                <h4 className="text-dark mb-1 fw-bold">Enquiry Management</h4>
+                <p className="text-muted mb-0 f-14">
                   Manage your wedding enquiries efficiently
                 </p>
               </div>
@@ -679,9 +679,9 @@ const EnquiryManagement = () => {
                             </div>
 
                             <div className="flex-grow-1">
-                              <h4 className="lw-name mb-1 fw-bold">
+                              <h5 className="lw-name mb-1 fw-bold">
                                 {selectedLead.request?.user?.name}
-                              </h4>
+                              </h5>
                               <div className="d-flex flex-column gap-1">
                                 <div className="lw-contact small">
                                   <Mail size={14} className="me-2 text-muted" />

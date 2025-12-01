@@ -12,7 +12,9 @@ function Faq({ formData, setFormData, onSave }) {
 
     async function fetchAnswers() {
       try {
-        const res = await fetch(`https://happywedz.com/api/faq-answers/${vendor.id}`);
+        const res = await fetch(
+          `https://happywedz.com/api/faq-answers/${vendor.id}`
+        );
         if (!res.ok) return;
         const data = await res.json();
         const answerMap = {};
@@ -23,7 +25,10 @@ function Faq({ formData, setFormData, onSave }) {
           let val = a.answer;
           if (typeof val === "string") {
             const s = val.trim();
-            if ((s.startsWith("{") && s.endsWith("}")) || (s.startsWith("[") && s.endsWith("]"))) {
+            if (
+              (s.startsWith("{") && s.endsWith("}")) ||
+              (s.startsWith("[") && s.endsWith("]"))
+            ) {
               try {
                 val = JSON.parse(s);
               } catch {}
