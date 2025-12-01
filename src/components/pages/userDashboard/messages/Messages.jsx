@@ -73,10 +73,11 @@ const QuickChip = ({ label, onClick }) => (
   <button
     type="button"
     onClick={() => onClick(label)}
-    className="btn btn-sm border rounded-pill me-2 mb-2 text-truncate"
+    className="btn btn-sm border rounded-pill me-2 mb-2 text-truncate fw-medium"
     style={{
       minWidth: 120,
       background: "#f8f9fa",
+      fontSize: "0.85rem",
     }}
   >
     {label}
@@ -274,54 +275,7 @@ const Messages = () => {
     };
   }, [token, activeConversationId, user?.id]);
 
-  // Polling: conversations (10s) and active conversation messages (4s)
-  useEffect(() => {
-    if (!token) return;
-    const interval = setInterval(async () => {
-      try {
-        const res = await messagesApi.getConversations();
-        const list = Array.isArray(res)
-          ? res
-          : res?.data || res?.conversations || [];
-        const mapped = list.map(normalizeConversation);
-        setConversations((prev) => {
-          // Preserve enriched vendorName/image if already present
-          const byId = new Map(prev.map((c) => [c.id, c]));
-          return mapped.map((c) => {
-            const old = byId.get(c.id);
-            return old
-              ? {
-                  ...c,
-                  vendorName: old.vendorName || c.vendorName,
-                  vendorImage: old.vendorImage || c.vendorImage,
-                  unreadCount:
-                    activeConversationId === c.id ? 0 : c.unreadCount,
-                }
-              : c;
-          });
-        });
-      } catch {}
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [token, activeConversationId]);
-
-  useEffect(() => {
-    if (!token || !activeConversationId) return;
-    const interval = setInterval(async () => {
-      try {
-        const res = await messagesApi.getMessages(activeConversationId, {
-          page: 1,
-          limit: 50,
-        });
-        const list = Array.isArray(res)
-          ? res
-          : res?.data || res?.messages || [];
-        const mapped = list.map((m) => normalizeMessage(m, user?.id));
-        setMessages(mapped);
-      } catch {}
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [token, activeConversationId, user?.id]);
+  // Removed continuous polling to prevent repeated API calls.
 
   const sendMessage = async (text) => {
     if (!text || !text.trim()) return;
@@ -372,13 +326,19 @@ const Messages = () => {
   const handleQuick = (label) => sendMessage(label);
 
   return (
-    <div className="container my-4">
+    <div className="container my-4 chat-wrapper">
       <style>{`
+        .chat-wrapper { font-size: 0.93rem; color: #1f2933; }
         .chat-card { min-height: 540px; max-height: 80vh; }
-        .msg-bubble { max-width: 100%; padding: .55rem .75rem; border-radius: 14px; line-height:1.25;}
-        .msg-vendor { background:#f1f3f5; color: #212529; border-top-left-radius: 4px; }
+        .chat-section-title { letter-spacing: .2px; }
+        .vendor-name { font-size: 1rem; }
+        .vendor-preview { font-size: 0.875rem; }
+        .chat-header-name { font-size: 1rem; }
+        .chat-header-status { font-size: 0.875rem; }
+        .msg-bubble { max-width: 100%; padding: .55rem .75rem; border-radius: 14px; line-height:1.25; font-size:0.93rem;}
+        .msg-vendor { background: #fff; color: #212529; border-top-left-radius: 4px; border: 1px solid #e0e0e0; }
         .msg-user { background: rgb(237 17 115); color: #fff; border-top-right-radius: 4px; }
-        .msg-time { font-size: .75rem; color: #6c757d; }
+        .msg-time { font-size: .78rem; color: #6c757d; }
         .chat-scroll { overflow-y: auto; max-height: 58vh; padding-right: 8px; }
         .vendor-card { cursor: pointer; transition: background .2s; }
         .vendor-card:hover { background:#f8f9fa; }
@@ -390,7 +350,9 @@ const Messages = () => {
         {/* Left: Vendors List */}
         <div className="col-12 col-md-4">
           <div className="card border-0 rounded-4 shadow-sm p-3 h-100">
-            <h6 className="fw-bold mb-3">Vendors</h6>
+            <h6 className="fw-bold mb-3 chat-section-title text-dark fs-16">
+              Vendors
+            </h6>
             <div className="list-group">
               {loadingConversations ? (
                 <div className="p-3 text-muted small">
@@ -417,14 +379,16 @@ const Messages = () => {
                       />
                       <div className="ms-3">
                         <div className="d-flex align-items-center">
-                          <div className="fw-bold me-2">{c.vendorName}</div>
+                          <div className="fw-bold me-2 vendor-name fs-16">
+                            {c.vendorName}
+                          </div>
                           {c.unreadCount > 0 && (
                             <span className="badge bg-primary rounded-pill">
                               {c.unreadCount}
                             </span>
                           )}
                         </div>
-                        <div className="small text-muted text-truncate">
+                        <div className="text-muted text-truncate vendor-preview fs-14">
                           {c.lastMessagePreview || c.vendorDescription || ""}
                         </div>
                       </div>
@@ -448,10 +412,10 @@ const Messages = () => {
                   size={44}
                 />
                 <div className="ms-3">
-                  <div className="fw-bold">
+                  <div className="fw-bold chat-header-name text-dark fs-16">
                     {activeConversation?.vendorName || "Select a conversation"}
                   </div>
-                  <div className="small text-muted">
+                  <div className="text-muted chat-header-status fs-14">
                     {isOnline(activeConversation?.vendorLastActiveAt)
                       ? "Online"
                       : `Last seen ${
@@ -462,7 +426,7 @@ const Messages = () => {
                   </div>
                 </div>
               </div>
-              <div className="text-muted small d-none d-md-block">
+              <div className="text-muted d-none d-md-block fs-14">
                 <FiClock className="me-1" /> {new Date().toLocaleDateString()}
               </div>
             </div>
@@ -479,7 +443,7 @@ const Messages = () => {
               ) : loadingMessages ? (
                 <div className="text-muted small">Loading messages…</div>
               ) : !activeConversationId ? (
-                <div className="text-muted small">Select a conversation</div>
+                <div className="text-muted fs-14">Select a conversation</div>
               ) : (
                 <div className="d-flex flex-column gap-3">
                   {messages.map((m) => (
@@ -501,10 +465,10 @@ const Messages = () => {
                             />
                           </div>
                           <div>
-                            <div className="msg-time mb-1 small">
+                            <div className="msg-time mb-1 fs-14 fw-bold">
                               {m.name} • {formatTime(m.time)}
                             </div>
-                            <div className="msg-bubble msg-vendor">
+                            <div className="msg-bubble msg-vendor fs-14">
                               {m.text}
                             </div>
                           </div>
@@ -515,10 +479,12 @@ const Messages = () => {
                             className="me-2 text-end"
                             style={{ marginRight: 8 }}
                           >
-                            <div className="msg-time mb-1 small">
+                            <div className="msg-time mb-1 fs-14 fw-bold">
                               {formatTime(m.time)}
                             </div>
-                            <div className="msg-bubble msg-user">{m.text}</div>
+                            <div className="msg-bubble msg-user fs-14">
+                              {m.text}
+                            </div>
                           </div>
                           <Avatar
                             name="You"
@@ -553,7 +519,7 @@ const Messages = () => {
                 </button>
                 <input
                   type="text"
-                  className="form-control"
+                  className="form-control fs-14"
                   placeholder="Type a message..."
                   value={input}
                   onChange={(e) => setInput(e.target.value)}

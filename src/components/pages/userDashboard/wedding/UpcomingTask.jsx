@@ -128,21 +128,21 @@ const UpComingTask = () => {
   ) {
     return (
       <div style={{ padding: "2rem", textAlign: "center" }}>
-        <h1 className="mb-3 fw-bold dark-pink-text">Start Your Planning</h1>
+        <h3 className="mb-3 fw-bold dark-pink-text">Start Your Planning</h3>
         <div className="bg-light p-4 p-md-5 rounded-4 d-flex flex-column align-items-center">
           <GoChecklist size={50} />
-          <h4 className="fw-bold text-dark my-2">
+          <h6 className="fw-bold text-dark my-2">
             Your Wedding Checklist is Empty
-          </h4>
-          <p className="text-muted mb-4">
+          </h6>
+          <p className="text-muted mb-4 fs-14">
             Create a personalized checklist to stay organized and on track.
           </p>
           <Link
             to="/user-dashboard/checklist"
-            className="btn rounded-3 px-4"
+            className="btn rounded-3 px-4 fs-14"
             style={{ background: "#C31162", color: "#fff" }}
           >
-            <BsPlusLg className="me-2" /> Create Your Checklist
+            <BsPlusLg className="me-2 fs-14" /> Create Your Checklist
           </Link>
         </div>
       </div>

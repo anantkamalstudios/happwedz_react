@@ -9,19 +9,25 @@ const ViewSwitcher = ({ view, setView }) => {
       <div className="view-switcher d-flex">
         <button
           onClick={() => setView("images")}
-          className={view === "images" ? "switch-btn active" : "switch-btn"}
+          className={
+            view === "images" ? "switch-btn active fs-14" : "switch-btn fs-14"
+          }
         >
           <CiGrid41 className="me-1" /> GRID
         </button>
         <button
           onClick={() => setView("list")}
-          className={view === "list" ? "switch-btn active" : "switch-btn"}
+          className={
+            view === "list" ? "switch-btn active fs-14" : "switch-btn fs-14"
+          }
         >
           <CiCircleList className="me-1" /> LIST
         </button>
         <button
           onClick={() => setView("map")}
-          className={view === "map" ? "switch-btn active" : "switch-btn"}
+          className={
+            view === "map" ? "switch-btn active fs-14" : "switch-btn fs-14"
+          }
         >
           <FaRegMap className="me-1" /> MAP
         </button>

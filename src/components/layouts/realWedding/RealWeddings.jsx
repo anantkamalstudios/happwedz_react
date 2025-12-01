@@ -247,14 +247,14 @@ const RealWeddings = ({ onPostClick }) => {
         </div>
         <div className="p-2">
           <div className="d-flex align-items-center text-center justify-content-center">
-            <h2 className="fw-bold mb-0">{wedding.brideName}</h2>
-            <h2 className="fw-bold mb-0 mx-2">And</h2>
-            <h2 className="fw-bold mb-0">{wedding.groomName}</h2>
+            <h4 className="fw-bold mb-0">{wedding.brideName}</h4>
+            <h4 className="fw-bold mb-0 mx-2">And</h4>
+            <h4 className="fw-bold mb-0">{wedding.groomName}</h4>
           </div>
-          <h2 className="mt-3 d-flex align-items-center primary-text justify-content-center">
+          <h4 className="mt-3 d-flex align-items-center primary-text justify-content-center">
             <FaMapMarkerAlt className="me-1" />
             {wedding.city}
-          </h2>
+          </h4>
         </div>
       </div>
     </div>

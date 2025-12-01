@@ -273,7 +273,7 @@ const Wedding = () => {
             </div>
 
             <div className="col-md-8 p-4 d-flex flex-column justify-content-center">
-              <h4 className="fw-bold mb-2 text-dark">
+              <h3 className="fw-bold mb-2 text-dark">
                 Welcome,{" "}
                 {user?.name
                   .split(" ")
@@ -283,33 +283,33 @@ const Wedding = () => {
                   )
                   .join(" ") || "User"}
                 !
-              </h4>
+              </h3>
 
-              <p className="text-muted mb-4">
+              <p className="text-muted mb-4 fs-16">
                 {formatDateWithOrdinal(user?.weddingDate)}
               </p>
 
               <div className="card rounded-0 border-0 shadow-sm">
                 <div className="row text-center g-0">
                   <div className="col py-3 border-end">
-                    <h6 className="mb-1 fw-semibold text-dark">
+                    <span className="mb-1 fw-semibold text-dark fs-16 d-block">
                       Service Hired
-                    </h6>
-                    <small className="text-muted">0 of 25</small>
+                    </span>
+                    <small className="text-muted fs-14">0 of 25</small>
                   </div>
                   <div className="col py-3 border-end">
-                    <h6 className="mb-1 fw-semibold text-dark">
+                    <span className="mb-1 fw-semibold text-dark fs-16 d-block">
                       Task Complete
-                    </h6>
-                    <small className="text-muted">
+                    </span>
+                    <small className="text-muted fs-14">
                       {taskStats.completed} of {taskStats.total || 20}
                     </small>
                   </div>
                   <div className="col py-3">
-                    <h6 className="mb-1 fw-semibold text-dark">
+                    <span className="mb-1 fw-semibold text-dark fs-16 d-block">
                       Guest Attending
-                    </h6>
-                    <small className="text-muted">
+                    </span>
+                    <small className="text-muted fs-14">
                       {guestStats.attending} of {guestStats.total || 100}
                     </small>
                   </div>
@@ -409,11 +409,11 @@ const Wedding = () => {
                     alignItems: "center",
                   }}
                 >
-                  <MdGroups size={40} />
+                  <MdGroups size={40} color="#fff" />
                 </div>
 
-                <p>You haven't added any guest yet</p>
-                <Link to="/user-dashboard/guest-list">
+                <p className="my-2 fs-16">You haven't added any guest yet</p>
+                <Link to="/user-dashboard/guest-list" className="fs-14">
                   <button
                     style={{
                       padding: "0.5rem 2rem",
@@ -444,19 +444,19 @@ const Wedding = () => {
               <div className="text-center my-auto">
                 <h3 className="fw-bold dark-pink-text mb-4">Wedding Budget</h3>
                 <div className="mb-3">
-                  <h1 className="display-5 fw-bold primary-text mb-1">
+                  <h3 className="display-5 fw-bold primary-text mb-1">
                     ₹{(budget.total / 100000).toFixed(1)}L
-                  </h1>
-                  <div className="text-muted">Total Budget</div>
+                  </h3>
+                  <div className="text-muted fs-16">Total Budget</div>
                 </div>
-                <div className="d-flex justify-content-center gap-4 small text-muted mb-4">
+                <div className="d-flex justify-content-center gap-4 small text-muted mb-4 fs-16">
                   <span>Spent: ₹{(budget.spent / 100000).toFixed(1)}L</span>
                   <span>
                     Remaining: ₹{(budget.remaining / 100000).toFixed(1)}L
                   </span>
                 </div>
                 <div
-                  className="progress mx-auto mb-2"
+                  className="progress mx-auto mb-2 fs-16"
                   style={{ height: "8px", maxWidth: "200px" }}
                 >
                   <div
@@ -486,7 +486,7 @@ const Wedding = () => {
               <div className="text-center mt-auto">
                 <Link
                   to="/user-dashboard/budget"
-                  className="btn rounded-3 px-4 py-2"
+                  className="btn rounded-3 px-4 py-2 fs-14"
                   style={{ background: "#C31162", color: "#fff" }}
                 >
                   + Add Budget
@@ -543,7 +543,7 @@ const Wedding = () => {
                       href="#"
                       style={{
                         display: "inline-block",
-                        width: "110px",
+                        width: "120px",
                       }}
                     >
                       <img

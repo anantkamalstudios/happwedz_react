@@ -94,11 +94,13 @@ const VendorRegister = () => {
         break;
 
       case "password":
-        const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+        const passwordRegex =
+          /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
         if (!value) {
           error = "Password is required";
         } else if (!passwordRegex.test(value)) {
-          error = "Password must be 8+ chars with uppercase, lowercase, and number";
+          error =
+            "Password must be 8+ chars with uppercase, lowercase, and number";
         }
         break;
 
@@ -192,12 +194,12 @@ const VendorRegister = () => {
       const token = data?.data?.token || data?.token;
       const vendor = data?.data?.vendor ||
         data?.vendor || {
-        businessName: formData.brandName,
-        email: formData.email,
-        phone: formData.phone,
-        city: formData.city,
-        vendor_type_id: formData.vendorType,
-      };
+          businessName: formData.brandName,
+          email: formData.email,
+          phone: formData.phone,
+          city: formData.city,
+          vendor_type_id: formData.vendorType,
+        };
 
       if (token && vendor) {
         dispatch(loginVendor({ token, vendor }));
@@ -241,8 +243,8 @@ const VendorRegister = () => {
 
           <div className="col-lg-7 p-5">
             <div className="text-center mb-5">
-              <h2 className="fw-bold text-dark mb-2">Vendor Registration</h2>
-              <p className="text-muted">
+              <h3 className="fw-bold text-dark mb-2">Vendor Registration</h3>
+              <p className="text-muted fs-16">
                 Create your vendor account to start providing services for
                 weddings.
               </p>
@@ -256,8 +258,9 @@ const VendorRegister = () => {
                       type="text"
                       id="brandName"
                       name="brandName"
-                      className={`form-control fs-16 ${errors.brandName ? "is-invalid" : ""
-                        }`}
+                      className={`form-control fs-16 ${
+                        errors.brandName ? "is-invalid" : ""
+                      }`}
                       placeholder="Brand Name"
                       value={formData.brandName}
                       onChange={handleChange}
@@ -274,13 +277,14 @@ const VendorRegister = () => {
                   <div className="form-floating">
                     <select
                       name="vendorType"
-                      className={`form-select fs-16 ${errors.vendorType ? "is-invalid" : ""
-                        }`}
+                      className={`form-select fs-16 ${
+                        errors.vendorType ? "is-invalid" : ""
+                      }`}
                       value={formData.vendorType}
                       onChange={handleChange}
                       required
                     >
-                      <option value="fs-16">Select Vendor Type</option>
+                      <option value="">Select Vendor Type</option>
                       {vendorTypes.map((type) => (
                         <option
                           key={type.id}
@@ -305,8 +309,9 @@ const VendorRegister = () => {
                     <input
                       type="email"
                       name="email"
-                      className={`form-control fs-16 ${errors.email ? "is-invalid" : ""
-                        }`}
+                      className={`form-control fs-16 ${
+                        errors.email ? "is-invalid" : ""
+                      }`}
                       placeholder="Email"
                       value={formData.email}
                       onChange={handleChange}
@@ -322,8 +327,9 @@ const VendorRegister = () => {
                   <div className="form-floating">
                     <select
                       name="city"
-                      className={`form-select fs-16 ${errors.city ? "is-invalid" : ""
-                        }`}
+                      className={`form-select fs-16 ${
+                        errors.city ? "is-invalid" : ""
+                      }`}
                       value={formData.city}
                       onChange={handleChange}
                     >
@@ -348,8 +354,9 @@ const VendorRegister = () => {
                     <input
                       type={passwordVisible ? "text" : "password"}
                       name="password"
-                      className={`form-control fs-16 ${errors.password ? "is-invalid" : ""
-                        }`}
+                      className={`form-control fs-16 ${
+                        errors.password ? "is-invalid" : ""
+                      }`}
                       placeholder="Password"
                       value={formData.password}
                       onChange={handleChange}
@@ -361,7 +368,7 @@ const VendorRegister = () => {
                       className="position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent"
                       onClick={togglePasswordVisibility}
                       style={{
-                        zIndex: 9999,
+                        zIndex: 10,
                         marginRight: "10px",
                       }}
                       aria-label={
@@ -394,8 +401,9 @@ const VendorRegister = () => {
                     <input
                       type="number"
                       name="phone"
-                      className={`input-number form-control fs-16 ${errors.phone ? "is-invalid" : ""
-                        }`}
+                      className={`input-number form-control fs-16 ${
+                        errors.phone ? "is-invalid" : ""
+                      }`}
                       placeholder="Phone"
                       value={formData.phone}
                       onChange={handleChange}
@@ -411,7 +419,7 @@ const VendorRegister = () => {
               <div className="d-grid mb-4">
                 <button
                   type="submit"
-                  className="btn btn-lg btn-primary fw-medium py-3"
+                  className="btn btn-lg btn-primary fw-medium py-3 fs-16"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
@@ -422,20 +430,20 @@ const VendorRegister = () => {
               </div>
 
               <div className="text-center d-flex justify-content-between">
-                <p className="text-muted fs-14">
+                <p className="text-muted fs-16">
                   I have an account?
                   <Link
                     to="/vendor-login"
-                    className="fw-semibold px-2 wedding-link fs-14"
+                    className="fw-semibold px-2 wedding-link"
                   >
                     Vendor Login
                   </Link>
                 </p>
-                <p className="text-muted fs-14">
+                <p className="text-muted fs-16">
                   I Am a Customer?
                   <Link
                     to="/customer-login"
-                    className="fw-semibold px-2 wedding-link fs-14"
+                    className="fw-semibold px-2 wedding-link"
                   >
                     Customer Login
                   </Link>

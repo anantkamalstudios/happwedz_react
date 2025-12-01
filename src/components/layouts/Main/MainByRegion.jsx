@@ -16,7 +16,6 @@ const MainByRegion = ({ type }) => {
   );
 
   const handleRegionClick = (regionName) => {
-    // Set location in Redux
     dispatch(setLocation(regionName));
 
     const cityParam = `city=${encodeURIComponent(regionName)}`;
@@ -36,7 +35,7 @@ const MainByRegion = ({ type }) => {
   return (
     <div className="container">
       <div className="venue-region-section px-4 my-5">
-        <h3 className="fw-bold mb-0 text-dark mb-5">
+        <h3 className="fw-bold mb-0 text-dark mb-3">
           {type === "Venues" ? "Venues" : "Vendors"} By Region
         </h3>
 
@@ -73,8 +72,10 @@ const MainByRegion = ({ type }) => {
                     />
                   </div>
                 </div>
-                <div className="region-title fw-medium">{region.name}</div>
-                <div className="text-muted small">
+                <div className="region-title fw-medium fs-16">
+                  {region.name}
+                </div>
+                <div className="text-muted fs-14">
                   {region.venueCount} {type === "venues" ? "Venues" : "Vendors"}
                 </div>
               </div>

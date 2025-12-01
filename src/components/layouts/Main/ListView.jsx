@@ -187,18 +187,18 @@ const ListView = ({ subVenuesData, handleShow }) => {
                     <Col md={8} className="p-3 d-flex flex-column">
                       <Link className="text-decoration-none">
                         <div className="d-flex justify-content-between align-items-start">
-                          <h4 className="fw-bold mb-1 primary-text">
+                          <span className="fw-bold mb-1 primary-text fs-18">
                             {venue.name}
-                          </h4>
+                          </span>
                         </div>
 
-                        <p className="text-muted small mb-1">
+                        <p className="text-muted small mb-1 fs-14">
                           {" "}
-                          <IoLocationOutline className="me-2" />
+                          <IoLocationOutline className="me-2 fs-14" />
                           {venue.location}
                         </p>
 
-                        <p className="fw-semibold text-dark mb-2">
+                        <p className="fw-semibold text-dark mb-2 fs-16">
                           <FaIndianRupeeSign size={14} />{" "}
                           {(
                             venue?.vegPrice ||
@@ -210,33 +210,34 @@ const ListView = ({ subVenuesData, handleShow }) => {
                             ?.trim()}
                         </p>
 
-                        <div className="d-flex align-items-center mb-2">
-                          <FaStar className="text-warning me-1" />
+                        <div className="d-flex align-items-center mb-2 fs-14">
+                          <FaStar className="text-warning me-1 fs-14" />
                           <span>{venue.rating || "5.0"}</span>
-                          <span className="text-muted ms-1">
+                          <span className="text-muted ms-1 fs-14">
                             ({venue.reviews} reviews)
                           </span>
                         </div>
 
                         <div
-                          className="text-muted small mb-2"
+                          className="text-muted small mb-2 fs-14"
                           style={{
+                            lineHeight: "1.9",
+                            wordSpacing: "0.1em",
+                            letterSpacing: "0.02em",
+                            whiteSpace: "pre-line",
+                            maxHeight: "5.7em",
                             overflow: "hidden",
                             textOverflow: "ellipsis",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 3,
-                            WebkitBoxOrient: "vertical",
-                            lineHeight: "1.5",
                           }}
                           dangerouslySetInnerHTML={{
                             __html: DOMPurify.sanitize(venue.description || ""),
                           }}
                         />
                       </Link>
-                      <div className="mt-auto text-end">
+                      <div className="mt-auto text-end fs-14">
                         <Button
                           variant="danger"
-                          className="btn-primary"
+                          className="btn-primary fs-14"
                           onClick={() => handleShow(venue.id)}
                         >
                           Send Message

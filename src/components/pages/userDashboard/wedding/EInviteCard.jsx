@@ -23,7 +23,7 @@ const EInviteCard = () => {
 
       {/* Content */}
       <div className=" text-center p-4">
-        <h6
+        <h3
           className="fw-bold mb-2"
           style={{
             color: "#C31162",
@@ -31,18 +31,18 @@ const EInviteCard = () => {
           }}
         >
           E-INVITES
-        </h6>
-        <h5
-          className="fw-bold mb-3"
+        </h3>
+        <p
+          className="fw-bold mb-3 fs-16 px-2"
           style={{
             color: "#C31162",
             fontSize: "1.1rem",
           }}
         >
           Create Stunning Digital Wedding Invitations That Wow
-        </h5>
+        </p>
         <p
-          className="text-muted mb-4 mt-4"
+          className="text-muted mb-4 mt-4 fs-14"
           style={{
             fontSize: "0.9rem",
             lineHeight: "1.5",
@@ -54,7 +54,7 @@ const EInviteCard = () => {
 
         <Link to="/einvites">
           <button
-            className="btn fw-bold mt-4 rounded-3"
+            className="btn mt-4 rounded-3 fs-14"
             style={{
               backgroundColor: "#C31162",
               color: "#fff",

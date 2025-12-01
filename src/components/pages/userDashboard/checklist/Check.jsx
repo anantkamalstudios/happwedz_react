@@ -21,6 +21,7 @@ import dayjs from "dayjs";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import ChecklistPDF from "./ChecklistPDF";
 import { FaSpinner } from "react-icons/fa6";
+import { Dropdown } from "react-bootstrap";
 
 const CATEGORY_API =
   "https://happywedz.com/api/vendor-types/with-subcategories/all";
@@ -310,11 +311,11 @@ const Check = () => {
             {/* Sidebar */}
             <div className="col-lg-4 mb-4">
               <div className="stat-card border border-black">
-                <div className="stat-card-header">
+                <div className="stat-card-header fs-16">
                   <FiClock size={20} />
                   <span>Task Status</span>
                 </div>
-                <div className="status-item d-flex justify-content-between align-items-center">
+                <div className="status-item d-flex justify-content-between align-items-center fs-14">
                   <span style={{ fontWeight: "600", color: "#374151" }}>
                     Pending Tasks
                   </span>
@@ -322,7 +323,7 @@ const Check = () => {
                     {checklists.filter((c) => c.status === "pending").length}
                   </span>
                 </div>
-                <div className="status-item d-flex justify-content-between align-items-center">
+                <div className="status-item d-flex justify-content-between align-items-center fs-14">
                   <span style={{ fontWeight: "600", color: "#374151" }}>
                     Completed Tasks
                   </span>
@@ -332,31 +333,38 @@ const Check = () => {
 
               {/* Wedding Dates Card */}
               <div className="stat-card border border-black">
-                <div className="stat-card-header">
+                <div className="stat-card-header fs-16">
                   <FaCalendarAlt size={18} />
                   <span>Wedding Timeline</span>
                 </div>
-                <div className="date-input-group">
+                <div className="date-input-group fs-16">
                   <label>
                     <FaCalendarAlt size={14} />
                     Start Date
                   </label>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <LocalizationProvider
+                    className="fs-14"
+                    dateAdapter={AdapterDayjs}
+                  >
                     <DatePicker
                       value={startDate ? dayjs(startDate) : null}
                       onChange={handleStartDateChange}
+                      className="fs-14"
                       disabled={checklists.length > 0 && !!startDate}
                       slotProps={{
                         textField: {
                           fullWidth: true,
                           size: "small",
                           placeholder: "Select start date",
+                          className: "fs-14",
+                          InputProps: { style: { fontSize: 14 } },
+                          inputProps: { style: { fontSize: 14 } },
                         },
                       }}
                     />
                   </LocalizationProvider>
                 </div>
-                <div className="date-input-group">
+                <div className="date-input-group fs-14">
                   <label>
                     <FaHeart size={14} />
                     Wedding Date
@@ -371,6 +379,8 @@ const Check = () => {
                           fullWidth: true,
                           size: "small",
                           placeholder: "Select wedding date",
+                          InputProps: { style: { fontSize: 14 } },
+                          inputProps: { style: { fontSize: 14 } },
                         },
                       }}
                     />
@@ -379,8 +389,8 @@ const Check = () => {
 
                 {daysLeft !== null && (
                   <div className="days-countdown">
-                    <span className="days-number">{Math.abs(daysLeft)}</span>
-                    <span className="days-text">
+                    <h3 className="days-number">{Math.abs(daysLeft)}</h3>
+                    <span className="days-text fs-16 fw-bold">
                       {daysLeft > 0
                         ? "Days Until Wedding"
                         : daysLeft === 0
@@ -400,7 +410,7 @@ const Check = () => {
                     <FaHeart />
                     Wedding Checklist
                   </h5>
-                  <div className="header-actions d-flex gap-2">
+                  <div className="header-actions d-flex gap-2 fs-14">
                     {(distributedTasks && distributedTasks.length > 0) ||
                     (checklists && checklists.length > 0) ? (
                       <PDFDownloadLink
@@ -422,14 +432,14 @@ const Check = () => {
                       >
                         {({ loading }) => (
                           <button className="btn">
-                            <FaDownload className="me-1" />
+                            <FaDownload className="me-1" size={12} />
                             {loading ? "Preparing..." : "Download"}
                           </button>
                         )}
                       </PDFDownloadLink>
                     ) : (
                       <button
-                        className="btn"
+                        className="btn fs-14"
                         disabled
                         title="No tasks to download"
                       >
@@ -469,7 +479,7 @@ const Check = () => {
 
                   {error && (
                     <div
-                      className="alert alert-danger alert-custom alert-dismissible fade show"
+                      className="alert alert-danger alert-custom alert-dismissible fade show fs-14 fw-bold"
                       role="alert"
                     >
                       {error}
@@ -483,49 +493,81 @@ const Check = () => {
 
                   {/* Add Task Form */}
                   <div className="add-task-card">
-                    <h6>Add New Task</h6>
+                    <h6 className="fs-16">Add New Task</h6>
                     <div className="row align-items-end">
-                      <div className="col-md-5 mb-3">
-                        <label
-                          className="form-label"
-                          style={{ fontWeight: "600", color: "#374151" }}
-                        >
-                          Category
-                        </label>
-                        <select
-                          className="form-select"
-                          value={vendorSubId}
-                          onChange={(e) => setVendorSubId(e.target.value)}
-                        >
-                          <option value="">Select Category</option>
-                          {categories.map((sub) => (
-                            <option key={sub.id} value={sub.id}>
-                              {sub.name}
-                            </option>
-                          ))}
-                        </select>
+                      <div className="col-md-11 mb-3">
+                        <div className="row">
+                          <div className="col-6">
+                            <label
+                              className="form-label fs-14"
+                              style={{ fontWeight: "600", color: "#374151" }}
+                            >
+                              Category
+                            </label>
+                            <Dropdown
+                              drop="down"
+                              autoClose="outside"
+                              flip={true}
+                            >
+                              <Dropdown.Toggle className="w-100 fs-14 bg-white text-black text-start d-flex justify-content-between align-items-center">
+                                {vendorSubId
+                                  ? categories.find((c) => c.id == vendorSubId)
+                                      ?.name
+                                  : "Select Category"}
+                              </Dropdown.Toggle>
+
+                              <Dropdown.Menu
+                                className="w-100"
+                                style={{
+                                  maxHeight: "350px",
+                                  overflowY: "auto",
+                                  background: "#fff",
+                                }}
+                              >
+                                {categories.map((sub) => (
+                                  <Dropdown.Item
+                                    key={sub.id}
+                                    onClick={() => setVendorSubId(sub.id)}
+                                    className="fs-14"
+                                  >
+                                    {sub.name}
+                                  </Dropdown.Item>
+                                ))}
+                              </Dropdown.Menu>
+                            </Dropdown>
+                          </div>
+                          <div className="col-6">
+                            <label
+                              className="form-label fs-14"
+                              style={{ fontWeight: "600", color: "#374151" }}
+                            >
+                              Task Name
+                            </label>
+                            <input
+                              type="text"
+                              className="form-control fs-14"
+                              placeholder="Enter task description"
+                              value={text}
+                              onChange={(e) => setText(e.target.value)}
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div className="col-md-5 mb-3">
-                        <label
-                          className="form-label"
-                          style={{ fontWeight: "600", color: "#374151" }}
-                        >
-                          Task Name
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="Enter task description"
-                          value={text}
-                          onChange={(e) => setText(e.target.value)}
-                        />
-                      </div>
-                      <div className="col-md-2 mb-3">
+                      <div className="col-md-1 mb-3 d-flex align-items-center text-center justify-content-center">
                         <button
-                          className="btn-outline-primary"
+                          className="btn btn-outline-primary fs-14"
+                          style={{
+                            borderRadius: "50%",
+                            width: "70px",
+                            height: "40px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: "0",
+                          }}
                           onClick={addChecklist}
                         >
-                          <FaPlus className="me-1" />
+                          <FaPlus />
                         </button>
                       </div>
                     </div>

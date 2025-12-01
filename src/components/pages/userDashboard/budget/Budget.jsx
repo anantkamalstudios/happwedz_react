@@ -150,11 +150,11 @@ const Budget = () => {
   return (
     <div className="wb-container">
       <div className="wb-header">
-        <h1 className="wb-title">Budget</h1>
+        <h3 className="wb-title">Budget</h3>
 
         <div className="wb-budget-summary">
           <div className="wb-budget-card">
-            <div className="wb-budget-label">ESTIMATED BUDGET</div>
+            <div className="wb-budget-label fs-14">ESTIMATED BUDGET</div>
             <div className="wb-budget-amount">
               {formatCurrency(estimatedTotal)}
             </div>
@@ -187,14 +187,14 @@ const Budget = () => {
 
       <div className="wb-categories-container">
         <div className="wb-categories-list">
-          <h2 className="wb-section-title">Categories</h2>
+          <h2 className="wb-section-title fs-16">Categories</h2>
           {categories.map((category) => (
-            <div key={category.id} className="wb-category-item">
+            <div key={category.id} className="wb-category-item fs-14">
               <div
-                className="wb-category-header"
+                className="wb-category-header fs-14"
                 onClick={() => toggleCategory(category.id)}
               >
-                <div className="wb-category-name fs-16">
+                <div className="wb-category-name fs-14">
                   {selectedCategoryId === category.id ? (
                     <FaBookOpenReader className="wb-category-icon" />
                   ) : (
@@ -202,7 +202,7 @@ const Budget = () => {
                   )}
                   {category.name}
                 </div>
-                <div className="wb-category-amount fs-16">
+                <div className="wb-category-amount fs-14">
                   {formatCurrency(category.amount)}
                 </div>
               </div>
@@ -371,7 +371,7 @@ const Budget = () => {
             </>
           ) : (
             <>
-              <h2 className="wb-section-title">Expense Details</h2>
+              <h2 className="wb-section-title fs-16">Expense Details</h2>
               <div className="wb-pie-chart-container">
                 {/* <div className="wb-pie-chart-message">
                   Select a category to view expense details
@@ -408,7 +408,10 @@ const Budget = () => {
                         }}
                       />
                       <Legend
-                        wrapperStyle={{ paddingTop: "20px" }}
+                        wrapperStyle={{
+                          paddingTop: "20px",
+                          fontSize: "14px",
+                        }}
                         formatter={(value) => value}
                       />
                     </PieChart>

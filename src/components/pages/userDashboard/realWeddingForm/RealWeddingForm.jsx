@@ -434,8 +434,10 @@ const RealWeddingForm = ({ user, token }) => {
     <div className="user-dashboard-wedding-submission-form">
       <div className="form-container">
         <div className="form-header">
-          <h1 className="form-title">Share Your Wedding Story</h1>
-          <p>Inspire thousands of couples with your special day</p>
+          <h3 className="form-title">Share Your Wedding Story</h3>
+          <p className="fs-16">
+            Inspire thousands of couples with your special day
+          </p>
         </div>
 
         {/* Stepper */}
@@ -447,8 +449,8 @@ const RealWeddingForm = ({ user, token }) => {
                 index < currentStep ? "completed" : ""
               }`}
             >
-              <div className="step-icon">{index + 1}</div>
-              <span className="step-label">{step}</span>
+              <div className="step-icon fs-14">{index + 1}</div>
+              <span className="step-label fs-14">{step}</span>
             </div>
           ))}
         </div>
@@ -490,7 +492,11 @@ const RealWeddingForm = ({ user, token }) => {
           <div className="form-footer">
             <div className="footer-buttons">
               {currentStep > 0 ? (
-                <button type="button" className="btn-prev" onClick={prevStep}>
+                <button
+                  type="button"
+                  className="btn-prev fs-16"
+                  onClick={prevStep}
+                >
                   <FiChevronLeft /> Previous
                 </button>
               ) : (
@@ -498,12 +504,20 @@ const RealWeddingForm = ({ user, token }) => {
               )}
 
               <div style={{ display: "flex", gap: "1rem" }}>
-                <button type="button" className="btn-draft" onClick={saveDraft}>
+                <button
+                  type="button"
+                  className="btn-draft fs-16"
+                  onClick={saveDraft}
+                >
                   Save Draft
                 </button>
 
                 {currentStep < steps.length - 1 ? (
-                  <button type="button" className="btn-next" onClick={nextStep}>
+                  <button
+                    type="button"
+                    className="btn-next fs-16"
+                    onClick={nextStep}
+                  >
                     Next <FiChevronRight />
                   </button>
                 ) : (
@@ -518,7 +532,7 @@ const RealWeddingForm = ({ user, token }) => {
                   >
                     {isLoading ? (
                       <span
-                        className="spinner-border spinner-border-sm"
+                        className="spinner-border spinner-border-sm fs-16"
                         role="status"
                         aria-hidden="true"
                       ></span>
@@ -638,7 +652,7 @@ const VenueSearchInput = ({ onSelectVenue }) => {
     >
       <input
         type="text"
-        className="form-control"
+        className="form-control fs-14"
         value={searchQuery}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
@@ -772,15 +786,15 @@ const BasicInfoStep = ({
 }) => {
   return (
     <div className="form-card">
-      <h2 className="form-section-title">
+      <h5 className="form-section-title">
         <FiCalendar /> Basic Information
-      </h2>
+      </h5>
 
       <div className="form-group">
-        <label className="form-label">Wedding Title</label>
+        <label className="form-label fs-16">Wedding Title</label>
         <input
           type="text"
-          className="form-control"
+          className="form-control fs-14"
           name="title"
           value={formData.title}
           onChange={(e) => {
@@ -800,10 +814,10 @@ const BasicInfoStep = ({
       </div>
 
       <div className="form-group">
-        <label className="form-label">URL Slug</label>
+        <label className="form-label fs-16">URL Slug</label>
         <input
           type="text"
-          className="form-control"
+          className="form-control fs-14"
           name="slug"
           value={formData.slug}
           disabled
@@ -816,33 +830,39 @@ const BasicInfoStep = ({
 
       <div className="form-row">
         <div className="form-group">
-          <label className="form-label">Wedding Date</label>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              value={formData.weddingDate ? dayjs(formData.weddingDate) : null}
-              onChange={(newValue) => {
-                const dateString = newValue
-                  ? dayjs(newValue).format("YYYY-MM-DD")
-                  : "";
-                handleInputChange({
-                  target: { name: "weddingDate", value: dateString },
-                });
-              }}
-              slotProps={{
-                textField: {
-                  fullWidth: true,
-                  size: "small",
-                  placeholder: "Select wedding date",
-                },
-              }}
-            />
-          </LocalizationProvider>
+          <label className="form-label fs-16">Wedding Date</label>
+          <div style={{ fontSize: 14 }}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                value={
+                  formData.weddingDate ? dayjs(formData.weddingDate) : null
+                }
+                onChange={(newValue) => {
+                  const dateString = newValue
+                    ? dayjs(newValue).format("YYYY-MM-DD")
+                    : "";
+                  handleInputChange({
+                    target: { name: "weddingDate", value: dateString },
+                  });
+                }}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    size: "small",
+                    placeholder: "Select wedding date",
+                    InputProps: { style: { fontSize: 14 } },
+                    inputProps: { style: { fontSize: 14 } },
+                  },
+                }}
+              />
+            </LocalizationProvider>
+          </div>
         </div>
 
         <div className="form-group">
-          <label className="form-label">Country</label>
+          <label className="form-label fs-16">Country</label>
           <select
-            className="form-control"
+            className="form-control fs-14"
             name="country"
             value={selectedCountry}
             onChange={handleCountryChange}
@@ -859,10 +879,10 @@ const BasicInfoStep = ({
 
       <div className="form-row">
         <div className="form-group">
-          <label className="form-label">City</label>
+          <label className="form-label fs-16">City</label>
           <input
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             name="city"
             value={formData.city}
             onChange={handleInputChange}
@@ -874,9 +894,9 @@ const BasicInfoStep = ({
         </div>
 
         <div className="form-group">
-          <label className="form-label">Culture</label>
+          <label className="form-label fs-16">Culture</label>
           <select
-            className="form-control"
+            className="form-control fs-14"
             name="cultures"
             value={formData.cultures}
             onChange={handleInputChange}
@@ -898,7 +918,7 @@ const BasicInfoStep = ({
       </div>
 
       <div className="form-group">
-        <label className="form-label">Venues</label>
+        <label className="form-label fs-16">Venues</label>
         <VenueSearchInput
           onSelectVenue={(venueName) => {
             if (venueName && !formData.venues.includes(venueName)) {
@@ -931,16 +951,16 @@ const BasicInfoStep = ({
 const CoupleInfoStep = ({ formData, handleInputChange }) => {
   return (
     <div className="form-card">
-      <h2 className="form-section-title">
+      <h4 className="form-section-title">
         <FiUser /> Couple Information
-      </h2>
+      </h4>
 
       <div className="form-row">
         <div className="form-group">
-          <label className="form-label">Bride's Name</label>
+          <label className="form-label fs-16">Bride's Name</label>
           <input
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             name="brideName"
             value={formData.brideName}
             onChange={handleInputChange}
@@ -949,10 +969,10 @@ const CoupleInfoStep = ({ formData, handleInputChange }) => {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Groom's Name</label>
+          <label className="form-label fs-16">Groom's Name</label>
           <input
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             name="groomName"
             value={formData.groomName}
             onChange={handleInputChange}
@@ -962,9 +982,9 @@ const CoupleInfoStep = ({ formData, handleInputChange }) => {
       </div>
 
       <div className="form-group">
-        <label className="form-label">Bride's Bio</label>
+        <label className="form-label fs-16">Bride's Bio</label>
         <textarea
-          className="form-control"
+          className="form-control fs-14"
           name="brideBio"
           value={formData.brideBio}
           onChange={handleInputChange}
@@ -974,9 +994,9 @@ const CoupleInfoStep = ({ formData, handleInputChange }) => {
       </div>
 
       <div className="form-group">
-        <label className="form-label">Groom's Bio</label>
+        <label className="form-label fs-16">Groom's Bio</label>
         <textarea
-          className="form-control"
+          className="form-control fs-14"
           name="groomBio"
           value={formData.groomBio}
           onChange={handleInputChange}
@@ -998,12 +1018,12 @@ const WeddingStoryStep = ({ formData, handleInputChange }) => {
 
   return (
     <div className="form-card">
-      <h2 className="form-section-title">
+      <h4 className="form-section-title">
         <FiEdit3 /> Wedding Story
-      </h2>
+      </h4>
 
       <div className="form-group">
-        <label className="form-label">Your Wedding Story</label>
+        <label className="form-label fs-16">Your Wedding Story</label>
         <SummernoteEditor
           value={formData.story || ""}
           onChange={(htmlContent) => {
@@ -1034,10 +1054,10 @@ const EventCreator = ({ onAdd }) => {
     <div className="mb-3 p-3 border rounded">
       <div className="form-row">
         <div className="form-group">
-          <label className="form-label">Event Name</label>
+          <label className="form-label fs-16">Event Name</label>
           <input
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             value={local.name}
             onChange={(e) => setLocal({ ...local, name: e.target.value })}
             onKeyDown={(e) => {
@@ -1051,7 +1071,24 @@ const EventCreator = ({ onAdd }) => {
           />
         </div>
         <div className="form-group">
-          <label className="form-label">Date</label>
+          <label className="form-label fs-16">Venue</label>
+          <input
+            type="text"
+            className="form-control fs-14"
+            value={local.venue}
+            onChange={(e) => setLocal({ ...local, venue: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && canAdd) {
+                e.preventDefault();
+                onAdd({ ...local });
+                setLocal({ name: "", date: "", venue: "", description: "" });
+              }
+            }}
+            placeholder="e.g., City Palace"
+          />
+        </div>
+        <div className="form-group">
+          <label className="form-label fs-16">Date</label>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               value={local.date ? dayjs(local.date) : null}
@@ -1066,33 +1103,18 @@ const EventCreator = ({ onAdd }) => {
                   fullWidth: true,
                   size: "small",
                   placeholder: "Select event date",
+                  InputProps: { style: { fontSize: 14 } },
+                  inputProps: { style: { fontSize: 14 } },
                 },
               }}
             />
           </LocalizationProvider>
         </div>
-        <div className="form-group">
-          <label className="form-label">Venue</label>
-          <input
-            type="text"
-            className="form-control"
-            value={local.venue}
-            onChange={(e) => setLocal({ ...local, venue: e.target.value })}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && canAdd) {
-                e.preventDefault();
-                onAdd({ ...local });
-                setLocal({ name: "", date: "", venue: "", description: "" });
-              }
-            }}
-            placeholder="e.g., City Palace"
-          />
-        </div>
       </div>
       <div className="form-group">
-        <label className="form-label">Description (optional)</label>
+        <label className="form-label fs-16">Description (optional)</label>
         <textarea
-          className="form-control"
+          className="form-control fs-14"
           rows="2"
           value={local.description}
           onChange={(e) => setLocal({ ...local, description: e.target.value })}
@@ -1101,7 +1123,7 @@ const EventCreator = ({ onAdd }) => {
       </div>
       <button
         type="button"
-        className="add-item-btn"
+        className="add-item-btn fs-14"
         onClick={() => {
           if (canAdd) {
             onAdd({ ...local });
@@ -1222,9 +1244,9 @@ const VendorCreator = ({ vendorTypes = [], onAdd }) => {
     <div className="mb-3 p-3 border rounded">
       <div className="form-row">
         <div className="form-group">
-          <label className="form-label">Vendor Type</label>
+          <label className="form-label fs-16">Vendor Type</label>
           <select
-            className="form-control"
+            className="form-control fs-14"
             value={local.typeId}
             onChange={(e) => {
               setLocal({ ...local, typeId: e.target.value, name: "" });
@@ -1245,10 +1267,10 @@ const VendorCreator = ({ vendorTypes = [], onAdd }) => {
           ref={searchRef}
           style={{ position: "relative" }}
         >
-          <label className="form-label">Vendor Name</label>
+          <label className="form-label fs-16">Vendor Name</label>
           <input
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             value={local.name}
             onChange={handleVendorNameChange}
             onFocus={() => {
@@ -1369,7 +1391,7 @@ const VendorCreator = ({ vendorTypes = [], onAdd }) => {
       </div>
       <button
         type="button"
-        className="add-item-btn"
+        className="add-item-btn fs-14"
         onClick={() => {
           if (canAdd) {
             onAdd({ name: local.name, type: local.type });
@@ -1389,12 +1411,12 @@ const VendorCreator = ({ vendorTypes = [], onAdd }) => {
 const EventsStep = ({ formData, handleArrayChange, handleRemoveItem }) => {
   return (
     <div className="form-card">
-      <h2 className="form-section-title">
+      <h4 className="form-section-title">
         <FiCalendar /> Wedding Events
-      </h2>
+      </h4>
 
       <div className="form-group">
-        <label className="form-label">Add Wedding Events</label>
+        <label className="form-label fs-16">Add Wedding Events</label>
 
         <EventCreator onAdd={(ev) => handleArrayChange("events", ev)} />
 
@@ -1439,12 +1461,12 @@ const VendorsStep = ({
 }) => {
   return (
     <div className="form-card">
-      <h2 className="form-section-title">
+      <h4 className="form-section-title">
         <FiUser /> Vendors
-      </h2>
+      </h4>
 
       <div className="form-group">
-        <label className="form-label">Add Your Wedding Vendors</label>
+        <label className="form-label fs-16">Add Your Wedding Vendors</label>
 
         <VendorCreator
           vendorTypes={vendorTypes}
@@ -1485,12 +1507,12 @@ const GalleryStep = ({
 }) => {
   return (
     <div className="form-card">
-      <h2 className="form-section-title">
+      <h4 className="form-section-title">
         <FiImage /> Gallery
-      </h2>
+      </h4>
 
       <div className="form-group">
-        <label className="form-label">Cover Photo</label>
+        <label className="form-label fs-16">Cover Photo</label>
         <div
           className="upload-area"
           onDragOver={(e) => e.preventDefault()}
@@ -1504,10 +1526,12 @@ const GalleryStep = ({
           <div className="upload-icon">
             <FiUpload />
           </div>
-          <p className="upload-text">
+          <p className="upload-text fs-14">
             Drag & drop your cover photo here or click to browse
           </p>
-          <p className="upload-hint">Recommended size: 1200x800 pixels</p>
+          <p className="upload-hint  fs-14">
+            Recommended size: 1200x800 pixels
+          </p>
           <input
             type="file"
             accept="image/*"
@@ -1552,7 +1576,7 @@ const GalleryStep = ({
       </div>
 
       <div className="form-group">
-        <label className="form-label">Highlight Photos</label>
+        <label className="form-label fs-16">Highlight Photos</label>
         <div
           className="upload-area"
           onDragOver={(e) => e.preventDefault()}
@@ -1566,10 +1590,10 @@ const GalleryStep = ({
           <div className="upload-icon">
             <FiUpload />
           </div>
-          <p className="upload-text">
+          <p className="upload-text fs-14">
             Drag & drop your highlight photos here or click to browse
           </p>
-          <p className="upload-hint">Select 5-10 of your best photos</p>
+          <p className="upload-hint  fs-14">Select 5-10 of your best photos</p>
           <input
             type="file"
             multiple
@@ -1621,7 +1645,7 @@ const GalleryStep = ({
       </div>
 
       <div className="form-group">
-        <label className="form-label">All Wedding Photos</label>
+        <label className="form-label fs-16">All Wedding Photos</label>
         <div
           className="upload-area"
           onDragOver={(e) => e.preventDefault()}
@@ -1635,10 +1659,10 @@ const GalleryStep = ({
           <div className="upload-icon">
             <FiUpload />
           </div>
-          <p className="upload-text">
+          <p className="upload-text fs-14">
             Drag & drop all your wedding photos here or click to browse
           </p>
-          <p className="upload-hint">You can upload up to 100 photos</p>
+          <p className="upload-hint fs-14">You can upload up to 100 photos</p>
           <input
             type="file"
             multiple
@@ -1694,14 +1718,14 @@ const HighlightsAndCreditsStep = ({
 }) => {
   return (
     <div className="form-card">
-      <h2 className="form-section-title">
+      <h4 className="form-section-title">
         <FiImage /> Highlights
-      </h2>
+      </h4>
 
       <div className="form-group">
-        <label className="form-label">Wedding Themes</label>
+        <label className="form-label fs-16">Wedding Themes</label>
         <select
-          className="form-control"
+          className="form-control fs-14"
           defaultValue=""
           onChange={(e) => {
             const value = e.target.value;
@@ -1745,10 +1769,10 @@ const HighlightsAndCreditsStep = ({
 
       <div className="form-row">
         <div className="form-group">
-          <label className="form-label">Bride's Outfit</label>
+          <label className="form-label fs-16">Bride's Outfit</label>
           <input
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             name="brideOutfit"
             value={formData.brideOutfit}
             onChange={handleInputChange}
@@ -1757,10 +1781,10 @@ const HighlightsAndCreditsStep = ({
         </div>
 
         <div className="form-group">
-          <label className="form-label">Groom's Outfit</label>
+          <label className="form-label fs-16">Groom's Outfit</label>
           <input
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             name="groomOutfit"
             value={formData.groomOutfit}
             onChange={handleInputChange}
@@ -1770,9 +1794,9 @@ const HighlightsAndCreditsStep = ({
       </div>
 
       <div className="form-group">
-        <label className="form-label">Special Moments</label>
+        <label className="form-label fs-16">Special Moments</label>
         <textarea
-          className="form-control"
+          className="form-control fs-14"
           name="specialMoments"
           value={formData.specialMoments}
           onChange={handleInputChange}
@@ -1786,15 +1810,15 @@ const HighlightsAndCreditsStep = ({
         style={{ margin: "2rem 0", borderTop: "2px solid #e0e0e0" }}
       ></div>
 
-      <h2 className="form-section-title">
+      <h4 className="form-section-title">
         <FiUser /> Credits & Publish
-      </h2>
+      </h4>
 
       <div className="form-group">
-        <label className="form-label">Photographer</label>
+        <label className="form-label fs-16">Photographer</label>
         <input
           type="text"
-          className="form-control"
+          className="form-control fs-14"
           name="photographer"
           value={formData.photographer}
           onChange={handleInputChange}
@@ -1804,10 +1828,10 @@ const HighlightsAndCreditsStep = ({
 
       <div className="form-row">
         <div className="form-group">
-          <label className="form-label">Makeup Artist</label>
+          <label className="form-label fs-16">Makeup Artist</label>
           <input
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             name="makeup"
             value={formData.makeup}
             onChange={handleInputChange}
@@ -1816,10 +1840,10 @@ const HighlightsAndCreditsStep = ({
         </div>
 
         <div className="form-group">
-          <label className="form-label">Decor & Floral</label>
+          <label className="form-label fs-16">Decor & Floral</label>
           <input
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             name="decor"
             value={formData.decor}
             onChange={handleInputChange}
@@ -1827,11 +1851,8 @@ const HighlightsAndCreditsStep = ({
           />
         </div>
       </div>
-
-      <div className="form-divider" style={{ margin: "1.5rem 0" }}></div>
-
-      <div className="form-group">
-        <label className="form-label d-block">Featured Wedding</label>
+      {/* <div className="form-group">
+        <label className="form-label fs-16 d-block">Featured Wedding</label>
         <label className="toggle-switch">
           <input
             type="checkbox"
@@ -1844,7 +1865,7 @@ const HighlightsAndCreditsStep = ({
         <small className="text-muted d-block mt-1">
           Feature this wedding on the homepage and category pages
         </small>
-      </div>
+      </div> */}
     </div>
   );
 };

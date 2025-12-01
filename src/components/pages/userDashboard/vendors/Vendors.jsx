@@ -86,7 +86,7 @@ const Vendors = () => {
         <div className="vendors-stats">
           <div className="stat-box">
             <span className="stat-number">{vendors.booked}</span>
-            <span className="stat-label">
+            <span className="stat-label fs-14">
               OF {vendors.total} VENDORS BOOKED
             </span>
           </div>

@@ -255,7 +255,7 @@ const AllCategories = ({ onSelect }) => {
   return (
     <div className="container py-5 wcg-grid">
       <div className="d-flex align-items-center justify-content-between mb-3">
-        <h3 className="fw-bold mb-0 text-dark fs-40">Explore by Category</h3>
+        <h3 className="fw-bold mb-0 text-dark">Explore by Category</h3>
       </div>
 
       <div className="row g-3 g-md-4">
@@ -295,15 +295,7 @@ const AllCategories = ({ onSelect }) => {
                   <div className="d-flex align-items-center justify-content-between my-2">
                     <div>
                       <h5 className="my-2">{cat.title}</h5>
-                      {/* {cat.subtitle && (
-                        <div className="badge rounded-0 primary-light-bg text-dark fs-14 opacity-75">
-                          {cat.subtitle}
-                        </div>
-                      )} */}
                     </div>
-                    {/* <span className="badge wcg-count rounded-pill">
-                    {cat.items.length}
-                  </span> */}
                   </div>
                   <div className=" pills d-flex flex-wrap gap-2 mb-3">
                     {previewItems.slice(0, 1).map((it, idx) => (
@@ -325,7 +317,7 @@ const AllCategories = ({ onSelect }) => {
                   <div className="wcg-actions d-flex justify-content-between align-items-center mb-2">
                     <button
                       type="button"
-                      className="btn btn-primary rounded-2 px-3"
+                      className="btn btn-primary rounded-2 px-3 fs-16"
                       onClick={(e) => {
                         e.stopPropagation();
                         if (onSelect) onSelect(cat);
@@ -341,9 +333,9 @@ const AllCategories = ({ onSelect }) => {
 
                   {isExpanded && (
                     <div className="wcg-subcats mt-3">
-                      <div className="row g-2">
+                      <div className="d-flex flex-wrap justify-content-start gap-2">
                         {cat.items.map((it, idx) => (
-                          <div key={idx} className="col-6 flex-wrap">
+                          <div key={idx} className="">
                             <Link
                               to={
                                 cat.title.toLowerCase() === "venues"
@@ -354,7 +346,8 @@ const AllCategories = ({ onSelect }) => {
                                       .toLowerCase()
                                       .replace(/\s+/g, "-")}`
                               }
-                              className="badge rounded-0 primary-light-bg text-dark fs-14"
+                              className="badge rounded-0 primary-light-bg text-dark fs-12 px-3 py-2"
+                              style={{ textDecoration: "none" }}
                             >
                               {it}
                             </Link>

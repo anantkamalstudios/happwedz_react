@@ -286,7 +286,9 @@ const Herosection = () => {
                         borderRadius: "6px",
                       }}
                     >
-                      <span style={{ fontSize: "14px" }}>{selectedCategory}</span>
+                      <span style={{ fontSize: "14px" }}>
+                        {selectedCategory}
+                      </span>
                       {showCategoryDropdown ? (
                         <MdExpandLess size={18} />
                       ) : (
@@ -372,7 +374,7 @@ const Herosection = () => {
                     >
                       <input
                         type="text"
-                        className="form-control"
+                        className="form-control fw-bold"
                         value={citySearch}
                         onChange={(e) => {
                           setCitySearch(e.target.value);

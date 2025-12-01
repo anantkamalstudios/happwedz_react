@@ -542,14 +542,14 @@ const Guests = () => {
   return (
     <div className="wgl-container">
       <div className="row">
-        <div className="col-md-3">
+        <div className="col-md-2">
           <div className="d-flex flex-column gap-3">
             <div className="position-relative">
-              <label className="form-label fw-medium text-black mb-1 fs-26 py-3">
+              <label className="form-label fw-medium text-black mb-1 fs-16 py-3">
                 Group
               </label>
               <select
-                className="form-select form-select-sm border-2 py-2 primary-text"
+                className="form-select form-select-sm border-2 py-2 primary-text fs-14"
                 style={{
                   cursor: "pointer",
                   borderRadius: "0px",
@@ -571,11 +571,11 @@ const Guests = () => {
               </select>
             </div>
             <div className="position-relative">
-              <label className="form-label fw-medium text-black mb-1 fs-26 py-3">
+              <label className="form-label fw-medium text-black mb-1 fs-16 py-3">
                 Status
               </label>
               <select
-                className="form-select form-select-sm border-2 py-2 primary-text"
+                className="form-select form-select-sm border-2 py-2 primary-text fs-14"
                 style={{
                   cursor: "pointer",
                   borderRadius: "0px",
@@ -596,9 +596,9 @@ const Guests = () => {
           </div>
         </div>
 
-        <div className="col-md-9">
+        <div className="col-md-10">
           <div className="wgl-header">
-            <h1 className="wgl-title">Guest List</h1>
+            <h4 className="wgl-title">Guest List</h4>
             <div className="wgl-stats-container">
               <div className="wgl-stat-card">
                 <h2 className="wgl-stat-number">{guests.length}</h2>
@@ -625,11 +625,11 @@ const Guests = () => {
           </div>
 
           <div className="wgl-controls">
-            <div className="wgl-search-container">
+            <div className="wgl-search-container fs-14">
               <FaSearch className="wgl-search-icon" />
               <input
                 type="text"
-                className="wgl-search-input"
+                className="wgl-search-input fs-14"
                 placeholder="Search guests..."
                 value={searchTerm}
                 onChange={(e) => {
@@ -647,7 +647,9 @@ const Guests = () => {
                   setShowMessageOptions(false);
                 }}
               >
-                <FaUserPlus className="wgl-button-icon" /> Add Guest
+                <span className="fs-14 d-flex align-items-center gap-1">
+                  <FaUserPlus className="wgl-button-icon" /> Add Guest
+                </span>
               </button>
               <button
                 className="wgl-button wgl-button-secondary"
@@ -657,7 +659,9 @@ const Guests = () => {
                   setShowMessageOptions(false);
                 }}
               >
-                <FaUsers className="wgl-button-icon" /> Create Group
+                <span className="fs-14 d-flex align-items-center gap-1">
+                  <FaUsers className="wgl-button-icon" /> Create Group
+                </span>
               </button>
               <div className="wgl-message-dropdown">
                 <button
@@ -668,16 +672,29 @@ const Guests = () => {
                     setShowAddGroupForm(false);
                   }}
                 >
-                  <FaEnvelope className="wgl-button-icon" /> Send Message
+                  <span className="fs-14 d-flex align-items-center gap-1">
+                    <FaEnvelope className="wgl-button-icon" /> Send Message
+                  </span>
                   <FaChevronDown className="wgl-dropdown-icon" />
                 </button>
                 {showMessageOptions && (
                   <div className="wgl-dropdown-menu">
-                    <button onClick={() => sendMessage("Email")}>Email</button>
-                    <button onClick={() => redirectToEinviteCards()}>
+                    <button
+                      className="fs-14"
+                      onClick={() => sendMessage("Email")}
+                    >
+                      Email
+                    </button>
+                    <button
+                      className="fs-14"
+                      onClick={() => redirectToEinviteCards()}
+                    >
                       Einvite Cards
                     </button>
-                    <button onClick={() => sendMessage("WhatsApp")}>
+                    <button
+                      className="fs-14"
+                      onClick={() => sendMessage("WhatsApp")}
+                    >
                       WhatsApp
                     </button>
                   </div>
@@ -697,7 +714,10 @@ const Guests = () => {
                 className="wgl-button wgl-button-secondary"
                 onClick={handleDownload}
               >
-                <FaDownload className="wgl-button-icon" /> Download
+                <span className="fs-14 d-flex align-items-center gap-1">
+                  {" "}
+                  <FaDownload className="wgl-button-icon" /> Download{" "}
+                </span>
               </button>
             </div>
           </div>
@@ -820,7 +840,7 @@ const Guests = () => {
 
           {showAddGroupForm && (
             <div className="wgl-add-form">
-              <h3 className="wgl-form-title">Create New Group</h3>
+              <h4 className="wgl-form-title">Create New Group</h4>
               <input
                 name="newGroupName"
                 className="wgl-form-input"
@@ -868,45 +888,6 @@ const Guests = () => {
             </div>
           )}
 
-          {/* Old Group Filter */}
-          {/* <div className="wgl-filter-container">
-            <div className="wgl-filter-group">
-              <label className="wgl-filter-label">Group:</label>
-              <select
-                className="wgl-filter-select"
-                value={selectedGroup}
-                onChange={(e) => {
-                  setSelectedGroup(e.target.value);
-                  setCurrentPage(1);
-                }}
-              >
-                <option value="All">All Groups</option>
-                <option value="Other">Other</option>
-                {availableGroups.map((group) => (
-                  <option key={group} value={group}>
-                    {group}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="wgl-filter-group">
-              <label className="wgl-filter-label">Status:</label>
-              <select
-                className="wgl-filter-select"
-                value={selectedStatus}
-                onChange={(e) => {
-                  setSelectedStatus(e.target.value);
-                  setCurrentPage(1);
-                }}
-              >
-                <option value="All">All Statuses</option>
-                {statusOptions.map((s) => (
-                  <option key={s}>{s}</option>
-                ))}
-              </select>
-            </div>
-          </div> */}
-
           <div className="wgl-guest-list" ref={printRef}>
             {Object.keys(filteredAndGroupedGuests).length > 0 ? (
               Object.entries(filteredAndGroupedGuests).map(
@@ -915,23 +896,28 @@ const Guests = () => {
                     <h4 className="wgl-group-title p-2">
                       {groupName} ({groupGuests.length})
                     </h4>
+
                     <table className="wgl-guest-table">
                       <thead>
                         <tr>
-                          <th className="wgl-table-header">Guest</th>
-                          <th className="wgl-table-header">Status</th>
-                          <th className="wgl-table-header">Companions</th>
-                          <th className="wgl-table-header">Seat</th>
-                          <th className="wgl-table-header">Type</th>
-                          <th className="wgl-table-header">Menu</th>
-                          <th className="wgl-table-header">Actions</th>
+                          <th className="wgl-table-header fs-16">Guest</th>
+                          <th className="wgl-table-header fs-16">Status</th>
+                          <th className="wgl-table-header fs-16">Companions</th>
+                          <th className="wgl-table-header fs-16">Seat</th>
+                          <th className="wgl-table-header fs-16">Type</th>
+                          <th className="wgl-table-header fs-16">Menu</th>
+                          <th className="wgl-table-header fs-16">Actions</th>
                         </tr>
                       </thead>
+
                       <tbody>
                         {groupGuests.map((g) => (
                           <tr key={g.id} className="wgl-guest-row">
-                            <td className="wgl-guest-name">{g.name}</td>
-                            <td className="wgl-guest-status">
+                            <td className="wgl-guest-name fs-14 text-center">
+                              {g.name}
+                            </td>
+
+                            <td className="wgl-guest-status fs-14 text-center">
                               <select
                                 className={`wgl-status-select wgl-status-${g.status.toLowerCase()}`}
                                 value={g.status}
@@ -948,11 +934,16 @@ const Guests = () => {
                                 ))}
                               </select>
                             </td>
-                            <td className="wgl-guest-companions">
+
+                            <td className="wgl-guest-companions fs-14 text-center">
                               {g.companions}
                             </td>
-                            <td className="wgl-guest-seat">{g.seat_number}</td>
-                            <td className="wgl-guest-type">
+
+                            <td className="wgl-guest-seat fs-14 text-center">
+                              {g.seat_number}
+                            </td>
+
+                            <td className="wgl-guest-type fs-14 text-center">
                               <select
                                 value={g.type}
                                 onChange={(e) =>
@@ -964,7 +955,8 @@ const Guests = () => {
                                 ))}
                               </select>
                             </td>
-                            <td className="wgl-guest-menu">
+
+                            <td className="wgl-guest-menu fs-14 text-center">
                               <select
                                 value={g.menu}
                                 onChange={(e) =>
@@ -976,7 +968,8 @@ const Guests = () => {
                                 ))}
                               </select>
                             </td>
-                            <td className="wgl-guest-actions">
+
+                            <td className="wgl-guest-actions fs-14 text-center">
                               <button
                                 className="wgl-action-button wgl-action-delete"
                                 onClick={() => deleteGuestAPI(g.id)}
@@ -993,7 +986,7 @@ const Guests = () => {
               )
             ) : (
               <div className="wgl-empty-state">
-                <p>No guests found matching your criteria</p>
+                <p className="fs-14">No guests found matching your criteria</p>
               </div>
             )}
           </div>

@@ -42,12 +42,12 @@ const CtaPanel = ({
               </h3>
             )}
             {subHeading && (
-              <h6 className="my-4 home-cta-section-sub-heading fs-16">
+              <h6 className="my-4 home-cta-section-sub-heading fs-18">
                 {subHeading}
               </h6>
             )}
-            {title && <h5 className="fw-bold mb-2 fs-16">{title}</h5>}
-            {subtitle && <p className="mb-0 fs-14">{subtitle}</p>}
+            {title && <h5 className="fw-bold mb-2 fs-18">{title}</h5>}
+            {subtitle && <p className="mb-0 fs-16">{subtitle}</p>}
             {btnName && link && (
               <div className="d-flex justify-content-end w-100 mt-auto">
                 <Link to={link}>

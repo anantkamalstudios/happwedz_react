@@ -183,27 +183,27 @@ const Wishlist = () => {
     <div className="container py-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 className="fw-bold text-dark mb-1">My Wishlist</h2>
-          <p className="text-muted mb-0">
+          <h3 className="fw-bold text-dark mb-1">My Wishlist</h3>
+          <p className="text-muted mb-0 fs-14">
             Manage your selected wedding services
           </p>
         </div>
         <div className="d-flex gap-2 align-items-center">
           <div className="position-relative">
-            <FaSearch
-              className="position-absolute text-muted"
+            {/* <FaSearch
+              className="position-absolute text-muted fs-14"
               style={{ top: 14, left: 10 }}
-            />
+            /> */}
             <input
               type="text"
-              className="form-control rounded-3 ps-5"
+              className="form-control rounded-3 fs-14"
               placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{ minWidth: 260 }}
             />
           </div>
-          <Link to="/vendors" className="btn btn-primary rounded-3 px-4">
+          <Link to="/vendors" className="btn btn-primary rounded-3 px-2 fs-14">
             <BsPlusLg className="me-2" size={16} /> Add Vendor
           </Link>
         </div>
@@ -234,16 +234,16 @@ const Wishlist = () => {
                 </button>
               </div>
               <div className="card-body d-flex flex-column">
-                <h6 className="card-title fw-semibold mb-1">
+                <p className="card-title fw-semibold mb-1 fs-16 ms-1">
                   {vendor.businessName}
-                </h6>
-                <div className="text-muted small mb-3">
+                </p>
+                <div className="text-muted small mb-3 fs-14">
                   <i className="bi bi-geo-alt me-1"></i>
                   {vendor.city}
                 </div>
                 <div className="mt-auto d-flex gap-2">
                   <button
-                    className="btn btn-outline-primary w-50 rounded-3"
+                    className="btn btn-outline-primary w-50 rounded-3 fs-14"
                     onClick={() =>
                       navigate(`/details/info/${vendor.vendor_services_id}`)
                     }
@@ -251,7 +251,7 @@ const Wishlist = () => {
                     View Details
                   </button>
                   <button
-                    className="btn btn-primary w-50 rounded-3"
+                    className="btn btn-primary w-50 rounded-3 fs-14"
                     onClick={() => handleShowModal(vendor.vendor_services_id)}
                   >
                     <PiChatCircleDotsLight className="me-2" size={18} />

@@ -150,8 +150,8 @@ const Booking = () => {
       <div className="user-booking-header">
         <div className="user-booking-header-content">
           <div className="user-booking-title-section">
-            <h1 className="user-booking-main-title">My Bookings</h1>
-            <p className="user-booking-subtitle">
+            <h3 className="user-booking-main-title">My Bookings</h3>
+            <p className="user-booking-subtitle fs-16">
               Manage and track all your service bookings
             </p>
           </div>
@@ -159,7 +159,7 @@ const Booking = () => {
           <div className="user-booking-filter-section">
             <div className="user-booking-filter-tabs">
               <button
-                className={`user-booking-filter-tab ${
+                className={`user-booking-filter-tab fs-16 ${
                   filterStatus === "all" ? "active" : ""
                 }`}
                 onClick={() => setFilterStatus("all")}
@@ -167,7 +167,7 @@ const Booking = () => {
                 All ({bookings.length})
               </button>
               <button
-                className={`user-booking-filter-tab ${
+                className={`user-booking-filter-tab fs-16 ${
                   filterStatus === "replied" ? "active" : ""
                 }`}
                 onClick={() => setFilterStatus("replied")}
@@ -176,7 +176,7 @@ const Booking = () => {
                 )
               </button>
               <button
-                className={`user-booking-filter-tab ${
+                className={`user-booking-filter-tab fs-16 ${
                   filterStatus === "pending" ? "active" : ""
                 }`}
                 onClick={() => setFilterStatus("pending")}
@@ -185,7 +185,7 @@ const Booking = () => {
                 )
               </button>
               <button
-                className={`user-booking-filter-tab ${
+                className={`user-booking-filter-tab fs-16 ${
                   filterStatus === "cancelled" ? "active" : ""
                 }`}
                 onClick={() => setFilterStatus("cancelled")}
@@ -251,12 +251,12 @@ const Booking = () => {
                             </Badge>
                           </div>
                           <div className="user-booking-card-vendor-info">
-                            <h3 className="user-booking-vendor-name">
+                            <h3 className="user-booking-vendor-name fs-16">
                               {item.vendor?.businessName || "Unknown Vendor"}
                             </h3>
-                            <p className="user-booking-vendor-location">
-                              <FaMapMarkerAlt />
-                              <span>
+                            <p className="user-booking-vendor-location fs-14">
+                              <FaMapMarkerAlt size={14} />
+                              <span className="fs-14">
                                 {item.vendor?.city || "Unknown"},{" "}
                                 {item.vendor?.state || ""}
                               </span>
@@ -267,31 +267,31 @@ const Booking = () => {
                         {isExpanded && (
                           <div className="user-booking-card-expanded">
                             <div className="user-booking-info-section">
-                              <h4 className="user-booking-section-title">
+                              <p className="user-booking-section-title fs-16">
                                 Booking Details
-                              </h4>
+                              </p>
                               <div className="user-booking-info-grid">
                                 <div className="user-booking-info-item">
-                                  <FaUser className="user-booking-info-icon" />
-                                  <span className="user-booking-info-text">
+                                  <FaUser className="user-booking-info-icon fs-14" />
+                                  <span className="user-booking-info-text fs-14">
                                     {item.firstName} {item.lastName}
                                   </span>
                                 </div>
                                 <div className="user-booking-info-item">
-                                  <FaEnvelope className="user-booking-info-icon" />
-                                  <span className="user-booking-info-text">
+                                  <FaEnvelope className="user-booking-info-icon fs-14" />
+                                  <span className="user-booking-info-text fs-14">
                                     {item.email}
                                   </span>
                                 </div>
                                 <div className="user-booking-info-item">
-                                  <FaPhone className="user-booking-info-icon" />
-                                  <span className="user-booking-info-text">
+                                  <FaPhone className="user-booking-info-icon fs-14" />
+                                  <span className="user-booking-info-text fs-14">
                                     {item.phone}
                                   </span>
                                 </div>
                                 <div className="user-booking-info-item">
-                                  <FaCalendarAlt className="user-booking-info-icon" />
-                                  <span className="user-booking-info-text">
+                                  <FaCalendarAlt className="user-booking-info-icon fs-14" />
+                                  <span className="user-booking-info-text fs-14">
                                     <strong>{item.eventDate}</strong>
                                   </span>
                                 </div>
@@ -299,34 +299,34 @@ const Booking = () => {
                             </div>
 
                             <div className="user-booking-quote-section">
-                              <h4 className="user-booking-section-title">
+                              <p className="user-booking-section-title fs-16">
                                 Quotation Details
-                              </h4>
+                              </p>
                               <div className="user-booking-quote-card">
                                 <div className="user-booking-quote-item">
-                                  <span className="user-booking-quote-label">
+                                  <span className="user-booking-quote-label fs-14">
                                     Quote Price
                                   </span>
-                                  <span className="user-booking-quote-value user-booking-quote-price">
+                                  <span className="user-booking-quote-value user-booking-quote-price fs-14">
                                     {item.quote?.price
                                       ? `₹ ${item.quote.price}`
                                       : "Not provided"}
                                   </span>
                                 </div>
                                 <div className="user-booking-quote-item">
-                                  <span className="user-booking-quote-label">
+                                  <span className="user-booking-quote-label fs-14">
                                     Valid Till
                                   </span>
-                                  <span className="user-booking-quote-value">
+                                  <span className="user-booking-quote-value fs-14">
                                     {item.quote?.validTill || "N/A"}
                                   </span>
                                 </div>
                                 {item.quote?.message && (
                                   <div className="user-booking-quote-message">
-                                    <span className="user-booking-quote-label">
+                                    <span className="user-booking-quote-label fs-14">
                                       Message
                                     </span>
-                                    <p className="user-booking-quote-message-text">
+                                    <p className="user-booking-quote-message-text fs-14">
                                       {item.quote.message}
                                     </p>
                                   </div>
@@ -339,18 +339,18 @@ const Booking = () => {
                         <div className="user-booking-card-actions">
                           <Button
                             variant="link"
-                            className="user-booking-show-more-btn"
+                            className="user-booking-show-more-btn fs-14"
                             onClick={() => toggleCardExpansion(item.id)}
                           >
                             {isExpanded ? (
                               <>
-                                <FaChevronUp className="me-1" />
-                                Show Less
+                                <FaChevronUp size={14} className="me-1" />
+                                <span className="fs-14"> Show Less</span>
                               </>
                             ) : (
                               <>
-                                <FaChevronDown className="me-1" />
-                                Show More
+                                <FaChevronDown size={14} className="me-1" />
+                                <span className="fs-14"> Show More</span>
                               </>
                             )}
                           </Button>
@@ -358,7 +358,7 @@ const Booking = () => {
                             <Button
                               variant="danger"
                               size="sm"
-                              className="user-booking-cancel-btn fs-10"
+                              className="user-booking-cancel-btn fs-14"
                               onClick={() =>
                                 handleCancelRequest(item.requestId || item.id)
                               }
@@ -376,7 +376,7 @@ const Booking = () => {
                               ) : (
                                 <>
                                   <FaBan className="me-1" />
-                                  Cancel
+                                  <span className="fs-14">Cancel</span>
                                 </>
                               )}
                             </Button>

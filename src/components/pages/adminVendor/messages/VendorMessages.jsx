@@ -63,11 +63,7 @@ const VendorMessages = () => {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [error, setError] = useState(null);
   const [input, setInput] = useState("");
-  const [quickReplies] = useState([
-    "Hello 👋",
-    "Thanks for reaching out!",
- 
-  ]);
+  const [quickReplies] = useState(["Hello 👋", "Thanks for reaching out!"]);
   const [vendorImage, setVendorImage] = useState(null);
   const [userImages, setUserImages] = useState({}); // userId -> image URL
   const [userNames, setUserNames] = useState({}); // userId -> name
@@ -172,7 +168,11 @@ const VendorMessages = () => {
           if (data) {
             map[id] = data.profileImage || null;
             nameMap[id] =
-              data.name || data.fullName || data.username || data.email || "Customer";
+              data.name ||
+              data.fullName ||
+              data.username ||
+              data.email ||
+              "Customer";
             lastActiveMap[id] = data.lastActiveAt || null;
           }
         });
@@ -388,7 +388,9 @@ const VendorMessages = () => {
                       />
                       <div className="ms-3">
                         <div className="d-flex align-items-center">
-                          <div className="fw-bold me-2">{userNames[c.userId] || "Customer"}</div>
+                          <div className="fw-bold me-2">
+                            {userNames[c.userId] || "Customer"}
+                          </div>
                           {c.vendorUnreadCount > 0 && (
                             <span className="badge bg-primary rounded-pill">
                               {/* {c.vendorUnreadCount} */}
@@ -420,8 +422,12 @@ const VendorMessages = () => {
                     {/* Show customer's presence when a conversation is selected */}
                     {activeConversation?.userId &&
                     isOnline(userLastActive[activeConversation.userId])
-                      ? `${userNames[activeConversation.userId] || "Customer"} Online`
-                      : `${userNames[activeConversation?.userId] || "Customer"} last seen ${formatTime(
+                      ? `${
+                          userNames[activeConversation.userId] || "Customer"
+                        } Online`
+                      : `${
+                          userNames[activeConversation?.userId] || "Customer"
+                        } last seen ${formatTime(
                           userLastActive[activeConversation?.userId] ||
                             activeConversation?.lastMessageAt ||
                             new Date().toISOString()
@@ -468,10 +474,13 @@ const VendorMessages = () => {
                             />
                           </div>
                           <div>
-                            <div className="msg-time mb-1 small">
-                              {(userNames[m.userId] || "Customer")} • {formatTime(m.time)}
+                            <div className="msg-time mb-1 fw-bold fs-14">
+                              {userNames[m.userId] || "Customer"} •{" "}
+                              {formatTime(m.time)}
                             </div>
-                            <div className="msg-bubble msg-user">{m.text}</div>
+                            <div className="msg-bubble msg-user fs-14">
+                              {m.text}
+                            </div>
                           </div>
                         </div>
                       ) : (
@@ -480,10 +489,10 @@ const VendorMessages = () => {
                             className="me-2 text-end"
                             style={{ marginRight: 8 }}
                           >
-                            <div className="msg-time mb-1 small">
+                            <div className="msg-time mb-1 fs-14 fw-bold">
                               {formatTime(m.time)}
                             </div>
-                            <div className="msg-bubble msg-vendor">
+                            <div className="msg-bubble msg-vendor fs-14">
                               {m.text}
                             </div>
                           </div>

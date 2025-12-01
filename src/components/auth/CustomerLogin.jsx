@@ -32,7 +32,7 @@ const CustomerLogin = () => {
         const res = await fetch("https://happywedz.com/api/login-cms");
         const data = await res.json();
         setLoginCms(data?.data || data || null);
-      } catch { }
+      } catch {}
     })();
   }, []);
 
@@ -128,11 +128,11 @@ const CustomerLogin = () => {
           style={{
             ...(loginCms?.image
               ? {
-                backgroundImage: `url(${normalizeUrl(loginCms?.image)})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                minHeight: "600px",
-              }
+                  backgroundImage: `url(${normalizeUrl(loginCms?.image)})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  minHeight: "600px",
+                }
               : {}),
           }}
         >
@@ -178,13 +178,15 @@ const CustomerLogin = () => {
 
           <Form onSubmit={handleSubmit} className="mt-4">
             <Form.Group controlId="formEmail" className="mb-4">
-              <Form.Label className="text-secondary">Email Address</Form.Label>
+              <Form.Label className="text-secondary fs-16">
+                Email Address
+              </Form.Label>
               <Form.Control
                 type="email"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="p-3"
+                className="p-3 fs-14"
                 required
               />
             </Form.Group>
@@ -193,14 +195,14 @@ const CustomerLogin = () => {
               controlId="formPassword"
               className="mb-4 position-relative"
             >
-              <Form.Label className="text-secondary">Password</Form.Label>
+              <Form.Label className="text-secondary fs-16">Password</Form.Label>
 
               <Form.Control
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="p-3 pe-5"
+                className="p-3 pe-5 fs-14"
                 required
               />
 
@@ -213,7 +215,7 @@ const CustomerLogin = () => {
                   top: "50%",
                   cursor: "pointer",
                   color: "#6c757d",
-                  zIndex: 9999,
+                  zIndex: 10,
                   pointerEvents: "auto",
                 }}
                 aria-label={showPassword ? "Hide password" : "Show password"}
@@ -223,17 +225,27 @@ const CustomerLogin = () => {
               </span>
             </Form.Group>
 
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <Form.Check
-                type="checkbox"
-                id="rememberMe"
-                label="Remember me"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="text-secondary"
-              />
+            <div className="d-flex justify-content-between align-items-center text-center mb-4 fs-14">
+              <div className="d-flex align-items-center">
+                <Form.Check
+                  type="checkbox"
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="text-secondary fs-16 me-2 mb-0"
+                  style={{ minHeight: "1.3em" }}
+                />
+                <label
+                  htmlFor="rememberMe"
+                  className="fs-16 mb-0"
+                  style={{ cursor: "pointer" }}
+                >
+                  Remember me
+                </label>
+              </div>
+
               <Link
-                className="text-decoration-none wedding-link"
+                className="text-decoration-none wedding-link fs-14"
                 to="/user-forgot-password"
               >
                 Forgot Password?
@@ -243,14 +255,14 @@ const CustomerLogin = () => {
             <Button
               variant="primary"
               type="submit"
-              className="w-100 p-3 login-btn"
+              className="w-100 p-3 login-btn fs-16"
               disabled={loading}
             >
               {loading ? "Signing In..." : "Sign In"}
             </Button>
           </Form>
 
-          <div className="mt-4 justify-content-center align-items-center">
+          <div className="mt-4 justify-content-center align-items-center fs-14">
             <GoogleLogin
               onSuccess={handleGoogleCredential}
               onError={() => {
@@ -260,8 +272,8 @@ const CustomerLogin = () => {
             />
           </div>
 
-          <div className="mt-5 text-center">
-            <p className="text-muted">
+          <div className="d-flex justify-content-between align-items-center text-center mb-4 fs-14 mt-3">
+            <p className="text-muted fs-14">
               Don't have an account?{" "}
               <Link
                 to="/customer-register"
@@ -270,7 +282,7 @@ const CustomerLogin = () => {
                 Sign up
               </Link>
             </p>
-            <p className="text-muted">
+            <p className="text-muted fs-14">
               I am a{" "}
               <Link
                 to="/vendor-login"

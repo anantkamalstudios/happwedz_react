@@ -26,7 +26,7 @@ const ReviewSection = ({ vendor }) => {
       .then((data) => {
         if (data.success) setReviews(data.reviews);
       })
-      .catch(() => { });
+      .catch(() => {});
 
     return () => controller.abort();
   }, [vendor?.id]);
@@ -50,17 +50,41 @@ const ReviewSection = ({ vendor }) => {
   const overallRating =
     reviews.length > 0
       ? (
-        reviews.reduce((sum, r) => sum + r.rating_quality, 0) /
-        reviews.length
-      ).toFixed(1)
+          reviews.reduce((sum, r) => sum + r.rating_quality, 0) / reviews.length
+        ).toFixed(1)
       : "0.0";
 
   const ratingCategories = [
-    { label: "Quality of service", field: "rating_quality", value: calculateAverageRating("rating_quality"), icon: "/images/review/quality.png" },
-    { label: "Responsiveness", field: "rating_responsiveness", value: calculateAverageRating("rating_responsiveness"), icon: "/images/review/responsiveness.png" },
-    { label: "Professionalism", field: "rating_professionalism", value: calculateAverageRating("rating_professionalism"), icon: "/images/review/professionalism.png" },
-    { label: "Value", field: "rating_value", value: calculateAverageRating("rating_value"), icon: "/images/review/value.png" },
-    { label: "Flexibility", field: "rating_flexibility", value: calculateAverageRating("rating_flexibility"), icon: "/images/review/flexibility.png" },
+    {
+      label: "Quality of service",
+      field: "rating_quality",
+      value: calculateAverageRating("rating_quality"),
+      icon: "/images/review/quality.png",
+    },
+    {
+      label: "Responsiveness",
+      field: "rating_responsiveness",
+      value: calculateAverageRating("rating_responsiveness"),
+      icon: "/images/review/responsiveness.png",
+    },
+    {
+      label: "Professionalism",
+      field: "rating_professionalism",
+      value: calculateAverageRating("rating_professionalism"),
+      icon: "/images/review/professionalism.png",
+    },
+    {
+      label: "Value",
+      field: "rating_value",
+      value: calculateAverageRating("rating_value"),
+      icon: "/images/review/value.png",
+    },
+    {
+      label: "Flexibility",
+      field: "rating_flexibility",
+      value: calculateAverageRating("rating_flexibility"),
+      icon: "/images/review/flexibility.png",
+    },
   ];
 
   const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 6);
@@ -110,13 +134,13 @@ const ReviewSection = ({ vendor }) => {
               vendor?.Name}{" "}
           </h3>
           <div className="d-flex align-items-center mb-1">
-            <FaStar className="text-warning me-2" size={22} />
+            <FaStar className="text-warning me-2" size={14} />
             <h4 className="mb-0 fw-bold fs-14">
               {reviews.length > 0
                 ? (
-                  reviews.reduce((sum, r) => sum + r.rating_quality, 0) /
-                  reviews.length
-                ).toFixed(1)
+                    reviews.reduce((sum, r) => sum + r.rating_quality, 0) /
+                    reviews.length
+                  ).toFixed(1)
                 : "0.0"}{" "}
               <span className="text-dark fw-normal fs-14">Excellent</span>
             </h4>
@@ -128,7 +152,7 @@ const ReviewSection = ({ vendor }) => {
 
         <div className="d-flex align-items-center">
           <Button
-            className="btn-outline-primary"
+            className="btn-outline-primary fs-14"
             onClick={handleWriteReviewClick}
           >
             Write a review
@@ -143,15 +167,34 @@ const ReviewSection = ({ vendor }) => {
               <div className="d-flex flex-column gap-3">
                 {[5, 4, 3, 2, 1].map((rating) => (
                   <div key={rating} className="d-flex align-items-center gap-3">
-                    <span className="text-dark" style={{ fontSize: "14px", minWidth: "12px" }}>{rating}</span>
-                    <div className="flex-grow-1 position-relative" style={{ height: "6px", backgroundColor: "#e0e0e0", borderRadius: "4px" }}>
+                    <span
+                      className="text-dark"
+                      style={{ fontSize: "14px", minWidth: "12px" }}
+                    >
+                      {rating}
+                    </span>
+                    <div
+                      className="flex-grow-1 position-relative"
+                      style={{
+                        height: "6px",
+                        backgroundColor: "#e0e0e0",
+                        borderRadius: "4px",
+                      }}
+                    >
                       <div
                         style={{
                           position: "absolute",
                           left: 0,
                           top: 0,
                           height: "100%",
-                          width: reviews.length > 0 ? `${(ratingDistribution[rating] / reviews.length) * 100}%` : "0%",
+                          width:
+                            reviews.length > 0
+                              ? `${
+                                  (ratingDistribution[rating] /
+                                    reviews.length) *
+                                  100
+                                }%`
+                              : "0%",
                           backgroundColor: "#222",
                           borderRadius: "4px",
                         }}
@@ -172,16 +215,37 @@ const ReviewSection = ({ vendor }) => {
                           <img
                             src={category.icon}
                             alt={category.label}
-                            style={{ width: "24px", height: "24px", objectFit: "contain" }}
+                            style={{
+                              width: "24px",
+                              height: "24px",
+                              objectFit: "contain",
+                            }}
                             onError={(e) => {
                               e.target.style.display = "none";
                             }}
                           />
-                          <span className="text-dark" style={{ fontSize: "14px", fontWeight: "500" }}>{category.label}</span>
+                          <span
+                            className="text-dark"
+                            style={{ fontSize: "14px", fontWeight: "500" }}
+                          >
+                            {category.label}
+                          </span>
                         </div>
-                        <span className="text-dark fw-semibold" style={{ fontSize: "14px" }}>{category.value}</span>
+                        <span
+                          className="text-dark fw-semibold"
+                          style={{ fontSize: "14px" }}
+                        >
+                          {category.value}
+                        </span>
                       </div>
-                      <div className="position-relative" style={{ height: "4px", backgroundColor: "#e0e0e0", borderRadius: "4px" }}>
+                      <div
+                        className="position-relative"
+                        style={{
+                          height: "4px",
+                          backgroundColor: "#e0e0e0",
+                          borderRadius: "4px",
+                        }}
+                      >
                         <div
                           style={{
                             position: "absolute",
@@ -210,28 +274,54 @@ const ReviewSection = ({ vendor }) => {
                       src={review.user?.image || "/images/no-image.png"}
                       alt={review.user?.name || "User"}
                       className="rounded-circle"
-                      style={{ width: "48px", height: "48px", objectFit: "cover" }}
+                      style={{
+                        width: "48px",
+                        height: "48px",
+                        objectFit: "cover",
+                      }}
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = "/images/no-image.png";
                       }}
                     />
                     <div className="flex-grow-1">
-                      <h6 className="mb-0 fw-semibold" style={{ fontSize: "16px" }}>{review.user?.name || "Anonymous"}</h6>
-                      <p className="mb-0 text-muted" style={{ fontSize: "14px" }}>
-                        {new Date(review.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                      <h6
+                        className="mb-0 fw-semibold"
+                        style={{ fontSize: "16px" }}
+                      >
+                        {review.user?.name || "Anonymous"}
+                      </h6>
+                      <p
+                        className="mb-0 text-muted"
+                        style={{ fontSize: "14px" }}
+                      >
+                        {new Date(review.createdAt).toLocaleDateString(
+                          "en-US",
+                          { month: "long", year: "numeric" }
+                        )}
                       </p>
                     </div>
                   </div>
 
                   <div className="d-flex align-items-center gap-1 mb-3">
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <FaStar key={i} size={12} color={i < review.rating_quality ? "#ff9114" : "#e0e0e0"} />
+                      <FaStar
+                        key={i}
+                        size={12}
+                        color={
+                          i < review.rating_quality ? "#ff9114" : "#e0e0e0"
+                        }
+                      />
                     ))}
                   </div>
 
-                  <p className="text-dark mb-2" style={{ fontSize: "14px", lineHeight: "1.6" }}>
-                    {review.comment.length > 180 ? review.comment.slice(0, 180) + "..." : review.comment}
+                  <p
+                    className="text-dark mb-2"
+                    style={{ fontSize: "14px", lineHeight: "1.6" }}
+                  >
+                    {review.comment.length > 180
+                      ? review.comment.slice(0, 180) + "..."
+                      : review.comment}
                   </p>
 
                   {review.comment.length > 180 && (
@@ -255,24 +345,27 @@ const ReviewSection = ({ vendor }) => {
                 style={{ fontSize: "16px", border: "1px solid #222" }}
                 onClick={() => setShowAllReviews(!showAllReviews)}
               >
-                {showAllReviews ? "Show less" : `Show all ${reviews.length} reviews`}
+                {showAllReviews
+                  ? "Show less"
+                  : `Show all ${reviews.length} reviews`}
               </button>
             </div>
           )}
         </>
       ) : (
-        <div className="text-center py-5">
-          <FaStar size={48} className="text-muted mb-3" />
-          <p className="text-muted mb-4" style={{ fontSize: "16px" }}>No reviews yet</p>
-          <Button className="btn-dark rounded-3 px-4 py-2 fw-semibold" style={{ fontSize: "16px" }} onClick={handleWriteReviewClick}>
-            Write a review
-          </Button>
-        </div>
+        <div className=""></div>
       )}
 
-      <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} centered size="lg">
+      <Modal
+        show={showDetailModal}
+        onHide={() => setShowDetailModal(false)}
+        centered
+        size="lg"
+      >
         <Modal.Header closeButton className="border-0 pb-0">
-          <Modal.Title className="fw-bold" style={{ fontSize: "22px" }}>Review</Modal.Title>
+          <Modal.Title className="fw-bold" style={{ fontSize: "22px" }}>
+            Review
+          </Modal.Title>
         </Modal.Header>
 
         <Modal.Body className="px-4 py-4">
@@ -290,34 +383,54 @@ const ReviewSection = ({ vendor }) => {
                   }}
                 />
                 <div className="flex-grow-1">
-                  <h6 className="mb-0 fw-bold" style={{ fontSize: "18px" }}>{selectedReview.user?.name || "Anonymous"}</h6>
+                  <h6 className="mb-0 fw-bold" style={{ fontSize: "18px" }}>
+                    {selectedReview.user?.name || "Anonymous"}
+                  </h6>
                   <p className="mb-0 text-muted" style={{ fontSize: "14px" }}>
-                    {new Date(selectedReview.createdAt).toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
+                    {new Date(selectedReview.createdAt).toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      }
+                    )}
                   </p>
                 </div>
               </div>
 
               <div className="d-flex align-items-center gap-1 mb-3">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <FaStar key={i} size={16} color={i < selectedReview.rating_quality ? "#222" : "#e0e0e0"} />
+                  <FaStar
+                    key={i}
+                    size={16}
+                    color={
+                      i < selectedReview.rating_quality ? "#222" : "#e0e0e0"
+                    }
+                  />
                 ))}
-                <span className="ms-2 fw-semibold" style={{ fontSize: "16px" }}>{selectedReview.rating_quality.toFixed(1)}</span>
+                <span className="ms-2 fw-semibold" style={{ fontSize: "16px" }}>
+                  {selectedReview.rating_quality.toFixed(1)}
+                </span>
               </div>
 
               {selectedReview.title && (
-                <h5 className="fw-bold mb-3" style={{ fontSize: "18px" }}>{selectedReview.title}</h5>
+                <h5 className="fw-bold mb-3" style={{ fontSize: "18px" }}>
+                  {selectedReview.title}
+                </h5>
               )}
 
-              <p className="text-dark mb-4" style={{ fontSize: "16px", lineHeight: "1.7" }}>
+              <p
+                className="text-dark mb-4"
+                style={{ fontSize: "16px", lineHeight: "1.7" }}
+              >
                 {selectedReview.comment}
               </p>
 
               <div className="border-top pt-4 mb-4">
-                <h6 className="fw-semibold mb-3" style={{ fontSize: "16px" }}>Rating breakdown</h6>
+                <h6 className="fw-semibold mb-3" style={{ fontSize: "16px" }}>
+                  Rating breakdown
+                </h6>
                 <div className="row g-3">
                   {[
                     { label: "Quality of service", key: "rating_quality" },
@@ -329,11 +442,20 @@ const ReviewSection = ({ vendor }) => {
                     <div className="col-6" key={item.key}>
                       <div className="d-flex justify-content-between align-items-center mb-2">
                         <span style={{ fontSize: "14px" }}>{item.label}</span>
-                        <span className="fw-semibold" style={{ fontSize: "14px" }}>{selectedReview[item.key].toFixed(1)}</span>
+                        <span
+                          className="fw-semibold"
+                          style={{ fontSize: "14px" }}
+                        >
+                          {selectedReview[item.key].toFixed(1)}
+                        </span>
                       </div>
                       <div
                         className="position-relative"
-                        style={{ height: "4px", backgroundColor: "#e0e0e0", borderRadius: "4px" }}
+                        style={{
+                          height: "4px",
+                          backgroundColor: "#e0e0e0",
+                          borderRadius: "4px",
+                        }}
                       >
                         <div
                           style={{
@@ -354,7 +476,9 @@ const ReviewSection = ({ vendor }) => {
 
               {selectedReview.media && selectedReview.media.length > 0 && (
                 <div className="mb-4">
-                  <h6 className="fw-semibold mb-3" style={{ fontSize: "16px" }}>Photos</h6>
+                  <h6 className="fw-semibold mb-3" style={{ fontSize: "16px" }}>
+                    Photos
+                  </h6>
                   <div className="d-flex flex-wrap gap-2">
                     {selectedReview.media.map((imgUrl, idx) => (
                       <img
@@ -362,7 +486,12 @@ const ReviewSection = ({ vendor }) => {
                         src={imgUrl}
                         alt="review"
                         className="rounded"
-                        style={{ width: "120px", height: "120px", objectFit: "cover", cursor: "pointer" }}
+                        style={{
+                          width: "120px",
+                          height: "120px",
+                          objectFit: "cover",
+                          cursor: "pointer",
+                        }}
                       />
                     ))}
                   </div>
@@ -370,9 +499,17 @@ const ReviewSection = ({ vendor }) => {
               )}
 
               {selectedReview.vendor_reply && (
-                <div className="border rounded p-3 mt-4" style={{ backgroundColor: "#f7f7f7" }}>
-                  <h6 className="fw-semibold mb-2" style={{ fontSize: "16px" }}>Response from {vendor?.name || "vendor"}</h6>
-                  <p className="mb-0" style={{ fontSize: "14px", whiteSpace: "pre-line" }}>
+                <div
+                  className="border rounded p-3 mt-4"
+                  style={{ backgroundColor: "#f7f7f7" }}
+                >
+                  <h6 className="fw-semibold mb-2" style={{ fontSize: "16px" }}>
+                    Response from {vendor?.name || "vendor"}
+                  </h6>
+                  <p
+                    className="mb-0"
+                    style={{ fontSize: "14px", whiteSpace: "pre-line" }}
+                  >
                     {selectedReview.vendor_reply}
                   </p>
                 </div>
@@ -382,7 +519,12 @@ const ReviewSection = ({ vendor }) => {
         </Modal.Body>
 
         <Modal.Footer className="border-0 pt-0">
-          <Button variant="light" className="rounded-3 px-4 py-2" style={{ fontSize: "14px" }} onClick={() => setShowDetailModal(false)}>
+          <Button
+            variant="light"
+            className="rounded-3 px-4 py-2"
+            style={{ fontSize: "14px" }}
+            onClick={() => setShowDetailModal(false)}
+          >
             Close
           </Button>
         </Modal.Footer>

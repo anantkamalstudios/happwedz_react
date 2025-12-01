@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
-import { FaCircleArrowLeft, FaCircleArrowRight } from "react-icons/fa6";
+import {
+  FaCaretDown,
+  FaCircleArrowLeft,
+  FaCircleArrowRight,
+} from "react-icons/fa6";
 import useApiData from "../../../../hooks/useApiData";
 import { Swiper, SwiperSlide } from "swiper/react"; //
 import { Navigation, Autoplay } from "swiper/modules";
@@ -79,31 +83,44 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
         flexDirection: "column",
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px", flex: 1 }}>
-        <h2 className="fw-bold dark-pink-text text-center">
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+          flex: 1,
+        }}
+      >
+        <h3 className="fw-bold dark-pink-text text-center">
           {isVendorBox ? "Book all your Vendors" : "Find the perfect Venue"}
-        </h2>
+        </h3>
 
-        <div className="d-flex justify-content-around align-items-start">
-          <span className="fs-18">Here are some gems we recommand for you</span>
+        <div className="d-flex justify-content-around align-items-center">
+          <span className="fs-16">Here are some gems we recommand for you</span>
 
           {isVendorBox && (
             <div
               style={{
                 width: "30%",
-                border: "2px solid #C31162",
-                borderColor: "#C31162",
-                outline: "none",
+                position: "relative",
+                paddingBottom: "0.25rem",
               }}
             >
               <select
                 name="vendors"
                 id="vendor"
                 style={{
-                  border: "2px solid transparent",
                   width: "100%",
-                  padding: "8px",
+                  padding: "8px 28px 8px 8px",
                   fontSize: "14px",
+                  background: "transparent",
+                  outline: "none",
+                  appearance: "none",
+                  border: "none",
+                  borderBottom: "2px solid #C31162",
+                  boxShadow: "none",
+                  borderRadius: 0,
+                  cursor: "pointer",
                 }}
                 value={selectedSlug || ""}
                 onChange={(e) => {
@@ -114,15 +131,25 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
                 }}
               >
                 {categories.map((cat) => (
-                  <option
-                    key={cat.id}
-                    value={toSlug(cat.name)}
-                    className="h-25"
-                  >
+                  <option key={cat.id} value={toSlug(cat.name)}>
                     {cat.name}
                   </option>
                 ))}
               </select>
+
+              <span
+                style={{
+                  position: "absolute",
+                  right: "6px",
+                  top: "44%",
+                  transform: "translateY(-50%)",
+                  pointerEvents: "none",
+                  fontSize: "14px",
+                  color: "#000",
+                }}
+              >
+                <FaCaretDown size={12} />
+              </span>
             </div>
           )}
         </div>
@@ -181,12 +208,15 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
                       </div>
                       <div
                         className="card-body p-3"
-                        style={{ flex: 1, display: "flex", flexDirection: "column" }}
+                        style={{
+                          flex: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                        }}
                       >
                         <h6
                           className="card-title fw-semibold"
                           style={{
-                            fontSize: "16px",
                             lineHeight: "1.3",
                             height: "42px",
                             overflow: "hidden",
@@ -245,7 +275,10 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
                               WebkitBoxOrient: "vertical",
                             }}
                           >
-                            {(item.location || "").split(" ").slice(0, 1).join(" ")}
+                            {(item.location || "")
+                              .split(" ")
+                              .slice(0, 1)
+                              .join(" ")}
                             {item.location?.split(" ").length > 1 && "..."}
                           </p>
                         </div>
@@ -276,7 +309,7 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
 
         <div style={{ display: "flex", justifyContent: "end" }}>
           <button
-            className="btn col-6"
+            className="btn col-6 fs-14"
             style={{ background: "#C31162", color: "#fff" }}
             disabled={isVendorBox ? !selectedSlug || loadingVendors : false}
             onClick={() => {
@@ -291,8 +324,8 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
               ? loadingVendors
                 ? "Loading..."
                 : selectedLabel
-                  ? `Search ${selectedLabel}`
-                  : "Search Vendors"
+                ? `Search ${selectedLabel}`
+                : "Search Vendors"
               : "Search Venues"}
           </button>
         </div>
@@ -317,7 +350,6 @@ const VenueSwiper = () => {
       ? words.slice(0, numWords).join(" ") + "..."
       : str;
   };
-
 
   const buildImageUrl = (path) => {
     if (!path) return null;
@@ -351,7 +383,9 @@ const VenueSwiper = () => {
               item.vendor?.businessName ||
               "Venue",
             image:
-              item.attributes?.image_url || cleanMediaUrl(item.media?.[0]) || null,
+              item.attributes?.image_url ||
+              cleanMediaUrl(item.media?.[0]) ||
+              null,
             rating: item.attributes?.rating || 0,
             review_count: item.attributes?.review_count || 0,
             location: item.attributes?.city || item.vendor?.city || "Location",

@@ -7,6 +7,8 @@ import vendorsAuthApi from "../../services/api/vendorAuthApi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { SiMinutemailer } from "react-icons/si";
+import { TbPassword } from "react-icons/tb";
 
 const VendorLogin = () => {
   const [email, setEmail] = useState("");
@@ -86,106 +88,107 @@ const VendorLogin = () => {
         {/* Right Form Section */}
         <div className="col-lg-6 bg-white p-4 p-md-5 d-flex flex-column justify-content-center">
           <div className="text-center mb-4">
-            <h2 className="fw-light mb-2" style={{ color: "#8a5a76" }}>
+            <h3 className="fw-light mb-2" style={{ color: "#8a5a76" }}>
               Welcome to <span className="gold-text">HappyWedz</span>
-            </h2>
-            <p className="text-muted">
+            </h3>
+            <p className="text-muted fs-16">
               Sign in to access your wedding planning dashboard
             </p>
           </div>
 
-          <Form onSubmit={handleSubmit} className="mt-4">
+          <Form onSubmit={handleSubmit} className="mt-1">
             <Form.Group controlId="formEmail" className="mb-4">
-              <Form.Label className="text-secondary">Email Address</Form.Label>
-              <div className="input-group">
-                <span className="input-group-text">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-send-icon lucide-send"
-                  >
-                    <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" />
-                    <path d="m21.854 2.147-10.94 10.939" />
-                  </svg>
-                </span>
+              <Form.Label className="text-secondary fs-16">
+                Email Address
+              </Form.Label>
+              <div className="position-relative">
+                <SiMinutemailer
+                  size={20}
+                  className="text-secondary"
+                  style={{
+                    position: "absolute",
+                    left: "16px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    pointerEvents: "none",
+                  }}
+                />
                 <Form.Control
                   type="email"
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="p-3"
+                  className="p-3 ps-5 fs-14 shadow-sm border-light bg-light"
+                  style={{ borderRadius: "12px" }}
                 />
               </div>
             </Form.Group>
 
             <Form.Group controlId="formPassword" className="mb-4">
-              <Form.Label className="text-secondary">Password</Form.Label>
-              <div className="input-group">
-                <span className="input-group-text">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-shield-icon lucide-shield"
-                  >
-                    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
-                  </svg>
+              <Form.Label className="text-secondary fs-16">Password</Form.Label>
+              <div className="position-relative">
+                <TbPassword
+                  size={22}
+                  className="text-secondary"
+                  style={{
+                    position: "absolute",
+                    left: "16px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    pointerEvents: "none",
+                  }}
+                />
+                <Form.Control
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="p-3 ps-5 pe-5 fs-14 shadow-sm border-light bg-light"
+                  style={{ borderRadius: "12px" }}
+                />
+                <span
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: "absolute",
+                    right: "16px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    cursor: "pointer",
+                    color: "#6c757d",
+                    zIndex: 2,
+                  }}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  role="button"
+                >
+                  {showPassword ? (
+                    <FaEye size={20} />
+                  ) : (
+                    <FaEyeSlash size={20} />
+                  )}
                 </span>
-                <div style={{ position: "relative", flex: "1 1 auto" }}>
-                  <Form.Control
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="p-3 w-100"
-                  />
-                  <span
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: "absolute",
-                      right: "15px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      cursor: "pointer",
-                      color: "#6c757d",
-                      zIndex: "99",
-                      pointerEvents: "auto",
-                    }}
-                  >
-                    {showPassword ? (
-                      <FaEye size={20} />
-                    ) : (
-                      <FaEyeSlash size={20} />
-                    )}
-                  </span>
-                </div>
               </div>
             </Form.Group>
 
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <Form.Check
-                type="checkbox"
-                id="rememberMe"
-                label="Remember me"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="text-secondary"
-              />
+            <div className="d-flex justify-content-between align-items-center mb-4 fs-14">
+              <div className="d-flex align-items-center">
+                <Form.Check
+                  type="checkbox"
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="text-secondary fs-16 me-2 mb-0"
+                  style={{ minHeight: "1.3em" }}
+                />
+                <label
+                  htmlFor="rememberMe"
+                  className="fs-16 mb-0"
+                  style={{ cursor: "pointer" }}
+                >
+                  Remember me
+                </label>
+              </div>
               <Link
-                className="text-decoration-none wedding-link"
+                className="text-decoration-none wedding-link fs-14"
                 to="/vendor-forgot-password"
               >
                 Forgot Password?
@@ -201,27 +204,27 @@ const VendorLogin = () => {
             <Button
               variant="primary"
               type="submit"
-              className="w-100 p-3 login-btn"
+              className="w-100 p-3 login-btn fs-16"
               disabled={loading}
             >
               {loading ? "Signing in..." : "Sign In"}
             </Button>
 
-            <div className="mt-5 text-center">
-              <p className="text-muted">
+            <div className="d-flex justify-content-between align-items-center text-center mb-4 fs-14 mt-3">
+              <p className="text-muted fs-14">
                 Don't have an account?{" "}
                 <Link
                   to="/vendor-register"
-                  className="text-decoration-none wedding-link fw-semibold"
+                  className="text-decoration-none wedding-link fw-semibold fs-14"
                 >
                   Sign up
                 </Link>
               </p>
-              <p className="text-muted">
+              <p className="text-muted fs-14">
                 Are you a user?{" "}
                 <Link
                   to="/customer-login"
-                  className="text-decoration-none wedding-link fw-semibold"
+                  className="text-decoration-none wedding-link fw-semibold fs-14"
                 >
                   Log in
                 </Link>

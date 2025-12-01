@@ -320,10 +320,10 @@ const CustomerRegister = () => {
 
         <div className="col-lg-7 p-5">
           <div className="text-center mb-5">
-            <h2 className="fw-bold text-dark mb-2">
+            <h3 className="fw-bold text-dark mb-2">
               {signInCms?.title || "Wedding Registration"}
-            </h2>
-            <p className="text-muted">
+            </h3>
+            <p className="text-muted fs-16">
               {signInCms?.description ||
                 "Create your account to start planning your special day"}
             </p>
@@ -336,7 +336,7 @@ const CustomerRegister = () => {
                   <input
                     type="text"
                     name="name"
-                    className={`form-control ${
+                    className={`form-control fs-16 ${
                       errors.name ? "is-invalid" : ""
                     }`}
                     placeholder="Full Name"
@@ -355,7 +355,7 @@ const CustomerRegister = () => {
                   <input
                     type="email"
                     name="email"
-                    className={`form-control ${
+                    className={`form-control fs-16 ${
                       errors.email ? "is-invalid" : ""
                     }`}
                     placeholder="Email"
@@ -374,7 +374,7 @@ const CustomerRegister = () => {
                   <input
                     type={passwordVisible ? "text" : "password"}
                     name="password"
-                    className={`form-control ${
+                    className={`form-control fs-16 ${
                       errors.password ? "is-invalid" : ""
                     }`}
                     placeholder="Password"
@@ -387,7 +387,7 @@ const CustomerRegister = () => {
                     className="position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent"
                     onClick={togglePasswordVisibility}
                     style={{
-                      zIndex: 9999,
+                      zIndex: 10,
                       marginRight: "10px",
                     }}
                     aria-label={
@@ -419,7 +419,7 @@ const CustomerRegister = () => {
                   <input
                     type="number"
                     name="phone"
-                    className={`input-number form-control ${
+                    className={`input-number form-control fs-16 ${
                       errors.phone ? "is-invalid" : ""
                     }`}
                     placeholder="Phone"
@@ -441,7 +441,7 @@ const CustomerRegister = () => {
                   <input
                     type="text"
                     name="weddingVenue"
-                    className={`form-control ${
+                    className={`form-control fs-16 ${
                       errors.weddingVenue ? "is-invalid" : ""
                     }`}
                     placeholder="Wedding Venue"
@@ -461,7 +461,7 @@ const CustomerRegister = () => {
                 <div className="form-floating">
                   <select
                     name="country"
-                    className={`form-select ${
+                    className={`form-select fs-16 ${
                       errors.country ? "is-invalid" : ""
                     }`}
                     value={formData.country}
@@ -485,7 +485,9 @@ const CustomerRegister = () => {
                 <div className="form-floating">
                   <select
                     name="city"
-                    className={`form-select ${errors.city ? "is-invalid" : ""}`}
+                    className={`form-select fs-16 ${
+                      errors.city ? "is-invalid" : ""
+                    }`}
                     value={formData.city}
                     onChange={handleChange}
                   >
@@ -508,7 +510,7 @@ const CustomerRegister = () => {
                   <input
                     type="date"
                     name="weddingDate"
-                    className={`form-control ${
+                    className={`form-control fs-16 ${
                       errors.weddingDate ? "is-invalid" : ""
                     }`}
                     value={formData.weddingDate}
@@ -525,7 +527,7 @@ const CustomerRegister = () => {
             <div className="d-grid mb-4">
               <button
                 type="submit"
-                className="btn btn-lg btn-primary fw-medium py-3"
+                className="btn btn-lg btn-primary fw-medium py-3 fs-16"
                 disabled={isSubmitting}
               >
                 {isSubmitting && (
@@ -536,7 +538,7 @@ const CustomerRegister = () => {
             </div>
 
             <div className="text-center d-flex justify-content-between">
-              <p className="text-muted">
+              <p className="text-muted fs-16">
                 I have an account?
                 <Link
                   to="/customer-login"
@@ -545,7 +547,7 @@ const CustomerRegister = () => {
                   Login
                 </Link>
               </p>
-              <p className="text-muted">
+              <p className="text-muted fs-16">
                 I Am Vendor?
                 <Link
                   to="/vendor-login"

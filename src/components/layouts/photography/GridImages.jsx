@@ -86,8 +86,8 @@ const GridImages = ({ category, searchQuery, photos }) => {
                     }}
                   />
                   <div className="card-body p-2">
-                    <h6 className="mb-1">{img.title || "No Title"}</h6>
-                    <small className="text-muted">
+                    <h6 className="mb-1 fs-16">{img.title || "No Title"}</h6>
+                    <small className="text-muted fs-14">
                       {img.city_name || "No City"}
                     </small>
                   </div>

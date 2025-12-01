@@ -16,9 +16,9 @@ const FaqsSection = ({ navbarId = null, customFaqs = null }) => {
   if (!customFaqs && loading) {
     return (
       <div className="faq-section container my-5">
-        <h2 className="text-center mb-4 faq-heading">
+        <h3 className="text-center mb-4 faq-heading">
           Frequently Asked Questions
-        </h2>
+        </h3>
         <p className="text-center">Loading FAQs...</p>
       </div>
     );
@@ -27,9 +27,9 @@ const FaqsSection = ({ navbarId = null, customFaqs = null }) => {
   if (!customFaqs && error) {
     return (
       <div className="faq-section container my-5">
-        <h2 className="text-center mb-4 faq-heading">
+        <h3 className="text-center mb-4 faq-heading">
           Frequently Asked Questions
-        </h2>
+        </h3>
         <p className="text-center text-danger">Failed to load FAQs</p>
       </div>
     );
@@ -37,9 +37,9 @@ const FaqsSection = ({ navbarId = null, customFaqs = null }) => {
 
   return (
     <div className="faq-section container my-5">
-      <h2 className="text-center mb-4 faq-heading">
+      <h3 className="text-center mb-4 faq-heading">
         Frequently Asked Questions
-      </h2>
+      </h3>
       <div className="accordion">
         {faqs.map((faq, index) => (
           <div
@@ -48,14 +48,15 @@ const FaqsSection = ({ navbarId = null, customFaqs = null }) => {
             onClick={() => toggleFAQ(index)}
           >
             <div className="faq-header d-flex justify-content-between align-items-center">
-              <h5 className="faq-question">{`${index + 1}. ${faq.question
-                }`}</h5>
-              <span className="faq-icon">
+              <h5 className="faq-question fs-16">{`${index + 1}. ${
+                faq.question
+              }`}</h5>
+              <span className="faq-icon fs-16">
                 {activeIndex === index ? "−" : "+"}
               </span>
             </div>
             {activeIndex === index && (
-              <p className="faq-answer">{faq.answer}</p>
+              <p className="faq-answer fs-14">{faq.answer}</p>
             )}
           </div>
         ))}

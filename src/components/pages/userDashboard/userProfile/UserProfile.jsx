@@ -74,7 +74,6 @@ const UserProfile = ({ user, token }) => {
 
     setFormData(userData);
 
-    // Set initial values once from Redux (for "Previous:" display)
     setInitialValues({
       name: effectiveUser.name || "",
       email: effectiveUser.email || "",
@@ -462,7 +461,7 @@ const UserProfile = ({ user, token }) => {
                     </div>
                     <div className="d-flex gap-2">
                       <Form.Group controlId="coverImage" className="mb-0">
-                        <Form.Label className="btn btn-outline-secondary btn-sm mb-0">
+                        <Form.Label className="btn btn-outline-secondary btn-sm mb-0 fs-14">
                           Change Cover
                         </Form.Label>
                         <Form.Control
@@ -474,7 +473,7 @@ const UserProfile = ({ user, token }) => {
                         />
                       </Form.Group>
                       <Form.Group controlId="profileImage" className="mb-0">
-                        <Form.Label className="btn btn-outline-secondary btn-sm mb-0">
+                        <Form.Label className="btn btn-outline-primary btn-sm mb-0 fs-14">
                           Change Photo
                         </Form.Label>
                         <Form.Control
@@ -507,8 +506,9 @@ const UserProfile = ({ user, token }) => {
                 <Row className="g-3">
                   <Col md={6}>
                     <Form.Group controlId="name">
-                      <Form.Label>Full Name</Form.Label>
+                      <Form.Label className="fs-16">Full Name</Form.Label>
                       <Form.Control
+                        className="fs-14"
                         type="text"
                         name="name"
                         value={formData.name}
@@ -518,10 +518,12 @@ const UserProfile = ({ user, token }) => {
                       />
                     </Form.Group>
                   </Col>
+
                   <Col md={6}>
                     <Form.Group controlId="email">
-                      <Form.Label>Email</Form.Label>
+                      <Form.Label className="fs-16">Email</Form.Label>
                       <Form.Control
+                        className="fs-14"
                         type="email"
                         name="email"
                         value={formData.email}
@@ -534,8 +536,9 @@ const UserProfile = ({ user, token }) => {
 
                   <Col md={6}>
                     <Form.Group controlId="phone">
-                      <Form.Label>Phone</Form.Label>
+                      <Form.Label className="fs-16">Phone</Form.Label>
                       <Form.Control
+                        className="fs-14"
                         type="tel"
                         name="phone"
                         value={formData.phone}
@@ -544,9 +547,11 @@ const UserProfile = ({ user, token }) => {
                       />
                     </Form.Group>
                   </Col>
+
                   <Col md={6}>
                     <Form.Group controlId="weddingDate">
-                      <Form.Label>Wedding Date</Form.Label>
+                      <Form.Label className="fs-16">Wedding Date</Form.Label>
+
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
                           value={
@@ -560,6 +565,9 @@ const UserProfile = ({ user, token }) => {
                               fullWidth: true,
                               size: "small",
                               placeholder: "Select wedding date",
+                              className: "fs-14",
+                              InputProps: { style: { fontSize: 14 } },
+                              inputProps: { style: { fontSize: 14 } },
                             },
                           }}
                         />
@@ -569,8 +577,9 @@ const UserProfile = ({ user, token }) => {
 
                   <Col md={6}>
                     <Form.Group controlId="country">
-                      <Form.Label>Country</Form.Label>
+                      <Form.Label className="fs-16">Country</Form.Label>
                       <Form.Control
+                        className="fs-14"
                         type="text"
                         name="country"
                         value={formData.country}
@@ -579,10 +588,12 @@ const UserProfile = ({ user, token }) => {
                       />
                     </Form.Group>
                   </Col>
+
                   <Col md={3}>
                     <Form.Group controlId="city">
-                      <Form.Label>City</Form.Label>
+                      <Form.Label className="fs-16">City</Form.Label>
                       <Form.Control
+                        className="fs-14"
                         type="text"
                         name="city"
                         value={formData.city}
@@ -591,10 +602,12 @@ const UserProfile = ({ user, token }) => {
                       />
                     </Form.Group>
                   </Col>
+
                   <Col md={3}>
                     <Form.Group controlId="weddingVenue">
-                      <Form.Label>Wedding Venue</Form.Label>
+                      <Form.Label className="fs-16">Wedding Venue</Form.Label>
                       <Form.Control
+                        className="fs-14"
                         type="text"
                         name="weddingVenue"
                         value={formData.weddingVenue}
@@ -603,6 +616,8 @@ const UserProfile = ({ user, token }) => {
                       />
                     </Form.Group>
                   </Col>
+
+                  {/* Toggle link */}
                   <Col xs={12} className="mt-2">
                     <span
                       onClick={() => setShowChangePassword((s) => !s)}
@@ -619,8 +634,11 @@ const UserProfile = ({ user, token }) => {
                     <div className="d-flex flex-column gap-3">
                       <Col md={4}>
                         <Form.Group controlId="currentPassword">
-                          <Form.Label>Current Password</Form.Label>
+                          <Form.Label className="fs-16">
+                            Current Password
+                          </Form.Label>
                           <Form.Control
+                            className="fs-14"
                             type="password"
                             name="currentPassword"
                             value={passwordFields.currentPassword}
@@ -629,10 +647,14 @@ const UserProfile = ({ user, token }) => {
                           />
                         </Form.Group>
                       </Col>
+
                       <Col md={4}>
                         <Form.Group controlId="newPassword">
-                          <Form.Label>New Password</Form.Label>
+                          <Form.Label className="fs-16">
+                            New Password
+                          </Form.Label>
                           <Form.Control
+                            className="fs-14"
                             type="password"
                             name="newPassword"
                             value={passwordFields.newPassword}
@@ -648,10 +670,14 @@ const UserProfile = ({ user, token }) => {
                           </Form.Control.Feedback>
                         </Form.Group>
                       </Col>
+
                       <Col md={4}>
                         <Form.Group controlId="confirmPassword">
-                          <Form.Label>Confirm Password</Form.Label>
+                          <Form.Label className="fs-16">
+                            Confirm Password
+                          </Form.Label>
                           <Form.Control
+                            className="fs-14"
                             type="password"
                             name="confirmPassword"
                             value={passwordFields.confirmPassword}
@@ -682,13 +708,16 @@ const UserProfile = ({ user, token }) => {
                     <Button
                       variant="outline-secondary"
                       type="button"
+                      className="fs-14 col-1"
                       onClick={() => setFormData(initialState)}
                     >
                       Reset
                     </Button>
+
                     <Button
                       variant="primary"
                       type="submit"
+                      className="fs-14 col-1"
                       disabled={submitting || !isPasswordFormValid}
                     >
                       {submitting ? (
@@ -702,7 +731,7 @@ const UserProfile = ({ user, token }) => {
                           Saving...
                         </>
                       ) : (
-                        "Save Changes"
+                        "Save"
                       )}
                     </Button>
                   </Col>

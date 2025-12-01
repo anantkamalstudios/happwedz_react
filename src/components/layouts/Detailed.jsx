@@ -673,7 +673,7 @@ const Detailed = () => {
               >
                 <button
                   type="button"
-                  className="btn btn-sm"
+                  className="btn btn-sm fs-14"
                   onClick={() => setMediaTab("gallery")}
                   style={{
                     background: mediaTab === "gallery" ? "#f2f2f2" : "#fff",
@@ -693,7 +693,7 @@ const Detailed = () => {
 
                 <button
                   type="button"
-                  className="btn btn-sm"
+                  className="btn btn-sm fs-14"
                   onClick={() => setMediaTab("video")}
                   disabled={videos.length === 0}
                   title={videos.length === 0 ? "No videos available" : ""}
@@ -828,7 +828,7 @@ const Detailed = () => {
               </h3>
               {venueData.attributes?.about_us ? (
                 <div
-                  className="description-text text-black fs-14"
+                  className="description-text text-black fs-16"
                   style={{ textAlign: "justify" }}
                   dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(
@@ -842,11 +842,11 @@ const Detailed = () => {
                 </p>
               )}
 
-              {venueData.attributes?.subtitle && (
-                <p className="description-text text-black text-justify">
+              {/* {venueData.attributes?.subtitle && (
+                <p className="description-text text-black text-justify fs-14">
                   {venueData.attributes.subtitle}
                 </p>
-              )}
+              )} */}
             </div>
 
             {/* DYNAMIC AMENITIES / SERVICES */}
@@ -873,16 +873,16 @@ const Detailed = () => {
                       >
                         <div className={`amenity-item ${isSub ? "ms-4" : ""}`}>
                           <div className="d-flex flex-column">
-                            <span className="fw-semibold text-dark">
+                            <span className="fw-semibold text-dark fs-16">
                               {label}
                             </span>
                             {value && (
-                              <span className="text-muted small mt-1">
+                              <span className="text-muted small mt-1 fs-14">
                                 {value}
                               </span>
                             )}
                             {!value && !label && (
-                              <span className="text-muted small">
+                              <span className="text-muted small fs-14">
                                 {trimmed}
                               </span>
                             )}
@@ -984,7 +984,7 @@ const Detailed = () => {
                     {validFaqs.length > 5 && (
                       <div className="text-start mt-3">
                         <button
-                          className="btn btn-link p-0 text-dark fw-semibold text-decoration-underline"
+                          className="btn btn-link p-0 text-dark fw-semibold text-decoration-underline fs-14"
                           onClick={() => setShowAllFaqs(!showAllFaqs)}
                         >
                           {showAllFaqs ? "Show Less" : "Read More"}
@@ -1004,7 +1004,10 @@ const Detailed = () => {
                 className="mb-2 fw-semibold text-dark fs-16"
                 style={{ fontSize: "1.05rem" }}
               >
-                <span>{venueData?.attributes?.address || venueData?.attributes?.city}</span>
+                <span>
+                  {venueData?.attributes?.address ||
+                    venueData?.attributes?.city}
+                </span>
               </div>
 
               {/* Show map by coordinates when available; fallback to text location */}
@@ -1032,69 +1035,104 @@ const Detailed = () => {
               style={{ top: "20px" }}
             >
               <div className="venue-info">
+                {/* Title + Location */}
                 <div className="mb-3">
                   <div className="d-flex">
-                    <h2 className="fw-bold fs-22">
+                    <h2 className="fw-bold fs-22 text-dark m-0">
                       {venueData?.attributes?.name ||
                         venueData?.attributes?.Name ||
                         "Vendor Name"}
                     </h2>
                   </div>
-                  <div className="d-flex align-items-center my-2 fs-14">
-                    <FaLocationDot className="me-1" size={15} color="black" />
-                    <span>
+
+                  <div
+                    className={`d-flex ${
+                      (
+                        venueData?.attributes?.address ||
+                        venueData?.attributes?.city ||
+                        ""
+                      ).length > 38
+                        ? "align-items-start"
+                        : "align-items-center"
+                    } my-2 fs-14 text-black`}
+                  >
+                    <FaLocationDot
+                      className="me-1"
+                      size={15}
+                      color="#000"
+                      style={{
+                        marginTop:
+                          (
+                            venueData?.attributes?.address ||
+                            venueData?.attributes?.city ||
+                            ""
+                          ).length > 38
+                            ? "3px"
+                            : "0",
+                      }}
+                    />
+                    <span
+                      style={{
+                        wordBreak: "break-word",
+                        lineHeight: "1.3",
+                      }}
+                    >
                       {venueData?.attributes?.address ||
                         venueData?.attributes?.city}
                     </span>
                   </div>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <div className="rating-badge">
-                      <FaStar className="text-warning" />
-                      <span className="rating-value fw-bold">
+
+                  {/* Rating Clean */}
+                  <div className="d-flex justify-content-between align-items-center mt-2">
+                    <div className="rating-badge d-flex align-items-center gap-1">
+                      <FaStar size={12} color="#000" />
+                      <span className="fw-semibold text-dark fs-16">
                         {venueData.attributes?.rating || 0}
                       </span>
-                      <span className="reviews">
+                      <span className="text-muted fs-10">
                         ({venueData.attributes?.review_count || 0} reviews)
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="tags mb-4">
+                <div className="tags mb-4 d-flex flex-wrap gap-2">
                   {venueData.attributes?.vendor_type && (
-                    <span className="tag badge bg-info me-2">
+                    <span className="px-2 py-1 border rounded text-dark fs-12 bg-white">
                       {venueData.attributes.vendor_type}
                     </span>
                   )}
                   {isVenue && venueData.attributes?.rooms && (
-                    <span className="tag badge bg-success me-2">
+                    <span className="px-2 py-1 border rounded text-dark fs-12 bg-white">
                       Hotel/Resort
                     </span>
                   )}
                   {isVenue && venueData.attributes?.indoor_outdoor && (
-                    <span className="tag badge bg-secondary me-2">
+                    <span className="px-2 py-1 border rounded text-dark fs-12 bg-white">
                       {capitalizeWords(venueData.attributes.indoor_outdoor)}
                     </span>
                   )}
                 </div>
 
-                <div className="pricing mb-4">
+                {/* Pricing Section */}
+                <div className="pricing mb-3 text-dark">
                   {isVenue ? (
                     <>
-                      <h4 className="price-title fw-bold fs-16">
+                      <h4 className="fw-semibold fs-16 m-0">
                         Veg Starting Price
                       </h4>
-                      <div className="price-value fw-bold fs-16">
+                      <div className="fw-bold fs-16 mt-1 primary-text">
                         {venueData.attributes?.veg_price
                           ? `₹ ${parseInt(
                               venueData.attributes.veg_price.replace(/,/g, "")
-                            ).toLocaleString()} onwards`
+                            ).toLocaleString()}`
                           : "Contact for pricing"}
                       </div>
-                      <h4 className="price-title fw-bold mt-3 fs-16">
+
+                      <h4 className="fw-semibold fs-16 mt-3 m-0 ">
                         Non-Veg Starting Price
                       </h4>
-                      <div className="price-value fs-16 fw-semibold">
+                      <div className="fw-bold fs-16 mt-1 primary-text">
                         {venueData.attributes?.non_veg_price
                           ? `₹ ${parseInt(
                               venueData.attributes.non_veg_price.replace(
@@ -1104,19 +1142,10 @@ const Detailed = () => {
                             ).toLocaleString()} onwards`
                           : "Contact for pricing"}
                       </div>
-                      {/* <p className="price-note text-muted mt-2">
-                        Price per plate, exclusive of taxes.
-                      </p> */}
                     </>
                   ) : (
                     <>
-                      {/* Photographer Pricing */}
-                      {/* <h4 className="price-title fw-bold">
-                        {venueData.attributes?.vendor_type === "Makeup"
-                          ? "Makeup Package (Starting)"
-                          : "Photography Package (Starting)"}
-                      </h4> */}
-                      <h4 className="price-title fw-bold ">
+                      <span className="fw-semibold fs-16 d-block">
                         {venueData.attributes?.vendor_type === "Makeup"
                           ? "Makeup Package (Starting)"
                           : venueData.attributes?.vendor_type === "Photography"
@@ -1125,74 +1154,74 @@ const Detailed = () => {
                             "Music And Dance"
                           ? "Pricing Range"
                           : ""}
-                      </h4>
+                      </span>
 
-                      <div className="price-value fs-16 fw-bold">
-                        <h4 className="price-title fw-bold mt-3">
+                      <div className="fs-16 fw-bold mt-1">
+                        <span className="fw-semibold fs-16 d-block">
                           Pricing Range (Starting)
-                        </h4>
-                        ₹{" "}
-                        {venueData.attributes?.PriceRange ||
-                        venueData.attributes.starting_price
-                          ? venueData.attributes.PriceRange.replace(
-                              "Rs.",
-                              ""
-                            ).trim() || venueData.attributes.starting_price
-                          : venueData.attributes.photo_package_price
-                          ? `₹${parseInt(
-                              venueData.attributes.photo_package_price.replace(
-                                /,/g,
+                        </span>
+                        <span className="primary-text">
+                          ₹{" "}
+                          {venueData.attributes?.PriceRange ||
+                          venueData.attributes.starting_price
+                            ? venueData.attributes.PriceRange.replace(
+                                "Rs.",
                                 ""
-                              )
-                            ).toLocaleString()} onwards`
-                          : "Contact for pricing"}
+                              ).trim() || venueData.attributes.starting_price
+                            : venueData.attributes.photo_package_price
+                            ? `₹${parseInt(
+                                venueData.attributes.photo_package_price.replace(
+                                  /,/g,
+                                  ""
+                                )
+                              ).toLocaleString()} onwards`
+                            : "Contact for pricing"}
+                        </span>
                       </div>
+
                       {venueData.attributes?.photo_video_package_price && (
                         <>
-                          <h4 className="price-title fw-bold mt-3">
+                          <h4 className="fw-semibold fs-16 mt-3 d-block m-0">
                             Photo + Video Package (Starting)
                           </h4>
-                          <div className="price-value fs-16 fw-bold">
-                            ₹{" "}
-                            {venueData.attributes.photo_video_package_price.replace(
-                              "Rs.",
-                              ""
-                            )}{" "}
+                          <div className="fs-16 fw-bold mt-1">
+                            <span className="primary-text">
+                              ₹{" "}
+                              {venueData.attributes.photo_video_package_price.replace(
+                                "Rs.",
+                                ""
+                              )}
+                            </span>
                           </div>
                         </>
                       )}
-                      <p className="price-note text-muted mt-2">
-                        {venueData.attributes?.vendor_type === "Makeup"
-                          ? "Price per session, exclusive of taxes."
-                          : "Price per day/event, exclusive of taxes."}
-                      </p>
                     </>
                   )}
                 </div>
 
                 <div>
                   <button
-                    className="btn btn-primary w-100 py-2 fs-14 mt-2 rounded-4"
+                    className="btn btn-outline-primary w-100 py-2 fs-14 mt-0 rounded-2"
                     onClick={() => setShowClaimForm(true)}
                   >
                     Claim Your Business
                   </button>
                 </div>
-              </div>
 
-              <hr />
+                <hr />
 
-              <div className="action-buttons mb-3">
-                <div className="margin-b-50 d-flex h-center cursor-pointer">
-                  <div style={{ width: "100%" }}>
-                    <button
-                      className="btn btn-primary w-100 py-2 fs-14 rounded-4"
-                      onClick={() =>
-                        handleShowPricingModal(venueData.vendor_id)
-                      }
-                    >
-                      Request Pricing & Availability
-                    </button>
+                <div className="mb-3">
+                  <div className="d-flex">
+                    <div style={{ width: "100%" }}>
+                      <button
+                        className="btn btn-outline-primary w-100 py-2 fs-14 mt-0 rounded-2"
+                        onClick={() =>
+                          handleShowPricingModal(venueData.vendor_id)
+                        }
+                      >
+                        Request Pricing & Availability
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
