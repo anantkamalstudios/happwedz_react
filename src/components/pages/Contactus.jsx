@@ -22,6 +22,44 @@ const Contactus = () => {
   };
 
   const handleSubmit = async () => {
+    const { firstName, lastName, email, phone, message } = formData;
+
+    // Basic validation
+    if (
+      !firstName.trim() ||
+      !lastName.trim() ||
+      !email.trim() ||
+      !phone.trim() ||
+      !message.trim()
+    ) {
+      Swal.fire({
+        icon: "error",
+        title: "Incomplete Form",
+        text: "Please fill out all fields.",
+      });
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Email",
+        text: "Please enter a valid email address.",
+      });
+      return;
+    }
+
+    // Phone validation (simple 10-digit check)
+    if (!/^\d{10}$/.test(phone)) {
+      Swal.fire({
+        icon: "error",
+        text: "Please enter a valid 10-digit phone number.",
+      });
+      return;
+    }
+
     try {
       await submitContact(formData);
       Swal.fire({
@@ -150,7 +188,7 @@ const Contactus = () => {
       marginBottom: "15px",
     },
     contactTitle: {
-      fontSize: "20px",
+      fontSize: "16px",
       color: "#d63384",
       marginBottom: "10px",
       marginTop: "0",
@@ -315,15 +353,16 @@ const Contactus = () => {
       title: "Vendors",
       description:
         "Are you an expert vendor eager to expand your business opportunities? Connect with us and discover the ideal platform to grow.",
-      email: "user@happywedz.com",
+      email: "support@happywedz.com",
       gradient: "linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)",
     },
+
     {
       icon: <TrendingUp size={24} />,
       title: "Marketing Collaborations",
       description:
         "For direct collaborations—including promotional events, shoots, or paid opportunities—reach out to us.",
-      email: "user@happywedz.com",
+      email: "support@happywedz.com",
       gradient: "linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)",
     },
     {
@@ -331,7 +370,7 @@ const Contactus = () => {
       title: "Wedding Submissions",
       description:
         "We're passionate about celebrating weddings on happywedz.com! Share your wedding story, photos, and vendor details with us.",
-      email: "user@happywedz.com",
+      email: "support@happywedz.com",
       gradient: "linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)",
     },
     {
@@ -339,7 +378,7 @@ const Contactus = () => {
       title: "Careers",
       description:
         "We have a team of dedicated professionals on the network, and we're always on the lookout for new talent. Join us today!",
-      email: "hr@happywedz.com",
+      email: "support@happywedz.com",
       gradient: "linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)",
     },
     {
@@ -347,7 +386,7 @@ const Contactus = () => {
       title: "Customers",
       description:
         "We aim to connect you with the very best in premium vendors. Share your feedback or concerns to help us improve.",
-      email: "feedback@happywedz.com",
+      email: "support@happywedz.com",
       gradient: "linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)",
     },
   ];
@@ -391,9 +430,9 @@ const Contactus = () => {
           {/* Left Column - Contact Form */}
           <div style={styles.leftCol} className="left-col">
             <div style={styles.formCard}>
-              <h2 className="fs-40 fw-bold dark-pink-text text-center d-flex justify-content-center">
+              <h4 className="fw-bold dark-pink-text text-center d-flex justify-content-center mb-4">
                 CONTACT US
-              </h2>
+              </h4>
               <div>
                 <div style={styles.formRow} className="form-row">
                   <div style={styles.formGroup}>
@@ -405,6 +444,7 @@ const Contactus = () => {
                       value={formData.firstName}
                       onChange={handleChange}
                       style={styles.input}
+                      className="fs-12"
                     />
                   </div>
                   <div style={styles.formGroup}>
@@ -416,6 +456,7 @@ const Contactus = () => {
                       value={formData.lastName}
                       onChange={handleChange}
                       style={styles.input}
+                      className="fs-12"
                     />
                   </div>
                 </div>
@@ -430,6 +471,7 @@ const Contactus = () => {
                       value={formData.email}
                       onChange={handleChange}
                       style={styles.input}
+                      className="fs-12"
                     />
                   </div>
                   <div style={styles.formGroup}>
@@ -441,6 +483,7 @@ const Contactus = () => {
                       value={formData.phone}
                       onChange={handleChange}
                       style={styles.input}
+                      className="fs-12"
                     />
                   </div>
                 </div>
@@ -453,6 +496,7 @@ const Contactus = () => {
                     value={formData.message}
                     onChange={handleChange}
                     style={styles.textarea}
+                    className="fs-12"
                   ></textarea>
                 </div>
 
@@ -469,8 +513,10 @@ const Contactus = () => {
             {/* Vendors Section */}
             <div style={styles.contactCardsContainer}>
               <div style={styles.header}>
-                <h2 style={styles.mainTitle}>Get In Touch</h2>
-                <p style={styles.subtitle}>We'd love to hear from you</p>
+                <h4 style={styles.mainTitle}>Get In Touch</h4>
+                <p className="fs-14" style={styles.subtitle}>
+                  We'd love to hear from you
+                </p>
               </div>
 
               <div style={styles.grid}>
@@ -482,7 +528,7 @@ const Contactus = () => {
                     onMouseLeave={(e) => handleCardHover(e, false)}
                   >
                     <div
-                      className="icon-wrapper"
+                      className="icon-wrapper "
                       style={{
                         ...styles.iconWrapper,
                         background: card.gradient,
@@ -491,9 +537,13 @@ const Contactus = () => {
                       {card.icon}
                     </div>
 
-                    <h3 style={styles.cardTitle}>{card.title}</h3>
+                    <span className="fs-16" style={styles.cardTitle}>
+                      {card.title}
+                    </span>
 
-                    <p style={styles.cardText}>{card.description}</p>
+                    <p className="fs-14" style={styles.cardText}>
+                      {card.description}
+                    </p>
 
                     <a
                       href={`mailto:${card.email}`}
@@ -527,7 +577,7 @@ const Contactus = () => {
           {/* Right Column - Contact Info */}
           <div style={styles.rightCol} className="right-col">
             {/* For Vendors */}
-            <p className="fs-30 dark-pink-text fw-medium">
+            <p className="fs-22 dark-pink-text fw-medium">
               Connect us to get best Deals
             </p>
             <div style={styles.contactBox}>
@@ -545,11 +595,11 @@ const Contactus = () => {
               </p>
               <div style={styles.contactInfo} className="mt-3">
                 <FiMail size={25} className="primary-text" />
-                <span className="fs-18 fw-bold">research@happywedz.com</span>
+                <span className="fs-14 fw-bold">support@happywedz.com</span>
               </div>
               <div style={styles.contactInfo} className="mt-5">
                 <FiPhone size={25} className="primary-text" />
-                <span className="fs-18 fw-bold">+91 456 700</span>
+                <span className="fs-14 fw-bold">+91 456 700</span>
               </div>
             </div>
 
@@ -568,11 +618,11 @@ const Contactus = () => {
               </p>
               <div style={styles.contactInfo} className="mt-3">
                 <FiMail size={25} className="primary-text" />
-                <span className="fs-18 fw-bold">info@happywedz.com</span>
+                <span className="fs-14 fw-bold">support@happywedz.com</span>
               </div>
               <div style={styles.contactInfo} className="mt-5">
                 <FiPhone size={25} className="primary-text" />
-                <span className="fs-18 fw-bold">+91 456 700</span>
+                <span className="fs-14 fw-bold">+91 456 700</span>
               </div>
             </div>
 
@@ -592,7 +642,7 @@ const Contactus = () => {
               <div style={styles.contactInfo} className="mt-2">
                 <FiMapPin size={25} className="primary-text" />
                 <div className="d-flex flex-column">
-                  <span className="fs-18 fw-bold">
+                  <span className="fs-14 fw-bold">
                     29/1B, Sinhgad Rd, next to Vidya Sahakri Bank,
                     <br /> Near Veer Baji Pasalkar Chowk,
                     <br /> Kirti Nagar, Vadgaon Budruk,

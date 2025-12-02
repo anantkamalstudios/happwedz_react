@@ -24,7 +24,7 @@ const VenueSlider = () => {
     // { name: "Resorts", slug: "top-rated" },
     { name: "Banquet Halls", slug: "venues/banquet-halls" },
     // { name: "Farmhouses", slug: "top-rated" },
-    { name: "Recommendation", slug: "ai-recommandation" },
+    // { name: "Recommendation", slug: "ai-recommandation" },
   ];
 
   const toggleFavorite = (id) => {

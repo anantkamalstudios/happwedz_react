@@ -12,6 +12,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Menu, Plus, SendHorizonal } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaChevronLeft } from "react-icons/fa6";
+import { MdOutlineCancel } from "react-icons/md";
 
 const HomeGennie = () => {
   const navigate = useNavigate();
@@ -23,6 +24,20 @@ const HomeGennie = () => {
   const [sessionId, setSessionId] = useState(null);
 
   const messageContainerRef = useRef(null);
+
+  // Prevent body scroll when chat is open on mobile
+  useEffect(() => {
+    const isMobile = window.innerWidth <= 576;
+    if (isChatOpen && isMobile) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isChatOpen]);
+
   const getIdFromToken = (token) => {
     try {
       const payload = token.split(".")[1];
@@ -209,13 +224,14 @@ const HomeGennie = () => {
             right: window.innerWidth <= 576 ? "0" : "24px",
             width: window.innerWidth <= 576 ? "100vw" : "440px",
             height: window.innerWidth <= 576 ? "80dvh" : "650px",
+            maxHeight: window.innerWidth <= 576 ? "80vh" : "650px",
             backgroundColor: "white",
             borderRadius: window.innerWidth <= 576 ? "0" : "24px",
             boxShadow:
               "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
             display: "flex",
             flexDirection: "column",
-            zIndex: 50,
+            zIndex: 1050,
             overflow: "hidden",
           }}
         >
@@ -227,19 +243,26 @@ const HomeGennie = () => {
             <div
               style={{
                 display: "flex",
-                alignItems: "end",
+                alignItems: "center",
                 justifyContent: "space-between",
                 marginTop: "10px",
+                gap: "8px",
               }}
             >
               <div
-                style={{ display: "flex", alignItems: "center", gap: "2px" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  flex: 1,
+                  minWidth: 0,
+                }}
               >
                 <button
                   onClick={() => setIsChatOpen(false)}
                   style={{
-                    width: "36px",
-                    height: "36px",
+                    width: window.innerWidth <= 576 ? "32px" : "36px",
+                    height: window.innerWidth <= 576 ? "32px" : "36px",
                     borderRadius: "50%",
                     backgroundColor: "rgba(255, 255, 255, 0.2)",
                     backdropFilter: "blur(10px)",
@@ -249,6 +272,7 @@ const HomeGennie = () => {
                     justifyContent: "center",
                     cursor: "pointer",
                     transition: "background-color 0.2s",
+                    flexShrink: 0,
                   }}
                   onMouseEnter={(e) =>
                     (e.currentTarget.style.backgroundColor =
@@ -259,14 +283,14 @@ const HomeGennie = () => {
                       "rgba(255, 255, 255, 0.2)")
                   }
                 >
-                  <FaChevronLeft
-                    style={{ width: "20px", height: "20px", color: "#ec4899" }}
+                  <MdOutlineCancel
+                    style={{ width: "18px", height: "18px", color: "#ec4899" }}
                   />
                 </button>
                 <div
                   style={{
-                    width: "35px",
-                    height: "35px",
+                    width: window.innerWidth <= 576 ? "32px" : "35px",
+                    height: window.innerWidth <= 576 ? "32px" : "35px",
                     borderRadius: "50%",
                     backgroundColor: "white",
                     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
@@ -277,7 +301,7 @@ const HomeGennie = () => {
                   }}
                 >
                   <img
-                    src="/gennie-logo.png"
+                    src="/shaadi.jpg"
                     alt="logo"
                     style={{
                       height: "100%",
@@ -286,13 +310,16 @@ const HomeGennie = () => {
                     }}
                   />
                 </div>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <h5
                     style={{
                       fontWeight: 600,
-                      fontSize: "18px",
+                      fontSize: window.innerWidth <= 576 ? "16px" : "18px",
                       margin: 0,
                       color: "#ec4899",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
                     }}
                   >
                     Ask our AI anything
@@ -304,13 +331,14 @@ const HomeGennie = () => {
                 style={{
                   border: "none",
                   borderRadius: "50%",
-                  width: window.innerWidth <= 640 ? "30px" : "35px",
-                  height: window.innerWidth <= 640 ? "30px" : "35px",
+                  width: window.innerWidth <= 576 ? "32px" : "35px",
+                  height: window.innerWidth <= 576 ? "32px" : "35px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   cursor: "pointer",
                   background: "rgba(255, 255, 255, 0.2)",
+                  flexShrink: 0,
                 }}
                 onMouseOver={(e) =>
                   (e.currentTarget.style.background =
@@ -322,7 +350,7 @@ const HomeGennie = () => {
                 }
               >
                 <Menu
-                  style={{ width: "20px", height: "20px", color: "#ec4899" }}
+                  style={{ width: "18px", height: "18px", color: "#ec4899" }}
                 />
               </Link>
             </div>
@@ -333,18 +361,24 @@ const HomeGennie = () => {
             style={{
               flex: 1,
               overflowY: "auto",
-              padding: "16px",
+              overflowX: "hidden",
+              padding: window.innerWidth <= 576 ? "12px" : "16px",
               background:
                 "linear-gradient(180deg, rgba(252, 231, 243, 0.3) 0%, white 100%)",
             }}
           >
             {messages.length === 0 && !isTyping && (
               <div>
-                <div style={{ textAlign: "center", padding: "32px 0" }}>
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: window.innerWidth <= 576 ? "20px 0" : "32px 0",
+                  }}
+                >
                   <div
                     style={{
-                      width: "80px",
-                      height: "80px",
+                      width: window.innerWidth <= 576 ? "64px" : "80px",
+                      height: window.innerWidth <= 576 ? "64px" : "80px",
                       margin: "0 auto 16px",
                       borderRadius: "50%",
                       background:
@@ -369,26 +403,32 @@ const HomeGennie = () => {
                       fontWeight: 600,
                       color: "#ec4899",
                       marginBottom: "8px",
+                      fontSize: window.innerWidth <= 576 ? "16px" : "18px",
                     }}
                   >
                     Welcome to Wedding ShaadiAI! ✨
                   </h3>
-                  <p style={{ fontSize: "14px", color: "#ec4899" }}>
+                  <p
+                    style={{
+                      fontSize: window.innerWidth <= 576 ? "12px" : "14px",
+                      color: "#ec4899",
+                    }}
+                  >
                     Let's plan your dream wedding together
                   </p>
                 </div>
 
-                <div className="row g-2 mb-4">
+                <div className="row g-2 mb-4" style={{ padding: "0 8px" }}>
                   {quickActions.map((action, idx) => (
-                    <div key={idx} className="col-3">
+                    <div key={idx} className="col-3" style={{ minWidth: 0 }}>
                       <button
                         style={{
                           width: "100%",
                           display: "flex",
                           flexDirection: "column",
                           alignItems: "center",
-                          gap: "8px",
-                          padding: "12px",
+                          gap: window.innerWidth <= 576 ? "4px" : "8px",
+                          padding: window.innerWidth <= 576 ? "8px" : "12px",
                           borderRadius: "16px",
                           backgroundColor: "white",
                           border: "1px solid #fce7f3",
@@ -405,10 +445,18 @@ const HomeGennie = () => {
                           e.currentTarget.style.boxShadow = "none";
                         }}
                       >
-                        <span style={{ fontSize: "24px" }}>{action.icon}</span>
                         <span
                           style={{
-                            fontSize: "12px",
+                            fontSize:
+                              window.innerWidth <= 576 ? "20px" : "24px",
+                          }}
+                        >
+                          {action.icon}
+                        </span>
+                        <span
+                          style={{
+                            fontSize:
+                              window.innerWidth <= 576 ? "10px" : "12px",
                             fontWeight: 500,
                             color: "#374151",
                           }}
@@ -420,10 +468,10 @@ const HomeGennie = () => {
                   ))}
                 </div>
 
-                <div>
+                <div style={{ padding: "0 8px" }}>
                   <p
                     style={{
-                      fontSize: "12px",
+                      fontSize: window.innerWidth <= 576 ? "11px" : "12px",
                       fontWeight: 600,
                       color: "#6b7280",
                       padding: "0 4px",
@@ -439,7 +487,7 @@ const HomeGennie = () => {
                       style={{
                         width: "100%",
                         textAlign: "left",
-                        padding: "16px",
+                        padding: window.innerWidth <= 576 ? "12px" : "16px",
                         borderRadius: "16px",
                         backgroundColor: "white",
                         border: "1px solid #fce7f3",
@@ -462,23 +510,31 @@ const HomeGennie = () => {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "space-between",
+                          gap: "8px",
                         }}
                       >
                         <span
                           style={{
-                            fontSize: "14px",
+                            fontSize:
+                              window.innerWidth <= 576 ? "12px" : "14px",
                             color: "#374151",
                             fontWeight: 500,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
                           }}
                         >
                           {question}
                         </span>
                         <ArrowLeft
                           style={{
-                            width: "16px",
-                            height: "16px",
+                            width: "14px",
+                            height: "14px",
                             color: "#ec4899",
                             transform: "rotate(180deg)",
+                            flexShrink: 0,
                           }}
                         />
                       </div>
@@ -513,7 +569,7 @@ const HomeGennie = () => {
                     }}
                   >
                     <img
-                      src="/gennie-logo.png"
+                      src="/shaadi.jpg"
                       alt="logo"
                       style={{
                         height: "100%",
@@ -716,15 +772,21 @@ const HomeGennie = () => {
           <div
             style={{
               borderTop: "1px solid #f3f4f6",
-              padding: "16px",
+              padding: window.innerWidth <= 576 ? "12px" : "16px",
               backgroundColor: "white",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: window.innerWidth <= 576 ? "6px" : "8px",
+              }}
+            >
               <button
                 style={{
-                  width: "40px",
-                  height: "40px",
+                  width: window.innerWidth <= 576 ? "36px" : "40px",
+                  height: window.innerWidth <= 576 ? "36px" : "40px",
                   borderRadius: "50%",
                   backgroundColor: "#fce7f3",
                   border: "none",
@@ -743,24 +805,33 @@ const HomeGennie = () => {
                   (e.currentTarget.style.backgroundColor = "#fce7f3")
                 }
               >
-                <span style={{ fontSize: "20px" }}>
+                <span
+                  style={{
+                    fontSize: window.innerWidth <= 576 ? "18px" : "20px",
+                  }}
+                >
                   <Plus style={{ color: "#ec4899" }} />
                 </span>
               </button>
-              <div style={{ flex: 1, position: "relative" }}>
+              <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
                 <input
                   type="text"
-                  placeholder="Ask me questions..."
+                  placeholder={
+                    window.innerWidth <= 576 ? "Ask..." : "Ask me questions..."
+                  }
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
                   disabled={isTyping}
                   style={{
                     width: "100%",
-                    padding: "12px 48px 12px 16px",
+                    padding:
+                      window.innerWidth <= 576
+                        ? "10px 40px 10px 14px"
+                        : "12px 48px 12px 16px",
                     borderRadius: "50px",
                     border: "1px solid #e5e7eb",
-                    fontSize: "14px",
+                    fontSize: window.innerWidth <= 576 ? "12px" : "14px",
                     outline: "none",
                   }}
                   onFocus={(e) => {
@@ -781,8 +852,8 @@ const HomeGennie = () => {
                     right: "4px",
                     top: "50%",
                     transform: "translateY(-50%)",
-                    width: "36px",
-                    height: "36px",
+                    width: window.innerWidth <= 576 ? "32px" : "36px",
+                    height: window.innerWidth <= 576 ? "32px" : "36px",
                     borderRadius: "50%",
                     border: "none",
                     display: "flex",
@@ -794,6 +865,8 @@ const HomeGennie = () => {
                         : "not-allowed",
                     transition: "transform 0.2s",
                     opacity: inputValue.trim() && !isTyping ? 1 : 0.5,
+                    background: "transparent",
+                    flexShrink: 0,
                   }}
                   onMouseEnter={(e) =>
                     inputValue.trim() &&

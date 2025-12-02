@@ -2,15 +2,15 @@ import { TEMPLATE_LIST } from "../../templates";
 import { useNavigate } from "react-router-dom";
 
 export default function ChooseTemplate() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const handleCardClick = (templateId) => {
-        navigate(`/wedding-form/${templateId}`);
-    };
+  const handleCardClick = (templateId) => {
+    navigate(`/wedding-form/${templateId}`);
+  };
 
-    return (
-        <>
-            <style>{`
+  return (
+    <>
+      <style>{`
             .choose-template-container { 
                 padding: 60px 0;
             }
@@ -147,42 +147,48 @@ export default function ChooseTemplate() {
             }
         `}</style>
 
-            <div className="choose-template-container">
-                <div className="container">
-                    <div className="choose-template-header">
-                        <h1 className="choose-template-title">Choose Your Wedding Website Template</h1>
-                        <p className="choose-template-subtitle">Select the perfect design to tell your love story</p>
-                    </div>
+      <div className="choose-template-container">
+        <div className="container">
+          <div className="choose-template-header">
+            <h3 className="choose-template-title">
+              Choose Your Wedding Website Template
+            </h3>
+            <p className="choose-template-subtitle fs-18">
+              Select the perfect design to tell your love story
+            </p>
+          </div>
 
-                    <div className="row g-4">
-                        {TEMPLATE_LIST.map((tpl) => (
-                            <div key={tpl.id} className="col-12 col-md-6 col-lg-4">
-                                <div
-                                    className="choose-template-card"
-                                    onClick={() => handleCardClick(tpl.id)}
-                                >
-                                    <div className="choose-template-image-wrapper">
-                                        <img
-                                            src={tpl.previewImage}
-                                            alt={tpl.name}
-                                            className="choose-template-image"
-                                        />
-                                        <div className="choose-template-overlay">
-                                            <div className="choose-template-overlay-text">
-                                                Click to Select
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="choose-template-content">
-                                        <h2 className="choose-template-name">{tpl.name}</h2>
-                                        <p className="choose-template-description">{tpl.description}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+          <div className="row g-4">
+            {TEMPLATE_LIST.map((tpl) => (
+              <div key={tpl.id} className="col-12 col-md-6 col-lg-4">
+                <div
+                  className="choose-template-card"
+                  onClick={() => handleCardClick(tpl.id)}
+                >
+                  <div className="choose-template-image-wrapper">
+                    <img
+                      src={tpl.previewImage}
+                      alt={tpl.name}
+                      className="choose-template-image"
+                    />
+                    <div className="choose-template-overlay">
+                      <div className="choose-template-overlay-text">
+                        Click to Select
+                      </div>
                     </div>
+                  </div>
+                  <div className="choose-template-content">
+                    <h4 className="choose-template-name">{tpl.name}</h4>
+                    <p className="choose-template-description fs-16">
+                      {tpl.description}
+                    </p>
+                  </div>
                 </div>
-            </div>
-        </>
-    );
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }

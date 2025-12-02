@@ -38,8 +38,9 @@ const EmptyState = ({ section, title }) => {
             {suggestions.length > 0 && (
               <div className="mb-4">
                 <h6 className="text-muted mb-3">
-                  We couldn't find any {title.toLowerCase()} in our database at the
-                  moment. Please try searching for a different category or location.
+                  We couldn't find any {title.toLowerCase()} in our database at
+                  the moment. Please try searching for a different category or
+                  location.
                 </h6>
                 <div className="d-flex flex-wrap justify-content-center gap-2">
                   {suggestions.map((suggestion) => (
@@ -74,7 +75,7 @@ const EmptyState = ({ section, title }) => {
           </div>
         </div>
       </div>
-    </div >
+    </div>
   );
 };
 

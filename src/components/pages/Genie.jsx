@@ -112,6 +112,22 @@ const Genie = () => {
     }
   };
 
+  // Load session from localStorage on mount
+  useEffect(() => {
+    const savedSessionId = localStorage.getItem("genie_session_id");
+    if (savedSessionId) {
+      setSessionId(savedSessionId);
+      loadChatHistory(savedSessionId);
+    }
+  }, []);
+
+  // Save session to localStorage whenever it changes
+  useEffect(() => {
+    if (sessionId) {
+      localStorage.setItem("genie_session_id", sessionId);
+    }
+  }, [sessionId]);
+
   const callChatApi = async (query) => {
     if (!query) return;
 
@@ -172,6 +188,18 @@ const Genie = () => {
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
+  // Prevent body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (isMobile && showSidebar) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isMobile, showSidebar]);
+
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
 
@@ -196,6 +224,7 @@ const Genie = () => {
   };
 
   const handleNewChat = () => {
+    localStorage.removeItem("genie_session_id");
     setSessionId(null);
     setMessages([
       {
@@ -277,8 +306,8 @@ const Genie = () => {
                 }}
               >
                 <img
-                  src="/gennie-logo.png"
-                  alt="gennie-logo"
+                  src="/shaadi.jpg"
+                  alt="shaadi-logo"
                   style={{ height: "100%" }}
                 />
               </div>
@@ -550,8 +579,11 @@ const Genie = () => {
                           style={{
                             marginTop: "20px",
                             display: "grid",
-                            gridTemplateColumns:
-                              "repeat(auto-fit, minmax(280px, 1fr))",
+                            gridTemplateColumns: isMobile
+                              ? "1fr"
+                              : window.innerWidth < 992
+                              ? "repeat(2, 1fr)"
+                              : "repeat(3, 1fr)",
                             gap: "16px",
                             maxWidth: "100%",
                           }}
@@ -783,7 +815,7 @@ const Genie = () => {
                 )}
               </div>
 
-              <div style={{ padding: "20px 40px 50px" }}>
+              <div style={{ padding: "20px 40px 0px" }}>
                 <div
                   style={{
                     position: "relative",

@@ -386,7 +386,7 @@ const SiteMap = () => {
       display: "flex",
       flexWrap: "wrap",
       gap: "6px",
-      fontSize: "0.85rem",
+      fontSize: "14px",
       lineHeight: "1.4",
     },
     link: {
@@ -461,11 +461,13 @@ const SiteMap = () => {
   return (
     <div style={styles.container}>
       <div style={styles.wrapper}>
-        <h1 style={styles.title}>Site Map</h1>
+        <h3 style={styles.title}>Site Map</h3>
 
         <div style={styles.gridContainer}>
           <div style={styles.card}>
-            <h4 style={styles.cardTitle}>HappyWedz Links</h4>
+            <p className="fs-16" style={styles.cardTitle}>
+              HappyWedz Links
+            </p>
             <div style={styles.linkContainer}>
               {mainLinks.map((link, index) => (
                 <span key={link.slug}>
@@ -489,7 +491,9 @@ const SiteMap = () => {
 
           {/* Photos */}
           <div style={styles.card}>
-            <h4 style={styles.cardTitle}>Photos</h4>
+            <p className="fs-16" style={styles.cardTitle}>
+              Photos
+            </p>
             <div style={styles.linkContainer}>
               {types?.map((type, index) => (
                 <span key={type.id}>
@@ -516,7 +520,9 @@ const SiteMap = () => {
 
           {/* Other Links */}
           <div style={styles.card}>
-            <h4 style={styles.cardTitle}>Other Links</h4>
+            <p className="fs-16" style={styles.cardTitle}>
+              Other Links
+            </p>
             <div style={styles.linkContainer}>
               {siteLinks.map((link, index) => (
                 <span key={link.slug}>
