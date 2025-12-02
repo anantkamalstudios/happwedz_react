@@ -494,10 +494,10 @@ const Check = () => {
                   {/* Add Task Form */}
                   <div className="add-task-card">
                     <h6 className="fs-16">Add New Task</h6>
-                    <div className="row align-items-end">
-                      <div className="col-md-11 mb-3">
-                        <div className="row">
-                          <div className="col-6">
+                    <div className="row align-items-end gy-3">
+                      <div className="col-12 col-md-11">
+                        <div className="row gy-3">
+                          <div className="col-12 col-md-6">
                             <label
                               className="form-label fs-14"
                               style={{ fontWeight: "600", color: "#374151" }}
@@ -536,7 +536,7 @@ const Check = () => {
                               </Dropdown.Menu>
                             </Dropdown>
                           </div>
-                          <div className="col-6">
+                          <div className="col-12 col-md-6">
                             <label
                               className="form-label fs-14"
                               style={{ fontWeight: "600", color: "#374151" }}
@@ -553,17 +553,17 @@ const Check = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="col-md-1 mb-3 d-flex align-items-center text-center justify-content-center">
+                      <div className="col-12 col-md-1 d-flex align-items-center justify-content-center">
                         <button
-                          className="btn btn-outline-primary fs-14"
+                          className="btn btn-outline-primary fs-14 w-100 w-md-auto"
                           style={{
                             borderRadius: "50%",
-                            width: "70px",
+                            maxWidth: "70px",
                             height: "40px",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            padding: "0",
+                            padding: 0,
                           }}
                           onClick={addChecklist}
                         >
@@ -767,12 +767,13 @@ const Check = () => {
                       )}
                     </>
                   ) : (
-                    <div className="empty-state">
+                    <div className="empty-state text-center py-4">
                       <img
                         src="/images/userDashboard/no-task-available.png"
                         alt="No tasks"
                         style={{
-                          width: "30%",
+                          width: "100%",
+                          maxWidth: "220px",
                           opacity: 0.7,
                         }}
                       />

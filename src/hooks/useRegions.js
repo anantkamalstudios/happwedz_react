@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import cityImages from "../data/cityImages";
 
@@ -7,96 +7,95 @@ const useRegions = (vendorType = null) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchVendors = async () => {
-      try {
-        const baseUrl = "https://happywedz.com/api/vendor-services/";
+  const fetchVendors = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const baseUrl = "https://happywedz.com/api/vendor-services/";
 
-        // First, get all unique cities from the initial data
-        const initialUrl = vendorType
-          ? `${baseUrl}?vendorType=${encodeURIComponent(vendorType)}&limit=100`
-          : `${baseUrl}?limit=100`;
+      const initialUrl = vendorType
+        ? `${baseUrl}?vendorType=${encodeURIComponent(vendorType)}&limit=100`
+        : `${baseUrl}?limit=100`;
 
-        const { data } = await axios.get(initialUrl);
-        const items = data.data || [];
+      const { data } = await axios.get(initialUrl);
+      const items = data.data || [];
 
-        // Collect unique cities
-        const uniqueCities = new Set();
-        items.forEach((item) => {
-          let city = null;
-          if (item?.attributes?.city) {
-            city = String(item.attributes.city).trim();
-          } else if (item?.attributes?.location?.city) {
-            city = String(item.attributes.location.city).trim();
-          } else if (item?.vendor?.city) {
-            city = String(item.vendor.city).trim();
-          }
-          if (!city) return;
+      const uniqueCities = new Set();
+      items.forEach((item) => {
+        let city = null;
+        if (item?.attributes?.city) {
+          city = String(item.attributes.city).trim();
+        } else if (item?.attributes?.location?.city) {
+          city = String(item.attributes.location.city).trim();
+        } else if (item?.vendor?.city) {
+          city = String(item.vendor.city).trim();
+        }
+        if (!city) return;
 
-          const matchedKey = Object.keys(cityImages).find((k) => {
-            const cityLower = city.toLowerCase();
-            const keyLower = k.toLowerCase();
-            return cityLower.includes(keyLower) || keyLower.includes(cityLower);
-          });
-
-          if (matchedKey) {
-            uniqueCities.add(matchedKey);
-          }
+        const matchedKey = Object.keys(cityImages).find((k) => {
+          const cityLower = city.toLowerCase();
+          const keyLower = k.toLowerCase();
+          return cityLower.includes(keyLower) || keyLower.includes(cityLower);
         });
 
-        // Now fetch the total count for each city
-        const cityMap = {};
-        const cityCountPromises = Array.from(uniqueCities).map(
-          async (cityName) => {
-            try {
-              const cityUrl = vendorType
-                ? `${baseUrl}?vendorType=${encodeURIComponent(
-                    vendorType
-                  )}&city=${encodeURIComponent(cityName)}&limit=1`
-                : `${baseUrl}?city=${encodeURIComponent(cityName)}&limit=1`;
+        if (matchedKey) {
+          uniqueCities.add(matchedKey);
+        }
+      });
 
-              const response = await axios.get(cityUrl);
-              const totalCount = response.data?.pagination?.total || 0;
+      const cityMap = {};
+      const cityCountPromises = Array.from(uniqueCities).map(
+        async (cityName) => {
+          try {
+            const cityUrl = vendorType
+              ? `${baseUrl}?vendorType=${encodeURIComponent(
+                  vendorType
+                )}&city=${encodeURIComponent(cityName)}&limit=1`
+              : `${baseUrl}?city=${encodeURIComponent(cityName)}&limit=1`;
 
-              return {
-                name: cityName,
-                count: totalCount,
-              };
-            } catch (err) {
-              console.error(`Error fetching count for ${cityName}:`, err);
-              return {
-                name: cityName,
-                count: 0,
-              };
-            }
+            const response = await axios.get(cityUrl);
+            const totalCount = response.data?.pagination?.total || 0;
+
+            return {
+              name: cityName,
+              count: totalCount,
+            };
+          } catch (err) {
+            console.error(`Error fetching count for ${cityName}:`, err);
+            return {
+              name: cityName,
+              count: 0,
+            };
           }
-        );
+        }
+      );
 
-        const cityCounts = await Promise.all(cityCountPromises);
+      const cityCounts = await Promise.all(cityCountPromises);
 
-        cityCounts.forEach((cityData, index) => {
-          cityMap[cityData.name] = {
-            id: index + 1,
-            name: cityData.name,
-            venueCount: cityData.count,
-            image: cityImages[cityData.name],
-          };
-        });
+      cityCounts.forEach((cityData, index) => {
+        cityMap[cityData.name] = {
+          id: index + 1,
+          name: cityData.name,
+          venueCount: cityData.count,
+          image: cityImages[cityData.name],
+        };
+      });
 
-        const finalRegions = Object.values(cityMap);
-        setRegions(finalRegions);
-      } catch (err) {
-        console.error("Error fetching vendors:", err);
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchVendors();
+      const finalRegions = Object.values(cityMap);
+      setRegions(finalRegions);
+    } catch (err) {
+      console.error("Error fetching vendors:", err);
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
   }, [vendorType]);
 
-  return { regions, loading, error };
+  useEffect(() => {
+    fetchVendors();
+  }, [fetchVendors]);
+
+  return { regions, loading, error, refetch: fetchVendors };
 };
 
 export default useRegions;

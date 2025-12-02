@@ -2,10 +2,17 @@ import React, { useState } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { useFaqFrontend } from "../../../hooks/useFaq";
+import ShimmerAccordian from "../../ui/ShimmerAccordian";
+import ErrorState from "../../ui/ErrorState";
 
 const FaqsSection = ({ navbarId = null, customFaqs = null }) => {
   const [activeIndex, setActiveIndex] = useState(null);
-  const { faqs: fetchedFaqs, loading, error } = useFaqFrontend(navbarId);
+  const {
+    faqs: fetchedFaqs,
+    loading,
+    error,
+    refetch,
+  } = useFaqFrontend(navbarId);
 
   const faqs = customFaqs || fetchedFaqs;
 
@@ -19,19 +26,18 @@ const FaqsSection = ({ navbarId = null, customFaqs = null }) => {
         <h3 className="text-center mb-4 faq-heading">
           Frequently Asked Questions
         </h3>
-        <p className="text-center">Loading FAQs...</p>
+        <ShimmerAccordian count={2} />
       </div>
     );
   }
 
   if (!customFaqs && error) {
     return (
-      <div className="faq-section container my-5">
-        <h3 className="text-center mb-4 faq-heading">
-          Frequently Asked Questions
-        </h3>
-        <p className="text-center text-danger">Failed to load FAQs</p>
-      </div>
+      <ErrorState
+        title="We couldn’t load FAQ something went wrong."
+        message={error.message || "Please try again later."}
+        onRetry={refetch}
+      />
     );
   }
 

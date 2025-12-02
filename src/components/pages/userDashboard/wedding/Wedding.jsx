@@ -344,214 +344,172 @@ const Wedding = () => {
           />
         </section>
 
-        <section>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(6,1fr)",
-              gridTemplateRows: "repeat(6, 1fr)",
-              gap: "2.5rem",
-              height: "100%",
-            }}
-          >
-            <div
-              className="shadow-lg"
-              style={{
-                gridColumn: "span 4/span 4",
-                gridRow: "span 3/span 3",
-                padding: "0 2rem",
-              }}
-            >
-              <UpComingTask />
-            </div>
-            <div
-              className="shadow-lg"
-              style={{
-                gridColumn: "span 2/span 2",
-                gridRow: "span 4/span 4",
-                gridColumnStart: 5,
-                height: "100%",
-              }}
-            >
-              <EInvites />
-            </div>
-            <div
-              className="shadow-lg"
-              style={{
-                gridColumn: "span 2/span 2",
-                gridRow: "span 3/span 3",
-                gridRowStart: 4,
-                padding: "1rem",
-                height: "100%",
-              }}
-            >
-              <h3 className="text-center fw-bold mt-4 dark-pink-text">
-                Add Guest
-              </h3>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "0.4rem",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "80%",
-                }}
-              >
-                <div
-                  style={{
-                    height: "60px",
-                    width: "60px",
-                    borderRadius: "50%",
-                    backgroundColor: "#C31162",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <MdGroups size={40} color="#fff" />
-                </div>
-
-                <p className="my-2 fs-16">You haven't added any guest yet</p>
-                <Link to="/user-dashboard/guest-list" className="fs-14">
-                  <button
-                    style={{
-                      padding: "0.5rem 2rem",
-                      backgroundColor: "#C31162",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "10px",
-                      cursor: "pointer",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Add Guest
-                  </button>
-                </Link>
+        <section className="mt-4">
+          <div className="row g-4">
+            {/* Upcoming tasks - primary wide card */}
+            <div className="col-12 col-lg-8">
+              <div className="shadow-lg h-100 p-3 p-md-4 rounded-3 bg-white">
+                <UpComingTask />
               </div>
             </div>
-            <div
-              className="shadow-lg d-flex flex-column p-4"
-              style={{
-                gridColumn: "span 2/span 2",
-                gridRow: "span 3/span 3",
-                gridColumnStart: 3,
-                gridRowStart: 4,
-                height: "100%",
-                background: "#fff",
-              }}
-            >
-              <div className="text-center my-auto">
-                <h3 className="fw-bold dark-pink-text mb-4">Wedding Budget</h3>
-                <div className="mb-3">
-                  <h3 className="display-5 fw-bold primary-text mb-1">
-                    ₹{(budget.total / 100000).toFixed(1)}L
-                  </h3>
-                  <div className="text-muted fs-16">Total Budget</div>
-                </div>
-                <div className="d-flex justify-content-center gap-4 small text-muted mb-4 fs-16">
-                  <span>Spent: ₹{(budget.spent / 100000).toFixed(1)}L</span>
-                  <span>
-                    Remaining: ₹{(budget.remaining / 100000).toFixed(1)}L
-                  </span>
-                </div>
-                <div
-                  className="progress mx-auto mb-2 fs-16"
-                  style={{ height: "8px", maxWidth: "200px" }}
-                >
+
+            {/* E-Invites side card */}
+            <div className="col-12 col-lg-4">
+              <div className="shadow-lg h-100 rounded-3 bg-white">
+                <EInvites />
+              </div>
+            </div>
+
+            {/* Add Guest */}
+            <div className="col-12 col-md-6 col-xl-4">
+              <div className="shadow-lg h-100 rounded-3 p-3 p-md-4 bg-white d-flex flex-column">
+                <h3 className="text-center fw-bold mt-2 mt-md-4 dark-pink-text">
+                  Add Guest
+                </h3>
+                <div className="d-flex flex-column align-items-center justify-content-center flex-grow-1 gap-2 py-3">
                   <div
-                    className="progress-bar bg-primary"
-                    role="progressbar"
                     style={{
-                      width: `${
+                      height: "60px",
+                      width: "60px",
+                      borderRadius: "50%",
+                      backgroundColor: "#C31162",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <MdGroups size={40} color="#fff" />
+                  </div>
+
+                  <p className="my-2 fs-16 text-center">
+                    You haven't added any guest yet
+                  </p>
+                  <Link to="/user-dashboard/guest-list" className="fs-14">
+                    <button
+                      style={{
+                        padding: "0.5rem 2rem",
+                        backgroundColor: "#C31162",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "10px",
+                        cursor: "pointer",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Add Guest
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Wedding Budget */}
+            <div className="col-12 col-md-6 col-xl-4">
+              <div className="shadow-lg h-100 rounded-3 p-3 p-md-4 bg-white d-flex flex-column">
+                <div className="text-center my-auto">
+                  <h3 className="fw-bold dark-pink-text mb-4">
+                    Wedding Budget
+                  </h3>
+                  <div className="mb-3">
+                    <h3 className="display-6 fw-bold primary-text mb-1">
+                      ₹{(budget.total / 100000).toFixed(1)}L
+                    </h3>
+                    <div className="text-muted fs-16">Total Budget</div>
+                  </div>
+                  <div className="d-flex justify-content-center gap-4 small text-muted mb-4 fs-16">
+                    <span>Spent: ₹{(budget.spent / 100000).toFixed(1)}L</span>
+                    <span>
+                      Remaining: ₹{(budget.remaining / 100000).toFixed(1)}L
+                    </span>
+                  </div>
+                  <div
+                    className="progress mx-auto mb-2 fs-16"
+                    style={{ height: "8px", maxWidth: "220px" }}
+                  >
+                    <div
+                      className="progress-bar bg-primary"
+                      role="progressbar"
+                      style={{
+                        width: `${
+                          budget.total > 0
+                            ? (budget.spent / budget.total) * 100
+                            : 0
+                        }%`,
+                      }}
+                      aria-valuenow={
                         budget.total > 0
                           ? (budget.spent / budget.total) * 100
                           : 0
-                      }%`,
-                    }}
-                    aria-valuenow={
+                      }
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    />
+                  </div>
+                  <small className="text-muted">
+                    {Math.round(
                       budget.total > 0 ? (budget.spent / budget.total) * 100 : 0
-                    }
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                  />
+                    )}
+                    % used
+                  </small>
                 </div>
-                <small className="text-muted">
-                  {Math.round(
-                    budget.total > 0 ? (budget.spent / budget.total) * 100 : 0
-                  )}
-                  % used
-                </small>
-              </div>
-              <div className="text-center mt-auto">
-                <Link
-                  to="/user-dashboard/budget"
-                  className="btn rounded-3 px-4 py-2 fs-14"
-                  style={{ background: "#C31162", color: "#fff" }}
-                >
-                  + Add Budget
-                </Link>
+                <div className="text-center mt-3 mt-md-auto">
+                  <Link
+                    to="/user-dashboard/budget"
+                    className="btn rounded-3 px-4 py-2 fs-14"
+                    style={{ background: "#C31162", color: "#fff" }}
+                  >
+                    + Add Budget
+                  </Link>
+                </div>
               </div>
             </div>
-            <div
-              className="div5 shadow-lg"
-              style={{
-                gridColumn: "span 2/span 2",
-                gridRow: "span 2/span 2",
-                gridColumnStart: 5,
-                gridRowStart: 5,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <div
-                className="text-center"
-                style={{
-                  padding: "20px",
-                }}
-              >
-                <div className="card-body">
-                  <h6 className="fw-bold mb-2">Get the Happywedz app</h6>
-                  <p
-                    style={{
-                      fontSize: "14px",
-                      color: "#555",
-                      marginBottom: "16px",
-                    }}
-                  >
-                    Always bring the best wedding planner for iPhone and Android
-                    with you.
-                  </p>
 
-                  <div className="d-flex justify-content-center gap-2">
-                    <a
-                      href="#"
+            {/* Get the app */}
+            <div className="col-12 col-xl-4">
+              <div className="shadow-lg h-100 rounded-3 d-flex justify-content-center align-items-center bg-white p-3 p-md-4">
+                <div className="text-center" style={{ padding: "10px" }}>
+                  <div className="card-body">
+                    <h6 className="fw-bold mb-2">Get the Happywedz app</h6>
+                    <p
                       style={{
-                        display: "inline-block",
-                        width: "110px",
+                        fontSize: "14px",
+                        color: "#555",
+                        marginBottom: "16px",
                       }}
                     >
-                      <img
-                        src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
-                        alt="Download on App Store"
-                        style={{ width: "100%" }}
-                      />
-                    </a>
+                      Always bring the best wedding planner for iPhone and
+                      Android with you.
+                    </p>
 
-                    <a
-                      href="#"
-                      style={{
-                        display: "inline-block",
-                        width: "120px",
-                      }}
-                    >
-                      <img
-                        src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
-                        alt="Get it on Google Play"
-                        style={{ width: "100%" }}
-                      />
-                    </a>
+                    <div className="d-flex justify-content-center gap-2 flex-wrap">
+                      <a
+                        href="#"
+                        style={{
+                          display: "inline-block",
+                          width: "130px",
+                        }}
+                      >
+                        <img
+                          src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+                          alt="Download on App Store"
+                          style={{ width: "100%" }}
+                        />
+                      </a>
+
+                      <a
+                        href="#"
+                        style={{
+                          display: "inline-block",
+                          width: "140px",
+                        }}
+                      >
+                        <img
+                          src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
+                          alt="Get it on Google Play"
+                          style={{ width: "100%" }}
+                        />
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -107,13 +107,16 @@ const UserDashboardNavbar = () => {
   return (
     <div className="container border-bottom py-3 px-3 mt-3">
       <div
-        className="d-flex gap-4 flex-nowrap"
+        className="d-flex gap-3 flex-nowrap justify-content-md-center"
         style={{
-          justifyContent: window.innerWidth > 768 ? "center" : "flex-start",
           overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
+          scrollBehavior: "smooth",
           scrollbarWidth: "thin",
           scrollbarColor: "#ed1173 #fff",
         }}
+        role="tablist"
+        aria-label="User dashboard navigation"
       >
         {tabs.map((tab) => (
           <button
@@ -122,7 +125,7 @@ const UserDashboardNavbar = () => {
             style={{
               background: "transparent",
               fontSize: "19px",
-              minWidth: "80px",
+              minWidth: "72px",
               color: activeTab === tab.id ? "#ed1173" : "#212529",
             }}
             onClick={() => handleTabClick(tab)}
@@ -130,20 +133,20 @@ const UserDashboardNavbar = () => {
             <div
               className="d-flex align-items-center justify-content-center"
               style={{
-                width: "65px",
-                height: "65px",
+                width: "56px",
+                height: "56px",
                 borderRadius: "50%",
                 backgroundColor: "#ed1173",
                 color: "#fff",
-                fontSize: "24px",
+                fontSize: "22px",
               }}
             >
               {/* {tab.icon} */}
               <div
                 style={{
-                  height: "60px",
-                  width: "60px",
-                  padding: "5px",
+                  height: "52px",
+                  width: "52px",
+                  padding: "4px",
                   border: "none",
                 }}
               >

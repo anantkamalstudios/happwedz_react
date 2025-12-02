@@ -213,10 +213,10 @@ const Budget = () => {
         <div className="wb-expense-details">
           {selectedCategoryId ? (
             <>
-              <div className="wb-category-summary">
-                <h3 className="wb-category-title">
+              <div className="wb-category-summary align-content-center">
+                <p className="wb-category-title m-0 fs-16 text-center align-content-center">
                   {categories.find((c) => c.id === selectedCategoryId)?.name}
-                </h3>
+                </p>
                 <div className="wb-category-total">
                   {formatCurrency(
                     categories.find((c) => c.id === selectedCategoryId)?.amount

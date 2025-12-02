@@ -7,11 +7,12 @@ import { setLocation } from "../../../redux/locationSlice";
 import "swiper/css";
 import useRegions from "../../../hooks/useRegions";
 import ShimmerRegion from "../../ui/ShimmerRegion";
+import ErrorState from "../../ui/ErrorState";
 
 const MainByRegion = ({ type }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { regions, loading, error } = useRegions(
+  const { regions, loading, error, refetch } = useRegions(
     type === "venues" ? "venues" : null
   );
 
@@ -27,7 +28,14 @@ const MainByRegion = ({ type }) => {
   };
 
   if (loading) return <ShimmerRegion />;
-  if (error) return <p>Error loading regions: {error.message}</p>;
+  if (error)
+    return (
+      <ErrorState
+        title="We couldn’t load popular regions"
+        message={error.message || "Please try again later."}
+        onRetry={refetch}
+      />
+    );
   if (!regions || regions.length === 0) {
     return null;
   }

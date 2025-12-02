@@ -67,12 +67,9 @@ const Footer = () => {
       />
 
       <div className="container" style={{ position: "relative", zIndex: 1 }}>
-        <div
-          className="d-flex flex-wrap justify-content-between"
-          style={{ rowGap: "2rem" }}
-        >
+        <div className="row gy-4">
           {/* === LOGO COLUMN === */}
-          <div style={{ flex: "1 1 20%" }}>
+          <div className="col-12 col-sm-6 col-lg-3">
             <Link
               to="/"
               style={{
@@ -105,7 +102,7 @@ const Footer = () => {
             </p>
           </div>
 
-          <div style={{ flex: "1 1 20%", color: "#fff" }}>
+          <div className="col-12 col-sm-6 col-lg-3" style={{ color: "#fff" }}>
             <p className="footer-title fs-16">Plan Your Wedding</p>
             <ul className="footer-list">
               <li className="fs-14">
@@ -149,7 +146,7 @@ const Footer = () => {
           </div>
 
           {/* === INSPIRATION & IDEAS === */}
-          <div style={{ flex: "1 1 20%" }}>
+          <div className="col-12 col-sm-6 col-lg-3">
             <p className="footer-title fs-16">Inspiration & Ideas</p>
             <ul className="footer-list">
               <li className="fs-14">
@@ -176,7 +173,7 @@ const Footer = () => {
           </div>
 
           {/* === BRIDAL & GROOM FASHION === */}
-          <div style={{ flex: "1 1 20%" }}>
+          <div className="col-12 col-sm-6 col-lg-3">
             <p className="footer-title fs-16">Bridal & Groom Fashion</p>
             <ul className="footer-list" style={{ color: "#fff" }}>
               <li className="fs-14">
@@ -228,7 +225,7 @@ const Footer = () => {
           </div>
 
           {/* === COMPANY === */}
-          <div style={{ flex: "1 1 20%" }}>
+          <div className="col-12 col-sm-6 col-lg-3">
             <p className="footer-title fs-16">Company</p>
             <ul className="footer-list">
               <li className="fs-14">

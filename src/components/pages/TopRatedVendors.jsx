@@ -71,8 +71,8 @@ const TopRatedVendors = () => {
         padding: "40px",
       }}
     >
-      <h4>Top Rated Vendors Page</h4>
-      <p style={{ color: "gray" }}>
+      <h4 className="fs-16">Top Rated Vendors Page</h4>
+      <p className="fs-14" style={{ color: "gray" }}>
         Meet our top vendors famous in the various cities
       </p>
       <div
@@ -87,20 +87,21 @@ const TopRatedVendors = () => {
             .replace(/[^a-z0-9-]/g, "");
           const to = `/venues/${slugified}`;
           return (
-          <div
-            key={index}
-            style={{
-              marginBottom: "10px",
-            }}
-          >
-            <Link
-              to={to}
-              state={{ city: item.city, minRating: 4 }}
-              style={{ textDecoration: "none", color: "#C31162" }}
+            <div
+              key={index}
+              style={{
+                marginBottom: "10px",
+              }}
             >
-              {item.title}
-            </Link>
-          </div>
+              <Link
+                className="fs-14"
+                to={to}
+                state={{ city: item.city, minRating: 4 }}
+                style={{ textDecoration: "none", color: "#C31162" }}
+              >
+                {item.title}
+              </Link>
+            </div>
           );
         })}
       </div>

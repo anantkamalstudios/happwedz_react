@@ -1,5 +1,5 @@
-import React from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function WeddingHero() {
   return (
@@ -141,11 +141,9 @@ export default function WeddingHero() {
         <div className="hero-overlay"></div>
 
         <div className="hero-content">
-
-
-          <h1 className="hero-title">
+          <h2 className="hero-title fw-bold">
             Crafting Unforgettable Destination Weddings for Your Happy Day
-          </h1>
+          </h2>
         </div>
       </section>
     </div>

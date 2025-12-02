@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import FILTER_CONFIG from "../../data/filtersConfig";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import ErrorState from "../ui/ErrorState";
 
 const API_BASE_URL = "https://happywedz.com";
 import { IMAGE_BASE_URL } from "../../config/constants";
+import ShimmerCards from "../ui/ShimmerCards";
 
 const WeddingCategories = ({ onSelect }) => {
   const [categories, setCategories] = useState([]);
@@ -15,46 +17,50 @@ const WeddingCategories = ({ onSelect }) => {
 
   const toggleExpand = (i) => setExpandedIndex((prev) => (prev === i ? -1 : i));
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await axios.get(
-          `${API_BASE_URL}/api/vendor-types/with-subcategories/all`
-        );
-        const apiData = response.data.map((cat) => {
-          const imageSrc = cat.hero_image
-            ? "https://happywedzbackend.happywedz.com" + cat.hero_image
-            : "logo-no-bg.png";
-          return {
-            id: cat.id,
-            title: cat.name,
-            subtitle: cat.description,
-            imageSrc,
-            slug: cat.name.toLowerCase().replace(/\s+/g, "-"),
-            items: cat.subcategories.map((sub) => sub.name),
-          };
-        });
-        setCategories(apiData);
-      } catch (err) {
-        setError("Failed to load categories. Please try again later.");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCategories();
+  const fetchCategories = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get(
+        `${API_BASE_URL}/api/vendor-types/with-subcategories/all`
+      );
+      const apiData = response.data.map((cat) => {
+        const imageSrc = cat.hero_image
+          ? "https://happywedzbackend.happywedz.com" + cat.hero_image
+          : "logo-no-bg.png";
+        return {
+          id: cat.id,
+          title: cat.name,
+          subtitle: cat.description,
+          imageSrc,
+          slug: cat.name.toLowerCase().replace(/\s+/g, "-"),
+          items: cat.subcategories.map((sub) => sub.name),
+        };
+      });
+      setCategories(apiData);
+    } catch (err) {
+      setError("Failed to load categories. Please try again later.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
   if (loading) {
-    return (
-      <div className="container py-5 text-center">Loading categories...</div>
-    );
+    return <ShimmerCards count={6} />;
   }
 
   if (error) {
     return (
-      <div className="container py-5 text-center text-danger">{error}</div>
+      <ErrorState
+        title="We couldn’t load the categories"
+        message={`${error} Check your connection and try again in a moment.`}
+        onRetry={fetchCategories}
+      />
     );
   }
 
@@ -103,31 +109,15 @@ const WeddingCategories = ({ onSelect }) => {
                   <div className="d-flex align-items-center justify-content-between my-2">
                     <div>
                       <h5 className="my-2">{cat.title}</h5>
-                      {/* {cat.subtitle && (
-                        <div className="badge rounded-0 primary-light-bg text-dark fs-14 opacity-75">
-                          {cat.subtitle}
-                        </div>
-                      )} */}
                     </div>
-                    {/* <span className="badge wcg-count rounded-pill">
-                    {cat.items.length}
-                  </span> */}
                   </div>
                   <div className=" pills d-flex flex-wrap gap-2 mb-3">
                     {previewItems.slice(0, 1).map((it, idx) => (
                       <span
                         key={idx}
                         className="badge rounded-0 px-3 py-2 primary-light-bg text-dark"
-                      >
-                        {/* {it} */}
-                      </span>
+                      ></span>
                     ))}
-
-                    {/* {remaining > 0 && (
-                      <span className="text-decoration-underline primary-text px-3 py-2 fs-12 text-end">
-                        {!isExpanded ? `+${remaining} More` : "Hide"}
-                      </span>
-                    )} */}
 
                     {isExpanded && (
                       <div className="wcg-subcats mt-3">
@@ -138,11 +128,11 @@ const WeddingCategories = ({ onSelect }) => {
                                 to={
                                   cat.title.toLowerCase() === "venues"
                                     ? `/venues/${it
-                                      .toLowerCase()
-                                      .replace(/\s+/g, "-")}`
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "-")}`
                                     : `/vendor/${it
-                                      .toLowerCase()
-                                      .replace(/\s+/g, "-")}`
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "-")}`
                                 }
                                 className="badge rounded-0 primary-light-bg text-dark fs-12 px-3 py-2"
                                 style={{ textDecoration: "none" }}
@@ -177,31 +167,6 @@ const WeddingCategories = ({ onSelect }) => {
                       Explore {cat.title}
                     </button>
                   </div>
-                  {/*
-                  {isExpanded && (
-                    <div className="wcg-subcats mt-3">
-                      <div className="row g-2">
-                        {cat.items.map((it, idx) => (
-                          <div key={idx} className="col-6 flex-wrap">
-                            <Link
-                              to={
-                                cat.title.toLowerCase() === "venues"
-                                  ? `/venues/${it
-                                      .toLowerCase()
-                                      .replace(/\s+/g, "-")}`
-                                  : `/vendor/${it
-                                      .toLowerCase()
-                                      .replace(/\s+/g, "-")}`
-                              }
-                              className="badge rounded-0 primary-light-bg text-dark fs-14"
-                            >
-                              {it}
-                            </Link>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )} */}
                 </div>
               </div>
             </div>

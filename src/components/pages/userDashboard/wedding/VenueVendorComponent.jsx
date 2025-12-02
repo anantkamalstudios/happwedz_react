@@ -78,7 +78,6 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
           " rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px",
         flex: 1,
         padding: "2rem",
-        height: "600px",
         display: "flex",
         flexDirection: "column",
       }}
@@ -95,61 +94,67 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
           {isVendorBox ? "Book all your Vendors" : "Find the perfect Venue"}
         </h3>
 
-        <div className="d-flex justify-content-around align-items-center">
-          <span className="fs-16">Here are some gems we recommand for you</span>
+        <div className="row align-items-center gy-2">
+          <div className="col-12 col-md-7">
+            <span className="fs-16 text-center text-md-start d-block">
+              Here are some gems we recommand for you
+            </span>
+          </div>
 
           {isVendorBox && (
-            <div
-              style={{
-                width: "30%",
-                position: "relative",
-                paddingBottom: "0.25rem",
-              }}
-            >
-              <select
-                name="vendors"
-                id="vendor"
+            <div className="col-12 col-md-5">
+              <div
                 style={{
                   width: "100%",
-                  padding: "8px 28px 8px 8px",
-                  fontSize: "14px",
-                  background: "transparent",
-                  outline: "none",
-                  appearance: "none",
-                  border: "none",
-                  borderBottom: "2px solid #C31162",
-                  boxShadow: "none",
-                  borderRadius: 0,
-                  cursor: "pointer",
-                }}
-                value={selectedSlug || ""}
-                onChange={(e) => {
-                  const slug = e.target.value || null;
-                  setSelectedSlug(slug);
-                  const opt = e.target.options[e.target.selectedIndex];
-                  setSelectedLabel(opt && opt.value ? opt.text : "");
+                  position: "relative",
+                  paddingBottom: "0.25rem",
                 }}
               >
-                {categories.map((cat) => (
-                  <option key={cat.id} value={toSlug(cat.name)}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
+                <select
+                  name="vendors"
+                  id="vendor"
+                  style={{
+                    width: "100%",
+                    padding: "8px 28px 8px 8px",
+                    fontSize: "14px",
+                    background: "transparent",
+                    outline: "none",
+                    appearance: "none",
+                    border: "none",
+                    borderBottom: "2px solid #C31162",
+                    boxShadow: "none",
+                    borderRadius: 0,
+                    cursor: "pointer",
+                  }}
+                  value={selectedSlug || ""}
+                  onChange={(e) => {
+                    const slug = e.target.value || null;
+                    setSelectedSlug(slug);
+                    const opt = e.target.options[e.target.selectedIndex];
+                    setSelectedLabel(opt && opt.value ? opt.text : "");
+                  }}
+                >
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={toSlug(cat.name)}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
 
-              <span
-                style={{
-                  position: "absolute",
-                  right: "6px",
-                  top: "44%",
-                  transform: "translateY(-50%)",
-                  pointerEvents: "none",
-                  fontSize: "14px",
-                  color: "#000",
-                }}
-              >
-                <FaCaretDown size={12} />
-              </span>
+                <span
+                  style={{
+                    position: "absolute",
+                    right: "6px",
+                    top: "44%",
+                    transform: "translateY(-50%)",
+                    pointerEvents: "none",
+                    fontSize: "14px",
+                    color: "#000",
+                  }}
+                >
+                  <FaCaretDown size={12} />
+                </span>
+              </div>
             </div>
           )}
         </div>
@@ -307,9 +312,9 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
           </div>
         )}
 
-        <div style={{ display: "flex", justifyContent: "end" }}>
+        <div className="d-flex justify-content-end mt-3 mt-md-4">
           <button
-            className="btn col-6 fs-14"
+            className="btn fs-14 w-100 w-md-auto"
             style={{ background: "#C31162", color: "#fff" }}
             disabled={isVendorBox ? !selectedSlug || loadingVendors : false}
             onClick={() => {

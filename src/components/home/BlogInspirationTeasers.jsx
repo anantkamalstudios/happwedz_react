@@ -24,7 +24,6 @@ const BlogsCarousel = () => {
 
         // Map API fields to component fields
         const mappedBlogs = result.data.map((blog) => {
-          // Remove the port number (4000) from the image URL
           const cleanedImageUrl = blog.image.replace(
             "https://happywedz.com:4000",
             "https://happywedzbackend.happywedz.com/"

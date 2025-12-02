@@ -6,12 +6,10 @@ export const useFaqFrontend = (navbarId = null) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    loadFaqs();
-  }, [navbarId]);
-
   const loadFaqs = async () => {
     try {
+      setLoading(true);
+      setError(null);
       setLoading(true);
       const response = await axios.get("https://happywedz.com/api/faq");
       let data = response.data.faqs || [];
@@ -30,6 +28,10 @@ export const useFaqFrontend = (navbarId = null) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadFaqs();
+  }, [navbarId]);
 
   return {
     faqs,

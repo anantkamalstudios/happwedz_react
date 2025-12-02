@@ -1,15 +1,52 @@
-import React, { use } from "react";
+import React from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import {
+  destinationWeddingData,
+  getDestinationBySlug,
+} from "../../data/designationWedding";
 
 const DestinationWeddingDetailPage = () => {
   const { name } = useParams();
+  const navigate = useNavigate();
+  const destination = getDestinationBySlug(name) || destinationWeddingData[0];
+
+  if (!destination) {
+    return (
+      <Container className="py-5 text-center">
+        <h2 className="mb-3">Destination not found</h2>
+        <p className="text-muted">
+          We couldn’t find details for this location. Please explore our other
+          destinations.
+        </p>
+        <Button
+          variant="primary"
+          className="mt-3"
+          onClick={() => navigate("/destination-wedding")}
+        >
+          Back to destinations
+        </Button>
+      </Container>
+    );
+  }
+
+  const heroImage =
+    destination.heroImage || destination.cardImage || destination.url;
+
+  const primaryHighlights = [
+    { label: "Best Season", value: destination.bestSeason },
+    { label: "Average Cost", value: destination.averageCost },
+    {
+      label: "Wedding Styles",
+      value: (destination.weddingStyles || []).join(", "),
+    },
+  ];
+
   return (
     <div>
       <div
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1400&q=80')",
+          backgroundImage: `url('${heroImage}')`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           height: "50vh",
@@ -30,7 +67,7 @@ const DestinationWeddingDetailPage = () => {
           }}
         >
           <h1 style={{ fontWeight: "600", marginBottom: "0.5rem" }}>
-            Destination Weddings {name}
+            Destination Weddings {destination.title}
           </h1>
           <div
             style={{
@@ -51,7 +88,8 @@ const DestinationWeddingDetailPage = () => {
             marginBottom: "1rem",
           }}
         >
-          Everything You Need To Know To Organize A Destination Wedding In Goa
+          Everything You Need To Know To Organize A Destination Wedding In{" "}
+          {destination.title}
         </h4>
 
         <div
@@ -64,7 +102,7 @@ const DestinationWeddingDetailPage = () => {
         ></div>
 
         <Row>
-          <Col md={7}>
+          <Col md={6}>
             <h5
               style={{
                 fontWeight: "600",
@@ -72,8 +110,7 @@ const DestinationWeddingDetailPage = () => {
                 marginBottom: "1rem",
               }}
             >
-              Everything You Need To Know To Organize A Destination Wedding In
-              Goa
+              Why {destination.title} works for dream celebrations
             </h5>
 
             <p
@@ -83,112 +120,409 @@ const DestinationWeddingDetailPage = () => {
                 fontSize: "0.95rem",
               }}
             >
-              Whether you are planning to organize a destination wedding at a
-              gorgeous beach, or planning to host your friends and family on
-              your hometown beach, a beach wedding can be a great experience for
-              yourself and your guests alike. After all, it is like a mini
-              vacation for everybody! What can be more romantic than the soft
-              humming of the waves, the sand between your toes and the salty
-              winds - a beach wedding is so much more fun than you can imagine!
-              And if that is not convincing enough, everybody these days is
-              having a beach wedding. So why not figure out what the fuss is
-              about?
+              {destination.overview || destination.description}
             </p>
 
-            <ul style={{ color: "#c31162", fontSize: "0.95rem" }}>
-              <li>
-                Average cost of destination weddings in Goa is: Rs. 30 Lakh to
-                50 Lakh
-              </li>
-              <li>Beach Weddings, Intimate Weddings</li>
-            </ul>
-
-            <div style={{ marginTop: "1rem" }}>
-              <span
-                style={{
-                  display: "inline-block",
-                  border: "1px dashed #aaa",
-                  borderRadius: "6px",
-                  padding: "4px 10px",
-                  marginRight: "8px",
-                  fontSize: "0.85rem",
-                  cursor: "default",
-                }}
-              >
-                Intimate weddings
-              </span>
-              <span
-                style={{
-                  display: "inline-block",
-                  border: "1px dashed #aaa",
-                  borderRadius: "6px",
-                  padding: "4px 10px",
-                  fontSize: "0.85rem",
-                  cursor: "default",
-                }}
-              >
-                Beach Weddings
-              </span>
+            <div className="d-flex flex-wrap gap-3 my-4">
+              {primaryHighlights.map(
+                (stat) =>
+                  stat.value && (
+                    <div
+                      key={stat.label}
+                      style={{
+                        border: "1px solid #f6a5c0",
+                        borderRadius: "10px",
+                        padding: "12px 18px",
+                        minWidth: "160px",
+                      }}
+                    >
+                      <p
+                        className="mb-1 text-uppercase"
+                        style={{
+                          fontSize: "0.75rem",
+                          letterSpacing: "1px",
+                          color: "#c31162",
+                        }}
+                      >
+                        {stat.label}
+                      </p>
+                      <p className="mb-0 fw-semibold">{stat.value}</p>
+                    </div>
+                  )
+              )}
             </div>
+
+            <section style={{ marginBottom: "2rem" }}>
+              <h6 className="fw-bold text-uppercase text-muted mb-3">
+                Signature Experiences
+              </h6>
+              <div className="d-flex flex-wrap gap-2">
+                {(destination.weddingStyles || []).map((style) => (
+                  <span
+                    key={style}
+                    className="badge bg-light text-dark border"
+                    style={{ borderColor: "#f3c0d6", padding: "10px 14px" }}
+                  >
+                    {style}
+                  </span>
+                ))}
+              </div>
+            </section>
+
+            {!!destination.topVenues?.length && (
+              <section style={{ marginBottom: "2rem" }}>
+                <h6 className="fw-bold text-uppercase text-muted mb-3">
+                  Top Venues We Love
+                </h6>
+                <ul style={{ color: "#c31162", fontSize: "0.95rem" }}>
+                  {destination.topVenues.map((venue) => (
+                    <li key={venue}>{venue}</li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {!!destination.travelTips?.length && (
+              <section style={{ marginBottom: "2rem" }}>
+                <h6 className="fw-bold text-uppercase text-muted mb-3">
+                  Planner Tips
+                </h6>
+                <ul style={{ color: "#555", fontSize: "0.95rem" }}>
+                  {destination.travelTips.map((tip) => (
+                    <li key={tip}>{tip}</li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {!!destination.checklist?.length && (
+              <section style={{ marginBottom: "2rem" }}>
+                <h6 className="fw-bold text-uppercase text-muted mb-3">
+                  Quick Checklist
+                </h6>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                  {destination.checklist.map((item) => (
+                    <span
+                      key={item}
+                      style={{
+                        display: "inline-block",
+                        border: "1px dashed #aaa",
+                        borderRadius: "6px",
+                        padding: "4px 10px",
+                        fontSize: "0.85rem",
+                      }}
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {!!destination.faqs?.length && (
+              <section>
+                <h6 className="fw-bold text-uppercase text-muted mb-3">
+                  FAQs Couples Ask
+                </h6>
+                {destination.faqs.map((faq) => (
+                  <div key={faq.question} className="mb-3">
+                    <p className="mb-1 fw-semibold">{faq.question}</p>
+                    <p className="mb-0 text-muted">{faq.answer}</p>
+                  </div>
+                ))}
+              </section>
+            )}
           </Col>
 
-          <Col md={5}>
-            <div
-              style={{
-                backgroundColor: "#fff",
-                border: "1px solid #ddd",
-                padding: "1.5rem",
-              }}
-            >
-              <h6 style={{ fontWeight: "600", marginBottom: "1rem" }}>
-                Need Help?
-              </h6>
-
-              <Form>
-                <Form.Group style={{ marginBottom: "1rem" }}>
-                  <Form.Control type="text" placeholder="Name*" />
-                </Form.Group>
-
-                <Form.Group style={{ marginBottom: "1rem" }}>
-                  <Form.Control type="email" placeholder="Email*" />
-                </Form.Group>
-
-                <Form.Group style={{ marginBottom: "1rem" }}>
-                  <Form.Control type="tel" placeholder="+91" />
-                </Form.Group>
-
-                <Form.Group style={{ marginBottom: "1rem" }}>
-                  <Form.Control type="text" placeholder="Wedding Month*" />
-                </Form.Group>
-
-                <Form.Group style={{ marginBottom: "1rem" }}>
-                  <Form.Control type="number" placeholder="No of Guests" />
-                </Form.Group>
-
-                <Form.Group style={{ marginBottom: "1rem" }}>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    placeholder="Additional Details"
-                  />
-                </Form.Group>
-
-                <Button
-                  type="submit"
-                  variant="light"
+          <Col md={6}>
+            {destination.snapshotImages?.length >= 4 && (
+              <div
+                style={{
+                  backgroundColor: "#fff",
+                  border: "1px solid #ddd",
+                  padding: "1.5rem",
+                  marginBottom: "1.5rem",
+                }}
+              >
+                <h6 style={{ fontWeight: "600", marginBottom: "1rem" }}>
+                  Snapshot
+                </h6>
+                <div
                   style={{
-                    border: "1px solid #000",
-                    borderRadius: "50px",
-                    padding: "0.6rem 2rem",
-                    width: "100%",
-                    fontWeight: "500",
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, 1fr)",
+                    gridTemplateRows: "repeat(2, 200px)",
+                    gap: "0.75rem",
                   }}
                 >
-                  Submit
-                </Button>
-              </Form>
-            </div>
+                  <div
+                    style={{
+                      gridColumn: "1",
+                      gridRow: "1 / 3",
+                      overflow: "hidden",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <img
+                      src={destination.snapshotImages[0]}
+                      alt="Venue snapshot 1"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+
+                  <div
+                    style={{
+                      gridColumn: "2",
+                      gridRow: "1",
+                      overflow: "hidden",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <img
+                      src={destination.snapshotImages[1]}
+                      alt="Venue snapshot 2"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+
+                  <div
+                    style={{
+                      gridColumn: "2",
+                      gridRow: "2",
+                      display: "grid",
+                      gridTemplateColumns: "repeat(2, 1fr)",
+                      gap: "0.75rem",
+                    }}
+                  >
+                    <div
+                      style={{
+                        overflow: "hidden",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      <img
+                        src={destination.snapshotImages[2]}
+                        alt="Venue snapshot 3"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </div>
+                    <div
+                      style={{
+                        overflow: "hidden",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      <img
+                        src={destination.snapshotImages[3]}
+                        alt="Venue snapshot 4"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {destination.highlights?.length > 0 && (
+              <div
+                style={{
+                  backgroundColor: "#fff",
+                  border: "1px solid #ddd",
+                  padding: "1.5rem",
+                }}
+              >
+                <h6 style={{ fontWeight: "600", marginBottom: "1rem" }}>
+                  Quick Facts
+                </h6>
+                {destination.highlights.map((highlight) => (
+                  <div
+                    key={highlight.label}
+                    className="d-flex justify-content-between align-items-center border-bottom py-2"
+                  >
+                    <span className="text-muted">{highlight.label}</span>
+                    <span className="fw-semibold text-dark text-end">
+                      {highlight.value}
+                    </span>
+                  </div>
+                ))}
+
+                <div
+                  className="d-flex justify-content-center mt-3"
+                  style={{ width: "100%" }}
+                >
+                  <div style={{ width: "25%" }}>
+                    <Link
+                      to="contact-us"
+                      className="btn btn-outline-primary w-100"
+                      style={{ display: "block", margin: "0 auto" }}
+                    >
+                      Contact US
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
           </Col>
+
+          {/* <Col md={6}> 
+            {destination.snapshotImages?.length >= 4 && (
+              <div
+                style={{
+                  backgroundColor: "#fff",
+                  border: "1px solid #ddd",
+                  padding: "1.5rem",
+                  marginBottom: "1.5rem",
+                }}
+              >
+                <h6 style={{ fontWeight: "600", marginBottom: "1rem" }}>
+                  Snapshot
+                </h6>
+                <div
+                  style={{
+                    position: "relative",
+                    width: "100%",
+                    height: "450px",
+                  }}
+                >  
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "0",
+                      left: "0",
+                      width: "55%",
+                      height: "200px",
+                      zIndex: 4,
+                      overflow: "hidden",
+                      borderRadius: "12px",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                    }}
+                  >
+                    <img
+                      src={destination.snapshotImages[0]}
+                      alt="Venue snapshot 1"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "60px",
+                      right: "0",
+                      width: "50%",
+                      height: "180px",
+                      zIndex: 3,
+                      overflow: "hidden",
+                      borderRadius: "12px",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                    }}
+                  >
+                    <img
+                      src={destination.snapshotImages[3]}
+                      alt="Venue snapshot 4"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "180px",
+                      left: "0",
+                      width: "45%",
+                      height: "180px",
+                      zIndex: 2,
+                      overflow: "hidden",
+                      borderRadius: "12px",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                    }}
+                  >
+                    <img
+                      src={destination.snapshotImages[1]}
+                      alt="Venue snapshot 2"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: "20px",
+                      right: "30px",
+                      width: "52%",
+                      height: "200px",
+                      zIndex: 1,
+                      overflow: "hidden",
+                      borderRadius: "12px",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                    }}
+                  >
+                    <img
+                      src={destination.snapshotImages[2]}
+                      alt="Venue snapshot 3"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+ 
+            {destination.highlights?.length > 0 && (
+              <div
+                style={{
+                  backgroundColor: "#fff",
+                  border: "1px solid #ddd",
+                  padding: "1.5rem",
+                }}
+              >
+                <h6 style={{ fontWeight: "600", marginBottom: "1rem" }}>
+                  Quick Facts
+                </h6>
+                {destination.highlights.map((highlight) => (
+                  <div
+                    key={highlight.label}
+                    className="d-flex justify-content-between align-items-center border-bottom py-2"
+                  >
+                    <span className="text-muted">{highlight.label}</span>
+                    <span className="fw-semibold text-dark text-end">
+                      {highlight.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Col> */}
         </Row>
       </Container>
     </div>

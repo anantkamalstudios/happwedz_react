@@ -18,6 +18,7 @@ import { TextField } from "@mui/material";
 import dayjs from "dayjs";
 import { setCredentials } from "../../../../redux/authSlice";
 import { getImageUrl } from "../../../../utils/imageUtils";
+import { FaUndo, FaSave, FaImage, FaCamera } from "react-icons/fa";
 
 const initialState = {
   id: "",
@@ -461,8 +462,12 @@ const UserProfile = ({ user, token }) => {
                     </div>
                     <div className="d-flex gap-2">
                       <Form.Group controlId="coverImage" className="mb-0">
-                        <Form.Label className="btn btn-outline-secondary btn-sm mb-0 fs-14">
-                          Change Cover
+                        <Form.Label
+                          className="btn btn-outline-secondary btn-sm mb-0 fs-14 d-inline-flex align-items-center justify-content-center"
+                          title="Change cover"
+                          aria-label="Change cover"
+                        >
+                          <FaImage size={16} />
                         </Form.Label>
                         <Form.Control
                           type="file"
@@ -473,8 +478,12 @@ const UserProfile = ({ user, token }) => {
                         />
                       </Form.Group>
                       <Form.Group controlId="profileImage" className="mb-0">
-                        <Form.Label className="btn btn-outline-primary btn-sm mb-0 fs-14">
-                          Change Photo
+                        <Form.Label
+                          className="btn btn-outline-primary btn-sm mb-0 fs-14 d-inline-flex align-items-center justify-content-center"
+                          title="Change photo"
+                          aria-label="Change photo"
+                        >
+                          <FaCamera size={16} />
                         </Form.Label>
                         <Form.Control
                           type="file"
@@ -703,12 +712,13 @@ const UserProfile = ({ user, token }) => {
 
                   <Col
                     xs={12}
-                    className="d-flex justify-content-end gap-2 mt-4"
+                    className="d-grid gap-2 d-sm-flex justify-content-sm-end mt-4"
                   >
                     <Button
                       variant="outline-secondary"
                       type="button"
-                      className="fs-14 col-1"
+                      className="fs-14"
+                      title="Reset profile form"
                       onClick={() => setFormData(initialState)}
                     >
                       Reset
@@ -717,7 +727,8 @@ const UserProfile = ({ user, token }) => {
                     <Button
                       variant="primary"
                       type="submit"
-                      className="fs-14 col-1"
+                      className="fs-14"
+                      title="Save profile"
                       disabled={submitting || !isPasswordFormValid}
                     >
                       {submitting ? (

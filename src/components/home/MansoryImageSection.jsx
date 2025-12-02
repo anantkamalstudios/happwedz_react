@@ -2,11 +2,19 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import usePhotography from "../../hooks/usePhotography";
 import { useLoader } from "../context/LoaderContext";
+import ShimmerMasonry from "../ui/ShimmerMasonry";
 
 const MasonryImageSection = () => {
   const { fetchAllPhotos, allPhotos, loading } = usePhotography();
   const { showLoader, hideLoader } = useLoader();
   const [weddingImages, setWeddingImages] = useState([]);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const update = () => setIsMobile(window.innerWidth < 576);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
   useEffect(() => {
     const loadPhotos = async () => {
@@ -25,7 +33,6 @@ const MasonryImageSection = () => {
         .map((photo, index) => {
           let imageUrl = photo.images?.[0]?.trim();
 
-          // Replace old URL prefix with backend prefix
           if (
             imageUrl?.startsWith("http://happywedz.com/uploads/photography/")
           ) {
@@ -43,7 +50,6 @@ const MasonryImageSection = () => {
             );
           }
 
-          // Alternate between large and medium sizes
           const size = index % 2 === 0 ? "large" : "medium";
 
           return {
@@ -96,18 +102,30 @@ const MasonryImageSection = () => {
 
           <div className="row">
             {weddingImages.length === 0 ? (
-              <div className="text-center text-muted py-5">
-                <p>Loading wedding gallery...</p>
+              <div>
+                <ShimmerMasonry />
               </div>
             ) : (
               <>
                 <div className="col-12 col-md-6 col-lg-4">
                   {weddingImages[0] && (
-                    <div className={`gallery-item ${weddingImages[0].size}`}>
+                    <div
+                      className={`gallery-item ${weddingImages[0].size}`}
+                      style={isMobile ? { height: "auto" } : undefined}
+                    >
                       <Link to={`/photography/details/${weddingImages[0].id}`}>
                         <img
                           src={weddingImages[0].src}
                           alt={weddingImages[0].title}
+                          style={
+                            isMobile
+                              ? {
+                                  width: "100%",
+                                  height: "auto",
+                                  objectFit: "contain",
+                                }
+                              : undefined
+                          }
                           onError={(e) => {
                             if (
                               weddingImages[0].fallbackSrc &&
@@ -130,11 +148,23 @@ const MasonryImageSection = () => {
                   )}
 
                   {weddingImages[3] && (
-                    <div className={`gallery-item ${weddingImages[3].size}`}>
+                    <div
+                      className={`gallery-item ${weddingImages[3].size}`}
+                      style={isMobile ? { height: "auto" } : undefined}
+                    >
                       <Link to={`/photography/details/${weddingImages[3].id}`}>
                         <img
                           src={weddingImages[3].src}
                           alt={weddingImages[3].title}
+                          style={
+                            isMobile
+                              ? {
+                                  width: "100%",
+                                  height: "auto",
+                                  objectFit: "contain",
+                                }
+                              : undefined
+                          }
                           onError={(e) => {
                             if (
                               weddingImages[3].fallbackSrc &&
@@ -159,11 +189,23 @@ const MasonryImageSection = () => {
 
                 <div className="col-12 col-md-6 col-lg-4">
                   {weddingImages[1] && (
-                    <div className={`gallery-item ${weddingImages[1].size}`}>
+                    <div
+                      className={`gallery-item ${weddingImages[1].size}`}
+                      style={isMobile ? { height: "auto" } : undefined}
+                    >
                       <Link to={`/photography/details/${weddingImages[1].id}`}>
                         <img
                           src={weddingImages[1].src}
                           alt={weddingImages[1].title}
+                          style={
+                            isMobile
+                              ? {
+                                  width: "100%",
+                                  height: "auto",
+                                  objectFit: "contain",
+                                }
+                              : undefined
+                          }
                           onError={(e) => {
                             if (
                               weddingImages[1].fallbackSrc &&
@@ -186,11 +228,23 @@ const MasonryImageSection = () => {
                   )}
 
                   {weddingImages[4] && (
-                    <div className={`gallery-item ${weddingImages[4].size}`}>
+                    <div
+                      className={`gallery-item ${weddingImages[4].size}`}
+                      style={isMobile ? { height: "auto" } : undefined}
+                    >
                       <Link to={`/photography/details/${weddingImages[4].id}`}>
                         <img
                           src={weddingImages[4].src}
                           alt={weddingImages[4].title}
+                          style={
+                            isMobile
+                              ? {
+                                  width: "100%",
+                                  height: "auto",
+                                  objectFit: "contain",
+                                }
+                              : undefined
+                          }
                           onError={(e) => {
                             if (
                               weddingImages[4].fallbackSrc &&
@@ -215,11 +269,23 @@ const MasonryImageSection = () => {
 
                 <div className="col-12 col-md-6 col-lg-4">
                   {weddingImages[2] && (
-                    <div className={`gallery-item ${weddingImages[2].size}`}>
+                    <div
+                      className={`gallery-item ${weddingImages[2].size}`}
+                      style={isMobile ? { height: "auto" } : undefined}
+                    >
                       <Link to={`/photography/details/${weddingImages[2].id}`}>
                         <img
                           src={weddingImages[2].src}
                           alt={weddingImages[2].title}
+                          style={
+                            isMobile
+                              ? {
+                                  width: "100%",
+                                  height: "auto",
+                                  objectFit: "contain",
+                                }
+                              : undefined
+                          }
                           onError={(e) => {
                             if (
                               weddingImages[2].fallbackSrc &&
@@ -242,11 +308,23 @@ const MasonryImageSection = () => {
                   )}
 
                   {weddingImages[5] && (
-                    <div className={`gallery-item ${weddingImages[5].size}`}>
+                    <div
+                      className={`gallery-item ${weddingImages[5].size}`}
+                      style={isMobile ? { height: "auto" } : undefined}
+                    >
                       <Link to={`/photography/details/${weddingImages[5].id}`}>
                         <img
                           src={weddingImages[5].src}
                           alt={weddingImages[5].title}
+                          style={
+                            isMobile
+                              ? {
+                                  width: "100%",
+                                  height: "auto",
+                                  objectFit: "contain",
+                                }
+                              : undefined
+                          }
                           onError={(e) => {
                             if (
                               weddingImages[5].fallbackSrc &&

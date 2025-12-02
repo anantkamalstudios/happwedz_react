@@ -181,29 +181,28 @@ const Wishlist = () => {
 
   return (
     <div className="container py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <div>
           <h3 className="fw-bold text-dark mb-1">My Wishlist</h3>
           <p className="text-muted mb-0 fs-14">
             Manage your selected wedding services
           </p>
         </div>
-        <div className="d-flex gap-2 align-items-center">
-          <div className="position-relative">
-            {/* <FaSearch
-              className="position-absolute text-muted fs-14"
-              style={{ top: 14, left: 10 }}
-            /> */}
+        <div className="d-flex flex-column flex-sm-row gap-2 align-items-stretch align-items-sm-center w-100 w-md-auto">
+          <div className="position-relative flex-grow-1">
             <input
               type="text"
-              className="form-control rounded-3 fs-14"
+              className="form-control rounded-3 fs-14 w-100"
               placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ minWidth: 260 }}
+              style={{ minWidth: 0 }}
             />
           </div>
-          <Link to="/vendors" className="btn btn-primary rounded-3 px-2 fs-14">
+          <Link
+            to="/vendors"
+            className="btn btn-primary rounded-3 px-3 fs-14 w-100 w-sm-auto text-center"
+          >
             <BsPlusLg className="me-2" size={16} /> Add Vendor
           </Link>
         </div>
