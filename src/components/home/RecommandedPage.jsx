@@ -667,9 +667,9 @@ const RecommandedPage = () => {
       }}
     >
       <div>
-        <h1 style={{ color: "#C31162", fontWeight: 700 }}>
+        <h4 style={{ color: "#C31162", fontWeight: 700 }}>
           Best Recommendations for Your <br /> Celebration
-        </h1>
+        </h4>
         <p style={{ color: "#555" }}>
           We’ve personalized your top wedding vendors and venues based on your
           preferences and activity.
@@ -677,7 +677,7 @@ const RecommandedPage = () => {
       </div>
 
       <div>
-        <h2
+        <h5
           style={{
             color: "#C31162",
             fontWeight: 600,
@@ -685,7 +685,7 @@ const RecommandedPage = () => {
           }}
         >
           Recommended Vendors for You
-        </h2>
+        </h5>
 
         {Object.keys(vendorCategories).map((key) => {
           const category = vendorCategories[key];
