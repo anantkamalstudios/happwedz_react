@@ -185,8 +185,29 @@ const Genie = () => {
 
   useEffect(() => {
     const el = messagesContainerRef.current;
-    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    if (el) {
+      setTimeout(() => {
+        el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+      }, 100);
+    }
   }, [messages]);
+
+  // Handle keyboard visibility on mobile
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleResize = () => {
+      const el = messagesContainerRef.current;
+      if (el) {
+        setTimeout(() => {
+          el.scrollTo({ top: el.scrollHeight, behavior: "auto" });
+        }, 100);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isMobile]);
 
   // Prevent body scroll when mobile sidebar is open
   useEffect(() => {
@@ -238,6 +259,20 @@ const Genie = () => {
 
   const headerHeight = "clamp(60px, 10vw, 200px)";
   const contentHeight = `calc(100vh - ${headerHeight})`;
+
+  // Mobile keyboard viewport fix
+  const chatSectionStyle = isMobile
+    ? {
+        height: contentHeight,
+        overflowY: "auto",
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+      }
+    : {
+        height: contentHeight,
+        overflowY: "auto",
+      };
 
   return (
     <div
@@ -431,13 +466,7 @@ const Genie = () => {
           )}
 
           {/* CHAT SECTION */}
-          <div
-            className="col-12 col-md-9 p-0"
-            style={{
-              height: contentHeight,
-              overflowY: "auto",
-            }}
-          >
+          <div className="col-12 col-md-9 p-0" style={chatSectionStyle}>
             <div
               style={{
                 height: "100%",
@@ -815,12 +844,17 @@ const Genie = () => {
                 )}
               </div>
 
-              <div style={{ padding: "20px 40px 0px" }}>
+              <div
+                style={{ padding: "20px 40px 0px" }}
+                className="genie-input-area"
+              >
                 <div
                   style={{
                     position: "relative",
                     maxWidth: "900px",
                     margin: "0 auto",
+                    paddingBottom: isMobile ? "20px" : "0px",
+                    scrollMarginBottom: "20px",
                   }}
                 >
                   <input

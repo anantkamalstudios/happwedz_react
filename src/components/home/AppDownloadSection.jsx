@@ -1,21 +1,36 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 const AppDownloadSection = () => {
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth <= 768 : false
+  );
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 768);
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", onResize);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("resize", onResize);
+      }
+    };
+  }, []);
+
+  const sectionStyle = {
+    background:
+      "linear-gradient(90deg, rgba(237,17,115,0.08) 0%, rgba(237,17,115,0.02) 100%)",
+    backgroundImage: isMobile ? "none" : "url('/images/home/cta1.jpg')",
+    backgroundSize: isMobile ? "" : "contain",
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "bottom",
+    overflow: "hidden",
+  };
+
   return (
-    <section
-      className="container-fluid rounded py-5 mb-5"
-      style={{
-        background:
-          "linear-gradient(90deg, rgba(237,17,115,0.08) 0%, rgba(237,17,115,0.02) 100%)",
-        backgroundImage: "url('/images/home/cta1.jpg')",
-        backgroundSize: "contain",
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "bottom",
-        overflow: "hidden",
-      }}
-    >
-      <div className="container d-none d-lg-flex align-items-center justify-content-center">
-        <div className="col-lg-6">
-          <div className="rounded-3 ">
+    <section className="container-fluid rounded py-5 mb-5" style={sectionStyle}>
+      <div className="container d-flex flex-column flex-lg-row align-items-center justify-content-center">
+        <div className={`col-12 ${isMobile ? "text-center" : "col-lg-6"}`}>
+          <div className="rounded-3">
             <h6 className="fw-bold mb-3 fs-20 text-center">
               Download The HappyWedz Mobile App Today
             </h6>
@@ -25,34 +40,26 @@ const AppDownloadSection = () => {
               everything in one place.
             </p>
 
-            <div className="d-flex flex-wrap justify-content-center gap-4">
-              <a
-                // href="https://play.google.com/store/apps/details?id=com.wedmegood.wmgapp"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+            <div className="d-flex flex-wrap justify-content-center gap-3">
+              <a target="_blank" rel="noopener noreferrer">
                 <img
                   src="/images/cta/playstore.svg"
                   alt="Google Play"
                   style={{
-                    width: "180px",
-                    height: "180px",
-                    objectFit: "contain",
+                    width: isMobile ? "140px" : "180px",
+                    height: isMobile ? "48px" : "180px",
+                    objectFit: "cover",
                   }}
                 />
               </a>
-              <a
-                // href="https://apps.apple.com/in/app/wedmegood/id919447453"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a target="_blank" rel="noopener noreferrer">
                 <img
                   src="/images/cta/appstore.svg"
                   alt="Apple Store"
                   style={{
-                    width: "180px",
-                    height: "180px",
-                    objectFit: "contain",
+                    width: isMobile ? "140px" : "180px",
+                    height: isMobile ? "48px" : "180px",
+                    objectFit: "cover",
                   }}
                 />
               </a>

@@ -626,12 +626,22 @@ const Detailed = () => {
                 mainImage ? (
                   <img
                     src={mainImage}
-                    alt={venueData.attributes?.vendor_name || "Main Vendor"}
+                    alt={venueData.attributes?.name || "Main Vendor"}
                     className="main-image rounded-lg"
                     style={{
                       width: "100%",
                       height: "500px",
                       objectFit: "cover",
+                    }}
+                    onError={(e) => {
+                      // Fallback to local placeholder image when main image fails to load
+                      e.target.onerror = null;
+                      e.target.src = "/images/imageNotFound.jpg";
+                      try {
+                        setMainImage("/images/imageNotFound.jpg");
+                      } catch (err) {
+                        // ignore if setMainImage not available in this scope for any reason
+                      }
                     }}
                   />
                 ) : (
@@ -822,7 +832,7 @@ const Detailed = () => {
             {/* In-page navigation */}
             <SectionTabs scrollToSection={scrollToSection} />
 
-            <div id="about" className="venue-description mb-5">
+            <div id="about" className="venue-description mb-5 p-2">
               <h3 className="details-section-title fw-bold fs-22">
                 About {venueData.attributes?.name || venueData.attributes?.Name}
               </h3>

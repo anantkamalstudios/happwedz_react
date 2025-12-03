@@ -259,27 +259,26 @@ const Footer = () => {
 
         <hr className="my-4 opacity-50" style={{ background: "#fff" }} />
 
-        <div className="row gy-4">
-          <div className="col-12 col-md-6">
-            <ul className="footer-list list-unstyled d-flex flex-wrap pt-3">
-              <li className="me-3">
-                {" "}
-                <Link to="/terms" className="me-3 fs-16">
+        <div className="row gy-4 text-center text-md-start">
+          <div className="col-12 col-md-6 d-flex justify-content-center justify-content-md-start">
+            <ul className="footer-list list-unstyled d-flex flex-wrap pt-3 justify-content-center justify-content-md-start">
+              <li className="mx-3">
+                <Link to="/terms" className="fs-16">
                   Terms & Condition
                 </Link>
               </li>
 
-              <li className="me-3">
-                {" "}
-                <Link to="/cancellation" className="me-3 fs-16">
+              <li className="mx-3">
+                <Link to="/cancellation" className="fs-16">
                   Cancellation Policy
                 </Link>
               </li>
             </ul>
           </div>
 
-          <div className="col-12 col-md-6">
-            <div className="d-flex gap-3 align-items-start pt-2">
+          <div className="col-12 col-md-6 d-flex justify-content-center justify-content-md-end">
+            <div className="d-flex gap-3 align-items-center pt-2">
+              {/* Facebook */}
               <a
                 href="https://facebook.com/happywedz"
                 aria-label="Facebook"
@@ -292,6 +291,8 @@ const Footer = () => {
                   style={{ color: "#C31162" }}
                 ></i>
               </a>
+
+              {/* Instagram */}
               <a
                 href="https://instagram.com/happywedz/"
                 aria-label="Instagram"
@@ -305,6 +306,7 @@ const Footer = () => {
                 ></i>
               </a>
 
+              {/* Twitter */}
               <a
                 href="https://twitter.com"
                 aria-label="Twitter (X)"
@@ -319,12 +321,12 @@ const Footer = () => {
                   width="20"
                   height="20"
                   fill="currentColor"
-                  aria-hidden="true"
                 >
                   <path d="M714.163 519.284L1160.89 0H1055.8L667.137 450.887L360.017 0H0L466.92 681.821L0 1226.55H105.08L518.72 751.869L840.882 1226.55H1200L714.163 519.284ZM567.17 689.73L523.16 627.913L143.04 80.73H310.4L621.477 532.57L665.487 594.387L1067.04 1150.63H899.68L567.17 689.73Z" />
                 </svg>
               </a>
 
+              {/* YouTube */}
               <a
                 href="https://youtube.com/@HappyWedz"
                 aria-label="YouTube"
@@ -338,7 +340,6 @@ const Footer = () => {
                   height="20"
                   viewBox="0 0 24 24"
                   fill="currentColor"
-                  aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path d="M23.498 6.186a2.995 2.995 0 0 0-2.111-2.115C19.37 3.5 12 3.5 12 3.5s-7.37 0-9.387.571a2.995 2.995 0 0 0-2.111 2.115C.5 8.203.5 12 .5 12s0 3.797.002 5.814a2.995 2.995 0 0 0 2.111 2.115c2.016.57 9.387.57 9.387.57s7.37 0 9.387-.571a2.995 2.995 0 0 0 2.111-2.115C23.5 15.797 23.5 12 23.5 12s0-3.797-.002-5.814zM9.75 15.02V8.98l6.5 3.02-6.5 3.02z" />

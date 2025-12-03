@@ -53,6 +53,8 @@ const Guests = () => {
   const [newGroupName, setNewGroupName] = useState("");
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [whatsappMessage, setWhatsappMessage] = useState("");
 
   const statusOptions = ["Attending", "Not Attending", "Pending"];
   const typeOptions = ["Adult", "Child"];
@@ -296,37 +298,13 @@ const Guests = () => {
       return "No guests in the list.";
     }
 
-    let message = `*Guest List*\n\n`;
-    message += `Total Guests: ${guests.length}\n`;
-    message += `Attending: ${attendingCount} | Pending: ${pendingCount} | Not Attending: ${declinedCount}\n`;
-    message += `Adults: ${adultsCount} | Children: ${childrenCount}\n\n`;
-    message += `*Guest Details:*\n\n`;
-
-    const allGroupedGuests = guests.reduce((acc, guest) => {
-      const groupName = guest.group || "Other";
-      if (!acc[groupName]) {
-        acc[groupName] = [];
-      }
-      acc[groupName].push(guest);
-      return acc;
-    }, {});
-
-    Object.entries(allGroupedGuests).forEach(([groupName, groupGuests]) => {
-      message += `*${groupName}* (${groupGuests.length})\n`;
-      groupGuests.forEach((guest, index) => {
-        message += `${index + 1}. ${guest.name}`;
-        if (guest.email) message += ` (${guest.email})`;
-        message += `\n   Status: ${guest.status || "Pending"}`;
-        if (guest.companions > 0)
-          message += ` | Companions: ${guest.companions}`;
-        if (guest.seat_number) message += ` | Seat: ${guest.seat_number}`;
-        message += ` | Type: ${guest.type || "Adult"} | Menu: ${
-          guest.menu || "Veg"
-        }`;
-        message += `\n`;
-      });
-      message += `\n`;
-    });
+    // Send custom wedding invitation template only
+    let message = `We, the family of [Family Name],\n`;
+    message += `warmly invite you to the wedding of\n`;
+    message += `[Bride Name] & [Groom Name]\n\n`;
+    message += `Date: [Date]\n`;
+    message += `Venue: [Venue]\n\n`;
+    message += `Your presence means a lot to us.`;
 
     return message;
   };
@@ -336,7 +314,7 @@ const Guests = () => {
       setShowEmailModal(true);
       setShowMessageOptions(false);
     } else if (type === "WhatsApp") {
-      // WhatsApp functionality
+      // Open WhatsApp modal with pre-filled message
       if (!userPhone) {
         Swal.fire({
           icon: "error",
@@ -358,37 +336,55 @@ const Guests = () => {
         setShowMessageOptions(false);
         return;
       }
-      let phoneNumber = userPhone
-        .replace(/\s+/g, "")
-        .replace(/-/g, "")
-        .replace(/\+/g, "")
-        .replace(/\(/g, "")
-        .replace(/\)/g, "")
-        .replace(/\./g, "");
 
-      if (phoneNumber.startsWith("0")) {
-        phoneNumber = phoneNumber.substring(1);
-      }
-
-      if (!/^\d+$/.test(phoneNumber)) {
-        Swal.fire({
-          icon: "error",
-          text: "Invalid phone number format. Please update your profile with a valid phone number.",
-          confirmButtonText: "OK",
-          confirmButtonColor: "#C31162",
-        });
-        setShowMessageOptions(false);
-        return;
-      }
-
-      const message = formatGuestListForWhatsApp();
-      const encodedMessage = encodeURIComponent(message);
-      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-
-      // Open WhatsApp Web in a new tab
-      window.open(whatsappUrl, "_blank");
+      // Set pre-filled message and show modal
+      const templateMessage = formatGuestListForWhatsApp();
+      setWhatsappMessage(templateMessage);
+      setShowWhatsAppModal(true);
       setShowMessageOptions(false);
     }
+  };
+
+  const handleSendWhatsAppMessage = () => {
+    if (!whatsappMessage.trim()) {
+      Swal.fire({
+        icon: "error",
+        text: "Please enter a message",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#C31162",
+      });
+      return;
+    }
+
+    let phoneNumber = userPhone
+      .replace(/\s+/g, "")
+      .replace(/-/g, "")
+      .replace(/\+/g, "")
+      .replace(/\(/g, "")
+      .replace(/\)/g, "")
+      .replace(/\./g, "");
+
+    if (phoneNumber.startsWith("0")) {
+      phoneNumber = phoneNumber.substring(1);
+    }
+
+    if (!/^\d+$/.test(phoneNumber)) {
+      Swal.fire({
+        icon: "error",
+        text: "Invalid phone number format. Please update your profile with a valid phone number.",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#C31162",
+      });
+      return;
+    }
+
+    const encodedMessage = encodeURIComponent(whatsappMessage);
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+
+    // Open WhatsApp Web in a new tab
+    window.open(whatsappUrl, "_blank");
+    setShowWhatsAppModal(false);
+    setWhatsappMessage("");
   };
 
   const redirectToEinviteCards = () => {
@@ -700,6 +696,72 @@ const Guests = () => {
                   </div>
                 )}
               </div>
+
+              {/* WhatsApp Modal */}
+              {showWhatsAppModal && (
+                <div
+                  className="modal d-block"
+                  style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+                >
+                  <div className="modal-dialog modal-lg">
+                    <div className="modal-content">
+                      <div className="modal-header">
+                        <h5 className="modal-title">
+                          Customize WhatsApp Message
+                        </h5>
+                        <button
+                          type="button"
+                          className="btn-close"
+                          onClick={() => {
+                            setShowWhatsAppModal(false);
+                            setWhatsappMessage("");
+                          }}
+                        ></button>
+                      </div>
+                      <div className="modal-body">
+                        <label className="form-label fw-bold mb-2">
+                          Message
+                        </label>
+                        <textarea
+                          className="form-control"
+                          rows="8"
+                          placeholder="Edit your message here..."
+                          value={whatsappMessage}
+                          onChange={(e) => setWhatsappMessage(e.target.value)}
+                          style={{
+                            fontFamily: "monospace",
+                            fontSize: "12px",
+                            resize: "vertical",
+                          }}
+                        />
+                        <small className="text-muted d-block mt-2">
+                          You can edit the message before sending. Line breaks
+                          will be preserved.
+                        </small>
+                      </div>
+                      <div className="modal-footer">
+                        <button
+                          type="button"
+                          className="btn btn-secondary"
+                          onClick={() => {
+                            setShowWhatsAppModal(false);
+                            setWhatsappMessage("");
+                          }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-success"
+                          onClick={handleSendWhatsAppMessage}
+                        >
+                          Send on WhatsApp
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Email Modal */}
               <EmailModal

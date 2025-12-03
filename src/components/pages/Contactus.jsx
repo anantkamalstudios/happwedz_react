@@ -663,8 +663,8 @@ const Contactus = () => {
                     src="/images/cta/playstore.svg"
                     alt="Google Play"
                     style={{
-                      width: "180px",
-                      height: "180px",
+                      width: "120px",
+                      height: "120px",
                       objectFit: "contain",
                     }}
                   />
@@ -674,8 +674,8 @@ const Contactus = () => {
                     src="/images/cta/appstore.svg"
                     alt="Apple Store"
                     style={{
-                      width: "180px",
-                      height: "180px",
+                      width: "120px",
+                      height: "120px",
                       objectFit: "contain",
                     }}
                   />

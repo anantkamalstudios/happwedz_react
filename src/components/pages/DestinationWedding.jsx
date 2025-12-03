@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import DestinationHero from "./DestinationHero"
+import DestinationHero from "./DestinationHero";
 import ImageCarousel from "./ImageCarousel";
 import DestinationWeddingLocation from "./DestinationWeddingLocation";
 import DestinationWeddingRealStories from "./DestinationWeddingRealStories";
@@ -38,7 +38,6 @@ const DestinationWedding = () => {
 
   return (
     <div>
-
       <DestinationHero />
       <section>
         <div className="container">
@@ -52,7 +51,6 @@ const DestinationWedding = () => {
       <section>
         <DestinationWeddingPlanningIdeas />
         <DestinationWeddingRealStories />
-
       </section>
     </div>
   );
