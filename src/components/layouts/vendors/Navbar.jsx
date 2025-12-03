@@ -16,12 +16,25 @@ const Navbar = () => {
   const { token, vendor } = useSelector((state) => state.vendorAuth || {});
   const [activeTab, setActiveTab] = useState("home");
   const [storedCompletion, setStoredCompletion] = useState(0);
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth <= 576 : false
+  );
 
   useEffect(() => {
     const stored = localStorage.getItem("storefrontCompletion");
     if (stored) {
       setStoredCompletion(parseInt(stored, 10));
     }
+  }, []);
+
+  // listen for resize to adapt navbar for small screens
+  useEffect(() => {
+    const onResize = () => {
+      setIsMobile(window.innerWidth <= 576);
+    };
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   // Fetch storefront completion from backend API
@@ -160,9 +173,25 @@ const Navbar = () => {
   };
   return (
     <div className="adminNav">
-      <div className="wrapper tabs-container py-2 px-3 px-lg-5 mt-3 vendor-dashboard-navbar">
+      <div
+        className="wrapper tabs-container py-2 px-3 px-lg-5 mt-3 vendor-dashboard-navbar"
+        style={{
+          paddingLeft: isMobile ? 12 : undefined,
+          paddingRight: isMobile ? 12 : undefined,
+        }}
+      >
         <div className="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
-          <div className="d-flex gap-3 gap-lg-4 flex-wrap justify-content-center justify-content-lg-start">
+          <div
+            className="d-flex gap-3 gap-lg-4"
+            style={{
+              // On mobile allow horizontal scroll of tabs (touch friendly)
+              flexWrap: isMobile ? "nowrap" : "wrap",
+              overflowX: isMobile ? "auto" : "visible",
+              WebkitOverflowScrolling: isMobile ? "touch" : undefined,
+              paddingBottom: isMobile ? 8 : undefined,
+              gap: isMobile ? 12 : undefined,
+            }}
+          >
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -171,10 +200,13 @@ const Navbar = () => {
                 }`}
                 style={{
                   background: "transparent",
-                  fontSize: "14px",
-                  minWidth: "70px",
+                  fontSize: isMobile ? 12 : 14,
+                  minWidth: isMobile ? 56 : 70,
                   color:
                     activeTab === tab.id ? "var(--primary-color)" : "#2c3e50",
+                  paddingLeft: isMobile ? 6 : undefined,
+                  paddingRight: isMobile ? 6 : undefined,
+                  marginRight: isMobile ? 4 : undefined,
                 }}
                 onClick={() => handleTabClick(tab)}
               >
@@ -182,12 +214,21 @@ const Navbar = () => {
                   src={tab.icon}
                   alt={tab.label}
                   style={{
-                    width: "30px",
-                    height: "30px",
+                    width: isMobile ? 24 : 30,
+                    height: isMobile ? 24 : 30,
                     objectFit: "cover",
+                    display: "block",
                   }}
                 />
-                <span className="mt-3">{tab.label}</span>
+                <span
+                  className="mt-3"
+                  style={{
+                    marginTop: isMobile ? 6 : 12,
+                    fontSize: isMobile ? 11 : 14,
+                  }}
+                >
+                  {tab.label}
+                </span>
               </button>
             ))}
           </div>
