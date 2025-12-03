@@ -42,13 +42,11 @@ const EnquiryManagement = () => {
   const [searchMail, setSearchEmail] = useState("");
   const [filteredLeads, setFilteredLeads] = useState([]);
 
-  // Global stats across all enquiries (not affected by current filter)
   const [globalStats, setGlobalStats] = useState({
     pending: 0,
     booked: 0,
     declined: 0,
   });
-  // Filtered stats (optional, not shown in the header cards anymore)
   const [stats, setStats] = useState({ pending: 0, booked: 0, declined: 0 });
 
   const fetchInbox = async () => {
@@ -74,7 +72,6 @@ const EnquiryManagement = () => {
         archived: data.archivedCount || 0,
       });
 
-      // Update stats for the current filtered view (not shown in header cards)
       setStats({
         booked: fetchedLeads.filter((l) => l.request?.status === "booked")
           .length,
@@ -99,7 +96,6 @@ const EnquiryManagement = () => {
     }
   };
 
-  // Fetch global stats regardless of the active filter
   const fetchGlobalStats = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/inbox`, {
@@ -148,7 +144,6 @@ const EnquiryManagement = () => {
     }
   }, [vendorToken, filter]);
 
-  // Load global stats on login/token change
   useEffect(() => {
     if (vendorToken) {
       fetchGlobalStats();
@@ -173,7 +168,6 @@ const EnquiryManagement = () => {
       const options = { method: "PATCH" };
 
       if (isStatusAction) {
-        // The request ID is required for status updates.
         if (!requestId) {
           console.error("No request ID found for this lead:", lead);
           throw new Error("Cannot update status without a request ID.");
@@ -271,12 +265,6 @@ const EnquiryManagement = () => {
         count: counts.total,
         icon: <Inbox size={18} />,
       },
-      // {
-      //   id: "read",
-      //   name: "Read",
-      //   count: counts.read,
-      //   icon: <MailOpen size={18} />,
-      // },
       {
         id: "unread",
         name: "Unread",
@@ -302,50 +290,38 @@ const EnquiryManagement = () => {
     []
   );
 
-  const tools = [
-    { id: "settings", name: "Settings", icon: <Settings size={18} /> },
-    { id: "templates", name: "Templates", icon: <FileText size={18} /> },
-    {
-      id: "export",
-      name: "Export leads",
-      icon: <Download size={18} />,
-      premium: true,
-    },
-  ];
-
   return (
-    <div style={{ background: "#f5f7fa", minHeight: "100vh", padding: "40px" }}>
+    <div
+      style={{ background: "#f8f9fa", minHeight: "100vh" }}
+      className="py-3 py-md-4 px-2 px-md-4"
+    >
       <div className="container-fluid">
         {/* Header */}
-        <div className="row mb-4">
+        <div className="row mb-3 mb-md-4">
           <div className="col-12">
-            <div className="d-flex justify-content-between align-items-center">
-              <div>
-                <h4 className="text-dark mb-1 fw-bold">Enquiry Management</h4>
-                <p className="text-muted mb-0 f-14">
-                  Manage your wedding enquiries efficiently
-                </p>
-              </div>
-            </div>
+            <h3 className="mb-1 fw-bold">Enquiry Management</h3>
+            <p className="text-muted mb-0 fs-14">
+              Manage your wedding enquiries efficiently
+            </p>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="row mb-4 lw-stats-row">
-          <div className="col-lg-3 col-md-6 mb-3">
-            <div className="lw-stats-card lw-stats-pending">
-              <div className="lw-stats-body">
+        <div className="row mb-3 mb-md-4 g-2 g-md-3">
+          <div className="col-12 col-sm-6 col-lg-4">
+            <div className="card border-0 shadow-sm rounded-3">
+              <div className="card-body p-3">
                 <div className="d-flex justify-content-between align-items-start">
                   <div>
-                    <p className="mb-1 small text-muted">Pending</p>
-                    <h3 className="mb-0 fw-bold">{globalStats.pending}</h3>
+                    <p className="mb-1 fs-16 fw-bold">Pending</p>
+                    <h4 className="mb-0 fw-bold">{globalStats.pending}</h4>
                   </div>
-                  <div className="lw-stats-icon">
-                    <MessageCircleReply size={22} />
+                  <div className="bg-warning bg-opacity-10 p-2 rounded">
+                    <MessageCircleReply size={20} className="text-warning" />
                   </div>
                 </div>
                 <div className="mt-2">
-                  <small className="text-muted d-flex align-items-center gap-1">
+                  <small className="text-muted fs-12 d-flex align-items-center gap-1">
                     <TrendingUp size={12} /> This month
                   </small>
                 </div>
@@ -353,20 +329,20 @@ const EnquiryManagement = () => {
             </div>
           </div>
 
-          <div className="col-lg-3 col-md-6 mb-3">
-            <div className="lw-stats-card lw-stats-booked">
-              <div className="lw-stats-body">
+          <div className="col-12 col-sm-6 col-lg-4">
+            <div className="card border-0 shadow-sm rounded-3">
+              <div className="card-body p-3">
                 <div className="d-flex justify-content-between align-items-start">
                   <div>
-                    <p className="mb-1 small text-muted">Booked</p>
-                    <h3 className="mb-0 fw-bold">{globalStats.booked}</h3>
+                    <p className="mb-1 fs-12 fs-16 fw-bold">Booked</p>
+                    <h4 className="mb-0 fw-bold">{globalStats.booked}</h4>
                   </div>
-                  <div className="lw-stats-icon">
-                    <Calendar size={22} />
+                  <div className="bg-success bg-opacity-10 p-2 rounded">
+                    <Calendar size={20} className="text-success" />
                   </div>
                 </div>
                 <div className="mt-2">
-                  <small className="text-muted d-flex align-items-center gap-1">
+                  <small className="text-muted fs-12 d-flex align-items-center gap-1">
                     <TrendingUp size={12} /> This month
                   </small>
                 </div>
@@ -374,20 +350,20 @@ const EnquiryManagement = () => {
             </div>
           </div>
 
-          <div className="col-lg-3 col-md-6 mb-3">
-            <div className="lw-stats-card lw-stats-declined">
-              <div className="lw-stats-body">
+          <div className="col-12 col-sm-6 col-lg-4">
+            <div className="card border-0 shadow-sm rounded-3">
+              <div className="card-body p-3">
                 <div className="d-flex justify-content-between align-items-start">
                   <div>
-                    <p className="mb-1 small text-muted">Declined</p>
-                    <h3 className="mb-0 fw-bold">{globalStats.declined}</h3>
+                    <p className="mb-1 fs-12 fs-16 fw-bold">Declined</p>
+                    <h4 className="mb-0 fw-bold">{globalStats.declined}</h4>
                   </div>
-                  <div className="lw-stats-icon">
-                    <Archive size={22} />
+                  <div className="bg-danger bg-opacity-10 p-2 rounded">
+                    <Archive size={20} className="text-danger" />
                   </div>
                 </div>
                 <div className="mt-2">
-                  <small className="text-muted d-flex align-items-center gap-1">
+                  <small className="text-muted fs-12 d-flex align-items-center gap-1">
                     <TrendingUp size={12} /> This month
                   </small>
                 </div>
@@ -399,65 +375,39 @@ const EnquiryManagement = () => {
         {/* Main Content */}
         <div className="row">
           <div className="col-12">
-            <div
-              className="card border-0 shadow-lg"
-              style={{ borderRadius: "20px", overflow: "hidden" }}
-            >
+            <div className="card border-0 shadow-sm rounded-3">
               <div className="row g-0">
                 {/* Sidebar */}
                 <div
-                  className="col-md-3 col-lg-2"
-                  style={{
-                    background: "#f8f9fa",
-                    borderRight: "1px solid #e9ecef",
-                  }}
+                  className="col-12 col-md-3 col-lg-2 border-end"
+                  style={{ background: "#fafafa" }}
                 >
-                  <div className="p-4">
+                  <div className="p-3">
                     {/* Folders */}
                     <div className="mb-4">
                       <h6
-                        className="text-uppercase text-muted fw-bold mb-3"
-                        style={{ fontSize: "11px", letterSpacing: "1px" }}
+                        className="text-uppercase text-muted fw-semibold mb-3 fs-10"
+                        style={{ letterSpacing: "0.5px" }}
                       >
                         Folders
                       </h6>
                       {folders.map((folder) => (
                         <div
                           key={folder.id}
-                          className={`d-flex align-items-center p-3 mb-2 ${
-                            filter === folder.id ? "text-dark" : "text-dark"
+                          className={`d-flex align-items-center p-2 mb-2 rounded-2 ${
+                            filter === folder.id ? "bg-white shadow-sm" : ""
                           }`}
                           role="button"
                           onClick={() => setFilter(folder.id)}
                           style={{
-                            borderRadius: "12px",
-                            background:
-                              filter === folder.id ? "" : "transparent",
-                            transition: "all 0.3s ease",
-                            fontSize: "14px",
-                          }}
-                          onMouseEnter={(e) => {
-                            if (filter !== folder.id) {
-                              e.currentTarget.style.background = "#e9ecef";
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (filter !== folder.id) {
-                              e.currentTarget.style.background = "transparent";
-                            }
+                            transition: "all 0.2s ease",
                           }}
                         >
-                          <span className="me-2">{folder.icon}</span>
-                          <span className="flex-grow-1 fw-semibold">
+                          <span className="me-2 text-muted">{folder.icon}</span>
+                          <span className="flex-grow-1 fs-14 fw-medium">
                             {folder.name}
                           </span>
-                          <span
-                            className={`badge ${
-                              filter === folder.id
-                                ? "bg-white text-primary"
-                                : "bg-light text-dark"
-                            } rounded-pill`}
-                          >
+                          <span className="badge bg-light text-dark rounded-pill fs-12">
                             {folder.count}
                           </span>
                         </div>
@@ -465,35 +415,23 @@ const EnquiryManagement = () => {
                     </div>
 
                     {/* Status Filters */}
-                    <div className="mb-4">
+                    <div className="mb-3">
                       <h6
-                        className="text-uppercase text-muted fw-bold mb-3"
-                        style={{ fontSize: "11px", letterSpacing: "1px" }}
+                        className="text-uppercase text-muted fw-semibold mb-3 fs-10"
+                        style={{ letterSpacing: "0.5px" }}
                       >
                         Status
                       </h6>
                       {statuses.map((status) => (
                         <div
                           key={status.id}
-                          className="d-flex align-items-center p-3 mb-2"
+                          className={`d-flex align-items-center p-2 mb-2 rounded-2 ${
+                            filter === status.id ? "bg-white shadow-sm" : ""
+                          }`}
                           role="button"
                           onClick={() => setFilter(status.id)}
                           style={{
-                            borderRadius: "12px",
-                            background:
-                              filter === status.id ? "#e9ecef" : "transparent",
-                            transition: "all 0.3s ease",
-                            fontSize: "14px",
-                          }}
-                          onMouseEnter={(e) => {
-                            if (filter !== status.id) {
-                              e.currentTarget.style.background = "#f8f9fa";
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (filter !== status.id) {
-                              e.currentTarget.style.background = "transparent";
-                            }
+                            transition: "all 0.2s ease",
                           }}
                         >
                           <span
@@ -502,10 +440,12 @@ const EnquiryManagement = () => {
                               height: "8px",
                               borderRadius: "50%",
                               backgroundColor: status.color,
-                              marginRight: "12px",
+                              marginRight: "10px",
                             }}
                           ></span>
-                          <span className="flex-grow-1">{status.name}</span>
+                          <span className="flex-grow-1 fs-14">
+                            {status.name}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -514,23 +454,36 @@ const EnquiryManagement = () => {
 
                 {/* Leads List */}
                 <div
-                  className="col-md-4 col-lg-4"
-                  style={{
-                    background: "#ffffff",
-                    borderRight: "1px solid #e9ecef",
-                  }}
+                  className="col-12 col-md-4 col-lg-4 border-end"
+                  style={{ background: "#ffffff" }}
                 >
-                  <div className="p-4">
-                    <div className="d-flex justify-content-between align-items-center mb-4">
-                      <h5 className="mb-0 fw-bold">
+                  <div className="p-3">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <h5 className="mb-0 fw-semibold fs-16">
                         {folders.find((f) => f.id === filter)?.name ||
                           statuses.find((s) => s.id === filter)?.name ||
                           "Enquiries"}
                       </h5>
                     </div>
 
+                    {/* Search Bar */}
+                    <div className="mb-3">
+                      <div className="input-group">
+                        <span className="input-group-text bg-white border-end-0">
+                          <SearchIcon size={16} className="text-muted" />
+                        </span>
+                        <input
+                          type="text"
+                          className="form-control border-start-0 fs-14"
+                          placeholder="Search enquiries..."
+                          value={searchMail}
+                          onChange={handleSearchMail}
+                        />
+                      </div>
+                    </div>
+
                     {loading ? (
-                      <div className="text-center py-5 w-100">
+                      <div className="text-center py-5">
                         <div
                           className="spinner-border text-primary"
                           role="status"
@@ -539,55 +492,26 @@ const EnquiryManagement = () => {
                         </div>
                       </div>
                     ) : error ? (
-                      <Alert variant="danger">{error}</Alert>
-                    ) : leads.length === 0 ? (
+                      <Alert variant="danger" className="fs-14">
+                        {error}
+                      </Alert>
+                    ) : filteredLeads.length === 0 ? (
                       <div className="text-center py-5">
-                        <Inbox className="text-muted mb-3" size={48} />
-                        <div className="fw-bold mb-1">No messages found</div>
-                        <div className="text-muted small">
+                        <Inbox className="text-muted mb-3" size={40} />
+                        <div className="fw-semibold mb-1 fs-16">
+                          No messages found
+                        </div>
+                        <div className="text-muted fs-14">
                           No messages in this folder.
                         </div>
                       </div>
                     ) : (
                       <div
                         style={{
-                          maxHeight: "calc(100vh - 50px)",
+                          maxHeight: "calc(100vh - 300px)",
                           overflowY: "auto",
-                          overflowX: "hidden",
                         }}
                       >
-                        <div className="w-100 px-4">
-                          <div
-                            style={{
-                              width: "100%",
-                              border: "2px solid #d1d5db",
-                              borderRadius: "20px",
-                              padding: "6px 12px",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "10px",
-                            }}
-                          >
-                            <span
-                              style={{ color: "#6b7280", fontSize: "18px" }}
-                            >
-                              <SearchIcon />
-                            </span>
-                            <input
-                              type="text"
-                              value={searchMail}
-                              onChange={handleSearchMail}
-                              placeholder="Search here"
-                              style={{
-                                width: "100%",
-                                border: "none",
-                                outline: "none",
-                                fontSize: "15px",
-                              }}
-                            />
-                          </div>
-                        </div>
-
                         {filteredLeads.map((lead) => {
                           const statusObj = statuses.find(
                             (s) => s.id === lead.request?.status
@@ -595,50 +519,74 @@ const EnquiryManagement = () => {
                           return (
                             <div
                               key={lead.id}
-                              className={`lead-card card border-0 ${
-                                selectedLead?.id === lead.id ? "active" : ""
+                              className={`card mb-2 border ${
+                                selectedLead?.id === lead.id
+                                  ? "border-primary"
+                                  : "border-light"
                               }`}
                               role="button"
                               onClick={() => handleLeadClick(lead)}
                               style={{
-                                borderLeft: `4px solid ${
+                                borderLeft: `3px solid ${
                                   statusObj?.color || "#95a5a6"
                                 }`,
                                 background:
                                   selectedLead?.id === lead.id
-                                    ? "#fafafa"
+                                    ? "#f8f9fa"
                                     : "#fff",
+                                transition: "all 0.2s ease",
                               }}
                             >
-                              <div className="lead-card-body">
-                                <div className="lead-header">
-                                  <div className="lead-avatar">
-                                    {lead.request?.user?.name?.charAt(0) || "?"}
-                                  </div>
-                                  <div className="lead-info">
-                                    <h6
-                                      className={`lead-name ${
-                                        !lead.isRead ? "fw-bold" : ""
-                                      }`}
+                              <div className="card-body p-3">
+                                <div className="d-flex align-items-start justify-content-between mb-2">
+                                  <div className="d-flex align-items-center gap-2">
+                                    <div
+                                      className="bg-white text-black rounded-circle border border-dark d-flex align-items-center justify-content-center fw-semibold shadow-lg"
+                                      style={{
+                                        width: "32px",
+                                        height: "32px",
+                                        fontSize: "14px",
+                                      }}
                                     >
-                                      {lead.request?.user?.name || "No Name"}
-                                    </h6>
-                                    <p className="lead-email">
-                                      {lead.request?.user?.email}
-                                    </p>
+                                      {lead.request?.user?.name?.charAt(0) ||
+                                        "?"}
+                                    </div>
+                                    <div>
+                                      <h6
+                                        className={`mb-0 fs-14 ${
+                                          !lead.isRead ? "fw-bold" : "fw-medium"
+                                        }`}
+                                      >
+                                        {lead.request?.user?.name || "No Name"}
+                                      </h6>
+                                      <p className="mb-0 text-muted fs-12">
+                                        {lead.request?.user?.email}
+                                      </p>
+                                    </div>
                                   </div>
                                   {!lead.isRead && (
-                                    <span className="lead-badge">New</span>
+                                    <span className="badge bg-primary fs-10">
+                                      New
+                                    </span>
                                   )}
                                 </div>
 
-                                <p className="lead-message">
+                                <p
+                                  className="mb-2 text-muted fs-14"
+                                  style={{
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    display: "-webkit-box",
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: "vertical",
+                                  }}
+                                >
                                   {lead.request?.message || "No message"}
                                 </p>
 
-                                <div className="lead-footer">
+                                <div className="d-flex justify-content-between align-items-center">
                                   <span
-                                    className="lead-status"
+                                    className="badge rounded-pill fs-10"
                                     style={{
                                       backgroundColor: `${statusObj?.color}20`,
                                       color: statusObj?.color,
@@ -646,8 +594,8 @@ const EnquiryManagement = () => {
                                   >
                                     {statusObj?.name}
                                   </span>
-                                  <div className="lead-date">
-                                    <Calendar size={13} className="me-1" />
+                                  <div className="text-muted fs-12 d-flex align-items-center gap-1">
+                                    <Calendar size={12} />
                                     {new Date(
                                       lead.request?.eventDate
                                     ).toLocaleDateString("en-IN", {
@@ -666,25 +614,32 @@ const EnquiryManagement = () => {
                 </div>
 
                 {/* Lead Detail */}
-                <div className="col-md-5 col-lg-6 lw-panel">
-                  <div className="lw-container p-4 h-100">
+                <div className="col-12 col-md-5 col-lg-6">
+                  <div className="p-3 p-md-4 h-100">
                     {selectedLead ? (
                       <>
                         {/* Header Section */}
-                        <div className="lw-header mb-4">
-                          <div className="d-flex align-items-start gap-3 mb-3">
-                            <div className="lw-avatar">
+                        <div className="mb-4">
+                          <div className="d-flex align-items-start gap-3 mb-3 flex-wrap">
+                            <div
+                              className="bg-white text-black rounded-circle border border-dark d-flex align-items-center justify-content-center fw-semibold shadow-sm"
+                              style={{
+                                width: "48px",
+                                height: "48px",
+                                fontSize: "20px",
+                              }}
+                            >
                               {selectedLead.request?.user?.name?.charAt(0) ||
                                 "?"}
                             </div>
 
                             <div className="flex-grow-1">
-                              <h5 className="lw-name mb-1 fw-bold">
+                              <h5 className="mb-1 fw-bold fs-16">
                                 {selectedLead.request?.user?.name}
                               </h5>
                               <div className="d-flex flex-column gap-1">
-                                <div className="lw-contact small">
-                                  <Mail size={14} className="me-2 text-muted" />
+                                <div className="d-flex align-items-center gap-2 fs-14">
+                                  <Mail size={14} className="text-muted" />
                                   <a
                                     href={`mailto:${selectedLead.request?.user?.email}`}
                                     className="text-decoration-none text-muted"
@@ -692,11 +647,8 @@ const EnquiryManagement = () => {
                                     {selectedLead.request?.user?.email}
                                   </a>
                                 </div>
-                                <div className="lw-contact small">
-                                  <Phone
-                                    size={14}
-                                    className="me-2 text-muted"
-                                  />
+                                <div className="d-flex align-items-center gap-2 fs-14 text-muted">
+                                  <Phone size={14} />
                                   <span>
                                     {selectedLead.request?.user?.phone}
                                   </span>
@@ -704,9 +656,9 @@ const EnquiryManagement = () => {
                               </div>
                             </div>
 
-                            <div className="d-flex gap-2">
+                            <div className="d-flex gap-2 flex-wrap">
                               <button
-                                className="btn btn-outline-light btn-sm lw-btn-action"
+                                className="btn btn-outline-secondary btn-sm fs-14"
                                 onClick={() =>
                                   handleAction(
                                     selectedLead,
@@ -721,7 +673,7 @@ const EnquiryManagement = () => {
                                   : "Archive"}
                               </button>
                               <button
-                                className="btn btn-outline-light btn-sm lw-btn-action"
+                                className="btn btn-outline-danger btn-sm fs-14"
                                 onClick={() =>
                                   handleDeleteEmail(selectedLead.id)
                                 }
@@ -732,56 +684,62 @@ const EnquiryManagement = () => {
                           </div>
 
                           {/* Meta Cards */}
-                          <div className="row g-3">
+                          <div className="row g-2">
                             <div className="col-6">
-                              <div className="lw-card">
-                                <div className="d-flex align-items-center gap-2 mb-1">
-                                  <Calendar
-                                    size={16}
-                                    className="text-primary"
-                                  />
-                                  <small className="text-muted">
-                                    Event Date
-                                  </small>
-                                </div>
-                                <div className="fw-semibold">
-                                  {new Date(
-                                    selectedLead.request.eventDate
-                                  ).toLocaleDateString("en-IN", {
-                                    day: "numeric",
-                                    month: "long",
-                                    year: "numeric",
-                                  })}
+                              <div className="card border-0 bg-light">
+                                <div className="card-body p-3">
+                                  <div className="d-flex align-items-center gap-2 mb-1">
+                                    <Calendar
+                                      size={16}
+                                      className="text-primary"
+                                    />
+                                    <small className="text-muted fs-12">
+                                      Event Date
+                                    </small>
+                                  </div>
+                                  <div className="fw-semibold fs-14">
+                                    {new Date(
+                                      selectedLead.request.eventDate
+                                    ).toLocaleDateString("en-IN", {
+                                      day: "numeric",
+                                      month: "long",
+                                      year: "numeric",
+                                    })}
+                                  </div>
                                 </div>
                               </div>
                             </div>
                             <div className="col-6">
-                              <div className="lw-card">
-                                <div className="d-flex align-items-center gap-2 mb-1">
-                                  <Clock size={16} className="text-info" />
-                                  <small className="text-muted">Received</small>
-                                </div>
-                                <div className="fw-semibold">
-                                  {new Date(
-                                    selectedLead.createdAt
-                                  ).toLocaleDateString("en-IN", {
-                                    day: "numeric",
-                                    month: "short",
-                                  })}
+                              <div className="card border-0 bg-light">
+                                <div className="card-body p-3">
+                                  <div className="d-flex align-items-center gap-2 mb-1">
+                                    <Clock size={16} className="text-info" />
+                                    <small className="text-muted fs-12">
+                                      Received
+                                    </small>
+                                  </div>
+                                  <div className="fw-semibold fs-14">
+                                    {new Date(
+                                      selectedLead.createdAt
+                                    ).toLocaleDateString("en-IN", {
+                                      day: "numeric",
+                                      month: "short",
+                                    })}
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </div>
 
-                        {/* Status */}
                         <div className="mb-4">
                           <span
-                            className="lw-status badge rounded-pill px-4 py-2"
+                            className="badge rounded-pill px-3 py-2 fs-14"
                             style={{
                               backgroundColor: statuses.find(
                                 (s) => s.id === selectedLead.request.status
                               )?.color,
+                              color: "white",
                             }}
                           >
                             {
@@ -791,33 +749,34 @@ const EnquiryManagement = () => {
                             }
                           </span>
                         </div>
-
-                        {/* Message */}
-                        <div className="lw-message mb-4">
-                          <h6 className="fw-bold mb-3">Message</h6>
-                          <div className="lw-card lw-msg-card">
-                            <p className="mb-0">
-                              {selectedLead.request.message ||
-                                "No message provided."}
-                            </p>
+                        <div className="mb-4">
+                          <h6 className="fw-semibold mb-2 fs-16">Message</h6>
+                          <div className="card border-0 bg-light">
+                            <div className="card-body p-3">
+                              <p
+                                className="mb-0 fs-14"
+                                style={{ lineHeight: "1.6" }}
+                              >
+                                {selectedLead.request.message ||
+                                  "No message provided."}
+                              </p>
+                            </div>
                           </div>
                         </div>
 
-                        {/* Actions */}
-                        <div className="lw-actions">
-                          <h6 className="fw-bold mb-3">Update Status</h6>
+                        <div>
+                          <h6 className="fw-semibold mb-3 fs-16">
+                            Update Status
+                          </h6>
                           <div className="d-flex flex-wrap gap-2 mb-3">
                             {statuses.map((status) => (
                               <button
                                 key={status.id}
-                                className={`lw-status-btn btn btn-sm rounded-pill ${
+                                className={`btn btn-sm rounded-pill fs-14 ${
                                   selectedLead.request.status === status.id
-                                    ? "active"
-                                    : ""
+                                    ? "btn-danger"
+                                    : "btn-outline-secondary"
                                 }`}
-                                style={{
-                                  "--lw-color": status.color,
-                                }}
                                 onClick={() =>
                                   handleAction(selectedLead, status.id)
                                 }
@@ -828,7 +787,7 @@ const EnquiryManagement = () => {
                           </div>
 
                           <button
-                            className="lw-reply-btn btn text-white fw-semibold"
+                            className="btn btn-primary w-100 fs-14 p-2 rounded-pill fw-semibold d-flex align-items-center justify-content-center gap-2"
                             onClick={() => {
                               if (selectedLead) setShowQuoteModal(true);
                               else
@@ -838,19 +797,19 @@ const EnquiryManagement = () => {
                                 );
                             }}
                           >
-                            <MessageCircleReply size={18} className="me-2" />
+                            <MessageCircleReply size={18} />
                             Reply to Enquiry
                           </button>
                         </div>
                       </>
                     ) : (
                       !loading && (
-                        <div className="lw-empty h-100 d-flex flex-column align-items-center justify-content-center text-center">
-                          <div className="lw-empty-icon">
-                            <MailOpen size={40} className="text-muted" />
-                          </div>
-                          <h5 className="fw-bold mb-2">Select an Enquiry</h5>
-                          <p className="text-muted">
+                        <div className="h-100 d-flex flex-column align-items-center justify-content-center text-center">
+                          <MailOpen size={48} className="text-muted mb-3" />
+                          <h5 className="fw-semibold mb-2 fs-16">
+                            Select an Enquiry
+                          </h5>
+                          <p className="text-muted fs-14">
                             Choose a lead from the list to view details
                           </p>
                         </div>

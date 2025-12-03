@@ -45,8 +45,6 @@ const VendorPricing = ({
             />
           </div>
 
-       
-
           {/* Price Range */}
           <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">Price Range</label>
@@ -117,13 +115,17 @@ const VendorPricing = ({
           )}
         </div>
 
-        <div style={{ display: "flex", gap: "5px", width: "50%" }}>
-          <button className="btn btn-primary mt-2" onClick={handleSave}>
-            Save Pricing Details
-          </button>
-          <button className="btn btn-primary mt-2" onClick={onSubmit}>
-            Submit All Details
-          </button>
+        <div className="row g-2 mt-2">
+          <div className="col-12 col-md-2">
+            <button className="btn btn-primary w-100" onClick={handleSave}>
+              Save Pricing Details
+            </button>
+          </div>
+          <div className="col-12 col-md-2">
+            <button className="btn btn-primary w-100" onClick={onSubmit}>
+              Submit All Details
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -316,100 +316,6 @@ const BusinessDetails = ({ formData, setFormData }) => {
 
   return (
     <div className="">
-      {/* Change Password panel */}
-
-      {/* <div className="p-3 border rounded mb-4 bg-white">
-        <h6 className="mb-3 fw-bold">Login Information</h6>
-        <div className="mb-3">
-          <label className="form-label">Username</label>
-          <input
-            name="username"
-            type="text"
-            className="form-control"
-            placeholder="Enter username"
-            value={formData.attributes?.username || ""}
-            onChange={handleAttributeChange}
-          />
-        </div>
-        <div className="mb-3">
-          {!showPasswordFields ? (
-            <button
-              type="button"
-              className="btn btn-link text-danger p-0"
-              onClick={() => setShowPasswordFields(true)}
-              style={{ textDecoration: "none" }}
-            >
-              Reset Password
-            </button>
-          ) : (
-            <div>
-              <div className="mb-3">
-                <label className="form-label">Your Password</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  placeholder="Enter your current password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                />
-                <div className="mt-3">
-                  <a
-                    href="#"
-                    style={{
-                      fontSize: "0.9em",
-                      color: "red",
-                      textDecoration: "none",
-                    }}
-                  >
-                    Forgot password?
-                  </a>
-                </div>
-              </div>
-              <div className="mb-3">
-                <label className="form-label">New Password</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  placeholder="Enter new password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Confirm Password</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  placeholder="Confirm new password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-              </div>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleSubmitRegister}
-                disabled={submitting}
-              >
-                {submitting ? "Saving..." : "Submit"}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-     
-      <div className="p-3 border rounded mb-4 bg-white">
-        <h6 className="mb-3 fw-bold">About</h6>
-        <textarea
-          name="about"
-          className="form-control"
-          rows="4"
-          placeholder="Write about your business..."
-          value={formData.attributes?.about || ""}
-          onChange={handleAttributeChange}
-        ></textarea>
-      </div> */}
-      {/* Contact Details */}
       <div className="p-3 border rounded bg-white">
         <h6 className="mb-3 fw-bold">Bussiness Details</h6>
         <div className="mb-3">
@@ -460,17 +366,28 @@ const BusinessDetails = ({ formData, setFormData }) => {
                 </div>
               )}
             </div>
-            <div style={{ flex: 1 }}>
+            <div
+              className="border rounded-3 p-2 text-center fs-14"
+              style={{ borderStyle: "dashed", cursor: "pointer" }}
+              onClick={() => document.getElementById("profileUpload").click()}
+            >
+              <p className="mb-1 fw-bold">Upload Profile Image</p>
+              <p className="text-muted small mb-2">
+                Drag & drop or click to browse
+              </p>
+
               <input
                 type="file"
+                id="profileUpload"
                 accept="image/*"
-                className="form-control"
+                className="d-none fs-14"
                 onChange={handleProfileImage}
               />
+
               {profileImageFile && (
-                <div className="small mt-2">
+                <p className="small text-success mt-1 fs-14">
                   Selected: {profileImageFile.name}
-                </div>
+                </p>
               )}
             </div>
           </div>

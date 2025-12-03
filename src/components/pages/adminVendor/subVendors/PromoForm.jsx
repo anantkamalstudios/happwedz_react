@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 // (no redux selector needed in this form component)
 import Swal from "sweetalert2";
 import { IMAGE_BASE_URL } from "../../../../config/constants";
+import { TbBookmarkEdit } from "react-icons/tb";
+import { MdDeleteOutline } from "react-icons/md";
 
 export default function PromoForm({ formData, setFormData, onSave }) {
   const [form, setForm] = useState({
@@ -207,19 +209,21 @@ export default function PromoForm({ formData, setFormData, onSave }) {
       <div className="promo-form-wrapper">
         <div className="form-section">
           <div className="form-card">
-            <h2>Promotion Details</h2>
-            <p className="form-description">
+            <h6>Promotion Details</h6>
+            <p className="form-description fs-14">
               Fill in the details of your special offer for couples
             </p>
 
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Offer Title</label>
+                <label className="fs-16">Offer Title</label>
                 <input
                   name="title"
                   value={form.title}
                   onChange={handleChange}
-                  className={`form-control ${errors.title ? "error" : ""}`}
+                  className={`form-control fs-14 ${
+                    errors.title ? "error" : ""
+                  }`}
                   placeholder="placeholder for offer"
                 />
                 {errors.title && (
@@ -229,12 +233,12 @@ export default function PromoForm({ formData, setFormData, onSave }) {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>Promo Code</label>
+                  <label className="fs-16">Promo Code</label>
                   <input
                     name="promoCode"
                     value={form.promoCode}
                     onChange={handleChange}
-                    className={`form-control ${
+                    className={`form-control fs-14 ${
                       errors.promoCode ? "error" : ""
                     }`}
                     placeholder="E.g. WWCOUPLE10"
@@ -245,7 +249,7 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                 </div>
 
                 <div className="form-group">
-                  <label>Status</label>
+                  <label className="fs-16">Status</label>
                   <div className="switch-container">
                     <label className="switch">
                       <input
@@ -265,12 +269,12 @@ export default function PromoForm({ formData, setFormData, onSave }) {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>Discount Type</label>
+                  <label className="fs-16">Discount Type</label>
                   <select
                     name="type"
                     value={form.type}
                     onChange={handleChange}
-                    className="form-control"
+                    className="form-control fs-14"
                   >
                     <option value="percentage">Percentage</option>
                     <option value="fixed">Fixed amount</option>
@@ -278,7 +282,7 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                 </div>
 
                 <div className="form-group">
-                  <label>Discount Value</label>
+                  <label className="fs-16">Discount Value</label>
                   <div className="input-with-icon">
                     <span className="input-icon">
                       {form.type === "percentage" ? "%" : "₹"}
@@ -287,7 +291,9 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                       name="value"
                       value={form.value}
                       onChange={handleChange}
-                      className={`form-control ${errors.value ? "error" : ""}`}
+                      className={`form-control fs-14 ${
+                        errors.value ? "error" : ""
+                      }`}
                       placeholder={form.type === "percentage" ? "10" : "500"}
                     />
                   </div>
@@ -299,13 +305,13 @@ export default function PromoForm({ formData, setFormData, onSave }) {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>Start Date</label>
+                  <label className="fs-16">Start Date</label>
                   <input
                     name="startDate"
                     type="date"
                     value={form.startDate}
                     onChange={handleChange}
-                    className={`form-control ${
+                    className={`form-control fs-14 ${
                       errors.startDate || errors.date ? "error" : ""
                     }`}
                   />
@@ -313,14 +319,15 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                     <div className="error-message">{errors.startDate}</div>
                   )}
                 </div>
+
                 <div className="form-group">
-                  <label>End Date</label>
+                  <label className="fs-16">End Date</label>
                   <input
                     name="endDate"
                     type="date"
                     value={form.endDate}
                     onChange={handleChange}
-                    className={`form-control ${
+                    className={`form-control fs-14 ${
                       errors.endDate || errors.date ? "error" : ""
                     }`}
                   />
@@ -333,26 +340,26 @@ export default function PromoForm({ formData, setFormData, onSave }) {
               </div>
 
               <div className="form-group">
-                <label>Description</label>
+                <label className="fs-16">Description</label>
                 <textarea
                   name="description"
                   value={form.description}
                   onChange={handleChange}
                   rows="3"
-                  className="form-control"
+                  className="form-control fs-14"
                   placeholder="Short note about terms or what customers get"
                 />
               </div>
 
               <div className="form-group">
-                <label>Promotion Image</label>
+                <label className="fs-16">Promotion Image</label>
                 <div className="file-upload">
                   <label className="file-upload-label">
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleImage}
-                      className="file-input"
+                      className="file-input fs-14"
                     />
                     <span className="file-upload-button">Choose File</span>
                     <span className="file-name">
@@ -366,7 +373,7 @@ export default function PromoForm({ formData, setFormData, onSave }) {
               </div>
 
               <div className="form-group terms-group">
-                <label className="checkbox-container">
+                <label className="checkbox-container fs-16">
                   <input
                     type="checkbox"
                     name="termsAccepted"
@@ -397,6 +404,7 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                 >
                   {submitting ? "Saving..." : "Save Promotion"}
                 </button>
+
                 <button
                   type="button"
                   className="btn-secondary folder-item"
@@ -409,22 +417,9 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                 >
                   Reset
                 </button>
-                <button
-                  type="button"
-                  className="btn-preview folder-item border"
-                  onClick={() =>
-                    Swal.fire({
-                      text: "Preview Openend",
-                      icon: "info",
-                      position: "top",
-                      timer: "1500",
-                    })
-                  }
-                >
-                  Preview
-                </button>
               </div>
             </form>
+
             {serverError && (
               <div className="alert alert-danger mt-3">{serverError}</div>
             )}
@@ -460,14 +455,14 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                           className="btn btn-sm btn-outline-primary"
                           onClick={() => handleEditDeal(i)}
                         >
-                          Edit
+                          <TbBookmarkEdit />
                         </button>
                         <button
                           type="button"
                           className="btn btn-sm btn-outline-danger"
                           onClick={() => handleDeleteDeal(i)}
                         >
-                          Delete
+                          <MdDeleteOutline />
                         </button>
                       </div>
                     </div>
@@ -475,7 +470,7 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                 </div>
               </div>
             )}
-            <div className="preview-header">
+            {/* <div className="preview-header">
               <h3>Promotion Preview</h3>
               <p>This is how couples will see your offer</p>
             </div>
@@ -583,7 +578,7 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                   </button>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

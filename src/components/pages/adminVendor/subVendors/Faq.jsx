@@ -135,11 +135,13 @@ function Faq({ formData, setFormData, onSave }) {
           <div className="mb-2">
             {q.label && q.label.length > 0 ? (
               q.label.map((label, index) => (
-                <div key={index}>
-                  <label>{label}</label>
+                <div key={index} className="mb-2">
+                  <label className="form-label fw-semibold fs-16">
+                    {label}
+                  </label>
                   <input
                     type="text"
-                    className="form-control w-25"
+                    className="form-control fs-14"
                     value={answers[q.id] || ""}
                     onChange={(e) => handleAnswerChange(q.id, e.target.value)}
                   />
@@ -149,7 +151,7 @@ function Faq({ formData, setFormData, onSave }) {
               <div className="mb-2">
                 <input
                   type="text"
-                  className="form-control w-25"
+                  className="form-control fs-14"
                   value={answers[q.id] || ""}
                   onChange={(e) => handleAnswerChange(q.id, e.target.value)}
                 />
@@ -161,7 +163,7 @@ function Faq({ formData, setFormData, onSave }) {
         return (
           <div>
             <textarea
-              className="form-control"
+              className="form-control fs-14"
               rows={3}
               value={answers[q.id] || ""}
               onChange={(e) => handleAnswerChange(q.id, e.target.value)}
@@ -170,7 +172,7 @@ function Faq({ formData, setFormData, onSave }) {
         );
       case "range":
         return (
-          <div className="w-75">
+          <div>
             <input
               type="range"
               min={q.min || 0}
@@ -179,24 +181,28 @@ function Faq({ formData, setFormData, onSave }) {
               value={answers[q.id] || 0}
               onChange={(e) => handleAnswerChange(q.id, e.target.value)}
             />
-            <div className="w-100 d-flex justify-content-between">
-              <p>₹ {answers[q.id] || 0}</p>
-              <p>₹ {q.max}+</p>
+            <div className="d-flex justify-content-between fs-14">
+              <span>₹ {answers[q.id] || 0}</span>
+              <span>₹ {q.max}+</span>
             </div>
           </div>
         );
       case "radio":
         return (
           <div>
-            <div className="gap-2 grid-col-3">
+            <div className="d-flex flex-wrap gap-2">
               {q.options.map((option, index) => (
-                <label key={index} className="me-2 gap-2">
+                <label
+                  key={index}
+                  className="form-check d-flex align-items-center gap-2 fs-14 me-3"
+                >
                   <input
                     type="radio"
                     name={`radio_${q.id}`}
                     value={option}
                     checked={answers[q.id] === option}
                     onChange={() => handleAnswerChange(q.id, option)}
+                    className="form-check-input me-1"
                   />
                   {option}
                 </label>
@@ -207,11 +213,11 @@ function Faq({ formData, setFormData, onSave }) {
       case "checkbox":
         return (
           <div>
-            <div className="gap-2 grid-col-3">
+            <div className="d-flex flex-wrap gap-2">
               {q.options.map((option, index) => (
                 <label
                   key={index}
-                  className="me-2 d-flex justify-content-center gap-2"
+                  className="form-check d-flex align-items-center gap-2 fs-14 me-3"
                 >
                   <input
                     type="checkbox"
@@ -222,6 +228,7 @@ function Faq({ formData, setFormData, onSave }) {
                       answers[q.id].includes(option)
                     }
                     onChange={() => checkboxAnswerHandler(q.id, option)}
+                    className="form-check-input me-1"
                   />
                   {option}
                 </label>
@@ -234,13 +241,15 @@ function Faq({ formData, setFormData, onSave }) {
           <div className="mb-2">
             {q.label && q.label.length > 0 ? (
               q.label.map((label, index) => (
-                <div key={index}>
-                  <label>{label}</label>
+                <div key={index} className="mb-2">
+                  <label className="form-label fw-semibold fs-16">
+                    {label}
+                  </label>
                   <input
                     inputMode="numeric"
                     min="0"
                     type="number"
-                    className="form-control w-25"
+                    className="form-control fs-14"
                     value={(answers[q.id] && answers[q.id][index]) || ""}
                     onChange={(e) => {
                       const newAnswer = { ...(answers[q.id] || {}) };
@@ -254,7 +263,7 @@ function Faq({ formData, setFormData, onSave }) {
               <div className="mb-2">
                 <input
                   type="number"
-                  className="form-control w-25"
+                  className="form-control fs-14"
                   value={answers[q.id] || ""}
                   onChange={(e) => handleAnswerChange(q.id, e.target.value)}
                 />
@@ -274,7 +283,7 @@ function Faq({ formData, setFormData, onSave }) {
           <div className="d-flex px-3 pt-3 pb-2">
             <div className="col-1">
               <img
-                src="/images/vendorsDashboard/chat.png"
+                src="/images/vendorsDashboard/faq.png"
                 alt="FAQ"
                 width={30}
                 height={30}
@@ -283,10 +292,10 @@ function Faq({ formData, setFormData, onSave }) {
               />
             </div>
             <div className="">
-              <h5 className="intro-title" style={{ color: "red" }}>
+              <h5 className="intro-title fs-16 px-2" style={{ color: "red" }}>
                 Please provide details about your services.
               </h5>
-              <p className="intro-sub" style={{ color: "black" }}>
+              <p className="intro-sub fs-14 px-2" style={{ color: "black" }}>
                 Add responses to frequently asked questions about your business
                 to give couples a better understanding of your offering before
                 deciding whether to contact you.
@@ -314,7 +323,7 @@ function Faq({ formData, setFormData, onSave }) {
         <button
           type="submit"
           onClick={handleSave}
-          className="px-4 py-2 rounded btn-pink w-25"
+          className="px-4 py-2 rounded btn-pink"
         >
           Submit
         </button>

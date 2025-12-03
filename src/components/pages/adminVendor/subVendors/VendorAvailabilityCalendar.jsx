@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef } from "react";
 import dayjs from "dayjs";
 import "dayjs/locale/en";
@@ -101,7 +99,6 @@ const VendorAvailabilityCalendar = ({
     setMonthsDays(getMonthsDays(initialAvailableDates));
   }, [initialAvailableDates]);
 
-
   // Toggle single date
   const toggleAvailability = (monthIndex, dayIndex) => {
     const day = monthsDays[monthIndex].days[dayIndex];
@@ -131,11 +128,7 @@ const VendorAvailabilityCalendar = ({
         <div className="col-12">
           <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4">
             <div className="mb-3 mb-md-0">
-              <h2 className="h3 mb-1 d-flex align-items-center">
-                <Calendar className="me-2 text-primary" size={28} />
-                Availability Calendar
-              </h2>
-              <p className="text-muted mb-0">
+              <p className="text-muted fs-16 mb-0">
                 Manage your availability for upcoming months
               </p>
             </div>

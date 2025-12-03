@@ -330,10 +330,11 @@ h6 {
 
 .wrapper {
   max-width: 1400px;
-  min-width: 400px;
+  min-width: 0;
   margin: 0 auto;
   padding: 15px 20px;
   display: block;
+  box-sizing: border-box;
 }
 
 .adminNav {
@@ -4437,7 +4438,7 @@ h6 {
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   padding: 30px;
-  height: 100%;
+  height: auto;
 }
 
 .form-card h2 {
@@ -15706,6 +15707,18 @@ input:checked + .slider:before {
   color: #ffd700;
   -webkit-text-stroke: 0.5px #ff9b00;
   text-shadow: 0 0 2px #ff9b00;
+}
+
+.vendor-dashboard-navbar {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.vendor-dashboard-navbar.wrapper {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* Genie */

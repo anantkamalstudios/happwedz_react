@@ -178,9 +178,14 @@ const Navbar = () => {
         style={{
           paddingLeft: isMobile ? 12 : undefined,
           paddingRight: isMobile ? 12 : undefined,
+          maxWidth: "100%",
+          overflowX: "hidden",
         }}
       >
-        <div className="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
+        <div
+          className="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3"
+          style={{ minWidth: 0, width: "100%" }}
+        >
           <div
             className="d-flex gap-3 gap-lg-4"
             style={{
@@ -190,6 +195,7 @@ const Navbar = () => {
               WebkitOverflowScrolling: isMobile ? "touch" : undefined,
               paddingBottom: isMobile ? 8 : undefined,
               gap: isMobile ? 12 : undefined,
+              maxWidth: "100%",
             }}
           >
             {tabs.map((tab) => (
@@ -236,7 +242,12 @@ const Navbar = () => {
           {/* Right side: Go Premium + small storefront completion (label above bar) */}
           <div
             className="d-flex align-items-center gap-2 bg-light px-3 rounded-3"
-            style={{ paddingTop: 8, paddingBottom: 8 }}
+            style={{
+              paddingTop: 8,
+              paddingBottom: 8,
+              maxWidth: "100%",
+              overflowX: "hidden",
+            }}
           >
             <div
               style={{
@@ -246,7 +257,16 @@ const Navbar = () => {
                 gap: 6,
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 40 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: isMobile ? 12 : 40,
+                  flexWrap: isMobile ? "wrap" : "nowrap",
+                  rowGap: isMobile ? 8 : undefined,
+                  width: "100%",
+                }}
+              >
                 {/* Compact progress bar */}
                 <div
                   style={{
@@ -272,7 +292,7 @@ const Navbar = () => {
                   >
                     <div
                       style={{
-                        width: 120,
+                        width: isMobile ? 100 : 120,
                         height: 8,
                         background: "#e9ecef",
                         borderRadius: 6,

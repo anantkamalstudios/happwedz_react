@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import ReviewsSidebar from "./subVendors/ReviewsSidebar";
+
 import ReviewsDashboard from "./subVendors/ReviewsDashboard";
 import Reviews from "./subVendors/Reviews";
 import ReviewsCollector from "./subVendors/ReviewsCollector";
@@ -8,7 +8,6 @@ import ReviewsCollector from "./subVendors/ReviewsCollector";
 const API_BASE_URL = "https://happywedz.com/api";
 
 const ReviewsPage = () => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState("reviews");
   const { vendor, token: vendorToken } = useSelector(
     (state) => state.vendorAuth
@@ -147,10 +146,6 @@ const ReviewsPage = () => {
     if (activeSection === "review-collector") {
       return (
         <div>
-          <div className="text-center mb-4">
-            <h3>Review Collector</h3>
-            <p>Send requests and collect reviews from your clients</p>
-          </div>
           <ReviewsCollector />
         </div>
       );
@@ -198,27 +193,41 @@ const ReviewsPage = () => {
 
   return (
     <div className="">
-      <div className="row">
-        {/* Sidebar */}
-        <div className={`col-md-3 ${sidebarCollapsed ? "d-none" : ""}`}>
-          <ReviewsSidebar
-            isCollapsed={sidebarCollapsed}
-            onToggle={() => setSidebarCollapsed((prev) => !prev)}
-            activeSection={activeSection}
-            onSectionChange={setActiveSection}
-          />
-        </div>
-
-        {/* Main content */}
-        <div className={`col-md-${sidebarCollapsed ? 12 : 9}`}>
-          <div className="py-4">{renderContent()}</div>
+      <div className="container">
+        <div className="d-flex justify-content-center">
+          <div className="w-100" style={{ maxWidth: 1000 }}>
+            <div className="nav nav-tabs justify-content-start flex-wrap mb-3">
+              <button
+                type="button"
+                className={`nav-link shadow-none px-2 ${
+                  activeSection === "reviews"
+                    ? "active primary-text"
+                    : "text-dark"
+                }`}
+                onClick={() => setActiveSection("reviews")}
+              >
+                Reviews
+              </button>
+              <button
+                type="button"
+                className={`nav-link shadow-none px-2 ${
+                  activeSection === "review-collector"
+                    ? "active primary-text"
+                    : "text-dark"
+                }`}
+                onClick={() => setActiveSection("review-collector")}
+              >
+                Review Collector
+              </button>
+            </div>
+            <div className="py-4">{renderContent()}</div>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-// New Component: Reviews Card Grid
 const ReviewsCardGrid = ({
   reviews,
   averageRating,
@@ -249,129 +258,163 @@ const ReviewsCardGrid = ({
   };
 
   return (
-    <div>
-      {/* Stats Summary */}
-      <div className="row mb-4">
-        <div className="col-md-4">
-          <div className="card shadow-sm">
-            <div className="card-body text-center">
-              <h3 className="mb-0">{averageRating.toFixed(1)}</h3>
+    <div className="container-fluid px-0">
+      {/* Stats Summary - Responsive Grid */}
+      <div className="row g-3 mb-4">
+        <div className="col-12 col-sm-6 col-lg-4 d-flex">
+          <div className="card shadow-sm rounded-3 h-100 w-100">
+            <div className="card-body text-center py-3">
+              <h3 className="mb-1">{averageRating.toFixed(1)}</h3>
               <div className="mb-2">
                 {renderStars(Math.round(averageRating))}
               </div>
-              <p className="text-muted mb-0">Average Rating</p>
+              <p className="text-muted mb-0 small">Average Rating</p>
             </div>
           </div>
         </div>
-        <div className="col-md-4">
-          <div className="card shadow-sm">
-            <div className="card-body text-center">
-              <h3 className="mb-0">{totalReviews}</h3>
-              <p className="text-muted mb-0">Total Reviews</p>
+
+        <div className="col-12 col-sm-6 col-lg-4 d-flex">
+          <div className="card shadow-sm rounded-3 h-100 w-100">
+            <div className="card-body text-center py-3">
+              <h3 className="mb-1">{totalReviews}</h3>
+              <p className="text-muted mb-0 small">Total Reviews</p>
             </div>
           </div>
         </div>
-        <div className="col-md-4">
-          <div className="card shadow-sm">
-            <div className="card-body text-center">
-              <h3 className="mb-0">{reviews.filter((r) => r.reply).length}</h3>
-              <p className="text-muted mb-0">Replies Sent</p>
+
+        <div className="col-12 col-sm-12 col-lg-4 d-flex">
+          <div className="card shadow-sm rounded-3 h-100 w-100">
+            <div className="card-body text-center py-3">
+              <h3 className="mb-1">{reviews.filter((r) => r.reply).length}</h3>
+              <p className="text-muted mb-0 small">Replies Sent</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Reviews Grid */}
+      {/* Reviews List - Horizontal Cards */}
       {reviews.length === 0 ? (
         <div className="text-center py-5">
           <p className="text-muted">No reviews yet</p>
         </div>
       ) : (
-        <div className="row g-4">
+        <div className="d-flex flex-column gap-3">
           {reviews.map((review) => (
-            <div key={review.id} className="col-md-6 col-lg-4">
-              <div className="card h-100 shadow-sm">
-                <div className="card-body">
-                  {/* Header */}
-                  <div className="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                      <h5 className="card-title mb-1">{review.name}</h5>
-                      <small className="text-muted">{review.date}</small>
-                    </div>
-                    {review.verified && (
-                      <span className="badge bg-success">Verified</span>
-                    )}
-                  </div>
-
-                  {/* Rating */}
-                  <div className="mb-3">
-                    <div className="d-flex align-items-center">
-                      <div className="me-2">{renderStars(review.rating)}</div>
-                      <strong>{review.rating}</strong>
-                    </div>
-                  </div>
-
-                  {/* Review Text */}
-                  <p className="card-text mb-3">{review.review}</p>
-
-                  {/* Vendor Reply */}
-                  {review.reply && (
-                    <div className="alert alert-light border mb-3">
-                      <small className="text-muted d-block mb-1">
-                        <strong>Your Reply:</strong>
-                      </small>
-                      <p className="mb-0 small">{review.reply}</p>
-                    </div>
-                  )}
-
-                  {/* Reply Form */}
-                  {replyingTo === review.id && (
-                    <div className="mb-3">
-                      <textarea
-                        className="form-control mb-2"
-                        rows="3"
-                        placeholder="Write your reply..."
-                        value={replyText}
-                        onChange={(e) => setReplyText(e.target.value)}
-                      />
-                      <div className="d-flex gap-2">
-                        <button
-                          className="btn btn-primary btn-sm"
-                          onClick={() => handleReplySubmitLocal(review.id)}
+            <div key={review.id} className="card shadow-sm rounded-3">
+              <div className="card-body p-3 p-md-4">
+                <div className="row g-3">
+                  {/* Left Section - User Info & Rating */}
+                  <div className="col-12 col-md-3 col-lg-2">
+                    <div className="d-flex flex-row flex-md-column align-items-start">
+                      <div className="flex-grow-1 flex-md-grow-0">
+                        <h5
+                          className="card-title mb-1"
+                          style={{ wordBreak: "break-word" }}
                         >
-                          Submit Reply
-                        </button>
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={handleReplyCancel}
-                        >
-                          Cancel
-                        </button>
+                          {review.name}
+                        </h5>
+                        <small className="text-muted d-block mb-2">
+                          {review.date}
+                        </small>
+                        {review.verified && (
+                          <span className="badge bg-success mb-2">
+                            Verified
+                          </span>
+                        )}
+                      </div>
+                      <div className="ms-3 ms-md-0 mt-md-2">
+                        <div className="d-flex align-items-center flex-nowrap">
+                          <div className="me-2">
+                            {renderStars(review.rating)}
+                          </div>
+                          <strong className="text-nowrap">
+                            {review.rating}
+                          </strong>
+                        </div>
                       </div>
                     </div>
-                  )}
+                  </div>
 
-                  {/* Action Buttons */}
-                  <div className="d-flex gap-2">
-                    {replyingTo !== review.id && (
-                      <button
-                        className="btn btn-outline-primary btn-sm"
-                        onClick={() =>
-                          handleReplyClick(review.id, review.reply)
-                        }
+                  <div
+                    className="col-12 col-md-9 col-lg-10 d-flex flex-column"
+                    style={{ minHeight: "100%" }}
+                  >
+                    {/* Review Text */}
+                    <div className="mb-3">
+                      <p
+                        className="card-text mb-0"
+                        style={{
+                          wordWrap: "break-word",
+                          overflowWrap: "break-word",
+                          whiteSpace: "pre-wrap",
+                        }}
                       >
-                        {review.reply ? "Edit Reply" : "Reply"}
-                      </button>
+                        {review.review}
+                      </p>
+                    </div>
+
+                    {review.reply && (
+                      <div className="alert alert-light border rounded-3 mb-3">
+                        <small className="text-muted d-block mb-1">
+                          <strong>Your Reply:</strong>
+                        </small>
+                        <p
+                          className="mb-0 small"
+                          style={{
+                            wordWrap: "break-word",
+                            overflowWrap: "break-word",
+                            whiteSpace: "pre-wrap",
+                          }}
+                        >
+                          {review.reply}
+                        </p>
+                      </div>
                     )}
 
-                    {/* Delete button - only show if no reply */}
+                    {replyingTo === review.id && (
+                      <div className="mb-3">
+                        <textarea
+                          className="form-control rounded-3 mb-2"
+                          rows="3"
+                          placeholder="Write your reply..."
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                        />
+                        <div className="d-flex flex-wrap gap-2">
+                          <button
+                            className="btn btn-primary btn-sm rounded-3"
+                            onClick={() => handleReplySubmitLocal(review.id)}
+                          >
+                            Submit Reply
+                          </button>
+                          <button
+                            className="btn btn-secondary btn-sm rounded-3"
+                            onClick={handleReplyCancel}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
-                    <button
-                      className="btn btn-outline-danger btn-sm"
-                      onClick={() => onDelete(review.id)}
-                    >
-                      Delete
-                    </button>
+                    <div className="mt-auto d-flex flex-row flex-md-row gap-2 justify-content-end">
+                      {replyingTo !== review.id && (
+                        <button
+                          className="btn btn-outline-primary btn-sm rounded-3 col-3 w-md-auto"
+                          onClick={() =>
+                            handleReplyClick(review.id, review.reply)
+                          }
+                        >
+                          {review.reply ? "Edit Reply" : "Reply"}
+                        </button>
+                      )}
+                      <button
+                        className="btn btn-outline-danger btn-sm rounded-3 col-3 w-md-auto"
+                        onClick={() => onDelete(review.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

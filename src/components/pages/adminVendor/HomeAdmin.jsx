@@ -626,11 +626,6 @@ const HomeAdmin = () => {
                 <Card.Title className="mb-0">
                   Leads, Impression, Profile Views, Overview
                 </Card.Title>
-                {/* <div className="d-flex gap-2">
-                  <Button variant="outline-secondary" size="sm">
-                    Leads
-                  </Button>
-                </div> */}
               </div>
               <div style={{ height: "300px" }}>
                 <Line data={leadsChartData} options={leadsChartOptions} />

@@ -810,12 +810,24 @@ const Storefront = ({ setCompletion }) => {
     sendCompletionToBackend();
   }, [calculateCompletion, setCompletion, formData.id, token]);
 
+  const contentRef = React.useRef(null);
   // Helper to set active tab and persist selection
   const handleSetActive = useCallback(
     (id) => {
       setActive(id);
       try {
         localStorage.setItem(storageKey, id);
+      } catch (_) {}
+      try {
+        const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
+        if (vw <= 992 && contentRef.current) {
+          setTimeout(() => {
+            contentRef.current.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }, 50);
+        }
       } catch (_) {}
     },
     [storageKey]
@@ -1126,7 +1138,9 @@ const Storefront = ({ setCompletion }) => {
           </Nav>
         </div>
 
-        <div className="col-md-9">{renderContent()}</div>
+        <div className="col-md-9" ref={contentRef}>
+          {renderContent()}
+        </div>
       </div>
 
       <SuccessModal
