@@ -297,20 +297,23 @@ const RealWeddings = ({ onPostClick }) => {
         }}
       >
         <div
-          className="d-flex justify-content-between align-items-center"
+          className="container d-flex justify-content-center align-items-stretch"
           style={{
             display: "flex",
-            gap: "15px",
+            gap: "12px",
             width: "100%",
-            padding: "0 40px",
+            padding: "0",
+            flexWrap: "wrap",
           }}
         >
-          <div className="d-flex justify-content-evenly gap-3">
+          <div className="d-flex flex-wrap gap-3 justify-content-center">
             {/* Custom City Dropdown */}
             <div
               style={{
-                flex: "0 0 auto",
-                width: "220px",
+                flex: "1 1 220px",
+                minWidth: "220px",
+                maxWidth: "300px",
+                width: "100%",
                 position: "relative",
               }}
               ref={cityDropdownRef}
@@ -467,8 +470,10 @@ const RealWeddings = ({ onPostClick }) => {
             {/* Culture Dropdown */}
             <div
               style={{
-                flex: "0 0 auto",
-                width: "220px",
+                flex: "1 1 220px",
+                minWidth: "220px",
+                maxWidth: "300px",
+                width: "100%",
                 position: "relative",
               }}
               ref={cultureDropdownRef}
@@ -572,8 +577,10 @@ const RealWeddings = ({ onPostClick }) => {
             {/* Theme Dropdown */}
             <div
               style={{
-                flex: "0 0 auto",
-                width: "220px",
+                flex: "1 1 220px",
+                minWidth: "220px",
+                maxWidth: "300px",
+                width: "100%",
                 position: "relative",
               }}
               ref={themeDropdownRef}
@@ -674,9 +681,10 @@ const RealWeddings = ({ onPostClick }) => {
           {/* Search Input with Button */}
           <div
             style={{
-              flex: "1 1 auto",
-              minWidth: "300px",
-              maxWidth: "500px",
+              flex: "1 1 300px",
+              minWidth: "260px",
+              maxWidth: "640px",
+              width: "100%",
               display: "flex",
               gap: "0",
             }}

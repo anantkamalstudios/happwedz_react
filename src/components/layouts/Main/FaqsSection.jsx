@@ -53,11 +53,26 @@ const FaqsSection = ({ navbarId = null, customFaqs = null }) => {
             className={`faq-card ${activeIndex === index ? "active" : ""}`}
             onClick={() => toggleFAQ(index)}
           >
-            <div className="faq-header d-flex justify-content-between align-items-center">
-              <h5 className="faq-question fs-16">{`${index + 1}. ${
-                faq.question
-              }`}</h5>
-              <span className="faq-icon fs-16">
+            <div
+              className="faq-header d-flex justify-content-between align-items-center"
+              style={{ gap: "8px", minWidth: 0 }}
+            >
+              <h5
+                className="faq-question fs-16 mb-0 flex-grow-1 me-2"
+                style={{ minWidth: 0, wordBreak: "break-word" }}
+              >{`${index + 1}. ${faq.question}`}</h5>
+              <span
+                className="faq-icon fs-16 flex-shrink-0"
+                style={{
+                  display: "inline-flex",
+                  width: "28px",
+                  height: "28px",
+                  border: "none",
+                  borderRadius: "4px",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 {activeIndex === index ? "−" : "+"}
               </span>
             </div>

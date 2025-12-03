@@ -57,7 +57,7 @@ export default function WeddingPage({ post, onBackClick }) {
             borderRadius: "8px",
             minWidth: "1000px",
             minHeight: "350px",
-            backgroundColor: "rgba(109, 106, 106, 0.3)", // Transparent background
+            backgroundColor: "rgba(109, 106, 106, 0.3)",
           }}
         >
           <h1
