@@ -66,6 +66,29 @@ const Budget = () => {
     }
   };
 
+  // Mobile-friendly category click: toggle selection and scroll expense details into view
+  const handleCategoryClick = (categoryId) => {
+    if (selectedCategoryId === categoryId) {
+      setSelectedCategoryId(null);
+    } else {
+      setSelectedCategoryId(categoryId);
+    }
+
+    // On small screens, scroll the expense details into view so user sees the details immediately
+    try {
+      if (typeof window !== "undefined" && window.innerWidth <= 768) {
+        setTimeout(() => {
+          const el = document.querySelector(".wb-expense-details");
+          if (el && typeof el.scrollIntoView === "function") {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 120);
+      }
+    } catch (err) {
+      // ignore
+    }
+  };
+
   const [newSubcategoryId, setNewSubcategoryId] = useState("");
   const [newEstimated, setNewEstimated] = useState("");
   const [newFinal, setNewFinal] = useState("");
@@ -190,22 +213,24 @@ const Budget = () => {
           <h2 className="wb-section-title fs-16">Categories</h2>
           {categories.map((category) => (
             <div key={category.id} className="wb-category-item fs-14">
-              <div
-                className="wb-category-header fs-14"
-                onClick={() => toggleCategory(category.id)}
+              <button
+                type="button"
+                className="wb-category-header fs-14 btn btn-transparent w-100 text-start d-flex justify-content-between align-items-center"
+                onClick={() => handleCategoryClick(category.id)}
+                aria-pressed={selectedCategoryId === category.id}
               >
-                <div className="wb-category-name fs-14">
+                <div className="wb-category-name fs-14 d-flex align-items-center gap-2">
                   {selectedCategoryId === category.id ? (
                     <FaBookOpenReader className="wb-category-icon" />
                   ) : (
                     <FaMinus className="wb-category-icon" />
                   )}
-                  {category.name}
+                  <span>{category.name}</span>
                 </div>
                 <div className="wb-category-amount fs-14">
                   {formatCurrency(category.amount)}
                 </div>
-              </div>
+              </button>
             </div>
           ))}
         </div>
@@ -254,7 +279,7 @@ const Budget = () => {
                                   e.target.value
                                 )
                               }
-                              className="wb-input wb-table-input"
+                              className="wb-input wb-table-input fs-14"
                             />
                           </div>
                         </td>
@@ -310,14 +335,14 @@ const Budget = () => {
                   <tr>
                     <td>
                       <select
-                        className="wb-input"
+                        className="form-select wb-input"
                         value={newSubcategoryId}
                         onChange={(e) => setNewSubcategoryId(e.target.value)}
                       >
                         <option value="">Select subcategory</option>
                         {categories
                           .find((c) => c.id === selectedCategoryId)
-                          ?.subcategories.map((sub) => (
+                          ?.subcategories?.map((sub) => (
                             <option key={sub.id} value={sub.id}>
                               {sub.name}
                             </option>

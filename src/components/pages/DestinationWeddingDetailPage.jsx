@@ -365,7 +365,7 @@ const DestinationWeddingDetailPage = () => {
                   className="d-flex justify-content-center mt-3"
                   style={{ width: "100%" }}
                 >
-                  <div style={{ width: "25%" }}>
+                  <div style={{ width: "50%" }}>
                     <Link
                       to="contact-us"
                       className="btn btn-outline-primary w-100"

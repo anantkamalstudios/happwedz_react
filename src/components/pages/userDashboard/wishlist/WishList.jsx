@@ -201,7 +201,7 @@ const Wishlist = () => {
           </div>
           <Link
             to="/vendors"
-            className="btn btn-primary rounded-3 px-3 fs-14 w-100 w-sm-auto text-center"
+            className="btn btn-primary rounded-3 px-3 fs-14 w-50 w-sm-auto text-center"
           >
             <BsPlusLg className="me-2" size={16} /> Add Vendor
           </Link>

@@ -150,7 +150,7 @@ export default function RealWeddingsStatic() {
                   <div
                     className="wedding-card h-100 shadow-sm rounded-3 overflow-hidden"
                     style={{ cursor: "pointer" }}
-                    onClick={() => handlePostClick(wedding)}
+                    // onClick={() => handlePostClick(wedding)}
                   >
                     <div className="position-relative">
                       <img

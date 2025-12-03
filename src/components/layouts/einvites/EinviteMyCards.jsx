@@ -8,8 +8,18 @@ const EinviteMyCards = () => {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   useEffect(() => {
     fetchUserCards();
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const fetchUserCards = async () => {
@@ -62,14 +72,19 @@ const EinviteMyCards = () => {
 
   return (
     <div className="einvite-my-cards">
-      <div className="row mb-4 light-pink-bg p-4">
-        <div className="col-12 container">
-          <h2 className="einvite-page-title display-6 fw-medium primary-text mb-0">
+      <div
+        className="row mb-4 light-pink-bg p-4"
+        style={{ marginLeft: 0, marginRight: 0 }}
+      >
+        <div className={isMobile ? "col-12 ps-2 pe-2" : "col-12 container"}>
+          <h2 className="einvite-page-title display-6 fw-medium primary-text mb-0 fs-22">
             Published Cards
           </h2>
         </div>
       </div>
-      <div className="container py-5">
+      <div
+        className={isMobile ? "container-fluid px-3 py-4" : "container py-5"}
+      >
         {cards.length === 0 ? (
           <div className="text-center py-5">
             <i className="fas fa-heart fa-4x text-muted mb-4"></i>
@@ -83,14 +98,14 @@ const EinviteMyCards = () => {
           </div>
         ) : (
           <>
-            <div className="row mb-4">
-              <div className="col-md-3">
+            <div className="row mb-4 g-3">
+              <div className={isMobile ? "col-6" : "col-md-3"}>
                 <div className="einvite-stats-card">
                   <div className="einvite-stats-number">{cards.length}</div>
                   <div className="einvite-stats-label">Total Cards</div>
                 </div>
               </div>
-              <div className="col-md-3">
+              <div className={isMobile ? "col-6" : "col-md-3"}>
                 <div className="einvite-stats-card">
                   <div className="einvite-stats-number">
                     {cards.filter((card) => card.isActive).length}
@@ -98,7 +113,7 @@ const EinviteMyCards = () => {
                   <div className="einvite-stats-label">Published</div>
                 </div>
               </div>
-              <div className="col-md-3">
+              <div className={isMobile ? "col-6" : "col-md-3"}>
                 <div className="einvite-stats-card">
                   <div className="einvite-stats-number">
                     {cards.filter((card) => !card.isActive).length}
@@ -106,7 +121,7 @@ const EinviteMyCards = () => {
                   <div className="einvite-stats-label">Drafts</div>
                 </div>
               </div>
-              <div className="col-md-3">
+              <div className={isMobile ? "col-6" : "col-md-3"}>
                 <div className="einvite-stats-card">
                   <div className="einvite-stats-number">0</div>
                   <div className="einvite-stats-label">Views</div>
