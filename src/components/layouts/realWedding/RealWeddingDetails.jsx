@@ -39,6 +39,16 @@ export default function WeddingPage({ post, onBackClick }) {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth <= 768 : false
+  );
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 768);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
   return (
     <div>
       {/* Hero Section */}
@@ -48,31 +58,39 @@ export default function WeddingPage({ post, onBackClick }) {
           backgroundImage: `url(${post.coverPhoto})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          height: "500px",
+          height: isMobile ? "320px" : "500px",
         }}
       >
         <div
           className="position-absolute top-50 start-50 translate-middle p-4 d-flex flex-column align-items-center justify-content-center gap-4"
           style={{
             borderRadius: "8px",
-            minWidth: "1000px",
-            minHeight: "350px",
-            backgroundColor: "rgba(109, 106, 106, 0.3)", // Transparent background
+            width: isMobile ? "92%" : "80%",
+            maxWidth: "1100px",
+            minHeight: isMobile ? "220px" : "350px",
+            padding: isMobile ? "1.25rem" : "2rem",
+            backgroundColor: "rgba(109, 106, 106, 0.4)", // Transparent background
+            backdropFilter: "blur(1px)",
           }}
         >
           <h1
             className="fw-bold display-5 text-white"
             style={{
               color: "#fff",
-              fontSize: "5rem",
+              fontSize: isMobile ? "1.6rem" : "3.5rem",
               letterSpacing: "1px",
-              wordSpacing: "5px",
-              fontWeight: "lighter",
+              wordSpacing: "3px",
+              fontWeight: "600",
+              margin: 0,
+              textAlign: "center",
             }}
           >
             {post.brideName} and {post.groomName}
           </h1>
-          <p className="mb-1" style={{ fontSize: "2rem" }}>
+          <p
+            className="mb-1"
+            style={{ fontSize: isMobile ? "0.95rem" : "1.75rem", margin: 0 }}
+          >
             {post.weddingDate} – {post.city}
           </p>
           {post.story && (
@@ -82,10 +100,10 @@ export default function WeddingPage({ post, onBackClick }) {
                   __html: DOMPurify.sanitize(post?.story?.slice(0, 100) || ""),
                 }}
               />
-              ...
+
               <button
                 type="button"
-                className="text-decoration-none  p-0 ms-2"
+                className="btn primary-btn text-decoration-none  p-0 ms-2 text-white"
                 onClick={() =>
                   document
                     .getElementById("love-story")
@@ -197,7 +215,7 @@ export default function WeddingPage({ post, onBackClick }) {
                   className="img-fluid rounded"
                   loading="lazy"
                   style={{
-                    objectFit: "cover",
+                    objectFit: "contain",
                     width: "100%",
                     height: "200px",
                   }}
@@ -306,7 +324,7 @@ export default function WeddingPage({ post, onBackClick }) {
                   style={{
                     width: "100%",
                     height: "250px",
-                    objectFit: "cover",
+                    objectFit: "contain",
                     borderRadius: "10px",
                   }}
                 />

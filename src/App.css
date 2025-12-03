@@ -330,7 +330,7 @@ h6 {
 
 .wrapper {
   max-width: 1400px;
-  min-width: 950px;
+  min-width: 400px;
   margin: 0 auto;
   padding: 15px 20px;
   display: block;
