@@ -35,6 +35,95 @@
 
 // export default SummernoteEditor;
 
+// import React from "react";
+// import "summernote/dist/summernote-lite.css";
+// import $ from "jquery";
+// import "summernote/dist/summernote-lite.js";
+
+// const SummernoteEditor = ({ value, onChange }) => {
+//   const editorRef = React.useRef();
+
+//   React.useEffect(() => {
+//     $(editorRef.current).summernote({
+//       height: 350,
+//       tabsize: 2,
+//       toolbar: [
+//         ["style", ["bold", "italic", "underline", "clear"]],
+//         ["para", ["ul", "ol", "paragraph"]],
+//         ["insert", ["link", "picture", "video"]],
+//         ["view", ["fullscreen", "codeview"]],
+//         ["mybuttons", ["h1", "h2", "body"]], // Custom buttons
+//       ],
+
+//       buttons: {
+//         h1: function () {
+//           return $.summernote.ui
+//             .button({
+//               contents: "<b>Heading</b>",
+//               tooltip: "Heading (22px)",
+//               click: function () {
+//                 document.execCommand("fontSize", false, 7);
+//                 $("font[size=7]").removeAttr("size").css("font-size", "22px");
+//               },
+//             })
+//             .render();
+//         },
+
+//         h2: function () {
+//           return $.summernote.ui
+//             .button({
+//               contents: "<b>Subtitle</b>",
+//               tooltip: "Subtitle (16px)",
+//               click: function () {
+//                 document.execCommand("fontSize", false, 6);
+//                 $("font[size=6]").removeAttr("size").css("font-size", "16px");
+//               },
+//             })
+//             .render();
+//         },
+
+//         body: function () {
+//           return $.summernote.ui
+//             .button({
+//               contents: "Body",
+//               tooltip: "Body Text (14px)",
+//               click: function () {
+//                 document.execCommand("fontSize", false, 5);
+//                 $("font[size=5]").removeAttr("size").css("font-size", "14px");
+//               },
+//             })
+//             .render();
+//         },
+//       },
+
+//       callbacks: {
+//         onChange: (contents) => {
+//           onChange(contents);
+//         },
+//       },
+//     });
+
+//     // initial value
+//     $(editorRef.current).summernote("code", value || "");
+
+//     return () => {
+//       $(editorRef.current).summernote("destroy");
+//     };
+//   }, []);
+
+//   // Sync external value
+//   React.useEffect(() => {
+//     if ($(editorRef.current).summernote("code") !== value) {
+//       $(editorRef.current).summernote("code", value || "");
+//     }
+//   }, [value]);
+
+//   return <textarea ref={editorRef} />;
+// };
+
+// export default SummernoteEditor;
+
+
 import React from "react";
 import "summernote/dist/summernote-lite.css";
 import $ from "jquery";
@@ -47,12 +136,14 @@ const SummernoteEditor = ({ value, onChange }) => {
     $(editorRef.current).summernote({
       height: 350,
       tabsize: 2,
+      tooltip: false, // IMPORTANT – disable tooltip everywhere
+
       toolbar: [
         ["style", ["bold", "italic", "underline", "clear"]],
         ["para", ["ul", "ol", "paragraph"]],
         ["insert", ["link", "picture", "video"]],
         ["view", ["fullscreen", "codeview"]],
-        ["mybuttons", ["h1", "h2", "body"]], // Custom buttons
+        ["mybuttons", ["h1", "h2", "body"]],
       ],
 
       buttons: {
@@ -60,7 +151,7 @@ const SummernoteEditor = ({ value, onChange }) => {
           return $.summernote.ui
             .button({
               contents: "<b>Heading</b>",
-              tooltip: "Heading (22px)",
+              tooltip: false,
               click: function () {
                 document.execCommand("fontSize", false, 7);
                 $("font[size=7]").removeAttr("size").css("font-size", "22px");
@@ -73,7 +164,7 @@ const SummernoteEditor = ({ value, onChange }) => {
           return $.summernote.ui
             .button({
               contents: "<b>Subtitle</b>",
-              tooltip: "Subtitle (16px)",
+              tooltip: false,
               click: function () {
                 document.execCommand("fontSize", false, 6);
                 $("font[size=6]").removeAttr("size").css("font-size", "16px");
@@ -86,7 +177,7 @@ const SummernoteEditor = ({ value, onChange }) => {
           return $.summernote.ui
             .button({
               contents: "Body",
-              tooltip: "Body Text (14px)",
+              tooltip: false,
               click: function () {
                 document.execCommand("fontSize", false, 5);
                 $("font[size=5]").removeAttr("size").css("font-size", "14px");
@@ -103,15 +194,15 @@ const SummernoteEditor = ({ value, onChange }) => {
       },
     });
 
-    // initial value
     $(editorRef.current).summernote("code", value || "");
 
     return () => {
-      $(editorRef.current).summernote("destroy");
+      try {
+        $(editorRef.current).summernote("destroy");
+      } catch (e) {}
     };
   }, []);
 
-  // Sync external value
   React.useEffect(() => {
     if ($(editorRef.current).summernote("code") !== value) {
       $(editorRef.current).summernote("code", value || "");

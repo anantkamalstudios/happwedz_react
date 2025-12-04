@@ -112,7 +112,7 @@ const MainSection = () => {
       <>
         <MainSearch />
         {!reduxLocation && <MainByRegion type="Venues" />}
-        {loading && data.length === 0 && <LoadingState title="Venues" />}
+
         {!loading && data.length === 0 && (
           <EmptyState section="venues" title="Venues" />
         )}
@@ -123,6 +123,7 @@ const MainSection = () => {
           setView={setView}
           onFiltersChange={setVenueFilters}
         />
+        {loading && data.length === 0 && <LoadingState title="Venues" />}
 
         {view === "map" && (
           <MapView

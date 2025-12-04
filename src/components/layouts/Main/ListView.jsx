@@ -12,8 +12,9 @@ import { toggleWishlist } from "../../../redux/authSlice";
 import DOMPurify from "dompurify";
 import { fetchVendorTypesWithSubcategoriesApi } from "../../../services/api/vendorTypesWithSubcategoriesApi";
 import { IMAGE_BASE_URL } from "../../../config/constants";
+import { useParams } from "react-router-dom";
 
-const ListView = ({ subVenuesData, handleShow }) => {
+const ListView = ({ subVenuesData, handleShow, section }) => {
   const dispatch = useDispatch();
   const { token } = useSelector((state) => state.auth);
   const [filter, setFilter] = useState("all");
@@ -22,6 +23,34 @@ const ListView = ({ subVenuesData, handleShow }) => {
   const [wishlistIds, setWishlistIds] = useState(new Set());
   const [vendorTypes, setVendorTypes] = useState([]);
   const navigate = useNavigate();
+  const { subcategory } = useParams(); // this will give slug like "banquet-hall"
+  const [activeSub, setActiveSub] = useState(subcategory || "");
+
+  useEffect(() => {
+    setActiveSub(subcategory || "");
+  }, [subcategory]);
+
+  // Persist active subcategory so selection survives page refresh
+  const ACTIVE_KEY = `listview_active_sub:${section}`;
+
+  // Load saved active sub if URL param is not present
+  useEffect(() => {
+    try {
+      if (!subcategory) {
+        const saved = window.localStorage.getItem(ACTIVE_KEY);
+        if (saved) setActiveSub(saved);
+      }
+    } catch (e) {
+      /* ignore */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const toSlug = (text) =>
+    text
+      ?.toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9\-]/g, "") || "";
 
   useEffect(() => {
     const loadVendorTypes = async () => {
@@ -267,6 +296,8 @@ const ListView = ({ subVenuesData, handleShow }) => {
           <div className="d-flex flex-column gap-3">
             {vendorTypes
               .filter((vt) => {
+                if (section && vt.name.toLowerCase() === section.toLowerCase())
+                  return true;
                 // If no data, maybe show nothing or default?
                 // Try to match based on the first item in subVenuesData
                 if (!subVenuesData || subVenuesData.length === 0) return false;
@@ -301,20 +332,29 @@ const ListView = ({ subVenuesData, handleShow }) => {
                   {/* Subcategories List */}
                   <h5 className="fw-bold mb-3">{venueType.name}</h5>
                   <div className="d-flex flex-column gap-2">
-                    {venueType.subcategories?.map((sub) => (
-                      <div
-                        key={sub.id}
-                        className="p-2 rounded-3 bg-light cursor-pointer hover-shadow transition-all"
-                        // style={{ cursor: "pointer" }}
-                        onClick={() => {
-                          // Navigate or filter logic here
-                          // For now, just logging or maybe navigating to a filtered page if exists
-                          // navigate(`/venues?subcategory=${sub.id}`);
-                        }}
-                      >
-                        <span className="fw-medium">{sub.name}</span>
-                      </div>
-                    ))}
+                    {venueType.subcategories?.map((sub) => {
+                      const slug = toSlug(sub.name);
+                      const isActive = slug === activeSub;
+                      return (
+                        <div
+                          key={sub.id}
+                          className={`p-2 rounded-3 cursor-pointer hover-shadow transition-all ${
+                            isActive ? "subcategory-active" : "bg-light"
+                          }`}
+                          style={{ cursor: "pointer" }}
+                          onClick={() => {
+                            // optimistically set active state for instant feedback
+                            setActiveSub(slug);
+                            try {
+                              window.localStorage.setItem(ACTIVE_KEY, slug);
+                            } catch (e) {}
+                            navigate(`/${section}/${slug}`);
+                          }}
+                        >
+                          <span className="fw-medium">{sub.name}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </Card>
               ))}

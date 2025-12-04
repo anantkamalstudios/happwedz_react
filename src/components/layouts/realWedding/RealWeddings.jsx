@@ -679,6 +679,7 @@ const RealWeddings = ({ onPostClick }) => {
           </div>
 
           {/* Search Input with Button */}
+
           <div
             style={{
               flex: "1 1 300px",
@@ -687,21 +688,25 @@ const RealWeddings = ({ onPostClick }) => {
               width: "100%",
               display: "flex",
               gap: "0",
+              position: "relative",
+              zIndex: 1,
             }}
           >
             <input
               type="text"
               className="form-control"
-              placeholder="Search by location..."
+              placeholder="Search by name and location..."
               style={{
                 backgroundColor: "#fff",
                 border: "1px solid #C31162",
-                borderRight: "none",
                 color: "#333",
                 fontSize: "14px",
                 padding: "10px 15px",
                 height: "45px",
                 borderRadius: "4px 0 0 4px",
+                flex: 1,
+                outline: "none",
+                boxSizing: "border-box",
               }}
               value={searchTerm}
               onChange={(e) => {
@@ -715,14 +720,17 @@ const RealWeddings = ({ onPostClick }) => {
               style={{
                 backgroundColor: "#C31162",
                 border: "1px solid #C31162",
+                borderLeft: "none",
                 color: "#fff",
                 fontSize: "14px",
                 padding: "10px 25px",
                 height: "45px",
-                borderRadius: "0 8px 8px 0",
+                borderRadius: "0 4px 4px 0",
                 cursor: "pointer",
                 whiteSpace: "nowrap",
                 fontWeight: "500",
+                flexShrink: 0,
+                boxSizing: "border-box",
               }}
               onClick={scrollToFilters}
             >

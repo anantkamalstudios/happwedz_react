@@ -618,7 +618,7 @@ const Detailed = () => {
 
   return (
     <div className="venue-detail-page">
-      <Container className="py-5">
+      <Container className="py-2">
         <Row>
           <Col lg={8}>
             <div className="main-image-container mb-4 position-relative">

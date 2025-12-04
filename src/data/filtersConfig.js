@@ -14,14 +14,14 @@ const FILTER_CONFIG = {
   },
 
   "bridal-makeup": {
-    "price Bridal Makeup": [
+    "price (Bridal Makeup)": [
       "12,000",
       "12,000-16,000",
       "16,000-20,000",
       "20,000-25,000",
       "25,000+",
     ],
-    "price Engagement": ["12,000", "12,000-18,000", "18,000-25,000", "25,000+"],
+    "price (Engagement)": ["12,000", "12,000-18,000", "18,000-25,000", "25,000+"],
     // specialty: ["north indian", "south indian", "bengali", "muslim", "marathi"],
     // "travels To Venue": ["travels to venue", "doesn't travel to venue"],
     // rating: ["all ratings", "rated <4", "rated 4+", "rated 4.5+", "rated 4.8+"],
@@ -86,7 +86,7 @@ const FILTER_CONFIG = {
       "Wedding Resorts",
       "Destination Wedding Venues",
       "Kalyana Mandapams",
-      "4 Star & Above Wedding Hotels",
+      "4 Star And Above Wedding Hotels",
     ],
     capacity: ["<100", "100-200", "200-500", "500-1000", "1000+"],
     "price Per Plate": ["<1,000", "1,000-2,000", "2,000-3,000", "3,000+"],
@@ -207,7 +207,7 @@ const FILTER_CONFIG = {
   },
   "4-star-and-above-wedding-hotels": {
     "venue Type": [
-      "4 Star & Above Wedding Hotels",
+      "4 Star And Above Wedding Hotels",
       "Wedding Farmhouses",
       "Marriage Garden / lawns",
       "Banquet Halls",
