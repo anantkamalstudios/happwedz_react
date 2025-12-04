@@ -36,9 +36,11 @@ export default function WeddingPage({ post, onBackClick }) {
     color: "#C31162",
     marginRight: "1rem",
   };
+  
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+  
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth <= 768 : false
   );
@@ -49,9 +51,10 @@ export default function WeddingPage({ post, onBackClick }) {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
+  
   return (
     <div>
-      {/* Hero Section */}
+      {/* Hero Section - FIXED */}
       <div
         className="position-relative text-center text-white"
         style={{
@@ -61,74 +64,105 @@ export default function WeddingPage({ post, onBackClick }) {
           height: isMobile ? "320px" : "500px",
         }}
       >
-        <div
-          className="position-absolute top-50 start-50 translate-middle p-4 d-flex flex-column align-items-center justify-content-center gap-4"
+        {/* Back Button - FIXED positioning */}
+        <button
+          className="btn btn-light position-absolute d-flex align-items-center justify-content-center"
+          onClick={onBackClick}
+          aria-label="Back"
           style={{
-            borderRadius: "8px",
-            width: isMobile ? "92%" : "80%",
-            maxWidth: "1100px",
-            minHeight: isMobile ? "220px" : "350px",
-            padding: isMobile ? "1.25rem" : "2rem",
-            backgroundColor: "rgba(109, 106, 106, 0.4)", // Transparent background
-            backdropFilter: "blur(1px)",
+            top: isMobile ? "1rem" : "2rem",
+            left: isMobile ? "1rem" : "2rem",
+            height: isMobile ? "40px" : "50px",
+            width: isMobile ? "40px" : "50px",
+            borderRadius: "50%",
+            zIndex: 10,
+            fontSize: isMobile ? "0.9rem" : "1rem",
           }}
         >
-          <h1
-            className="fw-bold display-5 text-white"
+          <FaChevronLeft />
+        </button>
+
+        {/* Content Overlay - FIXED */}
+        <div
+          className="position-absolute top-50 start-50 translate-middle d-flex flex-column align-items-center justify-content-center"
+          style={{
+            borderRadius: "10px",
+            width: isMobile ? "90%" : "70%",
+            maxWidth: "900px",
+            minHeight: isMobile ? "180px" : "300px",
+            padding: isMobile ? "1rem 0.75rem" : "2rem",
+            backgroundColor: "rgba(0, 0, 0, 0.35)",
+            backdropFilter: "blur(4px)",
+            gap: isMobile ? "0.5rem" : "1rem",
+          }}
+        >
+          {/* Names - FIXED responsive font */}
+          <h2
+            className="fw-bold text-white mb-0"
             style={{
-              color: "#fff",
-              fontSize: isMobile ? "1.6rem" : "3.5rem",
-              letterSpacing: "1px",
-              wordSpacing: "3px",
-              fontWeight: "600",
-              margin: 0,
+             fontSize: isMobile ? "0.9rem" : "3.2rem",
+
+              letterSpacing: isMobile ? "0.5px" : "1px",
+              wordSpacing: isMobile ? "2px" : "3px",
+              fontWeight: "400",
+              lineHeight: isMobile ? "1.3" : "1.2",
               textAlign: "center",
+              padding: isMobile ? "0 0.5rem" : "0",
             }}
           >
             {post.brideName} and {post.groomName}
-          </h1>
+          </h2>
+
+          {/* Date and City - FIXED responsive font */}
           <p
-            className="mb-1"
-            style={{ fontSize: isMobile ? "0.95rem" : "1.75rem", margin: 0 }}
+            className="mb-0"
+            style={{
+              fontSize: isMobile ? "0.85rem" : "1.75rem",
+              fontWeight: isMobile ? "400" : "normal",
+              textAlign: "center",
+            }}
           >
             {post.weddingDate} – {post.city}
           </p>
+
+          {/* Story Preview - FIXED responsive text */}
           {post.story && (
-            <p className="medium mb-0">
+            <p
+              className="mb-0"
+              style={{
+                fontSize: isMobile ? "0.8rem" : "1rem",
+                lineHeight: "1.4",
+                textAlign: "center",
+                padding: isMobile ? "0 0.5rem" : "0",
+              }}
+            >
               <span
                 dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(post?.story?.slice(0, 100) || ""),
+                  __html: DOMPurify.sanitize(
+                    post?.story?.slice(0, isMobile ? 80 : 100) || ""
+                  ),
                 }}
               />
-
               <button
                 type="button"
-                className="btn primary-btn text-decoration-none  p-0 ms-2 text-white"
+                className="btn p-0 ms-2 text-white text-decoration-underline"
                 onClick={() =>
                   document
                     .getElementById("love-story")
                     ?.scrollIntoView({ behavior: "smooth" })
                 }
+                style={{
+                  fontSize: isMobile ? "0.8rem" : "1rem",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                }}
               >
                 Read More
               </button>
             </p>
           )}
         </div>
-        <button
-          className="wedding-back-btn btn btn-light position-absolute d-flex align-items-center justify-content-center"
-          onClick={onBackClick}
-          aria-label="Back"
-          style={{
-            top: "2rem",
-            left: "2rem",
-            height: "50px",
-            width: "50px",
-            borderRadius: "50%",
-          }}
-        >
-          <FaChevronLeft />
-        </button>
       </div>
 
       {/* Couples Bio */}
@@ -231,15 +265,14 @@ export default function WeddingPage({ post, onBackClick }) {
 
       {/* Love story */}
       <Container className="my-5" id="love-story">
-        {/* Inline animation CSS */}
         <style>
           {`
-      @keyframes gradientMove {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-      }
-    `}
+            @keyframes gradientMove {
+              0% { background-position: 0% 50%; }
+              50% { background-position: 100% 50%; }
+              100% { background-position: 0% 50%; }
+            }
+          `}
         </style>
 
         <h3
@@ -378,7 +411,6 @@ export default function WeddingPage({ post, onBackClick }) {
           Special Highlights
         </h3>
 
-        {/* THEMES */}
         <div className="d-flex flex-wrap justify-content-center gap-2 mb-5">
           {post.themes?.map((theme, index) => (
             <span
@@ -398,7 +430,6 @@ export default function WeddingPage({ post, onBackClick }) {
         </div>
 
         <Row className="g-4">
-          {/* Special Moments */}
           <Col md={6}>
             <div
               className="p-4 rounded shadow-sm h-100"
@@ -419,7 +450,6 @@ export default function WeddingPage({ post, onBackClick }) {
             </div>
           </Col>
 
-          {/* Outfit Details */}
           <Col md={6}>
             <div
               className="p-4 rounded shadow-sm h-100"
@@ -435,7 +465,6 @@ export default function WeddingPage({ post, onBackClick }) {
                 <FaTshirt className="me-2" /> Outfit Details
               </h5>
 
-              {/* Groom Outfit */}
               <div className="mb-3">
                 <h6
                   className="mb-1 d-flex align-items-center"
@@ -448,7 +477,6 @@ export default function WeddingPage({ post, onBackClick }) {
                 </p>
               </div>
 
-              {/* Bride Outfit */}
               <div>
                 <h6
                   className="mb-1 d-flex align-items-center"

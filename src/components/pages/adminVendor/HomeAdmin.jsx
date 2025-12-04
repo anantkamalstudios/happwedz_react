@@ -61,7 +61,7 @@ ChartJS.register(
 const API_BASE_URL = "https://happywedz.com";
 
 const HomeAdmin = () => {
-  const [dateFilter, setDateFilter] = useState("this_month");
+  const [dateFilter, setDateFilter] = useState("all_time");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
   const [customApplyToggle, setCustomApplyToggle] = useState(false);
@@ -97,6 +97,47 @@ const HomeAdmin = () => {
       setStorefrontCompletion(parseInt(stored, 10));
     }
   }, []);
+
+  // Persist dashboard filter state so selections survive navigation
+  const FILTER_KEY = "homeAdmin_filters_v1";
+
+  // Load saved filters on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(FILTER_KEY);
+      if (raw) {
+        const obj = JSON.parse(raw);
+        // restore custom dates first
+        if (obj.customStart) setCustomStart(obj.customStart);
+        if (obj.customEnd) setCustomEnd(obj.customEnd);
+        if (obj.dateFilter) setDateFilter(obj.dateFilter);
+
+        // If the saved filter was a custom range, trigger the apply toggle
+        // so the data-fetching effect runs with the restored dates.
+        if (obj.dateFilter === "custom") {
+          // toggle after a tick to ensure state restored
+          setTimeout(() => setCustomApplyToggle((t) => !t), 0);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load saved dashboard filters:", err);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Save filters whenever they change
+  useEffect(() => {
+    try {
+      const payload = {
+        dateFilter,
+        customStart,
+        customEnd,
+      };
+      localStorage.setItem(FILTER_KEY, JSON.stringify(payload));
+    } catch (err) {
+      console.error("Failed to save dashboard filters:", err);
+    }
+  }, [dateFilter, customStart, customEnd]);
 
   useEffect(() => {
     if (!vendorToken) {
@@ -138,10 +179,18 @@ const HomeAdmin = () => {
           lastMonthEnd.getDate()
         );
         end.setHours(23, 59, 59, 999);
-      } else if (dateFilter === "custom" && customStart && customEnd) {
-        start = new Date(customStart);
-        start.setHours(0, 0, 0, 0);
-        end = new Date(customEnd);
+      } else if (dateFilter === "custom") {
+        if (customStart && customEnd) {
+          start = new Date(customStart);
+          start.setHours(0, 0, 0, 0);
+          end = new Date(customEnd);
+          end.setHours(23, 59, 59, 999);
+        } else {
+          return null;
+        }
+      } else if (dateFilter === "all_time") {
+        start = new Date(0); // 1970-01-01
+        end = new Date();
         end.setHours(23, 59, 59, 999);
       } else {
         // default to last 30 days
@@ -156,6 +205,9 @@ const HomeAdmin = () => {
     };
     const fetchDashboardData = async () => {
       try {
+        const range = computeRange();
+        if (!range) return;
+
         setLoadingLeads(true);
         setLoadingStats(true);
 
@@ -173,7 +225,7 @@ const HomeAdmin = () => {
         const leads = data?.requests || [];
 
         // compute date range from filter
-        const { start, end } = computeRange();
+        const { start, end } = range;
 
         // filter leads within range
         const leadsInRange = leads.filter((lead) => {
@@ -304,14 +356,24 @@ const HomeAdmin = () => {
             );
             if (wlRes && wlRes.ok) {
               const wlData = await wlRes.json();
-              const wlCount = wlData?.data?.[0]?.wishlistCount ?? 0;
+              const wlRaw = wlData?.data?.[0] || {};
+              const allUsers = wlRaw.users || [];
 
-              // If API returned users list with addedAt timestamps, build per-day series
-              const users = wlData?.data?.[0]?.users || null;
+              // Filter users by date range (addedAt field)
+              const { start, end } = range;
+              const usersInRange = allUsers.filter((user) => {
+                if (!user.addedAt) return false;
+                const t = new Date(user.addedAt).getTime();
+                return t >= start.getTime() && t <= end.getTime();
+              });
+
+              const wlCount = usersInRange.length; // count of wishlist adds in range
+
+              // Build per-day series from filtered users
               let wlSeries = null;
-              if (users && Array.isArray(users) && users.length > 0) {
+              if (usersInRange && usersInRange.length > 0) {
                 wlSeries = buildSeriesFromEvents(
-                  users,
+                  usersInRange,
                   ["addedAt", "createdAt", "date"],
                   labels.map((d) => new Date(d).toISOString().split("T")[0])
                 );
@@ -343,8 +405,6 @@ const HomeAdmin = () => {
     vendorToken,
     vendor?.id,
     dateFilter,
-    customStart,
-    customEnd,
     customApplyToggle,
   ]);
 
@@ -516,7 +576,11 @@ const HomeAdmin = () => {
                   ? "This Month"
                   : dateFilter === "last_month"
                   ? "Last Month"
-                  : "Custom Range"}
+                  : dateFilter === "last_month"
+                  ? "Last Month"
+                  : dateFilter === "custom"
+                  ? "Custom Range"
+                  : "All Data"}
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 <Dropdown.Item onClick={() => setDateFilter("this_week")}>
@@ -530,6 +594,9 @@ const HomeAdmin = () => {
                 </Dropdown.Item>
                 <Dropdown.Item onClick={() => setDateFilter("custom")}>
                   Custom Range
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => setDateFilter("all_time")}>
+                  All Data
                 </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
@@ -565,6 +632,18 @@ const HomeAdmin = () => {
                 </Button>
               </div>
             )}
+
+            <Button
+              variant="outline-danger"
+              className="ms-2"
+              onClick={() => {
+                setDateFilter("all_time");
+                setCustomStart("");
+                setCustomEnd("");
+              }}
+            >
+              Reset Filter
+            </Button>
           </div>
         </div>
       </div>

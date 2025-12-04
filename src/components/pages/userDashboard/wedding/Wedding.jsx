@@ -15,6 +15,7 @@ import bigleafcta1 from "../../../../../public/images/home/bigleafcta1.jpg";
 import VenueVendorComponent from "./VenueVendorComponent";
 import UpComingTask from "../wedding/UpcomingTask";
 import EInvites from "./EInviteCard";
+import cmsApi from "../../../../services/api/cmsApi";
 
 const Wedding = () => {
   const [budget, setBudget] = useState({
@@ -36,6 +37,29 @@ const Wedding = () => {
 
   const [vendorCategories, setVendorCategories] = useState([]);
   const [showAll, setShowAll] = useState(false);
+
+  const [designBanner, setDesignBanner] = useState(null);
+  const normalizeUrl = (u) => {
+    if (!u || typeof u !== "string") return null;
+    const cleaned = u.replace(/`/g, "").trim();
+    try {
+      return encodeURI(cleaned);
+    } catch {
+      return cleaned;
+    }
+  };
+
+  useEffect(() => {
+    const fetchBanner = async () => {
+      try {
+        const ds = await cmsApi.designStudioBanner.getBanner();
+        setDesignBanner(ds?.data || null);
+      } catch (e) {
+        console.error("Failed to fetch banner", e);
+      }
+    };
+    fetchBanner();
+  }, []);
 
   const token = useSelector((state) => state.auth.token);
   const userId = useSelector((state) => state.auth.user?.id);
@@ -332,15 +356,21 @@ const Wedding = () => {
 
         <section className="col-lg-12">
           <CtaPanel
-            logo={logo}
-            img={image}
-            heading="Design Studio"
-            subHeading="Try Virtual Makeup & Grooming Looks for Your Big Day"
-            link="/try"
-            title="Create Your Look !"
-            subtitle="Experience How You'll Look in Your Wedding Day with AI-Powered Virtual Makeover."
-            btnName="Try Virtual Look"
-            background={bigleafcta1}
+            logo={normalizeUrl(designBanner?.logo) || logo}
+            img={normalizeUrl(designBanner?.mainImage) || image}
+            heading={designBanner?.heading || "Design Studio"}
+            subHeading={
+              designBanner?.subheading ||
+              "Try Virtual Makeup & Grooming Looks for Your Big Day_"
+            }
+            link={`/${(designBanner?.btnRedirect || "try").replace(/^\/+/, "")}`}
+            title={designBanner?.title || "Create Your Look !"}
+            subtitle={
+              designBanner?.description ||
+              "Experience How You'll Look in Your Wedding Day with AI-Powered Virtual Makeover."
+            }
+            btnName={designBanner?.btnName || "Try Virtual Look"}
+            background={normalizeUrl(designBanner?.bgImage) || bigleafcta1}
           />
         </section>
 

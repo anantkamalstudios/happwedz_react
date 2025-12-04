@@ -274,9 +274,9 @@ const EinviteCategoryPage = () => {
   return (
     <div className="einvite-category-page">
       <div className="container py-3 py-md-5">
-        <div className="row mb-3 mb-md-4 align-items-center">
+        <div className="row mb-3 mb-md-4 align-items-center ">
           {/* LEFT SIDE */}
-          <div className="col-12 col-lg-8 mb-3 mb-lg-0">
+          <div className="col col-lg-8 mb-0">
             <div className="d-flex align-items-center">
               <Link
                 to="/einvites"
@@ -304,8 +304,8 @@ const EinviteCategoryPage = () => {
           </div>
 
           {/* RIGHT SIDE */}
-          <div className="col-12 col-lg-4">
-            <div className="d-flex align-items-center justify-content-center justify-content-lg-end">
+          <div className="col-auto col-lg-4">
+            <div className="d-flex align-items-center justify-content-end">
               <Link
                 to="/einvites/my-cards"
                 className="btn btn-outline-primary rounded-pill px-3 px-lg-4 py-2"
@@ -334,25 +334,50 @@ const EinviteCategoryPage = () => {
         )}
 
         {!loading && !error && (
+          // <div className="mt-3 mt-md-4">
+          //   {filteredCards.length === 0 ? (
+          //     <div className="text-center py-5">
+          //       <i className="fas fa-heart fa-3x fa-md-4x text-muted mb-3 mb-md-4"></i>
+          //       <h4 className="fs-5 fs-md-4">No cards found</h4>
+          //       <p className="text-muted fs-6">
+          //         Try adjusting your search or filter criteria
+          //       </p>
+          //     </div>
+          //   ) : (
+          //     <EinviteCardGrid
+          //       cards={filteredCards}
+          //       loading={false}
+          //       showActions={true}
+          //       showEditButton={true}
+          //       showShareButton={false}
+          //     />
+          //   )}
+          // </div>
           <div className="mt-3 mt-md-4">
-            {filteredCards.length === 0 ? (
-              <div className="text-center py-5">
-                <i className="fas fa-heart fa-3x fa-md-4x text-muted mb-3 mb-md-4"></i>
-                <h4 className="fs-5 fs-md-4">No cards found</h4>
-                <p className="text-muted fs-6">
-                  Try adjusting your search or filter criteria
-                </p>
-              </div>
-            ) : (
-              <EinviteCardGrid
-                cards={filteredCards}
-                loading={false}
-                showActions={true}
-                showEditButton={true}
-                showShareButton={false}
-              />
-            )}
-          </div>
+  {filteredCards.length === 0 ? (
+    <div className="text-center py-5">
+      <i className="fas fa-heart fa-3x fa-md-4x text-muted mb-3 mb-md-4"></i>
+      <h4 className="fs-5 fs-md-4">No cards found</h4>
+      <p className="text-muted fs-6">
+        Try adjusting your search or filter criteria
+      </p>
+    </div>
+  ) : (
+    <div
+      className="w-100 d-flex d-md-block justify-content-center"
+      style={{ textAlign: "center" }} // mobile center
+    >
+      <EinviteCardGrid
+        cards={filteredCards}
+        loading={false}
+        showActions={true}
+        showEditButton={true}
+        showShareButton={false}
+      />
+    </div>
+  )}
+</div>
+
         )}
 
         {loading && <EinviteCardGrid cards={[]} loading={true} />}

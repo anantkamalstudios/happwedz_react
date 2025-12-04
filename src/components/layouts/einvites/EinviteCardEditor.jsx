@@ -251,15 +251,48 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
     editedCard.backgroundUrl || editedCard.background_url
   );
 
+  const [scale, setScale] = useState(1);
+
+  // Calculate scale for responsive canvas
+  useEffect(() => {
+    const handleResize = () => {
+      const containerWidth = window.innerWidth;
+      // 414px is the base width of the canvas
+      // We add some padding (e.g., 30px) to ensure it doesn't touch edges
+      const availableWidth = Math.min(containerWidth - 30, 450); 
+      
+      if (availableWidth < 414) {
+        setScale(availableWidth / 414);
+      } else {
+        setScale(1);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const beginDrag = (e, field) => {
     e.stopPropagation();
+    // Prevent default to stop scrolling while dragging
+    // e.preventDefault(); 
 
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    let clientX, clientY;
+    if (e.type === 'touchstart') {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
     const canvasRect = canvas.getBoundingClientRect();
-    const startX = e.clientX - canvasRect.left;
-    const startY = e.clientY - canvasRect.top;
+    const startX = (clientX - canvasRect.left) / scale;
+    const startY = (clientY - canvasRect.top) / scale;
 
     setSelectedFieldId(field.id);
     setIsDragging(true);
@@ -267,12 +300,26 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
     pushHistory(JSON.parse(JSON.stringify(editedCard)));
   };
 
-  const onCanvasMouseMove = (e) => {
+  const onCanvasMove = (e) => {
     if (!isDragging || !selectedField) return;
 
     // Get canvas container bounds
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // Prevent scrolling on touch devices while dragging
+    if(e.type === 'touchmove') {
+      // e.preventDefault(); 
+    }
+
+    let clientX, clientY;
+    if (e.type === 'touchmove') {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
 
     const canvasRect = canvas.getBoundingClientRect();
 
@@ -281,10 +328,14 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
     if (!textElement) return;
 
     const textRect = textElement.getBoundingClientRect();
+    // Adjust textRect width/height by scale to get "real" unscaled dimensions
+    const textWidth = textRect.width / scale;
+    const textHeight = textRect.height / scale;
 
     // Calculate mouse position relative to canvas
-    const mouseX = e.clientX - canvasRect.left;
-    const mouseY = e.clientY - canvasRect.top;
+    // We divide by scale to map screen coordinates back to canvas coordinates
+    const mouseX = (clientX - canvasRect.left) / scale;
+    const mouseY = (clientY - canvasRect.top) / scale;
 
     // Calculate new position
     let newX = mouseX - dragOffset.x;
@@ -293,8 +344,8 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
     // Calculate boundaries (relative to canvas)
     const minX = 0;
     const minY = 0;
-    const maxX = canvasRect.width - textRect.width;
-    const maxY = canvasRect.height - textRect.height;
+    const maxX = 414 - textWidth; // 414 is fixed canvas width
+    const maxY = 659.288 - textHeight; // fixed canvas height
 
     // Constrain position within boundaries
     newX = Math.max(minX, Math.min(newX, maxX));
@@ -358,6 +409,7 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
     <div
       className={`einvite-editor py-4 ${!isInitialLoad ? "no-animations" : ""}`}
       onMouseUp={endDrag}
+      onTouchEnd={endDrag}
     >
       <style>
         {`
@@ -447,20 +499,28 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
             <div
               className="einvite-canvas-wrapper mx-auto"
               style={{
-                width: "414px",
-                maxWidth: "414px",
+                width: `${414 * scale}px`, // Scaled width for the wrapper
+                maxWidth: "100%",
+                height: `${659.288 * scale}px`, // Scaled height for the wrapper
+                position: "relative",
+                overflow: "hidden", // Hide overflow if any
               }}
             >
               <div
                 ref={canvasRef}
-                className="einvite-canvas-container position-relative border rounded shadow-sm"
+                className="einvite-canvas-container position-absolute border rounded shadow-sm"
                 style={{
                   width: "414px",
                   height: "659.288px",
                   backgroundColor: "#ffffff",
                   overflow: "hidden",
+                  transform: `scale(${scale})`,
+                  transformOrigin: "top left",
+                  left: 0,
+                  top: 0,
                 }}
-                onMouseMove={onCanvasMouseMove}
+                onMouseMove={onCanvasMove}
+                onTouchMove={onCanvasMove}
                 onMouseLeave={endDrag}
                 onClick={() => setSelectedFieldId(null)}
               >
@@ -508,6 +568,10 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                         if (el) textElementRefs.current[field.id] = el;
                       }}
                       onMouseDown={(e) => {
+                        if (isPreview || isPublished) return;
+                        beginDrag(e, field);
+                      }}
+                      onTouchStart={(e) => {
                         if (isPreview || isPublished) return;
                         beginDrag(e, field);
                       }}
@@ -567,6 +631,10 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDelete();
+                            }}
+                            onTouchStart={(e) => {
+                                e.stopPropagation();
+                                handleDelete();
                             }}
                           >
                             <MdDeleteOutline size={20} color="#000" />
