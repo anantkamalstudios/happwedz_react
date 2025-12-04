@@ -143,8 +143,13 @@ const VendorLogin = () => {
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="p-3 ps-5 pe-5 fs-14 shadow-sm border-light bg-light"
-                  style={{ borderRadius: "12px" }}
+                  className="p-3 ps-5 fs-14 shadow-sm border-light bg-light"
+                  style={{
+                    borderRadius: "12px",
+                    paddingRight: "3rem",
+                    position: "relative",
+                    zIndex: 1,
+                  }}
                 />
                 <span
                   onClick={() => setShowPassword(!showPassword)}
@@ -155,7 +160,9 @@ const VendorLogin = () => {
                     transform: "translateY(-50%)",
                     cursor: "pointer",
                     color: "#6c757d",
-                    zIndex: 2,
+                    zIndex: 100,
+                    pointerEvents: "auto",
+                    touchAction: "manipulation",
                   }}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                   role="button"

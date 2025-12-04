@@ -692,7 +692,7 @@ const RealWeddings = ({ onPostClick }) => {
             <input
               type="text"
               className="form-control"
-              placeholder="Search by name and location..."
+              placeholder="Search by location..."
               style={{
                 backgroundColor: "#fff",
                 border: "1px solid #C31162",

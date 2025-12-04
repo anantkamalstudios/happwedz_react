@@ -202,7 +202,12 @@ const CustomerLogin = () => {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="p-3 pe-5 fs-14"
+                className="p-3 fs-14"
+                style={{
+                  paddingRight: "2.75rem",
+                  position: "relative",
+                  zIndex: 1,
+                }}
                 required
               />
 
@@ -212,11 +217,13 @@ const CustomerLogin = () => {
                 style={{
                   position: "absolute",
                   right: "15px",
-                  top: "50%",
+                  top: "65%",
+                  transform: "translateY(-50%)",
                   cursor: "pointer",
                   color: "#6c757d",
-                  zIndex: 10,
+                  zIndex: 100,
                   pointerEvents: "auto",
+                  touchAction: "manipulation",
                 }}
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 role="button"

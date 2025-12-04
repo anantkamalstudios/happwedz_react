@@ -174,7 +174,6 @@ const HomeGennie = () => {
             width: "74px",
             height: "74px",
             borderRadius: "50%",
-            // background: "linear-gradient(135deg, #ec4899 0%, #9333ea 100%)",
             background: "white",
             border: "none",
             boxShadow:
@@ -183,36 +182,23 @@ const HomeGennie = () => {
             alignItems: "center",
             justifyContent: "center",
             cursor: "pointer",
-            zIndex: 999,
+            zIndex: 99999,
             transition: "transform 0.3s ease",
             overflow: "hidden",
           }}
           onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
           onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
+          <img
+            src="/shadigif.gif"
+            alt="logo"
             style={{
               height: "100%",
               width: "100%",
               objectFit: "cover",
             }}
-          >
-            <source src="/shadi.mp4" type="video/mp4" />
-            <img
-              src="/images/logo.png"
-              alt="logo"
-              style={{
-                height: "100%",
-                width: "100%",
-                objectFit: "cover",
-              }}
-              loading="lazy"
-            />
-          </video>
+            loading="lazy"
+          />
         </button>
       )}
 
@@ -231,8 +217,9 @@ const HomeGennie = () => {
               "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
             display: "flex",
             flexDirection: "column",
-            zIndex: 1050,
-            overflow: "hidden",
+            zIndex: 99999,
+            overflowY: "visible",
+            overflowX: "visible",
           }}
         >
           <div

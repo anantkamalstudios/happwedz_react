@@ -57,15 +57,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   subtitle: { fontSize: 10, color: "#6b7280", fontFamily: "Helvetica" },
-  statsRow: {
-    flexDirection: "row",
-    gap: 20,
-    marginTop: 8,
-  },
-  stat: {
-    fontSize: 9,
-    color: "#374151",
-  },
   table: {
     marginTop: 16,
     borderWidth: 1,
@@ -139,6 +130,10 @@ const getCategoryMeta = (categories, vendor_subcategory_id) => {
 };
 
 const ChecklistPDF = ({ items = [], categories = [], meta = {} }) => {
+  const safeItems = Array.isArray(items)
+    ? items.filter((item) => item && typeof item === "object")
+    : [];
+
   const { userName = "", generatedAt = new Date() } = meta;
   const dateStr =
     typeof generatedAt === "string"
@@ -156,45 +151,61 @@ const ChecklistPDF = ({ items = [], categories = [], meta = {} }) => {
           </Text>
         </View>
 
-        <View style={styles.table}>
-          <View style={[styles.row]}>
-            <Text style={[styles.cellHeader, styles.wStatus]}>Status</Text>
-            <Text style={[styles.cellHeader, styles.wTask]}>Task</Text>
-            <Text style={[styles.cellHeader, styles.wCategory]}>Category</Text>
-            <Text style={[styles.cellHeader, styles.wDays]}>Days Assigned</Text>
-          </View>
-
-          {items.map((item) => (
-            <View key={item.id} style={styles.row}>
-              <Text style={[styles.cell, styles.wStatus]}>
-                {item.status === "completed" ? "Completed" : "Pending"}
+        {safeItems.length > 0 && (
+          <View style={styles.table}>
+            <View style={[styles.row]}>
+              <Text style={[styles.cellHeader, styles.wStatus]}>Status</Text>
+              <Text style={[styles.cellHeader, styles.wTask]}>Task</Text>
+              <Text style={[styles.cellHeader, styles.wCategory]}>
+                Category
               </Text>
-              <Text
-                style={[
-                  styles.cell,
-                  styles.wTask,
-                  item.status === "completed"
-                    ? styles.taskCompleted
-                    : styles.taskActive,
-                ]}
-              >
-                {item.text}
-              </Text>
-              <View style={[styles.cell, styles.wCategory, styles.categoryRow]}>
-                <Text>
-                  {getCategoryMeta(categories, item.vendor_subcategory_id).name}
-                </Text>
-              </View>
-              <Text style={[styles.cell, styles.wDays]}>
-                {item.days_assigned === 0 || item.days_assigned > 0
-                  ? `${item.days_assigned} days`
-                  : item.days_assigned
-                  ? `${item.days_assigned} days`
-                  : "N/A"}
+              <Text style={[styles.cellHeader, styles.wDays]}>
+                Days Assigned
               </Text>
             </View>
-          ))}
-        </View>
+
+            {safeItems.map((item) => (
+              <View
+                key={item.id || `${item.text}-${Math.random()}`}
+                style={styles.row}
+              >
+                <Text style={[styles.cell, styles.wStatus]}>
+                  {item.status === "completed" ? "Completed" : "Pending"}
+                </Text>
+                <Text
+                  style={[
+                    styles.cell,
+                    styles.wTask,
+                    item.status === "completed"
+                      ? styles.taskCompleted
+                      : styles.taskActive,
+                  ]}
+                >
+                  {String(item.text || "")}
+                </Text>
+                <View
+                  style={[styles.cell, styles.wCategory, styles.categoryRow]}
+                >
+                  <Text>
+                    {
+                      getCategoryMeta(
+                        Array.isArray(categories) ? categories : [],
+                        item.vendor_subcategory_id
+                      ).name
+                    }
+                  </Text>
+                </View>
+                <Text style={[styles.cell, styles.wDays]}>
+                  {item.days_assigned === 0 || item.days_assigned > 0
+                    ? `${item.days_assigned} days`
+                    : item.days_assigned
+                    ? `${item.days_assigned} days`
+                    : "N/A"}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
       </Page>
     </Document>
   );

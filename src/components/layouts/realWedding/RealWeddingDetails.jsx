@@ -73,7 +73,7 @@ export default function WeddingPage({ post, onBackClick }) {
             backdropFilter: "blur(1px)",
           }}
         >
-          <h1
+          <h2
             className="fw-bold display-5 text-white"
             style={{
               color: "#fff",
@@ -86,7 +86,7 @@ export default function WeddingPage({ post, onBackClick }) {
             }}
           >
             {post.brideName} and {post.groomName}
-          </h1>
+          </h2>
           <p
             className="mb-1"
             style={{ fontSize: isMobile ? "0.95rem" : "1.75rem", margin: 0 }}

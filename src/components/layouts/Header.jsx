@@ -7,11 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/authSlice";
 import { vendorLogout } from "../../redux/vendorAuthSlice";
 import { setLocation } from "../../redux/locationSlice";
-import {
-  FaArrowRightLong,
-  FaChevronDown,
-  FaChevronRight,
-} from "react-icons/fa6";
+import { FaArrowRightLong, FaChevronDown, FaChevronUp } from "react-icons/fa6";
 import {
   FaRing,
   FaClipboardList,
@@ -379,9 +375,9 @@ const Header = () => {
                   >
                     <span className="fw-semibold">Planning Tools</span>
                     {mobileSubmenu === "planning" ? (
-                      <FaChevronDown />
+                      <FaChevronUp />
                     ) : (
-                      <FaChevronRight />
+                      <FaChevronDown />
                     )}
                   </button>
                   {mobileSubmenu === "planning" && (
@@ -432,11 +428,11 @@ const Header = () => {
                       Venues
                     </span>
                     {mobileSubmenu === "venues" ? (
-                      <FaChevronDown
+                      <FaChevronUp
                         onClick={() => toggleMobileSubmenu("venues")}
                       />
                     ) : (
-                      <FaChevronRight
+                      <FaChevronDown
                         onClick={() => toggleMobileSubmenu("venues")}
                       />
                     )}
@@ -533,11 +529,11 @@ const Header = () => {
                       Vendors
                     </span>
                     {mobileSubmenu === "vendors" ? (
-                      <FaChevronDown
+                      <FaChevronUp
                         onClick={() => toggleMobileSubmenu("vendors")}
                       />
                     ) : (
-                      <FaChevronRight
+                      <FaChevronDown
                         onClick={() => toggleMobileSubmenu("vendors")}
                       />
                     )}
@@ -594,11 +590,11 @@ const Header = () => {
                       Photography
                     </span>
                     {mobileSubmenu === "photography" ? (
-                      <FaChevronDown
+                      <FaChevronUp
                         onClick={() => toggleMobileSubmenu("photography")}
                       />
                     ) : (
-                      <FaChevronRight
+                      <FaChevronDown
                         onClick={() => toggleMobileSubmenu("photography")}
                       />
                     )}
@@ -649,11 +645,11 @@ const Header = () => {
                       E-Invites
                     </span>
                     {mobileSubmenu === "einvites" ? (
-                      <FaChevronDown
+                      <FaChevronUp
                         onClick={() => toggleMobileSubmenu("einvites")}
                       />
                     ) : (
-                      <FaChevronRight
+                      <FaChevronDown
                         onClick={() => toggleMobileSubmenu("einvites")}
                       />
                     )}
@@ -688,11 +684,11 @@ const Header = () => {
                       Blog
                     </span>
                     {mobileSubmenu === "blog" ? (
-                      <FaChevronDown
+                      <FaChevronUp
                         onClick={() => toggleMobileSubmenu("blog")}
                       />
                     ) : (
-                      <FaChevronRight
+                      <FaChevronDown
                         onClick={() => toggleMobileSubmenu("blog")}
                       />
                     )}
@@ -769,11 +765,11 @@ const Header = () => {
                       Real Wedding
                     </span>
                     {mobileSubmenu === "real-wedding" ? (
-                      <FaChevronDown
+                      <FaChevronUp
                         onClick={() => toggleMobileSubmenu("real-wedding")}
                       />
                     ) : (
-                      <FaChevronRight
+                      <FaChevronDown
                         onClick={() => toggleMobileSubmenu("real-wedding")}
                       />
                     )}

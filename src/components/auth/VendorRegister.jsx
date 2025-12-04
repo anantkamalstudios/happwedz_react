@@ -258,7 +258,7 @@ const VendorRegister = () => {
                       type="text"
                       id="brandName"
                       name="brandName"
-                      className={`form-control fs-16 ${
+                      className={`form-control fs-14 ${
                         errors.brandName ? "is-invalid" : ""
                       }`}
                       placeholder="Brand Name"
@@ -266,7 +266,9 @@ const VendorRegister = () => {
                       onChange={handleChange}
                       required
                     />
-                    <label htmlFor="brandName">Brand Name</label>
+                    <label htmlFor="brandName" className="fs-16">
+                      Brand Name
+                    </label>
                     {errors.brandName && (
                       <div className="invalid-feedback">{errors.brandName}</div>
                     )}
@@ -277,7 +279,7 @@ const VendorRegister = () => {
                   <div className="form-floating">
                     <select
                       name="vendorType"
-                      className={`form-select fs-16 ${
+                      className={`form-select fs-14 ${
                         errors.vendorType ? "is-invalid" : ""
                       }`}
                       value={formData.vendorType}
@@ -295,7 +297,7 @@ const VendorRegister = () => {
                         </option>
                       ))}
                     </select>
-                    <label>Vendor Type</label>
+                    <label className="fs-16">Vendor Type</label>
                     {errors.vendorType && (
                       <div className="invalid-feedback">
                         {errors.vendorType}
@@ -309,14 +311,14 @@ const VendorRegister = () => {
                     <input
                       type="email"
                       name="email"
-                      className={`form-control fs-16 ${
+                      className={`form-control fs-14 ${
                         errors.email ? "is-invalid" : ""
                       }`}
                       placeholder="Email"
                       value={formData.email}
                       onChange={handleChange}
                     />
-                    <label>Email</label>
+                    <label className="fs-16">Email</label>
                     {errors.email && (
                       <div className="invalid-feedback">{errors.email}</div>
                     )}
@@ -327,7 +329,7 @@ const VendorRegister = () => {
                   <div className="form-floating">
                     <select
                       name="city"
-                      className={`form-select fs-16 ${
+                      className={`form-select fs-14 ${
                         errors.city ? "is-invalid" : ""
                       }`}
                       value={formData.city}
@@ -342,7 +344,7 @@ const VendorRegister = () => {
                         </option>
                       ))}
                     </select>
-                    <label>City</label>
+                    <label className="fs-16">City</label>
                     {errors.city && (
                       <div className="invalid-feedback">{errors.city}</div>
                     )}
@@ -354,7 +356,7 @@ const VendorRegister = () => {
                     <input
                       type={passwordVisible ? "text" : "password"}
                       name="password"
-                      className={`form-control fs-16 ${
+                      className={`form-control fs-14 ${
                         errors.password ? "is-invalid" : ""
                       }`}
                       placeholder="Password"
@@ -362,7 +364,7 @@ const VendorRegister = () => {
                       onChange={handleChange}
                       style={{ paddingRight: "48px" }}
                     />
-                    <label>Password</label>
+                    <label className="fs-16">Password</label>
                     <button
                       type="button"
                       className="position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent"
@@ -393,6 +395,45 @@ const VendorRegister = () => {
                     .input-number {
                       -moz-appearance: textfield;
                     }
+
+                    /* Ensure labels appear visually above inputs on mobile */
+                    @media (max-width: 768px) {
+                      .form-floating {
+                        position: relative;
+                      }
+
+                      .form-floating > .form-control,
+                      .form-floating > .form-select {
+                        min-height: 3.25rem;
+                        padding-top: 1.4rem;
+                        padding-bottom: 0.75rem;
+                        font-size: 0.875rem; /* ~fs-14 */
+                      }
+
+                      .form-floating > label {
+                        position: absolute;
+                        top: 0.1rem;
+                        left: 0.9rem;
+                        transform: none;
+                        z-index: 999;
+                        font-size: 1rem;
+                        opacity: 1;
+                        height: auto;
+                        padding: 0 0.25rem;
+                        background: #ffffff;
+                        pointer-events: none;
+                      }
+
+                      input,
+                      select,
+                      textarea {
+                        z-index: 0 !important;
+                      }
+
+                      .form-floating > .form-control::placeholder {
+                        opacity: 0.7 !important;
+                      }
+                    }
                   `}
                 </style>
 
@@ -401,14 +442,14 @@ const VendorRegister = () => {
                     <input
                       type="number"
                       name="phone"
-                      className={`input-number form-control fs-16 ${
+                      className={`input-number form-control fs-14 ${
                         errors.phone ? "is-invalid" : ""
                       }`}
                       placeholder="Phone"
                       value={formData.phone}
                       onChange={handleChange}
                     />
-                    <label>Phone</label>
+                    <label className="fs-16">Phone</label>
                     {errors.phone && (
                       <div className="invalid-feedback">{errors.phone}</div>
                     )}

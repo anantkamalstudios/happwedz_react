@@ -151,15 +151,16 @@ const LocationModalWithAPI = () => {
           </span>
 
           {selectedLocation ? (
-            <RxCrossCircled
-              size={20}
-              color="#d00"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleClearLocation(e);
-              }}
-              style={{ cursor: "pointer" }}
-            />
+            // <RxCrossCircled
+            //   size={20}
+            //   color="#d00"
+            //   onClick={(e) => {
+            //     e.stopPropagation();
+            //     handleClearLocation(e);
+            //   }}
+            //   style={{ cursor: "pointer" }}
+            // />
+            <IoMdArrowDropdown size={25} color="#000" />
           ) : (
             <IoMdArrowDropdown size={25} color="#000" />
           )}

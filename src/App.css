@@ -177,6 +177,17 @@ h6 {
   font-weight: 500 !important;
 }
 
+label {
+  font-size: 16px;
+}
+
+input,
+select,
+textarea  {
+  font-size: 14px;
+  z-index: 10 !important;
+}
+
 .fs-10 {
   font-size: 10px !important;
 }
@@ -1107,8 +1118,9 @@ h6 {
 
 /* Venues By Region */
 .region-img-wrapper {
-  width: 130px;
-  height: 130px;
+  width: 100%;
+  max-width: 130px;
+  aspect-ratio: 1 / 1;
   margin: 0 auto;
   border-radius: 50%;
   overflow: hidden;
@@ -1293,11 +1305,14 @@ h6 {
 }
 
 /* End */
+
+/* Start View Switcher */
 .view-switcher-wrapper {
-  padding: 1rem;
+  /* padding: 1rem; */
 }
 
 .view-switcher {
+  border: 1px solid #000;
   display: inline-flex;
   background: #e9e9e9;
   border-radius: 15px;
@@ -1309,45 +1324,34 @@ h6 {
   padding: 8px 16px;
   background: transparent;
   font-weight: 500;
-  color: #333;
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s ease;
+  font-size: 14px;
+  color: #7a7a7a;
+  transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease,
+    transform 180ms ease;
 }
 
 .switch-btn:hover {
-  background: #ddd;
+  background: #d9d9d9;
+  color: #555;
 }
 
 .switch-btn.active {
-  background: white;
-  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.1);
-  color: black;
+  background: #ffffff;
+  color: #000000;
+  transform: scale(1.07);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 2;
 }
 
-/* ViewSwitcher - pink active styles */
-.view-switcher .switch-btn {
-  transition: background 180ms ease, color 180ms ease, border-color 180ms ease,
-    box-shadow 180ms ease, transform 180ms ease;
+.switch-btn:not(.active) {
+  opacity: 0.6;
 }
 
-.view-switcher .switch-btn.active {
-  background: #ed1173;
-  color: #fff;
-  border-color: #ed1173;
-  box-shadow: 0 6px 14px rgba(237, 17, 115, 0.28);
-}
-
-.view-switcher .switch-btn:not(.active):hover {
-  background: rgba(237, 17, 115, 0.08);
-  color: #ed1173;
-  border-color: rgba(237, 17, 115, 0.35);
-}
-
-.view-switcher .switch-btn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 0.2rem rgba(237, 17, 115, 0.3);
+.switch-btn:not(.active):hover {
+  opacity: 0.9;
 }
 
 /* Venues Grid */
@@ -4549,10 +4553,12 @@ label {
 
 input:checked + .slider {
   background-color: #ed1173;
+  z-index: 0 !important;
 }
 
 input:checked + .slider:before {
   transform: translateX(24px);
+  z-index: 0 !important;
 }
 
 .switch-label {
@@ -19516,7 +19522,6 @@ input:checked + .slider:before {
   align-items: center;
 }
 
-
 .location-columns-wrapper {
   display: flex;
   min-height: 400px;
@@ -19530,7 +19535,7 @@ input:checked + .slider:before {
 .location-column.bg-light {
   background-color: #fbfbfb;
 }
- 
+
 @media (max-width: 768px) {
   .location-columns-wrapper {
     flex-wrap: wrap;
@@ -19542,7 +19547,7 @@ input:checked + .slider:before {
     min-height: 250px;
   }
 }
- 
+
 @media (max-width: 576px) {
   .location-columns-wrapper {
     flex-direction: column;
@@ -21741,3 +21746,8 @@ body.mobile-menu-active {
 }
 
 /* ---------- End EInvite Mobile Responsive ---------- */
+
+.dropdown-menu {  
+  z-index: 99999 !important;
+} 
+

@@ -546,6 +546,13 @@ const RealWeddingForm = ({ user, token }) => {
           </div>
         </form>
       </div>
+      <style jsx>{`
+        input,
+        select,
+        textarea {
+          z-index: 0 !important;
+        }
+      `}</style>
     </div>
   );
 };

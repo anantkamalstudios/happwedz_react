@@ -331,10 +331,10 @@ const EmailModal = ({
           display: "flex",
           flexDirection: "column",
           boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
-          borderRadius: "50px",
+          borderRadius: "20px",
+          overflow: "hidden",
         }}
       >
-        {/* Header */}
         <div
           style={{
             padding: "20px 24px",

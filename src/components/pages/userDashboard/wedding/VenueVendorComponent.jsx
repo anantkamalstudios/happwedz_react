@@ -23,7 +23,7 @@ const toSlug = (text) =>
 const VenueVendorComponent = ({ type = "vendor" }) => {
   const navigate = useNavigate();
   const isVendorBox = type === "vendor";
-
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [selectedSlug, setSelectedSlug] = useState(null);
@@ -62,6 +62,20 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
     };
     fetchCategories();
   }, [isVendorBox]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest(".col-md-5")) {
+        setDropdownOpen(false);
+      }
+    };
+
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownOpen]);
 
   const { data: vendorItems, loading: loadingVendors } = useApiData(
     isVendorBox ? "vendors" : null,
@@ -110,37 +124,25 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
                   paddingBottom: "0.25rem",
                 }}
               >
-                <select
-                  name="vendors"
-                  id="vendor"
+                {/* Custom Select Button */}
+                <div
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
                   style={{
                     width: "100%",
                     padding: "8px 28px 8px 8px",
                     fontSize: "14px",
                     background: "transparent",
                     outline: "none",
-                    appearance: "none",
                     border: "none",
                     borderBottom: "2px solid #C31162",
-                    boxShadow: "none",
-                    borderRadius: 0,
                     cursor: "pointer",
-                  }}
-                  value={selectedSlug || ""}
-                  onChange={(e) => {
-                    const slug = e.target.value || null;
-                    setSelectedSlug(slug);
-                    const opt = e.target.options[e.target.selectedIndex];
-                    setSelectedLabel(opt && opt.value ? opt.text : "");
+                    userSelect: "none",
                   }}
                 >
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={toSlug(cat.name)}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
+                  {selectedLabel || categories[0]?.name || "Select"}
+                </div>
 
+                {/* Dropdown Icon */}
                 <span
                   style={{
                     position: "absolute",
@@ -154,6 +156,58 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
                 >
                   <FaCaretDown size={12} />
                 </span>
+
+                {/* Dropdown Menu - ALWAYS OPENS DOWNWARD */}
+                {dropdownOpen && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: 0,
+                      right: 0,
+                      backgroundColor: "#fff",
+                      border: "1px solid #ddd",
+                      borderRadius: "4px",
+                      maxHeight: "200px",
+                      overflowY: "auto",
+                      zIndex: 1000,
+                      marginTop: "4px",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                    }}
+                  >
+                    {categories.map((cat) => (
+                      <div
+                        key={cat.id}
+                        onClick={() => {
+                          const slug = toSlug(cat.name);
+                          setSelectedSlug(slug);
+                          setSelectedLabel(cat.name);
+                          setDropdownOpen(false);
+                        }}
+                        style={{
+                          padding: "8px 12px",
+                          cursor: "pointer",
+                          fontSize: "14px",
+                          backgroundColor:
+                            selectedSlug === toSlug(cat.name)
+                              ? "#f0f0f0"
+                              : "transparent",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = "#f5f5f5";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor =
+                            selectedSlug === toSlug(cat.name)
+                              ? "#f0f0f0"
+                              : "transparent";
+                        }}
+                      >
+                        {cat.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}

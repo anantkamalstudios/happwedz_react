@@ -205,6 +205,13 @@ const Check = () => {
       return;
     }
 
+    const sDate = new Date(startDate);
+    const wDate = new Date(weddingDate);
+    if (wDate < sDate) {
+      setError("Wedding date cannot be before start date.");
+      return;
+    }
+
     const today = new Date();
     const wedding = new Date(weddingDate);
     const diffDays = Math.ceil((wedding - today) / (1000 * 60 * 60 * 24));
@@ -410,7 +417,7 @@ const Check = () => {
                     <FaHeart />
                     Wedding Checklist
                   </h5>
-                  <div className="header-actions d-flex gap-2 fs-14">
+                  <div className="header-actions d-flex gap-2 fs-14 my-4">
                     {(distributedTasks && distributedTasks.length > 0) ||
                     (checklists && checklists.length > 0) ? (
                       <PDFDownloadLink
@@ -447,9 +454,6 @@ const Check = () => {
                         Download
                       </button>
                     )}
-                    {/* <button className="btn">
-                      <FaPrint className="me-1" /> Print
-                    </button> */}
                   </div>
                 </div>
 
@@ -507,7 +511,7 @@ const Check = () => {
                             <Dropdown
                               drop="down"
                               autoClose="outside"
-                              flip={true}
+                              flip={false}
                             >
                               <Dropdown.Toggle className="w-100 fs-14 bg-white text-black text-start d-flex justify-content-between align-items-center">
                                 {vendorSubId
@@ -519,9 +523,13 @@ const Check = () => {
                               <Dropdown.Menu
                                 className="w-100"
                                 style={{
-                                  maxHeight: "350px",
+                                  position: "absolute",
+                                  inset: "0 auto auto 0",
+                                  transform: "translateY(100%) !important",
+                                  maxHeight: "200px",
                                   overflowY: "auto",
                                   background: "#fff",
+                                  zIndex: 9999,
                                 }}
                               >
                                 {categories.map((sub) => (
@@ -555,19 +563,11 @@ const Check = () => {
                       </div>
                       <div className="col-12 col-md-1 d-flex align-items-center justify-content-center">
                         <button
-                          className="btn btn-outline-primary fs-14 w-100 w-md-auto"
-                          style={{
-                            borderRadius: "50%",
-                            maxWidth: "70px",
-                            height: "40px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            padding: 0,
-                          }}
+                          className="btn btn-outline-primary fs-14 w-100 w-md-auto d-flex align-items-center justify-content-center"
                           onClick={addChecklist}
                         >
-                          <FaPlus />
+                          <span className="d-inline d-md-none">Add</span>
+                          <FaPlus className="d-none d-md-inline" />
                         </button>
                       </div>
                     </div>

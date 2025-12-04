@@ -63,7 +63,6 @@ const PolicyModal = ({ open, onClose, onAgree }) => {
               </button>
             </div>
           </div>
-          {/* Intro Text */}
           <p className="mt-3 text-start small text-justify fs-14">
             To access this service, you must be at least 18 years old.
           </p>
@@ -80,22 +79,32 @@ const PolicyModal = ({ open, onClose, onAgree }) => {
           <span className="fw-medium text-center mb-3">Privacy Notice</span>
           {/* Checkbox 1 */}
           <div className="mb-3 d-flex align-items-start gap-2">
-            <div>
-              <input
-                type="checkbox"
-                // className="form-check-input mt-1"
-                checked={agreeOne}
-                onChange={(e) => setAgreeOne(e.target.checked)}
-                id="agreeOne"
-                style={{
-                  width: "16px",
-                  height: "16px",
-                  cursor: "pointer",
-                  accentColor: agreeOne ? "#fff" : "#fb3990ff",
-                  backgroundColor: "#fb3990ff",
-                  borderColor: "#C31162",
-                }}
-              />
+            <div
+              onClick={() => setAgreeOne(!agreeOne)}
+              style={{
+                width: "18px",
+                height: "18px",
+                border: "2px solid #fff",
+                borderRadius: "4px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: agreeOne ? "#fff" : "transparent",
+              }}
+            >
+              {agreeOne && (
+                <span
+                  style={{
+                    color: "#C31162",
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    marginTop: "-2px",
+                  }}
+                >
+                  ✔
+                </span>
+              )}
             </div>
             <label
               htmlFor="agreeOne"
@@ -113,22 +122,32 @@ const PolicyModal = ({ open, onClose, onAgree }) => {
           </div>
           {/* Checkbox 2 */}
           <div className="mb-4 d-flex align-items-start gap-2">
-            <div>
-              <input
-                type="checkbox"
-                // className="form-check-input mt-1"
-                checked={agreeTwo}
-                onChange={(e) => setAgreeTwo(e.target.checked)}
-                id="agreeTwo"
-                style={{
-                  width: "16px",
-                  height: "16px",
-                  cursor: "pointer",
-                  accentColor: agreeTwo ? "#fff" : "#C31162",
-                  backgroundColor: "#fb3990ff",
-                  borderColor: "#C31162",
-                }}
-              />
+            <div
+              onClick={() => setAgreeTwo(!agreeTwo)}
+              style={{
+                width: "18px",
+                height: "18px",
+                border: "2px solid #fff",
+                borderRadius: "4px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: agreeTwo ? "#fff" : "transparent",
+              }}
+            >
+              {agreeTwo && (
+                <span
+                  style={{
+                    color: "#C31162",
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    marginTop: "-2px",
+                  }}
+                >
+                  ✔
+                </span>
+              )}
             </div>
             <label
               htmlFor="agreeTwo"
@@ -181,16 +200,6 @@ const TryMakeupLanding = () => {
 
   return (
     <div className="container py-5">
-      {/* <div className="text-center mb-4">
-        <h2 className="fw-semibold">Try Makeup</h2>
-        <p className="text-muted">Start by reviewing our policy</p>
-      </div>
-      <div className="d-flex justify-content-center">
-        <button className="btn btn-primary" onClick={() => setOpen(true)}>
-          Open Policy
-        </button>
-      </div> */}
-
       <PolicyModal open={open} onClose={handleClose} onAgree={handleAgree} />
     </div>
   );

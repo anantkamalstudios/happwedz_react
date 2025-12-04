@@ -244,7 +244,7 @@ const TopFilter = ({
           className="d-flex align-items-center justify-content-between filter-dropdown-toggle"
           style={{
             minWidth: "140px",
-            width: "100%",
+            width: "auto",
             border: "1px solid #dee2e6",
             backgroundColor: "#fff",
             padding: "8px 12px",
@@ -317,26 +317,46 @@ const TopFilter = ({
       }}
     >
       <div className="container-fluid px-2 px-md-3">
-        {/* First Row: Filter Dropdowns - Responsive Grid */}
+        {/* Single Row: Filters + Actions + ViewSwitcher */}
         <div className="row">
           <div className="col-12">
-            <div className="row g-2 py-3 topfilter-filters">
-              {Object.entries(filters).map(([group, options]) => (
-                <div
-                  key={group}
-                  className="col-6 col-sm-4 col-md-3 col-lg-auto filter-item"
-                >
-                  {renderDropdown(group, options)}
-                </div>
-              ))}
+            <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 py-3 topfilter-row">
+              <div
+                className="d-flex flex-wrap gap-2 align-items-center"
+                style={{ flex: "1 1 auto", minWidth: 0 }}
+              >
+                {Object.entries(filters).map(([group, options]) => (
+                  <div key={group} className="filter-item">
+                    {renderDropdown(group, options)}
+                  </div>
+                ))}
+              </div>
+              <div className="d-flex align-items-center gap-2 flex-shrink-0">
+                {isAnyFilterSelected && (
+                  <>
+                    {hasPendingChanges && onApplyFilters && (
+                      <button
+                        className="btn btn-primary btn-sm d-flex align-items-center gap-1 px-3"
+                        onClick={onApplyFilters}
+                        style={{ whiteSpace: "nowrap" }}
+                      >
+                        <MdCheck size={18} />
+                        <span className="d-none d-sm-inline">Apply</span>
+                      </button>
+                    )}
+                    <button
+                      className="btn btn-outline-danger btn-sm d-flex align-items-center gap-1 px-3"
+                      onClick={clearFilters}
+                      style={{ whiteSpace: "nowrap" }}
+                    >
+                      <MdClear size={18} />
+                      <span className="d-none d-sm-inline">Clear</span>
+                    </button>
+                  </>
+                )}
+                <ViewSwitcher view={view} setView={setView} />
+              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Second Row: Action Buttons and View Switcher */}
-        <div className="row pt-2 pb-2">
-          <div className="col-12 d-flex flex-column gap-3">
-            {/* Active Filters Badges */}
             {isAnyFilterSelected && (
               <div className="d-flex flex-wrap gap-2 align-items-center">
                 <small className="text-muted me-1 fw-semibold fs-14 d-none d-sm-inline">
@@ -367,35 +387,6 @@ const TopFilter = ({
                 )}
               </div>
             )}
-
-            {/* Action Buttons and View Switcher */}
-            <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
-              <div className="d-flex align-items-center gap-2 flex-wrap">
-                {isAnyFilterSelected && (
-                  <>
-                    {hasPendingChanges && onApplyFilters && (
-                      <button
-                        className="btn btn-primary btn-sm d-flex align-items-center gap-1 px-3"
-                        onClick={onApplyFilters}
-                        style={{ whiteSpace: "nowrap" }}
-                      >
-                        <MdCheck size={18} />
-                        <span className="d-none d-sm-inline">Apply</span>
-                      </button>
-                    )}
-                    <button
-                      className="btn btn-outline-danger btn-sm d-flex align-items-center gap-1 px-3"
-                      onClick={clearFilters}
-                      style={{ whiteSpace: "nowrap" }}
-                    >
-                      <MdClear size={18} />
-                      <span className="d-none d-sm-inline">Clear</span>
-                    </button>
-                  </>
-                )}
-              </div>
-              <ViewSwitcher view={view} setView={setView} />
-            </div>
           </div>
         </div>
       </div>

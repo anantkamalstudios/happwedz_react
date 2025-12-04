@@ -1229,7 +1229,7 @@ const FiltersPage = () => {
             {isApplying && (
               <div className="processing-overlay">
                 <BarLoader />
-                <p>Applying For The Filters</p>
+                <p>Processing</p>
               </div>
             )}
             {activeBtn !== "Complete Look" &&
@@ -1878,7 +1878,7 @@ const FiltersPage = () => {
           </div>
         </div>
       )}  */}
-      <div className="w-100 py-2" style={{ background: "#ffb3d3ff" }}>
+      <div className="w-100 py-2 mb-3" style={{ background: "#ffb3d3ff" }}>
         <div className="d-flex justify-content-evenly">
           {buttons.map((button, index) => (
             <button

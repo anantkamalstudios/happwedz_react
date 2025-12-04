@@ -495,6 +495,7 @@ const HomeAdmin = () => {
     <Container className="leads-dashboard-page">
       <div className="page-header mb-4">
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center align-items-start gap-3">
+          {/* Title */}
           <div>
             <h4 className="page-title">
               Leads, Impressions & Profile Views Dashboard
@@ -503,11 +504,14 @@ const HomeAdmin = () => {
               Track your business growth and engagement
             </p>
           </div>
-          <div className="d-flex gap-2">
+          <div
+            className="d-flex flex-column gap-2 w-100"
+            style={{ maxWidth: "300px" }}
+          >
             <Dropdown>
               <Dropdown.Toggle
                 variant="outline-secondary"
-                className="d-flex align-items-center"
+                className="d-flex align-items-center w-100 justify-content-between"
               >
                 <FiCalendar className="me-2" />
                 {dateFilter === "this_week"
@@ -518,6 +522,7 @@ const HomeAdmin = () => {
                   ? "Last Month"
                   : "Custom Range"}
               </Dropdown.Toggle>
+
               <Dropdown.Menu>
                 <Dropdown.Item onClick={() => setDateFilter("this_week")}>
                   This Week
@@ -534,28 +539,32 @@ const HomeAdmin = () => {
               </Dropdown.Menu>
             </Dropdown>
 
+            {/* Custom Range Box - Shown Below Dropdown */}
             {dateFilter === "custom" && (
-              <div className="d-flex align-items-center gap-2">
-                <Form.Control
-                  type="date"
-                  value={customStart}
-                  onChange={(e) => setCustomStart(e.target.value)}
-                />
-                <Form.Control
-                  type="date"
-                  value={customEnd}
-                  onChange={(e) => setCustomEnd(e.target.value)}
-                />
+              <>
+                <div className="d-flex flex-column gap-2">
+                  <Form.Control
+                    type="date"
+                    value={customStart}
+                    onChange={(e) => setCustomStart(e.target.value)}
+                  />
+
+                  <Form.Control
+                    type="date"
+                    value={customEnd}
+                    onChange={(e) => setCustomEnd(e.target.value)}
+                  />
+                </div>
                 <Button
                   variant="primary"
+                  className="w-100 btn-outline-primary"
                   onClick={() => {
                     if (!customStart || !customEnd) {
-                      // basic validation
                       alert("Please select both start and end dates.");
                       return;
                     }
                     if (new Date(customStart) > new Date(customEnd)) {
-                      alert("Start date must be before or equal to end date.");
+                      alert("Start date must be before end date.");
                       return;
                     }
                     setCustomApplyToggle((t) => !t);
@@ -563,7 +572,7 @@ const HomeAdmin = () => {
                 >
                   Apply
                 </Button>
-              </div>
+              </>
             )}
           </div>
         </div>

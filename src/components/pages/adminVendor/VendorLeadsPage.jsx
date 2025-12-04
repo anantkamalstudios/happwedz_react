@@ -246,17 +246,12 @@ export default function VendorLeadsPage() {
     setShowQuoteModal(false);
     setSelectedLead(null);
   };
-
-  // Form handling moved to QuotationModal
-
-  // Submission handled by QuotationModal
-
   return (
     <div className="container my-5">
-      <div className="d-flex align-items-center mb-3 gap-2 justify-content-end">
+      <div className="d-flex align-items-center mb-3 gap-2 justify-content-end flex-wrap">
         <button
           type="button"
-          className="btn btn-outline-primary col-2"
+          className="btn btn-outline-primary col-12 col-sm-4 col-md-2"
           onClick={exportToCSV}
           disabled={exporting || rows.length === 0}
         >
@@ -265,7 +260,7 @@ export default function VendorLeadsPage() {
 
         <button
           type="button"
-          className="btn btn-outline-success col-2"
+          className="btn btn-outline-success col-12 col-sm-4 col-md-2"
           onClick={exportToExcel}
           disabled={exporting || rows.length === 0}
         >
