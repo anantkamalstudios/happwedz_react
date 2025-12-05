@@ -48,7 +48,6 @@ const authSlice = createSlice({
 
 export const { setCredentials, logout } = authSlice.actions;
 export const loginUser = (payload) => (dispatch) => {
-  dispatch(vendorLogout());
   dispatch(setCredentials(payload));
 };
 

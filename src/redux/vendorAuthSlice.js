@@ -48,7 +48,6 @@ const vendorAuthSlice = createSlice({
 export const { setVendorCredentials, vendorLogout, setVendor } =
   vendorAuthSlice.actions;
 export const loginVendor = (payload) => (dispatch) => {
-  dispatch(logout());
   dispatch(setVendorCredentials(payload));
 };
 export default vendorAuthSlice.reducer;

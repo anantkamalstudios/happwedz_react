@@ -401,12 +401,7 @@ const HomeAdmin = () => {
     };
 
     fetchDashboardData();
-  }, [
-    vendorToken,
-    vendor?.id,
-    dateFilter,
-    customApplyToggle,
-  ]);
+  }, [vendorToken, vendor?.id, dateFilter, customApplyToggle]);
 
   // Stats data
   const statsData = {
@@ -566,7 +561,7 @@ const HomeAdmin = () => {
           </div>
           <div
             className="d-flex flex-column gap-2 w-100"
-            style={{ maxWidth: "300px" }}
+            style={{ maxWidth: "200px" }}
           >
             <Dropdown>
               <Dropdown.Toggle

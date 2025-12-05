@@ -54,13 +54,16 @@ export default function FavouriteListPopup({
     >
       <div
         style={{
-          background: "#fce4ec",
-          width: "100%",
-          maxWidth: "700px",
-          boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
-          overflow: "hidden",
-          position: "relative",
-        }}
+  background: "#fce4ec",
+  width: "80%",               // responsive width
+  maxWidth: "700px",
+  margin: "0 auto",          // center popup
+  boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
+  overflow: "hidden",
+  position: "relative",
+  borderRadius: "12px",      // optional nicer UI
+}}
+
       >
         {/* Header with Tabs */}
         <div

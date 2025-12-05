@@ -838,7 +838,7 @@ const Detailed = () => {
               </h3>
               {venueData.attributes?.about_us ? (
                 <div
-                  className="description-text text-black fs-16"
+                  className="description-text text-black fs-14"
                   style={{ textAlign: "justify" }}
                   dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(

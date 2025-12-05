@@ -130,9 +130,22 @@ const VendorMessages = () => {
       setError(null);
       try {
         const res = await vendorMessagesApi.getConversations();
-        const list = Array.isArray(res)
+        let list = Array.isArray(res)
           ? res
           : res?.data || res?.conversations || [];
+
+        // Deduplicate: ensure one conversation per user, preferring most recent
+        list.sort(
+          (a, b) =>
+            new Date(b.lastMessageAt || 0) - new Date(a.lastMessageAt || 0)
+        );
+        const seenUsers = new Set();
+        list = list.filter((c) => {
+          if (!c.userId) return true;
+          if (seenUsers.has(c.userId)) return false;
+          seenUsers.add(c.userId);
+          return true;
+        });
         // enrich: fetch vendor self image (from any conversation vendorId)
         const first = list?.[0];
         if (first?.vendorId) {
@@ -245,9 +258,22 @@ const VendorMessages = () => {
     const interval = setInterval(async () => {
       try {
         const res = await vendorMessagesApi.getConversations();
-        const list = Array.isArray(res)
+        let list = Array.isArray(res)
           ? res
           : res?.data || res?.conversations || [];
+
+        // Deduplicate
+        list.sort(
+          (a, b) =>
+            new Date(b.lastMessageAt || 0) - new Date(a.lastMessageAt || 0)
+        );
+        const seenUsersPoll = new Set();
+        list = list.filter((c) => {
+          if (!c.userId) return true;
+          if (seenUsersPoll.has(c.userId)) return false;
+          seenUsersPoll.add(c.userId);
+          return true;
+        });
         setConversations((prev) => {
           const byId = new Map(prev.map((c) => [c.id, c]));
           return list.map((c) => {

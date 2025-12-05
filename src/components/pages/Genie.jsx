@@ -275,13 +275,7 @@ const Genie = () => {
       };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background:
-          "radial-gradient(circle at 80% 50%, rgba(137, 188, 255, 0.32) 0%,rgba(137, 188, 255, 0.1) 15%,rgba(238, 174, 202, 0.2) 21%, rgba(238, 174, 202, 0.1) 100%)",
-      }}
-    >
+    <div>
       <div className="container-fluid">
         <div className="row" style={{ minHeight: contentHeight }}>
           {/* SIDEBAR */}
@@ -566,19 +560,41 @@ const Genie = () => {
                     }}
                   >
                     {msg.type === "ai" && (
+                      // <div
+                      //   style={{
+                      //     width: "40px",
+                      //     height: "40px",
+                      //     borderRadius: "50%",
+                      //     display: "flex",
+                      //     alignItems: "center",
+                      //     justifyContent: "center",
+                      //     flexShrink: 0,
+                      //     alignSelf: "flex-end",
+                      //   }}
+                      // >
+                      //   <BsStars size={30} style={{ color: "#C31162" }} />
+                      // </div>
                       <div
                         style={{
                           width: "40px",
                           height: "40px",
                           borderRadius: "50%",
+                          overflow: "hidden", // important to keep image inside circle
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
                           flexShrink: 0,
-                          alignSelf: "flex-end",
                         }}
                       >
-                        <BsStars size={30} style={{ color: "#C31162" }} />
+                        <img
+                          src="/shaadi.jpg"
+                          alt="logo"
+                          style={{
+                            height: "100%",
+                            width: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
                       </div>
                     )}
                     <div
@@ -772,7 +788,7 @@ const Genie = () => {
                       gap: "10px",
                     }}
                   >
-                    <div
+                    {/* <div
                       style={{
                         width: "40px",
                         height: "40px",
@@ -784,7 +800,30 @@ const Genie = () => {
                       }}
                     >
                       <BsStars size={30} style={{ color: "#C31162" }} />
+                    </div> */}
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "50%",
+                        overflow: "hidden", // important to keep image inside circle
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <img
+                        src="/shaadi.jpg"
+                        alt="logo"
+                        style={{
+                          height: "100%",
+                          width: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
                     </div>
+
                     <div
                       style={{
                         display: "inline-flex",
@@ -850,41 +889,46 @@ const Genie = () => {
               >
                 <div
                   style={{
-                    position: "relative",
                     maxWidth: "900px",
                     margin: "0 auto",
                     paddingBottom: isMobile ? "20px" : "0px",
                     scrollMarginBottom: "20px",
                   }}
                 >
-                  <input
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    placeholder="Ask me anything..."
-                    className="form-control"
-                    style={{
-                      padding: "15px 60px 15px 20px",
-                      fontSize: "15px",
-                      boxShadow: "0 4px 15px rgba(217, 70, 239, 0.15)",
-                      borderRadius: "50px",
-                    }}
-                  />
-                  <button
-                    onClick={handleSendMessage}
-                    style={{
-                      position: "absolute",
-                      right: "10px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      background: "transparent",
-                      border: "none",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <LuSendHorizontal size={24} style={{ color: "#ed1147" }} />
-                  </button>
+                  <div style={{ position: "relative" }}>
+                    <input
+                      type="text"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onKeyDown={handleKeyPress}
+                      placeholder="Ask me anything..."
+                      className="form-control"
+                      style={{
+                        padding: "15px 60px 15px 20px",
+                        fontSize: "15px",
+                        boxShadow: "0 4px 15px rgba(217, 70, 239, 0.15)",
+                        borderRadius: "50px",
+                      }}
+                    />
+                    <button
+                      onClick={handleSendMessage}
+                      style={{
+                        position: "absolute",
+                        right: "10px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        background: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                        zIndex: 101,
+                      }}
+                    >
+                      <LuSendHorizontal
+                        size={24}
+                        style={{ color: "#ed1147" }}
+                      />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

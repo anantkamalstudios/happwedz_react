@@ -38,6 +38,13 @@ const HomeGennie = () => {
     };
   }, [isChatOpen]);
 
+  // Persist session ID for full page navigation
+  useEffect(() => {
+    if (sessionId) {
+      localStorage.setItem("genie_session_id", sessionId);
+    }
+  }, [sessionId]);
+
   const getIdFromToken = (token) => {
     try {
       const payload = token.split(".")[1];
@@ -54,7 +61,7 @@ const HomeGennie = () => {
     if (tokenId) {
       setIsChatOpen(true);
     } else {
-      navigate("/customer-login", { state: { from: location } });
+      navigate("/customer-login", { state: { from: "/shaadi-ai" } });
     }
   };
 
@@ -704,7 +711,7 @@ const HomeGennie = () => {
                   }}
                 >
                   <img
-                    src="/gennie-logo.png"
+                    src="/shaadi.jpg"
                     alt="logo"
                     style={{
                       height: "100%",

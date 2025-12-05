@@ -248,7 +248,7 @@ const RealWeddings = ({ onPostClick }) => {
         <div className="p-2">
           <div className="d-flex align-items-center text-center justify-content-center">
             <span className="fw-bold mb-0 fs-22">{wedding.brideName}</span>
-            <span className=" mb-0 mx-2 fs-14">And</span>
+            <span className=" mb-0 mx-2 fs-18">And</span>
             <span className="fw-bold mb-0 fs-22">{wedding.groomName}</span>
           </div>
           <h5 className="mt-3 d-flex align-items-center primary-text justify-content-center">
