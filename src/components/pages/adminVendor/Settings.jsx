@@ -25,7 +25,12 @@ import {
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("notifications");
   const [showSuccess, setShowSuccess] = useState(false);
-  const { vendor } = useSelector((state) => state.vendorAuth || {});
+  const { vendor, token } = useSelector((state) => state.vendorAuth || {});
+  const [enquiryNotificationEnabled, setEnquiryNotificationEnabled] = useState(true);
+  const [showEnquiryIcon, setShowEnquiryIcon] = useState(() => {
+    const stored = localStorage.getItem("showEnquiryCountBadge");
+    return stored !== null ? stored === "true" : true;
+  });
 
   const [profileData, setProfileData] = useState({
     businessName: "",
@@ -39,9 +44,8 @@ const Settings = () => {
     if (vendor) {
       setProfileData({
         businessName: vendor.businessName || "",
-        contactPerson: `${vendor.firstName || ""} ${
-          vendor.lastName || ""
-        }`.trim(),
+        contactPerson: `${vendor.firstName || ""} ${vendor.lastName || ""
+          }`.trim(),
         email: vendor.email || "",
         phone: vendor.phone || "",
         address: vendor.city || "",
@@ -277,7 +281,7 @@ const Settings = () => {
                   </div>
                 </Card.Header>
                 <Card.Body className="p-4">
-                  <div className="notification-item">
+                  {/* <div className="notification-item">
                     <div className="switch-wrapper">
                       <div>
                         <h6 className="mb-1">New Review Notifications</h6>
@@ -289,6 +293,29 @@ const Settings = () => {
                         type="switch"
                         defaultChecked
                         onChange={(e) => toggleNotifications(e.target.checked)}
+                      />
+                    </div>
+                  </div> */}
+                  <div className="notification-item">
+                    <div className="switch-wrapper">
+                      <div>
+                        <h6 className="mb-1">Show Enquiry Count Badge</h6>
+                        <small className="text-muted">
+                          Display unread enquiry count on the enquiry icon in navbar
+                        </small>
+                      </div>
+                      <Form.Check
+                        type="switch"
+                        checked={showEnquiryIcon}
+                        onChange={(e) => {
+                          const enabled = e.target.checked;
+                          setShowEnquiryIcon(enabled);
+                          localStorage.setItem("showEnquiryCountBadge", enabled.toString());
+                          // Dispatch custom event to notify Navbar
+                          window.dispatchEvent(new Event("enquiryBadgeSettingChanged"));
+                          setShowSuccess(true);
+                          setTimeout(() => setShowSuccess(false), 2000);
+                        }}
                       />
                     </div>
                   </div>

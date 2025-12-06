@@ -27,6 +27,41 @@ const normalizeConversation = (c) => {
   };
 };
 
+// Deduplicate conversations by vendorId - keep the most recent one
+const deduplicateConversations = (conversations) => {
+  const vendorMap = new Map();
+
+  conversations.forEach((conv) => {
+    if (!conv.vendorId) return;
+
+    const existing = vendorMap.get(conv.vendorId);
+
+    if (!existing) {
+      vendorMap.set(conv.vendorId, { ...conv });
+    } else {
+      // Compare by lastMessageAt or updatedAt to find the most recent
+      const existingTime = existing.lastMessageAt || existing.updatedAt || existing.createdAt;
+      const currentTime = conv.lastMessageAt || conv.updatedAt || conv.createdAt;
+
+      // Combine unread counts from both conversations
+      const combinedUnread = (existing.unreadCount || 0) + (conv.unreadCount || 0);
+
+      // If current conversation is more recent, replace it but keep combined unread count
+      if (new Date(currentTime) > new Date(existingTime)) {
+        vendorMap.set(conv.vendorId, {
+          ...conv,
+          unreadCount: combinedUnread,
+        });
+      } else {
+        // Existing is more recent, update its unread count
+        existing.unreadCount = combinedUnread;
+      }
+    }
+  });
+
+  return Array.from(vendorMap.values());
+};
+
 const normalizeMessage = (m, selfUserId) => {
   const isUser = (m.senderType || "").toLowerCase() === "user";
   return {
@@ -154,13 +189,13 @@ const Messages = () => {
         if (document.visibilityState === "visible") {
           await axiosInstance.post("/presence/heartbeat");
         }
-      } catch {}
+      } catch { }
       if (!stopped) timer = setTimeout(send, 45000);
     };
     send();
     const onVis = () => {
       if (document.visibilityState === "visible") {
-        axiosInstance.post("/presence/heartbeat").catch(() => {});
+        axiosInstance.post("/presence/heartbeat").catch(() => { });
       }
     };
     document.addEventListener("visibilitychange", onVis);
@@ -183,8 +218,10 @@ const Messages = () => {
           ? res
           : res?.data || res?.conversations || [];
         const mapped = list.map(normalizeConversation);
+        // Deduplicate by vendorId - keep most recent conversation per vendor
+        const deduplicated = deduplicateConversations(mapped);
         if (!isMounted) return;
-        setConversations(mapped);
+        setConversations(deduplicated);
         // Enrich with vendor details (name + profile image)
         try {
           const uniqueVendorIds = [
@@ -210,26 +247,28 @@ const Messages = () => {
               });
             });
             if (!isMounted) return;
-            setConversations((prev) =>
-              prev.map((c) => {
+            setConversations((prev) => {
+              const enriched = prev.map((c) => {
                 const v = idToVendor.get(c.vendorId);
                 return v
                   ? {
-                      ...c,
-                      vendorName: v.name || c.vendorName,
-                      vendorImage: v.image || c.vendorImage,
-                      vendorLastActiveAt:
-                        v.lastActiveAt || c.vendorLastActiveAt,
-                    }
+                    ...c,
+                    vendorName: v.name || c.vendorName,
+                    vendorImage: v.image || c.vendorImage,
+                    vendorLastActiveAt:
+                      v.lastActiveAt || c.vendorLastActiveAt,
+                  }
                   : c;
-              })
-            );
+              });
+              // Re-deduplicate after enrichment to ensure no duplicates
+              return deduplicateConversations(enriched);
+            });
           }
         } catch {
           // ignore enrichment errors
         }
-        if (mapped.length > 0 && !activeConversationId) {
-          setActiveConversationId(mapped[0].id);
+        if (deduplicated.length > 0 && !activeConversationId) {
+          setActiveConversationId(deduplicated[0].id);
         }
       } catch (e) {
         if (!isMounted) return;
@@ -308,10 +347,10 @@ const Messages = () => {
           prev.map((c) =>
             c.id === activeConversationId
               ? {
-                  ...c,
-                  lastMessagePreview: saved.message || text.trim(),
-                  lastMessageAt: saved.createdAt || new Date().toISOString(),
-                }
+                ...c,
+                lastMessagePreview: saved.message || text.trim(),
+                lastMessageAt: saved.createdAt || new Date().toISOString(),
+              }
               : c
           )
         );
@@ -366,9 +405,8 @@ const Messages = () => {
                 conversations.map((c) => (
                   <div
                     key={c.id}
-                    className={`list-group-item border-0 vendor-card rounded-3 mb-2 p-3 ${
-                      activeConversationId === c.id ? "bg-light" : ""
-                    }`}
+                    className={`list-group-item border-0 vendor-card rounded-3 mb-2 p-3 ${activeConversationId === c.id ? "bg-light" : ""
+                      }`}
                     onClick={() => selectConversation(c.id)}
                   >
                     <div className="d-flex align-items-center overflow-hidden">
@@ -418,11 +456,10 @@ const Messages = () => {
                   <div className="text-muted chat-header-status fs-14">
                     {isOnline(activeConversation?.vendorLastActiveAt)
                       ? "Online"
-                      : `Last seen ${
-                          activeConversation?.vendorLastActiveAt
-                            ? formatTime(activeConversation.vendorLastActiveAt)
-                            : formatTime(new Date().toISOString())
-                        }`}
+                      : `Last seen ${activeConversation?.vendorLastActiveAt
+                        ? formatTime(activeConversation.vendorLastActiveAt)
+                        : formatTime(new Date().toISOString())
+                      }`}
                   </div>
                 </div>
               </div>
@@ -449,11 +486,10 @@ const Messages = () => {
                   {messages.map((m) => (
                     <div
                       key={m.id}
-                      className={`d-flex ${
-                        m.sender === "user"
-                          ? "justify-content-end"
-                          : "justify-content-start"
-                      }`}
+                      className={`d-flex ${m.sender === "user"
+                        ? "justify-content-end"
+                        : "justify-content-start"
+                        }`}
                     >
                       {m.sender === "vendor" ? (
                         <div className="d-flex align-items-start">

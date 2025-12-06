@@ -98,8 +98,8 @@ const FiltersPage = () => {
         const items = Array.isArray(response)
           ? response
           : Array.isArray(response?.data)
-          ? response.data
-          : [];
+            ? response.data
+            : [];
         setCategories(items);
       } catch (e) {
         console.error("Failed to load products", e);
@@ -308,7 +308,7 @@ const FiltersPage = () => {
     if (applyAbortRef.current) {
       try {
         applyAbortRef.current.abort();
-      } catch {}
+      } catch { }
     }
     const controller = new AbortController();
     applyAbortRef.current = controller;
@@ -386,14 +386,14 @@ const FiltersPage = () => {
         "finalLookFilters",
         JSON.stringify(appliedProducts || {})
       );
-    } catch {}
+    } catch { }
   }, [appliedProducts]);
 
   // Optionally persist order (helps future needs; harmless now)
   useEffect(() => {
     try {
       sessionStorage.setItem("finalLookOrder", JSON.stringify(appliedOrder));
-    } catch {}
+    } catch { }
   }, [appliedOrder]);
 
   // Cleanup in-flight apply on unmount
@@ -402,7 +402,7 @@ const FiltersPage = () => {
       if (applyAbortRef.current) {
         try {
           applyAbortRef.current.abort();
-        } catch {}
+        } catch { }
       }
     };
   }, []);
@@ -449,7 +449,7 @@ const FiltersPage = () => {
         <div
           className="single-image-container"
           style={{ width: "100%" }}
-          // style={{ width: "100%", maxWidth: 400 }}
+        // style={{ width: "100%", maxWidth: 400 }}
         >
           <div
             className="image-wrapper"
@@ -866,29 +866,29 @@ const FiltersPage = () => {
                           try {
                             sessionStorage.removeItem("finalLookImage");
                             sessionStorage.removeItem("finalLookFilters");
-                          } catch {}
+                          } catch { }
                           try {
                             setAppliedProducts && setAppliedProducts({});
                             setAppliedOrder && setAppliedOrder([]);
-                          } catch {}
+                          } catch { }
                           try {
                             setExpandedProductId && setExpandedProductId(null);
-                          } catch {}
+                          } catch { }
                           try {
                             setExpandedCatIdx && setExpandedCatIdx(null);
-                          } catch {}
+                          } catch { }
                           try {
                             setShowProductDetails &&
                               setShowProductDetails(false);
-                          } catch {}
+                          } catch { }
 
                           // Exit compare mode if active
                           try {
                             setIsCompareMode && setIsCompareMode(false);
-                          } catch {}
+                          } catch { }
                           try {
                             setCompareImageUrl && setCompareImageUrl(null);
-                          } catch {}
+                          } catch { }
                         }
                       });
                     }
@@ -1422,63 +1422,61 @@ const FiltersPage = () => {
 
                               return (
                                 <React.Fragment
-                                  key={`${
-                                    cat.product_detailed_category_name || "cat"
-                                  }-${idx}`}
+                                  key={`${cat.product_detailed_category_name || "cat"
+                                    }-${idx}`}
                                 >
                                   {!(
                                     expandedCatIdx === idx &&
                                     expandedProductId !== null
                                   ) && (
-                                    <button
-                                      type="button"
-                                      // removed py-2 class from below
-                                      className={`d-flex flex-column align-items-center px-2 border-0 border-end bg-white position-relative ${
-                                        expandedCatIdx === idx
-                                          ? "border-primary"
-                                          : ""
-                                      } ${isApplied ? "border-success" : ""}`}
-                                      onClick={() => handleSelectCategory(idx)}
-                                      style={{
-                                        cursor: "pointer",
-                                        minWidth: 70,
-                                        transition: "all 0.3s ease",
-                                        flexShrink: 0,
-                                      }}
-                                    >
-                                      <img
-                                        src={cat.product_detailed_image}
-                                        alt={cat.product_detailed_category_name}
+                                      <button
+                                        type="button"
+                                        // removed py-2 class from below
+                                        className={`d-flex flex-column align-items-center px-2 border-0 border-end bg-white position-relative ${expandedCatIdx === idx
+                                            ? "border-primary"
+                                            : ""
+                                          } ${isApplied ? "border-success" : ""}`}
+                                        onClick={() => handleSelectCategory(idx)}
                                         style={{
-                                          width: "100%",
-                                          height: "55px",
-                                          objectFit: "cover",
-                                        }}
-                                      />
-                                      <p
-                                        style={{
-                                          fontSize: 11,
-                                          fontWeight: 600,
+                                          cursor: "pointer",
+                                          minWidth: 70,
+                                          transition: "all 0.3s ease",
+                                          flexShrink: 0,
                                         }}
                                       >
-                                        {cat.product_detailed_category_name ||
-                                          "Category"}
-                                      </p>
-                                      {isApplied && (
-                                        <div
-                                          className="position-absolute top-0 end-0 translate-middle rounded-circle"
+                                        <img
+                                          src={cat.product_detailed_image}
+                                          alt={cat.product_detailed_category_name}
                                           style={{
-                                            width: 10,
-                                            height: 10,
-                                            // backgroundColor: isApplied.colorHex,
-                                            border: "2px solid white",
-                                            transform: "translate(50%, -50%)",
+                                            width: "100%",
+                                            height: "55px",
+                                            objectFit: "cover",
                                           }}
-                                          title={`Applied: ${isApplied.colorHex}`}
                                         />
-                                      )}
-                                    </button>
-                                  )}
+                                        <p
+                                          style={{
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                          }}
+                                        >
+                                          {cat.product_detailed_category_name ||
+                                            "Category"}
+                                        </p>
+                                        {isApplied && (
+                                          <div
+                                            className="position-absolute top-0 end-0 translate-middle rounded-circle"
+                                            style={{
+                                              width: 10,
+                                              height: 10,
+                                              // backgroundColor: isApplied.colorHex,
+                                              border: "2px solid white",
+                                              transform: "translate(50%, -50%)",
+                                            }}
+                                            title={`Applied: ${isApplied.colorHex}`}
+                                          />
+                                        )}
+                                      </button>
+                                    )}
 
                                   {expandedCatIdx === idx && (
                                     <div
@@ -1506,9 +1504,9 @@ const FiltersPage = () => {
                                       >
                                         {(expandedProductId
                                           ? safeArray(cat.products).filter(
-                                              (pp) =>
-                                                pp.id === expandedProductId
-                                            )
+                                            (pp) =>
+                                              pp.id === expandedProductId
+                                          )
                                           : safeArray(cat.products)
                                         ).map((p) => (
                                           <React.Fragment key={p.id}>
@@ -1518,11 +1516,10 @@ const FiltersPage = () => {
                                                 handleSelectProduct(p.id);
                                                 setLikedProduct(p);
                                               }}
-                                              className={` d-flex flex-column align-items-center px-2 border-0 rounded bg-white ${
-                                                expandedProductId === p.id
+                                              className={` d-flex flex-column align-items-center px-2 border-0 rounded bg-white ${expandedProductId === p.id
                                                   ? "border-primary"
                                                   : ""
-                                              }`}
+                                                }`}
                                               style={{
                                                 cursor: "pointer",
                                                 width: 100,
@@ -1629,10 +1626,10 @@ const FiltersPage = () => {
                                         ))}
                                         {safeArray(cat.products).length ===
                                           0 && (
-                                          <div className="text-muted small">
-                                            No products
-                                          </div>
-                                        )}
+                                            <div className="text-muted small">
+                                              No products
+                                            </div>
+                                          )}
                                       </div>
                                     </div>
                                   )}
@@ -1723,8 +1720,8 @@ const FiltersPage = () => {
                           const list = [];
                           const allProducts = Array.isArray(categories)
                             ? categories.flatMap((c) =>
-                                Array.isArray(c.products) ? c.products : []
-                              )
+                              Array.isArray(c.products) ? c.products : []
+                            )
                             : [];
                           Object.values(appliedProducts || {}).forEach((p) => {
                             const found = allProducts.find(
@@ -1751,7 +1748,7 @@ const FiltersPage = () => {
                             "finalLookAppliedList",
                             JSON.stringify(list)
                           );
-                        } catch {}
+                        } catch { }
                         handleActiveList("Complete Look");
                       }}
                     >

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { FiMail, FiLock, FiCheck, FiArrowLeft, FiLoader } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { FiMail, FiLock, FiCheck, FiArrowLeft, FiLoader, FiEye, FiEyeOff } from "react-icons/fi";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
 
@@ -12,6 +12,17 @@ const VendorForgotPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
+
+  // Password strength validation
+  const isStrongPassword = (password) => {
+    const strongPasswordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return strongPasswordRegex.test(password);
+  };
 
   // ---------------- SEND OTP ----------------
   const handleEmailSubmit = async (e) => {
@@ -41,9 +52,19 @@ const VendorForgotPassword = () => {
     e.preventDefault();
     setIsLoading(true);
     setMessage("");
+    setPasswordError("");
+
+    // Validate password strength
+    if (!isStrongPassword(newPassword)) {
+      setPasswordError(
+        "Password must be at least 8 characters and include uppercase, lowercase, number, and special character."
+      );
+      setIsLoading(false);
+      return;
+    }
 
     if (newPassword !== confirmPassword) {
-      setMessage("Passwords do not match");
+      setPasswordError("Passwords do not match");
       setIsLoading(false);
       return;
     }
@@ -56,13 +77,23 @@ const VendorForgotPassword = () => {
       });
 
       setMessage(res.data.message || "Password reset successful");
-      setActiveStep("success");
+      Swal.fire({
+        icon: "success",
+        title: "Success!",
+        text: res.data.message || "Password reset successful",
+        confirmButtonColor: "#C31162",
+      }).then(() => {
+        navigate("/vendor-login");
+      });
     } catch (err) {
-      setMessage(err.response?.data?.message || "Failed to reset password");
+      const errorMsg = err.response?.data?.message || "Failed to reset password";
+      setMessage(errorMsg);
+      setPasswordError(errorMsg);
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: err.response?.data?.message || "Failed to reset password",
+        text: errorMsg,
+        confirmButtonColor: "#C31162",
       });
     } finally {
       setIsLoading(false);
@@ -114,7 +145,11 @@ const VendorForgotPassword = () => {
             <h2 className="weddingwire-auth-title">Reset Your Password</h2>
             <p className="weddingwire-auth-subtitle">Enter your email to receive a password reset link</p>
 
-            {message && <p className="text-red-500">{message}</p>}
+            {message && (
+              <div className="alert alert-danger py-2 px-3 small mb-3" role="alert">
+                {message}
+              </div>
+            )}
 
             <form onSubmit={handleEmailSubmit} className="weddingwire-auth-form">
               <div className="weddingwire-auth-input-group">
@@ -155,9 +190,14 @@ const VendorForgotPassword = () => {
             <h2 className="weddingwire-auth-title">Verify Your Account</h2>
             <p className="weddingwire-auth-subtitle">We've sent a 6-digit code to {email}</p>
 
-            {message && (
-              <div className="weddingwire-auth-message weddingwire-auth-message-success">
-                <FiCheck className="weddingwire-auth-message-icon" /> {message}
+            {message && !passwordError && (
+              <div className="alert alert-success py-2 px-3 small mb-3" role="alert">
+                <FiCheck className="me-1" /> {message}
+              </div>
+            )}
+            {passwordError && (
+              <div className="alert alert-danger py-2 px-3 small mb-3" role="alert">
+                {passwordError}
               </div>
             )}
 
@@ -185,35 +225,95 @@ const VendorForgotPassword = () => {
 
               <div className="weddingwire-auth-input-group">
                 <label htmlFor="weddingwire-password" className="weddingwire-auth-label">New Password</label>
-                <div className="weddingwire-auth-input-wrapper">
+                <div className="weddingwire-auth-input-wrapper" style={{ position: "relative", display: "flex", alignItems: "center" }}>
                   <FiLock className="weddingwire-auth-input-icon" />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     id="weddingwire-password"
                     value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
+                    onChange={(e) => {
+                      setNewPassword(e.target.value);
+                      setPasswordError("");
+                    }}
                     className="weddingwire-auth-input"
                     placeholder="Enter new password"
                     required
                     minLength="8"
+                    style={{ paddingRight: "40px" }}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="weddingwire-auth-password-toggle"
+                    style={{
+                      position: "absolute",
+                      right: "8px",
+                      background: "none",
+                      border: "none",
+                      padding: "0",
+                      cursor: "pointer",
+                      color: "#6c757d",
+                      display: "flex",
+                      alignItems: "center",
+                      zIndex: 10,
+                    }}
+                  >
+                    {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                  </button>
                 </div>
+                {passwordError && (
+                  <p className="text-danger small mt-1 mb-0" style={{ fontSize: "0.875rem" }}>
+                    {passwordError}
+                  </p>
+                )}
+                <ul className="text-muted small mt-2 mb-0" style={{ fontSize: "0.75rem", listStyle: "none", paddingLeft: "0" }}>
+                  <li>• Minimum 8 characters</li>
+                  <li>• At least 1 uppercase letter</li>
+                  <li>• At least 1 lowercase letter</li>
+                  <li>• At least 1 number</li>
+                  <li>• At least 1 special character (@$!%*?&)</li>
+                </ul>
               </div>
 
               <div className="weddingwire-auth-input-group">
                 <label htmlFor="weddingwire-confirm-password" className="weddingwire-auth-label">Confirm New Password</label>
-                <div className="weddingwire-auth-input-wrapper">
+                <div className="weddingwire-auth-input-wrapper" style={{ position: "relative", display: "flex", alignItems: "center" }}>
                   <FiLock className="weddingwire-auth-input-icon" />
                   <input
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     id="weddingwire-confirm-password"
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      if (passwordError && newPassword === e.target.value) {
+                        setPasswordError("");
+                      }
+                    }}
                     className="weddingwire-auth-input"
                     placeholder="Confirm your new password"
                     required
                     minLength="8"
+                    style={{ paddingRight: "40px" }}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="weddingwire-auth-password-toggle"
+                    style={{
+                      position: "absolute",
+                      right: "8px",
+                      background: "none",
+                      border: "none",
+                      padding: "0",
+                      cursor: "pointer",
+                      color: "#6c757d",
+                      display: "flex",
+                      alignItems: "center",
+                      zIndex: 10,
+                    }}
+                  >
+                    {showConfirmPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                  </button>
                 </div>
               </div>
 

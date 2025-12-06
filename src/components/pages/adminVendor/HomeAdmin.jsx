@@ -563,7 +563,7 @@ const HomeAdmin = () => {
             className="d-flex flex-column gap-2 w-100"
             style={{ maxWidth: "200px" }}
           >
-            <Dropdown>
+            <Dropdown autoClose="outside">
               <Dropdown.Toggle
                 variant="outline-secondary"
                 className="d-flex align-items-center w-100 justify-content-between"
@@ -573,8 +573,6 @@ const HomeAdmin = () => {
                   ? "This Week"
                   : dateFilter === "this_month"
                   ? "This Month"
-                  : dateFilter === "last_month"
-                  ? "Last Month"
                   : dateFilter === "last_month"
                   ? "Last Month"
                   : dateFilter === "custom"
@@ -598,12 +596,49 @@ const HomeAdmin = () => {
                 <Dropdown.Item onClick={() => setDateFilter("all_time")}>
                   All Data
                 </Dropdown.Item>
+                {/* Desktop-only inline custom range inside dropdown to avoid layout shift */}
+                {dateFilter === "custom" && (
+                  <div className="d-none d-md-block">
+                    <Dropdown.Divider />
+                    <div className="px-3 py-2" style={{ minWidth: "280px" }}>
+                      <div className="d-flex flex-column gap-2">
+                        <Form.Control
+                          type="date"
+                          value={customStart}
+                          onChange={(e) => setCustomStart(e.target.value)}
+                        />
+                        <Form.Control
+                          type="date"
+                          value={customEnd}
+                          onChange={(e) => setCustomEnd(e.target.value)}
+                        />
+                        <Button
+                          variant="primary"
+                          className="w-100 btn-outline-primary"
+                          onClick={() => {
+                            if (!customStart || !customEnd) {
+                              alert("Please select both start and end dates.");
+                              return;
+                            }
+                            if (new Date(customStart) > new Date(customEnd)) {
+                              alert("Start date must be before end date.");
+                              return;
+                            }
+                            setCustomApplyToggle((t) => !t);
+                          }}
+                        >
+                          Apply
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </Dropdown.Menu>
             </Dropdown>
 
-            {/* Custom Range Box - Shown Below Dropdown */}
+            {/* Mobile-only custom range below dropdown (hidden on md and up) */}
             {dateFilter === "custom" && (
-              <>
+              <div className="d-block d-md-none">
                 <div className="d-flex flex-column gap-2">
                   <Form.Control
                     type="date"
@@ -634,7 +669,7 @@ const HomeAdmin = () => {
                 >
                   Apply
                 </Button>
-              </>
+              </div>
             )}
 
             <Button

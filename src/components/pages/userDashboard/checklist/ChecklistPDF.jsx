@@ -164,10 +164,13 @@ const ChecklistPDF = ({ items = [], categories = [], meta = {} }) => {
               </Text>
             </View>
 
-            {safeItems.map((item) => (
+            {safeItems.map((item, index) => (
               <View
-                key={item.id || `${item.text}-${Math.random()}`}
-                style={styles.row}
+                key={item.id || `item-${index}`}
+                style={[
+                  styles.row,
+                  index === safeItems.length - 1 ? styles.lastRow : null,
+                ]}
               >
                 <Text style={[styles.cell, styles.wStatus]}>
                   {item.status === "completed" ? "Completed" : "Pending"}
@@ -196,9 +199,9 @@ const ChecklistPDF = ({ items = [], categories = [], meta = {} }) => {
                   </Text>
                 </View>
                 <Text style={[styles.cell, styles.wDays]}>
-                  {item.days_assigned === 0 || item.days_assigned > 0
-                    ? `${item.days_assigned} days`
-                    : item.days_assigned
+                  {item.days_assigned !== null &&
+                  item.days_assigned !== undefined &&
+                  typeof item.days_assigned === "number"
                     ? `${item.days_assigned} days`
                     : "N/A"}
                 </Text>

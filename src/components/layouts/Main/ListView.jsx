@@ -146,10 +146,10 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
 
   return (
     <>
-      <Container>
-        <Row>
+      <Container fluid="lg">
+        <Row className="g-3 g-md-4">
           {/* Main list: take 9/12 on md+ screens to leave space for right sidebar */}
-          <Col xs={12} md={9}>
+          <Col xs={12} lg={9} xl={9}>
             <Row>
               {filteredVenues.map((venue) => (
                 <Col xs={12} key={venue.id}>
@@ -180,15 +180,15 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
                           .includes("venue") ||
                           venue.vegPrice !== null ||
                           venue.nonVegPrice !== null) && (
-                          <button
-                            className="btn btn-light rounded-circle position-absolute top-0 start-0 m-2"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                            }}
-                          >
-                            <TbView360Number className="text-dark" />
-                          </button>
-                        )}
+                            <button
+                              className="btn btn-light rounded-circle position-absolute top-0 start-0 m-2"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                            >
+                              <TbView360Number className="text-dark" />
+                            </button>
+                          )}
 
                         <button
                           className="btn btn-light rounded-circle position-absolute top-0 end-0 m-2"
@@ -317,8 +317,8 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
           </Col>
 
           {/* Right sidebar: vertical stacked ad cards */}
-          <Col xs={12} md={3} className="mt-4 mt-md-0">
-            <div className="d-flex flex-column gap-3">
+          <Col xs={12} lg={3} xl={3} className="mt-4 mt-lg-0">
+            <div className="d-flex flex-column gap-3" style={{ position: "sticky", top: "20px", alignSelf: "flex-start" }}>
               {vendorTypes
                 .filter((vt) => {
                   if (
@@ -342,6 +342,7 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
                   <Card
                     key={venueType.id}
                     className="p-3 border-0 shadow-sm rounded-4"
+                    style={{ width: "100%", maxWidth: "100%", overflow: "hidden" }}
                   >
                     {/* Hero Image */}
                     {venueType.hero_image && (
@@ -354,7 +355,11 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
                           }
                           alt={venueType.name}
                           className="img-fluid rounded-4 w-100 object-fit-cover"
-                          style={{ height: "200px" }}
+                          style={{ height: "200px", width: "100%", maxWidth: "100%" }}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/images/imageNotFound.jpg";
+                          }}
                         />
                       </div>
                     )}
@@ -368,16 +373,15 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
                         return (
                           <div
                             key={sub.id}
-                            className={`p-2 rounded-3 cursor-pointer hover-shadow transition-all ${
-                              isActive ? "subcategory-active" : "bg-light"
-                            }`}
+                            className={`p-2 rounded-3 cursor-pointer hover-shadow transition-all ${isActive ? "subcategory-active" : "bg-light"
+                              }`}
                             style={{ cursor: "pointer" }}
                             onClick={() => {
                               // optimistically set active state for instant feedback
                               setActiveSub(slug);
                               try {
                                 window.localStorage.setItem(ACTIVE_KEY, slug);
-                              } catch (e) {}
+                              } catch (e) { }
                               navigate(`/${section}/${slug}`);
                             }}
                           >

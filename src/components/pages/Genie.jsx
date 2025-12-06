@@ -249,8 +249,8 @@ const Genie = () => {
     setSessionId(null);
     setMessages([
       {
-        // type: "ai",
-        // text: "Hey there! I'm your Wedding ShaadiAI. Ask me anything!",
+        type: "ai",
+        text: "Hey there! I'm your Wedding ShaadiAI. Ask me anything!",
       },
     ]);
     setInputValue("");
@@ -263,16 +263,16 @@ const Genie = () => {
   // Mobile keyboard viewport fix
   const chatSectionStyle = isMobile
     ? {
-        height: contentHeight,
-        overflowY: "auto",
-        display: "flex",
-        flexDirection: "column",
-        position: "relative",
-      }
+      height: contentHeight,
+      overflowY: "auto",
+      display: "flex",
+      flexDirection: "column",
+      position: "relative",
+    }
     : {
-        height: contentHeight,
-        overflowY: "auto",
-      };
+      height: contentHeight,
+      overflowY: "auto",
+    };
 
   return (
     <div>
@@ -627,8 +627,8 @@ const Genie = () => {
                             gridTemplateColumns: isMobile
                               ? "1fr"
                               : window.innerWidth < 992
-                              ? "repeat(2, 1fr)"
-                              : "repeat(3, 1fr)",
+                                ? "repeat(2, 1fr)"
+                                : "repeat(3, 1fr)",
                             gap: "16px",
                             maxWidth: "100%",
                           }}
