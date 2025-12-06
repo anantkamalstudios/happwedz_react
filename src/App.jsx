@@ -29,6 +29,7 @@ import BusinessClaimForm from "./components/pages/BusinessClaimForm";
 import { ToastContainer } from "react-toastify";
 import PublicWeddingView from "./components/pages/WeddingPublicView";
 // import PrivacyPolicy from "./components/pages/PrivacyPolicy";
+import ScrollToTop from "./components/ScrollToTop";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
@@ -218,12 +219,13 @@ function App() {
     }
   }, [dispatch]);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
+  // useEffect(() => {
+  //   window.scrollTo(0, 0);
+  // }, [location.pathname]);
 
   return (
     <LoaderProvider>
+      <ScrollToTop />
       <Suspense fallback={<Loader />}>
         <ToastContainer />
         <ToastProvider>

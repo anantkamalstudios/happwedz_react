@@ -19,6 +19,11 @@ const Navbar = () => {
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth <= 576 : false
   );
+  const [unreadEnquiryCount, setUnreadEnquiryCount] = useState(0);
+  const [showEnquiryBadge, setShowEnquiryBadge] = useState(() => {
+    const stored = localStorage.getItem("showEnquiryCountBadge");
+    return stored !== null ? stored === "true" : true;
+  });
 
   useEffect(() => {
     const stored = localStorage.getItem("storefrontCompletion");
@@ -121,6 +126,58 @@ const Navbar = () => {
     fetchCompletion();
   }, [vendor?.id, token]);
 
+  // Fetch unread enquiry count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      if (!token) return;
+
+      try {
+        const response = await fetch("https://happywedz.com/api/inbox", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setUnreadEnquiryCount(data.unreadCount || 0);
+        }
+      } catch (error) {
+        console.error("Failed to fetch unread enquiry count:", error);
+      }
+    };
+
+    fetchUnreadCount();
+    
+    // Refresh count every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, [token]);
+
+  // Listen for changes in the badge setting
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const stored = localStorage.getItem("showEnquiryCountBadge");
+      setShowEnquiryBadge(stored !== null ? stored === "true" : true);
+    };
+
+    // Listen for custom event when setting changes in same tab
+    const handleCustomStorageChange = () => {
+      handleStorageChange();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("enquiryBadgeSettingChanged", handleCustomStorageChange);
+    // Also check periodically in case localStorage was changed in same tab
+    const interval = setInterval(handleStorageChange, 1000);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("enquiryBadgeSettingChanged", handleCustomStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
+
   const tabs = [
     {
       id: "home",
@@ -201,9 +258,8 @@ const Navbar = () => {
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                className={`btn border-0 d-flex flex-column align-items-center p-0 ${
-                  activeTab === tab.id ? "active-tab" : ""
-                }`}
+                className={`btn border-0 d-flex flex-column align-items-center p-0 position-relative ${activeTab === tab.id ? "active-tab" : ""
+                  }`}
                 style={{
                   background: "transparent",
                   fontSize: isMobile ? 12 : 14,
@@ -216,16 +272,43 @@ const Navbar = () => {
                 }}
                 onClick={() => handleTabClick(tab)}
               >
-                <img
-                  src={tab.icon}
-                  alt={tab.label}
-                  style={{
-                    width: isMobile ? 24 : 30,
-                    height: isMobile ? 24 : 30,
-                    objectFit: "cover",
-                    display: "block",
-                  }}
-                />
+                <div style={{ position: "relative" }}>
+                  <img
+                    src={tab.icon}
+                    alt={tab.label}
+                    style={{
+                      width: isMobile ? 24 : 30,
+                      height: isMobile ? 24 : 30,
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
+                  {tab.id === "enquiries" &&
+                    showEnquiryBadge &&
+                    unreadEnquiryCount > 0 && (
+                      <span
+                        style={{
+                          position: "absolute",
+                          top: -6,
+                          right: -6,
+                          backgroundColor: "#f12d85",
+                          color: "white",
+                          borderRadius: "50%",
+                          minWidth: isMobile ? 16 : 18,
+                          height: isMobile ? 16 : 18,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: isMobile ? 9 : 10,
+                          fontWeight: "bold",
+                          padding: unreadEnquiryCount > 99 ? "0 4px" : "0",
+                          border: "2px solid white",
+                        }}
+                      >
+                        {unreadEnquiryCount > 99 ? "99+" : unreadEnquiryCount}
+                      </span>
+                    )}
+                </div>
                 <span
                   className="mt-3"
                   style={{

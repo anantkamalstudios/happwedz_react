@@ -18,7 +18,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { pdf } from "@react-pdf/renderer";
 import ChecklistPDF from "./ChecklistPDF";
 import { FaSpinner } from "react-icons/fa6";
 import { Dropdown } from "react-bootstrap";
@@ -296,6 +296,76 @@ const Check = () => {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    const itemsToDownload =
+      Array.isArray(distributedTasks) && distributedTasks.length > 0
+        ? distributedTasks
+        : Array.isArray(checklists)
+          ? checklists
+          : [];
+
+    if (itemsToDownload.length === 0) {
+      Swal.fire({
+        icon: "info",
+        text: "No tasks to download.",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#C31162",
+      });
+      return;
+    }
+
+    try {
+      Swal.fire({
+        title: "Generating PDF...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      const doc = (
+        <ChecklistPDF
+          items={itemsToDownload}
+          categories={Array.isArray(categories) ? categories : []}
+          meta={{
+            userName: user?.name || user?.email || "User",
+            generatedAt: new Date(),
+          }}
+        />
+      );
+
+      const asPdf = pdf(doc);
+      const blob = await asPdf.toBlob();
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `checklist-${userId || "user"}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      Swal.close();
+      Swal.fire({
+        icon: "success",
+        text: "Checklist downloaded successfully!",
+        timer: 2000,
+        confirmButtonText: "OK",
+        confirmButtonColor: "#C31162",
+      });
+    } catch (err) {
+      console.error("Download Error:", err);
+      Swal.close();
+      Swal.fire({
+        icon: "error",
+        text: "Could not download the checklist. Please try again.",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#C31162",
+      });
+    }
+  };
+
   const completedCount = checklists.filter(
     (c) => c.status === "completed"
   ).length;
@@ -401,8 +471,8 @@ const Check = () => {
                       {daysLeft > 0
                         ? "Days Until Wedding"
                         : daysLeft === 0
-                        ? "Wedding Day!"
-                        : "Days Since Wedding"}
+                          ? "Wedding Day!"
+                          : "Days Since Wedding"}
                     </span>
                   </div>
                 )}
@@ -419,31 +489,14 @@ const Check = () => {
                   </h5>
                   <div className="header-actions d-flex gap-2 fs-14 my-4">
                     {(distributedTasks && distributedTasks.length > 0) ||
-                    (checklists && checklists.length > 0) ? (
-                      <PDFDownloadLink
-                        document={
-                          <ChecklistPDF
-                            items={
-                              distributedTasks && distributedTasks.length > 0
-                                ? distributedTasks
-                                : checklists
-                            }
-                            categories={categories}
-                            meta={{
-                              userName: user?.name || user?.email || "User",
-                              generatedAt: new Date(),
-                            }}
-                          />
-                        }
-                        fileName={`checklist-${userId || "user"}.pdf`}
+                      (checklists && checklists.length > 0) ? (
+                      <button
+                        className="btn fs-14"
+                        onClick={handleDownloadPDF}
                       >
-                        {({ loading }) => (
-                          <button className="btn">
-                            <FaDownload className="me-1" size={12} />
-                            {loading ? "Preparing..." : "Download"}
-                          </button>
-                        )}
-                      </PDFDownloadLink>
+                        <FaDownload className="me-1" size={12} />
+                        Download
+                      </button>
                     ) : (
                       <button
                         className="btn fs-14"
@@ -511,12 +564,11 @@ const Check = () => {
                             <Dropdown
                               drop="down"
                               autoClose="outside"
-                              flip={false}
                             >
                               <Dropdown.Toggle className="w-100 fs-14 bg-white text-black text-start d-flex justify-content-between align-items-center">
                                 {vendorSubId
                                   ? categories.find((c) => c.id == vendorSubId)
-                                      ?.name
+                                    ?.name
                                   : "Select Category"}
                               </Dropdown.Toggle>
 
@@ -610,11 +662,10 @@ const Check = () => {
                               <tr key={item.id}>
                                 <td className="text-center">
                                   <div
-                                    className={`status-icon ${
-                                      item.status === "completed"
-                                        ? "completed"
-                                        : "pending"
-                                    }`}
+                                    className={`status-icon ${item.status === "completed"
+                                      ? "completed"
+                                      : "pending"
+                                      }`}
                                     onClick={() =>
                                       toggleStatus(item.id, item.status)
                                     }
@@ -750,9 +801,8 @@ const Check = () => {
                             {Array.from({ length: totalPages }, (_, i) => (
                               <li
                                 key={i + 1}
-                                className={`page-item ${
-                                  currentPage === i + 1 ? "active" : ""
-                                }`}
+                                className={`page-item ${currentPage === i + 1 ? "active" : ""
+                                  }`}
                               >
                                 <button
                                   onClick={() => paginate(i + 1)}

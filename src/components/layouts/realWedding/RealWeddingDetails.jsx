@@ -20,8 +20,15 @@ import {
   FaFemale,
 } from "react-icons/fa";
 import DOMPurify from "dompurify";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useSelector } from "react-redux";
 
 export default function WeddingPage({ post, onBackClick }) {
+  const navigate = useNavigate();
+  const reduxLocation = useSelector((state) => state.location.selectedLocation);
+  const [loadingVendor, setLoadingVendor] = useState(null);
+
   const vendorTypeIcons = {
     photographers: <FaCameraRetro />,
     venues: <FaLandmark />,
@@ -35,6 +42,84 @@ export default function WeddingPage({ post, onBackClick }) {
     fontSize: "1.8rem",
     color: "#C31162",
     marginRight: "1rem",
+  };
+
+  // Search for vendor and navigate to detail page
+  const handleVendorClick = async (vendor) => {
+    if (!vendor || !vendor.name) return;
+
+    setLoadingVendor(vendor.name);
+    try {
+      let apiUrl = `https://happywedz.com/api/vendor-services?search=${encodeURIComponent(
+        vendor.name
+      )}&limit=10`;
+
+      // Add city if available
+      if (reduxLocation || post.city) {
+        const city = reduxLocation || post.city;
+        apiUrl += `&city=${encodeURIComponent(city)}`;
+      }
+
+      // Add vendor type if available
+      if (vendor.type) {
+        const vendorTypeMap = {
+          photographers: "Photographers",
+          photography: "Photographers",
+          venues: "Venues",
+          venue: "Venues",
+          "bridal makeup": "Bridal Makeup",
+          makeup: "Bridal Makeup",
+          "bridal wear": "Bridal Wear",
+          jewellery: "Jewellery",
+          jewelry: "Jewellery",
+        };
+
+        const vendorType = vendorTypeMap[vendor.type.toLowerCase()] || vendor.type;
+        apiUrl += `&vendorType=${encodeURIComponent(vendorType)}`;
+      }
+
+      const response = await axios.get(apiUrl);
+      const results = response.data?.data || [];
+
+      if (results.length > 0) {
+        // Find the best match (exact name match or first result)
+        const exactMatch = results.find(
+          (r) =>
+            r.attributes?.name?.toLowerCase() === vendor.name.toLowerCase() ||
+            r.vendor?.businessName?.toLowerCase() === vendor.name.toLowerCase()
+        );
+
+        const selectedVendor = exactMatch || results[0];
+        const vendorId = selectedVendor.id || selectedVendor.attributes?.id;
+
+        if (vendorId) {
+          navigate(`/details/info/${vendorId}`);
+        } else {
+          console.error("Vendor ID not found");
+        }
+      } else {
+        // If no results found, try searching without filters
+        const fallbackUrl = `https://happywedz.com/api/vendor-services?search=${encodeURIComponent(
+          vendor.name
+        )}&limit=5`;
+        const fallbackResponse = await axios.get(fallbackUrl);
+        const fallbackResults = fallbackResponse.data?.data || [];
+
+        if (fallbackResults.length > 0) {
+          const selectedVendor = fallbackResults[0];
+          const vendorId = selectedVendor.id || selectedVendor.attributes?.id;
+          if (vendorId) {
+            navigate(`/details/info/${vendorId}`);
+          }
+        } else {
+          console.error("No vendor found");
+        }
+      }
+    } catch (error) {
+      console.error("Error searching for vendor:", error);
+    } finally {
+      setLoadingVendor(null);
+    }
   };
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -309,12 +394,12 @@ export default function WeddingPage({ post, onBackClick }) {
               __html: DOMPurify.sanitize(
                 post.story
                   ? post.story
-                      .replace(
-                        /<\/?(span|font|style|script|div|pre)[^>]*>/gi,
-                        ""
-                      )
-                      .replace(/<(p|br|hr|h[1-6])\b[^>]*>/gi, "")
-                      .replace(/<\/(p|br|hr|h[1-6])>/gi, "")
+                    .replace(
+                      /<\/?(span|font|style|script|div|pre)[^>]*>/gi,
+                      ""
+                    )
+                    .replace(/<(p|br|hr|h[1-6])\b[^>]*>/gi, "")
+                    .replace(/<\/(p|br|hr|h[1-6])>/gi, "")
                   : ""
               ),
             }}
@@ -495,17 +580,51 @@ export default function WeddingPage({ post, onBackClick }) {
             post.vendors.map((vendor, i) => {
               const typeKey = vendor.type?.toLowerCase() || "";
               const icon = vendorTypeIcons[typeKey] || vendorTypeIcons.default;
+              const isLoading = loadingVendor === vendor.name;
 
               return (
                 <Col xs={12} md={6} lg={4} key={i}>
-                  <Card className="border-0 shadow-sm h-100">
+                  <Card
+                    className="border-0 shadow-sm h-100"
+                    style={{
+                      cursor: isLoading ? "wait" : "pointer",
+                      transition: "all 0.3s ease",
+                      opacity: isLoading ? 0.7 : 1,
+                    }}
+                    onClick={() => !isLoading && handleVendorClick(vendor)}
+                    onMouseEnter={(e) => {
+                      if (!isLoading) {
+                        e.currentTarget.style.transform = "translateY(-4px)";
+                        e.currentTarget.style.boxShadow =
+                          "0 8px 16px rgba(195, 17, 98, 0.2)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+                    }}
+                  >
                     <Card.Body className="d-flex align-items-center">
                       <div style={iconStyle}>{icon}</div>
-                      <div>
+                      <div className="flex-grow-1">
                         <Card.Title
                           style={{ fontSize: "1.1rem", marginBottom: "0.2rem" }}
                         >
                           {vendor.name}
+                          {isLoading && (
+                            <span
+                              className="spinner-border spinner-border-sm ms-2"
+                              role="status"
+                              style={{
+                                width: "0.8rem",
+                                height: "0.8rem",
+                                borderWidth: "0.15rem",
+                                color: "#C31162",
+                              }}
+                            >
+                              <span className="visually-hidden">Loading...</span>
+                            </span>
+                          )}
                         </Card.Title>
                         <Card.Text className="text-muted small mb-0">
                           {vendor.type}

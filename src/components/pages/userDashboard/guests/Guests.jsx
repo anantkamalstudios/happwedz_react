@@ -20,7 +20,7 @@ import { useNavigate } from "react-router-dom";
 const initialGuestFormState = {
   name: "",
   email: "",
-  group: "Other",
+  groupId: "",
 
   type: "Adult",
   companions: 0,
@@ -55,6 +55,7 @@ const Guests = () => {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [whatsappMessage, setWhatsappMessage] = useState("");
+  const [groupsLoading, setGroupsLoading] = useState(false);
 
   const statusOptions = ["Attending", "Not Attending", "Pending"];
   const typeOptions = ["Adult", "Child"];
@@ -138,62 +139,87 @@ const Guests = () => {
     fetchGuests();
   }, [refresh, fetchGuests]);
 
-  useEffect(() => {
-    const savedGroups = localStorage.getItem("guestGroups");
-    if (savedGroups) {
-      try {
-        const groups = JSON.parse(savedGroups);
-        setAvailableGroups(groups);
-      } catch (error) {
-        console.error("Error loading groups from localStorage:", error);
+  const fetchGroups = useCallback(async () => {
+    if (!axiosInstance || !userId) {
+      return;
+    }
+    setGroupsLoading(true);
+    try {
+      const res = await axiosInstance.get("https://happywedz.com/api/groups");
+
+      if (res.data?.success && Array.isArray(res.data?.groups)) {
+        setAvailableGroups(res.data.groups);
+      } else {
         setAvailableGroups([]);
       }
+    } catch (err) {
+      console.error("Fetch Groups Error:", err);
+      setAvailableGroups([]);
+    } finally {
+      setGroupsLoading(false);
     }
-  }, []);
+  }, [axiosInstance, userId]);
 
-  const saveGroupToLocalStorage = (groupName) => {
-    if (!groupName.trim()) return;
+  useEffect(() => {
+    fetchGroups();
+  }, [fetchGroups]);
 
-    const savedGroups = localStorage.getItem("guestGroups");
-    let groups = [];
-
-    if (savedGroups) {
-      try {
-        groups = JSON.parse(savedGroups);
-      } catch (error) {
-        console.error("Error parsing groups:", error);
+  // Get unique group names from guests for filtering
+  const _uniqueGroups = React.useMemo(() => {
+    const groupNames = new Set();
+    guests.forEach((g) => {
+      if (g.group) {
+        groupNames.add(g.group);
+      } else if (g.groupId) {
+        // If guest has groupId, find the group name
+        const group = availableGroups.find((gr) => gr.id === g.groupId);
+        if (group) {
+          groupNames.add(group.name);
+        } else {
+          groupNames.add("Other");
+        }
+      } else {
+        groupNames.add("Other");
       }
-    }
-
-    if (!groups.includes(groupName)) {
-      groups.push(groupName);
-      localStorage.setItem("guestGroups", JSON.stringify(groups));
-      setAvailableGroups(groups);
-    }
-  };
-
-  const _uniqueGroups = [
-    "All",
-    ...new Set(guests.map((g) => g.group || "Other")),
-  ];
+    });
+    return ["All", ...Array.from(groupNames)];
+  }, [guests, availableGroups]);
 
   const filteredAndGroupedGuests = React.useMemo(() => {
-    const filtered = guests.filter(
-      (g) =>
-        g &&
-        (selectedGroup === "All" || g.group === selectedGroup) &&
+    const filtered = guests.filter((g) => {
+      if (!g) return false;
+
+      // Get group name for filtering
+      let guestGroupName = "Other";
+      if (g.group) {
+        guestGroupName = g.group;
+      } else if (g.groupId) {
+        const group = availableGroups.find((gr) => gr.id === g.groupId);
+        guestGroupName = group ? group.name : "Other";
+      }
+
+      return (
+        (selectedGroup === "All" || guestGroupName === selectedGroup) &&
         (selectedStatus === "All" || g.status === selectedStatus) &&
         g.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+      );
+    });
+
     return filtered.reduce((acc, guest) => {
-      const groupName = guest.group || "Other";
+      let groupName = "Other";
+      if (guest.group) {
+        groupName = guest.group;
+      } else if (guest.groupId) {
+        const group = availableGroups.find((gr) => gr.id === guest.groupId);
+        groupName = group ? group.name : "Other";
+      }
       if (!acc[groupName]) {
         acc[groupName] = [];
       }
       acc[groupName].push(guest);
       return acc;
     }, {});
-  }, [guests, selectedGroup, selectedStatus, searchTerm]);
+  }, [guests, selectedGroup, selectedStatus, searchTerm, availableGroups]);
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -225,14 +251,29 @@ const Guests = () => {
 
     try {
       const userIdToSend = isNaN(userId) ? userId : parseInt(userId, 10);
+
+      // Prepare payload with groupId (convert to number if it's a string)
+      const payload = {
+        name: newGuestForm.name.trim(),
+        email: newGuestForm.email.trim(),
+        userId: userIdToSend,
+        status: "Pending",
+        type: newGuestForm.type,
+        menu: newGuestForm.menu,
+        companions: parseInt(newGuestForm.companions, 10) || 0,
+        seat_number: newGuestForm.seat_number || null,
+      };
+
+      // Add groupId only if it's selected (not empty)
+      if (newGuestForm.groupId) {
+        payload.groupId = isNaN(newGuestForm.groupId)
+          ? newGuestForm.groupId
+          : parseInt(newGuestForm.groupId, 10);
+      }
+
       const res = await axiosInstance.post(
         "https://happywedz.com/api/guestlist",
-        {
-          ...newGuestForm,
-          userId: userIdToSend,
-          status: "Pending",
-          companions: parseInt(newGuestForm.companions, 10) || 0,
-        }
+        payload
       );
       if (res.data?.success && res.data.guest) {
         setGuests((prev) => [res.data.guest, ...prev]);
@@ -560,8 +601,8 @@ const Guests = () => {
                 <option value="All">All Groups</option>
                 <option value="Other">Other</option>
                 {availableGroups.map((group) => (
-                  <option key={group} value={group}>
-                    {group}
+                  <option key={group.id} value={group.name}>
+                    {group.name}
                   </option>
                 ))}
               </select>
@@ -831,15 +872,15 @@ const Guests = () => {
                   <div className="col-md-4">
                     <label className="form-label">Group</label>
                     <select
-                      name="group"
+                      name="groupId"
                       className="form-select"
-                      value={newGuestForm.group}
+                      value={newGuestForm.groupId}
                       onChange={handleFormChange}
                     >
-                      <option value="Other">Other</option>
+                      <option value="">Select a group (optional)</option>
                       {availableGroups.map((group) => (
-                        <option key={group} value={group}>
-                          {group}
+                        <option key={group.id} value={group.id}>
+                          {group.name}
                         </option>
                       ))}
                     </select>
@@ -919,7 +960,7 @@ const Guests = () => {
                 </button>
                 <button
                   className="wgl-button wgl-button-save"
-                  onClick={() => {
+                  onClick={async () => {
                     if (!newGroupName.trim()) {
                       Swal.fire({
                         icon: "error",
@@ -929,19 +970,53 @@ const Guests = () => {
                       return;
                     }
 
-                    // Save group to localStorage
-                    saveGroupToLocalStorage(newGroupName);
+                    if (!axiosInstance) {
+                      Swal.fire({
+                        icon: "error",
+                        text: "Authentication error. Please log in again.",
+                        confirmButtonColor: "#C31162",
+                      });
+                      return;
+                    }
 
-                    Swal.fire({
-                      icon: "success",
-                      text: `Group "${newGroupName}" created successfully`,
-                      timer: 3000,
-                      confirmButtonText: "OK",
-                      confirmButtonColor: "#C31162",
-                    });
+                    try {
+                      const res = await axiosInstance.post(
+                        "https://happywedz.com/api/groups/add",
+                        {
+                          name: newGroupName.trim(),
+                        }
+                      );
 
-                    setShowAddGroupForm(false);
-                    setNewGroupName("");
+                      if (res.data?.success && res.data?.group) {
+                        // Refresh groups list
+                        await fetchGroups();
+
+                        Swal.fire({
+                          icon: "success",
+                          text: `Group "${newGroupName}" created successfully`,
+                          timer: 3000,
+                          confirmButtonText: "OK",
+                          confirmButtonColor: "#C31162",
+                        });
+
+                        setShowAddGroupForm(false);
+                        setNewGroupName("");
+                      } else {
+                        throw new Error("Failed to create group");
+                      }
+                    } catch (err) {
+                      const errorMessage =
+                        err.response?.data?.message ||
+                        err.message ||
+                        "An error occurred while creating the group.";
+                      Swal.fire({
+                        icon: "error",
+                        text: errorMessage,
+                        confirmButtonText: "OK",
+                        confirmButtonColor: "#C31162",
+                      });
+                      console.error("Create Group Error:", err.response || err);
+                    }
                   }}
                 >
                   Create Group

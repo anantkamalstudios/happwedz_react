@@ -183,7 +183,7 @@ label {
 
 input,
 select,
-textarea  {
+textarea {
   font-size: 14px;
   z-index: 10 !important;
 }
@@ -6922,6 +6922,14 @@ input:checked+.slider:before {
   font-size: 14px;
 }
 
+.wgl-guest-type select,
+.wgl-guest-menu select,
+.wgl-guest-status select {
+  min-width: 110px;
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
 .wgl-status-select {
   padding: 5px 10px;
   border-radius: 4px;
@@ -11529,6 +11537,7 @@ input:checked+.slider:before {
 .weddingwire-auth-spinner {
   animation: weddingwire-spin 1s linear infinite;
 }
+
 
 @keyframes weddingwire-spin {
   from {
@@ -21695,13 +21704,13 @@ body.mobile-menu-active {
   outline: 3px solid rgba(0, 0, 0, 0.5);
   outline-offset: 2px;
 }
+
 @media (max-width: 768px) {
   .einvite-image-container {
     margin: 0 auto;
   }
 }
 
-.dropdown-menu {  
+.dropdown-menu {
   z-index: 99999 !important;
-} 
-
+}
