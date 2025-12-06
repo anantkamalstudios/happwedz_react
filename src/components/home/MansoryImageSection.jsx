@@ -107,7 +107,7 @@ const MasonryImageSection = () => {
               </div>
             ) : (
               <>
-                <div className="col-12 col-md-6 col-lg-4">
+                <div className="col-12 col-sm-6 col-xl-4">
                   {weddingImages[0] && (
                     <div
                       className={`gallery-item ${weddingImages[0].size}`}

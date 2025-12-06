@@ -8,23 +8,18 @@ import { logout } from "../../redux/authSlice";
 import { vendorLogout } from "../../redux/vendorAuthSlice";
 import { setLocation } from "../../redux/locationSlice";
 import { FaArrowRightLong, FaChevronDown, FaChevronUp } from "react-icons/fa6";
-import {
-  FaRing,
-  FaClipboardList,
-  FaStore,
-  FaUsers,
-  FaPiggyBank,
-  FaHeart,
-  FaShoppingCart,
-  FaEnvelopeOpenText,
-  FaUserFriends,
-  FaUser,
-} from "react-icons/fa";
-import axios from "axios";
 import usePhotography from "../../hooks/usePhotography";
 import { useFilter } from "../../context/realWedding.context";
 
 const Header = () => {
+  // Add state to track window width for responsive UI
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const dispatch = useDispatch();
   const { slug } = useParams();
   const reduxLocation = useSelector((state) => state.location.selectedLocation);
@@ -67,24 +62,6 @@ const Header = () => {
   }, []);
 
   const byCity = ["Mumbai", "Bangalore", "Pune", "Kolkata", "Jaipur", "Others"];
-  // const byCulture = [
-  //   "Maharashtrian",
-  //   "Punjabi / Sikh",
-  //   "Bengali",
-  //   "Gujarati",
-  //   "Marwari",
-  //   "Telugu",
-  //   "Others",
-  // ];
-  // const byTheme = [
-  //   "Destination",
-  //   "Grand & Luxurious",
-  //   "Pocket Friendly Stunners",
-  //   "Intimate & Minimalist",
-  //   "Modern & Stylish",
-  //   "International",
-  //   "Others",
-  // ];
 
   const handleLogout = () => {
     if (isVendorLoggedIn) {
@@ -113,13 +90,11 @@ const Header = () => {
 
   const location = window.location.pathname;
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
     setMobileSubmenu(null);
   }, [location]);
 
-  // Prevent background scroll when mobile sidebar is open
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -305,21 +280,22 @@ const Header = () => {
               <img src="/images/logo.webp" alt="HappyWedz" height="30" />
             </Link>
 
-            <button
-              className="navbar-toggler border-0 p-0"
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle navigation"
-            >
-              <RiMenuFill color="white" size={35} />
-            </button>
+            {windowWidth <= 1299 && (
+              <button
+                className="navbar-toggler border-0 p-0"
+                type="button"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label="Toggle navigation"
+              >
+                <RiMenuFill color="white" size={35} />
+              </button>
+            )}
           </div>
 
           {/* Mobile Side Drawer */}
           <div
-            className={`position-fixed top-0 start-0 h-100 bg-white shadow-lg d-lg-none ${
-              mobileMenuOpen ? "mobile-drawer-open" : ""
-            }`}
+            className={`position-fixed top-0 start-0 h-100 bg-white shadow-lg d-lg-none ${mobileMenuOpen ? "mobile-drawer-open" : ""
+              }`}
             style={{
               width: "85%",
               maxWidth: "400px",
@@ -419,7 +395,7 @@ const Header = () => {
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                    // onClick={() => toggleMobileSubmenu("venues")}
+                  // onClick={() => toggleMobileSubmenu("venues")}
                   >
                     <span
                       className="fw-semibold"
@@ -444,28 +420,28 @@ const Header = () => {
                       </h6>
                       {(venueSubcategories.length > 0
                         ? [
-                            ...venueSubcategories.map((s) => s.name),
-                            "View All Venues",
-                          ]
+                          ...venueSubcategories.map((s) => s.name),
+                          "View All Venues",
+                        ]
                         : [
-                            "Banquet Halls",
-                            "Marriage Garden / Lawns",
-                            "Wedding Resorts",
-                            "Small Function / Party Halls",
-                            "Destination Wedding Venues",
-                            "Kalyana Mandapams",
-                            "4 Star & Above Wedding Hotels",
-                            "Venue Concierge Services",
-                            "View All Venues",
-                          ]
+                          "Banquet Halls",
+                          "Marriage Garden / Lawns",
+                          "Wedding Resorts",
+                          "Small Function / Party Halls",
+                          "Destination Wedding Venues",
+                          "Kalyana Mandapams",
+                          "4 Star & Above Wedding Hotels",
+                          "Venue Concierge Services",
+                          "View All Venues",
+                        ]
                       ).map((item, i) => {
                         const isShowMore = item === "View All Venues";
                         const path = isShowMore
                           ? "/venues"
                           : `/venues/${item
-                              .toLowerCase()
-                              .replace(/\s+/g, "-")
-                              .replace(/[^a-z0-9\-]/g, "")}`;
+                            .toLowerCase()
+                            .replace(/\s+/g, "-")
+                            .replace(/[^a-z0-9\-]/g, "")}`;
                         return (
                           <Link
                             key={i}
@@ -519,7 +495,7 @@ const Header = () => {
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                    // onClick={() => toggleMobileSubmenu("vendors")}
+                  // onClick={() => toggleMobileSubmenu("vendors")}
                   >
                     <span
                       className="fw-semibold"
@@ -555,13 +531,12 @@ const Header = () => {
                                   {cat.subcategories.map((sub, j) => (
                                     <Link
                                       key={sub.id || j}
-                                      to={`/vendors/${toSlug(sub.name)}${
-                                        reduxLocation
-                                          ? `?city=${encodeURIComponent(
-                                              reduxLocation
-                                            )}`
-                                          : ""
-                                      }`}
+                                      to={`/vendors/${toSlug(sub.name)}${reduxLocation
+                                        ? `?city=${encodeURIComponent(
+                                          reduxLocation
+                                        )}`
+                                        : ""
+                                        }`}
                                       className="d-block py-2 text-decoration-none text-dark small"
                                       onClick={handleMobileLinkClick}
                                     >
@@ -580,7 +555,7 @@ const Header = () => {
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                    // onClick={() => toggleMobileSubmenu("photography")}
+                  // onClick={() => toggleMobileSubmenu("photography")}
                   >
                     <span
                       className="fw-semibold"
@@ -635,7 +610,7 @@ const Header = () => {
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                    // onClick={() => toggleMobileSubmenu("einvites")}
+                  // onClick={() => toggleMobileSubmenu("einvites")}
                   >
                     <span
                       className="fw-semibold"
@@ -674,7 +649,7 @@ const Header = () => {
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                    // onClick={() => toggleMobileSubmenu("blog")}
+                  // onClick={() => toggleMobileSubmenu("blog")}
                   >
                     <span
                       className="fw-semibold"
@@ -1026,12 +1001,12 @@ const Header = () => {
                                               "color 0.2s ease-in-out",
                                           }}
                                           onMouseEnter={(e) =>
-                                            (e.currentTarget.style.color =
-                                              "#e91e63")
+                                          (e.currentTarget.style.color =
+                                            "#e91e63")
                                           }
                                           onMouseLeave={(e) =>
-                                            (e.currentTarget.style.color =
-                                              "#212529")
+                                          (e.currentTarget.style.color =
+                                            "#212529")
                                           }
                                         >
                                           <div
@@ -1099,12 +1074,12 @@ const Header = () => {
                                             transition: "all 0.2s ease-in-out",
                                           }}
                                           onMouseEnter={(e) =>
-                                            (e.currentTarget.style.boxShadow =
-                                              "0 4px 12px rgba(0,0,0,0.08)")
+                                          (e.currentTarget.style.boxShadow =
+                                            "0 4px 12px rgba(0,0,0,0.08)")
                                           }
                                           onMouseLeave={(e) =>
-                                            (e.currentTarget.style.boxShadow =
-                                              "0 2px 4px rgba(0,0,0,0.04)")
+                                          (e.currentTarget.style.boxShadow =
+                                            "0 2px 4px rgba(0,0,0,0.04)")
                                           }
                                         >
                                           <Link
@@ -1212,40 +1187,39 @@ const Header = () => {
                                   <div className="row">
                                     {(venueSubcategories.length > 0
                                       ? [
-                                          ...venueSubcategories.map(
-                                            (s) => s.name
-                                          ),
-                                          "View All Venues",
-                                        ]
+                                        ...venueSubcategories.map(
+                                          (s) => s.name
+                                        ),
+                                        "View All Venues",
+                                      ]
                                       : [
-                                          "Banquet Halls",
-                                          "Marriage Garden / Lawns",
-                                          "Wedding Resorts",
-                                          "Small Function / Party Halls",
-                                          "Destination Wedding Venues",
-                                          "Kalyana Mandapams",
-                                          "4 Star & Above Wedding Hotels",
-                                          "Venue Concierge Services",
-                                          "View All Venues",
-                                        ]
+                                        "Banquet Halls",
+                                        "Marriage Garden / Lawns",
+                                        "Wedding Resorts",
+                                        "Small Function / Party Halls",
+                                        "Destination Wedding Venues",
+                                        "Kalyana Mandapams",
+                                        "4 Star & Above Wedding Hotels",
+                                        "Venue Concierge Services",
+                                        "View All Venues",
+                                      ]
                                     ).map((item, i) => {
                                       const isShowMore =
                                         item === "View All Venues";
                                       const path = isShowMore
                                         ? "/venues"
                                         : `/venues/${item
-                                            .toLowerCase()
-                                            .replace(/\s+/g, "-")
-                                            .replace(/[^a-z0-9\-]/g, "")}`;
+                                          .toLowerCase()
+                                          .replace(/\s+/g, "-")
+                                          .replace(/[^a-z0-9\-]/g, "")}`;
                                       return (
                                         <div className="col-12 mb-2" key={i}>
                                           <Link
                                             to={path}
-                                            className={`dropdown-link d-flex align-items-center ${
-                                              isShowMore
-                                                ? "primary-text fw-bold text-decoration-underline"
-                                                : ""
-                                            }`}
+                                            className={`dropdown-link d-flex align-items-center ${isShowMore
+                                              ? "primary-text fw-bold text-decoration-underline"
+                                              : ""
+                                              }`}
                                           >
                                             <i className="bi bi-check-circle text-primary"></i>
                                             <span className="fs-14">
@@ -1277,8 +1251,8 @@ const Header = () => {
                                       const path = isMore
                                         ? "/venues"
                                         : `/venues?city=${encodeURIComponent(
-                                            city
-                                          )}`;
+                                          city
+                                        )}`;
                                       return (
                                         <div className="col-12 mb-2" key={i}>
                                           <Link
@@ -1288,11 +1262,10 @@ const Header = () => {
                                                 dispatch(setLocation(city));
                                               }
                                             }}
-                                            className={`dropdown-link d-flex align-items-center ${
-                                              isMore
-                                                ? "primary-text fw-bold text-decoration-underline"
-                                                : ""
-                                            }`}
+                                            className={`dropdown-link d-flex align-items-center ${isMore
+                                              ? "primary-text fw-bold text-decoration-underline"
+                                              : ""
+                                              }`}
                                           >
                                             <i className="bi bi-geo-alt text-primary"></i>
                                             <span className="fs-14">
@@ -1360,13 +1333,12 @@ const Header = () => {
                                                     <Link
                                                       to={`/vendors/${toSlug(
                                                         sub.name
-                                                      )}${
-                                                        reduxLocation
-                                                          ? `?city=${encodeURIComponent(
-                                                              reduxLocation
-                                                            )}`
-                                                          : ""
-                                                      }`}
+                                                      )}${reduxLocation
+                                                        ? `?city=${encodeURIComponent(
+                                                          reduxLocation
+                                                        )}`
+                                                        : ""
+                                                        }`}
                                                       className="dropdown-link fs-14 d-block"
                                                     >
                                                       {formatName(sub.name)}

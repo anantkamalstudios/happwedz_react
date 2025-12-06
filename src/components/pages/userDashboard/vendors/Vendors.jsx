@@ -81,7 +81,7 @@ const Vendors = () => {
 
   return (
     <div className="vendors-container">
-      <div className="vendors-header">
+      {/* <div className="vendors-header">
         <h3>My Vendors</h3>
         <div className="vendors-stats">
           <div className="stat-box">
@@ -91,7 +91,7 @@ const Vendors = () => {
             </span>
           </div>
         </div>
-      </div>
+      </div> */}
 
       <div className="divider"></div>
 

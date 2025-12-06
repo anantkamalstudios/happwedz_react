@@ -3,7 +3,7 @@ import { Container, Row, Col, Button, Modal } from "react-bootstrap";
 import { FaLocationDot } from "react-icons/fa6";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleWishlist } from "../../redux/authSlice";
 import "swiper/css";
@@ -59,7 +59,7 @@ const Detailed = () => {
   const [selectedVendorId, setSelectedVendorId] = useState(null);
   const [showClaimForm, setShowClaimForm] = useState(false);
   const [showAllFaqs, setShowAllFaqs] = useState(false);
-
+  const navigate = useNavigate();
   const handleShowPricingModal = (vendorId) => {
     setSelectedVendorId(vendorId);
     setShowPricingModal(true);
@@ -739,9 +739,7 @@ const Detailed = () => {
                     alignItems: "center",
                     justifyContent: "center",
                   }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
+                  onClick={() => navigate(`/vendor-360/${id}`)}
                 >
                   <TbView360Number className="text-dark" size={18} />
                 </button>

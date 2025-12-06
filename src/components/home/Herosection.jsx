@@ -246,12 +246,12 @@ const Herosection = () => {
                               >
                                 <Link
                                   to={`/vendors/${toSlug(sub.name)}`}
+                                  className="fs-14 py-1"
                                   style={{
                                     fontSize: "14px",
                                     color: "#333",
                                     textDecoration: "none",
                                     display: "block",
-                                    padding: "0.75rem 1rem",
                                     transition: "color 0.2s",
                                   }}
                                   onClick={() => setShowDropdown(false)}

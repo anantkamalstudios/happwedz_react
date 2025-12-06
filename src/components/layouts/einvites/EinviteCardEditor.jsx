@@ -238,7 +238,29 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
 
   const handleSaveDraft = () => {
     const cleanedCard = buildCleanPayload();
+    pushHistory(JSON.parse(JSON.stringify(editedCard)));
+    try {
+      const key = "einviteDrafts";
+      const existing = JSON.parse(localStorage.getItem(key) || "[]");
+      const draftId = cleanedCard.id ? `draft:${cleanedCard.id}` : `draft:${Date.now()}`;
+      const draft = {
+        ...cleanedCard,
+        id: draftId,
+        isActive: false,
+        isDraft: true,
+        source: "local",
+        savedAt: Date.now(),
+      };
+      const idx = existing.findIndex((d) => d.id === draftId);
+      if (idx >= 0) {
+        existing[idx] = draft;
+      } else {
+        existing.unshift(draft);
+      }
+      localStorage.setItem(key, JSON.stringify(existing));
+    } catch {}
     onSaveDraft?.(cleanedCard);
+    Swal.fire({ text: "Draft saved successfully!", timer: 1500, icon: "success" });
   };
 
   const selectedField = useMemo(
@@ -253,14 +275,11 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
 
   const [scale, setScale] = useState(1);
 
-  // Calculate scale for responsive canvas
   useEffect(() => {
     const handleResize = () => {
       const containerWidth = window.innerWidth;
-      // 414px is the base width of the canvas
-      // We add some padding (e.g., 30px) to ensure it doesn't touch edges
-      const availableWidth = Math.min(containerWidth - 30, 450); 
-      
+      const availableWidth = Math.min(containerWidth - 30, 450);
+
       if (availableWidth < 414) {
         setScale(availableWidth / 414);
       } else {
@@ -273,16 +292,88 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const onCanvasMove = (e) => {
+    if (!isDragging || !selectedField) {
+      return;
+    }
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    if (e.type === "touchmove") {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    let clientX, clientY;
+    if (e.type === "touchmove") {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
+    const canvasRect = canvas.getBoundingClientRect();
+    const textElement = textElementRefs.current[selectedField.id];
+    if (!textElement) return;
+    const textRect = textElement.getBoundingClientRect();
+    const textWidth = textRect.width / scale;
+    const textHeight = textRect.height / scale;
+    const mouseX = (clientX - canvasRect.left) / scale;
+    const mouseY = (clientY - canvasRect.top) / scale;
+    let newX = mouseX - dragOffset.x;
+    let newY = mouseY - dragOffset.y;
+    const minX = 0;
+    const minY = 0;
+    const maxX = 414 - textWidth;
+    const maxY = 659.288 - textHeight;
+    newX = Math.max(minX, Math.min(newX, maxX));
+    newY = Math.max(minY, Math.min(newY, maxY));
+    setEditedCard((prev) => ({
+      ...prev,
+      editableFields: prev.editableFields.map((f) =>
+        f.id === selectedField.id ? { ...f, x: newX, y: newY } : f
+      ),
+    }));
+  };
+
+  // Add non-passive touch event listeners for proper preventDefault support on mobile
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleTouchMove = (e) => {
+      // Only prevent default if we're actively dragging
+      if (isDragging && selectedField) {
+        e.preventDefault();
+        e.stopPropagation();
+        // Call the move handler
+        onCanvasMove(e);
+      }
+      // If not dragging, allow normal scrolling
+    };
+
+    // Add non-passive listener so preventDefault works
+    canvas.addEventListener("touchmove", handleTouchMove, { passive: false });
+
+    return () => {
+      canvas.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, [isDragging, selectedField, onCanvasMove]);
+
   const beginDrag = (e, field) => {
     e.stopPropagation();
-    // Prevent default to stop scrolling while dragging
-    // e.preventDefault(); 
+
+    // Prevent scrolling on touch devices when starting to drag
+    if (e.type === "touchstart") {
+      e.preventDefault();
+    }
 
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     let clientX, clientY;
-    if (e.type === 'touchstart') {
+    if (e.type === "touchstart") {
       clientX = e.touches[0].clientX;
       clientY = e.touches[0].clientY;
     } else {
@@ -300,67 +391,11 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
     pushHistory(JSON.parse(JSON.stringify(editedCard)));
   };
 
-  const onCanvasMove = (e) => {
-    if (!isDragging || !selectedField) return;
-
-    // Get canvas container bounds
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // Prevent scrolling on touch devices while dragging
-    if(e.type === 'touchmove') {
-      // e.preventDefault(); 
-    }
-
-    let clientX, clientY;
-    if (e.type === 'touchmove') {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    } else {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    }
-
-    const canvasRect = canvas.getBoundingClientRect();
-
-    // Get the text element to measure its dimensions
-    const textElement = textElementRefs.current[selectedField.id];
-    if (!textElement) return;
-
-    const textRect = textElement.getBoundingClientRect();
-    // Adjust textRect width/height by scale to get "real" unscaled dimensions
-    const textWidth = textRect.width / scale;
-    const textHeight = textRect.height / scale;
-
-    // Calculate mouse position relative to canvas
-    // We divide by scale to map screen coordinates back to canvas coordinates
-    const mouseX = (clientX - canvasRect.left) / scale;
-    const mouseY = (clientY - canvasRect.top) / scale;
-
-    // Calculate new position
-    let newX = mouseX - dragOffset.x;
-    let newY = mouseY - dragOffset.y;
-
-    // Calculate boundaries (relative to canvas)
-    const minX = 0;
-    const minY = 0;
-    const maxX = 414 - textWidth; // 414 is fixed canvas width
-    const maxY = 659.288 - textHeight; // fixed canvas height
-
-    // Constrain position within boundaries
-    newX = Math.max(minX, Math.min(newX, maxX));
-    newY = Math.max(minY, Math.min(newY, maxY));
-
-    setEditedCard((prev) => ({
-      ...prev,
-      editableFields: prev.editableFields.map((f) =>
-        f.id === selectedField.id ? { ...f, x: newX, y: newY } : f
-      ),
-    }));
-  };
-
   const endDrag = () => {
-    if (isDragging) setIsDragging(false);
+    if (isDragging) {
+      setIsDragging(false);
+      // Re-enable scrolling after drag ends
+    }
   };
 
   const openEdit = () => {
@@ -520,7 +555,7 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                   top: 0,
                 }}
                 onMouseMove={onCanvasMove}
-                onTouchMove={onCanvasMove}
+                // Touch events handled via useEffect with non-passive listeners
                 onMouseLeave={endDrag}
                 onClick={() => setSelectedFieldId(null)}
               >
@@ -577,6 +612,7 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
+                        // Don't prevent default on click - allow normal behavior for text selection/editing
                         setSelectedFieldId(field.id);
                       }}
                       style={{
@@ -588,6 +624,7 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                         fontSize: `${field.fontSize}px`,
                         cursor: isPreview || isPublished ? "default" : "move",
                         userSelect: "none",
+                        // touchAction managed via preventDefault in event handlers
                         border:
                           !isPreview &&
                           !isPublished &&
@@ -633,8 +670,8 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                               handleDelete();
                             }}
                             onTouchStart={(e) => {
-                                e.stopPropagation();
-                                handleDelete();
+                              e.stopPropagation();
+                              handleDelete();
                             }}
                           >
                             <MdDeleteOutline size={20} color="#000" />
@@ -880,7 +917,10 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
                   onClick={() => setShowEditModal(false)}
                 ></button>
               </div>
-              <div className="modal-body">
+              <div
+                className="modal-body"
+                style={{ touchAction: "auto", overflowY: "auto" }}
+              >
                 <div className="mb-3">
                   <label className="form-label">Text</label>
                   <input

@@ -16,7 +16,7 @@ import muiTheme from "./theme/muiTheme";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ThemeProvider theme={muiTheme}>
-      <GoogleOAuthProvider clientId="83829632051-pgn25ipst5lf3bv7pcihooha5o91pe9o.apps.googleusercontent.com">
+      <GoogleOAuthProvider clientId="5404414440-cpfrtjjfh6maga878im03li5lmpqga30.apps.googleusercontent.com">
         <LoaderProvider>
           <Provider store={store}>
             <BrowserRouter>

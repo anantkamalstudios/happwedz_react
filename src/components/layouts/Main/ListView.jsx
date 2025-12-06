@@ -286,7 +286,17 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
                             className="btn-primary fs-14"
                             onClick={(e) => {
                               e.stopPropagation();
-                              const vid = venue.vendor_id ?? venue.id;
+                              const vid =
+                                venue.vendor_id ||
+                                (venue.vendor && venue.vendor.id) ||
+                                null;
+                              if (!vid) {
+                                console.error(
+                                  "Could not find vendor_id for venue:",
+                                  venue
+                                );
+                                return;
+                              }
                               if (typeof handleShow === "function") {
                                 handleShow(vid);
                               } else {

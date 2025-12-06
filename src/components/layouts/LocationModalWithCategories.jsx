@@ -185,7 +185,7 @@ const LocationModalWithAPI = () => {
             >
               <option value="">Select Country</option>
               {countries.map((c) => (
-                <option key={c} value={c}>
+                <option className="fs-14" key={c} value={c}>
                   {c}
                 </option>
               ))}
@@ -222,7 +222,7 @@ const LocationModalWithAPI = () => {
                     >
                       <a
                         href="#"
-                        className="text-dark d-block text-decoration-none small"
+                        className="text-dark d-block text-decoration-none fs-14"
                         onClick={(e) => {
                           e.preventDefault();
                           handleCityClick(city);

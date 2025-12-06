@@ -107,6 +107,7 @@ const useInfiniteScroll = (
 
       return {
         id,
+        vendor_id: item.vendor_id || vendor.id || null,
         name:
           attributes.vendor_name ||
           attributes.Name ||

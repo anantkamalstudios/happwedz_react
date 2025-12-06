@@ -41,7 +41,7 @@ const ForgotPassword = lazy(() => import("./components/auth/ForgotPassword"));
 const VendorForgotPassword = lazy(() =>
   import("./components/auth/VendorForgotPassword")
 );
-
+const Vendor360View = lazy(() => import("./components/pages/Vendor360View"));
 const MainSection = lazy(() => import("./components/pages/MainSection"));
 const SubSection = lazy(() => import("./components/pages/SubSection"));
 const Detailed = lazy(() => import("./components/layouts/Detailed"));
@@ -258,6 +258,7 @@ function App() {
               <Route path="/:section" element={<MainSection />} />
               <Route path="/:section/:slug" element={<SubSection />} />
               <Route path="/details/:section/:id" element={<Detailed />} />
+              <Route path="/vendor-360/:id" element={<Vendor360View />} />
               <Route path="/ai-recommandation" element={<RecommandPage />} />
               <Route path="/customer-login" element={<CustomerLogin />} />
               <Route path="/customer-register" element={<CustomerRegister />} />

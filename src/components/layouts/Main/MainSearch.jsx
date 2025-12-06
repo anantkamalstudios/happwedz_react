@@ -6,7 +6,7 @@ import { Link, useParams, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useSelector } from "react-redux";
 
-const MainSearch = ({ title = "Find Venues", onSearch }) => {
+const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
   const { slug } = useParams();
   const location = useLocation();
   const [keyword, setKeyword] = useState("");
@@ -159,11 +159,11 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
       return formattedSlug;
     }
 
-    if (slug && slug.toLowerCase() === "all" && city) {
+    if (slug && slug.toLowerCase() === "all") {
       const pathSegments = location.pathname
         .split("/")
         .filter((segment) => segment);
-      if (pathSegments.length >= 2) {
+      if (pathSegments.length >= 1) {
         const category = pathSegments[0];
         const formattedCategory = category
           .split(" ")
@@ -171,7 +171,9 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
             (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
           )
           .join(" ");
-        return `${formattedCategory} in ${city}`;
+        return city
+          ? `${formattedCategory} in ${city}`
+          : `All ${formattedCategory}`;
       }
     }
 
@@ -452,11 +454,7 @@ const MainSearch = ({ title = "Find Venues", onSearch }) => {
         <Row className="align-items-center g-4 g-lg-5">
           <Col xs={12} lg={6}>
             <div className="pe-lg-4">
-              <h3
-                className="mb-3"
-              >
-                {dynamicTitle}
-              </h3>
+              <h3 className="mb-3">{dynamicTitle}</h3>
               <p className="text-muted mb-4 fs-16">{placeholders.subtitle}</p>
               {/* <p className="text-muted mb-4">{heroInfo?.subtitle}</p> */}
 

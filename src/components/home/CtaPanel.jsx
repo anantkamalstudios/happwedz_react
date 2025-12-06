@@ -1,87 +1,3 @@
-// import { Link } from "react-router-dom";
-
-// const CtaPanel = ({
-//   logo,
-//   img,
-//   title,
-//   link,
-//   subtitle,
-//   btnName,
-//   heading,
-//   subHeading,
-//   background,
-// }) => {
-//   return (
-//     <div className="home-cta-section my-5">
-//       <div
-//         className="container ui-card"
-//         style={{
-//           background:
-//             background === "bigleaf"
-//               ? `linear-gradient(to bottom, #fbcfe8, #f7e0ed, #f8defc), url(${background})`
-//               : `url(${background})`,
-//           backgroundSize: "cover",
-//           backgroundPosition: "center",
-//           backgroundRepeat: "no-repeat",
-//         }}
-//       >
-//         <div className="row ">
-//           <div className="col-12 col-md-1 text-md-end mb-3 mb-md-0">
-//             <img
-//               src={logo}
-//               alt="Logo"
-//               className="img-fluid"
-//               style={{ maxWidth: "100px", objectFit: "contain" }}
-//             />
-//           </div>
-
-//           <div className="col-12 col-md-7 mb-3 mb-md-0 d-flex flex-column">
-//             {heading && (
-//               <h3 className="mb-1 fw-bold home-cta-section-heading text-decoration-underline">
-//                 {heading}
-//               </h3>
-//             )}
-//             {subHeading && (
-//               <h6 className="my-4 home-cta-section-sub-heading fs-18">
-//                 {subHeading}
-//               </h6>
-//             )}
-//             {title && <h5 className="fw-bold mb-2 fs-18">{title}</h5>}
-//             {subtitle && <p className="mb-0 fs-16">{subtitle}</p>}
-//             {btnName && link && (
-//               <div className="d-flex justify-content-end w-100 mt-auto">
-//                 <Link to={link}>
-//                   <button
-//                     className="btn"
-//                     style={{
-//                       padding: "10px 8rem",
-//                       backgroundColor: "#C31162",
-//                       color: "#fff",
-//                     }}
-//                   >
-//                     {btnName}
-//                   </button>
-//                 </Link>
-//               </div>
-//             )}
-//           </div>
-
-//           <div className="col-12 col-md-4 text-center text-md-start">
-//             <img
-//               src={img}
-//               alt="CTA"
-//               className="img-fluid rounded w-100 object-fit-cover"
-//               style={{ objectFit: "cover" }}
-//             />
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default CtaPanel;
-
 import { Link } from "react-router-dom";
 
 const CtaPanel = ({
@@ -110,18 +26,18 @@ const CtaPanel = ({
         }}
       >
         <div className="row">
-          <div className="col-12 col-md-1 text-md-end mb-3 mb-md-0">
+          <div className="col-12 col-md-2 col-lg-1 text-md-end mb-3 mb-md-0">
             <img
               src={logo}
               alt="Logo"
-              className="img-fluid"
-              style={{ maxWidth: "100px", objectFit: "contain" }}
+              className="object-fit-cover"
+              style={{ maxWidth: "120px", objectFit: "contain" }}
             />
           </div>
 
           <div className="col-12 col-md-7 mb-3 mb-md-0 d-flex flex-column">
             {heading && (
-              <h3 className="mb-3 fw-bold home-cta-section-heading text-decoration-underline">
+              <h3 className="mb-3 fw-bold home-cta-section-heading text-decoration-none">
                 {heading}
               </h3>
             )}
@@ -150,7 +66,7 @@ const CtaPanel = ({
             )}
           </div>
 
-          <div className="col-12 col-md-4 text-center text-md-start">
+          <div className="col-12 col-md-3 text-center text-md-start">
             <img
               src={img}
               alt="CTA"

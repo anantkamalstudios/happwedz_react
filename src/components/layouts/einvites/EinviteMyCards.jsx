@@ -9,6 +9,7 @@ const EinviteMyCards = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [filterType, setFilterType] = useState("all");
   useEffect(() => {
     fetchUserCards();
   }, []);
@@ -26,7 +27,15 @@ const EinviteMyCards = () => {
     try {
       setLoading(true);
       const data = await einviteApi.getAllEinvites();
-      setCards(data);
+      let drafts = [];
+      try {
+        drafts = JSON.parse(localStorage.getItem("einviteDrafts") || "[]");
+      } catch {}
+      const merged = [
+        ...(Array.isArray(drafts) ? drafts : []),
+        ...(Array.isArray(data) ? data : []),
+      ];
+      setCards(merged);
     } catch (err) {
       setError("Failed to load your cards");
       console.error("Error fetching user cards:", err);
@@ -35,19 +44,23 @@ const EinviteMyCards = () => {
     }
   };
 
+  const getFilteredCards = () => {
+    if (filterType === "published") return cards.filter((c) => c.isActive);
+    if (filterType === "drafts") return cards.filter((c) => !c.isActive);
+    return cards;
+  };
+
   const handleDeleteCard = async (cardId) => {
-    if (window.confirm("Are you sure you want to delete this card?")) {
-      try {
-        await einviteApi.deleteEinvite(cardId);
-        setCards(cards.filter((card) => card.id !== cardId));
-      } catch (err) {
-        console.error("Error deleting card:", err);
-        Swal.fire({
-          text: "Failed to delete card",
-          timer: 1500,
-          icon: "error",
-        });
-      }
+    if (!window.confirm("Are you sure you want to delete this card?")) return;
+    try {
+      const key = "einviteDrafts";
+      const existing = JSON.parse(localStorage.getItem(key) || "[]");
+      const next = existing.filter((d) => d.id !== cardId);
+      localStorage.setItem(key, JSON.stringify(next));
+      setCards((prev) => prev.filter((card) => card.id !== cardId));
+    } catch (err) {
+      console.error("Error deleting card:", err);
+      Swal.fire({ text: "Failed to delete card", timer: 1500, icon: "error" });
     }
   };
 
@@ -99,29 +112,54 @@ const EinviteMyCards = () => {
         ) : (
           <>
             <div className="row mb-4 g-3">
-              <div className={isMobile ? "col-6" : "col-md-3"}>
-                <div className="einvite-stats-card">
+              <div
+                className={
+                  isMobile ? "col-6 cursor-pointer" : "col-md-3 cursor-pointer"
+                }
+              >
+                <div
+                  className="einvite-stats-card"
+                  onClick={() => setFilterType("all")}
+                >
                   <div className="einvite-stats-number">{cards.length}</div>
                   <div className="einvite-stats-label">Total Cards</div>
                 </div>
               </div>
-              <div className={isMobile ? "col-6" : "col-md-3"}>
-                <div className="einvite-stats-card">
+              <div
+                className={
+                  isMobile ? "col-6 cursor-pointer" : "col-md-3 cursor-pointer"
+                }
+              >
+                <div
+                  className="einvite-stats-card"
+                  onClick={() => setFilterType("published")}
+                >
                   <div className="einvite-stats-number">
                     {cards.filter((card) => card.isActive).length}
                   </div>
                   <div className="einvite-stats-label">Published</div>
                 </div>
               </div>
-              <div className={isMobile ? "col-6" : "col-md-3"}>
-                <div className="einvite-stats-card">
+              <div
+                className={
+                  isMobile ? "col-6 cursor-pointer" : "col-md-3 cursor-pointer"
+                }
+              >
+                <div
+                  className="einvite-stats-card"
+                  onClick={() => setFilterType("drafts")}
+                >
                   <div className="einvite-stats-number">
                     {cards.filter((card) => !card.isActive).length}
                   </div>
                   <div className="einvite-stats-label">Drafts</div>
                 </div>
               </div>
-              <div className={isMobile ? "col-6" : "col-md-3"}>
+              <div
+                className={
+                  isMobile ? "col-6 cursor-pointer" : "col-md-3 cursor-pointer"
+                }
+              >
                 <div className="einvite-stats-card">
                   <div className="einvite-stats-number">0</div>
                   <div className="einvite-stats-label">Views</div>
@@ -130,7 +168,7 @@ const EinviteMyCards = () => {
             </div>
 
             <EinviteCardGrid
-              cards={cards}
+              cards={getFilteredCards()}
               loading={false}
               showActions={true}
               showEditButton={true}

@@ -19,16 +19,19 @@ const EinviteCardItem = ({
   const shouldShowShareButton = showShareButton || isMyCardsPage;
 
   const handleCustomize = () => {
-    navigate(`/einvites/editor/${card.id}`);
+    const routeId = String(card.id || "").replace(/^draft:/, "");
+    navigate(`/einvites/editor/${routeId}`);
   };
 
   const handlePreview = () => {
-    navigate(`/einvites/preview/${card.id}`);
+    const routeId = String(card.id || "").replace(/^draft:/, "");
+    navigate(`/einvites/preview/${routeId}`);
   };
 
   const handleShare = (e) => {
     e.stopPropagation();
-    navigate(`/einvites/share/${card.id}`);
+    const routeId = String(card.id || "").replace(/^draft:/, "");
+    navigate(`/einvites/share/${routeId}`);
   };
 
   const handleWholeCardClick = () => {

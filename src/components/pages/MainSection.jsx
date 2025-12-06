@@ -94,7 +94,7 @@ const MainSection = () => {
       if (typeof window !== "undefined") {
         localStorage.setItem(storageKey, view);
       }
-    } catch (e) { }
+    } catch (e) {}
   }, [view, storageKey]);
 
   const handleShow = (id) => {
@@ -113,17 +113,18 @@ const MainSection = () => {
         <MainSearch />
         {!reduxLocation && <MainByRegion type="Venues" />}
 
-        {!loading && data.length === 0 && (
-          <EmptyState section="venues" title="Venues" />
-        )}
-
         <DynamicAside
           section="venues"
           view={view}
           setView={setView}
           onFiltersChange={setVenueFilters}
         />
+
         {loading && data.length === 0 && <LoadingState title="Venues" />}
+
+        {!loading && data.length === 0 && (
+          <EmptyState section="venues" title="Venues" />
+        )}
 
         {view === "map" && (
           <MapView
@@ -203,7 +204,8 @@ const MainSection = () => {
           Every Smile, Every Tear, Every Moment — Perfectly Captured
         </h3>
         <h6>
-          Find the latest trends and heartfelt inspiration to shape your perfect wedding story
+          Find the latest trends and heartfelt inspiration to shape your perfect
+          wedding story
         </h6>
         <TopSlider
           onCategorySelect={(id, name) => {

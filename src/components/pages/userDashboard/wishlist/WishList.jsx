@@ -64,6 +64,8 @@ const Wishlist = () => {
                   return {
                     wishlist_id: item.wishlist_id,
                     vendor_services_id: item.vendor_services_id,
+                    vendor_id:
+                      serviceData?.vendor_id || serviceData?.vendor?.id || null,
                     businessName:
                       serviceData?.vendor?.businessName ||
                       serviceData?.attributes?.name ||

@@ -1644,27 +1644,6 @@ const FiltersPage = () => {
                       </DragScroll>
                     </div>
                   </div>
-
-                  {/* <button
-                    style={{
-                      position: "absolute",
-                      top: "50%",
-                      right: 0,
-                      transform: "translateY(-50%)",
-                      background: "white",
-                      border: "none",
-                      cursor: "pointer",
-                      zIndex: 10,
-                      width: 36,
-                      height: 36,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-
-                    }}
-                  >
-                    <IoIosArrowForward size={30} color="#000" />
-                  </button> */}
                 </div>
               );
 
@@ -1727,61 +1706,6 @@ const FiltersPage = () => {
                     height: 100,
                   }}
                 >
-                  {/* {Object.keys(appliedProducts).length > 0 && ( */}
-                  {/* <div
-                    className="applied-products-section mb-2"
-                    style={{
-                      height: 120,
-                      overflowX: "auto",
-                      overflowY: "hidden",
-                      whiteSpace: "nowrap",
-                      width: "100%",
-                      scrollbarWidth: "thin",
-                      scrollbarColor: "#ed1173 #f1f1f1",
-                    }}
-                  >
-                    <div
-                      className="d-flex justify-content-start align-items-start gap-2"
-                      style={{
-                        width: "max-content",
-                      }}
-                    >
-                      {Object.entries(appliedProducts).map(
-                        ([categoryName, product]) => (
-                          <div
-                            key={categoryName}
-                            className=" gap-1 px-2 py-1 bg-light d-flex flex-column"
-                            style={{ fontSize: 12, height: 55 }}
-                          >
-                            <img
-                              src={findProductImageById(
-                                product.productId,
-                                categories
-                              )}
-                              alt=""
-                              style={{
-                                width: 80,
-                                height: 60,
-                                objectFit: "cover",
-                                borderRadius: 4,
-                                display: "block",
-                                alignSelf: "flex-start",
-                              }}
-                            />
-                            <p
-                              style={{
-                                color: "#000",
-                                fontSize: "12px",
-                                textAlign: "center",
-                              }}
-                            >
-                              {categoryName}
-                            </p>
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div> */}
                   <div>
                     <button
                       style={{
@@ -1843,41 +1767,6 @@ const FiltersPage = () => {
           }
         })()}
       </>
-
-      {/* No separate sub-filter section when expanded; shown inline above */}
-      {/* Applied Products Display */}
-      {/* {Object.keys(appliedProducts).length > 0 && (
-        <div className="applied-products-section mb-2">
-          <h6 className="mb-1" style={{ fontSize: 13 }}>
-            Applied Products:
-          </h6>
-          <div className="d-flex flex-wrap gap-2">
-            {Object.entries(appliedProducts).map(([categoryName, product]) => (
-              <div
-                key={categoryName}
-                className="d-flex align-items-center gap-2 px-2 py-1 border rounded bg-light"
-                style={{ fontSize: 12 }}
-              >
-                <div
-                  className="rounded-circle"
-                  style={{
-                    width: 13,
-                    height: 13,
-                    backgroundColor: product.colorHex,
-                    border: "1px solid #ccc",
-                  }}
-                />
-                <span className="text-capitalize">{categoryName}</span>
-                <button
-                  type="button"
-                  className="btn-close btn-close-sm fs-10"
-                  onClick={() => handleRemoveProduct(categoryName)}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}  */}
       <div className="w-100 py-2 mb-3" style={{ background: "#ffb3d3ff" }}>
         <div className="d-flex justify-content-evenly">
           {buttons.map((button, index) => (
@@ -1926,27 +1815,6 @@ const FiltersPage = () => {
           ))}
         </div>
       </div>
-      {/* {Object.keys(appliedProducts).length != 0 && (
-        <div
-          className="footer-buttons"
-          style={{ marginTop: 12, textAlign: "center" }}
-        >
-          <button
-            className="btn btn-primary"
-            disabled={isApplying}
-            onClick={() => {
-              sessionStorage.setItem("finalLookImage", previewUrl);
-              sessionStorage.setItem(
-                "finalLookFilters",
-                JSON.stringify(appliedProducts)
-              );
-              navigate("/finallook");
-            }}
-          >
-            {isApplying ? "Applying..." : "Complete look"}
-          </button>
-        </div>
-      )} */}
       <style jsx>{`
         .preview-img {
           max-width: 100%;

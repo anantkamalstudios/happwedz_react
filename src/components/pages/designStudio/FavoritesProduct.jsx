@@ -54,16 +54,15 @@ export default function FavouriteListPopup({
     >
       <div
         style={{
-  background: "#fce4ec",
-  width: "80%",               // responsive width
-  maxWidth: "700px",
-  margin: "0 auto",          // center popup
-  boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
-  overflow: "hidden",
-  position: "relative",
-  borderRadius: "12px",      // optional nicer UI
-}}
-
+          background: "#fce4ec",
+          width: "80%", // responsive width
+          maxWidth: "700px",
+          margin: "0 auto", // center popup
+          boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
+          overflow: "hidden",
+          position: "relative",
+          borderRadius: "12px", // optional nicer UI
+        }}
       >
         {/* Header with Tabs */}
         <div
@@ -277,22 +276,27 @@ export default function FavouriteListPopup({
                       flex: 1,
                       display: "flex",
                       flexDirection: "column",
+                      marginTop: "4px",
+                      marginLeft: "12px",
+                      gap: "4px",
                     }}
                   >
                     {/* Details */}
                     <div
                       style={{
-                        fontSize: "13px",
+                        fontSize: "clamp(11px, 2.5vw, 13px)",
                         color: "#000",
-                        fontWeight: "500",
-                        marginBottom: "12px",
+                        fontWeight: "600",
+                        marginBottom: "8px",
                         lineHeight: "1.3",
+                        paddingRight: "30px",
+                        wordBreak: "break-word",
+                        overflowWrap: "anywhere",
                       }}
                     >
-                      {item.product_name}
+                      {item.product_name || item.description || ""}
                     </div>
 
-                    {/* Bottom row: price left, button right */}
                     <div
                       style={{
                         display: "flex",
@@ -310,7 +314,7 @@ export default function FavouriteListPopup({
                         {item.price}
                       </div>
 
-                      <button
+                      {/* <button
                         style={{
                           background: "white",
                           color: "#d81b60",
@@ -324,7 +328,7 @@ export default function FavouriteListPopup({
                         }}
                       >
                         BUY NOW
-                      </button>
+                      </button> */}
                     </div>
                   </div>
                 </div>
@@ -333,8 +337,7 @@ export default function FavouriteListPopup({
           )}
         </div>
 
-        {/* Email Button - Only show for Favourite List tab */}
-        {showEmailButton && (
+        {/* {showEmailButton && (
           <div style={{ padding: "0 20px 20px 20px" }}>
             <button
               onClick={() => setShowEmailPopUp(true)}
@@ -356,7 +359,7 @@ export default function FavouriteListPopup({
               Email Favourite
             </button>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Email Popup */}

@@ -136,7 +136,6 @@ const TryLanding = () => {
         >
           <div
             style={{
-              minHeight: "calc(100vh - 150px)",
               height: "auto",
               position: "relative",
               paddingTop: 0,

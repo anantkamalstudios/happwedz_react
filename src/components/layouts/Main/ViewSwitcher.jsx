@@ -6,7 +6,7 @@ import { FaRegMap } from "react-icons/fa6";
 const ViewSwitcher = ({ view, setView }) => {
   return (
     <div className="view-switcher-wrapper rounded-2">
-      <div className="view-switcher d-flex">
+      <div className="view-switcher d-flex" style={{ width: "fit-content" }}>
         <button
           onClick={() => setView("images")}
           className={

@@ -16,40 +16,38 @@ const RealWeddings = ({
     typeof u === "string" ? u.replace(/`/g, "").trim() : u;
   const images =
     Array.isArray(apiImages) && apiImages.length > 0
-      ? apiImages
-        .map(normalizeUrl)
-        .map((url, idx) => ({
+      ? apiImages.map(normalizeUrl).map((url, idx) => ({
           id: idx + 1,
           url,
           alt: title || "Real Wedding",
         }))
       : [
-        {
-          id: 1,
-          url: "images/home/home-realwedding3.jpg",
-          alt: "Wedding rings with pink roses",
-        },
-        {
-          id: 2,
-          url: "images/home/home-realwedding2.jpg",
-          alt: "Bridal party in pink dresses",
-        },
-        {
-          id: 3,
-          url: "images/home/home-realwedding1.jpg",
-          alt: "Elegant wedding table setting",
-        },
-        {
-          id: 4,
-          url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=400&fit=crop",
-          alt: "Wedding ceremony",
-        },
-        {
-          id: 5,
-          url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=400&fit=crop",
-          alt: "Wedding bouquet",
-        },
-      ];
+          {
+            id: 1,
+            url: "images/home/home-realwedding3.jpg",
+            alt: "Wedding rings with pink roses",
+          },
+          {
+            id: 2,
+            url: "images/home/home-realwedding2.jpg",
+            alt: "Bridal party in pink dresses",
+          },
+          {
+            id: 3,
+            url: "images/home/home-realwedding1.jpg",
+            alt: "Elegant wedding table setting",
+          },
+          {
+            id: 4,
+            url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=400&fit=crop",
+            alt: "Wedding ceremony",
+          },
+          {
+            id: 5,
+            url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=400&fit=crop",
+            alt: "Wedding bouquet",
+          },
+        ];
 
   useEffect(() => {
     const total = Math.max(images.length - 2, 1);
@@ -70,7 +68,7 @@ const RealWeddings = ({
   };
 
   return (
-    <div className="container py-5">
+    <div className="container py-2">
       <div className="row align-items-center">
         <div className="col-lg-5 p-0 m-0 real-wedding-custom-wide-card">
           <div
@@ -99,7 +97,7 @@ const RealWeddings = ({
                   <>
                     Real Wedding
                     <br />
-                    Photos
+                    Stories
                   </>
                 )}
               </h2>
@@ -132,6 +130,7 @@ const RealWeddings = ({
           </div>
         </div>
 
+        {/* Desktop Carousel - Hidden on mobile/tablet */}
         <div className="col-lg-7 position-relative overflow-hidden mt-5 d-none d-lg-block">
           <div
             className="carousel-wrapper position-relative overflow-hidden"
@@ -154,8 +153,9 @@ const RealWeddings = ({
                   style={{
                     width: "100%",
                     height: "100%",
-                    transform: `translateZ(${index * 0}px) scale(${1 - index * 0.02
-                      })`,
+                    transform: `translateZ(${index * 0}px) scale(${
+                      1 - index * 0.02
+                    })`,
                     zIndex: images.length - index,
                     transition: "all 0.6s ease-in-out",
                   }}
@@ -175,6 +175,41 @@ const RealWeddings = ({
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile/Tablet Images Grid - Hidden on desktop, shown below card */}
+      <div className="row d-lg-none mt-4">
+        <div className="col-12">
+          <div className="row g-3">
+            {images.map((image, index) => (
+              <div key={image.id} className="col-6 col-md-4">
+                <div
+                  className="overflow-hidden rounded"
+                  style={{
+                    width: "100%",
+                    aspectRatio: "1",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                  }}
+                >
+                  <img
+                    src={image.url}
+                    alt={image.alt}
+                    className="w-100 h-100 object-fit-cover"
+                    style={{
+                      transition: "transform 0.3s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "scale(1.05)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "scale(1)";
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -261,6 +296,17 @@ const RealWeddings = ({
 
           .carousel-track {
             transform: translateX(-${currentSlide * 120}px) !important;
+          }
+
+          .real-wedding-custom-wide-card {
+            margin-bottom: 2rem;
+          }
+        }
+
+        /* Mobile/Tablet Images Grid Styles */
+        @media (max-width: 991px) {
+          .real-wedding-custom-wide-card {
+            margin-bottom: 2rem;
           }
         }
       `}</style>
