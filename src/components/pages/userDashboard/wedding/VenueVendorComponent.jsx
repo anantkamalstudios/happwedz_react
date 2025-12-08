@@ -239,7 +239,7 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
                       className="card border-0 shadow-sm overflow-hidden"
                       style={{
                         borderRadius: "12px",
-                        height: "310px",
+                        height: "330px",
                         display: "flex",
                         flexDirection: "column",
                       }}

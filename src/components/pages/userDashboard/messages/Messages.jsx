@@ -420,11 +420,11 @@ const Messages = () => {
                           <div className="fw-bold me-2 vendor-name fs-16">
                             {c.vendorName}
                           </div>
-                          {c.unreadCount > 0 && (
+                          {/* {c.unreadCount > 0 && (
                             <span className="badge bg-primary rounded-pill">
                               {c.unreadCount}
                             </span>
-                          )}
+                          )} */}
                         </div>
                         <div className="text-muted text-truncate vendor-preview fs-14">
                           {c.lastMessagePreview || c.vendorDescription || ""}

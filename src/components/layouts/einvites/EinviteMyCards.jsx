@@ -155,7 +155,7 @@ const EinviteMyCards = () => {
                   <div className="einvite-stats-label">Drafts</div>
                 </div>
               </div>
-              <div
+              {/* <div
                 className={
                   isMobile ? "col-6 cursor-pointer" : "col-md-3 cursor-pointer"
                 }
@@ -164,7 +164,7 @@ const EinviteMyCards = () => {
                   <div className="einvite-stats-number">0</div>
                   <div className="einvite-stats-label">Views</div>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <EinviteCardGrid

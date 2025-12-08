@@ -6,6 +6,9 @@ const SectionTabs = ({ scrollToSection }) => {
   const sectionIds = ["about", "faq", "reviews", "map"];
   const isProgrammaticScroll = useRef(false);
   const scrollTimer = useRef(null);
+  const [stuck, setStuck] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const sentinelRef = useRef(null);
 
   const handleClick = (section) => {
     // Immediately highlight clicked tab
@@ -68,8 +71,36 @@ const SectionTabs = ({ scrollToSection }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sectionIds.join("|")]);
 
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 576px)");
+    const apply = () => setIsMobile(!!mq.matches);
+    apply();
+    if (mq.addEventListener) {
+      mq.addEventListener("change", apply);
+      return () => mq.removeEventListener("change", apply);
+    } else if (mq.addListener) {
+      mq.addListener(apply);
+      return () => mq.removeListener(apply);
+    }
+  }, []);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([entry]) => {
+      setStuck(!entry.isIntersecting);
+    });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   return (
-    <div className="section-tabs-sticky">
+    <>
+      <div ref={sentinelRef} style={{ height: 1 }} />
+      <div
+        className="section-tabs-sticky"
+        style={isMobile ? { zIndex: stuck ? 1020 : "auto" } : undefined}
+      >
       <div className="d-flex flex-wrap gap-2 mb-0">
         {["about", "faq", "reviews", "map"].map((item) => (
           <button
@@ -82,7 +113,8 @@ const SectionTabs = ({ scrollToSection }) => {
           </button>
         ))}
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

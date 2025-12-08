@@ -759,7 +759,13 @@ const Header = () => {
                           key={index}
                           to="/real-wedding"
                           className="d-block py-2 text-decoration-none text-dark small"
-                          onClick={handleMobileLinkClick}
+                          onClick={() => {
+                            setSelectCity(city);
+                            setSelectedCulture("All Cultures");
+                            setSelectedTheme("All Themes");
+                            navigate("/real-wedding");
+                            handleMobileLinkClick();
+                          }}
                         >
                           {city}
                         </Link>
@@ -774,11 +780,14 @@ const Header = () => {
                           to="/real-wedding"
                           className="d-block py-2 text-decoration-none text-dark small"
                           onClick={() => {
+                            setSelectedCulture(culture?.name || culture);
+                            setSelectCity("All Cities");
+                            setSelectedTheme("All Themes");
                             navigate("/real-wedding");
-                            setSelectedCulture(culture);
+                            handleMobileLinkClick();
                           }}
                         >
-                          {culture.name}
+                          {culture?.name || String(culture)}
                         </Link>
                       ))}
 
@@ -791,8 +800,11 @@ const Header = () => {
                           to="/real-wedding"
                           className="d-block py-2 text-decoration-none text-dark small"
                           onClick={() => {
-                            navigate("/real-wedding");
                             setSelectedTheme(theme);
+                            setSelectCity("All Cities");
+                            setSelectedCulture("All Cultures");
+                            navigate("/real-wedding");
+                            handleMobileLinkClick();
                           }}
                         >
                           {theme}
@@ -1756,7 +1768,11 @@ const Header = () => {
                                               textDecoration: "none",
                                               color: "#212529",
                                             }}
-                                            onClick={() => setSelectCity(city)}
+                                            onClick={() => {
+                                              setSelectCity(city);
+                                              setSelectedCulture("All Cultures");
+                                              setSelectedTheme("All Themes");
+                                            }}
                                           >
                                             {city}
                                           </Link>
@@ -1782,9 +1798,11 @@ const Header = () => {
                                               textDecoration: " none",
                                               color: "#212529",
                                             }}
-                                            onClick={() =>
-                                              setSelectedTheme(culture.name)
-                                            }
+                                            onClick={() => {
+                                              setSelectedCulture(culture?.name || culture);
+                                              setSelectCity("All Cities");
+                                              setSelectedTheme("All Themes");
+                                            }}
                                           >
                                             {culture.name}
                                           </Link>
@@ -1810,9 +1828,11 @@ const Header = () => {
                                               textDecoration: " none",
                                               color: "#212529",
                                             }}
-                                            onClick={() =>
-                                              setSelectedTheme(theme)
-                                            }
+                                            onClick={() => {
+                                              setSelectedTheme(theme);
+                                              setSelectCity("All Cities");
+                                              setSelectedCulture("All Cultures");
+                                            }}
                                           >
                                             {theme}
                                           </Link>

@@ -17476,7 +17476,27 @@ input:checked + .slider:before {
   margin-bottom: 3rem;
   position: relative;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
 }
+
+@media (max-width: 768px) {
+  .custom-testimonial-box {
+    width: 100%;
+    max-width: 450px;   /* control card width */
+    height: 400px;       /* auto adjust height */
+    padding: 16px;      /* better spacing */
+    margin-bottom: 2rem;
+  }
+}
+
+/* ✅ Small Phones */
+@media (max-width: 480px) {
+  .custom-testimonial-box {
+    max-width: 450px;
+    padding: 14px;
+  }
+}
+
 
 .custom-floral-graphic {
   background-image: url("/public/images/home/leaf.png");

@@ -787,7 +787,7 @@ const EinviteCardEditor = ({ card, onSave, onCancel, onSaveDraft }) => {
             {isPreview && !isPublished && (
               <div
                 className="mt-3 d-flex justify-content-center gap-2"
-                style={{ width: "414px", margin: "0 auto" }}
+                style={{ width: "350px", margin: "0 auto" }}
               >
                 <button
                   type="button"

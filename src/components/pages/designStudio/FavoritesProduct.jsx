@@ -224,6 +224,7 @@ export default function FavouriteListPopup({
                       }}
                     />
                     {/* Heart Icon */}
+                    
                     <button
                       onClick={() => {
                         const favId = item?.id ?? item?.productId;
@@ -234,13 +235,34 @@ export default function FavouriteListPopup({
                           const toAdd = item?.id
                             ? {
                                 ...item,
-                                description: item.product_name,
+                                product_name:
+                                  item.product_name ||
+                                  item.description ||
+                                  item.name ||
+                                  item.title ||
+                                  "",
+                                description:
+                                  item.product_name ||
+                                  item.description ||
+                                  item.name ||
+                                  item.title ||
+                                  "",
                               }
                             : {
                                 id: item.productId,
                                 product_real_image: item.product_real_image,
-                                product_name: item.product_name,
-                                description: item.product_name,
+                                product_name:
+                                  item.product_name ||
+                                  item.description ||
+                                  item.name ||
+                                  item.title ||
+                                  "",
+                                description:
+                                  item.product_name ||
+                                  item.description ||
+                                  item.name ||
+                                  item.title ||
+                                  "",
                                 price: item.price,
                               };
                           dispatch(addFavorite(toAdd));

@@ -189,7 +189,7 @@ const HomeGennie = () => {
             alignItems: "center",
             justifyContent: "center",
             cursor: "pointer",
-            zIndex: 99999,
+            zIndex: 999,
             transition: "transform 0.3s ease",
             overflow: "hidden",
           }}

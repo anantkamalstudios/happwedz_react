@@ -351,7 +351,7 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                 />
               </div>
 
-              <div className="form-group">
+              {/* <div className="form-group">
                 <label className="fs-16">Promotion Image</label>
                 <div className="file-upload">
                   <label className="file-upload-label">
@@ -370,7 +370,7 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                     Recommended size: 800x400px (JPG, PNG)
                   </small>
                 </div>
-              </div>
+              </div> */}
 
               <div className="form-group terms-group">
                 <label className="checkbox-container fs-16">

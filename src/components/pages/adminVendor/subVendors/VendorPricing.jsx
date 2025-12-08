@@ -115,7 +115,7 @@ const VendorPricing = ({
           )}
         </div>
 
-        <div className="row g-2 mt-2">
+        {/* <div className="row g-2 mt-2">
           <div className="col-12 col-md-2">
             <button className="btn btn-primary w-100" onClick={handleSave}>
               Save Pricing Details
@@ -126,7 +126,27 @@ const VendorPricing = ({
               Submit All Details
             </button>
           </div>
-        </div>
+        </div> */}
+        <div className="row g-3 mt-3 justify-content-start">
+  <div className="col-12 col-sm-6 col-md-4">
+    <button
+      className="btn btn-primary w-100 py-2"
+      onClick={handleSave}
+    >
+      Save Pricing Details
+    </button>
+  </div>
+
+  <div className="col-12 col-sm-6 col-md-4">
+    <button
+      className="btn btn-primary w-100 py-2"
+      onClick={onSubmit}
+    >
+      Submit All Details
+    </button>
+  </div>
+</div>
+
       </div>
     </div>
   );

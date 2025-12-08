@@ -139,6 +139,8 @@ const HomeAdmin = () => {
     }
   }, [dateFilter, customStart, customEnd]);
 
+  // No mobile conversion helpers needed when using native date inputs
+
   useEffect(() => {
     if (!vendorToken) {
       setLoadingLeads(false);
@@ -645,12 +647,14 @@ const HomeAdmin = () => {
                     value={customStart}
                     onChange={(e) => setCustomStart(e.target.value)}
                   />
+                  <Form.Text muted>Format: dd-mm-yyyy</Form.Text>
 
                   <Form.Control
                     type="date"
                     value={customEnd}
                     onChange={(e) => setCustomEnd(e.target.value)}
                   />
+                  <Form.Text muted>Format: dd-mm-yyyy</Form.Text>
                 </div>
                 <Button
                   variant="primary"

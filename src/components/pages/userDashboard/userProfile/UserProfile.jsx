@@ -186,17 +186,29 @@ const UserProfile = ({ user, token }) => {
     return passwordFields.newPassword === passwordFields.confirmPassword;
   }, [passwordFields.newPassword, passwordFields.confirmPassword]);
 
+  const passwordStrength = useMemo(() => {
+    const pwd = passwordFields.newPassword || "";
+    const hasMin = pwd.length >= 8;
+    const hasUpper = /[A-Z]/.test(pwd);
+    const hasLower = /[a-z]/.test(pwd);
+    const hasNumber = /[0-9]/.test(pwd);
+    const hasSpecial = /[^A-Za-z0-9]/.test(pwd);
+    const notSameAsCurrent = !!pwd && pwd !== (passwordFields.currentPassword || "");
+    const isStrong = hasMin && hasUpper && hasLower && hasNumber && hasSpecial && notSameAsCurrent;
+    return { hasMin, hasUpper, hasLower, hasNumber, hasSpecial, notSameAsCurrent, isStrong };
+  }, [passwordFields.newPassword, passwordFields.currentPassword]);
+
   // Check if password change form is valid
   const isPasswordFormValid = useMemo(() => {
     if (!showChangePassword) return true; // Not changing password
     return (
       passwordFields.currentPassword &&
       passwordFields.newPassword &&
-      passwordFields.newPassword.length >= 8 &&
+      passwordStrength.isStrong &&
       passwordFields.confirmPassword &&
       passwordFields.newPassword === passwordFields.confirmPassword
     );
-  }, [showChangePassword, passwordFields]);
+  }, [showChangePassword, passwordFields, passwordStrength]);
 
   const dispatch = useDispatch();
 
@@ -210,11 +222,10 @@ const UserProfile = ({ user, token }) => {
         if (!passwordFields.currentPassword) {
           throw new Error("Current password is required to change password.");
         }
-        if (
-          !passwordFields.newPassword ||
-          passwordFields.newPassword.length < 8
-        ) {
-          throw new Error("New password must be at least 8 characters.");
+        if (!passwordStrength.isStrong) {
+          throw new Error(
+            "Password must be 8+ chars and include upper, lower, number, special, and differ from current."
+          );
         }
         if (passwordFields.newPassword !== passwordFields.confirmPassword) {
           throw new Error("New password and confirm password do not match.");
@@ -668,15 +679,37 @@ const UserProfile = ({ user, token }) => {
                             name="newPassword"
                             value={passwordFields.newPassword}
                             onChange={handlePasswordFieldChange}
-                            placeholder="New password (min 8 chars)"
+                            placeholder="New password"
+                            isValid={
+                              !!passwordFields.newPassword && passwordStrength.isStrong
+                            }
                             isInvalid={
-                              passwordFields.newPassword &&
-                              passwordFields.newPassword.length < 8
+                              !!passwordFields.newPassword && !passwordStrength.isStrong
                             }
                           />
                           <Form.Control.Feedback type="invalid">
-                            Password must be at least 8 characters
+                            Must be 8+ chars, include upper, lower, number, special, and differ from current
                           </Form.Control.Feedback>
+                          <div className="mt-2 small">
+                            <div className={passwordStrength.hasMin ? "text-success" : "text-danger"}>
+                              • At least 8 characters
+                            </div>
+                            <div className={passwordStrength.hasUpper ? "text-success" : "text-danger"}>
+                              • At least one uppercase letter
+                            </div>
+                            <div className={passwordStrength.hasLower ? "text-success" : "text-danger"}>
+                              • At least one lowercase letter
+                            </div>
+                            <div className={passwordStrength.hasNumber ? "text-success" : "text-danger"}>
+                              • At least one number
+                            </div>
+                            <div className={passwordStrength.hasSpecial ? "text-success" : "text-danger"}>
+                              • At least one special character
+                            </div>
+                            <div className={passwordStrength.notSameAsCurrent ? "text-success" : "text-danger"}>
+                              • Different from current password
+                            </div>
+                          </div>
                         </Form.Group>
                       </Col>
 

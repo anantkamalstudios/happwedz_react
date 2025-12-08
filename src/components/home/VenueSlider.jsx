@@ -88,7 +88,7 @@ const VenueSlider = () => {
       {/* Header */}
       <div className="venues-slider-header d-flex justify-content-between align-items-end">
         <h3>Pick your Venue</h3>
-        <Link to="/venues" className="see-more-link">
+        <Link to="/venues" className="see-more-link fs-14">
           SEE MORE
           <svg
             width="14"

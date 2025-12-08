@@ -206,7 +206,9 @@ const RealWeddings = ({ onPostClick }) => {
       const themeMatch =
         selectedTheme === "All Themes" ||
         (Array.isArray(wedding.themes)
-          ? wedding.themes.includes(selectedTheme)
+          ? wedding.themes.some(
+              (t) => String(t || "").toLowerCase() === selectedTheme.toLowerCase()
+            )
           : String(wedding.themes || "").toLowerCase() ===
             selectedTheme.toLowerCase());
 

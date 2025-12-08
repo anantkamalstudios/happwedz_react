@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Alert } from "react-bootstrap";
 import {
   Inbox,
@@ -41,6 +41,10 @@ const EnquiryManagement = () => {
   const { addToast } = useToast();
   const [searchMail, setSearchEmail] = useState("");
   const [filteredLeads, setFilteredLeads] = useState([]);
+  const [dateFromText, setDateFromText] = useState("");
+  const [dateToText, setDateToText] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+  const detailRef = useRef(null);
 
   const [globalStats, setGlobalStats] = useState({
     pending: 0,
@@ -154,6 +158,61 @@ const EnquiryManagement = () => {
     setFilteredLeads(leads);
   }, [leads]);
 
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 576px)");
+    const update = () => setIsMobile(!!mq.matches);
+    update();
+    if (mq.addEventListener) {
+      mq.addEventListener("change", update);
+      return () => mq.removeEventListener("change", update);
+    } else if (mq.addListener) {
+      mq.addListener(update);
+      return () => mq.removeListener(update);
+    }
+  }, []);
+
+  const parseDMY = (s) => {
+    if (!s) return null;
+    const m = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (!m) return null;
+    const d = parseInt(m[1], 10);
+    const mo = parseInt(m[2], 10) - 1;
+    const y = parseInt(m[3], 10);
+    const dt = new Date(y, mo, d);
+    return Number.isNaN(dt.getTime()) ? null : dt;
+  };
+
+  // Recompute filteredLeads when search or date range changes
+  useEffect(() => {
+    let base = leads;
+    const s = (searchMail || "").toLowerCase().trim();
+    if (s) {
+      base = base.filter(
+        (lead) =>
+          lead.request?.user?.name?.toLowerCase().includes(s) ||
+          lead.request?.user?.email?.toLowerCase().includes(s) ||
+          lead.request?.service?.name?.toLowerCase().includes(s)
+      );
+    }
+
+    const from = parseDMY(dateFromText);
+    const to = parseDMY(dateToText);
+    if (from || to) {
+      base = base.filter((lead) => {
+        const ev = lead.request?.eventDate ? new Date(lead.request.eventDate) : null;
+        if (!ev || Number.isNaN(ev.getTime())) return false;
+        if (from && ev < from) return false;
+        if (to) {
+          // include the entire 'to' day
+          const toEnd = new Date(to.getFullYear(), to.getMonth(), to.getDate(), 23, 59, 59, 999);
+          if (ev > toEnd) return false;
+        }
+        return true;
+      });
+    }
+    setFilteredLeads(base);
+  }, [leads, searchMail, dateFromText, dateToText]);
+
   const handleAction = async (lead, action) => {
     const inboxId = lead.id;
     const requestId = lead.request?.id;
@@ -254,6 +313,12 @@ const EnquiryManagement = () => {
     setSelectedLead(lead);
     if (!lead.isRead) {
       handleAction(lead, "read");
+    }
+    // On mobile, scroll to detail section
+    if (isMobile && detailRef.current) {
+      setTimeout(() => {
+        detailRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 50);
     }
   };
 
@@ -482,6 +547,36 @@ const EnquiryManagement = () => {
                       </div>
                     </div>
 
+                    {/* Date Range Filters */}
+                    {/* <div className="row g-2 mb-2">
+                      <div className="col-6">
+                        <input
+                          type={isMobile ? "text" : "date"}
+                          className="form-control form-control-sm fs-14"
+                          placeholder={isMobile ? "dd-mm-yyyy" : "From"}
+                          inputMode={isMobile ? "numeric" : undefined}
+                          pattern={isMobile ? "^(0?[1-9]|[12][0-9]|3[01])-(0?[1-9]|1[012])-(\\d{4})$" : undefined}
+                          maxLength={isMobile ? 10 : undefined}
+                          value={dateFromText}
+                          onChange={(e) => setDateFromText(e.target.value)}
+                          aria-label="From date"
+                        />
+                      </div>
+                      <div className="col-6">
+                        <input
+                          type={isMobile ? "text" : "date"}
+                          className="form-control form-control-sm fs-14"
+                          placeholder={isMobile ? "dd-mm-yyyy" : "To"}
+                          inputMode={isMobile ? "numeric" : undefined}
+                          pattern={isMobile ? "^(0?[1-9]|[12][0-9]|3[01])-(0?[1-9]|1[012])-(\\d{4})$" : undefined}
+                          maxLength={isMobile ? 10 : undefined}
+                          value={dateToText}
+                          onChange={(e) => setDateToText(e.target.value)}
+                          aria-label="To date"
+                        />
+                      </div>
+                    </div> */}
+
                     {loading ? (
                       <div className="text-center py-5">
                         <div
@@ -614,7 +709,7 @@ const EnquiryManagement = () => {
                 </div>
 
                 {/* Lead Detail */}
-                <div className="col-12 col-md-5 col-lg-6">
+                <div className="col-12 col-md-5 col-lg-6" ref={detailRef}>
                   <div className="p-3 p-md-4 h-100">
                     {selectedLead ? (
                       <>

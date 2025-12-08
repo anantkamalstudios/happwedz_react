@@ -1039,7 +1039,7 @@ const Detailed = () => {
 
           <Col lg={4} className="ps-lg-5">
             <div
-              className="venue-details-card p-4 border rounded sticky-top"
+              className="venue-details-card p-4 border rounded sticky-top z-0"
               style={{ top: "20px" }}
             >
               <div className="venue-info">

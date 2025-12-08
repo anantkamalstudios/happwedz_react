@@ -299,7 +299,20 @@ const RealWeddings = ({
           }
 
           .real-wedding-custom-wide-card {
-            margin-bottom: 2rem;
+            margin-bottom: 1.25rem;
+          }
+
+          /* Reduce left card height and padding on small devices */
+          .real-wedding-custom-wide-card .card {
+            min-height: auto !important;
+          }
+          .real-wedding-custom-wide-card .card-body {
+            padding: 1.25rem !important; /* ~p-3 */
+          }
+          /* Prevent accidental horizontal scroll from any child */
+          .real-wedding-custom-wide-card .card-body, 
+          .real-wedding-custom-wide-card .card {
+            overflow: hidden;
           }
         }
 
