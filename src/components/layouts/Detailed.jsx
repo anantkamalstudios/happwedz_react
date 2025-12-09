@@ -1007,6 +1007,10 @@ const Detailed = () => {
             <div id="reviews" className="py-2">
               <ReviewSection vendor={venueData || activeVendor} />
             </div>
+
+
+
+
             <div id="map" className="mt-4 pt-3 border-top">
               <div
                 className="mb-2 fw-semibold text-dark fs-16"

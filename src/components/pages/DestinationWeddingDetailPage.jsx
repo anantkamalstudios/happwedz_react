@@ -80,7 +80,7 @@ const DestinationWeddingDetailPage = () => {
         </div>
       </div>
 
-      <Container style={{ padding: "4rem 0" }}>
+      <Container className="dw-detail-container" style={{ padding: "4rem 0" }}>
         <h4
           style={{
             textAlign: "center",
@@ -379,152 +379,16 @@ const DestinationWeddingDetailPage = () => {
             )}
           </Col>
 
-          {/* <Col md={6}> 
-            {destination.snapshotImages?.length >= 4 && (
-              <div
-                style={{
-                  backgroundColor: "#fff",
-                  border: "1px solid #ddd",
-                  padding: "1.5rem",
-                  marginBottom: "1.5rem",
-                }}
-              >
-                <h6 style={{ fontWeight: "600", marginBottom: "1rem" }}>
-                  Snapshot
-                </h6>
-                <div
-                  style={{
-                    position: "relative",
-                    width: "100%",
-                    height: "450px",
-                  }}
-                >  
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "0",
-                      left: "0",
-                      width: "55%",
-                      height: "200px",
-                      zIndex: 4,
-                      overflow: "hidden",
-                      borderRadius: "12px",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                    }}
-                  >
-                    <img
-                      src={destination.snapshotImages[0]}
-                      alt="Venue snapshot 1"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  </div>
-
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "60px",
-                      right: "0",
-                      width: "50%",
-                      height: "180px",
-                      zIndex: 3,
-                      overflow: "hidden",
-                      borderRadius: "12px",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                    }}
-                  >
-                    <img
-                      src={destination.snapshotImages[3]}
-                      alt="Venue snapshot 4"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  </div>
-
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "180px",
-                      left: "0",
-                      width: "45%",
-                      height: "180px",
-                      zIndex: 2,
-                      overflow: "hidden",
-                      borderRadius: "12px",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                    }}
-                  >
-                    <img
-                      src={destination.snapshotImages[1]}
-                      alt="Venue snapshot 2"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  </div>
-
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: "20px",
-                      right: "30px",
-                      width: "52%",
-                      height: "200px",
-                      zIndex: 1,
-                      overflow: "hidden",
-                      borderRadius: "12px",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                    }}
-                  >
-                    <img
-                      src={destination.snapshotImages[2]}
-                      alt="Venue snapshot 3"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
- 
-            {destination.highlights?.length > 0 && (
-              <div
-                style={{
-                  backgroundColor: "#fff",
-                  border: "1px solid #ddd",
-                  padding: "1.5rem",
-                }}
-              >
-                <h6 style={{ fontWeight: "600", marginBottom: "1rem" }}>
-                  Quick Facts
-                </h6>
-                {destination.highlights.map((highlight) => (
-                  <div
-                    key={highlight.label}
-                    className="d-flex justify-content-between align-items-center border-bottom py-2"
-                  >
-                    <span className="text-muted">{highlight.label}</span>
-                    <span className="fw-semibold text-dark text-end">
-                      {highlight.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Col> */}
+         
         </Row>
       </Container>
+      <style jsx>{`
+        @media (max-width: 576px) {
+          .dw-detail-container {
+            padding: 2rem 1rem !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

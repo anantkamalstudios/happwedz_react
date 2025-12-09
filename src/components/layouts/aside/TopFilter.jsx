@@ -147,12 +147,13 @@ const TopFilter = ({
                       </button>
                     )}
                     <button
-                      className="btn btn-outline-danger btn-sm d-flex align-items-center justify-content-center col-4 gap-1 px-3 flex-fill flex-sm-grow-0"
+                      className="btn btn-danger btn-sm d-flex align-items-center justify-content-center gap-1 px-3 flex-fill flex-sm-grow-0"
                       onClick={clearFilters}
                       style={{ whiteSpace: "nowrap" }}
+                      title="Clear all filters"
                     >
                       <MdClear size={18} />
-                      <span className="d-none d-sm-inline">Clear</span>
+                      <span>Clear</span>
                     </button>
                   </div>
                 )}
@@ -182,7 +183,7 @@ const TopFilter = ({
                       <button
                         type="button"
                         className="btn-close btn-close-sm ms-1"
-                        style={{ fontSize: "0.6rem" }}
+                        style={{ fontSize: "0.6rem"  }}
                         onClick={() => handleCheckbox(group, value)}
                         aria-label="Remove filter"
                       ></button>

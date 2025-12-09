@@ -258,7 +258,7 @@ const VendorForgotPassword = () => {
                       zIndex: 10,
                     }}
                   >
-                    {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                    {showPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />}
                   </button>
                 </div>
                 {passwordError && (
@@ -312,7 +312,7 @@ const VendorForgotPassword = () => {
                       zIndex: 10,
                     }}
                   >
-                    {showConfirmPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                    {showConfirmPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />}
                   </button>
                 </div>
               </div>

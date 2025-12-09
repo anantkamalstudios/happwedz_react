@@ -102,7 +102,7 @@ const VendorLogin = () => {
                 Email Address
               </Form.Label>
               <div className="position-relative">
-                <SiMinutemailer
+                {/* <SiMinutemailer
                   size={20}
                   className="text-secondary"
                   style={{
@@ -112,13 +112,13 @@ const VendorLogin = () => {
                     transform: "translateY(-50%)",
                     pointerEvents: "none",
                   }}
-                />
+                /> */}
                 <Form.Control
                   type="email"
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="p-3 ps-5 fs-14 shadow-sm border-light bg-light"
+                  className="p-3  fs-14 shadow-sm border-light bg-light"
                   style={{ borderRadius: "12px" }}
                 />
               </div>
@@ -127,7 +127,7 @@ const VendorLogin = () => {
             <Form.Group controlId="formPassword" className="mb-4">
               <Form.Label className="text-secondary fs-16">Password</Form.Label>
               <div className="position-relative">
-                <TbPassword
+                {/* <TbPassword
                   size={22}
                   className="text-secondary"
                   style={{
@@ -137,13 +137,13 @@ const VendorLogin = () => {
                     transform: "translateY(-50%)",
                     pointerEvents: "none",
                   }}
-                />
+                /> */}
                 <Form.Control
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="p-3 ps-5 fs-14 shadow-sm border-light bg-light"
+                  className="p-3  fs-14 shadow-sm border-light bg-light"
                   style={{
                     borderRadius: "12px",
                     paddingRight: "3rem",

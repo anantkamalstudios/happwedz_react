@@ -70,7 +70,7 @@ const VendorContact = ({ formData, setFormData, onSave }) => {
               placeholder="Enter WhatsApp number"
             />
           </div>
-          <div className="col-md-6 mb-3">
+          {/* <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">Email *</label>
             <input
               type="email"
@@ -79,7 +79,7 @@ const VendorContact = ({ formData, setFormData, onSave }) => {
               onChange={(e) => handleInputChange("email", e.target.value)}
               placeholder="Enter email address"
             />
-          </div>
+          </div> */}
           {/* <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">Inquiry Email</label>
             <input

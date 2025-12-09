@@ -59,14 +59,11 @@ const AboutUs = () => {
                     HappyWedz Bridal Gallery – Find Your Dream Bridal Look
                   </p>
                   <p className="fs-14">
-                    Discover your perfect wedding outfit at HappyWedz Bridal
-                    Gallery. Browse a wide range of designer bridal wear, from
-                    classic lehengas and sarees to modern gowns and fusion
-                    styles. Connect directly with bridal designers to customize
-                    your look and enjoy a seamless online shopping experience
-                    from home. Start your bridal fashion journey with HappyWedz,
-                    where elegance meets style, and every bride finds the
-                    outfit of her dreams.
+                    Discover your perfect wedding outfit at HappyWedz Bridal Gallery.
+                    Explore designer lehengas, sarees, gowns, and fusion styles.
+                    Connect directly with designers to customize your dream look.
+                    Enjoy a smooth online shopping experience from home.
+                    Elegance, style, and the perfect bridal outfit—all in one place.
                   </p>
                 </div>
               </div>
@@ -74,19 +71,12 @@ const AboutUs = () => {
               {/* Genie */}
               <div className="col-md-6">
                 <div className="p-4 border rounded shadow-sm bg-white h-100">
-                  <p className="fw-bold mb-2 fs-16">Genie</p>
+                  <p className="fw-bold mb-2 fs-16">Shaadi AI</p>
                   <p className="fs-14">
-                    Not sure where to begin your wedding planning journey? Let
-                    HappyWedz Genie, your AI-powered wedding planner, do the
-                    magic for you! Powered by smart technology, the HappyWedz
-                    Genie instantly understands your budget, style, and
-                    preferences, and recommends the best wedding vendors — from
-                    photographers and makeup artists to decorators and planners.
-                    Save hours of scrolling and comparing — just tell Genie what
-                    you’re looking for, and it will find your perfect wedding
-                    matches in seconds. Simple, smart, and stress-free! Let
-                    HappyWedz Genie turn your dream wedding vision into reality
-                    with the power of AI.
+                    Not sure where to begin your wedding planning?
+                    Let ShadiAi, your AI-powered wedding planner, make it effortless.
+                    It understands your style, budget, and preferences instantly.
+                    Get perfect vendor matches in seconds—smart, simple, stress-free
                   </p>
                 </div>
               </div>
@@ -183,13 +173,13 @@ const AboutUs = () => {
               <div className="col-md-6">
                 <div className="p-4 border rounded shadow-sm bg-white h-100">
                   <p className="fw-bold mb-2 text-dark fs-16">
-                    AI Design Studio
+                    Design Studio
                   </p>
                   <p className="fs-14">
-                    Personalize your wedding e-invites with our{" "}
-                    <strong>AI-powered Design Studio</strong>. Apply creative
-                    filters, edit designs, and visualize your invites in real
-                    time.
+      Personalize your wedding look with our smart Design Studio.
+Apply creative filters, edit styles, and see changes in real time.
+Try on makeup, jewellery, and outfits virtually with stunning accuracy.
+Create your perfect bridal look effortlessly.
                   </p>
                 </div>
               </div>

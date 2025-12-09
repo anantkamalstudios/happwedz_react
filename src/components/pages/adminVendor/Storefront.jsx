@@ -857,6 +857,8 @@ const Storefront = ({ setCompletion }) => {
     },
     { id: "photos", label: "Photos", icon: <IoCameraOutline size={20} /> },
     { id: "videos", label: "Videos", icon: <IoVideocamOutline size={20} /> },
+    
+
     {
       id: "preferred-vendors",
       label: "Preferred Vendors",

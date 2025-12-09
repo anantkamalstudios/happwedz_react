@@ -22,6 +22,7 @@ import {
   FaBan,
   FaChevronDown,
   FaChevronUp,
+  FaCalendarCheck 
 } from "react-icons/fa";
 import { CiBookmarkCheck } from "react-icons/ci";
 import Swal from "sweetalert2";
@@ -136,6 +137,9 @@ const Booking = () => {
         return <FaClock />;
       case "cancelled":
         return <FaBan />;
+        case "booked":
+          return <FaCalendarCheck/>;
+
       default:
         return <FaTimesCircle />;
     }

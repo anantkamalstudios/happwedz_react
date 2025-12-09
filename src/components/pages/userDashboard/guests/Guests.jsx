@@ -10,6 +10,7 @@ import {
   FaUsers,
   FaChevronDown,
   FaTrash,
+  FaWhatsapp,
 } from "react-icons/fa";
 import Swal from "sweetalert2";
 import EmailModal from "../../../ui/EmailModal";
@@ -20,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 const initialGuestFormState = {
   name: "",
   email: "",
+  phone_number: "",
   groupId: "",
 
   type: "Adult",
@@ -56,6 +58,8 @@ const Guests = () => {
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [whatsappMessage, setWhatsappMessage] = useState("");
   const [groupsLoading, setGroupsLoading] = useState(false);
+  const [selectedGuestIds, setSelectedGuestIds] = useState(new Set());
+  const [whatsappRecipients, setWhatsappRecipients] = useState(null);
 
   const statusOptions = ["Attending", "Not Attending", "Pending"];
   const typeOptions = ["Adult", "Child"];
@@ -221,6 +225,15 @@ const Guests = () => {
     }, {});
   }, [guests, selectedGroup, selectedStatus, searchTerm, availableGroups]);
 
+  const toggleGuestSelection = (id) => {
+    setSelectedGuestIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setNewGuestForm((prev) => ({ ...prev, [name]: value }));
@@ -256,6 +269,7 @@ const Guests = () => {
       const payload = {
         name: newGuestForm.name.trim(),
         email: newGuestForm.email.trim(),
+        phone_number: newGuestForm.phone_number?.trim() || null,
         userId: userIdToSend,
         status: "Pending",
         type: newGuestForm.type,
@@ -280,6 +294,7 @@ const Guests = () => {
       }
       setNewGuestForm(initialGuestFormState);
       setShowAddGuestForm(false);
+      setSelectedGuestIds(new Set());
     } catch (err) {
       const errorMessage =
         err.response?.data?.message ||
@@ -350,6 +365,19 @@ const Guests = () => {
     return message;
   };
 
+  const sanitizePhone = (raw) => {
+    if (!raw) return "";
+    let phone = String(raw)
+      .replace(/\s+/g, "")
+      .replace(/-/g, "")
+      .replace(/\+/g, "")
+      .replace(/\(/g, "")
+      .replace(/\)/g, "")
+      .replace(/\./g, "");
+    if (phone.startsWith("0")) phone = phone.substring(1);
+    return phone;
+  };
+
   const sendMessage = (type) => {
     if (type === "Email") {
       setShowEmailModal(true);
@@ -396,19 +424,34 @@ const Guests = () => {
       });
       return;
     }
+    const encodedMessage = encodeURIComponent(whatsappMessage);
 
-    let phoneNumber = userPhone
-      .replace(/\s+/g, "")
-      .replace(/-/g, "")
-      .replace(/\+/g, "")
-      .replace(/\(/g, "")
-      .replace(/\)/g, "")
-      .replace(/\./g, "");
-
-    if (phoneNumber.startsWith("0")) {
-      phoneNumber = phoneNumber.substring(1);
+    if (Array.isArray(whatsappRecipients) && whatsappRecipients.length > 0) {
+      const invalids = [];
+      whatsappRecipients.forEach((raw) => {
+        const phone = sanitizePhone(raw);
+        if (!/^\d+$/.test(phone)) {
+          invalids.push(raw);
+          return;
+        }
+        const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
+        window.open(whatsappUrl, "_blank");
+      });
+      if (invalids.length > 0) {
+        Swal.fire({
+          icon: "warning",
+          text: `Some numbers were invalid and skipped: ${invalids.join(", ")}`,
+          confirmButtonText: "OK",
+          confirmButtonColor: "#C31162",
+        });
+      }
+      setShowWhatsAppModal(false);
+      setWhatsappMessage("");
+      setWhatsappRecipients(null);
+      return;
     }
 
+    let phoneNumber = sanitizePhone(userPhone);
     if (!/^\d+$/.test(phoneNumber)) {
       Swal.fire({
         icon: "error",
@@ -418,11 +461,7 @@ const Guests = () => {
       });
       return;
     }
-
-    const encodedMessage = encodeURIComponent(whatsappMessage);
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-
-    // Open WhatsApp Web in a new tab
     window.open(whatsappUrl, "_blank");
     setShowWhatsAppModal(false);
     setWhatsappMessage("");
@@ -641,6 +680,32 @@ const Guests = () => {
                 <h2 className="wgl-stat-number">{guests.length}</h2>
                 <p className="wgl-stat-label">Guests</p>
               </div>
+
+              <button
+                className="wgl-button wgl-button-secondary"
+                onClick={() => {
+                  const selected = guests.filter(
+                    (g) => g && selectedGuestIds.has(g.id) && g.phone_number
+                  );
+                  if (selected.length === 0) {
+                    Swal.fire({
+                      icon: "info",
+                      text: "Select at least one guest with a phone number.",
+                      confirmButtonText: "OK",
+                      confirmButtonColor: "#C31162",
+                    });
+                    return;
+                  }
+                  const templateMessage = formatGuestListForWhatsApp();
+                  setWhatsappMessage(templateMessage);
+                  setWhatsappRecipients(selected.map((g) => g.phone_number));
+                  setShowWhatsAppModal(true);
+                }}
+              >
+                <span className="fs-14 d-flex align-items-center gap-1">
+                  <FaWhatsapp className="wgl-button-icon" /> WhatsApp Selected
+                </span>
+              </button>
               <div className="wgl-stat-card">
                 <h2 className="wgl-stat-number">{adultsCount}</h2>
                 <p className="wgl-stat-label">Adults</p>
@@ -859,6 +924,17 @@ const Guests = () => {
                     />
                   </div>
                   <div className="col-md-4">
+                    <label className="form-label">Phone Number</label>
+                    <input
+                      name="phone_number"
+                      type="tel"
+                      className="form-control"
+                      placeholder="e.g., +91 9876543210"
+                      value={newGuestForm.phone_number}
+                      onChange={handleFormChange}
+                    />
+                  </div>
+                  <div className="col-md-4">
                     <label className="form-label">Companions</label>
                     <input
                       name="companions"
@@ -1037,12 +1113,14 @@ const Guests = () => {
                     <table className="wgl-guest-table">
                       <thead>
                         <tr>
+                          {/* <th className="wgl-table-header fs-16">Select</th> */}
                           <th className="wgl-table-header fs-16">Guest</th>
                           <th className="wgl-table-header fs-16">Status</th>
                           <th className="wgl-table-header fs-16">Companions</th>
                           <th className="wgl-table-header fs-16">Seat</th>
                           <th className="wgl-table-header fs-16">Type</th>
                           <th className="wgl-table-header fs-16">Menu</th>
+                          <th className="wgl-table-header fs-16">Phone</th>
                           <th className="wgl-table-header fs-16">Actions</th>
                         </tr>
                       </thead>
@@ -1050,6 +1128,13 @@ const Guests = () => {
                       <tbody>
                         {groupGuests.map((g) => (
                           <tr key={g.id} className="wgl-guest-row">
+                            {/* <td className="fs-14 text-center">
+                              <input
+                                type="checkbox"
+                                checked={selectedGuestIds.has(g.id)}
+                                onChange={() => toggleGuestSelection(g.id)}
+                              />
+                            </td> */}
                             <td className="wgl-guest-name fs-14 text-center">
                               {g.name}
                             </td>
@@ -1106,7 +1191,42 @@ const Guests = () => {
                               </select>
                             </td>
 
+                            <td className="fs-14 text-center">
+                              {g.phone_number || "-"}
+                            </td>
+
                             <td className="wgl-guest-actions fs-14 text-center">
+                              <button
+                                className="wgl-action-button"
+                                title="WhatsApp"
+                                onClick={() => {
+                                  if (!g.phone_number) {
+                                    Swal.fire({
+                                      icon: "info",
+                                      text: "No phone number for this guest.",
+                                      confirmButtonText: "OK",
+                                      confirmButtonColor: "#C31162",
+                                    });
+                                    return;
+                                  }
+                                  const msg = encodeURIComponent(
+                                    whatsappMessage || formatGuestListForWhatsApp()
+                                  );
+                                  const phone = sanitizePhone(g.phone_number);
+                                  if (!/^\d+$/.test(phone)) {
+                                    Swal.fire({
+                                      icon: "error",
+                                      text: "Invalid phone number for this guest.",
+                                      confirmButtonText: "OK",
+                                      confirmButtonColor: "#C31162",
+                                    });
+                                    return;
+                                  }
+                                  window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
+                                }}
+                              >
+                                <FaWhatsapp />
+                              </button>
                               <button
                                 className="wgl-action-button wgl-action-delete"
                                 onClick={() => deleteGuestAPI(g.id)}

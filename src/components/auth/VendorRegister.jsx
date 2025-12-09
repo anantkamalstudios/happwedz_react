@@ -100,7 +100,7 @@ const VendorRegister = () => {
           error = "Password is required";
         } else if (!passwordRegex.test(value)) {
           error =
-            "Password must be 8+ chars with uppercase, lowercase, and number";
+            "Password must be 8+ chars with uppercase, lowercase, special character and number";
         }
         break;
 
