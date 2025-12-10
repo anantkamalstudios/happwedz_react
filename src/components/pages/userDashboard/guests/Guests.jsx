@@ -681,31 +681,7 @@ const Guests = () => {
                 <p className="wgl-stat-label">Guests</p>
               </div>
 
-              <button
-                className="wgl-button wgl-button-secondary"
-                onClick={() => {
-                  const selected = guests.filter(
-                    (g) => g && selectedGuestIds.has(g.id) && g.phone_number
-                  );
-                  if (selected.length === 0) {
-                    Swal.fire({
-                      icon: "info",
-                      text: "Select at least one guest with a phone number.",
-                      confirmButtonText: "OK",
-                      confirmButtonColor: "#C31162",
-                    });
-                    return;
-                  }
-                  const templateMessage = formatGuestListForWhatsApp();
-                  setWhatsappMessage(templateMessage);
-                  setWhatsappRecipients(selected.map((g) => g.phone_number));
-                  setShowWhatsAppModal(true);
-                }}
-              >
-                <span className="fs-14 d-flex align-items-center gap-1">
-                  <FaWhatsapp className="wgl-button-icon" /> WhatsApp Selected
-                </span>
-              </button>
+            
               <div className="wgl-stat-card">
                 <h2 className="wgl-stat-number">{adultsCount}</h2>
                 <p className="wgl-stat-label">Adults</p>
