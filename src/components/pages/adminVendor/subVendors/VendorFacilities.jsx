@@ -62,7 +62,7 @@ const VendorFacilities = ({
   return (
     <div className="my-5">
       <div className="p-3 border rounded bg-white">
-        <h6 className="mb-3 fw-bold">Facilities & Features</h6>
+        <h4 className="mb-3 fw-bold">Facilities & Features</h4>
         <div className="row">
           {isVenue && (
             <div className="col-md-6 mb-3">
@@ -204,10 +204,12 @@ const VendorFacilities = ({
             </div>
           )}
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">HappyWedz Since</label>
+            <label className="form-label fs-16 fw-semibold">
+              HappyWedz Since
+            </label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={formData.happywedz_since || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -293,7 +295,7 @@ const VendorFacilities = ({
             </div>
           )}
         </div>
-        <button className="btn btn-primary mt-2" onClick={handleSave}>
+        <button className="btn btn-primary mt-2 fs-14" onClick={handleSave}>
           Save Facilities Details
         </button>
       </div>

@@ -46,6 +46,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import axiosInstance from "../../../services/api/axiosInstance";
 
 ChartJS.register(
   CategoryScale,
@@ -57,8 +58,6 @@ ChartJS.register(
   Tooltip,
   Legend
 );
-
-const API_BASE_URL = "https://happywedz.com";
 
 const HomeAdmin = () => {
   const [dateFilter, setDateFilter] = useState("all_time");
@@ -213,17 +212,13 @@ const HomeAdmin = () => {
         setLoadingLeads(true);
         setLoadingStats(true);
 
-        const response = await fetch(
-          `${API_BASE_URL}/api/request-pricing/vendor/dashboard`,
+        const response = await axiosInstance.get(
+          "/request-pricing/vendor/dashboard",
           {
             headers: { Authorization: `Bearer ${vendorToken}` },
           }
         );
-        if (!response.ok) {
-          throw new Error("Failed to fetch leads.");
-        }
-
-        const data = await response.json();
+        const data = response.data || {};
         const leads = data?.requests || [];
 
         // compute date range from filter
@@ -312,12 +307,12 @@ const HomeAdmin = () => {
 
           // Profile views
           try {
-            const pvRes = await fetch(
-              `${API_BASE_URL}/api/vendor/profile-views/${vendor.id}`,
+            const pvRes = await axiosInstance.get(
+              `/vendor/profile-views/${vendor.id}`,
               { headers: { Authorization: `Bearer ${vendorToken}` } }
             );
-            if (pvRes && pvRes.ok) {
-              const pvData = await pvRes.json();
+            if (pvRes?.data) {
+              const pvData = pvRes.data;
               const pvCount = pvData?.vendor?.profileViews ?? 0;
 
               // try to build a timeseries if API returned event list
@@ -352,12 +347,12 @@ const HomeAdmin = () => {
 
           // Wishlist stats (returns wishlistCount in data[0].wishlistCount)
           try {
-            const wlRes = await fetch(
-              `${API_BASE_URL}/api/wishlist/vendor/stats/${vendor.id}`,
+            const wlRes = await axiosInstance.get(
+              `/wishlist/vendor/stats/${vendor.id}`,
               { headers: { Authorization: `Bearer ${vendorToken}` } }
             );
-            if (wlRes && wlRes.ok) {
-              const wlData = await wlRes.json();
+            if (wlRes?.data) {
+              const wlData = wlRes.data;
               const wlRaw = wlData?.data?.[0] || {};
               const allUsers = wlRaw.users || [];
 

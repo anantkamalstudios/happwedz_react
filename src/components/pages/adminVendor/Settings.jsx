@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import axiosInstance from "../../../services/api/axiosInstance";
 import {
   Container,
   Row,
@@ -26,7 +27,8 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState("notifications");
   const [showSuccess, setShowSuccess] = useState(false);
   const { vendor, token } = useSelector((state) => state.vendorAuth || {});
-  const [enquiryNotificationEnabled, setEnquiryNotificationEnabled] = useState(true);
+  const [enquiryNotificationEnabled, setEnquiryNotificationEnabled] =
+    useState(true);
   const [showEnquiryIcon, setShowEnquiryIcon] = useState(() => {
     const stored = localStorage.getItem("showEnquiryCountBadge");
     return stored !== null ? stored === "true" : true;
@@ -44,8 +46,9 @@ const Settings = () => {
     if (vendor) {
       setProfileData({
         businessName: vendor.businessName || "",
-        contactPerson: `${vendor.firstName || ""} ${vendor.lastName || ""
-          }`.trim(),
+        contactPerson: `${vendor.firstName || ""} ${
+          vendor.lastName || ""
+        }`.trim(),
         email: vendor.email || "",
         phone: vendor.phone || "",
         address: vendor.city || "",
@@ -56,17 +59,16 @@ const Settings = () => {
   // Toggle notifications on/off (sends review_notifications flag)
   const toggleNotifications = async (enabled) => {
     try {
-      const response = await fetch(
-        "https://happywedz.com/api/vendor/notification-settings",
+      await axiosInstance.put(
+        "/vendor/notification-settings",
+        { review_notifications: enabled },
         {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ review_notifications: enabled }),
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
         }
       );
-      const data = await response.json();
-      // simple feedback in console and show success alert briefly
-      console.log(data.message);
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 2000);
     } catch (err) {
@@ -301,7 +303,8 @@ const Settings = () => {
                       <div>
                         <h6 className="mb-1">Show Enquiry Count Badge</h6>
                         <small className="text-muted">
-                          Display unread enquiry count on the enquiry icon in navbar
+                          Display unread enquiry count on the enquiry icon in
+                          navbar
                         </small>
                       </div>
                       <Form.Check
@@ -310,9 +313,14 @@ const Settings = () => {
                         onChange={(e) => {
                           const enabled = e.target.checked;
                           setShowEnquiryIcon(enabled);
-                          localStorage.setItem("showEnquiryCountBadge", enabled.toString());
+                          localStorage.setItem(
+                            "showEnquiryCountBadge",
+                            enabled.toString()
+                          );
                           // Dispatch custom event to notify Navbar
-                          window.dispatchEvent(new Event("enquiryBadgeSettingChanged"));
+                          window.dispatchEvent(
+                            new Event("enquiryBadgeSettingChanged")
+                          );
                           setShowSuccess(true);
                           setTimeout(() => setShowSuccess(false), 2000);
                         }}

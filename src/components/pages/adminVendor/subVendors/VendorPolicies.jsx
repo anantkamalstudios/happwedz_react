@@ -11,16 +11,16 @@ const VendorPolicies = ({ formData, setFormData, onSave }) => {
   return (
     <div className="my-5">
       <div className="p-3 border rounded bg-white">
-        <h6 className="mb-3 fw-bold">Policies & Terms</h6>
+        <h4 className="mb-3 fw-bold">Policies & Terms</h4>
 
         <div className="row">
           {/* Cancellation Policy */}
           <div className="col-12 mb-3">
-            <label className="form-label fw-semibold">
+            <label className="form-label fs-16 fw-semibold">
               Cancellation Policy
             </label>
             <textarea
-              className="form-control"
+              className="form-control fs-14"
               rows="3"
               value={formData.cancellationPolicy || ""}
               onChange={(e) =>
@@ -32,9 +32,11 @@ const VendorPolicies = ({ formData, setFormData, onSave }) => {
 
           {/* Refund Policy */}
           <div className="col-12 mb-3">
-            <label className="form-label fw-semibold">Refund Policy</label>
+            <label className="form-label fs-16 fw-semibold">
+              Refund Policy
+            </label>
             <textarea
-              className="form-control"
+              className="form-control fs-14"
               rows="3"
               value={formData.refundPolicy || ""}
               onChange={(e) =>
@@ -46,10 +48,12 @@ const VendorPolicies = ({ formData, setFormData, onSave }) => {
 
           {/* ✅ Payment Terms (direct string, not nested) */}
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Payment Terms</label>
+            <label className="form-label fs-16 fw-semibold">
+              Payment Terms
+            </label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={formData?.payment_terms || ""}
               onChange={(e) =>
                 handleInputChange("payment_terms", e.target.value)
@@ -60,9 +64,11 @@ const VendorPolicies = ({ formData, setFormData, onSave }) => {
 
           {/* Terms & Conditions */}
           <div className="col-12 mb-3">
-            <label className="form-label fw-semibold">Terms & Conditions</label>
+            <label className="form-label fs-16 fw-semibold">
+              Terms & Conditions
+            </label>
             <textarea
-              className="form-control"
+              className="form-control fs-14"
               rows="4"
               value={formData.tnc || ""}
               onChange={(e) => handleInputChange("tnc", e.target.value)}
@@ -71,7 +77,7 @@ const VendorPolicies = ({ formData, setFormData, onSave }) => {
           </div>
         </div>
 
-        <button className="btn btn-primary mt-2" onClick={onSave}>
+        <button className="btn btn-primary mt-2 fs-14" onClick={onSave}>
           Save Policies & Terms
         </button>
       </div>

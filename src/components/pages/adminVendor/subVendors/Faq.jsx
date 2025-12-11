@@ -310,20 +310,22 @@ function Faq({ formData, setFormData, onSave }) {
           <div className="card-body">
             <div className="qa-top">
               {/* <div className="faq-number">{idx + 1}</div> */}
-              <p className="question-text">{q.text}</p>
+              <p className="question-text fs-16">{q.text}</p>
             </div>
             <div>
-              {q.description && <p className="text-muted">{q.description}</p>}
-              <div className="mh-100 mt-3">{renderQuestionInput(q)}</div>
+              {q.description && (
+                <p className="text-muted fs-14">{q.description}</p>
+              )}
+              <div className="mh-100 mt-3 fs-14">{renderQuestionInput(q)}</div>
             </div>
           </div>
         </div>
       ))}
-      <div className="w-100  d-flex justify-content-center align-content-center">
+      <div className="w-100 fs-14 d-flex justify-content-center align-content-center">
         <button
           type="submit"
           onClick={handleSave}
-          className="px-4 py-2 rounded btn-pink"
+          className="px-4 py-2 rounded btn-primary"
         >
           Submit
         </button>

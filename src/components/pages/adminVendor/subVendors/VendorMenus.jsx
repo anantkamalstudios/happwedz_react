@@ -83,15 +83,15 @@ const VendorMenus = ({ formData, setFormData, onSave }) => {
   return (
     <div className="my-5">
       <div className="p-3 border rounded bg-white">
-        <h6 className="mb-3 fw-bold">Menus (for Caterers)</h6>
+        <h4 className="mb-3 fw-bold">Menus (for Caterers)</h4>
         {menus.map((menu, index) => (
           <div key={index} className="border rounded p-3 mb-3 bg-light">
             <div className="row">
               {/* <div className="col-md-4 mb-3">
-                <label className="form-label fw-semibold">Menu Title</label>
+                <label className="form-label fs-16 fw-semibold">Menu Title</label>
                 <input
                   type="text"
-                  className="form-control"
+                  className="form-control fs-14"
                   value={menu.title}
                   onChange={(e) =>
                     handleMenuField(index, "title", e.target.value)
@@ -100,7 +100,7 @@ const VendorMenus = ({ formData, setFormData, onSave }) => {
                 />
               </div> */}
               {/* <div className="col-md-3 mb-3">
-                <label className="form-label fw-semibold">Type</label>
+                <label className="form-label fs-16 fw-semibold">Type</label>
                 <select
                   className="form-select"
                   value={menu.type || "veg"}
@@ -113,12 +113,12 @@ const VendorMenus = ({ formData, setFormData, onSave }) => {
                 </select>
               </div> */}
               <div className="col-md-6 mb-3">
-                <label className="form-label fw-semibold">
+                <label className="form-label fs-16 fw-semibold">
                   Veg Price Per Plate (for Venues)
                 </label>
                 <input
                   type="text"
-                  className="form-control"
+                  className="form-control fs-14"
                   value={formData.veg_price || ""}
                   onChange={(e) =>
                     setFormData((prev) => ({
@@ -131,12 +131,12 @@ const VendorMenus = ({ formData, setFormData, onSave }) => {
               </div>
               {/* Non-Veg Price (for Venues) */}
               <div className="col-md-6 mb-3">
-                <label className="form-label fw-semibold">
+                <label className="form-label fs-16 fw-semibold">
                   Non-Veg Price Per Plate (for Venues)
                 </label>
                 <input
                   type="text"
-                  className="form-control"
+                  className="form-control fs-14"
                   value={formData.non_veg_price || ""}
                   onChange={(e) =>
                     setFormData((prev) => ({
@@ -148,12 +148,12 @@ const VendorMenus = ({ formData, setFormData, onSave }) => {
                 />
               </div>
               {/* <div className="col-md-3 mb-3">
-                <label className="form-label fw-semibold">
+                <label className="form-label fs-16 fw-semibold">
                   Price (per plate)
                 </label>
                 <input
                   type="number"
-                  className="form-control"
+                  className="form-control fs-14"
                   value={menu.price}
                   onChange={(e) =>
                     handleMenuField(index, "price", e.target.value)
@@ -176,7 +176,7 @@ const VendorMenus = ({ formData, setFormData, onSave }) => {
                 <div className="col-md-10">
                   <input
                     type="text"
-                    className="form-control"
+                    className="form-control fs-14"
                     value={it}
                     onChange={(e) =>
                       handleItemChange(index, itemIdx, e.target.value)
@@ -206,7 +206,7 @@ const VendorMenus = ({ formData, setFormData, onSave }) => {
           {/* <button className="btn btn-outline-secondary" onClick={addMenu}>
             Add Menu
           </button> */}
-          <button className="btn btn-primary" onClick={handleSaveMenus}>
+          <button className="btn btn-primary fs-14" onClick={handleSaveMenus}>
             Save Menus
           </button>
         </div>

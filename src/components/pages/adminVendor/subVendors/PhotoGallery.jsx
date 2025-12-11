@@ -83,11 +83,11 @@ const PhotoGallery = ({ images = [], onImagesChange, onSave }) => {
       {/* Upload Card */}
       <div className="card shadow-lg border-0 rounded-3 overflow-hidden">
         <div className="card-body p-4 p-md-5">
-          <h3 className="mb-4 text-center text-gradient">
+          <h4 className="mb-4 text-center text-gradient">
             <span className="primary-text">
               Upload your best photos to showcase your work
             </span>
-          </h3>
+          </h4>
 
           {/* Drag & Drop Area */}
           <div
@@ -98,19 +98,18 @@ const PhotoGallery = ({ images = [], onImagesChange, onSave }) => {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           >
-            <h5 className="mb-2">Drag & Drop images here</h5>
-            <p className="text-muted mb-3">or</p>
+            <p className="mb-2 fs-16">Drag & Drop images here</p>
+            <p className="text-muted mb-3 fs-14">or</p>
 
             <button
-              className="btn btn-primary px-4 rounded-pill fw-medium"
-              style={{
-                background: "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)",
-              }}
+              className="btn btn-primary px-4 rounded-pill fw-medium fs-14"
               onClick={handleButtonClick}
             >
               Browse Files
             </button>
-            <p className="small text-muted mt-2 mb-0">JPG, PNG up to 1MB</p>
+            <p className="small text-muted mt-2 mb-0 fw-bold fs-14">
+              JPG, PNG up to 1MB
+            </p>
 
             {/* {localImages.length >= 8 && (
               <div className="mt-3 text-danger">
@@ -159,7 +158,7 @@ const PhotoGallery = ({ images = [], onImagesChange, onSave }) => {
         </div>
       </div>
 
-      <button className="btn btn-primary mt-4" onClick={handleSave}>
+      <button className="btn btn-primary mt-4 fs-14 " onClick={handleSave}>
         Save Gallery
       </button>
 

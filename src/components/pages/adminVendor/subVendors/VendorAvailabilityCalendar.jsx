@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import dayjs from "dayjs";
 import "dayjs/locale/en";
-import { Calendar, Check, X, Clock } from "lucide-react";
+import { Check, X, Clock } from "lucide-react";
 
 // Helper to get all days from current month to December
 const getMonthsDays = (initialAvailableDates = []) => {
@@ -122,77 +122,105 @@ const VendorAvailabilityCalendar = ({
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   return (
-    <div className="container-fluid py-4 vendor-available-calendar">
+    <div className="container-fluid py-4">
       {/* Header with Statistics */}
       <div className="row mb-4">
         <div className="col-12">
-          <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4">
-            <div className="mb-3 mb-md-0">
-              <p className="text-muted fs-16 mb-0">
+          <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+            <div>
+              <h4 className="mb-1 fw-semibold">Availability Calendar</h4>
+              <p className="text-muted mb-0" style={{ fontSize: "0.9rem" }}>
                 Manage your availability for upcoming months
               </p>
             </div>
 
             {/* Stats Cards */}
-            <div className="d-flex gap-3">
+            <div className="d-flex gap-3 flex-wrap">
               <div className="text-center">
-                <div className="calender-stat-card available-card fs-6 px-3 py-2">
+                <div
+                  className="d-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded px-3 py-2"
+                  style={{ minWidth: "90px" }}
+                >
                   <Check size={16} className="me-1" />
-                  {stats.available}
+                  <span className="fw-bold">{stats.available}</span>
                 </div>
-                <small className="d-block text-muted mt-1">Available</small>
+                <small
+                  className="d-block text-muted mt-1"
+                  style={{ fontSize: "0.75rem" }}
+                >
+                  Available
+                </small>
               </div>
               <div className="text-center">
-                <div className="calender-stat-card unavailable-card fs-6 px-3 py-2">
+                <div
+                  className="d-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded px-3 py-2"
+                  style={{ minWidth: "90px" }}
+                >
                   <X size={16} className="me-1" />
-                  {stats.unavailable}
+                  <span className="fw-bold">{stats.unavailable}</span>
                 </div>
-                <small className="d-block text-muted mt-1">Unavailable</small>
+                <small
+                  className="d-block text-muted mt-1"
+                  style={{ fontSize: "0.75rem" }}
+                >
+                  Unavailable
+                </small>
               </div>
               <div className="text-center">
-                <div className="calender-stat-card total-card fs-6 px-3 py-2">
+                <div
+                  className="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded px-3 py-2"
+                  style={{ minWidth: "90px" }}
+                >
                   <Clock size={16} className="me-1" />
-                  {stats.total}
+                  <span className="fw-bold">{stats.total}</span>
                 </div>
-                <small className="d-block text-muted mt-1">Total Days</small>
+                <small
+                  className="d-block text-muted mt-1"
+                  style={{ fontSize: "0.75rem" }}
+                >
+                  Total Days
+                </small>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Calendar */}
-      <div className="row g-4">
+      {/* Calendar Grid */}
+      <div className="row g-3">
         {monthsDays.map((monthData, monthIndex) => (
           <div key={monthData.month} className="col-12 col-md-6 col-xl-4">
-            <div className="card h-100 shadow-sm border-0">
+            <div className="card h-100 shadow-sm border">
               {/* Month Header */}
-              <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h5 className="card-title mb-0">{monthData.monthName}</h5>
+              <div className="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
+                <h6 className="mb-0 fw-semibold">{monthData.monthName}</h6>
                 <div className="dropdown">
                   <button
-                    className="btn btn-sm btn-outline-light dropdown-toggle"
+                    className="btn btn-sm btn-outline-secondary dropdown-toggle"
                     type="button"
                     data-bs-toggle="dropdown"
+                    style={{ fontSize: "0.8rem", padding: "0.25rem 0.75rem" }}
                   >
                     Actions
                   </button>
-                  <ul className="dropdown-menu">
+                  <ul className="dropdown-menu dropdown-menu-end shadow-sm">
                     <li>
                       <button
-                        className="dropdown-item"
+                        className="dropdown-item d-flex align-items-center"
                         onClick={() => setMonthAvailability(monthIndex, true)}
+                        style={{ fontSize: "0.85rem" }}
                       >
-                        <Check size={16} className="me-2" />
+                        <Check size={14} className="me-2 text-success" />
                         Mark All Available
                       </button>
                     </li>
                     <li>
                       <button
-                        className="dropdown-item"
+                        className="dropdown-item d-flex align-items-center"
                         onClick={() => setMonthAvailability(monthIndex, false)}
+                        style={{ fontSize: "0.85rem" }}
                       >
-                        <X size={16} className="me-2" />
+                        <X size={14} className="me-2 text-danger" />
                         Mark All Unavailable
                       </button>
                     </li>
@@ -206,15 +234,20 @@ const VendorAvailabilityCalendar = ({
                 <div className="row g-1 mb-2">
                   {weekDays.map((day) => (
                     <div key={day} className="col">
-                      <div className="text-center py-2">
-                        <small className="fw-bold text-muted">{day}</small>
+                      <div className="text-center">
+                        <small
+                          className="fw-semibold text-secondary"
+                          style={{ fontSize: "0.7rem" }}
+                        >
+                          {day}
+                        </small>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Days grid */}
-                <div className="calendar-grid">
+                {/* Days Grid */}
+                <div>
                   {Array.from(
                     { length: Math.ceil(monthData.days.length / 7) },
                     (_, weekIndex) => (
@@ -235,25 +268,46 @@ const VendorAvailabilityCalendar = ({
                                       )
                                     }
                                     disabled={day.isPast}
-                                    className={`btn w-100 p-2 border-0 position-relative ${
+                                    className={`btn w-100 p-0 border d-flex align-items-center justify-content-center fw-semibold transition-all ${
                                       day.isPast
-                                        ? "btn-light text-muted"
+                                        ? "bg-light text-muted border-light"
                                         : day.available
-                                        ? "btn-success"
-                                        : "btn-danger"
-                                    } ${day.isToday ? "ring-today" : ""}`}
+                                        ? "btn-success border-success"
+                                        : "btn-danger border-danger"
+                                    } ${
+                                      day.isToday
+                                        ? "border-3 border-primary"
+                                        : ""
+                                    }`}
                                     style={{
-                                      minHeight: "40px",
-                                      fontSize: "0.875rem",
+                                      height: "40px",
+                                      width: "100%",
+                                      fontSize: "0.85rem",
                                       cursor: day.isPast
                                         ? "not-allowed"
                                         : "pointer",
+                                      opacity: day.isPast ? 0.5 : 1,
+                                      position: "relative",
                                     }}
                                   >
                                     {day.dayNumber}
+                                    {day.isToday && (
+                                      <span
+                                        className="position-absolute bottom-0 start-50 translate-middle-x"
+                                        style={{
+                                          width: "4px",
+                                          height: "4px",
+                                          backgroundColor: "currentColor",
+                                          borderRadius: "50%",
+                                          marginBottom: "2px",
+                                        }}
+                                      ></span>
+                                    )}
                                   </button>
                                 ) : (
-                                  <div style={{ minHeight: "40px" }}></div>
+                                  <div
+                                    style={{ height: "40px", width: "100%" }}
+                                  ></div>
                                 )}
                               </div>
                             );

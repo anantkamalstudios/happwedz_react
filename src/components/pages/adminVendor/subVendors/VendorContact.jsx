@@ -26,43 +26,51 @@ const VendorContact = ({ formData, setFormData, onSave }) => {
   return (
     <div className="my-5">
       <div className="p-3 border rounded bg-white">
-        <h6 className="mb-3 fw-bold">Contact Details</h6>
+        <h4 className="mb-3 fw-bold">Contact Details</h4>
         <div className="row">
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Contact Person *</label>
+            <label className="form-label fw-semibold fs-16">
+              Contact Person *
+            </label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={contact.contactName}
               onChange={(e) => handleInputChange("contactName", e.target.value)}
               placeholder="Enter contact person name"
             />
           </div>
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Primary Phone *</label>
+            <label className="form-label fw-semibold fs-16">
+              Primary Phone *
+            </label>
             <input
               type="tel"
-              className="form-control"
+              className="form-control fs-14"
               value={contact.phone}
               onChange={(e) => handleInputChange("phone", e.target.value)}
               placeholder="Enter primary phone number"
             />
           </div>
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Alternative Phone</label>
+            <label className="form-label fw-semibold fs-16">
+              Alternative Phone
+            </label>
             <input
               type="tel"
-              className="form-control"
+              className="form-control fs-14"
               value={contact.altPhone}
               onChange={(e) => handleInputChange("altPhone", e.target.value)}
               placeholder="Enter alternative phone number"
             />
           </div>
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">WhatsApp Number</label>
+            <label className="form-label fw-semibold fs-16">
+              WhatsApp Number
+            </label>
             <input
               type="tel"
-              className="form-control"
+              className="form-control fs-14"
               value={contact.whatsappNumber}
               onChange={(e) =>
                 handleInputChange("whatsappNumber", e.target.value)
@@ -71,20 +79,20 @@ const VendorContact = ({ formData, setFormData, onSave }) => {
             />
           </div>
           {/* <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Email *</label>
+            <label className="form-label fw-semibold fs-16">Email *</label>
             <input
               type="email"
-              className="form-control"
+              className="form-control fs-14"
               value={contact.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
               placeholder="Enter email address"
             />
           </div> */}
           {/* <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Inquiry Email</label>
+            <label className="form-label fw-semibold fs-16">Inquiry Email</label>
             <input
               type="email"
-              className="form-control"
+              className="form-control fs-14"
               value={contact.inquiryEmail}
               onChange={(e) =>
                 handleInputChange("inquiryEmail", e.target.value)
@@ -93,17 +101,17 @@ const VendorContact = ({ formData, setFormData, onSave }) => {
             />
           </div> */}
           {/* <div className="col-12 mb-3">
-            <label className="form-label fw-semibold">Website</label>
+            <label className="form-label fw-semibold fs-16">Website</label>
             <input
               type="url"
-              className="form-control"
+              className="form-control fs-14"
               value={contact.website}
               onChange={(e) => handleInputChange("website", e.target.value)}
               placeholder="https://your-website.com"
             />
           </div> */}
         </div>
-        <button className="btn btn-primary mt-2" onClick={onSave}>
+        <button className="btn btn-primary mt-2 fs-14" onClick={onSave}>
           Save Contact Details
         </button>
       </div>

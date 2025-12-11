@@ -4,8 +4,7 @@ import { useSelector } from "react-redux";
 import ReviewsDashboard from "./subVendors/ReviewsDashboard";
 import Reviews from "./subVendors/Reviews";
 import ReviewsCollector from "./subVendors/ReviewsCollector";
-
-const API_BASE_URL = "https://happywedz.com/api";
+import axiosInstance from "../../../services/api/axiosInstance";
 
 const ReviewsPage = () => {
   const [activeSection, setActiveSection] = useState("reviews");
@@ -30,11 +29,10 @@ const ReviewsPage = () => {
 
   const fetchReviews = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/reviews/my-reviews`, {
+      const res = await axiosInstance.get("/reviews/my-reviews", {
         headers: { Authorization: `Bearer ${vendorToken}` },
       });
-      if (!res.ok) throw new Error("Failed to fetch reviews");
-      const data = await res.json();
+      const data = res.data;
 
       const formattedReviews = data.reviews.map((r) => ({
         id: r.id,
@@ -64,11 +62,10 @@ const ReviewsPage = () => {
   const fetchStats = async () => {
     try {
       if (!vendor?.id) return;
-      const res = await fetch(
-        `${API_BASE_URL}/reviews/vendor/${vendor.id}/average`
+      const res = await axiosInstance.get(
+        `/reviews/vendor/${vendor.id}/average`
       );
-      if (!res.ok) throw new Error("Failed to fetch stats");
-      const data = await res.json();
+      const data = res.data;
 
       setStats({
         averageRating: parseFloat(data.averageRating) || 0,
@@ -90,15 +87,16 @@ const ReviewsPage = () => {
 
   const handleReplySubmit = async (reviewId, replyText) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/reviews/reply/${reviewId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${vendorToken}`,
-        },
-        body: JSON.stringify({ vendor_reply: replyText }),
-      });
-      if (!res.ok) throw new Error("Failed to submit reply");
+      await axiosInstance.put(
+        `/reviews/reply/${reviewId}`,
+        { vendor_reply: replyText },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${vendorToken}`,
+          },
+        }
+      );
 
       setReviews((prev) =>
         prev.map((rev) =>
@@ -116,13 +114,11 @@ const ReviewsPage = () => {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/reviews/${reviewId}`, {
-        method: "DELETE",
+      await axiosInstance.delete(`/reviews/${reviewId}`, {
         headers: {
           Authorization: `Bearer ${vendorToken}`,
         },
       });
-      if (!res.ok) throw new Error("Failed to delete review");
 
       setReviews((prev) => prev.filter((rev) => rev.id !== reviewId));
     } catch (err) {

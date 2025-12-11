@@ -97,10 +97,10 @@ const VideoGallery = ({ videos: initialVideos = [], onVideosChange }) => {
                   >
                     <Video size={35} color="white" />
                   </div>
-                  <h2 className="fw-bold mb-2" style={{ color: "#2d3748" }}>
+                  <h4 className="fw-bold mb-2" style={{ color: "#2d3748" }}>
                     Video Gallery
-                  </h2>
-                  <p className="text-muted mb-0">
+                  </h4>
+                  <p className="text-muted mb-0 fs-16">
                     Add and manage your video collection
                   </p>
                 </div>
@@ -114,7 +114,7 @@ const VideoGallery = ({ videos: initialVideos = [], onVideosChange }) => {
                       value={newVideoUrl}
                       onChange={(e) => setNewVideoUrl(e.target.value)}
                       onKeyPress={handleKeyPress}
-                      className="form-control form-control-lg"
+                      className="form-control form-control-lg fs-14"
                       style={{
                         borderRadius: "12px",
                         border: "2px solid #e2e8f0",
@@ -127,7 +127,7 @@ const VideoGallery = ({ videos: initialVideos = [], onVideosChange }) => {
                     <button
                       onClick={handleAddUrl}
                       disabled={!newVideoUrl.trim()}
-                      className="btn btn-lg d-flex align-items-center gap-2"
+                      className="btn btn-lg d-flex align-items-center gap-2 fs-14"
                       style={{
                         background: "#ed1173",
                         color: "white",
@@ -280,10 +280,13 @@ const VideoGallery = ({ videos: initialVideos = [], onVideosChange }) => {
                   >
                     <Video size={40} color="#a0aec0" />
                   </div>
-                  <h4 className="fw-bold mb-2" style={{ color: "#4a5568" }}>
+                  <h4
+                    className="fw-bold mb-2 fs-16"
+                    style={{ color: "#4a5568" }}
+                  >
                     No Videos Yet
                   </h4>
-                  <p className="text-muted mb-0">
+                  <p className="text-muted mb-0 fs-14">
                     Start adding video URLs to build your gallery
                   </p>
                 </div>

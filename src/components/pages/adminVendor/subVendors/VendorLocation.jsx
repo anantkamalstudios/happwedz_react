@@ -13,7 +13,8 @@ L.Icon.Default.mergeOptions({
 });
 
 const VendorLocation = ({ formData, setFormData, onSave }) => {
-  const city = (formData.location && formData.location.city) || formData.city || "";
+  const city =
+    (formData.location && formData.location.city) || formData.city || "";
   const location = formData.location || {
     address: "",
     state: "",
@@ -31,10 +32,11 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
   );
   const [cities, setCities] = useState([]);
   const [cityInput, setCityInput] = useState(city || "");
-  
+
   // Keep city input in sync when formData updates from API or navigation
   useEffect(() => {
-    const nextCity = (formData.location && formData.location.city) || formData.city || "";
+    const nextCity =
+      (formData.location && formData.location.city) || formData.city || "";
     setCityInput(nextCity);
   }, [formData.location?.city, formData.city]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -98,7 +100,9 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
         handleInputChange("longitude", String(lng));
       },
     });
-    return markerPos ? <Marker position={[markerPos.lat, markerPos.lng]} /> : null;
+    return markerPos ? (
+      <Marker position={[markerPos.lat, markerPos.lng]} />
+    ) : null;
   };
 
   // Keep marker in sync if user types coords manually
@@ -116,27 +120,25 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
   return (
     <div className="my-5">
       <div className="p-3 border rounded bg-white">
-        <h6 className="mb-3 fw-bold">Location & Service Areas</h6>
+        <h4 className="mb-3 fw-bold">Location & Service Areas</h4>
         <div className="row">
           {/* Address Line 1 */}
           <div className="col-12 mb-3">
-            <label className="form-label fw-semibold">Address *</label>
+            <label className="form-label fs-16 fw-semibold">Address *</label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={location.address}
-              onChange={(e) =>
-                handleInputChange("address", e.target.value)
-              }
+              onChange={(e) => handleInputChange("address", e.target.value)}
               placeholder="Enter address"
             />
           </div>
 
           {/* Country Dropdown */}
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Country *</label>
+            <label className="form-label fs-16 fw-semibold">Country *</label>
             <select
-              className="form-select"
+              className="form-select fs-14"
               value={selectedCountry}
               onChange={(e) => {
                 setSelectedCountry(e.target.value);
@@ -158,10 +160,10 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
 
           {/* City Autocomplete */}
           <div className="col-md-6 mb-3 position-relative">
-            <label className="form-label fw-semibold">City *</label>
+            <label className="form-label fs-16 fw-semibold">City *</label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={cityInput}
               onChange={(e) => {
                 setCityInput(e.target.value);
@@ -197,10 +199,10 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
 
           {/* State */}
           <div className="col-md-4 mb-3">
-            <label className="form-label fw-semibold">State *</label>
+            <label className="form-label fs-16 fw-semibold">State *</label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={location.state}
               onChange={(e) => handleInputChange("state", e.target.value)}
               placeholder="Enter state"
@@ -209,10 +211,10 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
 
           {/* Pincode */}
           <div className="col-md-4 mb-3">
-            <label className="form-label fw-semibold">Pincode *</label>
+            <label className="form-label fs-16 fw-semibold">Pincode *</label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={location.pincode}
               onChange={(e) => handleInputChange("pincode", e.target.value)}
               placeholder="Enter pincode"
@@ -221,10 +223,10 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
 
           {/* Landmark */}
           <div className="col-md-4 mb-3">
-            <label className="form-label fw-semibold">Landmark</label>
+            <label className="form-label fs-16 fw-semibold">Landmark</label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={location.landmark}
               onChange={(e) => handleInputChange("landmark", e.target.value)}
               placeholder="Enter nearby landmark"
@@ -233,11 +235,11 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
 
           {/* Latitude */}
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Latitude</label>
+            <label className="form-label fs-16 fw-semibold">Latitude</label>
             <input
               type="number"
               step="any"
-              className="form-control"
+              className="form-control fs-14"
               value={location.latitude}
               onChange={(e) => handleInputChange("latitude", e.target.value)}
               placeholder="Enter latitude"
@@ -246,24 +248,22 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
 
           {/* Longitude */}
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Longitude</label>
+            <label className="form-label fs-16 fw-semibold">Longitude</label>
             <input
               type="number"
               step="any"
-              className="form-control"
+              className="form-control fs-14"
               value={location.longitude}
               onChange={(e) => handleInputChange("longitude", e.target.value)}
               placeholder="Enter longitude"
             />
           </div>
           <div className="col-12 mb-2">
-            <div className="fw-semibold mb-2">Pick on Map</div>
+            <div className="fw-semibold mb-2 fs-16">Pick on Map</div>
             <div style={{ height: 320 }}>
               <MapContainer
                 center={
-                  markerPos
-                    ? [markerPos.lat, markerPos.lng]
-                    : DEFAULT_CENTER
+                  markerPos ? [markerPos.lat, markerPos.lng] : DEFAULT_CENTER
                 }
                 zoom={markerPos ? SELECTED_ZOOM : DEFAULT_ZOOM}
                 scrollWheelZoom={true}
@@ -278,7 +278,7 @@ const VendorLocation = ({ formData, setFormData, onSave }) => {
             </div>
           </div>
         </div>
-        <button className="btn btn-primary mt-2" onClick={onSave}>
+        <button className="btn btn-primary mt-2 fs-14" onClick={onSave}>
           Save Location Details
         </button>
       </div>

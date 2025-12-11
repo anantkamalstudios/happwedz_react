@@ -68,7 +68,7 @@ const VendorAvailability = ({
   return (
     <div className="my-5">
       <div className="p-3 border rounded bg-white">
-        <h6 className="mb-3 fw-bold">Availability & Slots</h6>
+        <h4 className="mb-3 fw-bold">Availability & Slots</h4>
 
         {/* Calendar Section */}
         <div className="row">
@@ -78,7 +78,10 @@ const VendorAvailability = ({
           />
         </div>
 
-        <button className="btn btn-primary mt-2" onClick={handleSaveAndShow}>
+        <button
+          className="btn btn-primary mt-2 fs-14"
+          onClick={handleSaveAndShow}
+        >
           Save Availability Details
         </button>
       </div>

@@ -26,28 +26,30 @@ const LocationForm = () => {
         <Row className="mb-3">
           <Col md={6}>
             <Form.Group>
-              <Form.Label className="fw-semibold">Pin Code *</Form.Label>
+              <Form.Label className="fw-semibold fs-16">Pin Code *</Form.Label>
               <Form.Control
                 type="text"
                 name="pincode"
                 placeholder="Enter pin code"
                 value={formData.pincode}
                 onChange={handleChange}
-                className="py-2"
+                className="py-2 fs-14"
               />
             </Form.Group>
           </Col>
 
           <Col md={6}>
             <Form.Group>
-              <Form.Label className="fw-semibold">City / Town *</Form.Label>
+              <Form.Label className="fw-semibold fs-16">
+                City / Town *
+              </Form.Label>
               <Form.Control
                 type="text"
                 name="city"
                 placeholder="Enter city or town"
                 value={formData.city}
                 onChange={handleChange}
-                className="py-2"
+                className="py-2 fs-14"
               />
             </Form.Group>
           </Col>
@@ -56,28 +58,28 @@ const LocationForm = () => {
         <Row className="mb-3">
           <Col md={6}>
             <Form.Group>
-              <Form.Label className="fw-semibold">Country *</Form.Label>
+              <Form.Label className="fw-semibold fs-16">Country *</Form.Label>
               <Form.Control
                 type="text"
                 name="country"
                 placeholder="Enter country"
                 value={formData.country}
                 onChange={handleChange}
-                className="py-2"
+                className="py-2 fs-14"
               />
             </Form.Group>
           </Col>
 
           <Col md={6}>
             <Form.Group>
-              <Form.Label className="fw-semibold">Address *</Form.Label>
+              <Form.Label className="fw-semibold fs-16">Address *</Form.Label>
               <Form.Control
                 type="text"
                 name="address"
                 placeholder="Enter full address"
                 value={formData.address}
                 onChange={handleChange}
-                className="py-2"
+                className="py-2 fs-14"
               />
             </Form.Group>
           </Col>
@@ -87,7 +89,7 @@ const LocationForm = () => {
       {/* Map Section */}
       {fullAddress && (
         <div className="mt-4">
-          <h6 className="fw-semibold mb-3">Map Preview</h6>
+          <h6 className="fw-semibold fs-16 mb-3">Map Preview</h6>
           <div
             className="border rounded overflow-hidden"
             style={{ height: "350px" }}
@@ -116,7 +118,7 @@ const LocationForm = () => {
           </div>
         </div>
       )}
-      <button className="btn btn-primary mt-2 folder-item">Submit</button>
+      <button className="btn btn-primary mt-2 folder-item fs-14">Submit</button>
     </div>
   );
 };

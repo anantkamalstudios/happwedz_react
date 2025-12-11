@@ -317,13 +317,13 @@ const BusinessDetails = ({ formData, setFormData }) => {
   return (
     <div className="">
       <div className="p-3 border rounded bg-white">
-        <h6 className="mb-3 fw-bold">Bussiness Details</h6>
+        <h4 className="mb-3 fw-bold">Bussiness Details</h4>
         <div className="mb-3">
-          <label className="form-label">Profile Image</label>
+          <label className="form-label fs-16">Profile Image</label>
           <div className="d-flex align-items-center gap-3">
             <div style={{ width: 96, height: 96, flex: "0 0 96px" }}>
               {profileImagePreview &&
-              typeof profileImagePreview === "string" ? (
+                typeof profileImagePreview === "string" ? (
                 <img
                   src={profileImagePreview}
                   alt="Profile preview"
@@ -393,11 +393,11 @@ const BusinessDetails = ({ formData, setFormData }) => {
           </div>
         </div>
         <div className="mb-3">
-          <label className="form-label">Business Name *</label>
+          <label className="form-label fs-16">Business Name *</label>
           <input
             name="businessName"
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             placeholder="Enter business name"
             value={formData.attributes?.businessName || ""}
             onChange={handleAttributeChange}
@@ -409,11 +409,11 @@ const BusinessDetails = ({ formData, setFormData }) => {
           )}
         </div>
         <div className="mb-3">
-          <label className="form-label">Email *</label>
+          <label className="form-label fs-16">Email *</label>
           <input
             name="email"
             type="email"
-            className="form-control"
+            className="form-control fs-14"
             placeholder="Enter email"
             value={formData.attributes?.email || ""}
             onChange={handleAttributeChange}
@@ -423,11 +423,11 @@ const BusinessDetails = ({ formData, setFormData }) => {
           )}
         </div>
         <div className="mb-3">
-          <label className="form-label">Mobile Number *</label>
+          <label className="form-label fs-16">Mobile Number *</label>
           <input
             name="phone"
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             placeholder="Enter phone number"
             value={formData.attributes?.phone || ""}
             onChange={handleAttributeChange}
@@ -437,30 +437,30 @@ const BusinessDetails = ({ formData, setFormData }) => {
           )}
         </div>
         {/* <div className="mb-3">
-          <label className="form-label">Mobile Number</label>
+          <label className="form-label fs-16">Mobile Number</label>
           <input
             name="mobile"
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             placeholder="Enter mobile number"
             value={formData.attributes?.mobile || ""}
             onChange={handleAttributeChange}
           />
         </div> */}
         {/* <div className="mb-3">
-          <label className="form-label">Fax</label>
+          <label className="form-label fs-16">Fax</label>
           <input
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             placeholder="Enter fax number"
           />
         </div> */}
         <div className="mb-3">
-          <label className="form-label">City</label>
+          <label className="form-label fs-16">City</label>
           <input
             name="city"
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             placeholder="Enter city"
             value={formData.attributes?.city || ""}
             onChange={handleAttributeChange}
@@ -470,33 +470,33 @@ const BusinessDetails = ({ formData, setFormData }) => {
           )}
         </div>
         <div className="mb-3">
-          <label className="form-label">State</label>
+          <label className="form-label fs-16">State</label>
           <input
             name="state"
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             placeholder="Enter state"
             value={formData.attributes?.state || ""}
             onChange={handleAttributeChange}
           />
         </div>
         <div className="mb-3">
-          <label className="form-label">Zip</label>
+          <label className="form-label fs-16">Zip</label>
           <input
             name="zip"
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             placeholder="Enter zip"
             value={formData.attributes?.zip || ""}
             onChange={handleAttributeChange}
           />
         </div>
         <div>
-          <label className="form-label">Website</label>
+          <label className="form-label fs-16">Website</label>
           <input
             name="website"
             type="url"
-            className="form-control"
+            className="form-control fs-14"
             placeholder="Enter website URL"
             value={formData.attributes?.website || ""}
             onChange={handleAttributeChange}
@@ -507,7 +507,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
           <input
             name="vendor_type_id"
             type="hidden"
-            className="form-control"
+            className="form-control fs-14"
             value={vendor?.vendor_type_id || ""}
             readOnly
           />
@@ -525,33 +525,33 @@ const BusinessDetails = ({ formData, setFormData }) => {
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Years in Business</label>
+          <label className="form-label fs-16">Years in Business</label>
           <input
             name="years_in_business"
             type="number"
-            className="form-control"
+            className="form-control fs-14"
             placeholder="e.g. 5"
             value={formData.attributes?.years_in_business || ""}
             onChange={handleAttributeChange}
           />
         </div>
         <div className="mb-3">
-          <label className="form-label">First Name</label>
+          <label className="form-label fs-16">First Name</label>
           <input
             name="firstName"
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             placeholder="First name"
             value={formData.attributes?.firstName || ""}
             onChange={handleAttributeChange}
           />
         </div>
         <div className="mb-3">
-          <label className="form-label">Last Name</label>
+          <label className="form-label fs-16">Last Name</label>
           <input
             name="lastName"
             type="text"
-            className="form-control"
+            className="form-control fs-14"
             placeholder="Last name"
             value={formData.attributes?.lastName || ""}
             onChange={handleAttributeChange}
@@ -562,7 +562,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
           {!showPasswordFields ? (
             <button
               type="button"
-              className="btn btn-outline-secondary"
+              className="btn btn-outline-secondary fs-14"
               onClick={() => {
                 setShowPasswordFields(true);
                 setError("");
@@ -574,10 +574,10 @@ const BusinessDetails = ({ formData, setFormData }) => {
           ) : (
             <div>
               <div className="mb-3">
-                <label className="form-label">Current Password</label>
+                <label className="form-label fs-16">Current Password</label>
                 <input
                   type={showPasswords ? "text" : "password"}
-                  className="form-control"
+                  className="form-control fs-14"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                 />
@@ -588,10 +588,10 @@ const BusinessDetails = ({ formData, setFormData }) => {
                 )}
               </div>
               <div className="mb-3">
-                <label className="form-label">New Password</label>
+                <label className="form-label fs-16">New Password</label>
                 <input
                   type={showPasswords ? "text" : "password"}
-                  className="form-control"
+                  className="form-control fs-14"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                 />
@@ -608,10 +608,10 @@ const BusinessDetails = ({ formData, setFormData }) => {
                 ) : null}
               </div>
               <div className="mb-3">
-                <label className="form-label">Confirm New Password</label>
+                <label className="form-label fs-16">Confirm New Password</label>
                 <input
                   type={showPasswords ? "text" : "password"}
-                  className="form-control"
+                  className="form-control fs-14"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
@@ -621,22 +621,27 @@ const BusinessDetails = ({ formData, setFormData }) => {
                   </div>
                 )}
               </div>
-              <div className="d-flex gap-2">
-                <div className="me-auto d-flex align-items-center">
+              <div className="d-flex flex-column flex-md-row gap-2 align-items-md-center mt-2">
+                <div className="d-flex align-items-center mb-2 mb-md-0">
                   <input
                     id="showPasswords"
                     type="checkbox"
                     className="form-check-input me-2"
                     checked={showPasswords}
                     onChange={(e) => setShowPasswords(e.target.checked)}
+                    style={{ verticalAlign: "middle" }}
                   />
-                  <label htmlFor="showPasswords" className="form-check-label">
+                  <label
+                    htmlFor="showPasswords"
+                    className="form-check-label mb-0 fs-14"
+                  >
                     Show passwords
                   </label>
                 </div>
                 <button
                   type="button"
-                  className="btn btn-primary"
+                  className="btn btn-sm btn-primary fs-14"
+                  style={{ minWidth: 120 }}
                   onClick={handleChangePassword}
                   disabled={changePwdLoading}
                 >
@@ -644,7 +649,8 @@ const BusinessDetails = ({ formData, setFormData }) => {
                 </button>
                 <button
                   type="button"
-                  className="btn btn-outline-secondary"
+                  className="btn btn-sm btn-outline-secondary fs-14"
+                  style={{ minWidth: 100 }}
                   onClick={() => {
                     setShowPasswordFields(false);
                     setCurrentPassword("");
@@ -663,7 +669,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
       {error && <div className="alert alert-danger mt-2">{error}</div>}
       {success && <div className="alert alert-success mt-2">{success}</div>}
       <button
-        className="btn btn-primary mt-2 folder-item"
+        className="btn btn-primary mt-2 folder-item fs-14"
         onClick={handleSubmitRegister}
         disabled={submitting}
       >

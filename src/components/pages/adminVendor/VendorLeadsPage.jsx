@@ -4,8 +4,7 @@ import { useSelector } from "react-redux";
 import { useToast } from "../../layouts/toasts/Toast";
 import Swal from "sweetalert2";
 import QuotationModal from "./QuotationModal";
-
-const API_BASE_URL = "https://happywedz.com";
+import axiosInstance from "../../../services/api/axiosInstance";
 
 export default function VendorLeadsPage() {
   const [rows, setRows] = useState([]);
@@ -98,16 +97,14 @@ export default function VendorLeadsPage() {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(
-          `${API_BASE_URL}/api/request-pricing/vendor/dashboard`,
+        const response = await axiosInstance.get(
+          "/request-pricing/vendor/dashboard",
           {
             headers: { Authorization: `Bearer ${vendorToken}` },
           }
         );
 
-        if (!response.ok) throw new Error("Failed to fetch leads.");
-
-        const data = await response.json();
+        const data = response.data || {};
         let items = [];
         if (data && Array.isArray(data.requests)) {
           items = data.requests;
