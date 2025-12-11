@@ -125,6 +125,12 @@ const Detailed = () => {
           name: `Space: ${capitalizeWords(attributes.space)}`,
         });
       }
+      if (attributes.start_venue) {
+        amenities.push({
+          icon: <FaStar />,
+          name: `Start Venue: ${capitalizeWords(attributes.start_venue)}`,
+        });
+      }
 
       if (attributes.outside_alcohol) {
         amenities.push({
@@ -1007,9 +1013,6 @@ const Detailed = () => {
             <div id="reviews" className="py-2">
               <ReviewSection vendor={venueData || activeVendor} />
             </div>
-
-
-
 
             <div id="map" className="mt-4 pt-3 border-top">
               <div

@@ -185,9 +185,6 @@ const Storefront = ({ setCompletion }) => {
                     }
                   : {},
                 city: actualData.attributes.city || "",
-                // latitude: actualData.attributes.latitude || "",
-                // longitude: actualData.attributes.longitude || "",
-                // address:actualData.attributes.address || "",
 
                 location: actualData.attributes.location
                   ? {
@@ -213,14 +210,14 @@ const Storefront = ({ setCompletion }) => {
                   max: "",
                 },
                 PriceRange: actualData.attributes.PriceRange || "",
-                priceUnit: actualData.attributes.price_unit || "",
-                currency: actualData.attributes.currency || "INR",
+
                 capacity: actualData.attributes.capacity || {
                   min: "",
                   max: "",
                 },
-                indoorOutdoor: actualData.attributes.indoor_outdoor || "",
-                alcoholPolicy: actualData.attributes.alcohol_policy || "",
+                // indoorOutdoor: actualData.attributes.indoor_outdoor || "",
+                // alcoholPolicy: actualData.attributes.alcohol_policy || "",
+                outside_alcohol: actualData.attributes.outside_alcohol || "",
                 cateringPolicy: actualData.attributes.catering_policy || "",
                 rooms: actualData.attributes.rooms || "",
                 cancellationPolicy:
@@ -230,22 +227,22 @@ const Storefront = ({ setCompletion }) => {
                 payment_terms: actualData.attributes.payment_terms || "",
                 parking: actualData.attributes.parking || "",
 
-                tnc: actualData.attributes.tnc || "",
+                // tnc: actualData.attributes.tnc || "",
 
-                isFeatureAvailable: actualData.attributes.is_feature_available,
-                within24HrAvailable:
-                  actualData.attributes.within_24hr_available,
-                djPolicy: actualData.attributes.dj_policy || "",
-                primaryCTA: actualData.attributes.primary_cta || "enquire",
-                sortWeight: actualData.attributes.sort_weight || "",
+                // isFeatureAvailable: actualData.attributes.is_feature_available,
+                // within24HrAvailable:
+                //   actualData.attributes.within_24hr_available,
+                // djPolicy: actualData.attributes.dj_policy || "",
+                // primaryCTA: actualData.attributes.primary_cta || "enquire",
+                // sortWeight: actualData.attributes.sort_weight || "",
                 timing: actualData.attributes.timing || {
                   open: "",
                   close: "",
                   lastEntry: "",
                 },
-                ctaUrl: actualData.attributes.cta_url || "",
-                ctaPhone: actualData.attributes.cta_phone || "",
-                autoReply: actualData.attributes.auto_reply || "",
+                // ctaUrl: actualData.attributes.cta_url || "",
+                // ctaPhone: actualData.attributes.cta_phone || "",
+                // autoReply: actualData.attributes.auto_reply || "",
 
                 // New attributes from Detailed.jsx
                 veg_price: actualData.attributes.veg_price || "",
@@ -267,6 +264,9 @@ const Storefront = ({ setCompletion }) => {
                 delivery_time: actualData.attributes.delivery_time || "",
                 decorPolicy: actualData.attributes.decor_policy || "",
                 area: actualData.attributes.area || "",
+                start_venue: actualData.attributes.start_venue || "",
+                space: actualData.attributes.space || "",
+                dJ_policy: actualData.attributes.dJ_policy || "",
                 video: actualData.attributes.video || [],
 
                 attributes: {
@@ -372,18 +372,18 @@ const Storefront = ({ setCompletion }) => {
 
   const buildAttributes = () => {
     const attrs = {
-      tnc: formData.tnc,
+      // tnc: formData.tnc,
       name:
         formData.attributes?.businessName ||
         formData.attributes?.name ||
         formData.attributes?.Name ||
         "",
       slug: formData.attributes?.slug || "",
-      tags: formData.tags || [],
+      // tags: formData.tags || [],
       deals: formData.deals || [],
       email: formData.contact?.email || "",
       rooms: formData.rooms ? Number(formData.rooms) : undefined,
-      badges: formData.badges || {},
+      // badges: formData.badges || {},
       rating: formData.rating ? Number(formData.rating) : undefined,
       contact: {
         name: formData.contact?.contactName || "",
@@ -394,9 +394,9 @@ const Storefront = ({ setCompletion }) => {
         email: formData.contact?.email || "",
         // contactName: formData.contact?.contactName || "",
       },
-      cta_url: formData.ctaUrl || "",
-      tagline: formData.attributes?.tagline || "",
-      currency: formData.currency || "INR",
+      // cta_url: formData.ctaUrl || "",
+      // tagline: formData.attributes?.tagline || "",
+      // currency: formData.currency || "INR",
       city: formData.location?.city || "",
       latitude: formData.location?.latitude || "",
       longitude: formData.location?.longitude || "",
@@ -408,14 +408,14 @@ const Storefront = ({ setCompletion }) => {
         country: formData.location?.country || "India",
         pincode: formData.location?.pincode || "",
       },
-      packages: formData.packages || [],
-      subtitle: formData.attributes?.subtitle || "",
-      cta_phone: formData.ctaPhone || "",
-      dj_policy: formData.djPolicy || "",
-      auto_reply: formData.autoReply || "",
-      price_unit: formData.priceUnit || "",
+      // packages: formData.packages || [],
+      // subtitle: formData.attributes?.subtitle || "",
+      // cta_phone: formData.ctaPhone || "",
+      // dj_policy: formData.djPolicy || "",
+      // auto_reply: formData.autoReply || "",
+      // price_unit: formData.priceUnit || "",
       parking: formData.parking || "",
-      deco_policy: formData.decoPolicy || "",
+      // deco_policy: formData.decoPolicy || "",
       about_us: formData.attributes?.about_us || "",
       is_featured: !!formData.isFeatured,
       price_range: formData.priceRange || { min: "", max: "" },
@@ -423,18 +423,18 @@ const Storefront = ({ setCompletion }) => {
         formData.priceRange?.min && formData.priceRange?.max
           ? `${formData.priceRange.min} - ${formData.priceRange.max}`
           : formData.PriceRange || "",
-      primary_cta: formData.primaryCTA || "enquire",
-      sort_weight: formData.sortWeight
-        ? Number(formData.sortWeight)
-        : undefined,
-      timing_open: formData.timing?.open || "",
+      // primary_cta: formData.primaryCTA || "enquire",
+      // sort_weight: formData.sortWeight
+      //   ? Number(formData.sortWeight)
+      //   : undefined,
+      // timing_open: formData.timing?.open || "",
       capacity_max: formData.capacity?.max
         ? Number(formData.capacity?.max)
         : undefined,
       capacity_min: formData.capacity?.min
         ? Number(formData.capacity?.min)
         : undefined,
-      timing_close: formData.timing?.close || "",
+      // timing_close: formData.timing?.close || "",
 
       payment_terms: formData.payment_terms || "",
 
@@ -443,7 +443,8 @@ const Storefront = ({ setCompletion }) => {
         ? Number(formData.reviewsCount)
         : undefined,
       alcohol_policy: formData.alcoholPolicy || "",
-      blackout_dates: formData.blackoutDates || [],
+      outside_alcohol: formData.outside_alcohol || "",
+      // blackout_dates: formData.blackoutDates || [],
       indoor_outdoor: formData.indoorOutdoor || "",
       starting_price: formData.startingPrice
         ? Number(formData.startingPrice)
@@ -457,22 +458,22 @@ const Storefront = ({ setCompletion }) => {
           }))
         : [],
       catering_policy: formData.cateringPolicy || "",
-      hall_types_note: formData.hallTypesNote || "",
-      timing_last_entry: formData.timing?.lastEntry || "",
+      // hall_types_note: formData.hallTypesNote || "",
+      // timing_last_entry: formData.timing?.lastEntry || "",
       cancellation_policy: formData.cancellationPolicy || "",
-      is_feature_available:
-        (formData.isFeatureAvailable || "No").toString().toLowerCase() ===
-        "yes",
-      within_24hr_available:
-        (formData.within24HrAvailable || "No").toString().toLowerCase() ===
-        "yes",
+      // is_feature_available:
+      //   (formData.isFeatureAvailable || "No").toString().toLowerCase() ===
+      //   "yes",
+      // within_24hr_available:
+      //   (formData.within24HrAvailable || "No").toString().toLowerCase() ===
+      //   "yes",
       // New attributes from Detailed.jsx
-      vendor_name:
-        formData.attributes?.vendor_name ||
-        formData.attributes?.Name ||
-        formData.attributes?.businessName ||
-        "",
-      vendor_type: formData.vendorTypeName || vendorTypeName || "",
+      // vendor_name:
+      //   formData.attributes?.vendor_name ||
+      //   formData.attributes?.Name ||
+      //   formData.attributes?.businessName ||
+      //   "",
+      // vendor_type: formData.vendorTypeName || vendorTypeName || "",
       veg_price: formData.veg_price || "",
       non_veg_price: formData.non_veg_price || "",
       photo_package_price: formData.photo_package_price || "",
@@ -514,6 +515,9 @@ const Storefront = ({ setCompletion }) => {
         formData.preferredVendors ||
         formData.preferred_vendor_ids ||
         [],
+      start_venue: formData.start_venue || "",
+      space: formData.space || "",
+      dJ_policy: formData.dJ_policy || "",
     };
 
     // Remove undefined keys
@@ -857,7 +861,6 @@ const Storefront = ({ setCompletion }) => {
     },
     { id: "photos", label: "Photos", icon: <IoCameraOutline size={20} /> },
     { id: "videos", label: "Videos", icon: <IoVideocamOutline size={20} /> },
-    
 
     {
       id: "preferred-vendors",

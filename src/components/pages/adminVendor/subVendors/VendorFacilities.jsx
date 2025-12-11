@@ -47,7 +47,7 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
               placeholder="Car parking details"
             />
           </div>
-          <div className="col-md-6 mb-3">
+          {/* <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">Indoor/Outdoor</label>
             <select
               className="form-select"
@@ -64,8 +64,8 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
               <option value="outdoor">Outdoor</option>
               <option value="both">Both</option>
             </select>
-          </div>
-          <div className="col-md-6 mb-3">
+          </div> */}
+          {/* <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">Alcohol Policy</label>
             <select
               className="form-select"
@@ -82,7 +82,24 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
               <option value="not_allowed">Not Allowed</option>
               <option value="own_alcohol">Own Alcohol</option>
             </select>
+          </div> */}
+
+          <div className="col-md-6 mb-3">
+            <label className="form-label fw-semibold">Outside Alcohol</label>
+            <input
+              type="text"
+              className="form-control"
+              value={formData.outside_alcohol || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  outside_alcohol: e.target.value,
+                }))
+              }
+              placeholder="e.g. Allowed, Not Allowed, Own Alcohol"
+            />
           </div>
+
           <div className="col-md-6 mb-3">
             <label className="form-label fw-semibold">Catering Policy</label>
             <input
@@ -178,6 +195,54 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
                 }))
               }
               placeholder="e.g. 2020"
+            />
+          </div>
+
+          <div className="col-md-6 mb-3">
+            <label className="form-label fw-semibold">Start Venue</label>
+            <input
+              type="text"
+              className="form-control"
+              value={formData.start_venue || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  start_venue: e.target.value,
+                }))
+              }
+              placeholder="Start Venue"
+            />
+          </div>
+
+          <div className="col-md-6 mb-3">
+            <label className="form-label fw-semibold">DJ Policy</label>
+            <input
+              type="text"
+              className="form-control"
+              value={formData.dJ_policy || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  dJ_policy: e.target.value,
+                }))
+              }
+              placeholder="DJ Policy"
+            />
+          </div>
+
+          <div className="col-md-6 mb-3">
+            <label className="form-label fw-semibold">Space</label>
+            <input
+              type="text"
+              className="form-control"
+              value={formData.space || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  space: e.target.value,
+                }))
+              }
+              placeholder="Space"
             />
           </div>
 
