@@ -1,7 +1,6 @@
 import axios from "axios";
 
-const API_BASE = "https://happywedz.com/api/vendor";
-// const API_BASE = "http://localhost:4000/vendor";
+const API_BASE = "https://happywedz.com/api/vendor"; 
 
 export const vendorsApi = {
   getVendors: (params) =>

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Form, Button } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { loginVendor, setVendorCredentials } from "../../redux/vendorAuthSlice";
@@ -17,8 +17,17 @@ const VendorLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
+  const [sessionMessage, setSessionMessage] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("session") === "expired") {
+      setSessionMessage("Your session expired. Please log in again.");
+    }
+  }, [location.search]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -60,7 +69,7 @@ const VendorLogin = () => {
   };
 
   return (
-    <div className="wedding-login-container min-vh-100 d-flex align-items-center justify-content-center my-5">
+    <div className="wedding-login-container min-vh-100 d-flex align-items-center justify-content-center">
       <ToastContainer position="top-center" autoClose={3000} />
       <div
         className="row w-100 shadow-lg rounded-4 overflow-hidden"
@@ -94,6 +103,11 @@ const VendorLogin = () => {
             <p className="text-muted fs-16">
               Sign in to access your wedding planning dashboard
             </p>
+            {sessionMessage && (
+              <div className="alert alert-warning py-2 mt-3" role="alert">
+                {sessionMessage}
+              </div>
+            )}
           </div>
 
           <Form onSubmit={handleSubmit} className="mt-1">

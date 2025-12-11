@@ -105,17 +105,17 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
   return (
     <div className="my-5">
       <div className="p-3 border rounded bg-white">
-        <h6 className="mb-3 fw-bold">Basic Information</h6>
+        <h4 className="mb-3 fw-bold">Basic Information</h4>
         <div className="row">
           {/* Vendor Name */}
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">
+            <label className="form-label fw-semibold fs-16">
               Vendor Business Name
             </label>
             <input
               type="text"
               name="businessName"
-              className="form-control"
+              className="form-control fs-14"
               value={formData.attributes?.businessName || ""}
               onChange={handleAttributeChange}
               placeholder="Enter vendor name"
@@ -126,11 +126,11 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
 
           {/* Tagline */}
           {/* <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Tagline</label>
+            <label className="form-label fw-semibold fs-16">Tagline</label>
             <input
               type="text"
               name="tagline"
-              className="form-control"
+              className="form-control fs-14"
               value={formData.attributes?.tagline || ""}
               onChange={handleAttributeChange}
               placeholder="Short catchy tagline"
@@ -139,11 +139,11 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
 
        
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Subtitle</label>
+            <label className="form-label fw-semibold fs-16">Subtitle</label>
             <input
               type="text"
               name="subtitle"
-              className="form-control"
+              className="form-control fs-14"
               value={formData.attributes?.subtitle || ""}
               onChange={handleAttributeChange}
               placeholder="Brief subtitle"
@@ -152,7 +152,7 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
 
           {/* Description */}
           <div className="col-12 mb-3">
-            <label className="form-label fw-semibold">About US</label>
+            <label className="form-label fw-semibold fs-16">About US</label>
             <SummernoteEditor
               value={formData.attributes?.about_us || ""}
               onChange={(val) =>
@@ -165,22 +165,22 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
 
           {/* Vendor Type */}
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Vendor Type</label>
+            <label className="form-label fw-semibold fs-16">Vendor Type</label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={vendorTypeName}
               disabled
             />
 
             {/* Subcategories */}
             <div className="mt-3">
-              <label className="form-label fw-semibold">
+              <label className="form-label fw-semibold fs-16">
                 Primary Subcategory *
               </label>
               <select
                 name="vendor_subcategory_id"
-                className="form-select"
+                className="form-select fs-14"
                 value={formData.vendor_subcategory_id || ""}
                 onChange={handleRootChange}
                 required
@@ -195,7 +195,7 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
                 ))}
               </select>
               {formData.vendor_subcategory_id && (
-                <div className="mt-2 p-2 bg-light border rounded small">
+                <div className="mt-2 p-2 bg-light border rounded small fs-14">
                   <strong>Selected: </strong>
                   {subCategories.find(
                     (s) => s.id == formData.vendor_subcategory_id
@@ -207,7 +207,7 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
 
           {/* Status */}
           {/* <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Status</label>
+            <label className="form-label fw-semibold fs-16">Status</label>
             <select
               name="status"
               className="form-select"

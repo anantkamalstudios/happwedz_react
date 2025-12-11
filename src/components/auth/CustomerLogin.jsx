@@ -16,6 +16,7 @@ const CustomerLogin = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [sessionMessage, setSessionMessage] = useState("");
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,6 +36,13 @@ const CustomerLogin = () => {
       } catch {}
     })();
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("session") === "expired") {
+      setSessionMessage("Your session expired. Please log in again.");
+    }
+  }, [location.search]);
 
   const handleGoogleCredential = async (credentialResponse) => {
     try {
@@ -174,6 +182,11 @@ const CustomerLogin = () => {
               {loginCms?.description ||
                 "Sign in to access your wedding planning dashboard"}
             </p>
+            {sessionMessage && (
+              <div className="alert alert-warning py-2 mt-3" role="alert">
+                {sessionMessage}
+              </div>
+            )}
           </div>
 
           <Form onSubmit={handleSubmit} className="mt-4">

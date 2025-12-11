@@ -199,17 +199,10 @@ export default function PromoForm({ formData, setFormData, onSave }) {
 
   return (
     <div className="promo-form-container my-5">
-      {/* <div className="promo-header">
-        <div className="promo-header-content">
-          <h1>Create Special Offers for Couples</h1>
-          <p>Attract more couples with exclusive promotions and discounts</p>
-        </div>
-      </div> */}
-
       <div className="promo-form-wrapper">
         <div className="form-section">
           <div className="form-card">
-            <h6>Promotion Details</h6>
+            <h4 className="fw-bold">Promotion Details</h4>
             <p className="form-description fs-14">
               Fill in the details of your special offer for couples
             </p>
@@ -251,24 +244,39 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                 <div className="form-group">
                   <label className="fs-16">Status</label>
                   <div className="switch-container">
-                    <label className="switch">
+                    <label className="switch" style={{ position: "relative" }}>
                       <input
                         type="checkbox"
+                        className="fs-14"
                         name="active"
                         checked={form.active}
                         onChange={handleChange}
                       />
-                      <span className="slider round"></span>
+                      <span className="slider round fs-10 text-black">
+                        <span
+                          style={{
+                            position: "absolute",
+                            left: form.active ? "calc(100% - 65px)" : "5px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            fontSize: "12px",
+                            color: form.active ? "#fff" : "#fff",
+                            width: "60px",
+                            textAlign: "center",
+                            transition: "left 0.2s",
+                            pointerEvents: "none",
+                          }}
+                        >
+                          {form.active ? "YES" : "NO"}
+                        </span>
+                      </span>
                     </label>
-                    <span className="switch-label">
-                      {form.active ? "Active" : "Inactive"}
-                    </span>
                   </div>
                 </div>
               </div>
 
               <div className="form-row">
-                <div className="form-group">
+                <div className="form-group fs-14">
                   <label className="fs-16">Discount Type</label>
                   <select
                     name="type"
@@ -283,8 +291,8 @@ export default function PromoForm({ formData, setFormData, onSave }) {
 
                 <div className="form-group">
                   <label className="fs-16">Discount Value</label>
-                  <div className="input-with-icon">
-                    <span className="input-icon">
+                  <div className="input-with-icon fs-14">
+                    <span className="input-icon fs-14">
                       {form.type === "percentage" ? "%" : "₹"}
                     </span>
                     <input
@@ -372,30 +380,63 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                 </div>
               </div> */}
 
-              <div className="form-group terms-group">
-                <label className="checkbox-container fs-16">
-                  <input
-                    type="checkbox"
-                    name="termsAccepted"
-                    checked={form.termsAccepted}
-                    onChange={handleChange}
-                  />
-                  <span
-                    className={`checkmark ${
-                      errors.termsAccepted ? "error" : ""
-                    }`}
-                  ></span>
-                  I confirm this offer and its terms
-                </label>
-                {errors.termsAccepted && (
-                  <div className="error-message">{errors.termsAccepted}</div>
-                )}
+              <div className="form-group terms-group" style={{ marginTop: 25 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    minHeight: "28px",
+                  }}
+                >
+                  <label
+                    className="checkbox-container fs-14"
+                    style={{
+                      marginBottom: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      className="fs-14"
+                      name="termsAccepted"
+                      checked={form.termsAccepted}
+                      onChange={handleChange}
+                      style={{ margin: 0 }}
+                    />
+                    <span
+                      className={`checkmark fs-14 ${
+                        errors.termsAccepted ? "error" : ""
+                      }`}
+                    ></span>
+                    <span
+                      className="d-flex align-items-center"
+                      style={{ marginTop: "6px" }}
+                    >
+                      I confirm this offer and its terms
+                    </span>
+                  </label>
+                  {errors.termsAccepted && (
+                    <div
+                      className="error-message"
+                      style={{
+                        marginLeft: "12px",
+                        marginBottom: 0,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {errors.termsAccepted}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="form-actions">
                 <button
                   type="submit"
-                  className="btn-primary folder-item"
+                  className="btn-primary folder-item fs-14"
                   style={{
                     background:
                       "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)",
@@ -407,7 +448,7 @@ export default function PromoForm({ formData, setFormData, onSave }) {
 
                 <button
                   type="button"
-                  className="btn-secondary folder-item"
+                  className="btn-secondary folder-item fs-14"
                   onClick={resetForm}
                   style={{
                     display: "flex",
@@ -433,7 +474,7 @@ export default function PromoForm({ formData, setFormData, onSave }) {
           <div className="preview-card">
             {Array.isArray(formData?.deals) && formData.deals.length > 0 && (
               <div className="existing-deals-list mb-3">
-                <h5>Existing Offers</h5>
+                <h6>Existing Offers</h6>
                 <div className="list-group">
                   {formData.deals.map((d, i) => (
                     <div
@@ -441,18 +482,20 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                       className="d-flex align-items-center justify-content-between p-2 border mb-2 rounded"
                     >
                       <div>
-                        <strong>{d.title || d.name || `Offer ${i + 1}`}</strong>
-                        <div className="text-muted small">
+                        <strong className="fs-16">
+                          {d.title || d.name || `Offer ${i + 1}`}
+                        </strong>
+                        <div className="text-muted small fs-14">
                           Code: {d.code || d.promoCode || "-"}
                         </div>
-                        <div className="text-muted small">
+                        <div className="text-muted small fs-14">
                           {d.startDate || "-"} — {d.endDate || "-"}
                         </div>
                       </div>
                       <div style={{ display: "flex", gap: 8 }}>
                         <button
                           type="button"
-                          className="btn btn-sm btn-outline-primary"
+                          className="btn btn-sm btn-outline-primary  fs-14"
                           onClick={() => handleEditDeal(i)}
                         >
                           <TbBookmarkEdit />

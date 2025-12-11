@@ -21,13 +21,15 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
   return (
     <div className="my-5">
       <div className="p-3 border rounded bg-white">
-        <h6 className="mb-3 fw-bold">Facilities & Features</h6>
+        <h4 className="mb-3 fw-bold">Facilities & Features</h4>
         <div className="row">
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Number of Rooms</label>
+            <label className="form-label fs-16 fw-semibold">
+              Number of Rooms
+            </label>
             <input
               type="number"
-              className="form-control"
+              className="form-control fs-14"
               value={formData.rooms || ""}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, rooms: e.target.value }))
@@ -36,10 +38,10 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
             />
           </div>
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Car Parking</label>
+            <label className="form-label fs-16 fw-semibold">Car Parking</label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={formData.parking || ""}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, parking: e.target.value }))
@@ -48,7 +50,7 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
             />
           </div>
           {/* <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Indoor/Outdoor</label>
+            <label className="form-label fs-16 fw-semibold">Indoor/Outdoor</label>
             <select
               className="form-select"
               value={formData.indoorOutdoor || ""}
@@ -66,7 +68,7 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
             </select>
           </div> */}
           {/* <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Alcohol Policy</label>
+            <label className="form-label fs-16 fw-semibold">Alcohol Policy</label>
             <select
               className="form-select"
               value={formData.alcoholPolicy || ""}
@@ -85,10 +87,12 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
           </div> */}
 
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Outside Alcohol</label>
+            <label className="form-label fs-16 fw-semibold">
+              Outside Alcohol
+            </label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={formData.outside_alcohol || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -101,10 +105,12 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
           </div>
 
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Catering Policy</label>
+            <label className="form-label fs-16 fw-semibold">
+              Catering Policy
+            </label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={formData.cateringPolicy || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -116,10 +122,10 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
             />
           </div>
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Decor Policy</label>
+            <label className="form-label fs-16 fw-semibold">Decor Policy</label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={formData.decorPolicy || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -131,12 +137,12 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
             />
           </div>
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">
+            <label className="form-label fs-16 fw-semibold">
               Offerings (comma-separated)
             </label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={formData.offerings || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -150,12 +156,12 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
 
           {/* Delivery Time (for Photographers/Other Vendors) */}
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">
+            <label className="form-label fs-16 fw-semibold">
               Delivery Time (for Photographers)
             </label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={formData.delivery_time || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -168,10 +174,10 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
           </div>
           {/* Travel Info */}
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Travel Info</label>
+            <label className="form-label fs-16 fw-semibold">Travel Info</label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={formData.travel_info || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -183,10 +189,12 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
             />
           </div>
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">HappyWedz Since</label>
+            <label className="form-label fs-16 fw-semibold">
+              HappyWedz Since
+            </label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={formData.happywedz_since || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -199,10 +207,10 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
           </div>
 
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Start Venue</label>
+            <label className="form-label fs-16 fw-semibold">Start Venue</label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={formData.start_venue || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -215,10 +223,10 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
           </div>
 
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">DJ Policy</label>
+            <label className="form-label fs-16 fw-semibold">DJ Policy</label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={formData.dJ_policy || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -231,10 +239,10 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
           </div>
 
           <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold">Space</label>
+            <label className="form-label fs-16 fw-semibold">Space</label>
             <input
               type="text"
-              className="form-control"
+              className="form-control fs-14"
               value={formData.space || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -247,11 +255,11 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
           </div>
 
           <div className="col-12 mb-3">
-            <label className="form-label fw-semibold">
+            <label className="form-label fs-16 fw-semibold">
               Area / Capacity Details (e.g., Lawn 200 Seating | 50 Floating)
             </label>
             <textarea
-              className="form-control"
+              className="form-control fs-14"
               rows="3"
               value={formData.area || ""}
               onChange={(e) =>
@@ -264,7 +272,7 @@ const VendorFacilities = ({ formData, setFormData, onSave, onShowSuccess }) => {
             />
           </div>
         </div>
-        <button className="btn btn-primary mt-2" onClick={handleSave}>
+        <button className="btn btn-primary mt-2 fs-14" onClick={handleSave}>
           Save Facilities Details
         </button>
       </div>

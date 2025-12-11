@@ -24,7 +24,7 @@ import {
 import { useSelector } from "react-redux";
 import QuotationModal from "./QuotationModal";
 import { useToast } from "../../layouts/toasts/Toast";
-import axios from "axios";
+import axiosInstance from "../../../services/api/axiosInstance";
 
 const API_BASE_URL = "https://happywedz.com/api";
 
@@ -57,16 +57,12 @@ const EnquiryManagement = () => {
     setLoading(true);
     setError(null);
     try {
-      const url = `${API_BASE_URL}/inbox${
-        filter !== "all" ? `?filter=${filter}` : ""
-      }`;
-      const res = await fetch(url, {
+      const res = await axiosInstance.get("/inbox", {
+        params: filter !== "all" ? { filter } : undefined,
         headers: { Authorization: `Bearer ${vendorToken}` },
       });
 
-      if (!res.ok) throw new Error("Failed to fetch inbox");
-
-      const data = await res.json();
+      const data = res.data;
       const fetchedLeads = Array.isArray(data.inbox) ? data.inbox : [];
       setLeads(fetchedLeads);
 
@@ -102,11 +98,10 @@ const EnquiryManagement = () => {
 
   const fetchGlobalStats = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/inbox`, {
+      const res = await axiosInstance.get("/inbox", {
         headers: { Authorization: `Bearer ${vendorToken}` },
       });
-      if (!res.ok) throw new Error("Failed to fetch global stats");
-      const data = await res.json();
+      const data = res.data;
       const allLeads = Array.isArray(data.inbox) ? data.inbox : [];
       setGlobalStats({
         booked: allLeads.filter((l) => l.request?.status === "booked").length,
@@ -199,12 +194,22 @@ const EnquiryManagement = () => {
     const to = parseDMY(dateToText);
     if (from || to) {
       base = base.filter((lead) => {
-        const ev = lead.request?.eventDate ? new Date(lead.request.eventDate) : null;
+        const ev = lead.request?.eventDate
+          ? new Date(lead.request.eventDate)
+          : null;
         if (!ev || Number.isNaN(ev.getTime())) return false;
         if (from && ev < from) return false;
         if (to) {
           // include the entire 'to' day
-          const toEnd = new Date(to.getFullYear(), to.getMonth(), to.getDate(), 23, 59, 59, 999);
+          const toEnd = new Date(
+            to.getFullYear(),
+            to.getMonth(),
+            to.getDate(),
+            23,
+            59,
+            59,
+            999
+          );
           if (ev > toEnd) return false;
         }
         return true;
@@ -224,7 +229,7 @@ const EnquiryManagement = () => {
     try {
       const headers = { Authorization: `Bearer ${vendorToken}` };
       let url;
-      const options = { method: "PATCH" };
+      let body = undefined;
 
       if (isStatusAction) {
         if (!requestId) {
@@ -233,22 +238,17 @@ const EnquiryManagement = () => {
         }
         url = `${API_BASE_URL}/inbox/request/${requestId}/status`;
         headers["Content-Type"] = "application/json";
-        options.body = JSON.stringify({ newStatus: action });
+        body = { newStatus: action };
       } else if (isArchiveAction) {
         url = `${API_BASE_URL}/inbox/${inboxId}/archive`;
       } else {
         url = `${API_BASE_URL}/inbox/${inboxId}/${action}`;
       }
-      options.headers = headers;
-
-      const res = await fetch(url, options);
-
-      if (!res.ok) {
-        const errorData = await res
-          .json()
-          .catch(() => ({ message: res.statusText }));
-        throw new Error(errorData.message || `Failed to ${action} lead`);
-      }
+      const res = await axiosInstance.patch(
+        url.replace(API_BASE_URL, ""),
+        body,
+        { headers }
+      );
 
       setLeads((prevLeads) =>
         prevLeads.map((l) => {
@@ -317,7 +317,10 @@ const EnquiryManagement = () => {
     // On mobile, scroll to detail section
     if (isMobile && detailRef.current) {
       setTimeout(() => {
-        detailRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+        detailRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
       }, 50);
     }
   };

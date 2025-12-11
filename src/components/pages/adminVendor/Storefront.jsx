@@ -3,7 +3,7 @@ import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { FaRegBuilding } from "react-icons/fa";
 import { Nav } from "react-bootstrap";
-import { CiBullhorn, CiCircleQuestion, CiLocationOn } from "react-icons/ci";
+import { CiBullhorn, CiCircleQuestion, CiLocationOn, CiShoppingTag } from "react-icons/ci";
 import BusinessDetails from "./subVendors/BusinessDetails";
 import PromoForm from "./subVendors/PromoForm";
 import PhotoGallery from "./subVendors/PhotoGallery";
@@ -20,10 +20,16 @@ import VendorPolicies from "./subVendors/VendorPolicies";
 import VendorAvailability from "./subVendors/VendorAvailability";
 import VendorMarketing from "./subVendors/VendorMarketing";
 import SuccessModal from "../../ui/SuccessModal";
-import { PiPhoneCall } from "react-icons/pi";
+import { PiForkKnife, PiPhoneCall } from "react-icons/pi";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import { HiOutlineDocument } from "react-icons/hi2";
-import { MdCurrencyRupee, MdOutlineEventAvailable } from "react-icons/md";
+import {
+  MdCurrencyRupee,
+  MdOutlineAccountBalance,
+  MdOutlineEventAvailable,
+  MdOutlineFiberNew,
+} from "react-icons/md";
+
 import { PiShareNetworkDuotone } from "react-icons/pi";
 
 import {
@@ -39,6 +45,27 @@ import { name } from "dayjs/locale/en.js";
 import Swal from "sweetalert2";
 import PreferredVendors from "./subVendors/PreferredVendors";
 import SocialDetails from "./subVendors/SocialDetails";
+import axiosInstance from "../../../services/api/axiosInstance";
+import { TbView360Number } from "react-icons/tb";
+import View360 from "./subVendors/View360";
+
+// Reusable New Tag component
+const NewTag = () => (
+  <span
+    style={{
+      background: 'none',
+      fontWeight: '600',
+      marginLeft: '8px',
+      display: 'inline-flex',
+      alignItems: 'center',
+      height: '16px',
+      lineHeight: '12px',
+      whiteSpace: 'nowrap'
+    }}
+  >
+    <MdOutlineFiberNew size={25} color="red" />
+  </span>
+);
 
 const Storefront = ({ setCompletion }) => {
   const [active, setActive] = useState("business");
@@ -47,6 +74,8 @@ const Storefront = ({ setCompletion }) => {
   const [formData, setFormData] = useState({ attributes: vendor || {} });
   const [photoDrafts, setPhotoDrafts] = useState([]);
   const [videoDrafts, setVideoDrafts] = useState([]);
+  const [view360Images, setView360Images] = useState([]);
+  const [view360Videos, setView360Videos] = useState([]);
   const [vendorTypeName, setVendorTypeName] = useState("");
   // Persist active tab per-vendor so refresh/navigation keeps you on the same section
   const storageKey = React.useMemo(
@@ -77,10 +106,10 @@ const Storefront = ({ setCompletion }) => {
         // Fetch vendor type name from API (like VendorBasicInfo)
         if (vendor.vendor_type_id) {
           try {
-            const response = await fetch(
-              `https://happywedz.com/api/vendor-types/${vendor.vendor_type_id}`
+            const response = await axiosInstance.get(
+              `/vendor-types/${vendor.vendor_type_id}`
             );
-            const vendorTypeData = await response.json();
+            const vendorTypeData = response.data;
             setVendorTypeName(vendorTypeData?.name || "");
           } catch (err) {
             setVendorTypeName("");
@@ -96,6 +125,8 @@ const Storefront = ({ setCompletion }) => {
           if (actualData) {
             let gallery = [];
             let videos = [];
+            let panoImages = [];
+            let panoVideos = [];
 
             if (actualData.media) {
               if (Array.isArray(actualData.media)) {
@@ -111,13 +142,13 @@ const Storefront = ({ setCompletion }) => {
                 // legacy shape: { gallery: [...], videos: [...] }
                 gallery = Array.isArray(actualData.media.gallery)
                   ? actualData.media.gallery.map((g) =>
-                      typeof g === "string" ? g : g.url || g.path || null
-                    )
+                    typeof g === "string" ? g : g.url || g.path || null
+                  )
                   : [];
                 videos = Array.isArray(actualData.media.videos)
                   ? actualData.media.videos.map((v) =>
-                      typeof v === "string" ? v : v.url || v.path || null
-                    )
+                    typeof v === "string" ? v : v.url || v.path || null
+                  )
                   : [];
               }
             }
@@ -127,6 +158,12 @@ const Storefront = ({ setCompletion }) => {
                 actualData.attributes.video ||
                 actualData.attributes.vedio ||
                 [];
+              const panoImagesAttr = actualData.attributes.view360_images || [];
+              const panoVideosAttr = actualData.attributes.view360_video || [];
+              const panoImagesTop =
+                actualData.view360_images || actualData.view360_image || [];
+              const panoVideosTop =
+                actualData.view360_video || actualData.view360Videos || [];
               if (Array.isArray(videosFromAttr)) {
                 const normalizedVideos = videosFromAttr
                   .map((v) =>
@@ -135,37 +172,107 @@ const Storefront = ({ setCompletion }) => {
                   .filter(Boolean);
                 videos = [...new Set([...videos, ...normalizedVideos])];
               }
+              if (Array.isArray(panoImagesAttr)) {
+                panoImages = panoImagesAttr
+                  .map((v) =>
+                    typeof v === "string" ? v : v.url || v.path || null
+                  )
+                  .filter(Boolean);
+              }
+              if (Array.isArray(panoVideosAttr)) {
+                panoVideos = panoVideosAttr
+                  .map((v) =>
+                    typeof v === "string" ? v : v.url || v.path || null
+                  )
+                  .filter(Boolean);
+              }
+              if (Array.isArray(panoImagesTop)) {
+                panoImages = [
+                  ...panoImages,
+                  ...panoImagesTop
+                    .map((v) =>
+                      typeof v === "string" ? v : v.url || v.path || null
+                    )
+                    .filter(Boolean),
+                ];
+              } else if (
+                typeof panoImagesTop === "string" &&
+                panoImagesTop.trim()
+              ) {
+                panoImages = [...panoImages, panoImagesTop];
+              }
+              if (Array.isArray(panoVideosTop)) {
+                panoVideos = [
+                  ...panoVideos,
+                  ...panoVideosTop
+                    .map((v) =>
+                      typeof v === "string" ? v : v.url || v.path || null
+                    )
+                    .filter(Boolean),
+                ];
+              } else if (
+                typeof panoVideosTop === "string" &&
+                panoVideosTop.trim()
+              ) {
+                panoVideos = [...panoVideos, panoVideosTop];
+              }
             }
 
             // Normalize gallery and videos: prefix relative paths and build draft objects
             const photoDraftsData = Array.isArray(gallery)
               ? gallery.map((item, index) => {
-                  let preview = item || "";
-                  if (preview && preview.startsWith("/uploads/"))
-                    preview = IMAGE_BASE_URL + preview;
-                  return {
-                    preview,
-                    file: null,
-                  };
-                })
+                let preview = item || "";
+                if (preview && preview.startsWith("/uploads/"))
+                  preview = IMAGE_BASE_URL + preview;
+                return {
+                  preview,
+                  file: null,
+                };
+              })
               : [];
             setPhotoDrafts(photoDraftsData.filter((p) => p.preview));
 
             const videoDraftsData = Array.isArray(videos)
               ? videos.map((item, index) => {
-                  let preview = item || "";
-                  if (preview && preview.startsWith("/uploads/"))
-                    preview = IMAGE_BASE_URL + preview;
-                  return {
-                    id: `video_${index}`,
-                    title: "",
-                    type: "video",
-                    preview,
-                    file: null,
-                  };
-                })
+                let preview = item || "";
+                if (preview && preview.startsWith("/uploads/"))
+                  preview = IMAGE_BASE_URL + preview;
+                return {
+                  id: `video_${index}`,
+                  title: "",
+                  type: "video",
+                  preview,
+                  file: null,
+                };
+              })
               : [];
             setVideoDrafts(videoDraftsData.filter((v) => v.preview));
+            const panoImageDrafts = Array.isArray(panoImages)
+              ? panoImages.map((item, index) => {
+                let preview = item || "";
+                if (preview && preview.startsWith("/uploads/"))
+                  preview = IMAGE_BASE_URL + preview;
+                return {
+                  id: `pano_${index}`,
+                  preview,
+                  file: null,
+                };
+              })
+              : [];
+            setView360Images(panoImageDrafts.filter((v) => v.preview));
+            const panoVideoDrafts = Array.isArray(panoVideos)
+              ? panoVideos.map((item, index) => {
+                let preview = item || "";
+                if (preview && preview.startsWith("/uploads/"))
+                  preview = IMAGE_BASE_URL + preview;
+                return {
+                  id: `pano_video_${index}`,
+                  preview,
+                  file: null,
+                };
+              })
+              : [];
+            setView360Videos(panoVideoDrafts.filter((v) => v.preview));
             if (actualData && actualData.attributes) {
               setFormData((prev) => ({
                 ...prev,
@@ -173,34 +280,34 @@ const Storefront = ({ setCompletion }) => {
                 deals: actualData.attributes.deals || [],
                 contact: actualData.attributes.contact
                   ? {
-                      contactName: actualData.attributes.contact.name || "",
-                      phone: actualData.attributes.contact.phone || "",
-                      altPhone: actualData.attributes.contact.altPhone || "",
-                      email: actualData.attributes.contact.email || "",
-                      website: actualData.attributes.contact.website || "",
-                      whatsappNumber:
-                        actualData.attributes.contact.whatsapp || "",
-                      inquiryEmail:
-                        actualData.attributes.contact.inquiryEmail || "",
-                    }
+                    contactName: actualData.attributes.contact.name || "",
+                    phone: actualData.attributes.contact.phone || "",
+                    altPhone: actualData.attributes.contact.altPhone || "",
+                    email: actualData.attributes.contact.email || "",
+                    website: actualData.attributes.contact.website || "",
+                    whatsappNumber:
+                      actualData.attributes.contact.whatsapp || "",
+                    inquiryEmail:
+                      actualData.attributes.contact.inquiryEmail || "",
+                  }
                   : {},
                 city: actualData.attributes.city || "",
 
                 location: actualData.attributes.location
                   ? {
-                      address: actualData.attributes.address || "",
+                    address: actualData.attributes.address || "",
 
-                      city: actualData.attributes.city || "",
-                      state: actualData.attributes.location.state || "",
-                      country:
-                        actualData.attributes.location.country || "India",
-                      pincode: actualData.attributes.location.pincode || "",
-                      latitude: actualData.attributes.latitude || "",
-                      longitude: actualData.attributes.longitude || "",
+                    city: actualData.attributes.city || "",
+                    state: actualData.attributes.location.state || "",
+                    country:
+                      actualData.attributes.location.country || "India",
+                    pincode: actualData.attributes.location.pincode || "",
+                    latitude: actualData.attributes.latitude || "",
+                    longitude: actualData.attributes.longitude || "",
 
-                      serviceAreas:
-                        actualData.attributes.location.serviceAreas || [],
-                    }
+                    serviceAreas:
+                      actualData.attributes.location.serviceAreas || [],
+                  }
                   : {},
 
                 // Pricing fields mapping
@@ -296,20 +403,19 @@ const Storefront = ({ setCompletion }) => {
       if (!formData.id || !token) return;
 
       try {
-        const response = await fetch(
-          `https://happywedz.com/api/vendor-services/${formData.id}/storefront-completion`,
+        const response = await axiosInstance.get(
+          `/vendor-services/${formData.id}/storefront-completion`,
           {
-            method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
 
-        const data = await response.json();
+        const data = response.data;
         console.log("Storefront completion response:", data);
 
-        if (response.ok && data?.service?.storefront_completion !== undefined) {
+        if (data?.service?.storefront_completion !== undefined) {
           const completion = data.service.storefront_completion;
           localStorage.setItem("storefrontCompletion", completion.toString());
           console.log("Stored storefrontCompletion:", completion);
@@ -339,9 +445,8 @@ const Storefront = ({ setCompletion }) => {
         Swal.fire({
           icon: "error",
           title: "Oops...",
-          text: `Failed to update. ${
-            typeof e === "string" ? e : e?.message || "Unknown error"
-          }`,
+          text: `Failed to update. ${typeof e === "string" ? e : e?.message || "Unknown error"
+            }`,
           timer: "3000",
           confirmButtonText: "OK",
           confirmButtonColor: "#C31162",
@@ -451,11 +556,11 @@ const Storefront = ({ setCompletion }) => {
         : undefined,
       available_slots: Array.isArray(formData.availableSlots)
         ? formData.availableSlots.map((s) => ({
-            date: s.date,
-            // slots:
-            //   s.slots ||
-            //   (s.timeFrom && s.timeTo ? [`${s.timeFrom}-${s.timeTo}`] : []),
-          }))
+          date: s.date,
+          // slots:
+          //   s.slots ||
+          //   (s.timeFrom && s.timeTo ? [`${s.timeFrom}-${s.timeTo}`] : []),
+        }))
         : [],
       catering_policy: formData.cateringPolicy || "",
       // hall_types_note: formData.hallTypesNote || "",
@@ -497,17 +602,17 @@ const Storefront = ({ setCompletion }) => {
 
       video: Array.isArray(videoDrafts)
         ? videoDrafts
-            .map((v) => v.url || v.preview || "")
-            .filter(
-              (url) =>
-                url &&
-                typeof url === "string" &&
-                !url.startsWith("blob:") &&
-                !url.startsWith("data:")
-            )
-            .map((url) =>
-              url.startsWith("/uploads/") ? IMAGE_BASE_URL + url : url
-            )
+          .map((v) => v.url || v.preview || "")
+          .filter(
+            (url) =>
+              url &&
+              typeof url === "string" &&
+              !url.startsWith("blob:") &&
+              !url.startsWith("data:")
+          )
+          .map((url) =>
+            url.startsWith("/uploads/") ? IMAGE_BASE_URL + url : url
+          )
         : formData.attributes?.video || [],
       // Preferred vendors selection
       preferred_vendors:
@@ -530,18 +635,18 @@ const Storefront = ({ setCompletion }) => {
   const buildMedia = () => {
     const gallery = Array.isArray(photoDrafts)
       ? photoDrafts
-          .map((p) => {
-            const preview = p.preview || p.url || p.path || "";
-            return preview || null;
-          })
-          .filter(Boolean)
+        .map((p) => {
+          const preview = p.preview || p.url || p.path || "";
+          return preview || null;
+        })
+        .filter(Boolean)
       : Array.isArray(formData.media?.gallery)
-      ? formData.media.gallery
+        ? formData.media.gallery
           .map((g) => (typeof g === "string" ? g : g.url || g.path || null))
           .filter(Boolean)
-      : Array.isArray(formData.gallery)
-      ? formData.gallery.filter((g) => typeof g === "string")
-      : [];
+        : Array.isArray(formData.gallery)
+          ? formData.gallery.filter((g) => typeof g === "string")
+          : [];
     const media = {
       gallery,
       coverImage: formData.media?.coverImage || formData.coverImage || "",
@@ -609,6 +714,55 @@ const Storefront = ({ setCompletion }) => {
         }
       });
     }
+    if (Array.isArray(view360Images)) {
+      view360Images.forEach((img, index) => {
+        if (img && img.file instanceof File) {
+          fd.append(
+            "view360_images",
+            img.file,
+            img.file.name || `pano_${index}`
+          );
+        }
+      });
+    }
+    if (Array.isArray(view360Videos)) {
+      view360Videos.forEach((vid, index) => {
+        if (vid && vid.file instanceof File) {
+          fd.append(
+            "view360_video",
+            vid.file,
+            vid.file.name || `pano_video_${index}`
+          );
+        }
+      });
+    }
+
+    // Preserve existing 360 assets outside attributes as URL lists
+    const existingPanoImages = Array.isArray(view360Images)
+      ? view360Images
+        .map((i) => i.preview)
+        .filter(
+          (u) =>
+            typeof u === "string" &&
+            u.trim() &&
+            !u.startsWith("blob:") &&
+            !u.startsWith("data:")
+        )
+      : [];
+    const existingPanoVideos = Array.isArray(view360Videos)
+      ? view360Videos
+        .map((v) => v.preview)
+        .filter(
+          (u) =>
+            typeof u === "string" &&
+            u.trim() &&
+            !u.startsWith("blob:") &&
+            !u.startsWith("data:")
+        )
+      : [];
+
+    fd.append("view360_images_urls", JSON.stringify(existingPanoImages));
+    fd.append("view360_video_urls", JSON.stringify(existingPanoVideos));
 
     // Menus are now included only inside attributes for backend compatibility
     return fd;
@@ -689,9 +843,8 @@ const Storefront = ({ setCompletion }) => {
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: `Failed to submit. ${
-          typeof e === "string" ? e : e?.message || "Unknown error"
-        }`,
+        text: `Failed to submit. ${typeof e === "string" ? e : e?.message || "Unknown error"
+          }`,
         timer: "3000",
         confirmButtonText: "OK",
         confirmButtonColor: "#C31162",
@@ -792,20 +945,16 @@ const Storefront = ({ setCompletion }) => {
     const sendCompletionToBackend = async () => {
       if (!formData.id || !token) return;
       try {
-        const response = await fetch(
-          `https://happywedz.com/api/vendor-services/${formData.id}/storefront-completion`,
+        await axiosInstance.put(
+          `/vendor-services/${formData.id}/storefront-completion`,
+          { completion: percentage },
           {
-            method: "PUT",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ completion: percentage }),
           }
         );
-        if (!response.ok) {
-          console.warn("Failed to update storefront completion on backend");
-        }
       } catch (error) {
         console.error("Error sending storefront completion to backend:", error);
       }
@@ -821,7 +970,7 @@ const Storefront = ({ setCompletion }) => {
       setActive(id);
       try {
         localStorage.setItem(storageKey, id);
-      } catch (_) {}
+      } catch (_) { }
       try {
         const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
         if (vw <= 992 && contentRef.current) {
@@ -832,7 +981,7 @@ const Storefront = ({ setCompletion }) => {
             });
           }, 50);
         }
-      } catch (_) {}
+      } catch (_) { }
     },
     [storageKey]
   );
@@ -841,7 +990,7 @@ const Storefront = ({ setCompletion }) => {
     {
       id: "business",
       label: "Business details",
-      icon: <FaRegBuilding size={20} />,
+      icon: <MdOutlineAccountBalance size={20} />,
     },
     {
       id: "vendor-basic",
@@ -860,6 +1009,16 @@ const Storefront = ({ setCompletion }) => {
       icon: <CiLocationOn size={20} />,
     },
     { id: "photos", label: "Photos", icon: <IoCameraOutline size={20} /> },
+    {
+      id: "vendor-360-view",
+      label: (
+        <div className="d-flex align-items-center">
+          <span>360° View</span>
+          <span className="ms-2"><NewTag /></span>
+        </div>
+      ),
+      icon: <TbView360Number size={20} />,
+    },
     { id: "videos", label: "Videos", icon: <IoVideocamOutline size={20} /> },
 
     {
@@ -881,12 +1040,12 @@ const Storefront = ({ setCompletion }) => {
     // Only show Menus if vendorTypeName is allowed
     ...(allowedMenuTypes.includes(normalizedVendorTypeName)
       ? [
-          {
-            id: "vendor-menus",
-            label: "Menus",
-            icon: <MdCurrencyRupee size={20} />,
-          },
-        ]
+        {
+          id: "vendor-menus",
+          label: "Menus",
+          icon: <PiForkKnife size={20} />,
+        },
+      ]
       : []),
 
     { id: "promotions", label: "Promotions", icon: <CiBullhorn size={20} /> },
@@ -1019,6 +1178,17 @@ const Storefront = ({ setCompletion }) => {
             onShowSuccess={showSuccessModal}
           />
         );
+      case "vendor-360-view":
+        return (
+          <View360
+            images={view360Images}
+            setImages={setView360Images}
+            videos={view360Videos}
+            setVideos={setView360Videos}
+            onSave={handleSave}
+            onShowSuccess={showSuccessModal}
+          />
+        );
       case "promotions":
         return (
           <PromoForm
@@ -1132,9 +1302,10 @@ const Storefront = ({ setCompletion }) => {
               <Nav.Link
                 key={item.id}
                 onClick={() => handleSetActive(item.id)}
-                className={`d-flex align-items-center gap-2 sidebar-nav-item ${
-                  active === item.id ? "active" : ""
-                }`}
+                className={`d-flex align-items-center gap-2 sidebar-nav-item ${active === item.id
+                  ? "active fs-16 fw-bold"
+                  : "fs-14 fw-normal"
+                  }`}
               >
                 {item.icon}
                 <span>{item.label}</span>
