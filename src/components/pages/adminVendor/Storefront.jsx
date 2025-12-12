@@ -1209,15 +1209,19 @@ const Storefront = ({ setCompletion }) => {
             vendorTypeName={vendorTypeName}
           />
         );
-      case "vendor-facilities":
+      case "vendor-facilities": {
+        const isVenue = (vendorTypeName || "").toLowerCase().includes("venue");
         return (
           <VendorFacilities
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
             onShowSuccess={showSuccessModal}
+            vendorTypeName={vendorTypeName}
+            isVenue={isVenue}
           />
         );
+      }
       case "vendor-policies":
         return (
           <VendorPolicies

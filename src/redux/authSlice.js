@@ -56,7 +56,6 @@ export const toggleWishlist = (vendor) => async (dispatch, getState) => {
   const { token, user } = auth;
 
   if (!token || !user) {
-    alert("Please log in to add items to your wishlist.");
     Swal.fire({
       icon: "warning",
       text: "Please log in to add items to your wishlist.",

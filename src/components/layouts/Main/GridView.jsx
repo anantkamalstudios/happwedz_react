@@ -56,7 +56,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
     return favorites[vendorId] === true || wishlistIds.has(vendorId);
   };
 
-  const toggleFavorite = (venue, e) => {
+  const toggleFavorite = async (venue, e) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -79,6 +79,46 @@ const GridView = ({ subVenuesData, handleShow }) => {
     });
 
     dispatch(toggleWishlist(venue));
+
+    // Track wishlist interaction when adding
+    if (!wasFavorite && token) {
+      try {
+        await fetch(`https://happywedz.com/api/interactions/add`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            vendor_subcategory_data_id: venue.id,
+            action: "wishlist",
+          }),
+        });
+      } catch (error) {
+        console.error("Error tracking wishlist interaction:", error);
+      }
+    }
+  };
+
+  const handleCardClick = async (venue) => {
+    if (token) {
+      try {
+        await fetch(`https://happywedz.com/api/interactions/add`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            vendor_subcategory_data_id: venue.id,
+            action: "click",
+          }),
+        });
+      } catch (error) {
+        console.error("Error tracking click:", error);
+      }
+    }
+    navigate(`/details/info/${venue.id}`);
   };
 
   return (
@@ -89,7 +129,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
             <Col key={venue.id} xs={12} sm={6} lg={4} className="mb-4">
               <Card
                 className="border-0 main-grid-cards rounded-4 overflow-hidden p-2 h-100"
-                onClick={() => navigate(`/details/info/${venue.id}`)}
+                onClick={() => handleCardClick(venue)}
                 style={{ cursor: "pointer" }}
               >
                 <div className="position-relative" style={{ height: "240px" }}>
