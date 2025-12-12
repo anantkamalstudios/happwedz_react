@@ -234,7 +234,11 @@ function App() {
             <Route path="/customize/:id" element={<TemplateCustomizePage />} />
             <Route
               path="/wedding-form/:templateId"
-              element={<WeddingWebsiteForm />}
+              element={
+                <UserPrivateRoute>
+                  <WeddingWebsiteForm />
+                </UserPrivateRoute>
+              }
             />
             <Route
               path="/wedding-website/:id"
@@ -261,7 +265,14 @@ function App() {
               <Route path="/:section/:slug" element={<SubSection />} />
               <Route path="/details/:section/:id" element={<Detailed />} />
               <Route path="/vendor-360/:id" element={<Vendor360View />} />
-              <Route path="/ai-recommandation" element={<RecommandPage />} />
+              <Route
+                path="/ai-recommandation"
+                element={
+                  <UserPrivateRoute>
+                    <RecommandPage />
+                  </UserPrivateRoute>
+                }
+              />
               <Route path="/customer-login" element={<CustomerLogin />} />
               <Route path="/customer-register" element={<CustomerRegister />} />
               <Route path="/contact-us" element={<ContactUs />} />
@@ -398,14 +409,21 @@ function App() {
                   </UserPrivateRoute>
                 }
               />
-              <Route path="/choose-template" element={<ChooseTemplate />} />
               <Route
-                path="/my-wedding-websites"
-                element={<MyWeddingWebsites />}
+                path="/choose-template"
+                element={
+                  <UserPrivateRoute>
+                    <ChooseTemplate />
+                  </UserPrivateRoute>
+                }
               />
               <Route
                 path="/my-wedding-websites"
-                element={<MyWeddingWebsites />}
+                element={
+                  <UserPrivateRoute>
+                    <MyWeddingWebsites />
+                  </UserPrivateRoute>
+                }
               />
               <Route
                 path="/user-dashboard"
@@ -470,8 +488,6 @@ function App() {
               />
               <Route path="/edit-profile" element={<EditProfile />} />
             </Route>
-
-            <Route path="/ai-recommandation" element={<RecommandPage />} />
           </Routes>
         </ToastProvider>
       </Suspense>

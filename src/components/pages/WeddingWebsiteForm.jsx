@@ -560,27 +560,29 @@ const WeddingWebsiteForm = () => {
         }
 
         // Priority 2: auto-detect existing website by template for this user
-        const list = await weddingWebsiteApi.getMyWebsites(userToken);
-        if (!isMounted) return;
-        const match = Array.isArray(list)
-          ? list.find(
-              (w) =>
-                String(w.templateId).toLowerCase() ===
-                String(templateId || "").toLowerCase()
-            )
-          : null;
-
-        if (match?.id) {
-          const data = await weddingWebsiteApi.getWebsiteById(
-            match.id,
-            userToken
-          );
+        if (userToken) {
+          const list = await weddingWebsiteApi.getMyWebsites(userToken);
           if (!isMounted) return;
-          setExistingId(match.id);
-          setFormData((prev) => ({
-            ...prev,
-            ...mapExistingToFormState(data),
-          }));
+          const match = Array.isArray(list)
+            ? list.find(
+                (w) =>
+                  String(w.templateId).toLowerCase() ===
+                  String(templateId || "").toLowerCase()
+              )
+            : null;
+
+          if (match?.id) {
+            const data = await weddingWebsiteApi.getWebsiteById(
+              match.id,
+              userToken
+            );
+            if (!isMounted) return;
+            setExistingId(match.id);
+            setFormData((prev) => ({
+              ...prev,
+              ...mapExistingToFormState(data),
+            }));
+          }
         }
       } catch (e) {
         console.error("Error initializing website form:", e);

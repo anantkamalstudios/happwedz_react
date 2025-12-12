@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import {
   FaFacebookF,
   FaInstagram,
@@ -13,11 +14,18 @@ export default function SocialDetails({
   onSave,
   onShowSuccess,
 }) {
+  const { vendor } = useSelector((state) => state.vendorAuth || {});
+
   const handleChange = (name, value) => {
     setFormData((prev) => ({
       ...prev,
       attributes: { ...(prev?.attributes || {}), [name]: value },
     }));
+  };
+
+  const getValue = (key) => {
+    // Prefer formData (user edits), then vendor (saved data), then empty
+    return formData?.attributes?.[key] || vendor?.[key] || "";
   };
 
   const handleSubmit = async (e) => {
@@ -41,7 +49,7 @@ export default function SocialDetails({
               type="url"
               className="form-control fs-14"
               placeholder="https://facebook.com/yourpage"
-              value={formData?.attributes?.facebook_link || ""}
+              value={getValue("facebook_link")}
               onChange={(e) => handleChange("facebook_link", e.target.value)}
             />
           </div>
@@ -58,7 +66,7 @@ export default function SocialDetails({
               type="url"
               className="form-control fs-14"
               placeholder="https://instagram.com/yourprofile"
-              value={formData?.attributes?.instagram_link || ""}
+              value={getValue("instagram_link")}
               onChange={(e) => handleChange("instagram_link", e.target.value)}
             />
           </div>
@@ -74,7 +82,7 @@ export default function SocialDetails({
               type="url"
               className="form-control fs-14"
               placeholder="https://yourwebsite.com"
-              value={formData?.attributes?.website || ""}
+              value={getValue("website")}
               onChange={(e) => handleChange("website", e.target.value)}
             />
           </div>
@@ -91,7 +99,7 @@ export default function SocialDetails({
               type="url"
               className="form-control fs-14"
               placeholder="https://x.com/yourhandle"
-              value={formData?.attributes?.twitter_link || ""}
+              value={getValue("twitter_link")}
               onChange={(e) => handleChange("twitter_link", e.target.value)}
             />
           </div>
@@ -108,7 +116,7 @@ export default function SocialDetails({
               type="url"
               className="form-control fs-14"
               placeholder="https://pinterest.com/yourprofile"
-              value={formData?.attributes?.pinterest_link || ""}
+              value={getValue("pinterest_link")}
               onChange={(e) => handleChange("pinterest_link", e.target.value)}
             />
           </div>

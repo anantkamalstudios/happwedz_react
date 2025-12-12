@@ -56,7 +56,7 @@ const GridView = ({ subVenuesData, handleShow }) => {
     return favorites[vendorId] === true || wishlistIds.has(vendorId);
   };
 
-  const toggleFavorite = (venue, e) => {
+  const toggleFavorite = async (venue, e) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -79,6 +79,25 @@ const GridView = ({ subVenuesData, handleShow }) => {
     });
 
     dispatch(toggleWishlist(venue));
+
+    // Track wishlist interaction when adding
+    if (!wasFavorite && token) {
+      try {
+        await fetch(`https://happywedz.com/api/interactions/add`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            vendor_subcategory_data_id: venue.id,
+            action: "wishlist",
+          }),
+        });
+      } catch (error) {
+        console.error("Error tracking wishlist interaction:", error);
+      }
+    }
   };
 
   const handleCardClick = async (venue) => {
