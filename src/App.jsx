@@ -191,7 +191,7 @@ function App() {
       if (tokenTimestamp) {
         const now = Date.now();
         const elapsed = now - parseInt(tokenTimestamp, 10);
-        const TOKEN_EXPIRATION_TIME = 60 * 60 * 1000; // 1 hour
+        const TOKEN_EXPIRATION_TIME = 2 * 24 * 60 * 60 * 1000;
 
         if (elapsed >= TOKEN_EXPIRATION_TIME) {
           // Token expired, clear auth

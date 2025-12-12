@@ -130,7 +130,6 @@ const PricingModal = ({ show, handleClose, vendorId }) => {
         }
         throw new Error(result.message || "Something went wrong.");
       }
-      // Try to create or ensure a conversation exists for this vendor/user
       try {
         const createdRequestId =
           result?.data?.id || result?.request?.id || result?.id || null;
