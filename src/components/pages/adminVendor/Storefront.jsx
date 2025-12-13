@@ -3,7 +3,12 @@ import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { FaRegBuilding } from "react-icons/fa";
 import { Nav } from "react-bootstrap";
-import { CiBullhorn, CiCircleQuestion, CiLocationOn, CiShoppingTag } from "react-icons/ci";
+import {
+  CiBullhorn,
+  CiCircleQuestion,
+  CiLocationOn,
+  CiShoppingTag,
+} from "react-icons/ci";
 import BusinessDetails from "./subVendors/BusinessDetails";
 import PromoForm from "./subVendors/PromoForm";
 import PhotoGallery from "./subVendors/PhotoGallery";
@@ -53,14 +58,14 @@ import View360 from "./subVendors/View360";
 const NewTag = () => (
   <span
     style={{
-      background: 'none',
-      fontWeight: '600',
-      marginLeft: '8px',
-      display: 'inline-flex',
-      alignItems: 'center',
-      height: '16px',
-      lineHeight: '12px',
-      whiteSpace: 'nowrap'
+      background: "none",
+      fontWeight: "600",
+      marginLeft: "8px",
+      display: "inline-flex",
+      alignItems: "center",
+      height: "16px",
+      lineHeight: "12px",
+      whiteSpace: "nowrap",
     }}
   >
     <MdOutlineFiberNew size={25} color="red" />
@@ -142,13 +147,13 @@ const Storefront = ({ setCompletion }) => {
                 // legacy shape: { gallery: [...], videos: [...] }
                 gallery = Array.isArray(actualData.media.gallery)
                   ? actualData.media.gallery.map((g) =>
-                    typeof g === "string" ? g : g.url || g.path || null
-                  )
+                      typeof g === "string" ? g : g.url || g.path || null
+                    )
                   : [];
                 videos = Array.isArray(actualData.media.videos)
                   ? actualData.media.videos.map((v) =>
-                    typeof v === "string" ? v : v.url || v.path || null
-                  )
+                      typeof v === "string" ? v : v.url || v.path || null
+                    )
                   : [];
               }
             }
@@ -178,6 +183,11 @@ const Storefront = ({ setCompletion }) => {
                     typeof v === "string" ? v : v.url || v.path || null
                   )
                   .filter(Boolean);
+              } else if (
+                typeof panoImagesAttr === "string" &&
+                panoImagesAttr.trim()
+              ) {
+                panoImages = [panoImagesAttr];
               }
               if (Array.isArray(panoVideosAttr)) {
                 panoVideos = panoVideosAttr
@@ -185,6 +195,11 @@ const Storefront = ({ setCompletion }) => {
                     typeof v === "string" ? v : v.url || v.path || null
                   )
                   .filter(Boolean);
+              } else if (
+                typeof panoVideosAttr === "string" &&
+                panoVideosAttr.trim()
+              ) {
+                panoVideos = [panoVideosAttr];
               }
               if (Array.isArray(panoImagesTop)) {
                 panoImages = [
@@ -218,59 +233,68 @@ const Storefront = ({ setCompletion }) => {
               }
             }
 
+            // Deduplicate 360 media
+            panoImages = [...new Set(panoImages)];
+            panoVideos = [...new Set(panoVideos)];
+
             // Normalize gallery and videos: prefix relative paths and build draft objects
+            const cleanUrl = (s) =>
+              s && typeof s === "string"
+                ? s.replace(/^\s*`|`\s*$/g, "").trim()
+                : s;
+
             const photoDraftsData = Array.isArray(gallery)
               ? gallery.map((item, index) => {
-                let preview = item || "";
-                if (preview && preview.startsWith("/uploads/"))
-                  preview = IMAGE_BASE_URL + preview;
-                return {
-                  preview,
-                  file: null,
-                };
-              })
+                  let preview = cleanUrl(item || "");
+                  if (preview && preview.startsWith("/uploads/"))
+                    preview = IMAGE_BASE_URL + preview;
+                  return {
+                    preview,
+                    file: null,
+                  };
+                })
               : [];
             setPhotoDrafts(photoDraftsData.filter((p) => p.preview));
 
             const videoDraftsData = Array.isArray(videos)
               ? videos.map((item, index) => {
-                let preview = item || "";
-                if (preview && preview.startsWith("/uploads/"))
-                  preview = IMAGE_BASE_URL + preview;
-                return {
-                  id: `video_${index}`,
-                  title: "",
-                  type: "video",
-                  preview,
-                  file: null,
-                };
-              })
+                  let preview = cleanUrl(item || "");
+                  if (preview && preview.startsWith("/uploads/"))
+                    preview = IMAGE_BASE_URL + preview;
+                  return {
+                    id: `video_${index}`,
+                    title: "",
+                    type: "video",
+                    preview,
+                    file: null,
+                  };
+                })
               : [];
             setVideoDrafts(videoDraftsData.filter((v) => v.preview));
             const panoImageDrafts = Array.isArray(panoImages)
               ? panoImages.map((item, index) => {
-                let preview = item || "";
-                if (preview && preview.startsWith("/uploads/"))
-                  preview = IMAGE_BASE_URL + preview;
-                return {
-                  id: `pano_${index}`,
-                  preview,
-                  file: null,
-                };
-              })
+                  let preview = cleanUrl(item || "");
+                  if (preview && preview.startsWith("/uploads/"))
+                    preview = IMAGE_BASE_URL + preview;
+                  return {
+                    id: `pano_${index}`,
+                    preview,
+                    file: null,
+                  };
+                })
               : [];
             setView360Images(panoImageDrafts.filter((v) => v.preview));
             const panoVideoDrafts = Array.isArray(panoVideos)
               ? panoVideos.map((item, index) => {
-                let preview = item || "";
-                if (preview && preview.startsWith("/uploads/"))
-                  preview = IMAGE_BASE_URL + preview;
-                return {
-                  id: `pano_video_${index}`,
-                  preview,
-                  file: null,
-                };
-              })
+                  let preview = cleanUrl(item || "");
+                  if (preview && preview.startsWith("/uploads/"))
+                    preview = IMAGE_BASE_URL + preview;
+                  return {
+                    id: `pano_video_${index}`,
+                    preview,
+                    file: null,
+                  };
+                })
               : [];
             setView360Videos(panoVideoDrafts.filter((v) => v.preview));
             if (actualData && actualData.attributes) {
@@ -280,34 +304,34 @@ const Storefront = ({ setCompletion }) => {
                 deals: actualData.attributes.deals || [],
                 contact: actualData.attributes.contact
                   ? {
-                    contactName: actualData.attributes.contact.name || "",
-                    phone: actualData.attributes.contact.phone || "",
-                    altPhone: actualData.attributes.contact.altPhone || "",
-                    email: actualData.attributes.contact.email || "",
-                    website: actualData.attributes.contact.website || "",
-                    whatsappNumber:
-                      actualData.attributes.contact.whatsapp || "",
-                    inquiryEmail:
-                      actualData.attributes.contact.inquiryEmail || "",
-                  }
+                      contactName: actualData.attributes.contact.name || "",
+                      phone: actualData.attributes.contact.phone || "",
+                      altPhone: actualData.attributes.contact.altPhone || "",
+                      email: actualData.attributes.contact.email || "",
+                      website: actualData.attributes.contact.website || "",
+                      whatsappNumber:
+                        actualData.attributes.contact.whatsapp || "",
+                      inquiryEmail:
+                        actualData.attributes.contact.inquiryEmail || "",
+                    }
                   : {},
                 city: actualData.attributes.city || "",
 
                 location: actualData.attributes.location
                   ? {
-                    address: actualData.attributes.address || "",
+                      address: actualData.attributes.address || "",
 
-                    city: actualData.attributes.city || "",
-                    state: actualData.attributes.location.state || "",
-                    country:
-                      actualData.attributes.location.country || "India",
-                    pincode: actualData.attributes.location.pincode || "",
-                    latitude: actualData.attributes.latitude || "",
-                    longitude: actualData.attributes.longitude || "",
+                      city: actualData.attributes.city || "",
+                      state: actualData.attributes.location.state || "",
+                      country:
+                        actualData.attributes.location.country || "India",
+                      pincode: actualData.attributes.location.pincode || "",
+                      latitude: actualData.attributes.latitude || "",
+                      longitude: actualData.attributes.longitude || "",
 
-                    serviceAreas:
-                      actualData.attributes.location.serviceAreas || [],
-                  }
+                      serviceAreas:
+                        actualData.attributes.location.serviceAreas || [],
+                    }
                   : {},
 
                 // Pricing fields mapping
@@ -375,6 +399,7 @@ const Storefront = ({ setCompletion }) => {
                 space: actualData.attributes.space || "",
                 dJ_policy: actualData.attributes.dJ_policy || "",
                 video: actualData.attributes.video || [],
+                availableSlots: actualData.attributes.available_slots || [],
 
                 attributes: {
                   ...prev.attributes,
@@ -445,8 +470,9 @@ const Storefront = ({ setCompletion }) => {
         Swal.fire({
           icon: "error",
           title: "Oops...",
-          text: `Failed to update. ${typeof e === "string" ? e : e?.message || "Unknown error"
-            }`,
+          text: `Failed to update. ${
+            typeof e === "string" ? e : e?.message || "Unknown error"
+          }`,
           timer: "3000",
           confirmButtonText: "OK",
           confirmButtonColor: "#C31162",
@@ -556,11 +582,11 @@ const Storefront = ({ setCompletion }) => {
         : undefined,
       available_slots: Array.isArray(formData.availableSlots)
         ? formData.availableSlots.map((s) => ({
-          date: s.date,
-          // slots:
-          //   s.slots ||
-          //   (s.timeFrom && s.timeTo ? [`${s.timeFrom}-${s.timeTo}`] : []),
-        }))
+            date: s.date,
+            // slots:
+            //   s.slots ||
+            //   (s.timeFrom && s.timeTo ? [`${s.timeFrom}-${s.timeTo}`] : []),
+          }))
         : [],
       catering_policy: formData.cateringPolicy || "",
       // hall_types_note: formData.hallTypesNote || "",
@@ -602,17 +628,17 @@ const Storefront = ({ setCompletion }) => {
 
       video: Array.isArray(videoDrafts)
         ? videoDrafts
-          .map((v) => v.url || v.preview || "")
-          .filter(
-            (url) =>
-              url &&
-              typeof url === "string" &&
-              !url.startsWith("blob:") &&
-              !url.startsWith("data:")
-          )
-          .map((url) =>
-            url.startsWith("/uploads/") ? IMAGE_BASE_URL + url : url
-          )
+            .map((v) => v.url || v.preview || "")
+            .filter(
+              (url) =>
+                url &&
+                typeof url === "string" &&
+                !url.startsWith("blob:") &&
+                !url.startsWith("data:")
+            )
+            .map((url) =>
+              url.startsWith("/uploads/") ? IMAGE_BASE_URL + url : url
+            )
         : formData.attributes?.video || [],
       // Preferred vendors selection
       preferred_vendors:
@@ -635,18 +661,18 @@ const Storefront = ({ setCompletion }) => {
   const buildMedia = () => {
     const gallery = Array.isArray(photoDrafts)
       ? photoDrafts
-        .map((p) => {
-          const preview = p.preview || p.url || p.path || "";
-          return preview || null;
-        })
-        .filter(Boolean)
+          .map((p) => {
+            const preview = p.preview || p.url || p.path || "";
+            return preview || null;
+          })
+          .filter(Boolean)
       : Array.isArray(formData.media?.gallery)
-        ? formData.media.gallery
+      ? formData.media.gallery
           .map((g) => (typeof g === "string" ? g : g.url || g.path || null))
           .filter(Boolean)
-        : Array.isArray(formData.gallery)
-          ? formData.gallery.filter((g) => typeof g === "string")
-          : [];
+      : Array.isArray(formData.gallery)
+      ? formData.gallery.filter((g) => typeof g === "string")
+      : [];
     const media = {
       gallery,
       coverImage: formData.media?.coverImage || formData.coverImage || "",
@@ -740,25 +766,25 @@ const Storefront = ({ setCompletion }) => {
     // Preserve existing 360 assets outside attributes as URL lists
     const existingPanoImages = Array.isArray(view360Images)
       ? view360Images
-        .map((i) => i.preview)
-        .filter(
-          (u) =>
-            typeof u === "string" &&
-            u.trim() &&
-            !u.startsWith("blob:") &&
-            !u.startsWith("data:")
-        )
+          .map((i) => i.preview)
+          .filter(
+            (u) =>
+              typeof u === "string" &&
+              u.trim() &&
+              !u.startsWith("blob:") &&
+              !u.startsWith("data:")
+          )
       : [];
     const existingPanoVideos = Array.isArray(view360Videos)
       ? view360Videos
-        .map((v) => v.preview)
-        .filter(
-          (u) =>
-            typeof u === "string" &&
-            u.trim() &&
-            !u.startsWith("blob:") &&
-            !u.startsWith("data:")
-        )
+          .map((v) => v.preview)
+          .filter(
+            (u) =>
+              typeof u === "string" &&
+              u.trim() &&
+              !u.startsWith("blob:") &&
+              !u.startsWith("data:")
+          )
       : [];
 
     fd.append("view360_images_urls", JSON.stringify(existingPanoImages));
@@ -843,8 +869,9 @@ const Storefront = ({ setCompletion }) => {
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: `Failed to submit. ${typeof e === "string" ? e : e?.message || "Unknown error"
-          }`,
+        text: `Failed to submit. ${
+          typeof e === "string" ? e : e?.message || "Unknown error"
+        }`,
         timer: "3000",
         confirmButtonText: "OK",
         confirmButtonColor: "#C31162",
@@ -970,7 +997,7 @@ const Storefront = ({ setCompletion }) => {
       setActive(id);
       try {
         localStorage.setItem(storageKey, id);
-      } catch (_) { }
+      } catch (_) {}
       try {
         const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
         if (vw <= 992 && contentRef.current) {
@@ -981,7 +1008,7 @@ const Storefront = ({ setCompletion }) => {
             });
           }, 50);
         }
-      } catch (_) { }
+      } catch (_) {}
     },
     [storageKey]
   );
@@ -1009,16 +1036,22 @@ const Storefront = ({ setCompletion }) => {
       icon: <CiLocationOn size={20} />,
     },
     { id: "photos", label: "Photos", icon: <IoCameraOutline size={20} /> },
-    {
-      id: "vendor-360-view",
-      label: (
-        <div className="d-flex align-items-center">
-          <span>360° View</span>
-          <span className="ms-2"><NewTag /></span>
-        </div>
-      ),
-      icon: <TbView360Number size={20} />,
-    },
+    ...(normalizedVendorTypeName.includes("venue")
+      ? [
+          {
+            id: "vendor-360-view",
+            label: (
+              <div className="d-flex align-items-center">
+                <span>360° View</span>
+                <span className="ms-2">
+                  <NewTag />
+                </span>
+              </div>
+            ),
+            icon: <TbView360Number size={20} />,
+          },
+        ]
+      : []),
     { id: "videos", label: "Videos", icon: <IoVideocamOutline size={20} /> },
 
     {
@@ -1040,12 +1073,12 @@ const Storefront = ({ setCompletion }) => {
     // Only show Menus if vendorTypeName is allowed
     ...(allowedMenuTypes.includes(normalizedVendorTypeName)
       ? [
-        {
-          id: "vendor-menus",
-          label: "Menus",
-          icon: <PiForkKnife size={20} />,
-        },
-      ]
+          {
+            id: "vendor-menus",
+            label: "Menus",
+            icon: <PiForkKnife size={20} />,
+          },
+        ]
       : []),
 
     { id: "promotions", label: "Promotions", icon: <CiBullhorn size={20} /> },
@@ -1306,10 +1339,11 @@ const Storefront = ({ setCompletion }) => {
               <Nav.Link
                 key={item.id}
                 onClick={() => handleSetActive(item.id)}
-                className={`d-flex align-items-center gap-2 sidebar-nav-item ${active === item.id
-                  ? "active fs-16 fw-bold"
-                  : "fs-14 fw-normal"
-                  }`}
+                className={`d-flex align-items-center gap-2 sidebar-nav-item ${
+                  active === item.id
+                    ? "active fs-16 fw-bold"
+                    : "fs-14 fw-normal"
+                }`}
               >
                 {item.icon}
                 <span>{item.label}</span>

@@ -681,7 +681,6 @@ const Guests = () => {
                 <p className="wgl-stat-label">Guests</p>
               </div>
 
-            
               <div className="wgl-stat-card">
                 <h2 className="wgl-stat-number">{adultsCount}</h2>
                 <p className="wgl-stat-label">Adults</p>
@@ -1186,7 +1185,8 @@ const Guests = () => {
                                     return;
                                   }
                                   const msg = encodeURIComponent(
-                                    whatsappMessage || formatGuestListForWhatsApp()
+                                    whatsappMessage ||
+                                      formatGuestListForWhatsApp()
                                   );
                                   const phone = sanitizePhone(g.phone_number);
                                   if (!/^\d+$/.test(phone)) {
@@ -1198,7 +1198,10 @@ const Guests = () => {
                                     });
                                     return;
                                   }
-                                  window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
+                                  window.open(
+                                    `https://wa.me/${phone}?text=${msg}`,
+                                    "_blank"
+                                  );
                                 }}
                               >
                                 <FaWhatsapp />

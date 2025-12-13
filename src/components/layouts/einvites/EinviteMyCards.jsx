@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import EinviteCardGrid from "./EinviteCardGrid";
 import { einviteApi } from "../../../services/api/einviteApi";
 import Swal from "sweetalert2";
@@ -10,9 +11,17 @@ const EinviteMyCards = () => {
   const [error, setError] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [filterType, setFilterType] = useState("all");
+
+  const authUser = useSelector((state) => state.auth?.user);
+  const currentUserId = authUser?.id || authUser?._id || authUser?.userId;
+
   useEffect(() => {
-    fetchUserCards();
-  }, []);
+    if (currentUserId) {
+      fetchUserCards();
+    } else {
+      setLoading(false);
+    }
+  }, [currentUserId]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -26,14 +35,17 @@ const EinviteMyCards = () => {
   const fetchUserCards = async () => {
     try {
       setLoading(true);
-      const data = await einviteApi.getAllEinvites();
+      const data = await einviteApi.getUserEinvites(currentUserId);
+      
+      const userCards = Array.isArray(data) ? data : (data?.data || []);
+
       let drafts = [];
       try {
         drafts = JSON.parse(localStorage.getItem("einviteDrafts") || "[]");
       } catch {}
       const merged = [
         ...(Array.isArray(drafts) ? drafts : []),
-        ...(Array.isArray(data) ? data : []),
+        ...userCards,
       ];
       setCards(merged);
     } catch (err) {

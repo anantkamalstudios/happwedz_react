@@ -70,6 +70,10 @@ const BusinessDetails = ({ formData, setFormData }) => {
             prev.attributes?.facebook_link || vendor.facebook_link || "",
           instagram_link:
             prev.attributes?.instagram_link || vendor.instagram_link || "",
+          twitter_link:
+            prev.attributes?.twitter_link || vendor.twitter_link || "",
+          pinterest_link:
+            prev.attributes?.pinterest_link || vendor.pinterest_link || "",
         },
       }));
     }
@@ -147,6 +151,8 @@ const BusinessDetails = ({ formData, setFormData }) => {
       website: a.website || null,
       facebook_link: a.facebook_link || null,
       instagram_link: a.instagram_link || null,
+      twitter_link: a.twitter_link || null,
+      pinterest_link: a.pinterest_link || null,
       vendor_type_id: a.vendor_type_id ? Number(a.vendor_type_id) : null,
       years_in_business: a.years_in_business
         ? Number(a.years_in_business)
@@ -323,7 +329,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
           <div className="d-flex align-items-center gap-3">
             <div style={{ width: 96, height: 96, flex: "0 0 96px" }}>
               {profileImagePreview &&
-                typeof profileImagePreview === "string" ? (
+              typeof profileImagePreview === "string" ? (
                 <img
                   src={profileImagePreview}
                   alt="Profile preview"

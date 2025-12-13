@@ -300,7 +300,7 @@ const EnquiryManagement = () => {
 
   const handleDeleteEmail = async (id) => {
     try {
-      await axios.delete(`${API_BASE_URL}/inbox/${id}`, {
+      await axiosInstance.delete(`${API_BASE_URL}/inbox/${id}`, {
         headers: { Authorization: `Bearer ${vendorToken} ` },
       });
       fetchInbox();
@@ -646,7 +646,7 @@ const EnquiryManagement = () => {
                                         fontSize: "14px",
                                       }}
                                     >
-                                      {lead.request?.user?.name?.charAt(0) ||
+                                      {lead.request?.firstName?.charAt(0) ||
                                         "?"}
                                     </div>
                                     <div>
@@ -655,7 +655,9 @@ const EnquiryManagement = () => {
                                           !lead.isRead ? "fw-bold" : "fw-medium"
                                         }`}
                                       >
-                                        {lead.request?.user?.name || "No Name"}
+                                        {`${lead.request?.firstName || ""} ${
+                                          lead.request?.lastName || ""
+                                        }`.trim() || "No Name"}
                                       </h6>
                                       <p className="mb-0 text-muted fs-12">
                                         {lead.request?.user?.email}
@@ -733,7 +735,10 @@ const EnquiryManagement = () => {
 
                             <div className="flex-grow-1">
                               <h5 className="mb-1 fw-bold fs-16">
-                                {selectedLead.request?.user?.name}
+                                {/* {selectedLead.request?.user?.name} */}
+                                {`${selectedLead.request?.firstName || ""} ${
+                                  selectedLead.request?.lastName || ""
+                                }`.trim() || "No Name"}
                               </h5>
                               <div className="d-flex flex-column gap-1">
                                 <div className="d-flex align-items-center gap-2 fs-14">

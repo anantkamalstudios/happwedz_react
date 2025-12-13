@@ -100,10 +100,11 @@ const View360 = ({
         </button> */}
         <button
           type="button"
-          className={`btn pb-2 ${activeTab === "videos"
-            ? "border-0 border-bottom border-3 rounded-0 fs-16 border-primary"
-            : "border-0 fs-14"
-            }`}
+          className={`btn pb-2 ${
+            activeTab === "videos"
+              ? "border-0 border-bottom border-3 rounded-0 fs-16 border-primary"
+              : "border-0 fs-14"
+          }`}
           onClick={() => setActiveTab("videos")}
         >
           Videos

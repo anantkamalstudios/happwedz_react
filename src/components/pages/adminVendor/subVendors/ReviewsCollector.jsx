@@ -239,7 +239,10 @@ export default function ReviewRequestForm() {
               <option value="">Choose a booked customer...</option>
               {bookedLeads.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.request?.user?.name} - {item.request?.eventDate}
+                  {`${item.request?.firstName || ""} ${
+                    item.request?.lastName || ""
+                  }`.trim() || "No Name"}{" "}
+                  - {item.request?.eventDate}
                 </option>
               ))}
             </select>
