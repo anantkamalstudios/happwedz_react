@@ -106,13 +106,11 @@ const LocationModalWithAPI = () => {
     setShow(false);
     setSearchTerm("");
 
-    setTimeout(() => {
-      navigate(
-        `/vendors/all${
-          city !== "All Cities" ? `?city=${encodeURIComponent(city)}` : ""
-        }`
-      );
-    }, 300);
+    navigate(
+      `/vendors/all${
+        city !== "All Cities" ? `?city=${encodeURIComponent(city)}` : ""
+      }`
+    );
   };
 
   const handleClearLocation = (e) => {
