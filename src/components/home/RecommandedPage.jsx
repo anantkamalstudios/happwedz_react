@@ -77,6 +77,25 @@ const RecommandedPage = () => {
         : `${IMAGE_BASE_URL}${rawImage}`
       : "/images/imageNotFound.jpg";
 
+    const attrs = item.attributes || {};
+
+    // Extract Veg/Non-Veg prices if available
+    const vegPrice =
+      attrs.Veg_Price || attrs.veg_price || item.veg_price || null;
+    const nonVegPrice =
+      attrs.Non_Veg_Price || attrs.non_veg_price || item.non_veg_price || null;
+
+    // Determine the best price to show as "starting_price" (fallback chain)
+    let displayPrice =
+      attrs.PriceRange ||
+      item.priceRange ||
+      attrs.PhotoPackage_Price ||
+      attrs.Photo_video_Price ||
+      attrs.starting_price ||
+      item.starting_price ||
+      item.price ||
+      "N/A";
+
     return {
       ...item,
       id: item.id, // Ensure ID is passed
@@ -84,7 +103,12 @@ const RecommandedPage = () => {
 
       image: imageUrl, // Use processed image URL
       city: item.city, // Keep city
-      priceRange: item.priceRange || "N/A",
+
+      // Price mapping for GridView
+      vegPrice: vegPrice,
+      nonVegPrice: nonVegPrice,
+      starting_price: displayPrice,
+
       review_count: item.review_count || 0,
     };
   });
