@@ -621,6 +621,7 @@ const Storefront = ({ setCompletion }) => {
       instagram_link: formData.attributes?.instagram_link || "",
       twitter_link: formData.attributes?.twitter_link || "",
       pinterest_link: formData.attributes?.pinterest_link || "",
+      website: formData.attributes?.website || "",
       // Always include menus if present in attributes
       ...(Array.isArray(formData.attributes?.menus)
         ? { menus: formData.attributes.menus }
@@ -722,6 +723,21 @@ const Storefront = ({ setCompletion }) => {
       : [];
 
     fd.append("attributes", JSON.stringify(attrs));
+
+    // Append social links as root fields for backend compatibility
+    const socialFields = [
+      "facebook_link",
+      "instagram_link",
+      "twitter_link",
+      "pinterest_link",
+      "website",
+    ];
+    socialFields.forEach((field) => {
+      if (attrs[field]) {
+        fd.append(field, attrs[field]);
+      }
+    });
+
     // Send `media` as a flat array of URL strings as requested by the frontend contract
     fd.append("media", JSON.stringify(safeMedia));
 

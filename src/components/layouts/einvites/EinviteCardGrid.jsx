@@ -46,7 +46,7 @@ const EinviteCardGrid = ({
   return (
     <div className="row">
       {cards.map((card) => (
-        <div key={card.id} className="col-lg-3 col-md-6 mb-4">
+        <div key={card.id} className="col-lg-4 col-md-6 mb-4">
           <EinviteCardItem
             card={card}
             showActions={showActions}

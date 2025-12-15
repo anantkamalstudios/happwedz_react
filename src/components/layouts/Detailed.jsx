@@ -33,6 +33,8 @@ const API_BASE_URL = "https://happywedz.com";
 import Swal from "sweetalert2";
 import SectionTabs from "./SectionTabs";
 import { TbView360Number } from "react-icons/tb";
+import GridView from "./Main/GridView";
+import SimilarServices from "./SimilarServices";
 
 const capitalizeWords = (str) => {
   if (!str) return "";
@@ -1112,11 +1114,11 @@ const Detailed = () => {
                 </div>
 
                 <div className="tags mb-4 d-flex flex-wrap gap-2">
-                  {venueData.attributes?.vendor_type && (
+                  {/* {venueData.attributes?.vendor_type && (
                     <span className="px-2 py-1 border rounded text-dark fs-12 bg-white">
                       {venueData.attributes.vendor_type}
                     </span>
-                  )}
+                  )} */}
                   {isVenue && venueData.attributes?.rooms && (
                     <span className="px-2 py-1 border rounded text-dark fs-12 bg-white">
                       Hotel/Resort
@@ -1167,13 +1169,13 @@ const Detailed = () => {
                           ? "Photography Package (Starting)"
                           : venueData.attributes?.vendor_type ===
                             "Music And Dance"
-                          ? "Pricing Range"
+                          ? ""
                           : ""}
                       </span>
 
                       <div className="fs-16 fw-bold mt-1">
                         <span className="fw-semibold fs-16 d-block">
-                          Pricing Range (Starting)
+                          Starting Price
                         </span>
                         <span className="primary-text">
                           ₹{" "}
@@ -1245,63 +1247,8 @@ const Detailed = () => {
         </Row>
       </Container>
 
-      {/* Similar Venues/Vendors section remains the same */}
-      {/* <section className="similar-venues py-5 bg-light">
-        <Container>
-          <h3 className="details-section-title fw-bold text-center mb-5">
-            Similar {venueData.attributes?.vendor_type || "Vendors"} You Might
-            Like
-          </h3>
-          <Row>
-            {images.slice(0, 3).map((img, index) => (
-              <Col md={4} key={index}>
-                <div className="similar-venue-card bg-white p-3 rounded shadow-sm">
-                  <div
-                    className="venue-image rounded mb-3"
-                    style={{
-                      backgroundImage: `url(${img})`,
-                      height: "200px",
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                    }}
-                  ></div>
-                  <div className="venue-info">
-                    <h5 className="fw-bold">
-                      {venueData.attributes?.vendor_name || "Similar Vendor"}
-                    </h5>
-                    <p className="location text-muted small">
-                      <FaMapMarkerAlt className="me-1" /> {displayLocation}
-                    </p>
-                    <div className="d-flex justify-content-between align-items-center mt-2">
-                      <span className="rating fw-semibold">
-                        ⭐ {venueData.attributes?.rating || 4.5}
-                      </span>
-                      <span className="price text-primary fw-bold">
-                        {isVenue && venueData.attributes?.veg_price
-                          ? `₹${parseInt(
-                            venueData.attributes.veg_price.replace(/,/g, "")
-                          ).toLocaleString()} onwards`
-                          : !isVenue && venueData.attributes?.photo_package_price
-                            ? `₹${parseInt(
-                              venueData.attributes.photo_package_price.replace(
-                                /,/g,
-                                ""
-                              )
-                            ).toLocaleString()} onwards`
-                            : !isVenue && venueData.attributes?.PriceRange
-                              ? `₹${parseInt(
-                                venueData.attributes.PriceRange.replace(/[^\d]/g, "")
-                              ).toLocaleString()} onwards`
-                              : "Contact for pricing"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Col>
-            ))}
-          </Row>
-        </Container>
-      </section> */}
+      {/* Similar Venues/Vendors section */}
+      {/* <SimilarServices venueData={venueData} currentId={id} /> */}
 
       <PricingModal
         show={showPricingModal}

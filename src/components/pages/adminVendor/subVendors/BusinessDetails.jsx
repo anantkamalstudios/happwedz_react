@@ -497,7 +497,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
             onChange={handleAttributeChange}
           />
         </div>
-        <div>
+        {/* <div>
           <label className="form-label fs-16">Website</label>
           <input
             name="website"
@@ -507,7 +507,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
             value={formData.attributes?.website || ""}
             onChange={handleAttributeChange}
           />
-        </div>
+        </div> */}
         {/* Social links moved to Social Network section */}
         <div className="mb-3">
           <input

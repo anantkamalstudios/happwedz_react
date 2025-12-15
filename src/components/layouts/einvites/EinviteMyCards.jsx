@@ -36,17 +36,14 @@ const EinviteMyCards = () => {
     try {
       setLoading(true);
       const data = await einviteApi.getUserEinvites(currentUserId);
-      
-      const userCards = Array.isArray(data) ? data : (data?.data || []);
+
+      const userCards = Array.isArray(data) ? data : data?.data || [];
 
       let drafts = [];
       try {
         drafts = JSON.parse(localStorage.getItem("einviteDrafts") || "[]");
       } catch {}
-      const merged = [
-        ...(Array.isArray(drafts) ? drafts : []),
-        ...userCards,
-      ];
+      const merged = [...(Array.isArray(drafts) ? drafts : []), ...userCards];
       setCards(merged);
     } catch (err) {
       setError("Failed to load your cards");
