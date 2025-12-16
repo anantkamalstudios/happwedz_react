@@ -1196,27 +1196,28 @@ const Storefront = ({ setCompletion }) => {
             images={photoDrafts}
             onImagesChange={setPhotoDrafts}
             onShowSuccess={showSuccessModal}
-            onSave={(media) => {
-              const drafts = (media || []).map((m) => {
-                if (m instanceof File) {
-                  return {
-                    file: m,
-                    preview: URL.createObjectURL(m),
-                  };
-                }
-                if (typeof m === "string") {
-                  let preview = m;
-                  if (preview.startsWith("/uploads/"))
-                    preview = IMAGE_BASE_URL + preview;
-                  return { preview, file: null };
-                }
-                return {
-                  preview: m.preview || m.url || "",
-                  file: m.file || null,
-                };
-              });
-              setPhotoDrafts(drafts.filter((d) => d.preview));
-            }}
+            // onSave={(media) => {
+            //   const drafts = (media || []).map((m) => {
+            //     if (m instanceof File) {
+            //       return {
+            //         file: m,
+            //         preview: URL.createObjectURL(m),
+            //       };
+            //     }
+            //     if (typeof m === "string") {
+            //       let preview = m;
+            //       if (preview.startsWith("/uploads/"))
+            //         preview = IMAGE_BASE_URL + preview;
+            //       return { preview, file: null };
+            //     }
+            //     return {
+            //       preview: m.preview || m.url || "",
+            //       file: m.file || null,
+            //     };
+            //   });
+            //   setPhotoDrafts(drafts.filter((d) => d.preview));
+            // }}
+            onSave={handleSave}
           />
         );
       case "videos":
@@ -1225,6 +1226,7 @@ const Storefront = ({ setCompletion }) => {
             videos={videoDrafts}
             onVideosChange={setVideoDrafts}
             onShowSuccess={showSuccessModal}
+            onSave={handleSave}
           />
         );
       case "vendor-360-view":

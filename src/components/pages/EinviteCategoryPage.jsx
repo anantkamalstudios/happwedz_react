@@ -177,7 +177,8 @@
 // export default EinviteCategoryPage;
 
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import EinviteCardGrid from "../layouts/einvites/EinviteCardGrid";
 import EinviteFilterBar from "../layouts/einvites/EinviteFilterBar";
 import { einviteApi } from "../../services/api/einviteApi";
@@ -185,6 +186,8 @@ import { FaChevronLeft } from "react-icons/fa6";
 
 const EinviteCategoryPage = () => {
   const { category } = useParams();
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.user);
   const [cards, setCards] = useState([]);
   const [filteredCards, setFilteredCards] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -306,16 +309,24 @@ const EinviteCategoryPage = () => {
           {/* RIGHT SIDE */}
           <div className="col-auto col-lg-4">
             <div className="d-flex align-items-center justify-content-end">
-              <Link
-                to="/einvites/my-cards"
+              <button
                 className="btn btn-outline-primary rounded-pill px-3 px-lg-4 py-2"
                 style={{
                   minWidth: "140px",
                   maxWidth: "180px",
                 }}
+                onClick={() => {
+                  if (user) {
+                    navigate("/einvites/my-cards");
+                  } else {
+                    navigate("/customer-login", {
+                      state: { from: { pathname: "/einvites/my-cards" } },
+                    });
+                  }
+                }}
               >
                 My Cards
-              </Link>
+              </button>
             </div>
           </div>
         </div>
@@ -354,30 +365,29 @@ const EinviteCategoryPage = () => {
           //   )}
           // </div>
           <div className="mt-3 mt-md-4">
-  {filteredCards.length === 0 ? (
-    <div className="text-center py-5">
-      <i className="fas fa-heart fa-3x fa-md-4x text-muted mb-3 mb-md-4"></i>
-      <h4 className="fs-5 fs-md-4">No cards found</h4>
-      <p className="text-muted fs-6">
-        Try adjusting your search or filter criteria
-      </p>
-    </div>
-  ) : (
-    <div
-      className="w-100 d-flex d-md-block justify-content-center"
-      style={{ textAlign: "center" }} // mobile center
-    >
-      <EinviteCardGrid
-        cards={filteredCards}
-        loading={false}
-        showActions={true}
-        showEditButton={true}
-        showShareButton={false}
-      />
-    </div>
-  )}
-</div>
-
+            {filteredCards.length === 0 ? (
+              <div className="text-center py-5">
+                <i className="fas fa-heart fa-3x fa-md-4x text-muted mb-3 mb-md-4"></i>
+                <h4 className="fs-5 fs-md-4">No cards found</h4>
+                <p className="text-muted fs-6">
+                  Try adjusting your search or filter criteria
+                </p>
+              </div>
+            ) : (
+              <div
+                className="w-100 d-flex d-md-block justify-content-center"
+                style={{ textAlign: "center" }} // mobile center
+              >
+                <EinviteCardGrid
+                  cards={filteredCards}
+                  loading={false}
+                  showActions={true}
+                  showEditButton={true}
+                  showShareButton={false}
+                />
+              </div>
+            )}
+          </div>
         )}
 
         {loading && <EinviteCardGrid cards={[]} loading={true} />}

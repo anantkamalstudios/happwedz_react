@@ -400,7 +400,14 @@ function App() {
                 element={<EinviteSharePage />}
               />
               <Route path="/einvites/view/:id" element={<EinviteViewPage />} />
-              <Route path="/einvites/my-cards" element={<EinviteMyCards />} />
+              <Route
+                path="/einvites/my-cards"
+                element={
+                  <UserPrivateRoute>
+                    <EinviteMyCards />
+                  </UserPrivateRoute>
+                }
+              />
               <Route
                 path="/einvites/our-cards"
                 element={

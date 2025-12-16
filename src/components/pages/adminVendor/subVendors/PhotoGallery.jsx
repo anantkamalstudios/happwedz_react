@@ -98,8 +98,8 @@ const PhotoGallery = ({ images = [], onImagesChange, onSave }) => {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           >
-            <p className="mb-2 fs-16">Drag & Drop images here</p>
-            <p className="text-muted mb-3 fs-14">or</p>
+            {/* <p className="mb-2 fs-16">Drag & Drop images here</p>
+            <p className="text-muted mb-3 fs-14">or</p> */}
 
             <button
               className="btn btn-primary px-4 rounded-pill fw-medium fs-14"

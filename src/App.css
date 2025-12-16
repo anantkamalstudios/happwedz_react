@@ -12350,12 +12350,12 @@ input:checked + .slider:before {
 }
 
 .wedding-legal-sidelink:hover {
-  background-color: #f9f2f2;
-  color: #e47272;
+  background-color: #ed1173;
+   color: white;
 }
 
 .wedding-legal-sidelink.active {
-  background-color: #e47272;
+  background-color: #ed1173;
   color: white;
 }
 

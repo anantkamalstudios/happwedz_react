@@ -1119,7 +1119,7 @@ const Detailed = () => {
                       {venueData.attributes.vendor_type}
                     </span>
                   )} */}
-                  {isVenue && venueData.attributes?.rooms && (
+                  {/* {isVenue && venueData.attributes?.rooms && (
                     <span className="px-2 py-1 border rounded text-dark fs-12 bg-white">
                       Hotel/Resort
                     </span>
@@ -1128,7 +1128,7 @@ const Detailed = () => {
                     <span className="px-2 py-1 border rounded text-dark fs-12 bg-white">
                       {capitalizeWords(venueData.attributes.indoor_outdoor)}
                     </span>
-                  )}
+                  )} */}
                 </div>
 
                 {/* Pricing Section */}
@@ -1248,7 +1248,7 @@ const Detailed = () => {
       </Container>
 
       {/* Similar Venues/Vendors section */}
-      {/* <SimilarServices venueData={venueData} currentId={id} /> */}
+      <SimilarServices venueData={venueData} currentId={id} />
 
       <PricingModal
         show={showPricingModal}
