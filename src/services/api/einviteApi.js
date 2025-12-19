@@ -194,7 +194,9 @@ export const einviteApi = {
 
   getUserEinvites: async (userId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/${userId}/einvites`);
+      const response = await fetch(
+        `${API_BASE_URL}/einvites/${userId}/einvites`
+      );
       if (!response.ok) throw new Error("Failed to fetch user e-invites");
       return await response.json();
     } catch (error) {

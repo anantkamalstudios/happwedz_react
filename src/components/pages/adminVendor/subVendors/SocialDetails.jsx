@@ -1,5 +1,7 @@
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { vendorsApi } from "../../../../services/api/vendorAuthApi";
+import { setVendor } from "../../../../redux/vendorAuthSlice";
 import {
   FaFacebookF,
   FaInstagram,
@@ -15,6 +17,8 @@ export default function SocialDetails({
   onShowSuccess,
 }) {
   const { vendor } = useSelector((state) => state.vendorAuth || {});
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (name, value) => {
     setFormData((prev) => ({
@@ -30,8 +34,54 @@ export default function SocialDetails({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (onSave) await onSave();
-    if (onShowSuccess) onShowSuccess();
+    setLoading(true);
+    try {
+      // 1. Update Vendor Auth (Redux + DB) to keep business details in sync
+      // Construct full payload similar to BusinessDetails to ensure no data loss
+      const payload = {
+        businessName: vendor?.businessName || "",
+        email: vendor?.email || "",
+        phone: vendor?.phone || "",
+        city: vendor?.city || "",
+        state: vendor?.state || null,
+        zip: vendor?.zip || null,
+        firstName: vendor?.firstName || null,
+        lastName: vendor?.lastName || null,
+        vendor_type_id: vendor?.vendor_type_id
+          ? Number(vendor.vendor_type_id)
+          : null,
+        years_in_business: vendor?.years_in_business
+          ? Number(vendor.years_in_business)
+          : null,
+        // Social links from current form state (via getValue)
+        facebook_link: getValue("facebook_link"),
+        instagram_link: getValue("instagram_link"),
+        twitter_link: getValue("twitter_link"),
+        pinterest_link: getValue("pinterest_link"),
+        website: getValue("website"),
+      };
+
+      if (vendor?.id) {
+        try {
+          await vendorsApi.updateVendor(vendor.id, payload);
+          // Fetch fresh data to ensure Redux has the latest state without extra messages
+          const freshVendor = await vendorsApi.getVendorById(vendor.id);
+          if (freshVendor) {
+            dispatch(setVendor(freshVendor));
+          }
+        } catch (vendorErr) {
+          console.error("Failed to update vendor auth details:", vendorErr);
+        }
+      }
+
+      // 2. Update Vendor Service (Storefront) via parent handler
+      // if (onSave) await onSave();
+      if (onShowSuccess) onShowSuccess();
+    } catch (err) {
+      console.error("Error saving social links:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -127,13 +177,14 @@ export default function SocialDetails({
           <button
             type="submit"
             className="btn fs-14"
+            disabled={loading}
             style={{
               backgroundColor: "#e83e8c",
               color: "white",
               border: "none",
             }}
           >
-            Save Links
+            {loading ? "Saving..." : "Save Links"}
           </button>
         </div>
       </form>

@@ -9,6 +9,9 @@ const VendorAvailability = ({
 }) => {
   const [availableDates, setAvailableDates] = useState(
     (
+      (Array.isArray(formData?.availableSlots)
+        ? formData.availableSlots
+        : null) ||
       formData?.attributes?.availableSlots ||
       formData?.attributes?.available_slots ||
       []
@@ -17,12 +20,21 @@ const VendorAvailability = ({
 
   useEffect(() => {
     const slots =
+      (Array.isArray(formData?.availableSlots)
+        ? formData.availableSlots
+        : null) ||
       formData?.attributes?.availableSlots ||
       formData?.attributes?.available_slots ||
       [];
     const next = Array.isArray(slots) ? slots.map((s) => s.date) : [];
-    setAvailableDates(next);
+    // Only update if different to avoid loop/reset
+    setAvailableDates((prev) => {
+      const prevStr = JSON.stringify(prev.sort());
+      const nextStr = JSON.stringify(next.sort());
+      return prevStr === nextStr ? prev : next;
+    });
   }, [
+    formData?.availableSlots,
     formData?.attributes?.availableSlots,
     formData?.attributes?.available_slots,
   ]);

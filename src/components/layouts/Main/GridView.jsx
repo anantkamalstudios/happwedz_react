@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { toggleWishlist } from "../../../redux/authSlice";
 
-const GridView = ({ subVenuesData, handleShow }) => {
+const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
   const [favorites, setFavorites] = useState({});
   const [wishlistIds, setWishlistIds] = useState(new Set());
   const dispatch = useDispatch();
@@ -122,11 +122,11 @@ const GridView = ({ subVenuesData, handleShow }) => {
   };
 
   return (
-    <Container>
+    <Container fluid={fluid}>
       <Row>
         {subVenuesData && subVenuesData.length > 0 ? (
           subVenuesData.map((venue) => (
-            <Col key={venue.id} xs={12} sm={6} lg={4} className="mb-4">
+            <Col key={venue.id} xs={12} sm={6} lg={colLg || 4} className="mb-4">
               <Card
                 className="border-0 main-grid-cards rounded-4 overflow-hidden p-2 h-100"
                 onClick={() => handleCardClick(venue)}

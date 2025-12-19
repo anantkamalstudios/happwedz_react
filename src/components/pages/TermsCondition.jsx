@@ -1,241 +1,376 @@
 import React, { useState } from "react";
+import {
+  FaGavel,
+  FaUserShield,
+  FaCookieBite,
+  FaCopyright,
+  FaExclamationTriangle,
+  FaChevronRight,
+  FaAngleRight,
+} from "react-icons/fa";
 
 const TermsCondition = () => {
   const [activeSection, setActiveSection] = useState("terms");
-
-  // const legalSections = {
-  //   terms: {
-  //     title: "Terms of Service",
-  //     content: `Welcome to WeddingWire! These Terms of Service govern your use of our website and services. By accessing or using WeddingWire, you agree to be bound by these Terms.
-
-  //     1. Account Registration
-  //     You must create an account to access certain features. You agree to provide accurate information and keep your password secure.
-
-  //     2. User Content
-  //     You retain ownership of content you post, but grant WeddingWire a license to use it. You are responsible for your content and agree not to post illegal or infringing material.
-
-  //     3. Prohibited Activities
-  //     You agree not to: harass other users, use automated systems, violate laws, or interfere with the service.
-
-  //     4. Termination
-  //     We may suspend or terminate your account for violations of these Terms.
-
-  //     5. Disclaimer
-  //     WeddingWire provides the service "as is" without warranties.`,
-  //   },
-  //   privacy: {
-  //     title: "Privacy Policy",
-  //     content: `Your privacy is important to us. This Privacy Policy explains how we collect, use, and protect your information.
-
-  //     1. Information We Collect
-  //     We collect information you provide directly, usage data, and information from cookies.
-
-  //     2. How We Use Information
-  //     We use your information to provide services, communicate with you, and improve our platform.
-
-  //     3. Information Sharing
-  //     We may share information with vendors and service providers, or when required by law.
-
-  //     4. Your Choices
-  //     You can update your account information and communication preferences at any time.
-
-  //     5. Data Security
-  //     We implement security measures to protect your information, but no system is completely secure.`,
-  //   },
-  //   cookies: {
-  //     title: "Cookie Policy",
-  //     content: `We use cookies and similar technologies to provide and improve our services.
-
-  //     1. What Are Cookies?
-  //     Cookies are small text files stored on your device when you visit websites.
-
-  //     2. Types of Cookies We Use
-  //     - Essential cookies: Required for basic functions
-  //     - Performance cookies: Help us understand how visitors interact
-  //     - Functionality cookies: Remember your preferences
-  //     - Advertising cookies: Deliver relevant ads
-
-  //     3. Your Choices
-  //     Most browsers allow you to control cookies through their settings. However, disabling cookies may affect functionality.`,
-  //   },
-  //   intellectual: {
-  //     title: "Intellectual Property",
-  //     content: `All content on WeddingWire is protected by intellectual property laws.
-
-  //     1. Our Content
-  //     The WeddingWire name, logos, and all related names are trademarks of WeddingWire. All website content is protected by copyright.
-
-  //     2. Your Content
-  //     You retain ownership of content you post but grant us a license to use it.
-
-  //     3. Copyright Complaints
-  //     We respect intellectual property rights. Please contact us with any infringement claims.`,
-  //   },
-  //   disclaimer: {
-  //     title: "Disclaimer of Liability",
-  //     content: `WeddingWire provides a platform for wedding professionals and couples to connect.
-
-  //     1. No Endorsement
-  //     We do not endorse any vendors listed on our site. We are not responsible for the quality of services provided.
-
-  //     2. Third-Party Content
-  //     We are not responsible for content posted by users or third parties.
-
-  //     3. Limitation of Liability
-  //     To the fullest extent permitted by law, WeddingWire shall not be liable for any indirect, incidental, or consequential damages.`,
-  //   },
-  // };
+  const primaryColor = "var(--primary-color)";
 
   const legalSections = {
     terms: {
-      title: "Terms of Services",
-      content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-    Integer euismod lorem ut est feugiat, at scelerisque velit faucibus. 
-    Nunc interdum tellus non diam tincidunt, sit amet vulputate elit aliquam.
+      title: "Terms of Service",
+      icon: <FaGavel />,
+      content: `
+Last Updated: [Add Date]
 
-    1. Vivamus Porta  
-    Curabitur euismod, augue vitae iaculis mollis, enim lectus sodales metus, sed suscipit orci ipsum sit amet justo.
+By accessing or using Happywedz.com (the "Platform" / "Website"), you agree to these Terms. If you do not agree, please discontinue use immediately.
 
-    2. Nunc Elementum  
-    Aliquam blandit libero ac dui porttitor, a commodo magna convallis. Mauris tincidunt ligula sed turpis commodo, in ultricies leo bibendum.
+1. Acceptance of Terms
+These Terms govern your access and use of Happywedz.com. By using the Website, creating an account, or communicating with vendors, you confirm that you have read, understood, and agreed to these Terms.
+Happywedz reserves the right to modify these Terms at any time. Updates become effective once published.
 
-    3. Sed Consequat  
-    Cras facilisis lorem quis dui consequat, sed vulputate ante gravida. Nulla facilisi. Sed vel sem at orci mattis tincidunt.
+2. Nature of the Platform
+Happywedz.com is a wedding planning marketplace connecting:
+• Couples / Users seeking wedding services
+• Vendors / Service Providers offering wedding-related services
 
-    4. Donec Amet  
-    In rhoncus felis vitae sem facilisis malesuada. Quisque pretium nulla in odio sodales cursus.
+Happywedz is a digital intermediary only and does not provide or control vendor services.
+All bookings, payments, cancellations, and service delivery are contracts solely between Users and Vendors.
 
-    5. Ut Vulputate  
-    Etiam tempor arcu id risus viverra, nec viverra risus aliquet. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.`,
+3. User Eligibility
+You confirm that you:
+• Are at least 18 years old
+• Have legal capacity to enter binding agreements
+• Will use the platform lawfully
+
+4. User Responsibilities
+You agree not to:
+• Provide false or misleading information
+• Create fake or multiple accounts
+• Post abusive, unlawful, or harmful content
+• Infringe intellectual property
+• Hack, disrupt, or misuse the platform
+• Use bots or scrapers without permission
+
+Accounts may be suspended or terminated for violations.
+
+5. Vendor Responsibilities
+Vendors must:
+• Provide accurate business information
+• Publish genuine pricing and media
+• Deliver services professionally
+• Honor commitments
+• Respond to users in a timely manner
+
+Happywedz is not responsible for vendor behavior or service quality.
+
+6. Booking & Payments
+Happywedz is not involved in pricing, payment collection, refunds, or disputes.
+All service contracts are between Users and Vendors.
+
+7. Account Termination
+Accounts may be terminated due to fraud, violations, harmful content, or legal reasons.
+Users may request account deletion via support.
+
+8. Third-Party Links
+Happywedz is not responsible for third-party content or policies.
+
+9. Governing Law
+These Terms are governed by Indian law.
+Jurisdiction: Courts of [City/State – e.g., Pune, Maharashtra].
+`,
     },
+
     privacy: {
       title: "Privacy Policy",
-      content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-    Etiam ut nibh gravida, fringilla odio ac, laoreet sapien. Curabitur sit amet mauris lectus.
+      icon: <FaUserShield />,
+      content: `
+Your privacy is important to us.
 
-    1. Integer Mattis  
-    Ut vel lectus sed nulla aliquam ornare. In et orci nec lorem gravida sagittis ac eget turpis.
+1. Information We Collect
 
-    2. Fusce Faucibus  
-    Pellentesque ullamcorper ex et elit suscipit, vel ornare mauris vulputate. Donec vel arcu ut nibh suscipit hendrerit.
+a) Information You Provide
+• Name, email, phone number
+• Wedding details (date, location, budget)
+• Vendor profile information
+• Reviews, chats, photos, inquiries
 
-    3. Aliquam Vitae  
-    Nam tempor, nulla sit amet vulputate lacinia, nisl urna fermentum eros, nec suscipit erat velit ut leo.
+b) Information Collected Automatically
+• IP address
+• Device & browser details
+• Pages visited & activity logs
+• Cookies & analytics data
 
-    4. Mauris Blandit  
-    Donec porttitor odio at sapien euismod, vel tincidunt felis dictum. Vestibulum sed nisi id lorem porttitor egestas.
+c) Information from Vendors
+Vendors may share booking details and quotations.
 
-    5. Cras Integer  
-    Nullam malesuada tortor vel felis cursus, et ultricies nisi condimentum. Sed imperdiet nibh sit amet lacus pulvinar pretium.`,
+2. How We Use Information
+• Platform functionality
+• Vendor-user connections
+• Communication & inquiries
+• Personalization
+• Security & fraud prevention
+• Legal compliance
+
+3. Information Sharing
+We do not sell personal data.
+Information may be shared with vendors, service providers, legal authorities, or in business transfers.
+
+4. Data Protection & Retention
+• Secure servers & restricted access
+• Data retained only as required
+• No system is 100% secure
+
+5. Your Rights
+You may request access, correction, deletion, or withdrawal of consent.
+Contact: [Support Email]
+`,
     },
+
     cookies: {
       title: "Cookie Policy",
-      content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-    Vestibulum eget augue dapibus, aliquam arcu non, cursus lorem.
+      icon: <FaCookieBite />,
+      content: `
+Happywedz uses cookies to enhance user experience.
 
-    1. Donec Ultrices  
-    Proin dictum, mi et vestibulum fringilla, mi metus consequat erat, nec convallis orci nunc non massa.
+1. Types of Cookies
 
-    2. Suspendisse Potenti  
-    - Aenean lacinia risus quis lorem fermentum sagittis.  
-    - Morbi ac urna sed libero blandit faucibus.  
-    - Integer vel diam quis lorem dignissim tempor.  
-    - Nam condimentum purus ac leo varius elementum.
+• Essential Cookies
+Required for login, navigation, and security.
 
-    3. Pellentesque Dictum  
-    Vestibulum sit amet arcu quis est viverra pulvinar. Maecenas nec risus ut lectus cursus laoreet sed nec nunc.`,
+• Analytics Cookies
+Used to analyze usage and improve performance.
+
+• Functional Cookies
+Store preferences like language and filters.
+
+• Advertising Cookies
+(If enabled) Used for remarketing and ads.
+
+2. Third-Party Cookies
+Services like Google Analytics or ad networks may set cookies.
+You can disable cookies via browser settings, but some features may not work properly.
+`,
     },
+
     intellectual: {
-      title: "Intellectual Problem",
-      content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-    Suspendisse pretium urna ac velit aliquet, vitae efficitur nisl volutpat.
+      title: "Intellectual Property Policy",
+      icon: <FaCopyright />,
+      content: `
+1. Ownership
+All content on Happywedz.com including text, logos, graphics, videos, databases, and code is owned by or licensed to Happywedz and protected by IP laws.
 
-    1. Phasellus Odio  
-    Integer ut magna non orci tristique vestibulum. Fusce commodo lacus ut est ornare, vitae laoreet nulla tincidunt.
+2. User & Vendor Content
+By uploading content, you grant Happywedz a worldwide, royalty-free license to display, publish, format, distribute, and promote the content.
 
-    2. Morbi Efficitur  
-    Etiam imperdiet magna in ipsum ullamcorper, in porta sem dignissim. Duis dapibus mi eget neque pulvinar ultricies.
+Content remains yours and can be removed unless required for legal, review, or past marketing purposes.
 
-    3. Pellentesque Id  
-    Mauris fermentum augue non ligula suscipit, nec tincidunt velit bibendum. Ut varius massa eget orci posuere, in pulvinar risus egestas.`,
+3. Copyright Infringement
+If you believe your copyrighted work is misused:
+Email: [Your Email]
+Subject: Copyright Infringement Notice
+`,
     },
+
     disclaimer: {
       title: "Disclaimer of Liability",
-      content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-    Sed pharetra nisl ac enim vestibulum, vitae vulputate enim blandit.
+      icon: <FaExclamationTriangle />,
+      content: `
+1. Platform Disclaimer
+Happywedz is a listing and discovery platform only.
+We do not guarantee vendor quality, pricing, availability, or legality.
 
-    1. Nulla Facilisi  
-    Morbi faucibus turpis at sem iaculis, vitae commodo magna dignissim. Curabitur quis nisi in justo congue pretium.
+2. User-Vendor Interaction
+All dealings are at your own risk.
+Happywedz is not responsible for:
+• Financial loss
+• Service delays or cancellations
+• Fraud or disputes
+• Misrepresentation
+• Vendor or user misconduct
 
-    2. Sed Euismod  
-    Donec tincidunt augue in dolor cursus facilisis. Nunc pulvinar, ex in viverra elementum, turpis erat viverra mauris.
-
-    3. Integer Commodo  
-    Suspendisse tempor mi non elit egestas, non euismod sem suscipit. Pellentesque sagittis lectus ut ultricies tempus.`,
+3. No Warranty
+The platform is provided "as is" and "as available".
+We do not guarantee uninterrupted service, error-free content, or accuracy of listings.
+`,
     },
   };
 
+  // Helper to format content with bold headings and lists
+  const formatContent = (content) => {
+    return content
+      .trim()
+      .split("\n")
+      .map((line, index) => {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) return <br key={index} />;
+
+        // Check for numbered headings (e.g., "1. Title")
+        if (/^\d+\.\s/.test(trimmedLine) || /^[a-z]\)\s/.test(trimmedLine)) {
+          return (
+            <h5 key={index} className="fw-bold mt-4 mb-2 text-dark">
+              {trimmedLine}
+            </h5>
+          );
+        }
+
+        // Check for bullet points
+        if (trimmedLine.startsWith("•")) {
+          return (
+            <div key={index} className="d-flex align-items-start mb-2 ms-3">
+              <span className="me-2" style={{ color: primaryColor }}>
+                •
+              </span>
+              <span className="text-muted">
+                {trimmedLine.substring(1).trim()}
+              </span>
+            </div>
+          );
+        }
+
+        // Regular paragraph
+        return (
+          <p key={index} className="text-muted mb-2 leading-relaxed">
+            {trimmedLine}
+          </p>
+        );
+      });
+  };
+
   return (
-    <div className="wedding-legal-container">
-      <div className="wedding-legal-hero">
-        <h1 className="wedding-legal-herotitle">Legal Terms</h1>
-        <p className="wedding-legal-herosubtitle">
-          {/* Understanding our policies and terms of service */}
-          Lorem, ipsum dolor sit amet consectetur adipisicing.
-        </p>
-      </div>
+    <div className="terms-condition-page bg-light min-vh-100 py-5">
+      <div className="container">
+        {/* Hero Section */}
+        <div className="text-center mb-5 mx-auto" style={{ maxWidth: "800px" }}>
+          <h1 className="display-5 fw-bold text-dark mb-3">
+            Legal Terms & Policies
+          </h1>
+          <div className="d-flex justify-content-center mb-3">
+            <div
+              style={{
+                height: "4px",
+                width: "80px",
+                borderRadius: "2px",
+                backgroundColor: primaryColor,
+              }}
+            ></div>
+          </div>
+          <p className="text-muted fs-5">
+            Please review our policies carefully before using the platform.
+          </p>
+        </div>
 
-      <div className="wedding-legal-content">
-        <aside className="wedding-legal-sidebar">
-          <h2 className="wedding-legal-sidebartitle">Legal Documents</h2>
-          <ul className="wedding-legal-sidelinks">
-            {Object.keys(legalSections).map((key) => (
-              <li key={key}>
-                <button
-                  className={`wedding-legal-sidelink ${
-                    activeSection === key ? "active" : ""
-                  }`}
-                  onClick={() => setActiveSection(key)}
-                >
-                  {legalSections[key].title}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </aside>
+        <div className="row">
+          {/* Sidebar Navigation */}
+          <div className="col-lg-3 mb-4 mb-lg-0">
+            {/* Desktop Sidebar */}
+            <div
+              className="card border-0 shadow-sm rounded-4 sticky-lg-top d-none d-lg-block"
+              style={{ top: "100px", zIndex: 1 }}
+            >
+              <div className="card-body p-2">
+                <div className="list-group list-group-flush rounded-3">
+                  {Object.keys(legalSections).map((key) => (
+                    <button
+                      key={key}
+                      className={`list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3 border-0 rounded-3 mb-1 transition-all ${
+                        activeSection === key
+                          ? "text-white shadow-sm"
+                          : "bg-transparent text-secondary hover-bg-light"
+                      }`}
+                      onClick={() => {
+                        setActiveSection(key);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      style={{
+                        transition: "all 0.2s ease",
+                        backgroundColor:
+                          activeSection === key ? primaryColor : "transparent",
+                      }}
+                    >
+                      <div className="d-flex align-items-center">
+                        <span
+                          className={`me-3 ${
+                            activeSection === key ? "text-white" : ""
+                          }`}
+                          style={{
+                            color:
+                              activeSection === key ? "white" : primaryColor,
+                          }}
+                        >
+                          {legalSections[key].icon}
+                        </span>
+                        <span className="fw-semibold">
+                          {legalSections[key].title}
+                        </span>
+                      </div>
+                      {activeSection === key && <FaAngleRight />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
 
-        <main className="wedding-legal-main">
-          <div className="wedding-legal-section">
-            <h2 className="wedding-legal-sectiontitle">
-              {legalSections[activeSection].title}
-            </h2>
-            <div className="wedding-legal-sectioncontent">
-              {legalSections[activeSection].content
-                .split("\n")
-                .map((paragraph, index) => (
-                  <p key={index} className="wedding-legal-paragraph">
-                    {paragraph}
-                  </p>
+            {/* Mobile Dropdown */}
+            <div className="d-lg-none mb-3">
+              <select
+                className="form-select form-select-lg shadow-sm border-0"
+                value={activeSection}
+                onChange={(e) => setActiveSection(e.target.value)}
+                style={{
+                  color: primaryColor,
+                  fontWeight: "600",
+                }}
+              >
+                {Object.keys(legalSections).map((key) => (
+                  <option key={key} value={key}>
+                    {legalSections[key].title}
+                  </option>
                 ))}
+              </select>
             </div>
           </div>
 
-          <div className="wedding-legal-update">
-            <h3 className="wedding-legal-updatetitle">Lorem, ipsum.</h3>
-            <p className="wedding-legal-updatedate">Lorem, ipsum dolor.</p>
-            <p className="wedding-legal-updatetext">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, totam! Blanditiis culpa non iusto atque rem ab nostrum, corporis id!
-            </p>
+          {/* Main Content Area */}
+          <div className="col-lg-9">
+            <div className="card border-0 shadow-lg rounded-4 overflow-hidden">
+              <div className="card-header bg-white border-0 p-4 pb-0">
+                <div className="d-flex align-items-center">
+                  <div
+                    className="p-3 rounded-circle me-3"
+                    style={{
+                      backgroundColor: "rgba(237, 17, 115, 0.1)", // Light pink opacity
+                      color: primaryColor,
+                    }}
+                  >
+                    {legalSections[activeSection].icon}
+                  </div>
+                  <h2 className="fw-bold mb-0 text-dark">
+                    {legalSections[activeSection].title}
+                  </h2>
+                </div>
+                <hr className="mt-4 mb-0 text-muted opacity-25" />
+              </div>
+
+              <div className="card-body p-4 p-md-5">
+                <div className="legal-content-wrapper">
+                  {formatContent(legalSections[activeSection].content)}
+                </div>
+              </div>
+
+              <div className="card-footer bg-light border-0 p-4 text-center">
+                <p className="text-muted small mb-0">
+                  Have questions about our{" "}
+                  {legalSections[activeSection].title.toLowerCase()}?
+                  <a
+                    href="/contact-us"
+                    className="text-decoration-none fw-bold ms-1"
+                    style={{ color: primaryColor }}
+                  >
+                    Contact Support
+                  </a>
+                </p>
+              </div>
+            </div>
           </div>
-          {/* <div className="wedding-legal-update">
-            <h3 className="wedding-legal-updatetitle">Last Updated</h3>
-            <p className="wedding-legal-updatedate">January 1, 2025</p>
-            <p className="wedding-legal-updatetext">
-              We may update these terms from time to time. We will notify you of
-              any changes by posting the new terms on this page.
-            </p>
-          </div> */}
-        </main>
+        </div>
       </div>
     </div>
   );
