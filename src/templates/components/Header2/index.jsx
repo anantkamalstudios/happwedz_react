@@ -1,6 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "react-sticky-header/styles.css";
 import MobileMenu2 from "../MobileMenu2";
 
 const Header2 = () => {

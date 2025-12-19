@@ -1,6 +1,4 @@
 import React, { Component } from "react";
-import ReactFancyBox from "react-fancybox";
-import "react-fancybox/lib/fancybox.css";
 import Sectiontitle from "../section-title";
 import "./style.css";
 

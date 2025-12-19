@@ -1,66 +1,84 @@
 import React, { Component } from "react";
 import Slider from "react-slick";
-import {Animated} from "react-animated-css";
+import { motion } from "framer-motion";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import './style.css'
 
 
 class SimpleSlider extends Component {
-    render() {
-      var settings = {
-        dots: false,
-        arrows: true,
-        speed: 1200,
-        slidesToShow: 1,
-        slidesToScroll: 1,
-        autoplay:true,
-        autoplaySpeed:2500,
-        fade:true
-      };
-      return (
-        <Slider {...settings}>
-          <div id="home" className="item1">
-              <div className="container">
-                  <div className="slide-content">
-                      <div className="slide-subtitle">
-                          <h4>WERE GETTING MARRIED</h4>
-                      </div>
-                      <div className="slide-title">
-                          <h2>Save Our Date</h2>
-                      </div>
-                      <div className="slide-text">
-                          <p>25 December 2019</p>
-                      </div>
-                      <Animated>
-                          <div className="animated-circle"></div>
-                      </Animated>
-                  </div>
+  render() {
+    var settings = {
+      dots: false,
+      arrows: true,
+      speed: 1200,
+      slidesToShow: 1,
+      slidesToScroll: 1,
+      autoplay: true,
+      autoplaySpeed: 2500,
+      fade: true
+    };
+    return (
+      <Slider {...settings}>
+        <div id="home" className="item1">
+          <div className="container">
+            <div className="slide-content">
+              <div className="slide-subtitle">
+                <h4>WERE GETTING MARRIED</h4>
               </div>
+              <div className="slide-title">
+                <h2>Save Our Date</h2>
+              </div>
+              <div className="slide-text">
+                <p>25 December 2019</p>
+              </div>
+              <motion.div
+                className="animated-circle"
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.7, 1, 0.7],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+            </div>
           </div>
-          <div className="item2">
+        </div>
+        <div className="item2">
+          <div className="container">
             <div className="container">
-                <div className="container">
-                      <div className="slide-content">
-                          <div className="slide-subtitle">
-                              <h4>WERE GETTING MARRIED</h4>
-                          </div>
-                          <div className="slide-title">
-                              <h2>Save Our Date</h2>
-                          </div>
-                          <div className="slide-text">
-                              <p>25 December 2019</p>
-                          </div>
-                          <Animated>
-                            <div className="animated-circle"></div>
-                          </Animated>
-                      </div>
-                    </div>
+              <div className="slide-content">
+                <div className="slide-subtitle">
+                  <h4>WERE GETTING MARRIED</h4>
                 </div>
+                <div className="slide-title">
+                  <h2>Save Our Date</h2>
+                </div>
+                <div className="slide-text">
+                  <p>25 December 2019</p>
+                </div>
+                <motion.div
+                  className="animated-circle"
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [0.7, 1, 0.7],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+              </div>
+            </div>
           </div>
-        </Slider>
-      );
-    }
+        </div>
+      </Slider>
+    );
   }
+}
 
 export default SimpleSlider;

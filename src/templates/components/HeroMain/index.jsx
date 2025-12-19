@@ -1,74 +1,6 @@
-// import React, { Component } from "react";
-// import Slider from "react-slick";
-// import {Animated} from "react-animated-css";
-// import "slick-carousel/slick/slick.css";
-// import "slick-carousel/slick/slick-theme.css";
-
-// class HeroMain extends Component {
-//     render() {
-//       var settings = {
-//         dots: false,
-//         arrows: true,
-//         speed: 1200,
-//         slidesToShow: 1,
-//         slidesToScroll: 1,
-//         autoplay:true,
-//         autoplaySpeed:2500,
-//         fade:true
-//       };
-//       const images = Array.isArray(this.props.sliderImages) ? this.props.sliderImages : [];
-
-//       return (
-//         <Slider {...settings}>
-//           {images.map((img, index) => {
-//             // const url = (typeof img === 'string' ? img : img?.url) || '';
-//             console.log(img);
-
-//             return (
-//               <div
-//                 key={index}
-//                 className="items1"
-//                 style={{
-//                   backgroundImage: `url(${img})`,
-//                   height: '950px',
-//                   display: 'flex',
-//                   justifyContent: 'center',
-//                   flexDirection: 'column',
-//                   width: '100%',
-//                   backgroundSize: 'cover',
-//                   backgroundPosition: 'center',
-//                   backgroundRepeat: 'no-repeat'
-//                 }}
-//               >
-//                 <div className="container">
-//                   <div className="slide-content">
-//                     <div className="slide-subtitle">
-//                       <h4>WERE GETTING MARRIED</h4>
-//                     </div>
-//                     <div className="slide-title">
-//                       <h2>Save Our Date</h2>
-//                     </div>
-//                     <div className="slide-text">
-//                       <p>25 December 2019</p>
-//                     </div>
-//                     <Animated>
-//                       <div className="animated-circle"></div>
-//                     </Animated>
-//                   </div>
-//                 </div>
-//               </div>
-//             );
-//           })}
-//         </Slider>
-//       );
-//     }
-//   }
-
-// export default HeroMain;
-
 import React, { Component } from "react";
 import Slider from "react-slick";
-import { Animated } from "react-animated-css";
+import { motion } from "framer-motion";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
@@ -141,9 +73,18 @@ class HeroMain extends Component {
                 <div className="slide-text">
                   <p>{formatted}</p>
                 </div>
-                <Animated>
-                  <div className="animated-circle"></div>
-                </Animated>
+                <motion.div
+                  className="animated-circle"
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [0.7, 1, 0.7],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
               </div>
             </div>
 

@@ -1,59 +1,120 @@
-import React, { useState, useRef } from "react";
-import { Pannellum } from "pannellum-react";
-import {
-  X,
-  RotateCw,
-  ZoomIn,
-  ZoomOut,
-  Maximize2,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { X, ChevronLeft, ChevronRight, RotateCw, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
+
+// This will be our custom hook to load Pannellum
+const usePannellum = () => {
+  const [pannellum, setPannellum] = useState(null);
+
+  useEffect(() => {
+    // Load Pannellum script
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js';
+    script.async = true;
+    script.onload = () => {
+      setPannellum(window.pannellum);
+    };
+    document.body.appendChild(script);
+
+    // Load Pannellum CSS
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css';
+    document.head.appendChild(link);
+
+    return () => {
+      document.body.removeChild(script);
+      document.head.removeChild(link);
+    };
+  }, []);
+
+  return pannellum;
+};
 
 const Image360Modal = ({ images, onClose, title }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const pannellumRef = useRef(null);
+  const viewerRef = useRef(null);
+  const pannellum = usePannellum();
 
   const normalizedImages = React.useMemo(
-    () =>
-      (Array.isArray(images) ? images : []).filter(Boolean).map((s) =>
-        s
-          .toString()
-          .replace(/^\s*`|`\s*$/g, "")
-          .trim()
-      ),
+    () => (Array.isArray(images) ? images : [])
+      .filter(Boolean)
+      .map(s => s.toString().trim()),
     [images]
   );
 
+  // Initialize and update Pannellum viewer
+  useEffect(() => {
+    if (!pannellum || !pannellumRef.current || normalizedImages.length === 0) return;
+
+    const config = {
+      type: "equirectangular",
+      panorama: normalizedImages[currentIndex],
+      autoLoad: true,
+      autoRotate: -2,
+      compass: true,
+      showZoomCtrl: false,
+      showFullscreenCtrl: false,
+    };
+
+    // Initialize viewer
+    try {
+      if (viewerRef.current) {
+        try {
+          viewerRef.current.destroy();
+        } catch (e) {
+          console.error('Error destroying previous viewer:', e);
+        }
+      }
+
+      viewerRef.current = pannellum.viewer(pannellumRef.current, config);
+    } catch (error) {
+      console.error('Error initializing Pannellum:', error);
+    }
+
+    return () => {
+      if (viewerRef.current) {
+        try {
+          viewerRef.current.destroy();
+        } catch (e) {
+          console.error('Error cleaning up Pannellum:', e);
+        }
+      }
+    };
+  }, [pannellum, normalizedImages, currentIndex]);
+
   const handleZoomIn = () => {
-    if (pannellumRef.current) {
-      const viewer = pannellumRef.current.getViewer();
-      const currentHfov = viewer.getHfov();
-      viewer.setHfov(Math.max(30, currentHfov - 10));
+    if (viewerRef.current) {
+      const currentHfov = viewerRef.current.getHfov();
+      viewerRef.current.setHfov(Math.max(30, currentHfov - 10));
     }
   };
 
   const handleZoomOut = () => {
-    if (pannellumRef.current) {
-      const viewer = pannellumRef.current.getViewer();
-      const currentHfov = viewer.getHfov();
-      viewer.setHfov(Math.min(120, currentHfov + 10));
+    if (viewerRef.current) {
+      const currentHfov = viewerRef.current.getHfov();
+      viewerRef.current.setHfov(Math.min(120, currentHfov + 10));
     }
   };
 
   const handleReset = () => {
-    if (pannellumRef.current) {
-      const viewer = pannellumRef.current.getViewer();
-      viewer.setYaw(0);
-      viewer.setPitch(0);
-      viewer.setHfov(100);
+    if (viewerRef.current) {
+      viewerRef.current.setYaw(0);
+      viewerRef.current.setPitch(0);
+      viewerRef.current.setHfov(100);
     }
   };
 
   const handleFullscreen = () => {
-    if (pannellumRef.current) {
-      const viewer = pannellumRef.current.getViewer();
-      viewer.toggleFullscreen();
+    const container = pannellumRef.current;
+    if (!document.fullscreenElement) {
+      container.requestFullscreen?.() ||
+        container.webkitRequestFullscreen?.() ||
+        container.msRequestFullscreen?.();
+    } else {
+      document.exitFullscreen?.() ||
+        document.webkitExitFullscreen?.() ||
+        document.msExitFullscreen?.();
     }
   };
 
@@ -69,53 +130,58 @@ const Image360Modal = ({ images, onClose, title }) => {
     }
   };
 
+  if (normalizedImages.length === 0) {
+    return (
+      <div style={{
+        padding: "20px",
+        textAlign: "center",
+        color: "#666"
+      }}>
+        No 360° images available
+      </div>
+    );
+  }
+
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 9999,
-        backgroundColor: "#000",
-      }}
-    >
+    <div style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "#000",
+      zIndex: 1000
+    }}>
       {/* Header */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 10,
-          background:
-            "linear-gradient(to bottom, rgba(0,0,0,0.8), transparent)",
-          padding: "16px 24px",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
+      <div style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 10,
+        background: "linear-gradient(to bottom, rgba(0,0,0,0.8), transparent)",
+        padding: "16px 24px",
+      }}>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}>
           <div style={{ color: "white" }}>
             <h2 style={{ fontSize: "24px", fontWeight: "bold", margin: 0 }}>
               {title}
             </h2>
             {normalizedImages.length > 1 && (
-              <p
-                style={{
-                  fontSize: "14px",
-                  color: "#d1d5db",
-                  margin: "4px 0 0 0",
-                }}
-              >
+              <p style={{ fontSize: "14px", color: "#d1d5db", margin: "4px 0 0 0" }}>
                 Image {currentIndex + 1} of {normalizedImages.length}
               </p>
             )}
           </div>
           <button
-            onClick={onClose}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
             style={{
               backgroundColor: "rgba(255,255,255,0.2)",
               color: "white",
@@ -123,31 +189,26 @@ const Image360Modal = ({ images, onClose, title }) => {
               borderRadius: "50%",
               border: "none",
               cursor: "pointer",
+              zIndex: 20,
             }}
+            aria-label="Close"
           >
-            <X style={{ width: "24px", height: "24px" }} />
+            <X size={20} />
           </button>
         </div>
       </div>
 
       {/* Pannellum Viewer */}
-      <Pannellum
+      <div
         ref={pannellumRef}
-        width="100%"
-        height="100vh"
-        image={normalizedImages[currentIndex]}
-        pitch={0}
-        yaw={0}
-        hfov={100}
-        autoLoad
-        showZoomCtrl={false}
-        showFullscreenCtrl={false}
-        mouseZoom={true}
-        autoRotate={0}
-        orientationOnByDefault={false}
+        style={{
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+        }}
       />
 
-      {/* Navigation Arrows (if multiple images) */}
+      {/* Navigation Arrows */}
       {normalizedImages.length > 1 && (
         <>
           {currentIndex > 0 && (
@@ -155,19 +216,23 @@ const Image360Modal = ({ images, onClose, title }) => {
               onClick={goToPrev}
               style={{
                 position: "absolute",
-                left: "16px",
+                left: "20px",
                 top: "50%",
                 transform: "translateY(-50%)",
-                backgroundColor: "rgba(255,255,255,0.2)",
+                backgroundColor: "rgba(0,0,0,0.5)",
                 color: "white",
-                padding: "12px",
+                width: "40px",
+                height: "40px",
                 borderRadius: "50%",
                 border: "none",
                 cursor: "pointer",
                 zIndex: 10,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              <ChevronLeft style={{ width: "24px", height: "24px" }} />
+              <ChevronLeft size={24} />
             </button>
           )}
           {currentIndex < normalizedImages.length - 1 && (
@@ -175,166 +240,112 @@ const Image360Modal = ({ images, onClose, title }) => {
               onClick={goToNext}
               style={{
                 position: "absolute",
-                right: "16px",
+                right: "20px",
                 top: "50%",
                 transform: "translateY(-50%)",
-                backgroundColor: "rgba(255,255,255,0.2)",
+                backgroundColor: "rgba(0,0,0,0.5)",
                 color: "white",
-                padding: "12px",
+                width: "40px",
+                height: "40px",
                 borderRadius: "50%",
                 border: "none",
                 cursor: "pointer",
                 zIndex: 10,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              <ChevronRight style={{ width: "24px", height: "24px" }} />
+              <ChevronRight size={24} />
             </button>
           )}
         </>
       )}
 
-      {/* Controls Bar */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          background: "linear-gradient(to top, rgba(0,0,0,0.9), transparent)",
-          padding: "24px",
-          zIndex: 10,
-        }}
-      >
-        <div
+      {/* Controls */}
+      <div style={{
+        position: "absolute",
+        bottom: "20px",
+        left: 0,
+        right: 0,
+        display: "flex",
+        justifyContent: "center",
+        gap: "10px",
+        zIndex: 10,
+      }}>
+        <button
+          onClick={handleReset}
           style={{
+            backgroundColor: "rgba(0,0,0,0.5)",
+            color: "white",
+            width: "40px",
+            height: "40px",
+            borderRadius: "50%",
+            border: "none",
+            cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: "16px",
-            flexWrap: "wrap",
           }}
+          title="Reset View"
         >
-          <button
-            onClick={handleReset}
-            style={{
-              backgroundColor: "rgba(255,255,255,0.2)",
-              color: "white",
-              padding: "12px",
-              borderRadius: "50%",
-              border: "none",
-              cursor: "pointer",
-            }}
-            title="Reset View"
-          >
-            <RotateCw style={{ width: "20px", height: "20px" }} />
-          </button>
-
-          <button
-            onClick={handleZoomOut}
-            style={{
-              backgroundColor: "rgba(255,255,255,0.2)",
-              color: "white",
-              padding: "12px",
-              borderRadius: "50%",
-              border: "none",
-              cursor: "pointer",
-            }}
-            title="Zoom Out"
-          >
-            <ZoomOut style={{ width: "20px", height: "20px" }} />
-          </button>
-
-          <button
-            onClick={handleZoomIn}
-            style={{
-              backgroundColor: "rgba(255,255,255,0.2)",
-              color: "white",
-              padding: "12px",
-              borderRadius: "50%",
-              border: "none",
-              cursor: "pointer",
-            }}
-            title="Zoom In"
-          >
-            <ZoomIn style={{ width: "20px", height: "20px" }} />
-          </button>
-
-          <button
-            onClick={handleFullscreen}
-            style={{
-              backgroundColor: "rgba(255,255,255,0.2)",
-              color: "white",
-              padding: "12px",
-              borderRadius: "50%",
-              border: "none",
-              cursor: "pointer",
-            }}
-            title="Fullscreen"
-          >
-            <Maximize2 style={{ width: "20px", height: "20px" }} />
-          </button>
-        </div>
-
-        <div
+          <RotateCw size={20} />
+        </button>
+        <button
+          onClick={handleZoomOut}
           style={{
-            textAlign: "center",
-            marginTop: "16px",
-            color: "#d1d5db",
-            fontSize: "14px",
-          }}
-        >
-          <p style={{ margin: 0 }}>
-            🖱️ Drag to rotate • Scroll to zoom • Touch & drag on mobile
-          </p>
-        </div>
-      </div>
-
-      {/* Thumbnails (if multiple images) */}
-      {normalizedImages.length > 1 && (
-        <div
-          style={{
-            position: "absolute",
-            bottom: "100px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            display: "flex",
-            gap: "8px",
             backgroundColor: "rgba(0,0,0,0.5)",
-            padding: "8px",
-            borderRadius: "8px",
-            maxWidth: "90vw",
-            overflowX: "auto",
-            zIndex: 10,
+            color: "white",
+            width: "40px",
+            height: "40px",
+            borderRadius: "50%",
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
+          title="Zoom Out"
         >
-          {normalizedImages.map((img, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentIndex(idx)}
-              style={{
-                flexShrink: 0,
-                width: "64px",
-                height: "64px",
-                borderRadius: "4px",
-                overflow: "hidden",
-                border: `2px solid ${
-                  idx === currentIndex ? "#3b82f6" : "#4b5563"
-                }`,
-                opacity: idx === currentIndex ? 1 : 0.6,
-                cursor: "pointer",
-                padding: 0,
-                background: "none",
-              }}
-            >
-              <img
-                src={img}
-                alt={`View ${idx + 1}`}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            </button>
-          ))}
-        </div>
-      )}
+          <ZoomOut size={20} />
+        </button>
+        <button
+          onClick={handleZoomIn}
+          style={{
+            backgroundColor: "rgba(0,0,0,0.5)",
+            color: "white",
+            width: "40px",
+            height: "40px",
+            borderRadius: "50%",
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          title="Zoom In"
+        >
+          <ZoomIn size={20} />
+        </button>
+        <button
+          onClick={handleFullscreen}
+          style={{
+            backgroundColor: "rgba(0,0,0,0.5)",
+            color: "white",
+            width: "40px",
+            height: "40px",
+            borderRadius: "50%",
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          title="Fullscreen"
+        >
+          <Maximize2 size={20} />
+        </button>
+      </div>
     </div>
   );
 };
