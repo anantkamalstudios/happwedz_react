@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Form, Button } from "react-bootstrap";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../../redux/authSlice";
 import { GoogleLogin } from "@react-oauth/google";
 import { toast, ToastContainer } from "react-toastify";
@@ -23,17 +23,34 @@ const CustomerLogin = () => {
   const dispatch = useDispatch();
   const { showLoader, hideLoader } = useLoader();
 
+  // Check if user is already authenticated
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
   const from = location.state?.from || "/";
   const [loginCms, setLoginCms] = useState(null);
   const normalizeUrl = (u) =>
     typeof u === "string" ? u.replace(/`/g, "").trim() : null;
+
+  // Redirect authenticated users away from login page
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, from]);
+
+  const persistUserSession = (user, token) => {
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("token", token);
+    localStorage.setItem("tokenTimestamp", Date.now().toString());
+  };
+
   useEffect(() => {
     (async () => {
       try {
         const res = await fetch("https://happywedz.com/api/login-cms");
         const data = await res.json();
         setLoginCms(data?.data || data || null);
-      } catch {}
+      } catch { }
     })();
   }, []);
 
@@ -60,6 +77,7 @@ const CustomerLogin = () => {
         authResponse.user &&
         authResponse.token
       ) {
+        persistUserSession(authResponse.user, authResponse.token);
         dispatch(
           loginUser({ user: authResponse.user, token: authResponse.token })
         );
@@ -98,6 +116,7 @@ const CustomerLogin = () => {
       const response = await userApi.login(payload);
 
       if (response.success) {
+        persistUserSession(response.user, response.token);
         dispatch(loginUser({ user: response.user, token: response.token }));
         toast.success("Login successful!");
         navigate(from, { replace: true });
@@ -136,11 +155,11 @@ const CustomerLogin = () => {
           style={{
             ...(loginCms?.image
               ? {
-                  backgroundImage: `url(${normalizeUrl(loginCms?.image)})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  minHeight: "600px",
-                }
+                backgroundImage: `url(${normalizeUrl(loginCms?.image)})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                minHeight: "600px",
+              }
               : {}),
           }}
         >

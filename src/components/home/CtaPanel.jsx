@@ -16,7 +16,7 @@ const CtaPanel = ({
       <div
         className="container ui-card"
         style={{
-          background:
+          backgroundImage:
             background === "bigleaf"
               ? `linear-gradient(to bottom, #fbcfe8, #f7e0ed, #f8defc), url(${background})`
               : `url(${background})`,

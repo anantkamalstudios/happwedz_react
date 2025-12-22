@@ -10,6 +10,7 @@ import { setLocation } from "../../redux/locationSlice";
 import { FaArrowRightLong, FaChevronDown, FaChevronUp } from "react-icons/fa6";
 import usePhotography from "../../hooks/usePhotography";
 import { useFilter } from "../../context/realWedding.context";
+import axiosInstance from "../../services/api/axiosInstance";
 
 const Header = () => {
   // Add state to track window width for responsive UI
@@ -17,8 +18,8 @@ const Header = () => {
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
   const dispatch = useDispatch();
   const { slug } = useParams();
@@ -63,22 +64,34 @@ const Header = () => {
 
   const byCity = ["Mumbai", "Bangalore", "Pune", "Kolkata", "Jaipur", "Others"];
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await axiosInstance.post("/auth/logout");
+    } catch (error) {
+      console.error("Logout request failed", error);
+    }
+
     if (isVendorLoggedIn) {
       dispatch(vendorLogout());
     } else {
       dispatch(logout());
     }
-    localStorage.clear();
+
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("tokenTimestamp");
+    localStorage.removeItem("vendor");
+    localStorage.removeItem("vendorToken");
+    localStorage.removeItem("vendorTokenExpiry");
     setMobileMenuOpen(false);
   };
 
-  const { user, token: userToken } = useSelector((state) => state.auth);
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { vendor, token: vendorToken } = useSelector(
     (state) => state.vendorAuth
   );
 
-  const isUserLoggedIn = !!userToken && !!user;
+  const isUserLoggedIn = !!user && !!isAuthenticated;
   const isVendorLoggedIn = !!vendorToken && !!vendor;
   const isLoggedIn = isUserLoggedIn || isVendorLoggedIn;
 
@@ -294,8 +307,9 @@ const Header = () => {
 
           {/* Mobile Side Drawer */}
           <div
-            className={`position-fixed top-0 start-0 h-100 bg-white shadow-lg d-lg-none ${mobileMenuOpen ? "mobile-drawer-open" : ""
-              }`}
+            className={`position-fixed top-0 start-0 h-100 bg-white shadow-lg d-lg-none ${
+              mobileMenuOpen ? "mobile-drawer-open" : ""
+            }`}
             style={{
               width: "85%",
               maxWidth: "400px",
@@ -395,7 +409,7 @@ const Header = () => {
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                  // onClick={() => toggleMobileSubmenu("venues")}
+                    // onClick={() => toggleMobileSubmenu("venues")}
                   >
                     <span
                       className="fw-semibold"
@@ -420,28 +434,28 @@ const Header = () => {
                       </h6>
                       {(venueSubcategories.length > 0
                         ? [
-                          ...venueSubcategories.map((s) => s.name),
-                          "View All Venues",
-                        ]
+                            ...venueSubcategories.map((s) => s.name),
+                            "View All Venues",
+                          ]
                         : [
-                          "Banquet Halls",
-                          "Marriage Garden / Lawns",
-                          "Wedding Resorts",
-                          "Small Function / Party Halls",
-                          "Destination Wedding Venues",
-                          "Kalyana Mandapams",
-                          "4 Star & Above Wedding Hotels",
-                          "Venue Concierge Services",
-                          "View All Venues",
-                        ]
+                            "Banquet Halls",
+                            "Marriage Garden / Lawns",
+                            "Wedding Resorts",
+                            "Small Function / Party Halls",
+                            "Destination Wedding Venues",
+                            "Kalyana Mandapams",
+                            "4 Star & Above Wedding Hotels",
+                            "Venue Concierge Services",
+                            "View All Venues",
+                          ]
                       ).map((item, i) => {
                         const isShowMore = item === "View All Venues";
                         const path = isShowMore
                           ? "/venues"
                           : `/venues/${item
-                            .toLowerCase()
-                            .replace(/\s+/g, "-")
-                            .replace(/[^a-z0-9\-]/g, "")}`;
+                              .toLowerCase()
+                              .replace(/\s+/g, "-")
+                              .replace(/[^a-z0-9\-]/g, "")}`;
                         return (
                           <Link
                             key={i}
@@ -495,7 +509,7 @@ const Header = () => {
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                  // onClick={() => toggleMobileSubmenu("vendors")}
+                    // onClick={() => toggleMobileSubmenu("vendors")}
                   >
                     <span
                       className="fw-semibold"
@@ -531,12 +545,13 @@ const Header = () => {
                                   {cat.subcategories.map((sub, j) => (
                                     <Link
                                       key={sub.id || j}
-                                      to={`/vendors/${toSlug(sub.name)}${reduxLocation
-                                        ? `?city=${encodeURIComponent(
-                                          reduxLocation
-                                        )}`
-                                        : ""
-                                        }`}
+                                      to={`/vendors/${toSlug(sub.name)}${
+                                        reduxLocation
+                                          ? `?city=${encodeURIComponent(
+                                              reduxLocation
+                                            )}`
+                                          : ""
+                                      }`}
                                       className="d-block py-2 text-decoration-none text-dark small"
                                       onClick={handleMobileLinkClick}
                                     >
@@ -555,7 +570,7 @@ const Header = () => {
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                  // onClick={() => toggleMobileSubmenu("photography")}
+                    // onClick={() => toggleMobileSubmenu("photography")}
                   >
                     <span
                       className="fw-semibold"
@@ -610,7 +625,7 @@ const Header = () => {
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                  // onClick={() => toggleMobileSubmenu("einvites")}
+                    // onClick={() => toggleMobileSubmenu("einvites")}
                   >
                     <span
                       className="fw-semibold"
@@ -649,7 +664,7 @@ const Header = () => {
                 <li className="mb-2">
                   <button
                     className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                  // onClick={() => toggleMobileSubmenu("blog")}
+                    // onClick={() => toggleMobileSubmenu("blog")}
                   >
                     <span
                       className="fw-semibold"
@@ -1013,12 +1028,12 @@ const Header = () => {
                                               "color 0.2s ease-in-out",
                                           }}
                                           onMouseEnter={(e) =>
-                                          (e.currentTarget.style.color =
-                                            "#e91e63")
+                                            (e.currentTarget.style.color =
+                                              "#e91e63")
                                           }
                                           onMouseLeave={(e) =>
-                                          (e.currentTarget.style.color =
-                                            "#212529")
+                                            (e.currentTarget.style.color =
+                                              "#212529")
                                           }
                                         >
                                           <div
@@ -1086,12 +1101,12 @@ const Header = () => {
                                             transition: "all 0.2s ease-in-out",
                                           }}
                                           onMouseEnter={(e) =>
-                                          (e.currentTarget.style.boxShadow =
-                                            "0 4px 12px rgba(0,0,0,0.08)")
+                                            (e.currentTarget.style.boxShadow =
+                                              "0 4px 12px rgba(0,0,0,0.08)")
                                           }
                                           onMouseLeave={(e) =>
-                                          (e.currentTarget.style.boxShadow =
-                                            "0 2px 4px rgba(0,0,0,0.04)")
+                                            (e.currentTarget.style.boxShadow =
+                                              "0 2px 4px rgba(0,0,0,0.04)")
                                           }
                                         >
                                           <Link
@@ -1199,39 +1214,40 @@ const Header = () => {
                                   <div className="row">
                                     {(venueSubcategories.length > 0
                                       ? [
-                                        ...venueSubcategories.map(
-                                          (s) => s.name
-                                        ),
-                                        "View All Venues",
-                                      ]
+                                          ...venueSubcategories.map(
+                                            (s) => s.name
+                                          ),
+                                          "View All Venues",
+                                        ]
                                       : [
-                                        "Banquet Halls",
-                                        "Marriage Garden / Lawns",
-                                        "Wedding Resorts",
-                                        "Small Function / Party Halls",
-                                        "Destination Wedding Venues",
-                                        "Kalyana Mandapams",
-                                        "4 Star & Above Wedding Hotels",
-                                        "Venue Concierge Services",
-                                        "View All Venues",
-                                      ]
+                                          "Banquet Halls",
+                                          "Marriage Garden / Lawns",
+                                          "Wedding Resorts",
+                                          "Small Function / Party Halls",
+                                          "Destination Wedding Venues",
+                                          "Kalyana Mandapams",
+                                          "4 Star & Above Wedding Hotels",
+                                          "Venue Concierge Services",
+                                          "View All Venues",
+                                        ]
                                     ).map((item, i) => {
                                       const isShowMore =
                                         item === "View All Venues";
                                       const path = isShowMore
                                         ? "/venues"
                                         : `/venues/${item
-                                          .toLowerCase()
-                                          .replace(/\s+/g, "-")
-                                          .replace(/[^a-z0-9\-]/g, "")}`;
+                                            .toLowerCase()
+                                            .replace(/\s+/g, "-")
+                                            .replace(/[^a-z0-9\-]/g, "")}`;
                                       return (
                                         <div className="col-12 mb-2" key={i}>
                                           <Link
                                             to={path}
-                                            className={`dropdown-link d-flex align-items-center ${isShowMore
-                                              ? "primary-text fw-bold text-decoration-underline"
-                                              : ""
-                                              }`}
+                                            className={`dropdown-link d-flex align-items-center ${
+                                              isShowMore
+                                                ? "primary-text fw-bold text-decoration-underline"
+                                                : ""
+                                            }`}
                                           >
                                             <i className="bi bi-check-circle text-primary"></i>
                                             <span className="fs-14">
@@ -1263,8 +1279,8 @@ const Header = () => {
                                       const path = isMore
                                         ? "/venues"
                                         : `/venues?city=${encodeURIComponent(
-                                          city
-                                        )}`;
+                                            city
+                                          )}`;
                                       return (
                                         <div className="col-12 mb-2" key={i}>
                                           <Link
@@ -1274,10 +1290,11 @@ const Header = () => {
                                                 dispatch(setLocation(city));
                                               }
                                             }}
-                                            className={`dropdown-link d-flex align-items-center ${isMore
-                                              ? "primary-text fw-bold text-decoration-underline"
-                                              : ""
-                                              }`}
+                                            className={`dropdown-link d-flex align-items-center ${
+                                              isMore
+                                                ? "primary-text fw-bold text-decoration-underline"
+                                                : ""
+                                            }`}
                                           >
                                             <i className="bi bi-geo-alt text-primary"></i>
                                             <span className="fs-14">
@@ -1345,12 +1362,13 @@ const Header = () => {
                                                     <Link
                                                       to={`/vendors/${toSlug(
                                                         sub.name
-                                                      )}${reduxLocation
-                                                        ? `?city=${encodeURIComponent(
-                                                          reduxLocation
-                                                        )}`
-                                                        : ""
-                                                        }`}
+                                                      )}${
+                                                        reduxLocation
+                                                          ? `?city=${encodeURIComponent(
+                                                              reduxLocation
+                                                            )}`
+                                                          : ""
+                                                      }`}
                                                       className="dropdown-link fs-14 d-block"
                                                     >
                                                       {formatName(sub.name)}
@@ -1770,7 +1788,9 @@ const Header = () => {
                                             }}
                                             onClick={() => {
                                               setSelectCity(city);
-                                              setSelectedCulture("All Cultures");
+                                              setSelectedCulture(
+                                                "All Cultures"
+                                              );
                                               setSelectedTheme("All Themes");
                                             }}
                                           >
@@ -1799,7 +1819,9 @@ const Header = () => {
                                               color: "#212529",
                                             }}
                                             onClick={() => {
-                                              setSelectedCulture(culture?.name || culture);
+                                              setSelectedCulture(
+                                                culture?.name || culture
+                                              );
                                               setSelectCity("All Cities");
                                               setSelectedTheme("All Themes");
                                             }}
@@ -1831,7 +1853,9 @@ const Header = () => {
                                             onClick={() => {
                                               setSelectedTheme(theme);
                                               setSelectCity("All Cities");
-                                              setSelectedCulture("All Cultures");
+                                              setSelectedCulture(
+                                                "All Cultures"
+                                              );
                                             }}
                                           >
                                             {theme}

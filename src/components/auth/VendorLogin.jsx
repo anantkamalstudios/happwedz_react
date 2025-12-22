@@ -11,6 +11,13 @@ import { SiMinutemailer } from "react-icons/si";
 import { TbPassword } from "react-icons/tb";
 
 const VendorLogin = () => {
+  const persistVendorSession = (vendorData, tokenValue) => {
+    const expiry = Date.now() + 60 * 60 * 1000;
+    localStorage.setItem("vendor", JSON.stringify(vendorData));
+    localStorage.setItem("vendorToken", tokenValue);
+    localStorage.setItem("vendorTokenExpiry", expiry.toString());
+  };
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -53,6 +60,7 @@ const VendorLogin = () => {
         throw new Error("Invalid response from server");
       }
 
+      persistVendorSession(vendor, token);
       dispatch(loginVendor({ token, vendor }));
 
       navigate("/vendor-dashboard/vendor-home", { replace: true });

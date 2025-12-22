@@ -7,11 +7,18 @@ import {
 } from "../../redux/vendorAuthSlice";
 import { toast } from "react-toastify";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  "http://localhost:4000";
+
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://happywedz.com/api",
+  baseURL: API_BASE_URL,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
 const handle401Error = (error) => {
@@ -51,6 +58,8 @@ const handle401Error = (error) => {
 
 axiosInstance.interceptors.request.use(
   (config) => {
+    config.withCredentials = true;
+
     const token = localStorage.getItem("token");
     const vendorToken = localStorage.getItem("vendorToken");
 

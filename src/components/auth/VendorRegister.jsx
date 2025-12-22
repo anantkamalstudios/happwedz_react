@@ -8,9 +8,19 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEyeSlash, FaEye } from "react-icons/fa";
 
-const API_BASE = "https://happywedz.com/api";
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  "https://happywedz.com/api";
 
 const VendorRegister = () => {
+  const persistVendorSession = (vendorData, tokenValue) => {
+    const expiry = Date.now() + 60 * 60 * 1000;
+    localStorage.setItem("vendor", JSON.stringify(vendorData));
+    localStorage.setItem("vendorToken", tokenValue);
+    localStorage.setItem("vendorTokenExpiry", expiry.toString());
+  };
+
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -202,6 +212,7 @@ const VendorRegister = () => {
         };
 
       if (token && vendor) {
+        persistVendorSession(vendor, token);
         dispatch(loginVendor({ token, vendor }));
         navigate("/vendor-dashboard/vendor-home", { replace: true });
       } else {

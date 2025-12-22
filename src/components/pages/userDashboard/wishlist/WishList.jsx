@@ -7,9 +7,10 @@ import { PiChatCircleDotsLight } from "react-icons/pi";
 import { FaSearch } from "react-icons/fa";
 import PricingModal from "../../../layouts/PricingModal";
 import vendorServicesApi from "../../../../services/api/vendorServicesApi";
+import axiosInstance from "../../../../services/api/axiosInstance";
 
 const Wishlist = () => {
-  const token = useSelector((state) => state.auth.token);
+  useSelector((state) => state.auth.token); // keep for detecting auth state
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,15 +31,11 @@ const Wishlist = () => {
   };
 
   useEffect(() => {
-    if (!token) return;
-
     const fetchWishlist = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`https://happywedz.com/api/wishlist`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
+        const res = await axiosInstance.get(`https://happywedz.com/api/wishlist`);
+        const data = res.data;
 
         if (data.success && data.data.length > 0) {
           const enrichedData = await Promise.all(
@@ -76,10 +73,10 @@ const Wishlist = () => {
                       "Unknown City",
                     image: getImageUrl(
                       serviceData?.media?.[0] ||
-                        serviceData?.attributes?.cover_image ||
-                        serviceData?.cover_image ||
-                        serviceData?.image ||
-                        null
+                      serviceData?.attributes?.cover_image ||
+                      serviceData?.cover_image ||
+                      serviceData?.image ||
+                      null
                     ),
                   };
                 } catch (err) {
@@ -110,7 +107,7 @@ const Wishlist = () => {
     };
 
     fetchWishlist();
-  }, [token]);
+  }, []);
 
   const toggleWishlistItem = async (vendorId) => {
     const originalWishlist = [...wishlist];
@@ -119,19 +116,12 @@ const Wishlist = () => {
     );
 
     try {
-      const response = await fetch(
+      const response = await axiosInstance.post(
         "https://happywedz.com/api/wishlist/toggle",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ vendor_services_id: vendorId }),
-        }
+        { vendor_services_id: vendorId }
       );
 
-      const result = await response.json();
+      const result = response.data;
       if (!result.success) {
         setWishlist(originalWishlist);
         console.error("Failed to remove item from wishlist:", result.message);
