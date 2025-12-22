@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { X, Plus, Video } from "lucide-react";
 
+const getYouTubeVideoId = (url) => {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? match[2] : null;
+};
+
 const VideoGallery = ({ videos: initialVideos = [], onVideosChange }) => {
   const [videos, setVideos] = useState(initialVideos);
   const [newVideoUrl, setNewVideoUrl] = useState("");
@@ -201,16 +208,34 @@ const VideoGallery = ({ videos: initialVideos = [], onVideosChange }) => {
                       }}
                     >
                       <div style={{ position: "relative" }}>
-                        <video
-                          src={video.url}
-                          controls
-                          style={{
-                            width: "100%",
-                            height: "220px",
-                            objectFit: "cover",
-                            background: "#f7fafc",
-                          }}
-                        />
+                        {(() => {
+                          const youtubeId = getYouTubeVideoId(video.url);
+                          return youtubeId ? (
+                            <iframe
+                              src={`https://www.youtube.com/embed/${youtubeId}`}
+                              title="YouTube video player"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              style={{
+                                width: "100%",
+                                height: "220px",
+                                border: "none",
+                                background: "#000",
+                              }}
+                            />
+                          ) : (
+                            <video
+                              src={video.url}
+                              controls
+                              style={{
+                                width: "100%",
+                                height: "220px",
+                                objectFit: "cover",
+                                background: "#f7fafc",
+                              }}
+                            />
+                          );
+                        })()}
                         <button
                           onClick={() => handleRemoveVideo(video.id)}
                           className="btn btn-danger btn-sm d-flex align-items-center justify-content-center"

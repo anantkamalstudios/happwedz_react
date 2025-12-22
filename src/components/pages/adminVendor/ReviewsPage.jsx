@@ -232,8 +232,9 @@ const ReviewsPage = () => {
             <div className="modern-tabs d-flex justify-content-start flex-wrap">
               <button
                 type="button"
-                className={`modern-tab ${activeSection === "reviews" ? "active" : ""
-                  }`}
+                className={`modern-tab ${
+                  activeSection === "reviews" ? "active" : ""
+                }`}
                 onClick={() => setActiveSection("reviews")}
               >
                 <FiStar />
@@ -241,8 +242,9 @@ const ReviewsPage = () => {
               </button>
               <button
                 type="button"
-                className={`modern-tab ${activeSection === "review-collector" ? "active" : ""
-                  }`}
+                className={`modern-tab ${
+                  activeSection === "review-collector" ? "active" : ""
+                }`}
                 onClick={() => setActiveSection("review-collector")}
               >
                 <FiMail />

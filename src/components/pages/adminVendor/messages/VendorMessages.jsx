@@ -101,7 +101,7 @@ const VendorMessages = () => {
             headers: { Authorization: `Bearer ${vendorToken}` },
           });
         }
-      } catch { }
+      } catch {}
       if (!stopped) timer = setTimeout(send, 45000);
     };
     send();
@@ -111,7 +111,7 @@ const VendorMessages = () => {
           .post("/presence/heartbeat", null, {
             headers: { Authorization: `Bearer ${vendorToken}` },
           })
-          .catch(() => { });
+          .catch(() => {});
       }
     };
     document.addEventListener("visibilitychange", onVis);
@@ -155,7 +155,7 @@ const VendorMessages = () => {
             setVendorImage(
               vendorData?.profileImage || vendorData?.image || null
             );
-          } catch { }
+          } catch {}
         }
         // enrich: fetch each user's profile image
         const userIds = [...new Set(list.map((c) => c.userId).filter(Boolean))];
@@ -280,15 +280,15 @@ const VendorMessages = () => {
             const old = byId.get(c.id);
             return old
               ? {
-                ...c,
-                // preserve any local UI only fields if you add later
-                vendorUnreadCount:
-                  activeConversationId === c.id ? 0 : c.vendorUnreadCount,
-              }
+                  ...c,
+                  // preserve any local UI only fields if you add later
+                  vendorUnreadCount:
+                    activeConversationId === c.id ? 0 : c.vendorUnreadCount,
+                }
               : c;
           });
         });
-      } catch { }
+      } catch {}
     }, 10000);
     return () => clearInterval(interval);
   }, [vendorToken, activeConversationId]);
@@ -316,7 +316,7 @@ const VendorMessages = () => {
           };
         });
         setMessages(mapped);
-      } catch { }
+      } catch {}
     }, 4000);
     return () => clearInterval(interval);
   }, [vendorToken, activeConversationId]);
@@ -352,10 +352,10 @@ const VendorMessages = () => {
           prev.map((c) =>
             c.id === activeConversationId
               ? {
-                ...c,
-                lastMessagePreview: saved.message || text.trim(),
-                lastMessageAt: saved.createdAt || new Date().toISOString(),
-              }
+                  ...c,
+                  lastMessagePreview: saved.message || text.trim(),
+                  lastMessageAt: saved.createdAt || new Date().toISOString(),
+                }
               : c
           )
         );
@@ -367,8 +367,6 @@ const VendorMessages = () => {
   };
 
   const handleQuick = (label) => sendMessage(label);
-
-
 
   return (
     <div className="container-fluid px-0 my-4">
@@ -449,7 +447,10 @@ const VendorMessages = () => {
             <div className="p-3 border-bottom">
               <h6 className="fw-bold mb-0">Conversations</h6>
             </div>
-            <div className="list-group border-0" style={{ flex: 1, overflowY: 'auto' }}>
+            <div
+              className="list-group border-0"
+              style={{ flex: 1, overflowY: "auto" }}
+            >
               {loadingConversations ? (
                 <div className="p-3 text-muted small">
                   Loading conversations…
@@ -462,8 +463,9 @@ const VendorMessages = () => {
                 conversations.map((c) => (
                   <div
                     key={c.id}
-                    className={`list-group-item border-0 vendor-card rounded-3 mb-2 p-3 ${activeConversationId === c.id ? "bg-light" : ""
-                      }`}
+                    className={`list-group-item border-0 vendor-card rounded-3 mb-2 p-3 ${
+                      activeConversationId === c.id ? "bg-light" : ""
+                    }`}
                     onClick={() => selectConversation(c.id)}
                   >
                     <div className="d-flex align-items-center overflow-hidden">
@@ -505,15 +507,17 @@ const VendorMessages = () => {
                     <div className="small text-muted">
                       {/* Show customer's presence when a conversation is selected */}
                       {activeConversation?.userId &&
-                        isOnline(userLastActive[activeConversation.userId])
-                        ? `${userNames[activeConversation.userId] || "Customer"
-                        } Online`
-                        : `${userNames[activeConversation?.userId] || "Customer"
-                        } last seen ${formatTime(
-                          userLastActive[activeConversation?.userId] ||
-                          activeConversation?.lastMessageAt ||
-                          new Date().toISOString()
-                        )}`}
+                      isOnline(userLastActive[activeConversation.userId])
+                        ? `${
+                            userNames[activeConversation.userId] || "Customer"
+                          } Online`
+                        : `${
+                            userNames[activeConversation?.userId] || "Customer"
+                          } last seen ${formatTime(
+                            userLastActive[activeConversation?.userId] ||
+                              activeConversation?.lastMessageAt ||
+                              new Date().toISOString()
+                          )}`}
                     </div>
                   </div>
                 </div>
@@ -540,10 +544,11 @@ const VendorMessages = () => {
                     {messages.map((m) => (
                       <div
                         key={m.id}
-                        className={`d-flex ${m.sender === "vendor"
-                          ? "justify-content-end"
-                          : "justify-content-start"
-                          }`}
+                        className={`d-flex ${
+                          m.sender === "vendor"
+                            ? "justify-content-end"
+                            : "justify-content-start"
+                        }`}
                       >
                         {m.sender === "user" ? (
                           <div className="d-flex align-items-start">

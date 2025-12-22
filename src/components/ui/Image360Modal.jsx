@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { X, ChevronLeft, ChevronRight, RotateCw, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
+import {
+  X,
+  ChevronLeft,
+  ChevronRight,
+  RotateCw,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+} from "lucide-react";
 
 // This will be our custom hook to load Pannellum
 const usePannellum = () => {
@@ -7,8 +15,9 @@ const usePannellum = () => {
 
   useEffect(() => {
     // Load Pannellum script
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js';
+    const script = document.createElement("script");
+    script.src =
+      "https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js";
     script.async = true;
     script.onload = () => {
       setPannellum(window.pannellum);
@@ -16,9 +25,10 @@ const usePannellum = () => {
     document.body.appendChild(script);
 
     // Load Pannellum CSS
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css';
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href =
+      "https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css";
     document.head.appendChild(link);
 
     return () => {
@@ -37,15 +47,17 @@ const Image360Modal = ({ images, onClose, title }) => {
   const pannellum = usePannellum();
 
   const normalizedImages = React.useMemo(
-    () => (Array.isArray(images) ? images : [])
-      .filter(Boolean)
-      .map(s => s.toString().trim()),
+    () =>
+      (Array.isArray(images) ? images : [])
+        .filter(Boolean)
+        .map((s) => s.toString().trim()),
     [images]
   );
 
   // Initialize and update Pannellum viewer
   useEffect(() => {
-    if (!pannellum || !pannellumRef.current || normalizedImages.length === 0) return;
+    if (!pannellum || !pannellumRef.current || normalizedImages.length === 0)
+      return;
 
     const config = {
       type: "equirectangular",
@@ -63,13 +75,13 @@ const Image360Modal = ({ images, onClose, title }) => {
         try {
           viewerRef.current.destroy();
         } catch (e) {
-          console.error('Error destroying previous viewer:', e);
+          console.error("Error destroying previous viewer:", e);
         }
       }
 
       viewerRef.current = pannellum.viewer(pannellumRef.current, config);
     } catch (error) {
-      console.error('Error initializing Pannellum:', error);
+      console.error("Error initializing Pannellum:", error);
     }
 
     return () => {
@@ -77,7 +89,7 @@ const Image360Modal = ({ images, onClose, title }) => {
         try {
           viewerRef.current.destroy();
         } catch (e) {
-          console.error('Error cleaning up Pannellum:', e);
+          console.error("Error cleaning up Pannellum:", e);
         }
       }
     };
@@ -132,47 +144,62 @@ const Image360Modal = ({ images, onClose, title }) => {
 
   if (normalizedImages.length === 0) {
     return (
-      <div style={{
-        padding: "20px",
-        textAlign: "center",
-        color: "#666"
-      }}>
+      <div
+        style={{
+          padding: "20px",
+          textAlign: "center",
+          color: "#666",
+        }}
+      >
         No 360° images available
       </div>
     );
   }
 
   return (
-    <div style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: "#000",
-      zIndex: 1000
-    }}>
-      {/* Header */}
-      <div style={{
-        position: "absolute",
+    <div
+      style={{
+        position: "fixed",
         top: 0,
         left: 0,
         right: 0,
-        zIndex: 10,
-        background: "linear-gradient(to bottom, rgba(0,0,0,0.8), transparent)",
-        padding: "16px 24px",
-      }}>
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}>
+        bottom: 0,
+        backgroundColor: "#000",
+        zIndex: 1000,
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 10,
+          background:
+            "linear-gradient(to bottom, rgba(0,0,0,0.8), transparent)",
+          padding: "16px 24px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
           <div style={{ color: "white" }}>
             <h2 style={{ fontSize: "24px", fontWeight: "bold", margin: 0 }}>
               {title}
             </h2>
             {normalizedImages.length > 1 && (
-              <p style={{ fontSize: "14px", color: "#d1d5db", margin: "4px 0 0 0" }}>
+              <p
+                style={{
+                  fontSize: "14px",
+                  color: "#d1d5db",
+                  margin: "4px 0 0 0",
+                }}
+              >
                 Image {currentIndex + 1} of {normalizedImages.length}
               </p>
             )}
@@ -202,9 +229,9 @@ const Image360Modal = ({ images, onClose, title }) => {
       <div
         ref={pannellumRef}
         style={{
-          width: '100%',
-          height: '100%',
-          position: 'relative',
+          width: "100%",
+          height: "100%",
+          position: "relative",
         }}
       />
 
@@ -263,16 +290,18 @@ const Image360Modal = ({ images, onClose, title }) => {
       )}
 
       {/* Controls */}
-      <div style={{
-        position: "absolute",
-        bottom: "20px",
-        left: 0,
-        right: 0,
-        display: "flex",
-        justifyContent: "center",
-        gap: "10px",
-        zIndex: 10,
-      }}>
+      <div
+        style={{
+          position: "absolute",
+          bottom: "20px",
+          left: 0,
+          right: 0,
+          display: "flex",
+          justifyContent: "center",
+          gap: "10px",
+          zIndex: 10,
+        }}
+      >
         <button
           onClick={handleReset}
           style={{

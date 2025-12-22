@@ -112,7 +112,7 @@ export default function VendorLeadsPage() {
           items = data.data;
         } else if (data && Array.isArray(data.inbox)) {
           // Handle the inbox array from your API response
-          items = data.inbox.map(item => item.request);
+          items = data.inbox.map((item) => item.request);
         } else if (Array.isArray(data)) {
           items = data;
         }
@@ -138,12 +138,14 @@ export default function VendorLeadsPage() {
     fetchLeads();
   }, [vendorToken]);
 
-  const filteredRows = rows.filter(row => {
+  const filteredRows = rows.filter((row) => {
     const searchLower = searchQuery.toLowerCase();
     return (
-      `${row.firstName || ''} ${row.lastName || ''}`.toLowerCase().includes(searchLower) ||
-      (row.email || '').toLowerCase().includes(searchLower) ||
-      (row.phone || '').includes(searchLower)
+      `${row.firstName || ""} ${row.lastName || ""}`
+        .toLowerCase()
+        .includes(searchLower) ||
+      (row.email || "").toLowerCase().includes(searchLower) ||
+      (row.phone || "").includes(searchLower)
     );
   });
 
@@ -247,13 +249,21 @@ export default function VendorLeadsPage() {
   };
 
   const getInitials = (firstName, lastName) => {
-    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
+    return `${firstName?.charAt(0) || ""}${
+      lastName?.charAt(0) || ""
+    }`.toUpperCase();
   };
 
   const getAvatarColor = (id) => {
     const colors = [
-      '#4A90E2', '#7B68EE', '#FF6B9D', '#20C997',
-      '#FFA500', '#E74C3C', '#9B59B6', '#3498DB'
+      "#4A90E2",
+      "#7B68EE",
+      "#FF6B9D",
+      "#20C997",
+      "#FFA500",
+      "#E74C3C",
+      "#9B59B6",
+      "#3498DB",
     ];
     return colors[id % colors.length];
   };
@@ -659,7 +669,9 @@ export default function VendorLeadsPage() {
                 <CiTimer size={30} />
               </div>
             </div>
-            <div className="stat-value">{rows.filter(r => r.status === 'pending').length}</div>
+            <div className="stat-value">
+              {rows.filter((r) => r.status === "pending").length}
+            </div>
             <div className="stat-change">Awaiting response</div>
           </div>
 
@@ -682,7 +694,14 @@ export default function VendorLeadsPage() {
               </div>
             </div>
             <div className="stat-value">
-              {rows.length > 0 ? Math.round((rows.filter(r => r.status !== 'pending').length / rows.length) * 100) : 0}%
+              {rows.length > 0
+                ? Math.round(
+                    (rows.filter((r) => r.status !== "pending").length /
+                      rows.length) *
+                      100
+                  )
+                : 0}
+              %
             </div>
             <div className="stat-change positive">Replied leads</div>
           </div>
@@ -692,17 +711,33 @@ export default function VendorLeadsPage() {
         <div className="controls-bar">
           <div className="controls-row">
             <div className="controls-left">
-              <button className="export-btn csv" onClick={exportToCSV} disabled={exporting || rows.length === 0}>
-                {exporting ? 'Exporting...' : 'Export CSV'}
+              <button
+                className="export-btn csv"
+                onClick={exportToCSV}
+                disabled={exporting || rows.length === 0}
+              >
+                {exporting ? "Exporting..." : "Export CSV"}
               </button>
-              <button className="export-btn excel" onClick={exportToExcel} disabled={exporting || rows.length === 0}>
-                {exporting ? 'Exporting...' : 'Export Excel'}
+              <button
+                className="export-btn excel"
+                onClick={exportToExcel}
+                disabled={exporting || rows.length === 0}
+              >
+                {exporting ? "Exporting..." : "Export Excel"}
               </button>
             </div>
 
             <div className="controls-right">
               <div className="search-box">
-                <svg className="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="search-icon"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <circle cx="11" cy="11" r="8"></circle>
                   <path d="m21 21-4.35-4.35"></path>
                 </svg>
@@ -771,23 +806,30 @@ export default function VendorLeadsPage() {
                       </td>
                       <td>{row.phone}</td>
                       <td>
-                        {new Date(row.eventDate).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
+                        {new Date(row.eventDate).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
                         })}
                       </td>
                       <td>
-                        <span className={`badge text-black border border-dark-subtle ${row.status || 'pending'}`}>
-                          {(row.status || 'pending').charAt(0).toUpperCase() + (row.status || 'pending').slice(1)}
+                        <span
+                          className={`badge text-black border border-dark-subtle ${
+                            row.status || "pending"
+                          }`}
+                        >
+                          {(row.status || "pending").charAt(0).toUpperCase() +
+                            (row.status || "pending").slice(1)}
                         </span>
                       </td>
-                      <td style={{ maxWidth: '250px' }}>
-                        <div style={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
-                        }}>
+                      <td style={{ maxWidth: "250px" }}>
+                        <div
+                          style={{
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
                           {row.message}
                         </div>
                       </td>
