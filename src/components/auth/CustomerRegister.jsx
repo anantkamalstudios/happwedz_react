@@ -4,6 +4,7 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { setCredentials } from "../../redux/authSlice";
+import axiosInstance from "../../services/api/axiosInstance";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -34,13 +35,26 @@ const CustomerRegister = () => {
   const [signInCms, setSignInCms] = useState(null);
   const normalizeUrl = (u) =>
     typeof u === "string" ? u.replace(/`/g, "").trim() : null;
+  const persistUserSession = (user, token) => {
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("token", token);
+    localStorage.setItem("tokenTimestamp", Date.now().toString());
+  };
+
+  // Redirect authenticated users away from register page
+  useEffect(() => {
+    if (auth?.isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [auth?.isAuthenticated, navigate]);
+
   useEffect(() => {
     (async () => {
       try {
         const res = await fetch("https://happywedz.com/api/sign-in-cms");
         const data = await res.json();
         setSignInCms(data?.data || data || null);
-      } catch {}
+      } catch { }
     })();
   }, []);
 
@@ -236,15 +250,11 @@ const CustomerRegister = () => {
       };
 
       try {
-        const res = await fetch("https://happywedz.com/api/user/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+        const res = await axiosInstance.post("/user/register", payload);
+        const data = res.data;
 
-        const data = await res.json();
-
-        if (data.success && data.user && data.token) {
+        if (data?.success && data.user && data.token) {
+          persistUserSession(data.user, data.token);
           dispatch(setCredentials({ user: data.user, token: data.token }));
 
           setFormData({
@@ -301,8 +311,8 @@ const CustomerRegister = () => {
           style={{
             background: signInCms?.image
               ? `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('${normalizeUrl(
-                  signInCms?.image
-                )}') center/cover`
+                signInCms?.image
+              )}') center/cover`
               : "linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop') center/cover",
             minHeight: "600px",
           }}
@@ -336,9 +346,8 @@ const CustomerRegister = () => {
                   <input
                     type="text"
                     name="name"
-                    className={`form-control fs-14 ${
-                      errors.name ? "is-invalid" : ""
-                    }`}
+                    className={`form-control fs-14 ${errors.name ? "is-invalid" : ""
+                      }`}
                     placeholder="Full Name"
                     value={formData.name}
                     onChange={handleChange}
@@ -355,9 +364,8 @@ const CustomerRegister = () => {
                   <input
                     type="email"
                     name="email"
-                    className={`form-control fs-14 ${
-                      errors.email ? "is-invalid" : ""
-                    }`}
+                    className={`form-control fs-14 ${errors.email ? "is-invalid" : ""
+                      }`}
                     placeholder="Email"
                     value={formData.email}
                     onChange={handleChange}
@@ -374,9 +382,8 @@ const CustomerRegister = () => {
                   <input
                     type={passwordVisible ? "text" : "password"}
                     name="password"
-                    className={`form-control fs-14 ${
-                      errors.password ? "is-invalid" : ""
-                    }`}
+                    className={`form-control fs-14 ${errors.password ? "is-invalid" : ""
+                      }`}
                     placeholder="Password"
                     value={formData.password}
                     onChange={handleChange}
@@ -402,7 +409,7 @@ const CustomerRegister = () => {
                 </div>
               </div>
 
-              <style jsx>
+              <style>
                 {`
                   .input-number::-webkit-inner-spin-button,
                   .input-number::-webkit-outer-spin-button {
@@ -457,9 +464,8 @@ const CustomerRegister = () => {
                   <input
                     type="number"
                     name="phone"
-                    className={`input-number form-control fs-16 ${
-                      errors.phone ? "is-invalid" : ""
-                    }`}
+                    className={`input-number form-control fs-16 ${errors.phone ? "is-invalid" : ""
+                      }`}
                     placeholder="Phone"
                     value={formData.phone}
                     onChange={handleChange}
@@ -479,9 +485,8 @@ const CustomerRegister = () => {
                   <input
                     type="text"
                     name="weddingVenue"
-                    className={`form-control fs-14 ${
-                      errors.weddingVenue ? "is-invalid" : ""
-                    }`}
+                    className={`form-control fs-14 ${errors.weddingVenue ? "is-invalid" : ""
+                      }`}
                     placeholder="Wedding Venue"
                     value={formData.weddingVenue}
                     onChange={handleChange}
@@ -499,9 +504,8 @@ const CustomerRegister = () => {
                 <div className="form-floating">
                   <select
                     name="country"
-                    className={`form-select fs-14 ${
-                      errors.country ? "is-invalid" : ""
-                    }`}
+                    className={`form-select fs-14 ${errors.country ? "is-invalid" : ""
+                      }`}
                     value={formData.country}
                     onChange={handleChange}
                   >
@@ -523,9 +527,8 @@ const CustomerRegister = () => {
                 <div className="form-floating">
                   <select
                     name="city"
-                    className={`form-select fs-14 ${
-                      errors.city ? "is-invalid" : ""
-                    }`}
+                    className={`form-select fs-14 ${errors.city ? "is-invalid" : ""
+                      }`}
                     value={formData.city}
                     onChange={handleChange}
                   >
@@ -548,9 +551,8 @@ const CustomerRegister = () => {
                   <input
                     type="date"
                     name="weddingDate"
-                    className={`form-control fs-14 ${
-                      errors.weddingDate ? "is-invalid" : ""
-                    }`}
+                    className={`form-control fs-14 ${errors.weddingDate ? "is-invalid" : ""
+                      }`}
                     value={formData.weddingDate}
                     onChange={handleChange}
                   />

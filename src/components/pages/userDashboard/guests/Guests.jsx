@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
+import axiosInstance from "../../../../services/api/axiosInstance";
 import {
   FaSearch,
   FaDownload,
@@ -102,19 +102,8 @@ const Guests = () => {
     printWindow.print();
   };
 
-  const axiosInstance = React.useMemo(() => {
-    if (!token) return null;
-
-    return axios.create({
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "X-Auth-Provider": "google",
-      },
-    });
-  }, [token]);
-
   const fetchGuests = useCallback(async () => {
-    if (!axiosInstance || !userId) {
+    if (!userId) {
       setLoading(false);
       return;
     }
@@ -137,14 +126,14 @@ const Guests = () => {
     } finally {
       setLoading(false);
     }
-  }, [axiosInstance, userId]);
+  }, [userId]);
 
   useEffect(() => {
     fetchGuests();
   }, [refresh, fetchGuests]);
 
   const fetchGroups = useCallback(async () => {
-    if (!axiosInstance || !userId) {
+    if (!userId) {
       return;
     }
     setGroupsLoading(true);
@@ -162,7 +151,7 @@ const Guests = () => {
     } finally {
       setGroupsLoading(false);
     }
-  }, [axiosInstance, userId]);
+  }, [userId]);
 
   useEffect(() => {
     fetchGroups();
@@ -316,7 +305,6 @@ const Guests = () => {
   };
 
   const updateGuestField = async (id, field, value) => {
-    if (!axiosInstance) return;
     try {
       await axiosInstance.put(`https://happywedz.com/api/guestlist/${id}`, {
         [field]: value,
@@ -328,7 +316,6 @@ const Guests = () => {
   };
 
   const deleteGuestAPI = async (id) => {
-    if (!axiosInstance) return;
     if (!window.confirm("Are you sure?")) return;
     setGuests((prevGuests) => prevGuests.filter((guest) => guest.id !== id));
     try {
@@ -482,7 +469,7 @@ const Guests = () => {
       return;
     }
 
-    if (!axiosInstance || !userId) {
+    if (!userId) {
       Swal.fire({
         icon: "error",
         text: "Authentication error. Please log in again.",
@@ -1021,15 +1008,6 @@ const Guests = () => {
                       return;
                     }
 
-                    if (!axiosInstance) {
-                      Swal.fire({
-                        icon: "error",
-                        text: "Authentication error. Please log in again.",
-                        confirmButtonColor: "#C31162",
-                      });
-                      return;
-                    }
-
                     try {
                       const res = await axiosInstance.post(
                         "https://happywedz.com/api/groups/add",
@@ -1186,7 +1164,7 @@ const Guests = () => {
                                   }
                                   const msg = encodeURIComponent(
                                     whatsappMessage ||
-                                      formatGuestListForWhatsApp()
+                                    formatGuestListForWhatsApp()
                                   );
                                   const phone = sanitizePhone(g.phone_number);
                                   if (!/^\d+$/.test(phone)) {

@@ -108,15 +108,12 @@
 //     return { loading, error, register, login, logout };
 // };
 
-import axios from "axios";
-
-// const API_BASE = "https://happywedz.com/api";
-const API_BASE = import.meta.env.VITE_API_URL;
+import axiosInstance from "./axiosInstance";
 
 const userApi = {
   register: async (data) => {
     try {
-      const res = await axios.post(`${API_BASE}/user/register`, data);
+      const res = await axiosInstance.post("/user/register", data);
       return res.data;
     } catch (err) {
       return (
@@ -127,7 +124,7 @@ const userApi = {
 
   login: async (data) => {
     try {
-      const res = await axios.post(`${API_BASE}/user/login`, data);
+      const res = await axiosInstance.post("/user/login", data);
       return res.data;
     } catch (err) {
       return err.response?.data || { success: false, message: "Login failed" };
@@ -135,7 +132,7 @@ const userApi = {
   },
   googleAuth: async (data) => {
     try {
-      const res = await axios.post(`${API_BASE}/user/google-auth`, data);
+      const res = await axiosInstance.post("/user/google-auth", data);
       return res.data;
     } catch (err) {
       return (

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
+import axiosInstance from "../../../../services/api/axiosInstance";
 import {
   Row,
   Col,
@@ -22,14 +22,14 @@ import {
   FaBan,
   FaChevronDown,
   FaChevronUp,
-  FaCalendarCheck 
+  FaCalendarCheck
 } from "react-icons/fa";
 import { CiBookmarkCheck } from "react-icons/ci";
 import Swal from "sweetalert2";
 import Loader from "../../../ui/Loader";
 
 const Booking = () => {
-  const { token, user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
@@ -38,18 +38,9 @@ const Booking = () => {
 
   useEffect(() => {
     const fetchBookings = async () => {
-      if (!token) {
-        console.warn("No token found, redirecting...");
-        window.location.href = "/customer-login";
-        return;
-      }
-
       try {
-        const res = await axios.get(
-          "https://happywedz.com/api/request-pricing/user/quotations",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        const res = await axiosInstance.get(
+          "https://happywedz.com/api/request-pricing/user/quotations"
         );
         if (res.data.success) {
           setBookings(res.data.quotations);
@@ -61,7 +52,7 @@ const Booking = () => {
       }
     };
     fetchBookings();
-  }, [token]);
+  }, []);
 
   const handleActionChange = (id, newStatus) => {
     setBookings((prev) =>
@@ -93,11 +84,8 @@ const Booking = () => {
     setCancelling((prev) => ({ ...prev, [requestId]: true }));
 
     try {
-      const res = await axios.delete(
-        `https://happywedz.com/api/request-pricing/user/quotations/${requestId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const res = await axiosInstance.delete(
+        `https://happywedz.com/api/request-pricing/user/quotations/${requestId}`
       );
 
       if (res.data.success) {
@@ -121,7 +109,7 @@ const Booking = () => {
       Swal.fire(
         "Error",
         err.response?.data?.message ||
-          "Failed to cancel quotation. Please try again.",
+        "Failed to cancel quotation. Please try again.",
         "error"
       );
     } finally {
@@ -137,8 +125,8 @@ const Booking = () => {
         return <FaClock />;
       case "cancelled":
         return <FaBan />;
-        case "booked":
-          return <FaCalendarCheck/>;
+      case "booked":
+        return <FaCalendarCheck />;
 
       default:
         return <FaTimesCircle />;
@@ -163,35 +151,31 @@ const Booking = () => {
           <div className="user-booking-filter-section">
             <div className="user-booking-filter-tabs">
               <button
-                className={`user-booking-filter-tab fs-16 ${
-                  filterStatus === "all" ? "active" : ""
-                }`}
+                className={`user-booking-filter-tab fs-16 ${filterStatus === "all" ? "active" : ""
+                  }`}
                 onClick={() => setFilterStatus("all")}
               >
                 All ({bookings.length})
               </button>
               <button
-                className={`user-booking-filter-tab fs-16 ${
-                  filterStatus === "replied" ? "active" : ""
-                }`}
+                className={`user-booking-filter-tab fs-16 ${filterStatus === "replied" ? "active" : ""
+                  }`}
                 onClick={() => setFilterStatus("replied")}
               >
                 Replied ({bookings.filter((b) => b.status === "replied").length}
                 )
               </button>
               <button
-                className={`user-booking-filter-tab fs-16 ${
-                  filterStatus === "pending" ? "active" : ""
-                }`}
+                className={`user-booking-filter-tab fs-16 ${filterStatus === "pending" ? "active" : ""
+                  }`}
                 onClick={() => setFilterStatus("pending")}
               >
                 Pending ({bookings.filter((b) => b.status === "pending").length}
                 )
               </button>
               <button
-                className={`user-booking-filter-tab fs-16 ${
-                  filterStatus === "cancelled" ? "active" : ""
-                }`}
+                className={`user-booking-filter-tab fs-16 ${filterStatus === "cancelled" ? "active" : ""
+                  }`}
                 onClick={() => setFilterStatus("cancelled")}
               >
                 Cancelled (

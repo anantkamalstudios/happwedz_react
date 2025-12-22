@@ -342,7 +342,7 @@ const RealWeddingForm = ({ user, token }) => {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "An error occurred while submitting the form."
+        "An error occurred while submitting the form."
       );
       console.error("Submission error:", err);
     } finally {
@@ -445,9 +445,8 @@ const RealWeddingForm = ({ user, token }) => {
           {steps.map((step, index) => (
             <div
               key={index}
-              className={`step ${index === currentStep ? "active" : ""} ${
-                index < currentStep ? "completed" : ""
-              }`}
+              className={`step ${index === currentStep ? "active" : ""} ${index < currentStep ? "completed" : ""
+                }`}
             >
               <div className="step-icon fs-14">{index + 1}</div>
               <span className="step-label fs-14">{step}</span>
@@ -546,7 +545,7 @@ const RealWeddingForm = ({ user, token }) => {
           </div>
         </form>
       </div>
-      <style jsx>{`
+      <style>{`
         input,
         select,
         textarea {

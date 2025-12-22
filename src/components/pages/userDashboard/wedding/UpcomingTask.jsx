@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { BsPlusLg } from "react-icons/bs";
 import { GoChecklist } from "react-icons/go";
 import { useSelector } from "react-redux";
-import axios from "axios";
+import axiosInstance from "../../../../services/api/axiosInstance";
 
 const UpComingTask = () => {
   const [tasks, setTasks] = useState([]);
@@ -14,13 +14,12 @@ const UpComingTask = () => {
   const [statusMessage, setStatusMessage] = useState("");
   const [messageType, setMessageType] = useState("success");
 
-  const token = useSelector((state) => state.auth.token);
   const user = useSelector((state) => state.auth.user);
   const userId = user?.id || user?.user_id || user?._id;
   const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
-    if (!userId || !token) {
+    if (!userId) {
       setLoading(false);
       return;
     }
@@ -28,11 +27,8 @@ const UpComingTask = () => {
     const fetchTasks = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(
-          `https://happywedz.com/api/new-checklist/newChecklist/user/${userId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        const res = await axiosInstance.get(
+          `https://happywedz.com/api/new-checklist/newChecklist/user/${userId}`
         );
         const allTasks = res.data?.data || [];
         const pending = allTasks.filter((task) => task.status === "pending");
@@ -54,7 +50,7 @@ const UpComingTask = () => {
     };
 
     fetchTasks();
-  }, [userId, token, refresh]);
+  }, [userId, refresh]);
 
   const handleCheckboxChange = async (event) => {
     const { name: taskId, checked } = event.target;
@@ -90,12 +86,9 @@ const UpComingTask = () => {
 
     try {
       const newStatus = "completed";
-      await axios.put(
+      await axiosInstance.put(
         `https://happywedz.com/api/new-checklist/update/${taskId}`,
-        { status: newStatus },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { status: newStatus }
       );
       setStatusMessage("✓ Task marked as completed!");
       setMessageType("success");
@@ -154,9 +147,8 @@ const UpComingTask = () => {
       <h1 style={{ marginBottom: "1.5rem" }}>Upcoming tasks</h1>
       {statusMessage && (
         <div
-          className={`alert alert-${
-            messageType === "success" ? "success" : "danger"
-          } alert-dismissible fade show`}
+          className={`alert alert-${messageType === "success" ? "success" : "danger"
+            } alert-dismissible fade show`}
           role="alert"
           style={{ marginBottom: "1.5rem" }}
         >
@@ -172,9 +164,8 @@ const UpComingTask = () => {
         {tasks.slice(0, 3).map((task, index) => (
           <div
             key={task.id || index}
-            className={`task-item ${
-              animatingTasks[task.id] ? "task-checking" : ""
-            } ${removingTasks[task.id] ? "task-removing" : ""}`}
+            className={`task-item ${animatingTasks[task.id] ? "task-checking" : ""
+              } ${removingTasks[task.id] ? "task-removing" : ""}`}
             style={{
               display: "flex",
               justifyContent: "flex-start",

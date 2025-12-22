@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { setCredentials, logout as logoutAction } from "../redux/authSlice";
+import axiosInstance from "../services/api/axiosInstance";
 
 export const useUser = () => {
   const dispatch = useDispatch();
@@ -13,13 +14,7 @@ export const useUser = () => {
       setError(null);
 
       try {
-        const response = await fetch("https://happywedz.com/api/user/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        });
-
-        const data = await response.json();
+        const { data } = await axiosInstance.post("/user/login", formData);
 
         if (data.success && data.user && data.token) {
           const { user, token } = data;
@@ -32,12 +27,14 @@ export const useUser = () => {
 
           return { success: true, user, token };
         } else {
-          setError(data.message || "Login failed");
-          return { success: false, message: data.message };
+          const msg = data.message || "Login failed";
+          setError(msg);
+          return { success: false, message: msg };
         }
       } catch (err) {
-        setError(err.message || "Login error");
-        return { success: false, message: err.message };
+        const msg = err.response?.data?.message || err.message || "Login error";
+        setError(msg);
+        return { success: false, message: msg };
       } finally {
         setLoading(false);
       }
@@ -49,6 +46,10 @@ export const useUser = () => {
     dispatch(logoutAction());
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+    localStorage.removeItem("tokenTimestamp");
+    axiosInstance.post("/auth/logout").catch(() => {
+      /* best-effort */
+    });
   }, [dispatch]);
 
   return { login, logout, loading, error };

@@ -30,6 +30,7 @@ import { ToastContainer } from "react-toastify";
 import PublicWeddingView from "./components/pages/WeddingPublicView";
 // import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import ScrollToTop from "./components/ScrollToTop";
+import CookieConsent from "./components/ui/CookieConsent";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
@@ -226,6 +227,7 @@ function App() {
   return (
     <LoaderProvider>
       <ScrollToTop />
+      <CookieConsent />
       <Suspense fallback={<Loader />}>
         <ToastContainer />
         <ToastProvider>

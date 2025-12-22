@@ -16,6 +16,7 @@ import VenueVendorComponent from "./VenueVendorComponent";
 import UpComingTask from "../wedding/UpcomingTask";
 import EInvites from "./EInviteCard";
 import cmsApi from "../../../../services/api/cmsApi";
+import axiosInstance from "../../../../services/api/axiosInstance";
 
 const Wedding = () => {
   const [budget, setBudget] = useState({
@@ -61,7 +62,7 @@ const Wedding = () => {
     fetchBanner();
   }, []);
 
-  const token = useSelector((state) => state.auth.token);
+  const token = useSelector((state) => state.auth.token); // Keep for auth state
   const userId = useSelector((state) => state.auth.user?.id);
 
   const iconMapping = [
@@ -127,17 +128,11 @@ const Wedding = () => {
 
         let userInfo = parseJwt(token);
 
-        const response = await fetch(
-          "https://happywedz.com/api/user/" + userInfo.id,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+        const response = await axiosInstance.get(
+          "https://happywedz.com/api/user/" + userInfo.id
         );
 
-        const data = await response.json();
+        const data = response.data;
         setUser(data.user);
       } catch (error) {
         console.error("Failed to fetch user data:", error);
@@ -154,13 +149,10 @@ const Wedding = () => {
 
     const fetchDashboardData = async () => {
       try {
-        const guestsRes = await fetch(
-          `https://happywedz.com/api/guestlist/${userId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        const guestsRes = await axiosInstance.get(
+          `https://happywedz.com/api/guestlist/${userId}`
         );
-        const guestsData = await guestsRes.json();
+        const guestsData = guestsRes.data;
         if (
           guestsData.success &&
           guestsData.data &&
@@ -173,13 +165,10 @@ const Wedding = () => {
           setGuestStats({ total: totalGuests, attending: attendingGuests });
         }
 
-        const tasksRes = await fetch(
-          `https://happywedz.com/api/new-checklist/newChecklist/user/${userId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        const tasksRes = await axiosInstance.get(
+          `https://happywedz.com/api/new-checklist/newChecklist/user/${userId}`
         );
-        const tasksData = await tasksRes.json();
+        const tasksData = tasksRes.data;
         if (tasksData.success) {
           const allTasks = Array.isArray(tasksData.data) ? tasksData.data : [];
           const completedTasks = allTasks.filter(
@@ -460,11 +449,10 @@ const Wedding = () => {
                       className="progress-bar bg-primary"
                       role="progressbar"
                       style={{
-                        width: `${
-                          budget.total > 0
+                        width: `${budget.total > 0
                             ? (budget.spent / budget.total) * 100
                             : 0
-                        }%`,
+                          }%`,
                       }}
                       aria-valuenow={
                         budget.total > 0
