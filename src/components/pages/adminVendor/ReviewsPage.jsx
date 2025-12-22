@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { FiStar, FiMail } from "react-icons/fi";
 
 import ReviewsDashboard from "./subVendors/ReviewsDashboard";
 import Reviews from "./subVendors/Reviews";
@@ -189,30 +190,62 @@ const ReviewsPage = () => {
 
   return (
     <div className="">
+      <style>{`
+        .modern-tabs {
+          border-bottom: 2px solid #e5e7eb;
+          margin-bottom: 2rem;
+        }
+        
+        .modern-tab {
+          position: relative;
+          padding: 0.875rem 1.5rem;
+          border: none;
+          background: transparent;
+          color: #6b7280;
+          font-weight: 500;
+          font-size: 0.9375rem;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          border-bottom: 2px solid transparent;
+          margin-bottom: -2px;
+        }
+        
+        .modern-tab:hover {
+          color: #111827;
+        }
+        
+        .modern-tab.active {
+          color: #e91e63;
+          border-bottom-color: #e91e63;
+        }
+        
+        .modern-tab svg {
+          font-size: 1.125rem;
+        }
+      `}</style>
       <div className="container">
         <div className="d-flex justify-content-center">
           <div className="w-100" style={{ maxWidth: 1000 }}>
-            <div className="nav nav-tabs justify-content-start flex-wrap mb-3">
+            <div className="modern-tabs d-flex justify-content-start flex-wrap">
               <button
                 type="button"
-                className={`nav-link shadow-none px-2 ${
-                  activeSection === "reviews"
-                    ? "active primary-text"
-                    : "text-dark"
-                }`}
+                className={`modern-tab ${activeSection === "reviews" ? "active" : ""
+                  }`}
                 onClick={() => setActiveSection("reviews")}
               >
+                <FiStar />
                 Reviews
               </button>
               <button
                 type="button"
-                className={`nav-link shadow-none px-2 ${
-                  activeSection === "review-collector"
-                    ? "active primary-text"
-                    : "text-dark"
-                }`}
+                className={`modern-tab ${activeSection === "review-collector" ? "active" : ""
+                  }`}
                 onClick={() => setActiveSection("review-collector")}
               >
+                <FiMail />
                 Review Collector
               </button>
             </div>

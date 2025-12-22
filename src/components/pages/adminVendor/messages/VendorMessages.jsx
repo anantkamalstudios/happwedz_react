@@ -368,27 +368,88 @@ const VendorMessages = () => {
 
   const handleQuick = (label) => sendMessage(label);
 
+
+
   return (
-    <div className="container my-4">
+    <div className="container-fluid px-0 my-4">
       <style>{`
-        .chat-card { min-height: 540px; max-height: 80vh; }
-        .msg-bubble { max-width: 100%; padding: .55rem .75rem; border-radius: 14px; line-height:1.25;}
-        .msg-user { background:#f1f3f5; color: #212529; border-top-left-radius: 4px; } /* other */
-        .msg-vendor { background: rgb(237 17 115); color: #fff; border-top-right-radius: 4px; } /* self */
-        .msg-time { font-size: .75rem; color: #6c757d; }
-        .chat-scroll { overflow-y: auto; max-height: 58vh; padding-right: 8px; }
-        .vendor-card { cursor: pointer; transition: background .2s; }
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+        
+        .messages-wrapper {
+          font-family: "DM Sans", sans-serif !important;
+          max-width: 1400px;
+          margin: 0 auto;
+        }
+        .messages-container {
+        font-family: "DM Sans", sans-serif !important;
+          display: flex;
+          background: white;
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        .conversations-panel {
+        font-family: "DM Sans", sans-serif !important;
+          width: 380px;
+          border-right: 1px solid #e5e7eb;
+          display: flex;
+          flex-direction: column;
+        }
+        .chat-panel {
+        font-family: "DM Sans", sans-serif !important;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+        .chat-card { min-height: 540px; max-height: 80vh;font-family: "DM Sans", sans-serif !important; }
+        .msg-bubble { 
+        font-family: "DM Sans", sans-serif !important;
+          max-width: 100%; 
+          padding: .55rem .75rem; 
+          border-radius: 14px; 
+          line-height: 1.4;
+          font-size: 0.9375rem;
+        }
+        .msg-user { background:#f1f3f5; color: #212529; border-top-left-radius: 4px;font-family: "DM Sans", sans-serif !important; }
+        .msg-vendor { background: rgb(237 17 115); color: #fff; border-top-right-radius: 4px;font-family: "DM Sans", sans-serif !important; }
+        .msg-time { 
+          font-size: .75rem; 
+          color: #6c757d;
+          font-weight: 400;font-family: "DM Sans", sans-serif !important;
+        }
+        .chat-scroll { overflow-y: auto; max-height: 58vh; padding-right: 8px;font-family: "DM Sans", sans-serif !important; }
+        .vendor-card { 
+          cursor: pointer; 
+          transition: background .2s;
+          font-weight: 400;font-family: "DM Sans", sans-serif !important;
+        }
         .vendor-card:hover { background:#f8f9fa; }
-        .chip-scroll { overflow-x:auto; -webkit-overflow-scrolling: touch; }
-        .chip-scroll::-webkit-scrollbar { display: none; }
+        .vendor-card .fw-bold {
+          font-weight: 600 !important;font-family: "DM Sans", sans-serif !important;
+        }
+        .chip-scroll { overflow-x:auto; -webkit-overflow-scrolling: touch;font-family: "DM Sans", sans-serif !important; }
+        .chip-scroll::-webkit-scrollbar { display: none;font-family: "DM Sans", sans-serif !important; }
+        
+        @media (max-width: 768px) {
+          .conversations-panel {
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid #e5e7eb;
+          }
+          .messages-container {
+            flex-direction: column;
+          }
+        }
       `}</style>
 
-      <div className="row g-3">
-        {/* Left: Conversation List (customers) */}
-        <div className="col-12 col-md-4">
-          <div className="card border-0 rounded-4 shadow-sm p-3 h-100">
-            <h6 className="fw-bold mb-3">Conversations</h6>
-            <div className="list-group">
+      <div className="messages-wrapper">
+        <div className="messages-container">
+          <div className="conversations-panel">
+            <div className="p-3 border-bottom">
+              <h6 className="fw-bold mb-0">Conversations</h6>
+            </div>
+            <div className="list-group border-0" style={{ flex: 1, overflowY: 'auto' }}>
               {loadingConversations ? (
                 <div className="p-3 text-muted small">
                   Loading conversations…
@@ -432,138 +493,137 @@ const VendorMessages = () => {
               )}
             </div>
           </div>
-        </div>
 
-        {/* Right: Chat Panel */}
-        <div className="col-12 col-md-8">
-          <div className="card border-0 rounded-4 shadow-sm chat-card d-flex flex-column">
-            {/* Header */}
-            <div className="card-body border-bottom py-3 d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center">
-                <Avatar name={"You"} imageUrl={vendorImage} size={44} />
-                <div className="ms-3">
-                  <div className="fw-bold">You (Vendor)</div>
-                  <div className="small text-muted">
-                    {/* Show customer's presence when a conversation is selected */}
-                    {activeConversation?.userId &&
-                      isOnline(userLastActive[activeConversation.userId])
-                      ? `${userNames[activeConversation.userId] || "Customer"
-                      } Online`
-                      : `${userNames[activeConversation?.userId] || "Customer"
-                      } last seen ${formatTime(
-                        userLastActive[activeConversation?.userId] ||
-                        activeConversation?.lastMessageAt ||
-                        new Date().toISOString()
-                      )}`}
+          <div className="chat-panel">
+            <div className="card border-0 h-100 d-flex flex-column">
+              {/* Header */}
+              <div className="card-body border-bottom py-3 d-flex align-items-center justify-content-between">
+                <div className="d-flex align-items-center">
+                  <Avatar name={"You"} imageUrl={vendorImage} size={44} />
+                  <div className="ms-3">
+                    <div className="fw-bold">You (Vendor)</div>
+                    <div className="small text-muted">
+                      {/* Show customer's presence when a conversation is selected */}
+                      {activeConversation?.userId &&
+                        isOnline(userLastActive[activeConversation.userId])
+                        ? `${userNames[activeConversation.userId] || "Customer"
+                        } Online`
+                        : `${userNames[activeConversation?.userId] || "Customer"
+                        } last seen ${formatTime(
+                          userLastActive[activeConversation?.userId] ||
+                          activeConversation?.lastMessageAt ||
+                          new Date().toISOString()
+                        )}`}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="text-muted small d-none d-md-block">
-                <FiClock className="me-1" /> {new Date().toLocaleDateString()}
-              </div>
-            </div>
-
-            {/* Messages */}
-            <div className="card-body chat-scroll" ref={scrollRef}>
-              {error && !loadingMessages && activeConversationId ? (
-                <div
-                  className="alert alert-danger py-2 px-3 small"
-                  role="alert"
-                >
-                  {error || "Failed to load messages."}
+                <div className="text-muted small d-none d-md-block">
+                  <FiClock className="me-1" /> {new Date().toLocaleDateString()}
                 </div>
-              ) : loadingMessages ? (
-                <div className="text-muted small">Loading messages…</div>
-              ) : !activeConversationId ? (
-                <div className="text-muted small">Select a conversation</div>
-              ) : (
-                <div className="d-flex flex-column gap-3">
-                  {messages.map((m) => (
-                    <div
-                      key={m.id}
-                      className={`d-flex ${m.sender === "vendor"
+              </div>
+
+              {/* Messages */}
+              <div className="card-body chat-scroll" ref={scrollRef}>
+                {error && !loadingMessages && activeConversationId ? (
+                  <div
+                    className="alert alert-danger py-2 px-3 small"
+                    role="alert"
+                  >
+                    {error || "Failed to load messages."}
+                  </div>
+                ) : loadingMessages ? (
+                  <div className="text-muted small">Loading messages…</div>
+                ) : !activeConversationId ? (
+                  <div className="text-muted small">Select a conversation</div>
+                ) : (
+                  <div className="d-flex flex-column gap-3">
+                    {messages.map((m) => (
+                      <div
+                        key={m.id}
+                        className={`d-flex ${m.sender === "vendor"
                           ? "justify-content-end"
                           : "justify-content-start"
-                        }`}
-                    >
-                      {m.sender === "user" ? (
-                        <div className="d-flex align-items-start">
-                          <div className="me-2">
+                          }`}
+                      >
+                        {m.sender === "user" ? (
+                          <div className="d-flex align-items-start">
+                            <div className="me-2">
+                              <Avatar
+                                name={userNames[m.userId] || "Customer"}
+                                imageUrl={userImages[m.userId]}
+                                size={36}
+                              />
+                            </div>
+                            <div>
+                              <div className="msg-time mb-1 fw-bold fs-14">
+                                {userNames[m.userId] || "Customer"} •{" "}
+                                {formatTime(m.time)}
+                              </div>
+                              <div className="msg-bubble msg-user fs-14">
+                                {m.text}
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="d-flex align-items-end">
+                            <div
+                              className="me-2 text-end"
+                              style={{ marginRight: 8 }}
+                            >
+                              <div className="msg-time mb-1 fs-14 fw-bold">
+                                {formatTime(m.time)}
+                              </div>
+                              <div className="msg-bubble msg-vendor fs-14">
+                                {m.text}
+                              </div>
+                            </div>
                             <Avatar
-                              name={userNames[m.userId] || "Customer"}
-                              imageUrl={userImages[m.userId]}
+                              name={"You"}
+                              imageUrl={vendorImage}
                               size={36}
                             />
                           </div>
-                          <div>
-                            <div className="msg-time mb-1 fw-bold fs-14">
-                              {userNames[m.userId] || "Customer"} •{" "}
-                              {formatTime(m.time)}
-                            </div>
-                            <div className="msg-bubble msg-user fs-14">
-                              {m.text}
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="d-flex align-items-end">
-                          <div
-                            className="me-2 text-end"
-                            style={{ marginRight: 8 }}
-                          >
-                            <div className="msg-time mb-1 fs-14 fw-bold">
-                              {formatTime(m.time)}
-                            </div>
-                            <div className="msg-bubble msg-vendor fs-14">
-                              {m.text}
-                            </div>
-                          </div>
-                          <Avatar
-                            name={"You"}
-                            imageUrl={vendorImage}
-                            size={36}
-                          />
-                        </div>
-                      )}
-                    </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Quick chips */}
+              <div className="px-3 pt-2">
+                <div className="chip-scroll d-flex align-items-center py-2">
+                  {quickReplies.map((q) => (
+                    <QuickChip key={q} label={q} onClick={handleQuick} />
                   ))}
                 </div>
-              )}
-            </div>
-
-            {/* Quick chips */}
-            <div className="px-3 pt-2">
-              <div className="chip-scroll d-flex align-items-center py-2">
-                {quickReplies.map((q) => (
-                  <QuickChip key={q} label={q} onClick={handleQuick} />
-                ))}
               </div>
-            </div>
 
-            {/* Input */}
-            <div className="card-body border-top py-3">
-              <div className="d-flex align-items-center gap-2">
-                <button
-                  className="btn btn-light"
-                  onClick={() => setInput(input + " 😊")}
-                >
-                  <FiSmile />
-                </button>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Type a message..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
-                />
-                <button
-                  className="btn btn-primary d-flex align-items-center justify-content-center"
-                  onClick={() => sendMessage(input)}
-                  style={{ height: "40px", width: "44px", borderRadius: 8 }}
-                >
-                  <FiSend color="white" />
-                </button>
+              {/* Input */}
+              <div className="card-body border-top py-3">
+                <div className="d-flex align-items-center gap-2">
+                  <button
+                    className="btn btn-light"
+                    onClick={() => setInput(input + " 😊")}
+                  >
+                    <FiSmile />
+                  </button>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Type a message..."
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
+                  />
+                  <button
+                    className="btn btn-primary d-flex align-items-center justify-content-center"
+                    onClick={() => sendMessage(input)}
+                    style={{ height: "40px", width: "44px", borderRadius: 8 }}
+                  >
+                    <FiSend color="white" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>

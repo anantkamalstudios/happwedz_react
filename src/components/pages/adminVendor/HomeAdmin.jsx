@@ -427,37 +427,60 @@ const HomeAdmin = () => {
     },
   };
 
-  // Chart data
+  // Chart data - Enhanced styling
   const leadsChartData = {
     labels: stats.chartData.labels,
     datasets: [
       {
         label: "Leads",
         data: stats.chartData.leads,
-        borderColor: "#8e44ad",
-        backgroundColor: "rgba(142, 68, 173, 0.2)",
-        tension: 0.3,
+        borderColor: "#8b5cf6",
+        backgroundColor: "rgba(139, 92, 246, 0.1)",
+        tension: 0.4,
         fill: true,
         yAxisID: "y",
+        borderWidth: 3,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: "#8b5cf6",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+        pointHoverBackgroundColor: "#8b5cf6",
+        pointHoverBorderColor: "#fff",
       },
-
       {
-        label: "impressions",
+        label: "Impressions",
         data: stats.chartData.wishlist,
-        borderColor: "#34495e",
-        backgroundColor: "rgba(52, 73, 94, 0.12)",
-        tension: 0.3,
+        borderColor: "#ec4899",
+        backgroundColor: "rgba(236, 72, 153, 0.1)",
+        tension: 0.4,
         yAxisID: "y3",
         fill: true,
+        borderWidth: 3,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: "#ec4899",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+        pointHoverBackgroundColor: "#ec4899",
+        pointHoverBorderColor: "#fff",
       },
       {
         label: "Profile Views",
         data: stats.chartData.profileViews,
-        borderColor: "#27ae60",
-        backgroundColor: "rgba(39, 174, 96, 0.12)",
-        tension: 0.3,
+        borderColor: "#10b981",
+        backgroundColor: "rgba(16, 185, 129, 0.1)",
+        tension: 0.4,
         yAxisID: "y2",
         fill: true,
+        borderWidth: 3,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: "#10b981",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+        pointHoverBackgroundColor: "#10b981",
+        pointHoverBorderColor: "#fff",
       },
     ],
   };
@@ -481,7 +504,7 @@ const HomeAdmin = () => {
     ],
   };
 
-  // Chart options
+  // Chart options - Enhanced for modern UI
   const leadsChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -489,46 +512,143 @@ const HomeAdmin = () => {
       mode: "index",
       intersect: false,
     },
+    animation: {
+      duration: 1000,
+      easing: 'easeInOutQuart',
+    },
     plugins: {
       legend: {
         position: "top",
+        align: 'end',
+        labels: {
+          usePointStyle: true,
+          pointStyle: 'circle',
+          padding: 20,
+          font: {
+            size: 13,
+            weight: '500',
+            family: "'Inter', 'Segoe UI', sans-serif",
+          },
+          color: '#4a5568',
+          boxWidth: 8,
+          boxHeight: 8,
+        },
+      },
+      tooltip: {
+        enabled: true,
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+        borderWidth: 1,
+        padding: 12,
+        displayColors: true,
+        cornerRadius: 8,
+        titleFont: {
+          size: 14,
+          weight: 'bold',
+        },
+        bodyFont: {
+          size: 13,
+        },
+        callbacks: {
+          label: function (context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += context.parsed.y.toLocaleString();
+            }
+            return label;
+          }
+        }
       },
     },
     scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          font: {
+            size: 11,
+            weight: '500',
+          },
+          color: '#718096',
+          maxRotation: 45,
+          minRotation: 0,
+        },
+      },
       y: {
         type: "linear",
         display: true,
         position: "left",
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)',
+          drawBorder: false,
+        },
+        ticks: {
+          font: {
+            size: 11,
+            weight: '500',
+          },
+          color: '#718096',
+          padding: 8,
+        },
         title: {
           display: true,
           text: "Leads",
-        },
-      },
-      y1: {
-        type: "linear",
-        display: true,
-        position: "right",
-        grid: {
-          drawOnChartArea: false,
-        },
-        title: {
-          display: true,
-          text: "Impressions",
+          font: {
+            size: 12,
+            weight: '600',
+          },
+          color: '#4a5568',
         },
       },
       y2: {
         type: "linear",
         display: true,
         position: "right",
-        grid: { drawOnChartArea: false },
-        title: { display: true, text: "Profile Views" },
+        grid: {
+          drawOnChartArea: false,
+          drawBorder: false,
+        },
+        ticks: {
+          font: {
+            size: 11,
+            weight: '500',
+          },
+          color: '#718096',
+          padding: 8,
+        },
+        title: {
+          display: true,
+          text: "Profile Views",
+          font: {
+            size: 12,
+            weight: '600',
+          },
+          color: '#4a5568',
+        },
       },
       y3: {
         type: "linear",
         display: false,
         position: "right",
-        grid: { drawOnChartArea: false },
-        title: { display: true, text: "Wishlist" },
+        grid: {
+          drawOnChartArea: false,
+          drawBorder: false,
+        },
+        title: {
+          display: true,
+          text: "Impressions",
+          font: {
+            size: 12,
+            weight: '600',
+          },
+          color: '#4a5568',
+        },
       },
     },
   };
@@ -569,12 +689,12 @@ const HomeAdmin = () => {
                 {dateFilter === "this_week"
                   ? "This Week"
                   : dateFilter === "this_month"
-                  ? "This Month"
-                  : dateFilter === "last_month"
-                  ? "Last Month"
-                  : dateFilter === "custom"
-                  ? "Custom Range"
-                  : "All Data"}
+                    ? "This Month"
+                    : dateFilter === "last_month"
+                      ? "Last Month"
+                      : dateFilter === "custom"
+                        ? "Custom Range"
+                        : "All Data"}
               </Dropdown.Toggle>
 
               <Dropdown.Menu>
@@ -700,9 +820,8 @@ const HomeAdmin = () => {
                     <h5 className="pt-4">{data.value}</h5>
                   </div>
                   <div
-                    className={`icon-circle bg-${
-                      data.trend === "up" ? "success" : "danger"
-                    }-light`}
+                    className={`icon-circle bg-${data.trend === "up" ? "success" : "danger"
+                      }-light`}
                   >
                     {data.icon}
                   </div>
@@ -715,13 +834,12 @@ const HomeAdmin = () => {
             <Col xl={3} md={6} key={key} className="mb-4">
               {key === "leads" ? (
                 <Link
-                  to={`/vendor-dashboard/total-leads?dateFilter=${dateFilter}${
-                    dateFilter === "custom" && customStart && customEnd
-                      ? `&customStart=${encodeURIComponent(
-                          customStart
-                        )}&customEnd=${encodeURIComponent(customEnd)}`
-                      : ""
-                  }`}
+                  to={`/vendor-dashboard/total-leads?dateFilter=${dateFilter}${dateFilter === "custom" && customStart && customEnd
+                    ? `&customStart=${encodeURIComponent(
+                      customStart
+                    )}&customEnd=${encodeURIComponent(customEnd)}`
+                    : ""
+                    }`}
                   style={{ textDecoration: "none" }}
                 >
                   {cardContent}
@@ -734,19 +852,143 @@ const HomeAdmin = () => {
         })}
       </Row>
 
-      {/* Charts */}
+      {/* Charts - Modern Design */}
       <Row className="mb-4">
         <Col lg={12} className="mb-4 mb-lg-0">
-          <Card className="h-100">
-            <Card.Body>
-              <div className="d-flex justify-content-between align-items-center mb-4">
-                <Card.Title className="mb-0">
-                  Leads, Impression, Profile Views, Overview
-                </Card.Title>
+          <Card
+            className="modern-chart-card border-0 shadow-sm"
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              overflow: 'hidden',
+              border: '1px solid #e5e7eb',
+            }}
+          >
+            <Card.Body className="p-4">
+              {/* Header Section */}
+              <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 pb-3"
+                style={{ borderBottom: '2px solid #f3f4f6' }}>
+                <div>
+                  <h4 className="mb-1 fw-bold" style={{ color: '#111827', fontSize: '1.5rem' }}>
+                    Performance Analytics
+                  </h4>
+                  <p className="mb-0" style={{ color: '#6b7280', fontSize: '0.9rem' }}>
+                    Track your leads, impressions, and profile views over time
+                  </p>
+                </div>
+                <div className="d-flex gap-2 mt-3 mt-md-0">
+                  <Button
+                    variant="light"
+                    size="sm"
+                    className="d-flex align-items-center gap-2"
+                    style={{
+                      borderRadius: '8px',
+                      padding: '8px 16px',
+                      fontWeight: '500',
+                      backgroundColor: '#f9fafb',
+                      border: '1px solid #e5e7eb',
+                      color: '#374151',
+                    }}
+                  >
+                    <FiTrendingUp size={16} />
+                    Insights
+                  </Button>
+                  <Button
+                    variant="outline-light"
+                    size="sm"
+                    className="d-flex align-items-center gap-2"
+                    style={{
+                      borderRadius: '8px',
+                      padding: '8px 16px',
+                      fontWeight: '500',
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e5e7eb',
+                      color: '#374151',
+                    }}
+                  >
+                    <FiDownload size={16} />
+                    Export
+                  </Button>
+                </div>
               </div>
-              <div style={{ height: "300px" }}>
-                <Line data={leadsChartData} options={leadsChartOptions} />
+
+              {/* Chart Container */}
+              <div
+                className="chart-container p-4"
+                style={{
+                  backgroundColor: '#fafbfc',
+                  borderRadius: '12px',
+                  border: '1px solid #e5e7eb',
+                }}
+              >
+                <div style={{ height: "400px", position: 'relative' }}>
+                  <Line data={leadsChartData} options={leadsChartOptions} />
+                </div>
               </div>
+
+              {/* Stats Summary Row */}
+              <Row className="mt-4 g-3">
+                <Col md={4}>
+                  <div
+                    className="p-3 text-center"
+                    style={{
+                      backgroundColor: '#f9fafb',
+                      borderRadius: '10px',
+                      border: '1px solid #e5e7eb',
+                    }}
+                  >
+                    <div className="d-flex align-items-center justify-content-center gap-2 mb-1">
+                      <FiUsers size={18} style={{ color: '#6b7280' }} />
+                      <span style={{ color: '#6b7280', fontSize: '0.85rem', fontWeight: '500' }}>
+                        Total Leads
+                      </span>
+                    </div>
+                    <h5 className="mb-0 fw-bold" style={{ color: '#111827', fontSize: '1.5rem' }}>
+                      {leadCount}
+                    </h5>
+                  </div>
+                </Col>
+                <Col md={4}>
+                  <div
+                    className="p-3 text-center"
+                    style={{
+                      backgroundColor: '#f9fafb',
+                      borderRadius: '10px',
+                      border: '1px solid #e5e7eb',
+                    }}
+                  >
+                    <div className="d-flex align-items-center justify-content-center gap-2 mb-1">
+                      <FiEye size={18} style={{ color: '#6b7280' }} />
+                      <span style={{ color: '#6b7280', fontSize: '0.85rem', fontWeight: '500' }}>
+                        Profile Views
+                      </span>
+                    </div>
+                    <h5 className="mb-0 fw-bold" style={{ color: '#111827', fontSize: '1.5rem' }}>
+                      {stats.profileViews.toLocaleString()}
+                    </h5>
+                  </div>
+                </Col>
+                <Col md={4}>
+                  <div
+                    className="p-3 text-center"
+                    style={{
+                      backgroundColor: '#f9fafb',
+                      borderRadius: '10px',
+                      border: '1px solid #e5e7eb',
+                    }}
+                  >
+                    <div className="d-flex align-items-center justify-content-center gap-2 mb-1">
+                      <FiHeart size={18} style={{ color: '#6b7280' }} />
+                      <span style={{ color: '#6b7280', fontSize: '0.85rem', fontWeight: '500' }}>
+                        Impressions
+                      </span>
+                    </div>
+                    <h5 className="mb-0 fw-bold" style={{ color: '#111827', fontSize: '1.5rem' }}>
+                      {stats.wishlistCount?.toLocaleString?.() ?? 0}
+                    </h5>
+                  </div>
+                </Col>
+              </Row>
             </Card.Body>
           </Card>
         </Col>

@@ -1,6 +1,4 @@
 import axios from "axios";
-
-// Use a dedicated client that always sends vendor JWT from localStorage
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "https://happywedz.com/api",
   headers: { "Content-Type": "application/json" },
@@ -13,9 +11,7 @@ client.interceptors.request.use((config) => {
   }
   return config;
 });
-
 const BASE = "/messages/vendor";
-
 const vendorMessagesApi = {
   getConversations: async () => {
     const res = await client.get(`${BASE}/conversations`);
