@@ -18,7 +18,7 @@ const TermsCondition = () => {
       title: "Terms of Service",
       icon: <FaGavel />,
       content: `
-Last Updated: [Add Date]
+Last Updated: 04 Oct 2025
 
 By accessing or using Happywedz.com (the "Platform" / "Website"), you agree to these Terms. If you do not agree, please discontinue use immediately.
 
