@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import messagesApi from "../../../../services/api/messagesApi";
 import { vendorsApi } from "../../../../services/api/vendorAuthApi";
 import axiosInstance from "../../../../services/api/axiosInstance";
+import EmojiPicker from "emoji-picker-react";
 
 const ONLINE_WINDOW_MS = 60 * 1000;
 function isOnline(lastActiveAtIso) {
@@ -27,7 +28,7 @@ const normalizeConversation = (c) => {
   };
 };
 
-// Deduplicate conversations by vendorId - keep the most recent one
+
 const deduplicateConversations = (conversations) => {
   const vendorMap = new Map();
 
@@ -39,21 +40,21 @@ const deduplicateConversations = (conversations) => {
     if (!existing) {
       vendorMap.set(conv.vendorId, { ...conv });
     } else {
-      // Compare by lastMessageAt or updatedAt to find the most recent
+
       const existingTime = existing.lastMessageAt || existing.updatedAt || existing.createdAt;
       const currentTime = conv.lastMessageAt || conv.updatedAt || conv.createdAt;
 
-      // Combine unread counts from both conversations
+
       const combinedUnread = (existing.unreadCount || 0) + (conv.unreadCount || 0);
 
-      // If current conversation is more recent, replace it but keep combined unread count
+
       if (new Date(currentTime) > new Date(existingTime)) {
         vendorMap.set(conv.vendorId, {
           ...conv,
           unreadCount: combinedUnread,
         });
       } else {
-        // Existing is more recent, update its unread count
+
         existing.unreadCount = combinedUnread;
       }
     }
@@ -108,7 +109,7 @@ const QuickChip = ({ label, onClick }) => (
   <button
     type="button"
     onClick={() => onClick(label)}
-    className="btn btn-sm border rounded-pill me-2 mb-2 text-truncate fw-medium"
+    className="btn btn-sm border rounded-pill me-2 mb-2 text-truncate fw-medium inter"
     style={{
       minWidth: 120,
       background: "#f8f9fa",
@@ -121,6 +122,7 @@ const QuickChip = ({ label, onClick }) => (
 
 const Messages = () => {
   const { user, token } = useSelector((state) => state.auth);
+  const [showEmoji, setShowEmoji] = useState(false);
   const [conversations, setConversations] = useState([]);
   const [activeConversationId, setActiveConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -366,7 +368,7 @@ const Messages = () => {
 
   return (
     <div className="container my-4 chat-wrapper">
-      <style>{`
+      <style>{` 
         .chat-wrapper { font-size: 0.93rem; color: #1f2933; }
         .chat-card { min-height: 540px; max-height: 80vh; }
         .chat-section-title { letter-spacing: .2px; }
@@ -383,6 +385,8 @@ const Messages = () => {
         .vendor-card:hover { background:#f8f9fa; }
         .chip-scroll { overflow-x:auto; -webkit-overflow-scrolling: touch; }
         .chip-scroll::-webkit-scrollbar { display: none; }
+        .epr-emoji-category-label{ display: none; }
+        .epr-emoji-category h2{display:none}
       `}</style>
 
       <div className="row g-3">
@@ -417,16 +421,11 @@ const Messages = () => {
                       />
                       <div className="ms-3">
                         <div className="d-flex align-items-center">
-                          <div className="fw-bold me-2 vendor-name fs-16">
+                          <div className="fw-bold me-2 vendor-name fs-16 inter">
                             {c.vendorName}
                           </div>
-                          {/* {c.unreadCount > 0 && (
-                            <span className="badge bg-primary rounded-pill">
-                              {c.unreadCount}
-                            </span>
-                          )} */}
                         </div>
-                        <div className="text-muted text-truncate vendor-preview fs-14">
+                        <div className="text-muted text-truncate vendor-preview fs-14 inter">
                           {c.lastMessagePreview || c.vendorDescription || ""}
                         </div>
                       </div>
@@ -450,10 +449,10 @@ const Messages = () => {
                   size={44}
                 />
                 <div className="ms-3">
-                  <div className="fw-bold chat-header-name text-dark fs-16">
+                  <div className="fw-bold chat-header-name text-dark fs-16 inter">
                     {activeConversation?.vendorName || "Select a conversation"}
                   </div>
-                  <div className="text-muted chat-header-status fs-14">
+                  <div className="text-muted chat-header-status fs-14 inter">
                     {isOnline(activeConversation?.vendorLastActiveAt)
                       ? "Online"
                       : `Last seen ${activeConversation?.vendorLastActiveAt
@@ -463,7 +462,7 @@ const Messages = () => {
                   </div>
                 </div>
               </div>
-              <div className="text-muted d-none d-md-block fs-14">
+              <div className="text-muted d-none d-md-block fs-14 inter">
                 <FiClock className="me-1" /> {new Date().toLocaleDateString()}
               </div>
             </div>
@@ -478,9 +477,9 @@ const Messages = () => {
                   {error || "Failed to load messages."}
                 </div>
               ) : loadingMessages ? (
-                <div className="text-muted small">Loading messages…</div>
+                <div className="text-muted small inter">Loading messages…</div>
               ) : !activeConversationId ? (
-                <div className="text-muted fs-14">Select a conversation</div>
+                <div className="text-muted fs-14 inter">Select a conversation</div>
               ) : (
                 <div className="d-flex flex-column gap-3">
                   {messages.map((m) => (
@@ -501,10 +500,10 @@ const Messages = () => {
                             />
                           </div>
                           <div>
-                            <div className="msg-time mb-1 fs-14 fw-bold">
+                            <div className="msg-time mb-1 fs-14 fw-bold  inter">
                               {m.name} • {formatTime(m.time)}
                             </div>
-                            <div className="msg-bubble msg-vendor fs-14">
+                            <div className="msg-bubble msg-vendor fs-14  inter">
                               {m.text}
                             </div>
                           </div>
@@ -515,10 +514,10 @@ const Messages = () => {
                             className="me-2 text-end"
                             style={{ marginRight: 8 }}
                           >
-                            <div className="msg-time mb-1 fs-14 fw-bold">
+                            <div className="msg-time mb-1 fs-14 fw-bold inter">
                               {formatTime(m.time)}
                             </div>
-                            <div className="msg-bubble msg-user fs-14">
+                            <div className="msg-bubble msg-user fs-14 inter">
                               {m.text}
                             </div>
                           </div>
@@ -547,22 +546,44 @@ const Messages = () => {
             {/* Input */}
             <div className="card-body border-top py-3">
               <div className="d-flex align-items-center gap-2">
-                <button
-                  className="btn btn-light"
-                  onClick={() => setInput(input + " 😊")}
-                >
-                  <FiSmile />
-                </button>
+                <div style={{ position: "relative" }}>
+                  <button
+                    type="button"
+                    className="btn btn-light inter"
+                    onClick={() => setShowEmoji((prev) => !prev)}
+                  >
+                    <FiSmile />
+                  </button>
+
+                  {showEmoji && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: "48px",
+                        left: 0,
+                        zIndex: 9999,
+                      }}
+                    >
+                      <EmojiPicker
+                        onEmojiClick={(emojiData) => {
+                          setInput((prev) => prev + emojiData.emoji);
+                          setShowEmoji(false);
+                        }}
+                        theme="light"
+                      />
+                    </div>
+                  )}
+                </div>
                 <input
                   type="text"
-                  className="form-control fs-14"
+                  className="form-control fs-14 inter"
                   placeholder="Type a message..."
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
                 />
                 <button
-                  className="btn btn-primary d-flex align-items-center justify-content-center"
+                  className="btn btn-primary d-flex align-items-center justify-content-center  inter"
                   onClick={() => sendMessage(input)}
                   style={{ height: "40px", width: "44px", borderRadius: 8 }}
                 >

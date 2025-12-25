@@ -8,12 +8,22 @@ import {
 import { toast } from "react-toastify";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  import.meta.env.VITE_API_BASE_URL ||
-  "http://localhost:4000";
+  import.meta.env.VITE_API_URL || "https://happywedz.com/api";
+
+const AI_API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "https://www.happywedz.com/ai/api";
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 30000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
+});
+
+const aiAxiosInstance = axios.create({
+  baseURL: AI_API_BASE_URL,
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",
@@ -56,39 +66,63 @@ const handle401Error = (error) => {
   }
 };
 
-axiosInstance.interceptors.request.use(
-  (config) => {
-    config.withCredentials = true;
+const requestInterceptor = (config) => {
+  config.withCredentials = true;
+  config.withCredentials = true;
 
-    const token = localStorage.getItem("token");
-    const vendorToken = localStorage.getItem("vendorToken");
+  const token = localStorage.getItem("token");
+  const vendorToken = localStorage.getItem("vendorToken");
 
-    if (token && !config.headers.Authorization) {
-      config.headers.Authorization = `Bearer ${token}`;
-    } else if (vendorToken && !token && !config.headers.Authorization) {
-      if (isVendorTokenExpired()) {
-        store.dispatch(vendorLogout());
-        toast.error("Your session has expired. Please login again.");
+  if (token && !config.headers.Authorization) {
+    config.headers.Authorization = `Bearer ${token}`;
+  } else if (vendorToken && !token && !config.headers.Authorization) {
+    if (isVendorTokenExpired()) {
+      store.dispatch(vendorLogout());
+      toast.error("Your session has expired. Please login again.");
 
-        if (!window.location.pathname.startsWith("/vendor-login")) {
-          const url = new URL("/vendor-login", window.location.origin);
-          url.searchParams.set("session", "expired");
-          window.location.href = url.pathname + url.search + url.hash;
-        }
-
-        return Promise.reject(
-          new axios.Cancel("Vendor token expired. Redirecting to login.")
-        );
+      if (!window.location.pathname.startsWith("/vendor-login")) {
+        const url = new URL("/vendor-login", window.location.origin);
+        url.searchParams.set("session", "expired");
+        window.location.href = url.pathname + url.search + url.hash;
       }
 
-      config.headers.Authorization = `Bearer ${vendorToken}`;
+      return Promise.reject(
+        new axios.Cancel("Vendor token expired. Redirecting to login.")
+      );
     }
 
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+    config.headers.Authorization = `Bearer ${vendorToken}`;
   }
+
+  return config;
+};
+
+const errorInterceptor = (error) => {
+  return Promise.reject(error);
+};
+
+axiosInstance.interceptors.request.use(requestInterceptor, errorInterceptor);
+
+aiAxiosInstance.interceptors.request.use(requestInterceptor, errorInterceptor);
+
+const responseInterceptor = (response) => {
+  return response;
+};
+
+const responseErrorInterceptor = (error) => {
+  if (error.response?.status === 401) {
+    handle401Error(error);
+  }
+  return Promise.reject(error);
+};
+
+axiosInstance.interceptors.response.use(
+  responseInterceptor,
+  responseErrorInterceptor
+);
+aiAxiosInstance.interceptors.response.use(
+  responseInterceptor,
+  responseErrorInterceptor
 );
 
 axiosInstance.interceptors.response.use(
@@ -110,5 +144,7 @@ axios.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export { axiosInstance, aiAxiosInstance };
 
 export default axiosInstance;

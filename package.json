@@ -29,6 +29,7 @@
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.19",
     "dompurify": "^3.3.0",
+    "emoji-picker-react": "^4.16.1",
     "fabric": "^5.5.2",
     "face-api.js": "^0.20.0",
     "firebase": "^12.3.0",

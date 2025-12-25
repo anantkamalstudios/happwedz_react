@@ -1086,7 +1086,6 @@ const Storefront = ({ setCompletion }) => {
       label: "Facilities & Features",
       icon: <IoCheckmarkCircleOutline size={20} />,
     },
-    // Only show Menus if vendorTypeName is allowed
     ...(allowedMenuTypes.includes(normalizedVendorTypeName)
       ? [
           {

@@ -5,6 +5,7 @@ import { FaTimes, FaEdit } from "react-icons/fa";
 import { LuSendHorizontal } from "react-icons/lu";
 import { MdChatBubbleOutline } from "react-icons/md";
 import { useSelector } from "react-redux";
+import { axiosInstance, aiAxiosInstance } from "../../services/api/axiosInstance";
 
 const Genie = () => {
   const [messages, setMessages] = useState([
@@ -26,15 +27,6 @@ const Genie = () => {
   const { token, user } = useSelector((store) => store.auth);
   const userName = user?.name || "User";
 
-  // function getIdFromToken(token) {
-  //   try {
-  //     const payload = token.split(".")[1];
-  //     const decoded = JSON.parse(atob(payload));
-  //     return decoded.id || decoded.userId || null;
-  //   } catch (_) {
-  //     return null;
-  //   }
-  // }
 
   function getIdFromToken(token) {
     if (!token) return null;
@@ -56,17 +48,12 @@ const Genie = () => {
       if (!userId) return;
       setLoadingSessions(true);
       try {
-        const res = await fetch(
-          `https://shaadiai.happywedz.com/api/sessions/${userId}`,
-          {
-            headers: {
-              Accept: "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-          }
-        );
-        const raw = await res.json();
-        const data = Array.isArray(raw?.data) ? raw.data : [];
+        const response = await aiAxiosInstance.get(`/sessions/${userId}`, {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+        const data = Array.isArray(response?.data?.data) ? response.data.data : [];
         setSessions(data);
       } catch (err) {
         console.error(err);
@@ -80,24 +67,17 @@ const Genie = () => {
 
   const loadChatHistory = async (sid) => {
     try {
-      const res = await fetch(
-        `https://shaadiai.happywedz.com/api/chat_history?session_id=${encodeURIComponent(
-          sid
-        )}`,
-        {
-          headers: {
-            Accept: "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-        }
-      );
-      const raw = await res.json();
-      const items = Array.isArray(raw?.data) ? raw.data : [];
+      const response = await aiAxiosInstance.get(`/chat_history`, {
+        params: { session_id: sid },
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      const items = Array.isArray(response?.data?.data) ? response.data.data : [];
       const mapped = items.map((it) => {
         if (it.role === "user") {
           return { type: "user", text: String(it.content || "") };
         }
-        // assistant content may be object with summary/results/message
         const c = it.content || {};
         const summary =
           typeof c === "string" ? c : c.summary || c.message || "";
@@ -112,7 +92,6 @@ const Genie = () => {
     }
   };
 
-  // Load session from localStorage on mount
   useEffect(() => {
     const savedSessionId = localStorage.getItem("genie_session_id");
     if (savedSessionId) {
@@ -137,24 +116,19 @@ const Genie = () => {
       const payload = { user_query: query, user_id: userId };
       if (sessionId) payload.session_id = sessionId;
 
-      const res = await fetch("https://shaadiai.happywedz.com/api/user_chat", {
-        method: "POST",
+      const response = await aiAxiosInstance.post("/user_chat", payload, {
         headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify(payload),
       });
 
-      const raw = await res.json();
       // Some responses come wrapped in { data: { response, session_id, ... }, ... }
-      const wrapped = raw?.data ? raw.data : raw;
+      const wrapped = response?.data?.data || response?.data || {};
       if (wrapped?.session_id) setSessionId(wrapped.session_id);
-      const response = wrapped?.response || {};
+      const responseData = wrapped?.response || {};
       return {
-        summary: response?.summary || "No response received.",
-        results: Array.isArray(response?.results) ? response.results : null,
+        summary: responseData?.summary || "No response received.",
+        results: Array.isArray(responseData?.results) ? responseData.results : null,
       };
     } catch (err) {
       console.error("API ERROR:", err);
