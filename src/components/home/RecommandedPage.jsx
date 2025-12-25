@@ -99,10 +99,10 @@ const RecommandedPage = () => {
     return {
       ...item,
       id: item.id, // Ensure ID is passed
-      name: item.businessName, // Map businessName to name
+      name: attrs.name || item.name, // Map businessName to name
 
       image: imageUrl, // Use processed image URL
-      city: item.city, // Keep city
+      city: attrs.city || item.city, // Keep city
 
       // Price mapping for GridView
       vegPrice: vegPrice,

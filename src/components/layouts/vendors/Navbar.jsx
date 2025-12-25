@@ -148,7 +148,7 @@ const Navbar = () => {
     };
 
     fetchUnreadCount();
-    
+
     // Refresh count every 30 seconds
     const interval = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(interval);
@@ -167,13 +167,19 @@ const Navbar = () => {
     };
 
     window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("enquiryBadgeSettingChanged", handleCustomStorageChange);
+    window.addEventListener(
+      "enquiryBadgeSettingChanged",
+      handleCustomStorageChange
+    );
     // Also check periodically in case localStorage was changed in same tab
     const interval = setInterval(handleStorageChange, 1000);
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("enquiryBadgeSettingChanged", handleCustomStorageChange);
+      window.removeEventListener(
+        "enquiryBadgeSettingChanged",
+        handleCustomStorageChange
+      );
       clearInterval(interval);
     };
   }, []);
@@ -258,8 +264,9 @@ const Navbar = () => {
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                className={`btn border-0 d-flex flex-column align-items-center p-0 position-relative ${activeTab === tab.id ? "active-tab" : ""
-                  }`}
+                className={`btn border-0 d-flex flex-column align-items-center p-0 position-relative ${
+                  activeTab === tab.id ? "active-tab" : ""
+                }`}
                 style={{
                   background: "transparent",
                   fontSize: isMobile ? 12 : 14,

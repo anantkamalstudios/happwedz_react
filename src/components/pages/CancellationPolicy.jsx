@@ -13,11 +13,11 @@ const CancellationPolicy = () => {
       <div className="container">
         {/* Header Section */}
         <div className="text-center mb-5 mx-auto" style={{ maxWidth: "800px" }}>
-          <h1 className="display-5 fw-bold text-dark mb-3">
+          <h3 className="display-5 fw-bold text-dark mb-3">
             Cancellation Policy
-          </h1>
+          </h3>
 
-          <p className="text-muted fs-5">
+          <p className="text-muted fs-18">
             Understanding how cancellations and refunds work on Happywedz.
           </p>
         </div>
@@ -27,7 +27,7 @@ const CancellationPolicy = () => {
             {/* Intro Card */}
             <div className="card border-0  rounded-4 mb-4">
               <div className="card-body p-4 p-md-5 text-center bg-white rounded-4">
-                <p className="mb-0 fs-5 text-secondary">
+                <p className="mb-0 fs-18 text-secondary">
                   "Because <strong>Happywedz</strong> is a platform and not a
                   service provider, cancellations and refunds depend entirely on
                   the individual vendor’s policies."

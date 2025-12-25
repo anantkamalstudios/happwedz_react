@@ -105,6 +105,7 @@ const LocationModalWithAPI = () => {
     }
     setShow(false);
     setSearchTerm("");
+    document.body.style.overflow = "auto";
 
     navigate(
       `/vendors/all${
@@ -116,6 +117,7 @@ const LocationModalWithAPI = () => {
   const handleClearLocation = (e) => {
     e.stopPropagation();
     dispatch(clearLocation());
+    document.body.style.overflow = "auto";
   };
 
   const handleSearchChange = (e) => {

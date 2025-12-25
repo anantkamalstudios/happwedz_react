@@ -80,11 +80,7 @@ const Vendor360View = () => {
   }
 
   return (
-    <Image360Modal
-      images={images}
-      title={title}
-      onClose={() => navigate(-1)}
-    />
+    <Image360Modal images={images} title={title} onClose={() => navigate(-1)} />
   );
 };
 

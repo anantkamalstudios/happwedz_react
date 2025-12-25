@@ -41,6 +41,13 @@ const capitalizeWords = (str) => {
   return str.replace(/^(.)|\s+(.)/g, (c) => c.toUpperCase());
 };
 
+const getYouTubeVideoId = (url) => {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? match[2] : null;
+};
+
 const Detailed = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
@@ -658,17 +665,35 @@ const Detailed = () => {
                   </div>
                 )
               ) : mainVideo ? (
-                <video
-                  src={mainVideo}
-                  controls
-                  className="rounded-lg"
-                  style={{
-                    width: "100%",
-                    height: "500px",
-                    objectFit: "cover",
-                    backgroundColor: "#000",
-                  }}
-                />
+                getYouTubeVideoId(mainVideo) ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${getYouTubeVideoId(
+                      mainVideo
+                    )}`}
+                    title="YouTube video player"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="rounded-lg"
+                    style={{
+                      width: "100%",
+                      height: "500px",
+                      border: "none",
+                      backgroundColor: "#000",
+                    }}
+                  />
+                ) : (
+                  <video
+                    src={mainVideo}
+                    controls
+                    className="rounded-lg"
+                    style={{
+                      width: "100%",
+                      height: "500px",
+                      objectFit: "cover",
+                      backgroundColor: "#000",
+                    }}
+                  />
+                )
               ) : (
                 <div className="main-image rounded-lg d-flex align-items-center justify-content-center bg-light">
                   <p className="text-muted">No video available</p>
@@ -813,24 +838,59 @@ const Detailed = () => {
               : videos.length > 0 && (
                   <div className="mb-5">
                     <div className="d-flex gap-2 flex-wrap">
-                      {videos.map((vid, idx) => (
-                        <video
-                          key={idx}
-                          src={vid}
-                          muted
-                          onClick={() => setMainVideo(vid)}
-                          className={`rounded ${
-                            mainVideo === vid ? "border border-primary" : ""
-                          }`}
-                          style={{
-                            width: "160px",
-                            height: "100px",
-                            objectFit: "cover",
-                            backgroundColor: "#000",
-                            cursor: "pointer",
-                          }}
-                        />
-                      ))}
+                      {videos.map((vid, idx) => {
+                        const youtubeId = getYouTubeVideoId(vid);
+                        return youtubeId ? (
+                          <div
+                            key={idx}
+                            onClick={() => setMainVideo(vid)}
+                            className={`rounded overflow-hidden position-relative ${
+                              mainVideo === vid ? "border border-primary" : ""
+                            }`}
+                            style={{
+                              width: "160px",
+                              height: "100px",
+                              backgroundColor: "#000",
+                              cursor: "pointer",
+                              backgroundImage: `url(https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg)`,
+                              backgroundSize: "cover",
+                              backgroundPosition: "center",
+                            }}
+                          >
+                            <div
+                              className="d-flex align-items-center justify-content-center h-100"
+                              style={{ backgroundColor: "rgba(0,0,0,0.3)" }}
+                            >
+                              <svg
+                                width="32"
+                                height="32"
+                                viewBox="0 0 24 24"
+                                fill="white"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path d="M8 5V19L19 12L8 5Z" />
+                              </svg>
+                            </div>
+                          </div>
+                        ) : (
+                          <video
+                            key={idx}
+                            src={vid}
+                            muted
+                            onClick={() => setMainVideo(vid)}
+                            className={`rounded ${
+                              mainVideo === vid ? "border border-primary" : ""
+                            }`}
+                            style={{
+                              width: "160px",
+                              height: "100px",
+                              objectFit: "cover",
+                              backgroundColor: "#000",
+                              cursor: "pointer",
+                            }}
+                          />
+                        );
+                      })}
                     </div>
                   </div>
                 )}

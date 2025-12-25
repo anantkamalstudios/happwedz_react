@@ -10,11 +10,14 @@ import BlogDetails from "./components/pages/BlogDetails";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "./redux/authSlice";
 import { setVendorCredentials } from "./redux/vendorAuthSlice";
+// Import axios instance to initialize interceptors
 import "./services/api/axiosInstance";
 import ToastProvider from "./components/layouts/toasts/Toast";
 import LoaderProvider from "./components/context/LoaderContext";
 import VendorPrivateRoute from "./components/routes/VendorPrivateRoute";
 import UserPrivateRoute from "./components/routes/UserPrivateRoute";
+import VendorLeadsPage from "./components/pages/adminVendor/VendorLeadsPage";
+import RecommandedPage from "./components/home/RecommandedPage";
 import ReviewsPage from "./components/pages/WriteReviewPage";
 import AboutUs from "./components/layouts/AboutUs";
 import DestinationWedding from "./components/pages/DestinationWedding";
@@ -25,6 +28,7 @@ import DestinationWeddingDetailPage from "./components/pages/DestinationWeddingD
 import BusinessClaimForm from "./components/pages/BusinessClaimForm";
 import { ToastContainer } from "react-toastify";
 import PublicWeddingView from "./components/pages/WeddingPublicView";
+// import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import ScrollToTop from "./components/ScrollToTop";
 import CookieConsent from "./components/ui/CookieConsent";
 
@@ -361,6 +365,10 @@ function App() {
                     <FinalLookPage />
                   </UserPrivateRoute>
                 }
+              />
+              <Route
+                path="/vendor-dashboard/total-leads"
+                element={<VendorLeadsPage />}
               />
               <Route path="/write-review/:vendorId" element={<ReviewsPage />} />
               <Route path="/editor" element={<CardEditorPage />} />

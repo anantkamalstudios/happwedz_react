@@ -514,55 +514,55 @@ const HomeAdmin = () => {
     },
     animation: {
       duration: 1000,
-      easing: 'easeInOutQuart',
+      easing: "easeInOutQuart",
     },
     plugins: {
       legend: {
         position: "top",
-        align: 'end',
+        align: "end",
         labels: {
           usePointStyle: true,
-          pointStyle: 'circle',
+          pointStyle: "circle",
           padding: 20,
           font: {
             size: 13,
-            weight: '500',
+            weight: "500",
             family: "'Inter', 'Segoe UI', sans-serif",
           },
-          color: '#4a5568',
+          color: "#4a5568",
           boxWidth: 8,
           boxHeight: 8,
         },
       },
       tooltip: {
         enabled: true,
-        backgroundColor: 'rgba(0, 0, 0, 0.85)',
-        titleColor: '#fff',
-        bodyColor: '#fff',
-        borderColor: 'rgba(255, 255, 255, 0.2)',
+        backgroundColor: "rgba(0, 0, 0, 0.85)",
+        titleColor: "#fff",
+        bodyColor: "#fff",
+        borderColor: "rgba(255, 255, 255, 0.2)",
         borderWidth: 1,
         padding: 12,
         displayColors: true,
         cornerRadius: 8,
         titleFont: {
           size: 14,
-          weight: 'bold',
+          weight: "bold",
         },
         bodyFont: {
           size: 13,
         },
         callbacks: {
           label: function (context) {
-            let label = context.dataset.label || '';
+            let label = context.dataset.label || "";
             if (label) {
-              label += ': ';
+              label += ": ";
             }
             if (context.parsed.y !== null) {
               label += context.parsed.y.toLocaleString();
             }
             return label;
-          }
-        }
+          },
+        },
       },
     },
     scales: {
@@ -573,9 +573,9 @@ const HomeAdmin = () => {
         ticks: {
           font: {
             size: 11,
-            weight: '500',
+            weight: "500",
           },
-          color: '#718096',
+          color: "#718096",
           maxRotation: 45,
           minRotation: 0,
         },
@@ -585,15 +585,15 @@ const HomeAdmin = () => {
         display: true,
         position: "left",
         grid: {
-          color: 'rgba(0, 0, 0, 0.05)',
+          color: "rgba(0, 0, 0, 0.05)",
           drawBorder: false,
         },
         ticks: {
           font: {
             size: 11,
-            weight: '500',
+            weight: "500",
           },
-          color: '#718096',
+          color: "#718096",
           padding: 8,
         },
         title: {
@@ -601,9 +601,9 @@ const HomeAdmin = () => {
           text: "Leads",
           font: {
             size: 12,
-            weight: '600',
+            weight: "600",
           },
-          color: '#4a5568',
+          color: "#4a5568",
         },
       },
       y2: {
@@ -617,9 +617,9 @@ const HomeAdmin = () => {
         ticks: {
           font: {
             size: 11,
-            weight: '500',
+            weight: "500",
           },
-          color: '#718096',
+          color: "#718096",
           padding: 8,
         },
         title: {
@@ -627,9 +627,9 @@ const HomeAdmin = () => {
           text: "Profile Views",
           font: {
             size: 12,
-            weight: '600',
+            weight: "600",
           },
-          color: '#4a5568',
+          color: "#4a5568",
         },
       },
       y3: {
@@ -645,9 +645,9 @@ const HomeAdmin = () => {
           text: "Impressions",
           font: {
             size: 12,
-            weight: '600',
+            weight: "600",
           },
-          color: '#4a5568',
+          color: "#4a5568",
         },
       },
     },
@@ -689,12 +689,12 @@ const HomeAdmin = () => {
                 {dateFilter === "this_week"
                   ? "This Week"
                   : dateFilter === "this_month"
-                    ? "This Month"
-                    : dateFilter === "last_month"
-                      ? "Last Month"
-                      : dateFilter === "custom"
-                        ? "Custom Range"
-                        : "All Data"}
+                  ? "This Month"
+                  : dateFilter === "last_month"
+                  ? "Last Month"
+                  : dateFilter === "custom"
+                  ? "Custom Range"
+                  : "All Data"}
               </Dropdown.Toggle>
 
               <Dropdown.Menu>
@@ -820,8 +820,9 @@ const HomeAdmin = () => {
                     <h5 className="pt-4">{data.value}</h5>
                   </div>
                   <div
-                    className={`icon-circle bg-${data.trend === "up" ? "success" : "danger"
-                      }-light`}
+                    className={`icon-circle bg-${
+                      data.trend === "up" ? "success" : "danger"
+                    }-light`}
                   >
                     {data.icon}
                   </div>
@@ -834,12 +835,13 @@ const HomeAdmin = () => {
             <Col xl={3} md={6} key={key} className="mb-4">
               {key === "leads" ? (
                 <Link
-                  to={`/vendor-dashboard/total-leads?dateFilter=${dateFilter}${dateFilter === "custom" && customStart && customEnd
-                    ? `&customStart=${encodeURIComponent(
-                      customStart
-                    )}&customEnd=${encodeURIComponent(customEnd)}`
-                    : ""
-                    }`}
+                  to={`/vendor-dashboard/total-leads?dateFilter=${dateFilter}${
+                    dateFilter === "custom" && customStart && customEnd
+                      ? `&customStart=${encodeURIComponent(
+                          customStart
+                        )}&customEnd=${encodeURIComponent(customEnd)}`
+                      : ""
+                  }`}
                   style={{ textDecoration: "none" }}
                 >
                   {cardContent}
@@ -858,21 +860,29 @@ const HomeAdmin = () => {
           <Card
             className="modern-chart-card border-0 shadow-sm"
             style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '16px',
-              overflow: 'hidden',
-              border: '1px solid #e5e7eb',
+              backgroundColor: "#ffffff",
+              borderRadius: "16px",
+              overflow: "hidden",
+              border: "1px solid #e5e7eb",
             }}
           >
             <Card.Body className="p-4">
               {/* Header Section */}
-              <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 pb-3"
-                style={{ borderBottom: '2px solid #f3f4f6' }}>
+              <div
+                className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 pb-3"
+                style={{ borderBottom: "2px solid #f3f4f6" }}
+              >
                 <div>
-                  <h4 className="mb-1 fw-bold" style={{ color: '#111827', fontSize: '1.5rem' }}>
+                  <h4
+                    className="mb-1 fw-bold"
+                    style={{ color: "#111827", fontSize: "1.5rem" }}
+                  >
                     Performance Analytics
                   </h4>
-                  <p className="mb-0" style={{ color: '#6b7280', fontSize: '0.9rem' }}>
+                  <p
+                    className="mb-0"
+                    style={{ color: "#6b7280", fontSize: "0.9rem" }}
+                  >
                     Track your leads, impressions, and profile views over time
                   </p>
                 </div>
@@ -882,12 +892,12 @@ const HomeAdmin = () => {
                     size="sm"
                     className="d-flex align-items-center gap-2"
                     style={{
-                      borderRadius: '8px',
-                      padding: '8px 16px',
-                      fontWeight: '500',
-                      backgroundColor: '#f9fafb',
-                      border: '1px solid #e5e7eb',
-                      color: '#374151',
+                      borderRadius: "8px",
+                      padding: "8px 16px",
+                      fontWeight: "500",
+                      backgroundColor: "#f9fafb",
+                      border: "1px solid #e5e7eb",
+                      color: "#374151",
                     }}
                   >
                     <FiTrendingUp size={16} />
@@ -898,12 +908,12 @@ const HomeAdmin = () => {
                     size="sm"
                     className="d-flex align-items-center gap-2"
                     style={{
-                      borderRadius: '8px',
-                      padding: '8px 16px',
-                      fontWeight: '500',
-                      backgroundColor: '#ffffff',
-                      border: '1px solid #e5e7eb',
-                      color: '#374151',
+                      borderRadius: "8px",
+                      padding: "8px 16px",
+                      fontWeight: "500",
+                      backgroundColor: "#ffffff",
+                      border: "1px solid #e5e7eb",
+                      color: "#374151",
                     }}
                   >
                     <FiDownload size={16} />
@@ -916,12 +926,12 @@ const HomeAdmin = () => {
               <div
                 className="chart-container p-4"
                 style={{
-                  backgroundColor: '#fafbfc',
-                  borderRadius: '12px',
-                  border: '1px solid #e5e7eb',
+                  backgroundColor: "#fafbfc",
+                  borderRadius: "12px",
+                  border: "1px solid #e5e7eb",
                 }}
               >
-                <div style={{ height: "400px", position: 'relative' }}>
+                <div style={{ height: "400px", position: "relative" }}>
                   <Line data={leadsChartData} options={leadsChartOptions} />
                 </div>
               </div>
@@ -932,18 +942,27 @@ const HomeAdmin = () => {
                   <div
                     className="p-3 text-center"
                     style={{
-                      backgroundColor: '#f9fafb',
-                      borderRadius: '10px',
-                      border: '1px solid #e5e7eb',
+                      backgroundColor: "#f9fafb",
+                      borderRadius: "10px",
+                      border: "1px solid #e5e7eb",
                     }}
                   >
                     <div className="d-flex align-items-center justify-content-center gap-2 mb-1">
-                      <FiUsers size={18} style={{ color: '#6b7280' }} />
-                      <span style={{ color: '#6b7280', fontSize: '0.85rem', fontWeight: '500' }}>
+                      <FiUsers size={18} style={{ color: "#6b7280" }} />
+                      <span
+                        style={{
+                          color: "#6b7280",
+                          fontSize: "0.85rem",
+                          fontWeight: "500",
+                        }}
+                      >
                         Total Leads
                       </span>
                     </div>
-                    <h5 className="mb-0 fw-bold" style={{ color: '#111827', fontSize: '1.5rem' }}>
+                    <h5
+                      className="mb-0 fw-bold"
+                      style={{ color: "#111827", fontSize: "1.5rem" }}
+                    >
                       {leadCount}
                     </h5>
                   </div>
@@ -952,18 +971,27 @@ const HomeAdmin = () => {
                   <div
                     className="p-3 text-center"
                     style={{
-                      backgroundColor: '#f9fafb',
-                      borderRadius: '10px',
-                      border: '1px solid #e5e7eb',
+                      backgroundColor: "#f9fafb",
+                      borderRadius: "10px",
+                      border: "1px solid #e5e7eb",
                     }}
                   >
                     <div className="d-flex align-items-center justify-content-center gap-2 mb-1">
-                      <FiEye size={18} style={{ color: '#6b7280' }} />
-                      <span style={{ color: '#6b7280', fontSize: '0.85rem', fontWeight: '500' }}>
+                      <FiEye size={18} style={{ color: "#6b7280" }} />
+                      <span
+                        style={{
+                          color: "#6b7280",
+                          fontSize: "0.85rem",
+                          fontWeight: "500",
+                        }}
+                      >
                         Profile Views
                       </span>
                     </div>
-                    <h5 className="mb-0 fw-bold" style={{ color: '#111827', fontSize: '1.5rem' }}>
+                    <h5
+                      className="mb-0 fw-bold"
+                      style={{ color: "#111827", fontSize: "1.5rem" }}
+                    >
                       {stats.profileViews.toLocaleString()}
                     </h5>
                   </div>
@@ -972,18 +1000,27 @@ const HomeAdmin = () => {
                   <div
                     className="p-3 text-center"
                     style={{
-                      backgroundColor: '#f9fafb',
-                      borderRadius: '10px',
-                      border: '1px solid #e5e7eb',
+                      backgroundColor: "#f9fafb",
+                      borderRadius: "10px",
+                      border: "1px solid #e5e7eb",
                     }}
                   >
                     <div className="d-flex align-items-center justify-content-center gap-2 mb-1">
-                      <FiHeart size={18} style={{ color: '#6b7280' }} />
-                      <span style={{ color: '#6b7280', fontSize: '0.85rem', fontWeight: '500' }}>
+                      <FiHeart size={18} style={{ color: "#6b7280" }} />
+                      <span
+                        style={{
+                          color: "#6b7280",
+                          fontSize: "0.85rem",
+                          fontWeight: "500",
+                        }}
+                      >
                         Impressions
                       </span>
                     </div>
-                    <h5 className="mb-0 fw-bold" style={{ color: '#111827', fontSize: '1.5rem' }}>
+                    <h5
+                      className="mb-0 fw-bold"
+                      style={{ color: "#111827", fontSize: "1.5rem" }}
+                    >
                       {stats.wishlistCount?.toLocaleString?.() ?? 0}
                     </h5>
                   </div>

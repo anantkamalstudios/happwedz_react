@@ -18,7 +18,7 @@ const TermsCondition = () => {
       title: "Terms of Service",
       icon: <FaGavel />,
       content: `
-Last Updated: [Add Date]
+Last Updated: 04 Oct 2025
 
 By accessing or using Happywedz.com (the "Platform" / "Website"), you agree to these Terms. If you do not agree, please discontinue use immediately.
 
@@ -239,9 +239,9 @@ We do not guarantee uninterrupted service, error-free content, or accuracy of li
       <div className="container">
         {/* Hero Section */}
         <div className="text-center mb-5 mx-auto" style={{ maxWidth: "800px" }}>
-          <h1 className="display-5 fw-bold text-dark mb-3">
+          <h3 className="display-5 fw-bold text-dark mb-3">
             Legal Terms & Policies
-          </h1>
+          </h3>
           <div className="d-flex justify-content-center mb-3">
             <div
               style={{
@@ -252,7 +252,7 @@ We do not guarantee uninterrupted service, error-free content, or accuracy of li
               }}
             ></div>
           </div>
-          <p className="text-muted fs-5">
+          <p className="text-muted fs-18">
             Please review our policies carefully before using the platform.
           </p>
         </div>
@@ -297,7 +297,7 @@ We do not guarantee uninterrupted service, error-free content, or accuracy of li
                         >
                           {legalSections[key].icon}
                         </span>
-                        <span className="fw-semibold">
+                        <span className="fw-semibold fs-14">
                           {legalSections[key].title}
                         </span>
                       </div>
@@ -342,9 +342,9 @@ We do not guarantee uninterrupted service, error-free content, or accuracy of li
                   >
                     {legalSections[activeSection].icon}
                   </div>
-                  <h2 className="fw-bold mb-0 text-dark">
+                  <h4 className="fw-bold mb-0 text-dark">
                     {legalSections[activeSection].title}
-                  </h2>
+                  </h4>
                 </div>
                 <hr className="mt-4 mb-0 text-muted opacity-25" />
               </div>
