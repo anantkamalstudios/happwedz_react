@@ -1,0 +1,139 @@
+import React, { useState, useEffect } from "react";
+import { Nav } from "react-bootstrap";
+import {
+  MdDashboard,
+  MdLink,
+  MdCloudUpload,
+  MdPhotoLibrary,
+  MdAnalytics,
+  MdStorage,
+  MdPeople,
+  MdSettings,
+  MdOutlineToken,
+} from "react-icons/md";
+import { LuLayoutDashboard } from "react-icons/lu";
+
+import Dashboard from "./Dashboard";
+import TokensSharing from "./TokensSharing";
+import UploadMedia from "./UploadMedia";
+import Galleries from "./Galleries";
+import Analytics from "./Analytics";
+import PackagesStorage from "./PackagesStorage";
+import GuestsAccess from "./GuestsAccess";
+import Settings from "./Settings";
+import { IoCloudUploadOutline, IoSettingsOutline } from "react-icons/io5";
+import { TbDeviceDesktopAnalytics, TbLibraryPhoto } from "react-icons/tb";
+import { GrStorage } from "react-icons/gr";
+import { GoPeople } from "react-icons/go";
+
+const MovmentsPlus = () => {
+  const [activeTab, setActiveTab] = useState("dashboard");
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [activeTab]);
+
+  const menuItems = [
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: <LuLayoutDashboard size={22} />,
+    },
+    {
+      id: "tokens-sharing",
+      label: "Tokens & Sharing",
+      icon: <MdOutlineToken size={22} />,
+    },
+    {
+      id: "upload-media",
+      label: "Upload Media",
+      icon: <IoCloudUploadOutline size={22} />,
+    },
+    {
+      id: "galleries",
+      label: "Galleries",
+      icon: <TbLibraryPhoto size={22} />,
+    },
+    {
+      id: "analytics",
+      label: "Analytics",
+      icon: <TbDeviceDesktopAnalytics size={22} />,
+    },
+    {
+      id: "packages-storage",
+      label: "Packages & Storage",
+      icon: <GrStorage size={22} />,
+    },
+    {
+      id: "guests-access",
+      label: "Guests Access",
+      icon: <GoPeople size={22} />,
+    },
+    {
+      id: "settings",
+      label: "Settings",
+      icon: <IoSettingsOutline size={22} />,
+    },
+  ];
+
+  const handleTabClick = (tabId) => {
+    setActiveTab(tabId);
+  };
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "dashboard":
+        return <Dashboard onNavigate={setActiveTab} />;
+      case "tokens-sharing":
+        return <TokensSharing />;
+      case "upload-media":
+        return <UploadMedia />;
+      case "galleries":
+        return <Galleries />;
+      case "analytics":
+        return <Analytics />;
+      case "packages-storage":
+        return <PackagesStorage />;
+      case "guests-access":
+        return <GuestsAccess />;
+      case "settings":
+        return <Settings />;
+      default:
+        return <Dashboard />;
+    }
+  };
+
+  return (
+    <div className="container-fluid py-3 px-5 movments-plus-container">
+      <div className="row">
+        <div className="col-md-2 border-end pe-4">
+          <div className="sticky-top" style={{ top: "20px" }}>
+            <h4 className="mb-4 fw-bold" style={{ color: "#2c3e50" }}>
+              Movments+
+            </h4>
+            <Nav className="flex-column custom-sidebar d-flex">
+              {menuItems.map((item) => (
+                <Nav.Link
+                  key={item.id}
+                  onClick={() => handleTabClick(item.id)}
+                  className={`sidebar-item d-flex align-items-center ${
+                    activeTab === item.id ? "active" : ""
+                  }`}
+                >
+                  <span className="icon-wrap">{item.icon}</span>
+                  <span className="label-text">{item.label}</span>
+                </Nav.Link>
+              ))}
+            </Nav>
+          </div>
+        </div>
+
+        <div className="col-md-9">
+          <div style={{ minHeight: "500px" }}>{renderContent()}</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MovmentsPlus;

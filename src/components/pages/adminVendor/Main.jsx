@@ -12,6 +12,7 @@ import ReviewsDashboard from "./subVendors/ReviewsDashboard";
 import Reviews from "./subVendors/Reviews";
 import VendorMessages from "./messages/VendorMessages";
 import VendorLeadsPage from "./VendorLeadsPage";
+import MovmentsPlus from "./movments-plus/MovmentsPlus";
 
 const Main = () => {
   const { slug } = useParams();
@@ -36,6 +37,8 @@ const Main = () => {
         return <EnquiryManagement />;
       case "total-leads":
         return <VendorLeadsPage />;
+      case "movments-plus":
+        return <MovmentsPlus />;
       default:
         return <HomeAdmin />;
     }

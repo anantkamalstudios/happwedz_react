@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { FaGift, FaStore, FaEnvelope, FaStar, FaCog } from "react-icons/fa";
 import { LiaHomeSolid } from "react-icons/lia";
@@ -184,44 +184,66 @@ const Navbar = () => {
     };
   }, []);
 
-  const tabs = [
-    {
-      id: "home",
-      slug: "vendor-home",
-      label: "Home",
-      icon: "/images/vendorsDashboard/homeico.png",
-    },
-    {
-      id: "storefront",
-      slug: "vendor-store-front",
-      label: "Storefront",
-      icon: "/images/vendorsDashboard/storefrontico.png",
-    },
-    {
-      id: "enquiries",
-      slug: "vendor-enquiries",
-      label: "Enquiries",
-      icon: "/images/vendorsDashboard/enquireico.png",
-    },
-    {
-      id: "message",
-      slug: "vendor-messages",
-      label: "Messages",
-      icon: "/images/vendorsDashboard/chat.png",
-    },
-    {
-      id: "reviews",
-      slug: "vendor-reviews",
-      label: "Reviews",
-      icon: "/images/vendorsDashboard/reviewico.png",
-    },
-    {
+  // Check if vendor is a photographer (vendor type id = 1 or 12)
+  const isPhotographer = useMemo(() => {
+    const vendorTypeId = vendor?.vendor_type_id;
+    console.log("VTI", vendorTypeId);
+    return vendorTypeId === 1 || vendorTypeId === 12;
+  }, [vendor?.vendorType?.id]);
+
+  const tabs = useMemo(() => {
+    const baseTabs = [
+      {
+        id: "home",
+        slug: "vendor-home",
+        label: "Home",
+        icon: "/images/vendorsDashboard/homeico.png",
+      },
+      {
+        id: "storefront",
+        slug: "vendor-store-front",
+        label: "Storefront",
+        icon: "/images/vendorsDashboard/storefrontico.png",
+      },
+      {
+        id: "enquiries",
+        slug: "vendor-enquiries",
+        label: "Enquiries",
+        icon: "/images/vendorsDashboard/enquireico.png",
+      },
+      {
+        id: "message",
+        slug: "vendor-messages",
+        label: "Messages",
+        icon: "/images/vendorsDashboard/chat.png",
+      },
+      {
+        id: "reviews",
+        slug: "vendor-reviews",
+        label: "Reviews",
+        icon: "/images/vendorsDashboard/reviewico.png",
+      },
+    ];
+
+    // Only add Movments+ tab for photographers (vendor type id = 1 or 12)
+    if (isPhotographer) {
+      baseTabs.push({
+        id: "movments-plus",
+        slug: "movments-plus",
+        label: "Movments+",
+        icon: "/images/vendorsDashboard/live.png",
+      });
+    }
+
+    baseTabs.push({
       id: "settings",
       slug: "vendor-setting",
       label: "Settings",
       icon: "/images/vendorsDashboard/settingsico.png",
-    },
-  ];
+    });
+
+    return baseTabs;
+  }, [isPhotographer]);
 
   useEffect(() => {
     const foundTab = tabs.find((tab) => tab.slug === slug);
@@ -252,7 +274,6 @@ const Navbar = () => {
           <div
             className="d-flex gap-3 gap-lg-4"
             style={{
-              // On mobile allow horizontal scroll of tabs (touch friendly)
               flexWrap: isMobile ? "nowrap" : "wrap",
               overflowX: isMobile ? "auto" : "visible",
               WebkitOverflowScrolling: isMobile ? "touch" : undefined,

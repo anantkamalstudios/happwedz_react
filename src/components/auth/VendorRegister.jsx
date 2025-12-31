@@ -7,6 +7,7 @@ import vendorsAuthApi from "../../services/api/vendorAuthApi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEyeSlash, FaEye } from "react-icons/fa";
+import axiosInstance from "../../services/api/axiosInstance";
 
 const API_BASE =
   import.meta.env.VITE_API_BASE_URL ||
@@ -70,8 +71,8 @@ const VendorRegister = () => {
   }, [formData.country]);
 
   useEffect(() => {
-    axios
-      .get(`${API_BASE}/vendor-types`)
+    axiosInstance
+      .get(`/vendor-types`)
       .then((res) => {
         if (res.data) {
           setVendorTypes(res.data);
@@ -190,6 +191,10 @@ const VendorRegister = () => {
 
     setIsSubmitting(true);
     try {
+      // Get current date/time in ISO format
+      const now = new Date();
+      const packageStartedAt = now.toISOString();
+
       const payload = {
         businessName: formData.brandName,
         email: formData.email,
@@ -197,6 +202,8 @@ const VendorRegister = () => {
         phone: formData.phone,
         city: formData.city,
         vendor_type_id: formData.vendorType,
+        current_package_id: 1,
+        package_started_at: packageStartedAt,
       };
 
       const data = await vendorsAuthApi.register(payload);

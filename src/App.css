@@ -7,8 +7,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Stack+Sans+Headline:wght@200..700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Stack+Sans+Headline:wght@200..700&display=swap");
 
 @font-face {
   font-family: "AirbnbCereal";
@@ -118,7 +118,7 @@
   font-family: var(--rubik-font);
 }
 
-.inter{
+.inter {
   font-family: "Stack Sans Headline", sans-serif !important;
 }
 
@@ -189,7 +189,7 @@ label {
 }
 
 input,
-select, 
+select,
 textarea {
   font-size: 14px;
   z-index: 10 !important;
@@ -11598,7 +11598,6 @@ input:checked + .slider:before {
   animation: weddingwire-spin 1s linear infinite;
 }
 
-
 @keyframes weddingwire-spin {
   from {
     transform: rotate(0deg);
@@ -12357,7 +12356,7 @@ input:checked + .slider:before {
 
 .wedding-legal-sidelink:hover {
   background-color: #ed1173;
-   color: white;
+  color: white;
 }
 
 .wedding-legal-sidelink.active {
@@ -17488,9 +17487,9 @@ input:checked + .slider:before {
 @media (max-width: 768px) {
   .custom-testimonial-box {
     width: 100%;
-    max-width: 450px;   /* control card width */
-    height: 400px;       /* auto adjust height */
-    padding: 16px;      /* better spacing */
+    max-width: 450px; /* control card width */
+    height: 400px; /* auto adjust height */
+    padding: 16px; /* better spacing */
     margin-bottom: 2rem;
   }
 }
@@ -17502,7 +17501,6 @@ input:checked + .slider:before {
     padding: 14px;
   }
 }
-
 
 .custom-floral-graphic {
   background-image: url("/public/images/home/leaf.png");
@@ -21831,12 +21829,66 @@ body.mobile-menu-active {
 }
 
 .dropdown-menu {
-.dropdown-menu {
-  z-index: 99999 !important;
-}
+  .dropdown-menu {
+    z-index: 99999 !important;
+  }
 }
 
- 
- .epr_-xuzz9z{
+.epr_-xuzz9z {
   display: none;
- }
+}
+
+/* Movment+ */
+.custom-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Sidebar row */
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  background: transparent !important;
+  color: #6c757d;
+  transition: transform 0.25s ease, color 0.25s ease;
+  perspective: 800px;
+}
+
+.sidebar-item:hover {
+  transform: scale(1.06);
+  color: #2c3e50;
+}
+
+.sidebar-item.active {
+  color: #f12d85;
+  font-weight: 600;
+}
+
+.icon-wrap {
+  transition: transform 0.6s ease;
+  transform-style: preserve-3d;
+}
+
+.sidebar-item:hover .icon-wrap {
+  transform: rotateY(360deg);
+}
+
+.sidebar-item.active .icon-wrap {
+  color: #f12d85;
+}
+
+.label-text {
+  white-space: nowrap;
+  font-size: 14px;
+  transition: color 0.25s ease;
+}
+
+.sidebar-item:hover .label-text {
+  color: #2c3e50;
+}

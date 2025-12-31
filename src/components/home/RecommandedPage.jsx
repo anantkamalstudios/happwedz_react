@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import GridView from "../layouts/Main/GridView";
+import Loader from "../ui/Loader";
 
 const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
 
@@ -51,13 +52,7 @@ const RecommandedPage = () => {
   }, [user, token]);
 
   if (loading) {
-    return (
-      <div className="container py-5 text-center">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error) {
