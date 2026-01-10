@@ -267,9 +267,11 @@ const HomeAdmin = () => {
             ),
             leads: leadChartValues,
             impressions: prev.chartData.impressions,
-            profileViews: prev.chartData.profileViews || [],
+            profileViews: prev.chartData.totalViews || [],
           },
         }));
+
+        console.log("stats", stats);
 
         // 4. Fetch profile views and wishlist stats for the vendor (if vendor id available)
         if (vendor?.id) {
@@ -313,31 +315,32 @@ const HomeAdmin = () => {
             );
             if (pvRes?.data) {
               const pvData = pvRes.data;
-              const pvCount = pvData?.vendor?.profileViews ?? 0;
+              const allViews = pvData.views || [];
 
-              // try to build a timeseries if API returned event list
-              // possible places: pvData.data (array), pvData.events, pvData.views
-              const candidateEvents =
-                pvData?.data || pvData?.events || pvData?.views || null;
-              let pvSeries = null;
-              if (
-                candidateEvents &&
-                Array.isArray(candidateEvents) &&
-                candidateEvents.length > 0
-              ) {
-                pvSeries = buildSeriesFromEvents(
-                  candidateEvents,
-                  ["date", "createdAt", "addedAt", "timestamp", "time"],
-                  labels.map((d) => new Date(d).toISOString().split("T")[0])
-                );
-              }
+              // Filter views by date range
+              const { start, end } = range;
+              const viewsInRange = allViews.filter((view) => {
+                const dateStr = view.createdAt || view.view_date;
+                if (!dateStr) return false;
+                const t = new Date(dateStr).getTime();
+                return t >= start.getTime() && t <= end.getTime();
+              });
+
+              const pvCount = viewsInRange.length;
+
+              // Build timeseries from filtered views
+              const pvSeries = buildSeriesFromEvents(
+                viewsInRange,
+                ["createdAt", "view_date", "date"],
+                labels.map((d) => new Date(d).toISOString().split("T")[0])
+              );
 
               setStats((prev) => ({
                 ...prev,
                 profileViews: pvCount,
                 chartData: {
                   ...prev.chartData,
-                  profileViews: pvSeries || labels.map(() => pvCount),
+                  profileViews: pvSeries,
                 },
               }));
             }
@@ -885,40 +888,6 @@ const HomeAdmin = () => {
                   >
                     Track your leads, impressions, and profile views over time
                   </p>
-                </div>
-                <div className="d-flex gap-2 mt-3 mt-md-0">
-                  <Button
-                    variant="light"
-                    size="sm"
-                    className="d-flex align-items-center gap-2"
-                    style={{
-                      borderRadius: "8px",
-                      padding: "8px 16px",
-                      fontWeight: "500",
-                      backgroundColor: "#f9fafb",
-                      border: "1px solid #e5e7eb",
-                      color: "#374151",
-                    }}
-                  >
-                    <FiTrendingUp size={16} />
-                    Insights
-                  </Button>
-                  <Button
-                    variant="outline-light"
-                    size="sm"
-                    className="d-flex align-items-center gap-2"
-                    style={{
-                      borderRadius: "8px",
-                      padding: "8px 16px",
-                      fontWeight: "500",
-                      backgroundColor: "#ffffff",
-                      border: "1px solid #e5e7eb",
-                      color: "#374151",
-                    }}
-                  >
-                    <FiDownload size={16} />
-                    Export
-                  </Button>
                 </div>
               </div>
 

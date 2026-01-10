@@ -20,6 +20,8 @@ import axiosInstance from "../../../../services/api/axiosInstance";
 import "./tokens-sharing.css";
 import { CiVideoOff } from "react-icons/ci";
 import ShareModal from "./ShareModal";
+import { SiJsonwebtokens } from "react-icons/si";
+import { ClockLoader } from "react-spinners";
 
 const TokensSharing = () => {
   const [tokens, setTokens] = useState([]);
@@ -205,18 +207,18 @@ const TokensSharing = () => {
       {/* Header */}
       <div className="tokens-header">
         <div>
-          <h1 className="page-title">Tokens & Sharing</h1>
-          <p className="page-subtitle">
+          <h3 className="page-title inter">Tokens & Sharing</h3>
+          <p className="page-subtitle inter fs-14">
             Manage gallery access tokens and share with clients
           </p>
         </div>
         <button
-          className="btn-outline-primary d-flex align-items-center justify-content-center"
+          className="btn-outline-primary d-flex align-items-center justify-content-center inter"
           onClick={() => setShowGenerateModal(true)}
           style={{ gap: "0.5rem" }}
         >
           <FiPlus size={18} />
-          <span>Generate New Token</span>
+          <span className="inter">Generate New Token</span>
         </button>
       </div>
 
@@ -306,58 +308,66 @@ const TokensSharing = () => {
                     <td>
                       <div className="token-code-cell">
                         <FiKey className="me-2" />
-                        <code className="token-code">{token.token}</code>
+                        <code className="token-code inter">{token.token}</code>
                       </div>
                     </td>
                     <td>
-                      <span className={`badge badge-${token.type}`}>
+                      <span className={`inter badge badge-${token.type}`}>
                         {token.type}
                       </span>
                     </td>
                     <td>
-                      <div className="event-cell">
+                      <div className="event-cell inter">
                         <FiCalendar size={14} className="me-1" />
                         Event #{token.event_id}
                       </div>
                     </td>
                     <td>
-                      <span className={`status-badge status-${token.status}`}>
+                      <span
+                        className={`inter status-badge status-${token.status}`}
+                      >
                         {token.status === "active" ? (
                           <FiCheckCircle size={14} />
                         ) : (
                           <FiEyeOff size={14} />
                         )}
-                        {token.status}
+                        <span className="inter">{token.status}</span>
                       </span>
                     </td>
                     <td>
-                      <div className="views-cell">
+                      <div className="views-cell inter">
                         <FiEye size={14} className="me-1" />
-                        <span>{token.view_count || 0}</span>
-                        <small className="text-muted ms-1">
+                        <span className="inter">{token.view_count || 0}</span>
+                        <small className="text-muted ms-1 inter">
                           ({token.unique_views || 0} unique)
                         </small>
                       </div>
                     </td>
                     <td>
-                      <div className="emails-cell">
+                      <div className="emails-cell inter">
                         <FiMail size={14} className="me-1" />
-                        {token.email_sent_count || 0}
+                        <span className="inter">
+                          {token.email_sent_count || 0}
+                        </span>
                         {token.last_shared_at && (
-                          <small className="text-muted d-block">
+                          <small className="text-muted d-block inter">
                             {formatDateTime(token.last_shared_at)}
                           </small>
                         )}
                       </div>
                     </td>
                     <td>
-                      <div className="expiry-cell">
-                        {formatDate(token.expires_at)}
+                      <div className="expiry-cell inter">
+                        <span className="inter">
+                          {formatDate(token.expires_at)}
+                        </span>
                       </div>
                     </td>
                     <td>
-                      <div className="created-cell">
-                        {formatDateTime(token.created_at)}
+                      <div className="created-cell inter">
+                        <span className="inter">
+                          {formatDateTime(token.created_at)}
+                        </span>
                       </div>
                     </td>
                     <td>
@@ -404,55 +414,57 @@ const TokensSharing = () => {
                 <div className="mobile-token-header">
                   <div className="token-code-cell">
                     <FiKey className="me-2" />
-                    <code className="token-code">{token.token}</code>
+                    <code className="token-code inter">{token.token}</code>
                   </div>
-                  <span className={`status-badge status-${token.status}`}>
+                  <span className={`inter status-badge status-${token.status}`}>
                     {token.status === "active" ? (
                       <FiCheckCircle size={14} />
                     ) : (
                       <FiEyeOff size={14} />
                     )}
-                    {token.status}
+                    <span className="inter">{token.status}</span>
                   </span>
                 </div>
 
                 <div className="mobile-token-body">
                   <div className="mobile-info-row">
-                    <span className="mobile-label">Type:</span>
-                    <span className={`badge badge-${token.type}`}>
+                    <span className="mobile-label inter">Type:</span>
+                    <span className={`inter badge badge-${token.type}`}>
                       {token.type}
                     </span>
                   </div>
                   <div className="mobile-info-row">
-                    <span className="mobile-label">Event:</span>
-                    <span>Event #{token.event_id}</span>
+                    <span className="mobile-label inter">Event:</span>
+                    <span className="inter">Event #{token.event_id}</span>
                   </div>
                   <div className="mobile-info-row">
-                    <span className="mobile-label">Views:</span>
-                    <span>
+                    <span className="mobile-label inter">Views:</span>
+                    <span className="inter">
                       {token.view_count || 0} ({token.unique_views || 0} unique)
                     </span>
                   </div>
                   <div className="mobile-info-row">
-                    <span className="mobile-label">Emails Sent:</span>
-                    <span>{token.email_sent_count || 0}</span>
+                    <span className="mobile-label inter">Emails Sent:</span>
+                    <span className="inter">{token.email_sent_count || 0}</span>
                   </div>
                   <div className="mobile-info-row">
-                    <span className="mobile-label">Expires:</span>
-                    <span>{formatDate(token.expires_at)}</span>
+                    <span className="mobile-label inter">Expires:</span>
+                    <span className="inter">
+                      {formatDate(token.expires_at)}
+                    </span>
                   </div>
                 </div>
 
                 <div className="mobile-token-actions">
                   <button
-                    className="action-btn-mobile"
+                    className="action-btn-mobile inter"
                     onClick={() => handleCopyToken(token.token)}
                   >
                     <FiCopy size={16} />
                     Copy
                   </button>
                   <button
-                    className="action-btn-mobile"
+                    className="action-btn-mobile inter danger"
                     onClick={() => openShareModal(token)}
                     disabled={token.status !== "active"}
                   >
@@ -460,7 +472,7 @@ const TokensSharing = () => {
                     Share
                   </button>
                   <button
-                    className="action-btn-mobile danger"
+                    className="action-btn-mobile inter danger"
                     onClick={() => handleDisableToken(token.id)}
                     disabled={token.status !== "active"}
                   >
@@ -504,10 +516,10 @@ const TokensSharing = () => {
         >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 className="modal-title fs-20">
+              <h4 className="modal-title fs-20 inter">
                 <FiKey className="me-2" />
                 Generate New Token
-              </h3>
+              </h4>
               <button
                 className="modal-close"
                 onClick={() => setShowGenerateModal(false)}
@@ -518,38 +530,40 @@ const TokensSharing = () => {
 
             <div className="modal-body">
               <div className="form-group">
-                <label className="form-label">Select Token Type</label>
+                <label className="form-label inter">Select Token Type</label>
                 <div className="token-type-grid">
                   <div
-                    className={`token-type-card ${
+                    className={`token-type-card inter ${
                       tokenType === "private" ? "selected" : ""
                     }`}
                     onClick={() => setTokenType("private")}
                   >
-                    <div className="token-type-icon private">
+                    <div className="token-type-icon private inter">
                       <FiEyeOff size={28} />
                     </div>
-                    <h4 className="token-type-title fs-16">Private Gallery</h4>
+                    <h4 className="token-type-title fs-16 inter">
+                      Private Gallery
+                    </h4>
                     <p className="token-type-description fs-14">
                       Only accessible with token link. Perfect for
                       client-exclusive galleries.
                     </p>
                     <div className="token-type-features fs-14">
-                      <div className="feature-item">
+                      <div className="feature-item inter">
                         <FiCheckCircle size={14} />
-                        <span>Secure access</span>
+                        <span className="inter">Secure access</span>
                       </div>
-                      <div className="feature-item">
+                      <div className="feature-item inter">
                         <FiCheckCircle size={14} />
-                        <span>Email sharing</span>
+                        <span className="inter">Email sharing</span>
                       </div>
-                      <div className="feature-item">
+                      <div className="feature-item inter">
                         <FiCheckCircle size={14} />
-                        <span>View tracking</span>
+                        <span className="inter">View tracking</span>
                       </div>
                     </div>
                     {tokenType === "private" && (
-                      <div className="selected-badge">
+                      <div className="selected-badge inter">
                         <FiCheckCircle size={16} />
                         Selected
                       </div>
@@ -565,51 +579,55 @@ const TokensSharing = () => {
                     <div className="token-type-icon public">
                       <FiEye size={28} />
                     </div>
-                    <h4 className="token-type-title fs-16">Public Gallery</h4>
-                    <p className="token-type-description fs-14">
+                    <h4 className="token-type-title fs-16 inter">
+                      Public Gallery
+                    </h4>
+                    <p className="token-type-description fs-14 inter">
                       Open to everyone with the link. Ideal for portfolio
                       showcases.
                     </p>
-                    <div className="token-type-features fs-14">
-                      <div className="feature-item">
+                    <div className="token-type-features fs-14 inter">
+                      <div className="feature-item inter">
                         <FiCheckCircle size={14} />
-                        <span>No restrictions</span>
+                        <span className="inter">No restrictions</span>
                       </div>
                       <div className="feature-item">
                         <FiCheckCircle size={14} />
-                        <span>Easy sharing</span>
+                        <span className="inter">Easy sharing</span>
                       </div>
-                      <div className="feature-item">
+                      <div className="feature-item inter">
                         <FiCheckCircle size={14} />
-                        <span>SEO friendly</span>
+                        <span className="inter">SEO friendly</span>
                       </div>
                     </div>
                     {tokenType === "public" && (
-                      <div className="selected-badge">
+                      <div className="selected-badge inter">
                         <FiCheckCircle size={16} />
-                        Selected
+                        <span className="inter">Selected</span>
                       </div>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div className="info-box">
-                <FiActivity className="me-2" />
-                This token will be automatically linked to your active event
+              <div className="info-box inter">
+                <ClockLoader size={20} color="#1e40af" className="me-2 inter" />{" "}
+                <span className="inter">
+                  This token will be automatically linked to your active event
+                </span>
               </div>
             </div>
 
             <div className="modal-footer">
               <button
-                className="btn-secondary"
+                className="btn-secondary inter"
                 onClick={() => setShowGenerateModal(false)}
                 disabled={generateLoading}
               >
                 Cancel
               </button>
               <button
-                className="btn-primary"
+                className="btn-primary inter"
                 onClick={handleGenerateToken}
                 disabled={generateLoading}
               >

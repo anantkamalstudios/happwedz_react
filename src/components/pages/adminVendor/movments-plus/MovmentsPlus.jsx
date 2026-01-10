@@ -59,21 +59,21 @@ const MovmentsPlus = () => {
       label: "Analytics",
       icon: <TbDeviceDesktopAnalytics size={22} />,
     },
-    {
-      id: "packages-storage",
-      label: "Packages & Storage",
-      icon: <GrStorage size={22} />,
-    },
-    {
-      id: "guests-access",
-      label: "Guests Access",
-      icon: <GoPeople size={22} />,
-    },
-    {
-      id: "settings",
-      label: "Settings",
-      icon: <IoSettingsOutline size={22} />,
-    },
+    // {
+    //   id: "packages-storage",
+    //   label: "Packages & Storage",
+    //   icon: <GrStorage size={22} />,
+    // },
+    // {
+    //   id: "guests-access",
+    //   label: "Guests Access",
+    //   icon: <GoPeople size={22} />,
+    // },
+    // {
+    //   id: "settings",
+    //   label: "Settings",
+    //   icon: <IoSettingsOutline size={22} />,
+    // },
   ];
 
   const handleTabClick = (tabId) => {
@@ -104,9 +104,38 @@ const MovmentsPlus = () => {
   };
 
   return (
-    <div className="container-fluid py-3 px-5 movments-plus-container">
+    <div className="container-fluid py-3 px-3 px-lg-4 px-xl-5 movments-plus-container">
       <div className="row">
-        <div className="col-md-2 border-end pe-4">
+        {/* Mobile Navigation */}
+        <div className="col-12 d-md-none mb-3">
+          <div
+            className="d-flex overflow-auto pb-2 gap-2 mobile-nav-scrollbar"
+            style={{ whiteSpace: "nowrap", scrollbarWidth: "none" }}
+          >
+            {menuItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => handleTabClick(item.id)}
+                className={`btn btn-sm d-flex align-items-center gap-2 ${
+                  activeTab === item.id
+                    ? "bg-primary text-white border-primary"
+                    : "bg-white text-secondary border"
+                }`}
+                style={{
+                  borderRadius: "20px",
+                  padding: "0.5rem 1rem",
+                  flexShrink: 0,
+                  transition: "all 0.2s",
+                }}
+              >
+                <span style={{ fontSize: "1.1em" }}>{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="col-lg-2 col-md-3 border-end pe-lg-4 pe-md-3 d-none d-md-block">
           <div className="sticky-top" style={{ top: "20px" }}>
             <h4 className="mb-4 fw-bold" style={{ color: "#2c3e50" }}>
               Movments+
@@ -128,7 +157,7 @@ const MovmentsPlus = () => {
           </div>
         </div>
 
-        <div className="col-md-9">
+        <div className="col-lg-10 col-md-9 col-12">
           <div style={{ minHeight: "500px" }}>{renderContent()}</div>
         </div>
       </div>

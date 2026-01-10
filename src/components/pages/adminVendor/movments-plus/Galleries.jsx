@@ -3,25 +3,24 @@ import axiosInstance from "../../../../services/api/axiosInstance";
 import {
   FiImage,
   FiVideo,
-  FiFolder,
-  FiClock,
+  FiSearch,
+  FiDownload,
   FiEye,
   FiEyeOff,
-  FiDownload,
-  FiSearch,
-  FiCopy,
-  FiCheck,
+  FiX,
+  FiChevronLeft,
+  FiChevronRight,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
-import "./tokens-sharing.css"; // Reuse existing styles
+import "./gallery.css";
 
 const Galleries = () => {
   const [mediaItems, setMediaItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [selectedCollection, setSelectedCollection] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
-  const [copiedId, setCopiedId] = useState(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     fetchMedia();
@@ -33,12 +32,10 @@ const Galleries = () => {
       const response = await axiosInstance.get("/media/");
       if (response.data.success) {
         setMediaItems(response.data.media);
-      } else {
-        setError("Failed to load galleries");
       }
     } catch (err) {
       console.error("Error fetching media:", err);
-      setError("Failed to fetch media galleries");
+      toast.error("Failed to fetch media galleries");
     } finally {
       setLoading(false);
     }
@@ -48,30 +45,51 @@ const Galleries = () => {
     return `https://happywedz-s3-bucket.s3.ap-south-1.amazonaws.com/${s3Key}`;
   };
 
-  const handleCopyUrl = async (url, id) => {
+  const handleDownload = async (s3Key, collection, e) => {
+    if (e) e.stopPropagation();
     try {
-      await navigator.clipboard.writeText(url);
-      setCopiedId(id);
-      toast.success("URL copied to clipboard");
-      setTimeout(() => setCopiedId(null), 2000);
+      const url = getS3Url(s3Key);
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `${collection}_${Date.now()}.${s3Key.split(".").pop()}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+      toast.success("Download started");
     } catch (err) {
-      toast.error("Failed to copy URL");
+      toast.error("Failed to download file");
     }
+  };
+
+  const openLightbox = (index) => {
+    setCurrentImageIndex(index);
+    setLightboxOpen(true);
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+    document.body.style.overflow = "auto";
+  };
+
+  const goToNext = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % filteredMedia.length);
+  };
+
+  const goToPrevious = () => {
+    setCurrentImageIndex(
+      (prev) => (prev - 1 + filteredMedia.length) % filteredMedia.length
+    );
   };
 
   const formatFileSize = (mb) => {
     return `${parseFloat(mb).toFixed(2)} MB`;
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  // Group media by collection
   const collections = [
     "All",
     ...new Set(mediaItems.map((item) => item.collection)),
@@ -86,150 +104,187 @@ const Galleries = () => {
     return matchesCollection && matchesSearch;
   });
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!lightboxOpen) return;
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowRight") goToNext();
+      if (e.key === "ArrowLeft") goToPrevious();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxOpen]);
+
   if (loading) {
     return (
-      <div className="tokens-container d-flex justify-content-center align-items-center">
-        <div className="spinner"></div>
+      <div className="gallery-container">
+        <div className="gallery-loader">
+          <div className="spinner"></div>
+        </div>
       </div>
     );
   }
 
+  const currentMedia = filteredMedia[currentImageIndex];
+
   return (
-    <div className="tokens-container">
-      {/* Header */}
-      <div className="tokens-header">
+    <div className="gallery-container">
+      <div className="gallery-header">
         <div>
-          <h1 className="page-title">Galleries</h1>
-          <p className="page-subtitle">
-            Manage your event collections and media files
-          </p>
+          <h3 className="gallery-title">Galleries</h3>
+          <p className="gallery-subtitle">Manage your event collections</p>
         </div>
-        <div className="d-flex gap-3">
-          <div
-            className="email-input-wrapper d-flex align-items-center p-2"
-            style={{ minHeight: "auto", height: "45px" }}
-          >
-            <FiSearch className="text-muted me-2" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="email-input p-0"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+        <div className="gallery-search">
+          <FiSearch className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search collections..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
       </div>
 
-      {/* Collection Filters */}
-      <div className="d-flex gap-2 mb-4 overflow-auto pb-2">
+      <div className="gallery-filters py-3">
         {collections.map((collection) => (
           <button
             key={collection}
-            className={`btn ${
-              selectedCollection === collection
-                ? "btn-primary"
-                : "btn-secondary"
+            className={`filter-btn ${
+              selectedCollection === collection ? "active" : ""
             }`}
             onClick={() => setSelectedCollection(collection)}
-            style={{ whiteSpace: "nowrap" }}
           >
-            <FiFolder size={16} />
             {collection}
           </button>
         ))}
       </div>
 
-      {/* Media Grid */}
       {filteredMedia.length > 0 ? (
-        <div className="row g-4">
-          {filteredMedia.map((item) => (
-            <div key={item.id} className="col-12 col-sm-6 col-md-4 col-lg-3">
-              <div className="table-card h-100 d-flex flex-column transition-hover">
-                <div
-                  className="position-relative"
-                  style={{ paddingTop: "75%" }}
-                >
-                  <div className="position-absolute top-0 start-0 w-100 h-100 bg-light d-flex align-items-center justify-content-center overflow-hidden">
-                    {item.s3_key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                      <img
-                        src={getS3Url(item.s3_key)}
-                        alt={`Media ${item.id}`}
-                        className="w-100 h-100 object-fit-cover transition-transform"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src =
-                            "https://via.placeholder.com/300?text=Image+Error";
-                        }}
-                      />
+        <div className="gallery-grid">
+          {filteredMedia.map((item, index) => (
+            <div key={item.id} className="gallery-card">
+              <div
+                className="card-image"
+                onClick={() =>
+                  item.s3_key.match(/\.(jpg|jpeg|png|gif|webp)$/i) &&
+                  openLightbox(index)
+                }
+                style={{
+                  cursor: item.s3_key.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+                    ? "pointer"
+                    : "default",
+                }}
+              >
+                {item.s3_key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                  <img
+                    src={getS3Url(item.s3_key)}
+                    alt={item.collection}
+                    onError={(e) => {
+                      e.target.src =
+                        "https://via.placeholder.com/400x300?text=Image+Error";
+                    }}
+                  />
+                ) : (
+                  <div className="video-placeholder">
+                    <FiVideo size={40} />
+                    <span>Video File</span>
+                  </div>
+                )}
+                <div className="card-badges">
+                  <div className="card-badge">
+                    {item.visibility === "public" ? (
+                      <FiEye size={12} />
                     ) : (
-                      <div className="text-center text-muted">
-                        <FiVideo size={48} className="mb-2" />
-                        <p className="small m-0">Video File</p>
-                      </div>
+                      <FiEyeOff size={12} />
                     )}
+                    <span>{item.visibility}</span>
                   </div>
-                  <div className="position-absolute top-0 end-0 p-2">
-                    <span
-                      className={`badge ${
-                        item.visibility === "public"
-                          ? "badge-public"
-                          : "badge-private"
-                      }`}
-                    >
-                      {item.visibility === "public" ? (
-                        <FiEye size={12} className="me-1" />
-                      ) : (
-                        <FiEyeOff size={12} className="me-1" />
-                      )}
-                      {item.visibility}
-                    </span>
-                  </div>
+                  <button
+                    className="card-download-btn"
+                    onClick={(e) =>
+                      handleDownload(item.s3_key, item.collection, e)
+                    }
+                    title="Download"
+                  >
+                    <FiDownload size={14} />
+                  </button>
                 </div>
+              </div>
 
-                <div className="p-3 d-flex flex-column flex-grow-1">
-                  <div className="d-flex justify-content-between align-items-start mb-2">
-                    <h6
-                      className="fw-bold mb-0 text-truncate"
-                      title={item.collection}
-                    >
-                      {item.collection}
-                    </h6>
-                    <small className="text-muted bg-light px-2 py-1 rounded">
-                      ID: {item.event_id}
-                    </small>
-                  </div>
-
-                  <div className="mt-auto pt-3 border-top">
-                    <div className="d-flex justify-content-between align-items-center small text-muted mb-2">
-                      <span className="d-flex align-items-center gap-1">
-                        <FiClock size={14} />
-                        {formatDate(item.created_at)}
-                      </span>
-                      <span>{formatFileSize(item.file_size_mb)}</span>
-                    </div>
-
-                    <div className="d-flex gap-2 mt-2">
-                      <a
-                        href={getS3Url(item.s3_key)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn btn-sm btn-outline-primary flex-grow-1 d-flex align-items-center justify-content-center gap-1"
-                      >
-                        <FiDownload size={14} /> View
-                      </a>
-                    </div>
-                  </div>
-                </div>
+              <div className="card-content">
+                <h3 className="card-title">{item.collection}</h3>
+                <p className="card-price">
+                  {formatFileSize(item.file_size_mb)}
+                </p>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="empty-state-card">
-          <FiImage size={48} />
+        <div className="empty-state">
+          <FiImage size={64} />
           <h3>No Media Found</h3>
-          <p>No media files found for the selected collection.</p>
+          <p>No media files match your search criteria</p>
+        </div>
+      )}
+
+      {/* Lightbox Modal */}
+      {lightboxOpen && currentMedia && (
+        <div className="lightbox-overlay" onClick={closeLightbox}>
+          <button className="lightbox-close" onClick={closeLightbox}>
+            <FiX size={24} />
+          </button>
+
+          <button
+            className="lightbox-nav lightbox-prev"
+            onClick={(e) => {
+              e.stopPropagation();
+              goToPrevious();
+            }}
+          >
+            <FiChevronLeft size={32} />
+          </button>
+
+          <button
+            className="lightbox-nav lightbox-next"
+            onClick={(e) => {
+              e.stopPropagation();
+              goToNext();
+            }}
+          >
+            <FiChevronRight size={32} />
+          </button>
+
+          <div
+            className="lightbox-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={getS3Url(currentMedia.s3_key)}
+              alt={currentMedia.collection}
+              className="lightbox-image"
+            />
+            <div className="lightbox-info">
+              <div className="lightbox-details">
+                <h3>{currentMedia.collection}</h3>
+                <p>{formatFileSize(currentMedia.file_size_mb)}</p>
+              </div>
+              <button
+                className="lightbox-download-btn"
+                onClick={() =>
+                  handleDownload(currentMedia.s3_key, currentMedia.collection)
+                }
+              >
+                <FiDownload size={16} />
+                Download
+              </button>
+            </div>
+          </div>
+
+          <div className="lightbox-counter">
+            {currentImageIndex + 1} / {filteredMedia.length}
+          </div>
         </div>
       )}
     </div>

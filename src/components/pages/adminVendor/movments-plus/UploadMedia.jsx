@@ -15,10 +15,60 @@ import {
   Key,
   Calendar,
   EyeOff,
+  RefreshCw,
+  Trash2,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import axiosInstance from "../../../../services/api/axiosInstance";
 import "./tokens-sharing.css";
+
+const FilePreview = ({ file, index, onReplace, onRemove, disabled }) => {
+  const [preview, setPreview] = useState(null);
+
+  useEffect(() => {
+    if (file.type.startsWith("image/")) {
+      const url = URL.createObjectURL(file);
+      setPreview(url);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [file]);
+
+  return (
+    <div className="preview-card">
+      <div className="preview-image-wrapper">
+        {file.type.startsWith("image/") ? (
+          <img src={preview} alt={file.name} className="preview-image" />
+        ) : (
+          <div className="d-flex flex-column align-items-center">
+            <Video size={48} className="text-muted mb-2" />
+            <span
+              className="small text-muted text-truncate"
+              style={{ maxWidth: "120px" }}
+            >
+              {file.name}
+            </span>
+          </div>
+        )}
+      </div>
+      <div className="preview-actions">
+        <button
+          className="preview-btn replace"
+          onClick={() => onReplace(index)}
+          disabled={disabled}
+        >
+          <RefreshCw size={14} /> Replace
+        </button>
+        <button
+          className="preview-btn remove"
+          onClick={() => onRemove(index)}
+          disabled={disabled}
+        >
+          <Trash2 size={14} /> Remove
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const UploadMedia = () => {
   const { vendor } = useSelector((state) => state.vendorAuth);
@@ -36,7 +86,9 @@ const UploadMedia = () => {
   const [uploadSuccess, setUploadSuccess] = useState(null);
   const [errors, setErrors] = useState({});
   const [isDragging, setIsDragging] = useState(false);
+  const [replacingIndex, setReplacingIndex] = useState(null);
   const fileInputRef = useRef(null);
+  const replaceInputRef = useRef(null);
 
   useEffect(() => {
     if (vendor?.id) {
@@ -90,6 +142,32 @@ const UploadMedia = () => {
   const handleFileInput = (e) => {
     const files = Array.from(e.target.files);
     handleFileSelection(files);
+  };
+
+  const handleReplaceClick = (index) => {
+    setReplacingIndex(index);
+    replaceInputRef.current?.click();
+  };
+
+  const handleReplaceInput = (e) => {
+    const file = e.target.files[0];
+    if (file && replacingIndex !== null) {
+      const isImage = file.type.startsWith("image/");
+      const isVideo = file.type.startsWith("video/");
+      const sizeMB = file.size / (1024 * 1024);
+
+      if ((isImage || isVideo) && sizeMB <= 100) {
+        setSelectedFiles((prev) => {
+          const newFiles = [...prev];
+          newFiles[replacingIndex] = file;
+          return newFiles;
+        });
+      } else {
+        toast.warning("Invalid file type or size > 100MB");
+      }
+    }
+    setReplacingIndex(null);
+    e.target.value = "";
   };
 
   const handleFileSelection = (files) => {
@@ -292,8 +370,8 @@ const UploadMedia = () => {
       {/* Header */}
       <div className="tokens-header">
         <div>
-          <h1 className="page-title">Upload Media</h1>
-          <p className="page-subtitle">
+          <h3 className="page-title inter">Upload Media</h3>
+          <p className="page-subtitle inter">
             Select a token and upload media to your event collections
           </p>
         </div>
@@ -303,44 +381,44 @@ const UploadMedia = () => {
       {analytics && (
         <div className="stats-row">
           <div className="stat-box">
-            <div className="stat-icon-wrapper">
+            <div className="stat-icon-wrapper inter">
               <HardDrive size={20} />
             </div>
             <div>
-              <p className="stat-box-label text-start">Storage Used</p>
-              <h3 className="stat-box-value">
+              <p className="stat-box-label text-start inter">Storage Used</p>
+              <h3 className="stat-box-value inter">
                 {analytics.package.usedMB}{" "}
-                <span className="fs-6 text-muted">MB</span>
+                <span className="fs-6 text-muted inter">MB</span>
               </h3>
             </div>
           </div>
           <div className="stat-box">
-            <div className="stat-icon-wrapper">
+            <div className="stat-icon-wrapper inter">
               <CheckCircle size={20} />
             </div>
             <div>
-              <p className="stat-box-label text-start">Remaining</p>
+              <p className="stat-box-label text-start inter">Remaining</p>
               <h3
                 className={`stat-box-value ${
                   analytics.package.remainingMB < 100
-                    ? "text-danger"
-                    : "text-success"
+                    ? "text-danger inter"
+                    : "text-success inter"
                 }`}
               >
                 {analytics.package.remainingMB.toFixed(2)}{" "}
-                <span className="fs-6 text-muted">MB</span>
+                <span className="fs-6 text-success inter">MB</span>
               </h3>
             </div>
           </div>
           <div className="stat-box">
-            <div className="stat-icon-wrapper">
+            <div className="stat-icon-wrapper inter">
               <Video size={20} />
             </div>
             <div>
-              <p className="stat-box-label text-start">Limit</p>
-              <h3 className="stat-box-value">
+              <p className="stat-box-label text-start inter">Limit</p>
+              <h3 className="stat-box-value inter">
                 {analytics.package.limitMB}{" "}
-                <span className="fs-6 text-muted">MB</span>
+                <span className="fs-6 text-muted inter">MB</span>
               </h3>
             </div>
           </div>
@@ -349,10 +427,10 @@ const UploadMedia = () => {
 
       {/* Token List */}
       <div className="table-card mb-4">
-        <div className="p-3 border-bottom bg-light">
-          <h5 className="mb-0 fw-bold">Select a Token to Upload</h5>
+        <div className="p-3 border-bottom bg-light inter">
+          <h3 className="mb-0 fw-bold inter">Select a Token to Upload</h3>
         </div>
-        <div className="table-responsive">
+        <div className="table-responsive inter">
           <table className="tokens-table">
             <thead>
               <tr>
@@ -365,48 +443,48 @@ const UploadMedia = () => {
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="inter">
               {tokens.length > 0 ? (
                 tokens.map((token) => (
                   <tr key={token.id} className="token-row">
                     <td>
                       <div className="token-code-cell">
                         <Key size={16} />
-                        <code className="token-code">{token.token}</code>
+                        <code className="token-code inter">{token.token}</code>
                       </div>
                     </td>
                     <td>
-                      <span className={`badge badge-${token.type}`}>
+                      <span className={`inter badge badge-${token.type}`}>
                         {token.type}
                       </span>
                     </td>
                     <td>
-                      <div className="event-cell">
-                        <Calendar size={14} className="me-1" />
+                      <div className="event-cell inter">
+                        <Calendar size={14} className="me-1 inter" />
                         Event #{token.event_id}
                       </div>
                     </td>
-                    <td>{getStatusBadge(token.status)}</td>
+                    <td className="inter">{getStatusBadge(token.status)}</td>
                     <td>
-                      <div className="created-cell">
+                      <div className="created-cell inter">
                         {formatDate(token.created_at)}
                       </div>
                     </td>
                     <td>
-                      <div className="expiry-cell">
+                      <div className="expiry-cell inter">
                         {token.expires_at ? (
-                          <div className="d-flex align-items-center gap-1">
+                          <div className="d-flex align-items-center gap-1 inter">
                             <Clock size={14} />
                             {formatDate(token.expires_at)}
                           </div>
                         ) : (
-                          <span className="text-muted">No expiry</span>
+                          <span className="text-muted inter">No expiry</span>
                         )}
                       </div>
                     </td>
                     <td>
                       <button
-                        className="btn-primary py-1 px-3 fs-6"
+                        className="btn-primary py-1 px-3 fs-6 inter"
                         onClick={() => {
                           setFormData((prev) => ({
                             ...prev,
@@ -503,7 +581,7 @@ const UploadMedia = () => {
 
       {/* Success Message */}
       {uploadSuccess && (
-        <div className="row mb-4">
+        <div className="row mb-4 inter">
           <div className="col-12">
             <div
               className="alert alert-success border d-flex align-items-center"
@@ -519,25 +597,24 @@ const UploadMedia = () => {
         </div>
       )}
 
-      {/* Upload Form */}
       <div id="upload-section" className="table-card">
         <div className="p-3 border-bottom bg-light">
-          <h5 className="mb-0 fw-bold">Upload Files</h5>
+          <h3 className="mb-0 fw-bold inter">Upload Files</h3>
         </div>
         <div className="p-4">
           {/* Form Fields */}
           <div className="row g-4 mb-4">
             <div className="col-md-6">
-              <label className="form-label fw-bold">
+              <label className="form-label fw-bold inter">
                 Event ID <span className="text-danger">*</span>
               </label>
               <div className="input-group">
-                <span className="input-group-text bg-white">
+                <span className="input-group-text bg-white inter">
                   <Calendar size={18} className="text-muted" />
                 </span>
                 <input
                   type="text"
-                  className={`form-control ${
+                  className={`form-control inter ${
                     errors.event_id ? "is-invalid" : ""
                   }`}
                   name="event_id"
@@ -552,22 +629,19 @@ const UploadMedia = () => {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label fw-bold">
+              <label className="form-label fw-bold inter">
                 Collection <span className="text-danger">*</span>
               </label>
-              <select
-                className={`form-select ${
+              <input
+                type="text"
+                className={`form-control inter ${
                   errors.collection ? "is-invalid" : ""
                 }`}
                 name="collection"
                 value={formData.collection}
                 onChange={handleInputChange}
-              >
-                <option value="">Select collection</option>
-                <option value="Engagement">Engagement</option>
-                <option value="Haldi">Haldi</option>
-                <option value="Wedding">Wedding</option>
-              </select>
+                placeholder="Enter collection name"
+              />
               {errors.collection && (
                 <div className="text-danger small mt-1">
                   {errors.collection}
@@ -576,11 +650,11 @@ const UploadMedia = () => {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label fw-bold">
+              <label className="form-label fw-bold inter">
                 Visibility <span className="text-danger">*</span>
               </label>
               <select
-                className={`form-select ${
+                className={`form-select inter ${
                   errors.visibility ? "is-invalid" : ""
                 }`}
                 name="visibility"
@@ -599,15 +673,17 @@ const UploadMedia = () => {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label fw-bold">
+              <label className="form-label fw-bold inter">
                 Token <span className="text-danger">*</span>
               </label>
               <div className="input-group">
-                <span className="input-group-text bg-white">
+                <span className="input-group-text bg-white inter">
                   <Key size={18} className="text-muted" />
                 </span>
                 <select
-                  className={`form-select ${errors.token ? "is-invalid" : ""}`}
+                  className={`form-select inter ${
+                    errors.token ? "is-invalid" : ""
+                  }`}
                   name="token"
                   value={formData.token}
                   onChange={handleInputChange}
@@ -628,6 +704,15 @@ const UploadMedia = () => {
               </div>
             </div>
           </div>
+
+          {/* Hidden Replace Input */}
+          <input
+            ref={replaceInputRef}
+            type="file"
+            accept="image/*,video/*"
+            onChange={handleReplaceInput}
+            className="d-none"
+          />
 
           {/* Drag and Drop Area */}
           <div
@@ -685,7 +770,7 @@ const UploadMedia = () => {
             </div>
           )}
 
-          {/* Selected Files List */}
+          {/* Selected Files Grid */}
           {selectedFiles.length > 0 && (
             <div className="mt-4">
               <div className="d-flex justify-content-between align-items-center mb-3">
@@ -706,37 +791,16 @@ const UploadMedia = () => {
                 </div>
               </div>
 
-              <div className="selected-files-list">
+              <div className="upload-preview-grid">
                 {selectedFiles.map((file, index) => (
-                  <div
-                    key={index}
-                    className="file-item d-flex align-items-center justify-content-between p-3 border rounded mb-2 bg-white"
-                  >
-                    <div className="d-flex align-items-center gap-3">
-                      <div className="file-icon">{getFileIcon(file)}</div>
-                      <div>
-                        <div
-                          className="file-name fw-medium text-truncate"
-                          style={{ maxWidth: "250px" }}
-                        >
-                          {file.name}
-                        </div>
-                        <div className="file-size text-muted small">
-                          {formatFileSize(file.size)} MB
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      className="btn btn-link text-danger p-0"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFile(index);
-                      }}
-                      disabled={uploading}
-                    >
-                      <X size={18} />
-                    </button>
-                  </div>
+                  <FilePreview
+                    key={`${file.name}-${index}`}
+                    file={file}
+                    index={index}
+                    onReplace={handleReplaceClick}
+                    onRemove={removeFile}
+                    disabled={uploading}
+                  />
                 ))}
               </div>
 
@@ -766,7 +830,7 @@ const UploadMedia = () => {
                   {uploading ? (
                     <>
                       <span
-                        className="spinner-border spinner-border-sm me-2"
+                        className="spinter-border spinter-border-sm me-2"
                         role="status"
                         aria-hidden="true"
                       ></span>

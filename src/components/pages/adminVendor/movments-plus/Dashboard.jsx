@@ -106,7 +106,7 @@ const VendorDashboard = ({ onNavigate }) => {
 
   if (loading) {
     return (
-      <div className="dashboard-container w-100 justify-content-center">
+      <div className="movments-plus-dashboard-container w-100 justify-content-center">
         <div className="loading-state">
           <Loader />
         </div>
@@ -116,7 +116,7 @@ const VendorDashboard = ({ onNavigate }) => {
 
   if (error) {
     return (
-      <div className="dashboard-container">
+      <div className="movments-plus-dashboard-container">
         <div className="error-state">
           <FiAlertCircle size={48} />
           <h4 className="mt-3">Unable to Load Dashboard</h4>
@@ -136,33 +136,36 @@ const VendorDashboard = ({ onNavigate }) => {
   const { package: pkg, media, tokens, reach, activity, usage } = analytics;
 
   return (
-    <div className="">
+    <div className="movments-plus-dashboard-container">
       {/* Header with Status */}
-      <div className="dashboard-header px-3">
-        <div className="header-left">
-          <h1 className="dashboard-title text-start text-black">
+      <div className="dashboard-header px-0">
+        <div className="header-left w-100 px-2">
+          <h3 className="dashboard-title text-start text-black">
             Dashboard Overview
-          </h1>
-          <div className="status-bar w-100 d-flex justify-content-between">
-            <div className="d-flex gap-3">
+          </h3>
+          <div className="status-bar w-100 d-flex justify-content-between flex-wrap gap-3">
+            <div className="d-flex gap-3 flex-wrap align-items-center">
               <div
-                className={`status-indicator ${
+                className={`status-indicator inter ${
                   isOnline ? "online" : "offline"
                 }`}
               >
-                <span className="status-dot"></span>
+                <span className="status-dot inter"></span>
                 {isOnline ? "Online" : "Offline"}
               </div>
-              <div className="time-display text-black fs-16">
+              <div className="time-display inter text-black fs-16">
                 <FiClock size={14} />
                 <span>{formatTime()}</span>
               </div>
-              <div className="date-display text-black fs-16">
+              <div className="date-display inter text-black fs-16">
                 {formatFullDate()}
               </div>
             </div>
 
-            <button className="btn-refresh" onClick={fetchDashboardAnalytics}>
+            <button
+              className="btn-refresh inter"
+              onClick={fetchDashboardAnalytics}
+            >
               <VscRefresh size={18} />
               Refresh Data
             </button>
@@ -281,9 +284,12 @@ const VendorDashboard = ({ onNavigate }) => {
           <div className="card-header">
             <div className="card-title-group">
               <FiFolder size={20} />
-              <h5>Media Collections</h5>
+              <h5 className="inter">Media Collections</h5>
             </div>
-            <button className="btn-icon">
+            <button
+              className="btn-icon"
+              onClick={() => onNavigate && onNavigate("galleries")}
+            >
               <FiPlus size={18} />
             </button>
           </div>
@@ -329,9 +335,9 @@ const VendorDashboard = ({ onNavigate }) => {
           <div className="card-header">
             <div className="card-title-group">
               <FiActivity size={20} />
-              <h5>Recent Activity</h5>
+              <h5 className="inter">Recent Activity</h5>
             </div>
-            <span className="badge-today">Today</span>
+            <span className="badge-today inter">Today</span>
           </div>
           <div className="activity-timeline">
             <div className="timeline-item">

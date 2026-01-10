@@ -54,6 +54,26 @@
   transform: none;
 }
 
+.btn-outline-primary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  color: #ed1173;
+  border: 1px solid #ed1173;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-outline-primary:hover {
+  background: #fff5f9;
+  transform: translateY(-2px);
+}
+
 .btn-secondary {
   display: flex;
   align-items: center;
@@ -682,7 +702,7 @@
 }
 
 /* Responsive */
-@media (max-width: 1024px) {
+@media (max-width: 991px) {
   .table-responsive {
     display: none;
   }
@@ -895,4 +915,144 @@
 
 .radio-group {
   display: none;
+}
+
+/* Upload Section Styles */
+.upload-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.preview-card {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-card:hover {
+  border-color: #ed1173;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.preview-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-video-icon {
+  color: #6c757d;
+  width: 48px;
+  height: 48px;
+}
+
+.preview-actions {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(4px);
+  display: flex;
+  gap: 0.5rem;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.preview-card:hover .preview-actions {
+  transform: translateY(0);
+}
+
+.preview-btn {
+  flex: 1;
+  border: none;
+  background: #fff;
+  padding: 0.4rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e0e0e0;
+}
+
+.preview-btn.replace {
+  color: #495057;
+}
+
+.preview-btn.replace:hover {
+  background: #f8f9fa;
+  border-color: #dee2e6;
+  color: #212529;
+}
+
+.preview-btn.remove {
+  color: #dc3545;
+}
+
+.preview-btn.remove:hover {
+  background: #fff5f5;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.upload-zone {
+  border: 2px dashed #dee2e6;
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.upload-zone:hover,
+.upload-zone.active {
+  border-color: #ed1173;
+  background: #fff5f9;
+}
+
+.upload-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Inner Class Styles (if needed, currently just adding specificity hook) */
+.form-control.inner,
+.form-select.inner,
+.form-label.inner {
+  /* Inherits existing styles, can be extended */
 }

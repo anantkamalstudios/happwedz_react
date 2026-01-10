@@ -1,15 +1,8 @@
-* {
-  margin: 0;
+.movments-plus-dashboard-container {
   padding: 0;
-  box-sizing: border-box;
-}
-
-.dashboard-container {
-  padding: 1.5rem;
-  max-width: 1600px;
+  max-width: 100%;
   margin: 0 auto;
-  background: #f8f9fa;
-  min-height: 100vh;
+  background: transparent;
 }
 
 /* Header */
@@ -20,10 +13,12 @@
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
   gap: 1rem;
+  width: 100%;
 }
 
 .header-left {
   flex: 1;
+  min-width: 0; /* Prevents flex item from overflowing */
 }
 
 .dashboard-title {
@@ -702,7 +697,7 @@
 }
 
 @media (max-width: 768px) {
-  .dashboard-container {
+  .movments-plus-dashboard-container {
     padding: 1rem;
   }
 
