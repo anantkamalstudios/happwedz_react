@@ -22,6 +22,7 @@ import { CiVideoOff } from "react-icons/ci";
 import ShareModal from "./ShareModal";
 import { SiJsonwebtokens } from "react-icons/si";
 import { ClockLoader } from "react-spinners";
+import { useSelector } from "react-redux";
 
 const TokensSharing = () => {
   const [tokens, setTokens] = useState([]);
@@ -35,6 +36,9 @@ const TokensSharing = () => {
   const [tokenType, setTokenType] = useState("private");
   const [copySuccess, setCopySuccess] = useState("");
   const [vendorId, setVendorId] = useState(null);
+
+  const vendor = useSelector((state) => state.vendorAuth);
+  console.log("Tokens Sharing Vendor Id - ", vendor);
 
   useEffect(() => {
     // Get vendor ID from localStorage or auth state
