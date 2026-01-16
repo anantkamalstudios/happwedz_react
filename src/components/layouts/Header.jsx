@@ -1091,6 +1091,12 @@ const Header = () => {
                                           image: "/images/couple.png",
                                           route: "/choose-template",
                                         },
+                                        {
+                                          title: "Travels",
+                                          desc: "Showcase your wedding website to friends and family.",
+                                          image: "/images/couple.png",
+                                          route: "/travels",
+                                        },
                                       ].map((item, i) => (
                                         <div
                                           key={i}
