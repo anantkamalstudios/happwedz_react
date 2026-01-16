@@ -178,6 +178,11 @@ const WriteReviewPage = lazy(() =>
   import("./components/pages/WriteReviewPage")
 );
 
+const Travels = lazy(() => import("./components/pages/Travels/Travel"));
+const CityActivities = lazy(() =>
+  import("./components/pages/Travels/CityDetails/CityActivities")
+);
+
 function App() {
   const location = useLocation();
 
@@ -478,6 +483,8 @@ function App() {
               <Route path="/about-us" element={<AboutUs />} />
 
               <Route path="*" element={<NotFound />} />
+              <Route path="/travels" element={<Travels />} />
+              <Route path="/travels/:cityName" element={<CityActivities />} />
             </Route>
 
             <Route element={<MatrimonialLayout />}>
@@ -505,5 +512,3 @@ function App() {
 }
 
 export default App;
-
-// ni
