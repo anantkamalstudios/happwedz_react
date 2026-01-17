@@ -674,8 +674,9 @@ const BusinessDetails = ({ formData, setFormData }) => {
       </div>
       {error && <div className="alert alert-danger mt-2">{error}</div>}
       {success && <div className="alert alert-success mt-2">{success}</div>}
+
       <button
-        className="btn btn-primary mt-2 folder-item fs-14"
+        className="btn btn-primary mt-2 fs-14"
         onClick={handleSubmitRegister}
         disabled={submitting}
       >

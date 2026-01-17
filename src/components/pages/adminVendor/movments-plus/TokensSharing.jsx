@@ -36,13 +36,9 @@ const TokensSharing = () => {
   const [tokenType, setTokenType] = useState("private");
   const [copySuccess, setCopySuccess] = useState("");
   const [vendorId, setVendorId] = useState(null);
-
-  const vendor = useSelector((state) => state.vendorAuth);
-  console.log("Tokens Sharing Vendor Id - ", vendor);
-
+  const storedVendorId = useSelector((state) => state.vendorAuth.vendor.id);
+  console.log("storedVendorId -> ", storedVendorId);
   useEffect(() => {
-    // Get vendor ID from localStorage or auth state
-    const storedVendorId = localStorage.getItem("vendorId") || 75075;
     setVendorId(storedVendorId);
     fetchTokens(storedVendorId);
   }, []);
@@ -72,7 +68,6 @@ const TokensSharing = () => {
         vendorId: vendorId,
         type: tokenType,
       });
-
       if (response.data.success) {
         setShowGenerateModal(false);
         setTokenType("private");
@@ -108,8 +103,6 @@ const TokensSharing = () => {
   };
 
   const handleShareViaEmail = async (email) => {
-    // This function is called for each email individually by ShareModal
-    // The ShareModal handles the bulk sending
     if (!email || !selectedToken) {
       return Promise.reject(new Error("Invalid email or token"));
     }
