@@ -71,10 +71,8 @@ const Navbar = () => {
             },
           }
         );
-        console.log("Navbar API response status:", response.status);
         if (response.ok) {
           const data = await response.json();
-          console.log("Navbar completion data:", data);
 
           // Handle both response formats and coerce to a safe numeric value
           let completionValue = undefined;
@@ -104,10 +102,6 @@ const Navbar = () => {
             Math.min(100, Math.round(completionValue))
           );
 
-          console.log(
-            "Setting storefront completion in Navbar:",
-            completionValue
-          );
           setStoredCompletion(completionValue);
           localStorage.setItem(
             "storefrontCompletion",
@@ -187,7 +181,6 @@ const Navbar = () => {
   // Check if vendor is a photographer (vendor type id = 1 or 12)
   const isPhotographer = useMemo(() => {
     const vendorTypeId = vendor?.vendor_type_id;
-    console.log("VTI", vendorTypeId);
     return vendorTypeId === 1 || vendorTypeId === 12;
   }, [vendor?.vendorType?.id]);
 

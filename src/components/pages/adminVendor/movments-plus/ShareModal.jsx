@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { X, Link2, Copy, Check, Mail } from "lucide-react";
+import { useSelector } from "react-redux";
+import { X, Link2, Copy, Check, Mail, MessageCircle } from "lucide-react";
 
 const ShareModal = ({ isOpen, onClose, projectData }) => {
   const [emailInput, setEmailInput] = useState("");
@@ -7,6 +8,7 @@ const ShareModal = ({ isOpen, onClose, projectData }) => {
   const [emailError, setEmailError] = useState("");
   const [copied, setCopied] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const vendorPhone = useSelector((state) => state.vendorAuth.vendor?.phone);
 
   const {
     people = [],
@@ -66,6 +68,15 @@ const ShareModal = ({ isOpen, onClose, projectData }) => {
     navigator.clipboard.writeText(shareLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleWhatsAppShare = () => {
+    if (!shareLink || !vendorPhone) return;
+    const phone = String(vendorPhone).replace(/\D/g, "");
+    const message = `Here is your access link: ${shareLink}`;
+    const encoded = encodeURIComponent(message);
+    const url = `https://wa.me/${phone}?text=${encoded}`;
+    window.open(url, "_blank");
   };
 
   const handleInvite = async () => {
@@ -215,6 +226,22 @@ const ShareModal = ({ isOpen, onClose, projectData }) => {
                 </div>
                 {/* <span className="access-role">{generalAccess.role}</span> */}
               </div>
+            </div>
+          )}
+
+          {shareLink && (
+            <div className="whatsapp-section">
+              <button
+                type="button"
+                className="whatsapp-btn"
+                onClick={handleWhatsAppShare}
+              >
+                <MessageCircle size={18} />
+                <span className="whatsapp-text">Share via WhatsApp</span>
+                {vendorPhone && (
+                  <span className="whatsapp-phone">({vendorPhone})</span>
+                )}
+              </button>
             </div>
           )}
 
@@ -523,6 +550,38 @@ const ShareModal = ({ isOpen, onClose, projectData }) => {
           font-size: 14px;
           color: #64748b;
           flex-shrink: 0;
+        }
+
+        .whatsapp-section {
+          margin-bottom: 12px;
+        }
+
+        .whatsapp-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 16px;
+          background: #25d366;
+          border-radius: 8px;
+          border: none;
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .whatsapp-btn:hover {
+          background: #1ebe5d;
+        }
+
+        .whatsapp-text {
+          white-space: nowrap;
+        }
+
+        .whatsapp-phone {
+          font-size: 12px;
+          opacity: 0.9;
         }
 
         .link-section {

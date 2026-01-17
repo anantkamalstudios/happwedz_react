@@ -59,11 +59,11 @@ const MovmentsPlus = () => {
       label: "Analytics",
       icon: <TbDeviceDesktopAnalytics size={22} />,
     },
-    // {
-    //   id: "packages-storage",
-    //   label: "Packages & Storage",
-    //   icon: <GrStorage size={22} />,
-    // },
+    {
+      id: "packages-storage",
+      label: "Packages & Storage",
+      icon: <GrStorage size={22} />,
+    },
     // {
     //   id: "guests-access",
     //   label: "Guests Access",
