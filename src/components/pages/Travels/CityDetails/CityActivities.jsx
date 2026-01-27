@@ -22,6 +22,20 @@ const CityActivities = () => {
       "https://www.getyourguide.com/barcelona-l45/?partner_id=235SCEF&utm_medium=online_publisher",
   };
 
+  const viatorAffiliateLinks = {
+    rome: "https://www.viator.com/Rome/d511-ttd?pid=P00234765&mcid=42383&medium=link&campaign=rome",
+    paris:
+      "https://www.viator.com/Paris/d479-ttd?pid=P00234765&mcid=42383&medium=link",
+    london:
+      "https://www.viator.com/London/d737-ttd?pid=P00234765&mcid=42383&medium=link",
+    "new york city":
+      "https://www.viator.com/New-York-City/d687-ttd?pid=P00234765&mcid=42383&medium=link",
+    dubai:
+      "https://www.viator.com/Dubai/d828-ttd?pid=P00234765&mcid=42383&medium=link",
+    barcelona:
+      "https://www.viator.com/Barcelona/d562-ttd?pid=P00234765&mcid=42383&medium=link",
+  };
+
   // Data for different cities
   const cityData = {
     rome: {
@@ -35,7 +49,7 @@ const CityActivities = () => {
           title: "Best Rome tours and excursions",
           description:
             "Book unique experiences, day trips, and guided tours. From food walking tours to ancient ruins.",
-          link: "https://www.viator.com/Rome/d511-ttd?pid=P00234765&mcid=42383&medium=link&campaign=rome",
+          link: viatorAffiliateLinks.rome,
           buttonText: "View on Viator",
           tag: "Great value",
           // discount: "84% OFF",
@@ -86,6 +100,23 @@ const CityActivities = () => {
       subtitle: `Explore the best activities and tours in ${cityName}`,
       activities: [
         {
+          id: 3,
+          provider: "Viator",
+          title: `${cityName} Tours & Excursions`,
+          description:
+            "Discover local culture, food, and landmarks with expert guides.",
+          link:
+            viatorAffiliateLinks[cityKey] ||
+            `https://www.viator.com/searchResults/all?text=${cityName}&pid=P00234765&mcid=42383`,
+          buttonText: "View on Viator",
+          tag: "Great value",
+          highlights: [
+            "Handpicked tours with flexible scheduling",
+            "Secure payments and support",
+            "From day trips to short activities",
+          ],
+        },
+        {
           id: 1,
           provider: "GetYourGuide",
           title: `Top Things to Do in ${cityName}`,
@@ -94,9 +125,9 @@ const CityActivities = () => {
           link:
             gygAffiliateLinks[cityKey] ||
             `https://www.getyourguide.com/s/?q=${cityName}&partner_id=235SCEF`,
-          buttonText: "View Activities",
-          tag: "Popular choice",
-          discount: "Best picks",
+          buttonText: "View on GetYourGuide",
+          tag: "Most popular",
+          featured: true,
           highlights: [
             "Wide range of tours and tickets",
             "Verified reviews from real travelers",
@@ -105,35 +136,18 @@ const CityActivities = () => {
         },
         {
           id: 2,
-          provider: "Viator",
-          title: `${cityName} Tours & Excursions`,
+          provider: "Tiqets",
+          title: "All Rome attractions in one view",
           description:
-            "Discover local culture, food, and landmarks with expert guides.",
-          link: `https://www.viator.com/searchResults/all?text=${cityName}&pid=P00234765&mcid=42383`,
-          buttonText: "Book Now",
-          tag: "Guided tours",
-          discount: "Top rated",
-          featured: true,
+            "Explore a curated list of the best things to do in Rome, from free walking tours to premium experiences.",
+          link: "https://www.getyourguide.com/s/?q=Rome&customerSearch=1", // Fallback generic search
+          buttonText: "View on Tiqets",
+          tag: "Explore more",
+          // discount: "Top picks",
           highlights: [
-            "Handpicked tours with flexible scheduling",
-            "Secure payments and support",
-            "From day trips to short activities",
-          ],
-        },
-        {
-          id: 3,
-          provider: "Travel",
-          title: "Plan Your Trip",
-          description:
-            "Everything you need to know about visiting this amazing destination.",
-          link: "#",
-          buttonText: "Learn More",
-          tag: "Plan",
-          discount: "",
-          highlights: [
-            "Best time to visit and local tips",
-            "Ideas for things to do and see",
-            "Helps you design your own itinerary",
+            "Compare activities across categories",
+            "Flexible durations and group sizes",
+            "Instant online booking",
           ],
         },
       ],
