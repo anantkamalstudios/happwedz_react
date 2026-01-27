@@ -1093,7 +1093,7 @@ const Header = () => {
                                         },
                                         {
                                           title: "Travels",
-                                          desc: "Showcase your wedding website to friends and family.",
+                                          desc: "Travel destinations offer culture, nature, and adventure.",
                                           image: "/images/couple.png",
                                           route: "/travels",
                                         },

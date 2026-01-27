@@ -23,7 +23,7 @@ const CityActivities = () => {
   };
 
   const viatorAffiliateLinks = {
-    rome: "https://www.viator.com/Rome/d511-ttd?pid=P00234765&mcid=42383&medium=link&campaign=rome",
+    rome: "https://www.viator.com/Rome/d511-ttd?pid=P00234765&mcid=42383&medium=link",
     paris:
       "https://www.viator.com/Paris/d479-ttd?pid=P00234765&mcid=42383&medium=link",
     london:
@@ -52,11 +52,23 @@ const CityActivities = () => {
           link: viatorAffiliateLinks.rome,
           buttonText: "View on Viator",
           tag: "Great value",
-          // discount: "84% OFF",
           highlights: [
-            "Top-rated local guides and small groups",
-            "Day trips and city highlights in one place",
-            "Secure booking with instant confirmation",
+            {
+              text: "Colosseum tickets and tours on Viator",
+              link: "https://www.viator.com/Rome-attractions/Colosseum/d511-a701?pid=P00234765&mcid=42383&medium=link",
+            },
+            {
+              text: "Trevi Fountain tours and experiences on Viator",
+              link: "https://www.viator.com/Rome-attractions/Trevi-Fountain/d511-a717?pid=P00234765&mcid=42383&medium=link",
+            },
+            {
+              text: "Pantheon tours and tickets on Viator",
+              link: "https://www.viator.com/Rome-attractions/Pantheon/d511-a51?pid=P00234765&mcid=42383&medium=link",
+            },
+            {
+              text: "Roman Forum tours and tickets on Viator",
+              link: "https://www.viator.com/Rome-attractions/Roman-Forum/d511-a705?pid=P00234765&mcid=42383&medium=link",
+            },
           ],
         },
         {
@@ -68,12 +80,16 @@ const CityActivities = () => {
           link: "https://www.getyourguide.com/rome-l33/?partner_id=235SCEF&utm_medium=online_publisher&cmp=rome",
           buttonText: "View on GetYourGuide",
           tag: "Most popular",
-          // discount: "85% OFF",
           featured: true,
           highlights: [
-            "500+ Rome experiences with verified reviews",
-            "Free cancellation on many activities",
-            "Skip-the-line options for top attractions",
+            {
+              text: "Colosseum skip-the-line tickets on GetYourGuide",
+              link: "https://www.getyourguide.com/colosseum-l2619/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+            {
+              text: "Vatican Museums & Sistine Chapel tickets on GetYourGuide",
+              link: "https://www.getyourguide.com/vatican-museums-l2738/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
           ],
         },
         {
@@ -88,6 +104,384 @@ const CityActivities = () => {
           // discount: "Top picks",
           highlights: [
             "Compare activities across categories",
+            "Flexible durations and group sizes",
+            "Instant online booking",
+          ],
+        },
+      ],
+    },
+    paris: {
+      title: "Paris, France",
+      subtitle: "Iconic landmarks and world-class museums in the City of Light",
+      activities: [
+        {
+          id: 3,
+          provider: "Viator",
+          title: "Best Paris tours and excursions",
+          description:
+            "From river cruises to landmark tours, discover Paris with local guides.",
+          link: viatorAffiliateLinks.paris,
+          buttonText: "View on Viator",
+          tag: "Great value",
+          highlights: [
+            {
+              text: "Eiffel Tower tours and tickets on Viator",
+              link: "https://www.viator.com/Paris-attractions/Eiffel-Tower/d479-a89?pid=P00234765&mcid=42383&medium=link",
+            },
+            {
+              text: "Louvre Museum tours and tickets on Viator",
+              link: "https://www.viator.com/Paris-attractions/Louvre-Museum/d479-a73?pid=P00234765&mcid=42383&medium=link",
+            },
+            {
+              text: "Arc de Triomphe tours and tickets on Viator",
+              link: "https://www.viator.com/Paris-attractions/Arc-de-Triomphe/d479-a573?pid=P00234765&mcid=42383&medium=link",
+            },
+            {
+              text: "Notre Dame Cathedral tours and tickets on Viator",
+              link: "https://www.viator.com/France-attractions/Notre-Dame-de-Lorette/d51-a18421?pid=P00234765&mcid=42383&medium=link",
+            },
+          ],
+        },
+        {
+          id: 1,
+          provider: "GetYourGuide",
+          title: "Top Paris tickets and fast-track experiences",
+          description:
+            "Book tickets and tours for Paris icons like the Eiffel Tower, Louvre, and more.",
+          link: gygAffiliateLinks.paris,
+          buttonText: "View on GetYourGuide",
+          tag: "Most popular",
+          featured: true,
+          highlights: [
+            {
+              text: "Eiffel Tower tickets and tours on GetYourGuide",
+              link: "https://www.getyourguide.com/eiffel-tower-l2600/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+            {
+              text: "Louvre Museum tickets and tours on GetYourGuide",
+              link: "https://www.getyourguide.com/louvre-museum-l3224/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+            {
+              text: "Arc de Triomphe experiences on GetYourGuide",
+              link: "https://www.getyourguide.com/arc-de-triomphe-l3238/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+            {
+              text: "Notre Dame Cathedral experiences on GetYourGuide",
+              link: "https://www.getyourguide.com/notre-dame-cathedral-l3230/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+          ],
+        },
+        {
+          id: 2,
+          provider: "Tiqets",
+          title: "All Paris attractions in one view",
+          description:
+            "Compare Paris attractions and experiences in one place with flexible options.",
+          link: "https://www.getyourguide.com/s/?q=Paris&customerSearch=1",
+          buttonText: "Explore more",
+          tag: "Explore more",
+          highlights: [
+            "Curated list of top Paris attractions",
+            "Flexible durations and group sizes",
+            "Instant online booking",
+          ],
+        },
+      ],
+    },
+    london: {
+      title: "London, United Kingdom",
+      subtitle: "Historic landmarks and modern icons along the River Thames",
+      activities: [
+        {
+          id: 3,
+          provider: "Viator",
+          title: "Best London tours and excursions",
+          description:
+            "See royal palaces, historic sites, and modern London with expert guides.",
+          link: viatorAffiliateLinks.london,
+          buttonText: "View on Viator",
+          tag: "Great value",
+          highlights: [
+            {
+              text: "Tower of London tickets and tours on Viator",
+              link: "https://www.viator.com/London-attractions/Tower-of-London/d737-a93?pid=P00234765&mcid=42383&medium=link",
+            },
+            {
+              text: "British Museum tours and experiences on Viator",
+              link: "https://www.viator.com/London-attractions/British-Museum/d737-a1388?pid=P00234765&mcid=42383&medium=link",
+            },
+            {
+              text: "London Eye tickets and experiences on Viator",
+              link: "https://www.viator.com/London-attractions/London-Eye/d737-a1400?pid=P00234765&mcid=42383&medium=link",
+            },
+            {
+              text: "Tower Bridge tours and experiences on Viator",
+              link: "https://www.viator.com/London-attractions/Tower-Bridge/d737-a1379?pid=P00234765&mcid=42383&medium=link",
+            },
+          ],
+        },
+        {
+          id: 1,
+          provider: "GetYourGuide",
+          title: "Top London tickets and fast-track experiences",
+          description:
+            "Book tickets and tours for London icons like the Tower of London, London Eye, and more.",
+          link: gygAffiliateLinks.london,
+          buttonText: "View on GetYourGuide",
+          tag: "Most popular",
+          featured: true,
+          highlights: [
+            {
+              text: "Tower of London tickets and tours on GetYourGuide",
+              link: "https://www.getyourguide.com/tower-of-london-l2708/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+            {
+              text: "British Museum tickets and tours on GetYourGuide",
+              link: "https://www.getyourguide.com/british-museum-l3190/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+            {
+              text: "The London Eye tickets and experiences on GetYourGuide",
+              link: "https://www.getyourguide.com/the-london-eye-l2711/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+            {
+              text: "Tower Bridge experiences on GetYourGuide",
+              link: "https://www.getyourguide.com/tower-bridge-l2713/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+          ],
+        },
+        {
+          id: 2,
+          provider: "Tiqets",
+          title: "All London attractions in one view",
+          description:
+            "Compare London attractions and experiences in one place with flexible options.",
+          link: "https://www.getyourguide.com/s/?q=London&customerSearch=1",
+          buttonText: "Explore more",
+          tag: "Explore more",
+          highlights: [
+            "Curated list of top London attractions",
+            "Flexible durations and group sizes",
+            "Instant online booking",
+          ],
+        },
+      ],
+    },
+
+    "new york city": {
+      title: "New York City, USA",
+      subtitle:
+        "The city that never sleeps, featuring iconic skylines and landmarks",
+      activities: [
+        {
+          id: 3,
+          provider: "Viator",
+          title: "Best New York City tours and excursions",
+          description:
+            "Experience the Big Apple with top-rated tours, from Broadway to the Statue of Liberty.",
+          link: viatorAffiliateLinks["new york city"],
+          buttonText: "View on Viator",
+          tag: "Great value",
+          highlights: [
+            {
+              text: "Washington, D.C. day trips and tours on Viator",
+              link: "https://www.viator.com/Washington-DC/d657-ttd?pid=P00234765&mcid=42383&medium=link",
+            },
+            {
+              text: "Statue of Liberty tours and tickets on Viator",
+              link: "https://www.viator.com/New-York-City-attractions/Statue-of-Liberty/d687-a16?pid=P00234765&mcid=42383&medium=link",
+            },
+            {
+              text: "Brooklyn Bridge tours and experiences on Viator",
+              link: "https://www.viator.com/New-York-City-attractions/Brooklyn-Bridge/d687-a1282?pid=P00234765&mcid=42383&medium=link",
+            },
+            {
+              text: "Empire State Building tickets and tours on Viator",
+              link: "https://www.viator.com/New-York-City-attractions/Empire-State-Building/d687-a19?pid=P00234765&mcid=42383&medium=link",
+            },
+          ],
+        },
+        {
+          id: 1,
+          provider: "GetYourGuide",
+          title: "Top New York City tickets and fast-track experiences",
+          description:
+            "Book tickets and tours for NYC icons like the Empire State Building, Statue of Liberty, and more.",
+          link: gygAffiliateLinks["new york city"],
+          buttonText: "View on GetYourGuide",
+          tag: "Most popular",
+          featured: true,
+          highlights: [
+            {
+              text: "Washington tours from New York on GetYourGuide",
+              link: "https://www.getyourguide.com/washington-va-l209140/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+            {
+              text: "Brooklyn tours and experiences on GetYourGuide",
+              link: "https://www.getyourguide.com/brooklyn-l2034/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+            {
+              text: "Empire State Building tickets on GetYourGuide",
+              link: "https://www.getyourguide.com/empire-state-building-l2608/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+            {
+              text: "Statue of Liberty tickets and tours on GetYourGuide",
+              link: "https://www.getyourguide.com/statue-of-liberty-l2612/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+            "Free cancellation on many activities",
+          ],
+        },
+        {
+          id: 2,
+          provider: "Tiqets",
+          title: "All New York City attractions in one view",
+          description:
+            "Compare NYC attractions and experiences in one place with flexible options.",
+          link: "https://www.getyourguide.com/s/?q=New%20York%20City&customerSearch=1",
+          buttonText: "Explore more",
+          tag: "Explore more",
+          highlights: [
+            "Curated list of top NYC attractions",
+            "Flexible durations and group sizes",
+            "Instant online booking",
+          ],
+        },
+      ],
+    },
+    dubai: {
+      title: "Dubai, UAE",
+      subtitle:
+        "The city of superlatives, from the world's tallest building to man-made islands",
+      activities: [
+        {
+          id: 3,
+          provider: "Viator",
+          title: "Best Dubai tours and excursions",
+          description:
+            "Experience the desert, modern architecture, and luxury of Dubai with top-rated tours.",
+          link: viatorAffiliateLinks.dubai,
+          buttonText: "View on Viator",
+          tag: "Great value",
+          highlights: [
+            {
+              text: "Burj Khalifa tours and tickets on Viator",
+              link: "https://www.viator.com/Dubai-attractions/Burj-Khalifa/d828-a1622?pid=P00234765&mcid=42383&medium=link",
+            },
+            {
+              text: "Dubai Mall experiences and tickets on Viator",
+              link: "https://www.viator.com/Dubai-attractions/Dubai-Mall/d828-a11308?pid=P00234765&mcid=42383&medium=link",
+            },
+          ],
+        },
+        {
+          id: 1,
+          provider: "GetYourGuide",
+          title: "Top Dubai tickets and fast-track experiences",
+          description:
+            "Book tickets for Dubai icons like the Burj Khalifa, Dubai Mall, and more.",
+          link: gygAffiliateLinks.dubai,
+          buttonText: "View on GetYourGuide",
+          tag: "Most popular",
+          featured: true,
+          highlights: [
+            {
+              text: "Burj Khalifa tickets and tours on GetYourGuide",
+              link: "https://www.getyourguide.com/burj-khalifa-l2703/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+            {
+              text: "Dubai Mall tickets and experiences on GetYourGuide",
+              link: "https://www.getyourguide.com/dubai-mall-l4308/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+            {
+              text: "Dubai Fountain tickets and experiences on GetYourGuide",
+              link: "https://www.getyourguide.com/dubai-fountain-l3305/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+            {
+              text: "Dubai Frame tickets and tours on GetYourGuide",
+              link: "https://www.getyourguide.com/dubai-frame-l87469/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+          ],
+        },
+        {
+          id: 2,
+          provider: "Tiqets",
+          title: "All Dubai attractions in one view",
+          description:
+            "Compare Dubai attractions and experiences in one place with flexible options.",
+          link: "https://www.getyourguide.com/s/?q=Dubai&customerSearch=1",
+          buttonText: "Explore more",
+          tag: "Explore more",
+          highlights: [
+            "Curated list of top Dubai attractions",
+            "Flexible durations and group sizes",
+            "Instant online booking",
+          ],
+        },
+      ],
+    },
+    barcelona: {
+      title: "Barcelona, Spain",
+      subtitle: "Modernist architecture, seaside views, and vibrant city life",
+      activities: [
+        {
+          id: 3,
+          provider: "Viator",
+          title: "Best Barcelona tours and excursions",
+          description:
+            "Discover Gaudí’s masterpieces, historic neighborhoods, and Mediterranean views with expert guides.",
+          link: viatorAffiliateLinks.barcelona,
+          buttonText: "View on Viator",
+          tag: "Great value",
+          highlights: [
+            {
+              text: "Park Güell tours and tickets on Viator",
+              link: "https://www.viator.com/Barcelona-attractions/Park-Guell/d562-a831?pid=P00234765&mcid=42383&medium=link",
+            },
+            {
+              text: "Casa Batlló tours and tickets on Viator",
+              link: "https://www.viator.com/Barcelona-attractions/Casa-Batllo/d562-a9858?pid=P00234765&mcid=42383&medium=link",
+            },
+            {
+              text: "La Pedrera (Casa Milà) tours and tickets on Viator",
+              link: "https://www.viator.com/Barcelona-attractions/La-Pedrera-Casa-Mila/d562-a833?pid=P00234765&mcid=42383&medium=link",
+            },
+          ],
+        },
+        {
+          id: 1,
+          provider: "GetYourGuide",
+          title: "Top Barcelona tickets and fast-track experiences",
+          description:
+            "Book tickets and tours for Barcelona icons like Park Güell and Casa Batlló.",
+          link: gygAffiliateLinks.barcelona,
+          buttonText: "View on GetYourGuide",
+          tag: "Most popular",
+          featured: true,
+          highlights: [
+            {
+              text: "Park Güell tickets and tours on GetYourGuide",
+              link: "https://www.getyourguide.com/park-guell-l3032/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+            {
+              text: "Casa Batlló tickets and tours on GetYourGuide",
+              link: "https://www.getyourguide.com/casa-batllo-l3027/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+            {
+              text: "La Pedrera tickets and tours on GetYourGuide",
+              link: "https://www.getyourguide.com/las-palmas-l423/?partner_id=235SCEF&utm_medium=online_publisher",
+            },
+          ],
+        },
+        {
+          id: 2,
+          provider: "Tiqets",
+          title: "All Barcelona attractions in one view",
+          description:
+            "Compare Barcelona attractions and experiences in one place with flexible options.",
+          link: "https://www.getyourguide.com/s/?q=Barcelona&customerSearch=1",
+          buttonText: "Explore more",
+          tag: "Explore more",
+          highlights: [
+            "Curated list of top Barcelona attractions",
             "Flexible durations and group sizes",
             "Instant online booking",
           ],
@@ -274,12 +668,29 @@ const CityActivities = () => {
 
                 {activity.highlights && (
                   <ul className="activity-features">
-                    {activity.highlights.map((item, index) => (
-                      <li key={index}>
-                        <span className="feature-bullet" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
+                    {activity.highlights.map((item, index) => {
+                      const isObject =
+                        typeof item === "object" && item !== null;
+                      const text = isObject ? item.text : item;
+                      const link = isObject ? item.link : undefined;
+
+                      return (
+                        <li key={index}>
+                          <span className="feature-bullet" />
+                          {link ? (
+                            <a
+                              href={link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {text}
+                            </a>
+                          ) : (
+                            <span>{text}</span>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
 
