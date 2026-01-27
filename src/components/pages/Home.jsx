@@ -1,28 +1,21 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Herosection from "../home/Herosection";
 import WeddingCategories from "../home/WeddingCategories";
-import StatisticsSection from "../home/StatisticsSection";
 import VenueSlider from "../home/VenueSlider";
-import FeaturedVendorsSection from "../home/FeaturedVendorsSection";
 import HowItWorksSection from "../home/HowItWorksSection";
-import TestimonialsSection from "../home/TestimonialsSection";
 import RealWeddings from "../home/RealWeddings";
 import PlanningToolsCTA from "../home/PlanningToolsCTA";
 import BlogInspirationTeasers from "../home/BlogInspirationTeasers";
-import NewsletterSection from "../home/NewsletterSection";
 import AppDownloadSection from "../home/AppDownloadSection";
 import MansoryImageSection from "../home/MansoryImageSection";
 import CtaPanel from "../home/CtaPanel";
 import logo from "../../../public/happywed_white.png";
-// import image from "../../../public/images/home/try.png";
 import image from "../../../public/images/home/1.jpg";
 import einviteImage from "../../../public/images/home/einvite.png";
 import MainTestimonial from "../home/MainTestimonial";
 import MetroCities from "../home/MetroCities";
-import HomeGennie from "../common/HomeGennie";
 import bigleafcta1 from "../../../public/images/home/bigleafcta1.jpg";
 import bigleafcta5 from "../../../public/images/home/bigleafcta5.jpg";
-import bigleaf from "../../../public/images/home/bigleaf.png";
 import cmsApi from "../../services/api/cmsApi";
 const Home = () => {
   const [designBanner, setDesignBanner] = useState(null);
@@ -43,19 +36,19 @@ const Home = () => {
       try {
         const ds = await cmsApi.designStudioBanner.getBanner();
         setDesignBanner(ds?.data || null);
-      } catch { }
+      } catch {}
       try {
         const ei = await cmsApi.einviteBanner.getBanner();
         setEinviteBanner(ei?.data || null);
-      } catch { }
+      } catch {}
       try {
         const rw = await cmsApi.realWeddingPhoto.getData();
         setRealWeddingData(rw || null);
-      } catch { }
+      } catch {}
       try {
         const cs = await cmsApi.whatCouplesSays.getData();
         setCouplesSaysData(cs?.data || null);
-      } catch { }
+      } catch {}
     };
     run();
   }, []);
@@ -101,7 +94,7 @@ const Home = () => {
         }
         link={`/${(einviteBanner?.btnRedirect || "einvites").replace(
           /^\/+/,
-          ""
+          "",
         )}`}
         btnName={einviteBanner?.btnName || "Create Your E-Invite"}
         background={normalizeUrl(einviteBanner?.bgImage) || bigleafcta5}
@@ -137,9 +130,9 @@ const Home = () => {
         sections={
           Array.isArray(couplesSaysData?.sections)
             ? couplesSaysData.sections.map((s) => ({
-              ...s,
-              img: normalizeUrl(s.img),
-            }))
+                ...s,
+                img: normalizeUrl(s.img),
+              }))
             : []
         }
       />

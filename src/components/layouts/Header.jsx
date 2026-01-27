@@ -48,7 +48,7 @@ const Header = () => {
     const fetchCategories = async (type, setter) => {
       try {
         const res = await fetch(
-          `https://happywedz.com/api/blog-categories/all?type=${type}&status=active`
+          `https://happywedz.com/api/blog-categories/all?type=${type}&status=active`,
         );
         const json = await res.json();
         const arr = Array.isArray(json.data) ? json.data : [];
@@ -88,7 +88,7 @@ const Header = () => {
 
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { vendor, token: vendorToken } = useSelector(
-    (state) => state.vendorAuth
+    (state) => state.vendorAuth,
   );
 
   const isUserLoggedIn = !!user && !!isAuthenticated;
@@ -184,11 +184,11 @@ const Header = () => {
     const fetchSubcategories = async () => {
       try {
         const response = await fetch(
-          "https://happywedz.com/api/vendor-types/with-subcategories/all"
+          "https://happywedz.com/api/vendor-types/with-subcategories/all",
         );
         const data = await response.json();
         const venues = data.find(
-          (vendor) => vendor.name && vendor.name.toLowerCase() === "venues"
+          (vendor) => vendor.name && vendor.name.toLowerCase() === "venues",
         );
         if (venues && Array.isArray(venues.subcategories)) {
           setVenueSubcategories(venues.subcategories);
@@ -221,7 +221,7 @@ const Header = () => {
     const fetchVendorCategories = async () => {
       try {
         const response = await fetch(
-          "https://happywedz.com/api/vendor-types/with-subcategories/all"
+          "https://happywedz.com/api/vendor-types/with-subcategories/all",
         );
         const data = await response.json();
         setVendorCategories(Array.isArray(data) ? data : []);
@@ -548,7 +548,7 @@ const Header = () => {
                                       to={`/vendors/${toSlug(sub.name)}${
                                         reduxLocation
                                           ? `?city=${encodeURIComponent(
-                                              reduxLocation
+                                              reduxLocation,
                                             )}`
                                           : ""
                                       }`}
@@ -1018,7 +1018,7 @@ const Header = () => {
                                           key={tab.id}
                                           onClick={() =>
                                             navigate(
-                                              `/user-dashboard/${tab.slug}`
+                                              `/user-dashboard/${tab.slug}`,
                                             )
                                           }
                                           className="d-flex align-items-center fs-16"
@@ -1221,7 +1221,7 @@ const Header = () => {
                                     {(venueSubcategories.length > 0
                                       ? [
                                           ...venueSubcategories.map(
-                                            (s) => s.name
+                                            (s) => s.name,
                                           ),
                                           "View All Venues",
                                         ]
@@ -1285,7 +1285,7 @@ const Header = () => {
                                       const path = isMore
                                         ? "/venues"
                                         : `/venues?city=${encodeURIComponent(
-                                            city
+                                            city,
                                           )}`;
                                       return (
                                         <div className="col-12 mb-2" key={i}>
@@ -1367,11 +1367,11 @@ const Header = () => {
                                                   >
                                                     <Link
                                                       to={`/vendors/${toSlug(
-                                                        sub.name
+                                                        sub.name,
                                                       )}${
                                                         reduxLocation
                                                           ? `?city=${encodeURIComponent(
-                                                              reduxLocation
+                                                              reduxLocation,
                                                             )}`
                                                           : ""
                                                       }`}
@@ -1380,7 +1380,7 @@ const Header = () => {
                                                       {formatName(sub.name)}
                                                     </Link>
                                                   </li>
-                                                )
+                                                ),
                                               )}
                                             </ul>
                                           )}
@@ -1417,44 +1417,76 @@ const Header = () => {
                               onClick={() => setOpenMenu(null)}
                             >
                               <div className="container">
-                                <div
-                                  style={{
-                                    columnCount: 4,
-                                    columnGap: "1rem",
-                                  }}
-                                  className="grid-layout"
-                                >
-                                  {photography.length > 0 &&
-                                    photography.map((cat, i) => (
-                                      <div
-                                        className="mb-4 d-inline-block w-100"
-                                        key={cat.id || i}
-                                      >
-                                        <div className="fw-bold primary-text text-uppercase mb-2 fs-16">
-                                          {cat.name}
+                                <div className="row">
+                                  <div className="col-md-9">
+                                    <div
+                                      style={{
+                                        columnCount: 3,
+                                        columnGap: "1rem",
+                                      }}
+                                      className="grid-layout"
+                                    >
+                                      {photography.length > 0 &&
+                                        photography.map((cat, i) => (
+                                          <div
+                                            className="mb-4 d-inline-block w-100"
+                                            key={cat.id || i}
+                                          >
+                                            <div className="fw-bold primary-text text-uppercase mb-2 fs-16">
+                                              {cat.name}
+                                            </div>
+                                            {Array.isArray(cat.categories) &&
+                                              cat.categories.length > 0 && (
+                                                <ul className="list-unstyled">
+                                                  {cat.categories.map(
+                                                    (sub, j) => (
+                                                      <li
+                                                        key={sub.id || j}
+                                                        className="mb-1"
+                                                      >
+                                                        <Link
+                                                          to={`/photography/${toSlug(
+                                                            sub.name,
+                                                          )}`}
+                                                          className="dropdown-link fs-14 d-block"
+                                                        >
+                                                          {formatName(sub.name)}
+                                                        </Link>
+                                                      </li>
+                                                    ),
+                                                  )}
+                                                </ul>
+                                              )}
+                                          </div>
+                                        ))}
+                                    </div>
+                                  </div>
+                                  <div className="col-md-3">
+                                    <Link
+                                      to="/movment-plus/home"
+                                      className="text-decoration-none"
+                                    >
+                                      <div className="h-100 d-flex flex-column justify-content-center align-items-center text-center p-1 rounded">
+                                        <img
+                                          src="https://img.freepik.com/free-photo/bride-groom-having-their-wedding-beach_23-2149043965.jpg?semt=ais_hybrid&w=740&q=80"
+                                          alt="Movments Plus"
+                                          className="mb-3 rounded"
+                                          style={{
+                                            width: "100%",
+                                            height: "auto",
+                                            objectFit: "cover",
+                                          }}
+                                        />
+                                        <div className="fw-bold primary-text text-uppercase fs-16">
+                                          Movments Plus
                                         </div>
-                                        {Array.isArray(cat.categories) &&
-                                          cat.categories.length > 0 && (
-                                            <ul className="list-unstyled">
-                                              {cat.categories.map((sub, j) => (
-                                                <li
-                                                  key={sub.id || j}
-                                                  className="mb-1"
-                                                >
-                                                  <Link
-                                                    to={`/photography/${toSlug(
-                                                      sub.name
-                                                    )}`}
-                                                    className="dropdown-link fs-14 d-block"
-                                                  >
-                                                    {formatName(sub.name)}
-                                                  </Link>
-                                                </li>
-                                              ))}
-                                            </ul>
-                                          )}
+                                        <div className="small mt-2 fs-14 text-black">
+                                          All-new gallery experience for
+                                          photographers with Movments+.
+                                        </div>
                                       </div>
-                                    ))}
+                                    </Link>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -1795,7 +1827,7 @@ const Header = () => {
                                             onClick={() => {
                                               setSelectCity(city);
                                               setSelectedCulture(
-                                                "All Cultures"
+                                                "All Cultures",
                                               );
                                               setSelectedTheme("All Themes");
                                             }}
@@ -1826,7 +1858,7 @@ const Header = () => {
                                             }}
                                             onClick={() => {
                                               setSelectedCulture(
-                                                culture?.name || culture
+                                                culture?.name || culture,
                                               );
                                               setSelectCity("All Cities");
                                               setSelectedTheme("All Themes");
@@ -1860,7 +1892,7 @@ const Header = () => {
                                               setSelectedTheme(theme);
                                               setSelectCity("All Cities");
                                               setSelectedCulture(
-                                                "All Cultures"
+                                                "All Cultures",
                                               );
                                             }}
                                           >

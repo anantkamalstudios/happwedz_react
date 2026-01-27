@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import MainLayout from "./components/layouts/MainLayout";
+import MovmentPlusLayout from "./components/layouts/MovmentPlusLayout";
 import MatrimonialLayout from "./components/layouts/MatrimonialLayout";
 import Loader from "./components/ui/Loader";
 import "./App.css";
@@ -10,14 +11,12 @@ import BlogDetails from "./components/pages/BlogDetails";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "./redux/authSlice";
 import { setVendorCredentials } from "./redux/vendorAuthSlice";
-// Import axios instance to initialize interceptors
 import "./services/api/axiosInstance";
 import ToastProvider from "./components/layouts/toasts/Toast";
 import LoaderProvider from "./components/context/LoaderContext";
 import VendorPrivateRoute from "./components/routes/VendorPrivateRoute";
 import UserPrivateRoute from "./components/routes/UserPrivateRoute";
 import VendorLeadsPage from "./components/pages/adminVendor/VendorLeadsPage";
-import RecommandedPage from "./components/home/RecommandedPage";
 import ReviewsPage from "./components/pages/WriteReviewPage";
 import AboutUs from "./components/layouts/AboutUs";
 import DestinationWedding from "./components/pages/DestinationWedding";
@@ -28,20 +27,23 @@ import DestinationWeddingDetailPage from "./components/pages/DestinationWeddingD
 import BusinessClaimForm from "./components/pages/BusinessClaimForm";
 import { ToastContainer } from "react-toastify";
 import PublicWeddingView from "./components/pages/WeddingPublicView";
-// import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import ScrollToTop from "./components/ScrollToTop";
 import CookieConsent from "./components/ui/CookieConsent";
+import MovementPlusHome from "./components/pages/movments-plus/MovementPlusHome";
+import MovmentPlusGuestToken from "./components/pages/movments-plus/MovmentPlusGuestToken";
+import MovmentPlusUploadSelfie from "./components/pages/movments-plus/MovmentPlusUploadSelfie";
+import MovmentPlusGalleryPage from "./components/pages/movments-plus/MovmentPlusGalleryPage";
 
 const Home = lazy(() => import("./components/pages/Home"));
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
-const CustomerRegister = lazy(() =>
-  import("./components/auth/CustomerRegister")
+const CustomerRegister = lazy(
+  () => import("./components/auth/CustomerRegister"),
 );
 const VendorLogin = lazy(() => import("./components/auth/VendorLogin"));
 const VendorRegister = lazy(() => import("./components/auth/VendorRegister"));
 const ForgotPassword = lazy(() => import("./components/auth/ForgotPassword"));
-const VendorForgotPassword = lazy(() =>
-  import("./components/auth/VendorForgotPassword")
+const VendorForgotPassword = lazy(
+  () => import("./components/auth/VendorForgotPassword"),
 );
 const Vendor360View = lazy(() => import("./components/pages/Vendor360View"));
 const MainSection = lazy(() => import("./components/pages/MainSection"));
@@ -49,109 +51,109 @@ const SubSection = lazy(() => import("./components/pages/SubSection"));
 const Detailed = lazy(() => import("./components/layouts/Detailed"));
 const Main = lazy(() => import("./components/pages/adminVendor/Main"));
 const Search = lazy(() => import("./components/pages/matrimonial/Search"));
-const MatrimonialMain = lazy(() =>
-  import("./components/pages/matrimonial/MatrimonialMain")
+const MatrimonialMain = lazy(
+  () => import("./components/pages/matrimonial/MatrimonialMain"),
 );
-const ProfileMatrimonial = lazy(() =>
-  import("./components/pages/matrimonial/ProfileMatrimonial")
+const ProfileMatrimonial = lazy(
+  () => import("./components/pages/matrimonial/ProfileMatrimonial"),
 );
 const PrivacyPolicy = lazy(() => import("./components/pages/PrivacyPolicy"));
 
-const MatrimonialRegister = lazy(() =>
-  import("./components/pages/matrimonial/MatrimonialRegistration")
+const MatrimonialRegister = lazy(
+  () => import("./components/pages/matrimonial/MatrimonialRegistration"),
 );
-const UserDashboardMain = lazy(() =>
-  import("./components/pages/userDashboard/UserDashboardMain")
+const UserDashboardMain = lazy(
+  () => import("./components/pages/userDashboard/UserDashboardMain"),
 );
-const MatrimonialDashboard = lazy(() =>
-  import("./components/pages/matrimonial/dashboard/MatrimonialDashboard")
+const MatrimonialDashboard = lazy(
+  () => import("./components/pages/matrimonial/dashboard/MatrimonialDashboard"),
 );
-const EditProfile = lazy(() =>
-  import("./components/pages/matrimonial/dashboard/EditProfile")
+const EditProfile = lazy(
+  () => import("./components/pages/matrimonial/dashboard/EditProfile"),
 );
 
 const TermsCondition = lazy(() => import("./components/pages/TermsCondition"));
 const Blog = lazy(() => import("./components/pages/Blog"));
-const CancellationPolicy = lazy(() =>
-  import("./components/pages/CancellationPolicy")
+const CancellationPolicy = lazy(
+  () => import("./components/pages/CancellationPolicy"),
 );
 const CardEditorPage = lazy(() => import("./components/CardEditorPage"));
 
-const PhotographyDetails = lazy(() =>
-  import("./components/pages/PhotographyDetails")
+const PhotographyDetails = lazy(
+  () => import("./components/pages/PhotographyDetails"),
 );
 const VideoEditorPage = lazy(() => import("./components/VideoEditorPage"));
-const VideoTemplates = lazy(() =>
-  import("./components/layouts/eInvite/VideoTemplates")
+const VideoTemplates = lazy(
+  () => import("./components/layouts/eInvite/VideoTemplates"),
 );
-const VideoEditorDemo = lazy(() =>
-  import("./components/layouts/eInvite/VideoEditorDemo")
+const VideoEditorDemo = lazy(
+  () => import("./components/layouts/eInvite/VideoEditorDemo"),
 );
-const ProfileImageSelector = lazy(() =>
-  import("./components/pages/ProfileImageSelector")
+const ProfileImageSelector = lazy(
+  () => import("./components/pages/ProfileImageSelector"),
 );
 
 // E-Invite Pages
-const EinviteHomePage = lazy(() =>
-  import("./components/pages/EinviteHomePage")
+const EinviteHomePage = lazy(
+  () => import("./components/pages/EinviteHomePage"),
 );
-const EinviteCategoryPage = lazy(() =>
-  import("./components/pages/EinviteCategoryPage")
+const EinviteCategoryPage = lazy(
+  () => import("./components/pages/EinviteCategoryPage"),
 );
-const EinviteEditorPage = lazy(() =>
-  import("./components/pages/EinviteEditorPage")
+const EinviteEditorPage = lazy(
+  () => import("./components/pages/EinviteEditorPage"),
 );
-const EinviteSharePage = lazy(() =>
-  import("./components/pages/EinviteSharePage")
+const EinviteSharePage = lazy(
+  () => import("./components/pages/EinviteSharePage"),
 );
-const EinviteMyCards = lazy(() =>
-  import("./components/layouts/einvites/EinviteMyCards")
+const EinviteMyCards = lazy(
+  () => import("./components/layouts/einvites/EinviteMyCards"),
 );
-const EinviteViewPage = lazy(() =>
-  import("./components/pages/EinviteViewPage")
+const EinviteViewPage = lazy(
+  () => import("./components/pages/EinviteViewPage"),
 );
 const OurCards = lazy(() => import("./components/pages/OurCards"));
-const TryLanding = lazy(() =>
-  import("./components/pages/designStudio/TryLanding")
+const TryLanding = lazy(
+  () => import("./components/pages/designStudio/TryLanding"),
 );
 const ChooseTemplate = lazy(() => import("./components/pages/ChooseTemplate"));
-const TemplatePreviewPage = lazy(() =>
-  import("./components/pages/TemplatePreviewPage")
+const TemplatePreviewPage = lazy(
+  () => import("./components/pages/TemplatePreviewPage"),
 );
-const TemplateCustomizePage = lazy(() =>
-  import("./components/pages/TemplateCustomizePage")
-);
-
-const WeddingWebsiteForm = lazy(() =>
-  import("./components/pages/WeddingWebsiteForm")
+const TemplateCustomizePage = lazy(
+  () => import("./components/pages/TemplateCustomizePage"),
 );
 
-const WeddingWebsiteView = lazy(() =>
-  import("./components/pages/WeddingWebsiteView")
+const WeddingWebsiteForm = lazy(
+  () => import("./components/pages/WeddingWebsiteForm"),
 );
 
-const MyWeddingWebsites = lazy(() =>
-  import("./components/pages/MyWeddingWebsites")
+const WeddingWebsiteView = lazy(
+  () => import("./components/pages/WeddingWebsiteView"),
 );
 
-const BrideMakeupChoose = lazy(() =>
-  import("./components/pages/designStudio/BrideMakeupChoose")
-);
-const GroomeMakeupChoose = lazy(() =>
-  import("./components/pages/designStudio/GroomeMakeupChoose")
-);
-const TryMakeupLanding = lazy(() =>
-  import("./components/pages/designStudio/TryMakeupLanding")
-);
-const UploadSelfiePage = lazy(() =>
-  import("./components/pages/designStudio/UploadSelfiePage")
-);
-const FiltersPage = lazy(() =>
-  import("./components/pages/designStudio/FiltersPage")
+const MyWeddingWebsites = lazy(
+  () => import("./components/pages/MyWeddingWebsites"),
 );
 
-const OutfitFilterPage = lazy(() =>
-  import("./components/pages/designStudio/OutfitFilterPage")
+const BrideMakeupChoose = lazy(
+  () => import("./components/pages/designStudio/BrideMakeupChoose"),
+);
+const GroomeMakeupChoose = lazy(
+  () => import("./components/pages/designStudio/GroomeMakeupChoose"),
+);
+const TryMakeupLanding = lazy(
+  () => import("./components/pages/designStudio/TryMakeupLanding"),
+);
+const UploadSelfiePage = lazy(
+  () => import("./components/pages/designStudio/UploadSelfiePage"),
+);
+const FiltersPage = lazy(
+  () => import("./components/pages/designStudio/FiltersPage"),
+);
+
+const OutfitFilterPage = lazy(
+  () => import("./components/pages/designStudio/OutfitFilterPage"),
 );
 
 const ContactUs = lazy(() => import("./components/pages/Contactus"));
@@ -169,18 +171,18 @@ const FinalLookPage = lazy(() => import("./components/pages/FinalLookPage"));
 //   import("./components/pages/WeddingWebsiteView")
 // );
 
-const VendorPremium = lazy(() =>
-  import("./components/pages/adminVendor/VendorPremium")
+const VendorPremium = lazy(
+  () => import("./components/pages/adminVendor/VendorPremium"),
 );
 
 const RecommandPage = lazy(() => import("./components/home/RecommandedPage"));
-const WriteReviewPage = lazy(() =>
-  import("./components/pages/WriteReviewPage")
+const WriteReviewPage = lazy(
+  () => import("./components/pages/WriteReviewPage"),
 );
 
 const Travels = lazy(() => import("./components/pages/Travels/Travel"));
-const CityActivities = lazy(() =>
-  import("./components/pages/Travels/CityDetails/CityActivities")
+const CityActivities = lazy(
+  () => import("./components/pages/Travels/CityDetails/CityActivities"),
 );
 
 function App() {
@@ -220,7 +222,10 @@ function App() {
     const vendorToken = localStorage.getItem("vendorToken");
     if (vendor && vendorToken) {
       dispatch(
-        setVendorCredentials({ vendor: JSON.parse(vendor), token: vendorToken })
+        setVendorCredentials({
+          vendor: JSON.parse(vendor),
+          token: vendorToken,
+        }),
       );
     }
   }, [dispatch]);
@@ -503,6 +508,22 @@ function App() {
                 element={<MatrimonialDashboard />}
               />
               <Route path="/edit-profile" element={<EditProfile />} />
+            </Route>
+
+            <Route element={<MovmentPlusLayout />}>
+              <Route path="/movment-plus/home" element={<MovementPlusHome />} />
+              <Route
+                path="/movment-plus/guest-token"
+                element={<MovmentPlusGuestToken />}
+              />
+              <Route
+                path="/movment-plus/upload-selfie"
+                element={<MovmentPlusUploadSelfie />}
+              />
+              <Route
+                path="/movment-plus/gallery/:token"
+                element={<MovmentPlusGalleryPage />}
+              />
             </Route>
           </Routes>
         </ToastProvider>
