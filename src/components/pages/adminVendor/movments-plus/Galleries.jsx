@@ -10,26 +10,51 @@ import {
   FiX,
   FiChevronLeft,
   FiChevronRight,
+  FiFolder,
+  FiArrowLeft,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import "./gallery.css";
 
 const Galleries = () => {
+  const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedCollection, setSelectedCollection] = useState(null);
   const [mediaItems, setMediaItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedCollection, setSelectedCollection] = useState("All");
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
-    fetchMedia();
+    fetchEvents();
   }, []);
 
-  const fetchMedia = async () => {
+  useEffect(() => {
+    if (selectedEvent) {
+      fetchMedia(selectedEvent.id);
+      setSelectedCollection(null); // Reset collection when event changes
+    } else {
+      setMediaItems([]);
+    }
+  }, [selectedEvent]);
+
+  const fetchEvents = async () => {
+    try {
+      const response = await axiosInstance.get("/events");
+      if (response.data.success) {
+        setEvents(response.data.events);
+      }
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      toast.error("Failed to load events");
+    }
+  };
+
+  const fetchMedia = async (eventId) => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get("/media/");
+      const response = await axiosInstance.get(`/media?event_id=${eventId}`);
       if (response.data.success) {
         setMediaItems(response.data.media);
       }
@@ -76,33 +101,42 @@ const Galleries = () => {
     document.body.style.overflow = "auto";
   };
 
+  // Group media by collection
+  const groupedMedia = mediaItems.reduce((acc, item) => {
+    const col = item.collection || "Uncategorized";
+    if (!acc[col]) acc[col] = [];
+    acc[col].push(item);
+    return acc;
+  }, {});
+
+  // Get current view media
+  const currentViewMedia = selectedCollection
+    ? groupedMedia[selectedCollection] || []
+    : [];
+
+  // Filter media in the current view (collection view)
+  const filteredMedia = currentViewMedia.filter((item) =>
+    item.token.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
+  // Filter collections in the folders view
+  const filteredCollections = Object.keys(groupedMedia).filter((col) =>
+    col.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
   const goToNext = () => {
     setCurrentImageIndex((prev) => (prev + 1) % filteredMedia.length);
   };
 
   const goToPrevious = () => {
     setCurrentImageIndex(
-      (prev) => (prev - 1 + filteredMedia.length) % filteredMedia.length
+      (prev) => (prev - 1 + filteredMedia.length) % filteredMedia.length,
     );
   };
 
   const formatFileSize = (mb) => {
     return `${parseFloat(mb).toFixed(2)} MB`;
   };
-
-  const collections = [
-    "All",
-    ...new Set(mediaItems.map((item) => item.collection)),
-  ];
-
-  const filteredMedia = mediaItems.filter((item) => {
-    const matchesCollection =
-      selectedCollection === "All" || item.collection === selectedCollection;
-    const matchesSearch =
-      item.collection.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.token.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCollection && matchesSearch;
-  });
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -116,117 +150,192 @@ const Galleries = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lightboxOpen]);
 
-  if (loading) {
-    return (
-      <div className="gallery-container">
-        <div className="gallery-loader">
-          <div className="spinner"></div>
-        </div>
-      </div>
-    );
-  }
-
   const currentMedia = filteredMedia[currentImageIndex];
 
   return (
     <div className="gallery-container">
       <div className="gallery-header">
-        <div>
-          <h3 className="gallery-title">Galleries</h3>
-          <p className="gallery-subtitle">Manage your event collections</p>
+        <div className="">
+          <h3 className="gallery-title inter">Galleries</h3>
+          <p className="gallery-subtitle inter">
+            Manage your event collections
+          </p>
         </div>
-        <div className="gallery-search">
+
+        {/* Event Selector */}
+        <div className="d-flex align-items-center gap-3 inter">
+          <select
+            className="form-select inter"
+            style={{ width: "250px" }}
+            value={selectedEvent?.id || ""}
+            onChange={(e) => {
+              const evt = events.find(
+                (ev) => ev.id.toString() === e.target.value,
+              );
+              setSelectedEvent(evt || null);
+            }}
+          >
+            <option value="" className="inter">
+              Select Event
+            </option>
+            {events.map((evt) => (
+              <option key={evt.id} value={evt.id} className="inter">
+                {evt.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Breadcrumb / Navigation */}
+      {selectedEvent && (
+        <div className="d-flex align-items-center gap-2 py-3 border-bottom mb-3 inter">
+          <span
+            className={`cursor-pointer inter ${!selectedCollection ? "fw-bold primary-text" : "text-muted"}`}
+            onClick={() => setSelectedCollection(null)}
+            style={{ cursor: "pointer" }}
+          >
+            Collections
+          </span>
+          {selectedCollection && (
+            <>
+              <span className="text-muted">/</span>
+              <span className="fw-bold primary-text">{selectedCollection}</span>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Search Bar */}
+      {selectedEvent && (
+        <div className="gallery-search mb-4">
           <FiSearch className="search-icon" />
           <input
             type="text"
-            placeholder="Search collections..."
+            placeholder={
+              selectedCollection ? "Search media..." : "Search collections..."
+            }
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-      </div>
+      )}
 
-      <div className="gallery-filters py-3">
-        {collections.map((collection) => (
-          <button
-            key={collection}
-            className={`filter-btn ${
-              selectedCollection === collection ? "active" : ""
-            }`}
-            onClick={() => setSelectedCollection(collection)}
-          >
-            {collection}
-          </button>
-        ))}
-      </div>
-
-      {filteredMedia.length > 0 ? (
-        <div className="gallery-grid">
-          {filteredMedia.map((item, index) => (
-            <div key={item.id} className="gallery-card">
+      {/* Content Area */}
+      {loading ? (
+        <div className="gallery-loader">
+          <div className="spinner"></div>
+        </div>
+      ) : !selectedEvent ? (
+        <div className="empty-state">
+          <FiFolder size={64} />
+          <h3>Select an Event</h3>
+          <p>Please select an event to view its galleries</p>
+        </div>
+      ) : !selectedCollection ? (
+        /* Collections View (Folders) */
+        <div className="main-gallery-grid">
+          {filteredCollections.length > 0 ? (
+            filteredCollections.map((colName) => (
               <div
-                className="card-image"
-                onClick={() =>
-                  item.s3_key.match(/\.(jpg|jpeg|png|gif|webp)$/i) &&
-                  openLightbox(index)
-                }
-                style={{
-                  cursor: item.s3_key.match(/\.(jpg|jpeg|png|gif|webp)$/i)
-                    ? "pointer"
-                    : "default",
+                key={colName}
+                className="gallery-card folder-card"
+                onClick={() => {
+                  setSelectedCollection(colName);
+                  setSearchTerm("");
                 }}
               >
-                {item.s3_key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                  <img
-                    src={getS3Url(item.s3_key)}
-                    alt={item.collection}
-                    onError={(e) => {
-                      e.target.src =
-                        "https://via.placeholder.com/400x300?text=Image+Error";
-                    }}
-                  />
-                ) : (
-                  <div className="video-placeholder">
-                    <FiVideo size={40} />
-                    <span>Video File</span>
-                  </div>
-                )}
-                <div className="card-badges">
-                  <div className="card-badge">
-                    {item.visibility === "public" ? (
-                      <FiEye size={12} />
-                    ) : (
-                      <FiEyeOff size={12} />
-                    )}
-                    <span>{item.visibility}</span>
-                  </div>
-                  <button
-                    className="card-download-btn"
-                    onClick={(e) =>
-                      handleDownload(item.s3_key, item.collection, e)
-                    }
-                    title="Download"
-                  >
-                    <FiDownload size={14} />
-                  </button>
+                <div className="folder-icon-wrapper">
+                  <img src="/images/movments-plus/folder.png" alt="Folder" />
+                </div>
+                <div className="folder-info">
+                  <p className="folder-name text-uppercase fw-bold fs-16 inter">
+                    {colName}
+                  </p>
+                  <p className="gallery-folder-count fs-14 inter">
+                    {groupedMedia[colName].length} items
+                  </p>
                 </div>
               </div>
-
-              <div className="card-content">
-                <h3 className="card-title">{item.collection}</h3>
-                <p className="card-price">
-                  {formatFileSize(item.file_size_mb)}
-                </p>
-              </div>
+            ))
+          ) : (
+            <div className="col-12 text-center py-5 inter">
+              <p className="text-muted">No collections found for this event</p>
             </div>
-          ))}
+          )}
         </div>
       ) : (
-        <div className="empty-state">
-          <FiImage size={64} />
-          <h3>No Media Found</h3>
-          <p>No media files match your search criteria</p>
-        </div>
+        /* Media View (Images) */
+        <>
+          {filteredMedia.length > 0 ? (
+            <div className="gallery-grid inter">
+              {filteredMedia.map((item, index) => (
+                <div key={item.id} className="gallery-card">
+                  <div
+                    className="card-image"
+                    onClick={() =>
+                      item.s3_key.match(/\.(jpg|jpeg|png|gif|webp)$/i) &&
+                      openLightbox(index)
+                    }
+                    style={{
+                      cursor: item.s3_key.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+                        ? "pointer"
+                        : "default",
+                    }}
+                  >
+                    {item.s3_key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                      <img
+                        src={getS3Url(item.s3_key)}
+                        alt={item.collection}
+                        onError={(e) => {
+                          e.target.src =
+                            "https://via.placeholder.com/400x300?text=Image+Error";
+                        }}
+                      />
+                    ) : (
+                      <div className="video-placeholder">
+                        <FiVideo size={40} />
+                        <span>Video File</span>
+                      </div>
+                    )}
+                    <div className="card-badges">
+                      <div className="card-badge">
+                        {item.visibility === "public" ? (
+                          <FiEye size={12} />
+                        ) : (
+                          <FiEyeOff size={12} />
+                        )}
+                        <span>{item.visibility}</span>
+                      </div>
+                      <button
+                        className="card-download-btn"
+                        onClick={(e) =>
+                          handleDownload(item.s3_key, item.collection, e)
+                        }
+                        title="Download"
+                      >
+                        <FiDownload size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="card-content">
+                    <h3 className="card-title">{item.collection}</h3>
+                    <p className="card-price">
+                      {formatFileSize(item.file_size_mb)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <FiImage size={64} />
+              <h3>No Media Found</h3>
+              <p>No media files match your search criteria</p>
+            </div>
+          )}
+        </>
       )}
 
       {/* Lightbox Modal */}

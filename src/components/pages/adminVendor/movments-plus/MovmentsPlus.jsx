@@ -12,8 +12,10 @@ import {
   MdOutlineToken,
 } from "react-icons/md";
 import { LuLayoutDashboard } from "react-icons/lu";
+import { FiCalendar } from "react-icons/fi";
 
 import Dashboard from "./Dashboard";
+import Events from "./Events";
 import TokensSharing from "./TokensSharing";
 import UploadMedia from "./UploadMedia";
 import Galleries from "./Galleries";
@@ -28,16 +30,27 @@ import { GoPeople } from "react-icons/go";
 
 const MovmentsPlus = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeParams, setActiveParams] = useState(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [activeTab]);
+
+  const handleNavigate = (tabId, params = null) => {
+    setActiveTab(tabId);
+    setActiveParams(params);
+  };
 
   const menuItems = [
     {
       id: "dashboard",
       label: "Dashboard",
       icon: <LuLayoutDashboard size={22} />,
+    },
+    {
+      id: "events",
+      label: "Events",
+      icon: <FiCalendar size={22} />,
     },
     {
       id: "tokens-sharing",
@@ -78,16 +91,19 @@ const MovmentsPlus = () => {
 
   const handleTabClick = (tabId) => {
     setActiveTab(tabId);
+    setActiveParams(null);
   };
 
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
-        return <Dashboard onNavigate={setActiveTab} />;
+        return <Dashboard onNavigate={handleNavigate} />;
+      case "events":
+        return <Events onNavigate={handleNavigate} />;
       case "tokens-sharing":
         return <TokensSharing />;
       case "upload-media":
-        return <UploadMedia />;
+        return <UploadMedia initialParams={activeParams} />;
       case "galleries":
         return <Galleries />;
       case "analytics":

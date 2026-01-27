@@ -120,7 +120,9 @@
   background-color: #ffffff;
   border-radius: 8px;
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .gallery-card:hover {
@@ -525,6 +527,131 @@
   }
 
   .lightbox-content {
+    gap: 12px;
+  }
+}
+
+/* Main Gallery Grid */
+
+/* Gallery Grid */
+.main-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+/* Card */
+.main-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+/* Folder Card */
+.gallery-card.folder-card {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 32px 24px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  min-height: 140px;
+}
+
+.gallery-card.folder-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Folder Icon Container */
+.folder-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.folder-icon-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Folder Info */
+.folder-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.folder-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.gallery-folder-count {
+  color: #6b7280;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .main-gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+
+  .gallery-card.folder-card {
+    padding: 24px 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+
+  .gallery-card.folder-card {
+    padding: 20px 16px;
+    min-height: 120px;
+  }
+
+  .folder-icon-wrapper {
+    width: 40px;
+    height: 40px;
+  }
+
+  .folder-name {
+    font-size: 15px;
+  }
+
+  .gallery-folder-count {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+  }
+
+  .gallery-card.folder-card {
+    padding: 16px 12px;
     gap: 12px;
   }
 }

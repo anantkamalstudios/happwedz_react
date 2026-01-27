@@ -70,19 +70,32 @@ const FilePreview = ({ file, index, onReplace, onRemove, disabled }) => {
   );
 };
 
-const UploadMedia = () => {
+const UploadMedia = ({ initialParams }) => {
   const { vendor } = useSelector((state) => state.vendorAuth);
   const [tokens, setTokens] = useState([]);
+  const [events, setEvents] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
   const [formData, setFormData] = useState({
-    event_id: "",
+    event_id: initialParams?.eventId || "",
     collection: "",
     visibility: "",
     token: "",
   });
+
+  useEffect(() => {
+    if (initialParams?.eventId) {
+      setFormData((prev) => ({ ...prev, event_id: initialParams.eventId }));
+      // Scroll to upload section if navigated with eventId
+      setTimeout(() => {
+        document
+          .getElementById("upload-section")
+          ?.scrollIntoView({ behavior: "smooth" });
+      }, 500);
+    }
+  }, [initialParams]);
   const [uploadSuccess, setUploadSuccess] = useState(null);
   const [errors, setErrors] = useState({});
   const [isDragging, setIsDragging] = useState(false);
@@ -94,8 +107,21 @@ const UploadMedia = () => {
     if (vendor?.id) {
       fetchTokens();
     }
+    fetchEvents();
     fetchAnalytics();
   }, [vendor?.id]);
+
+  const fetchEvents = async () => {
+    try {
+      const response = await axiosInstance.get("/events");
+      if (response.data.success) {
+        setEvents(response.data.events);
+      }
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      toast.error("Failed to load events");
+    }
+  };
 
   const fetchTokens = async () => {
     if (!vendor?.id) return;
@@ -267,11 +293,11 @@ const UploadMedia = () => {
           },
           onUploadProgress: (progressEvent) => {
             const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
+              (progressEvent.loaded * 100) / progressEvent.total,
             );
             setUploadProgress({ overall: percentCompleted });
           },
-        }
+        },
       );
 
       if (response.data.success) {
@@ -300,7 +326,7 @@ const UploadMedia = () => {
     } catch (error) {
       console.error("Upload error:", error);
       toast.error(
-        error.response?.data?.message || "Upload failed. Please try again."
+        error.response?.data?.message || "Upload failed. Please try again.",
       );
     } finally {
       setUploading(false);
@@ -558,7 +584,7 @@ const UploadMedia = () => {
 
               <div className="mobile-token-actions">
                 <button
-                  className="action-btn-mobile w-100 justify-content-center text-primary border-primary"
+                  className="action-btn-mobile w-100 justify-content-center text-primary border-primary inter"
                   onClick={() => {
                     setFormData((prev) => ({
                       ...prev,
@@ -606,22 +632,32 @@ const UploadMedia = () => {
           <div className="row g-4 mb-4">
             <div className="col-md-6">
               <label className="form-label fw-bold inter">
-                Event ID <span className="text-danger">*</span>
+                Event <span className="text-danger">*</span>
               </label>
               <div className="input-group">
                 <span className="input-group-text bg-white inter">
                   <Calendar size={18} className="text-muted" />
                 </span>
-                <input
-                  type="text"
-                  className={`form-control inter ${
+                <select
+                  className={`form-select inter ${
                     errors.event_id ? "is-invalid" : ""
                   }`}
                   name="event_id"
                   value={formData.event_id}
-                  onChange={handleInputChange}
-                  placeholder="Enter event ID"
-                />
+                  onChange={(e) => {
+                    handleInputChange(e);
+                    // Clear token when event changes
+                    setFormData((prev) => ({ ...prev, token: "" }));
+                  }}
+                >
+                  <option value="">Select Event</option>
+                  {events.map((event) => (
+                    <option key={event.id} value={event.id}>
+                      {event.name} (
+                      {new Date(event.event_date).toLocaleDateString()})
+                    </option>
+                  ))}
+                </select>
               </div>
               {errors.event_id && (
                 <div className="text-danger small mt-1">{errors.event_id}</div>
@@ -689,11 +725,17 @@ const UploadMedia = () => {
                   onChange={handleInputChange}
                 >
                   <option value="">Select token</option>
-                  {tokens.map((token) => (
-                    <option key={token.id} value={token.token}>
-                      {token.token} ({token.type})
-                    </option>
-                  ))}
+                  {tokens
+                    .filter(
+                      (t) =>
+                        !formData.event_id ||
+                        t.event_id?.toString() === formData.event_id.toString(),
+                    )
+                    .map((token) => (
+                      <option key={token.id} value={token.token}>
+                        {token.token} ({token.type})
+                      </option>
+                    ))}
                 </select>
               </div>
               {errors.token && (
