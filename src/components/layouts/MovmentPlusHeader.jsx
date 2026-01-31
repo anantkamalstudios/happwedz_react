@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-
+import { FaSignOutAlt } from "react-icons/fa";
+import { Link, Navigate, useLocation } from "react-router-dom";
+import { removeGuestToken } from "../../redux/guestToken";
+import { useDispatch } from "react-redux";
 // Header Component
 const MovmentPlusHeader = () => {
   const location = useLocation();
   const [activeNav, setActiveNav] = useState("Home");
 
+  const handleLogout = () => {
+    dispatch(removeGuestToken());
+    Navigate("/movment-plus/guest-token");
+  };
   const navItems = [
     { name: "Home", path: "/movment-plus/home" },
     { name: "Guest Token", path: "/movment-plus/guest-token" },
@@ -66,6 +72,9 @@ const MovmentPlusHeader = () => {
                   </Link>
                 </li>
               ))}
+              <button className="logout_btn" onClick={handleLogout}>
+                <FaSignOutAlt /> Exit Gallery
+              </button>
             </ul>
           </div>
         </nav>

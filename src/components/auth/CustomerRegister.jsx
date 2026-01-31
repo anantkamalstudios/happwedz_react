@@ -54,7 +54,12 @@ const CustomerRegister = () => {
         const res = await fetch("https://happywedz.com/api/sign-in-cms");
         const data = await res.json();
         setSignInCms(data?.data || data || null);
-      } catch { }
+      } catch (err) {
+        console.error("Error fetching sign-in CMS:", err);
+        setSignInCms(null);
+      } finally {
+        hideLoader();
+      }
     })();
   }, []);
 
@@ -279,7 +284,7 @@ const CustomerRegister = () => {
             msg.toLowerCase().includes("already")
           ) {
             toast.error(
-              "Mobile number already exists. Please use a different number."
+              "Mobile number already exists. Please use a different number.",
             );
           } else if (
             msg.toLowerCase().includes("email") &&
@@ -311,8 +316,8 @@ const CustomerRegister = () => {
           style={{
             background: signInCms?.image
               ? `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('${normalizeUrl(
-                signInCms?.image
-              )}') center/cover`
+                  signInCms?.image,
+                )}') center/cover`
               : "linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop') center/cover",
             minHeight: "600px",
           }}
@@ -346,8 +351,9 @@ const CustomerRegister = () => {
                   <input
                     type="text"
                     name="name"
-                    className={`form-control fs-14 ${errors.name ? "is-invalid" : ""
-                      }`}
+                    className={`form-control fs-14 ${
+                      errors.name ? "is-invalid" : ""
+                    }`}
                     placeholder="Full Name"
                     value={formData.name}
                     onChange={handleChange}
@@ -364,8 +370,9 @@ const CustomerRegister = () => {
                   <input
                     type="email"
                     name="email"
-                    className={`form-control fs-14 ${errors.email ? "is-invalid" : ""
-                      }`}
+                    className={`form-control fs-14 ${
+                      errors.email ? "is-invalid" : ""
+                    }`}
                     placeholder="Email"
                     value={formData.email}
                     onChange={handleChange}
@@ -382,8 +389,9 @@ const CustomerRegister = () => {
                   <input
                     type={passwordVisible ? "text" : "password"}
                     name="password"
-                    className={`form-control fs-14 ${errors.password ? "is-invalid" : ""
-                      }`}
+                    className={`form-control fs-14 ${
+                      errors.password ? "is-invalid" : ""
+                    }`}
                     placeholder="Password"
                     value={formData.password}
                     onChange={handleChange}
@@ -464,8 +472,9 @@ const CustomerRegister = () => {
                   <input
                     type="number"
                     name="phone"
-                    className={`input-number form-control fs-16 ${errors.phone ? "is-invalid" : ""
-                      }`}
+                    className={`input-number form-control fs-16 ${
+                      errors.phone ? "is-invalid" : ""
+                    }`}
                     placeholder="Phone"
                     value={formData.phone}
                     onChange={handleChange}
@@ -485,8 +494,9 @@ const CustomerRegister = () => {
                   <input
                     type="text"
                     name="weddingVenue"
-                    className={`form-control fs-14 ${errors.weddingVenue ? "is-invalid" : ""
-                      }`}
+                    className={`form-control fs-14 ${
+                      errors.weddingVenue ? "is-invalid" : ""
+                    }`}
                     placeholder="Wedding Venue"
                     value={formData.weddingVenue}
                     onChange={handleChange}
@@ -504,8 +514,9 @@ const CustomerRegister = () => {
                 <div className="form-floating">
                   <select
                     name="country"
-                    className={`form-select fs-14 ${errors.country ? "is-invalid" : ""
-                      }`}
+                    className={`form-select fs-14 ${
+                      errors.country ? "is-invalid" : ""
+                    }`}
                     value={formData.country}
                     onChange={handleChange}
                   >
@@ -527,8 +538,9 @@ const CustomerRegister = () => {
                 <div className="form-floating">
                   <select
                     name="city"
-                    className={`form-select fs-14 ${errors.city ? "is-invalid" : ""
-                      }`}
+                    className={`form-select fs-14 ${
+                      errors.city ? "is-invalid" : ""
+                    }`}
                     value={formData.city}
                     onChange={handleChange}
                   >
@@ -551,8 +563,9 @@ const CustomerRegister = () => {
                   <input
                     type="date"
                     name="weddingDate"
-                    className={`form-control fs-14 ${errors.weddingDate ? "is-invalid" : ""
-                      }`}
+                    className={`form-control fs-14 ${
+                      errors.weddingDate ? "is-invalid" : ""
+                    }`}
                     value={formData.weddingDate}
                     onChange={handleChange}
                   />

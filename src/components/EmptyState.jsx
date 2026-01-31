@@ -49,7 +49,7 @@ const EmptyState = ({ section, title }) => {
                       to={`/${section}/${suggestion
                         .toLowerCase()
                         .replace(/\s+/g, "-")
-                        .replace(/[^a-z0-9\-]/g, "")}`}
+                        .replace(/[^a-z0-9-]/g, "")}`}
                       className="btn btn-outline-secondary btn-sm"
                     >
                       {suggestion}

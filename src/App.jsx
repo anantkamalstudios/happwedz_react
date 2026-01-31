@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect } from "react";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./components/layouts/MainLayout";
 import MovmentPlusLayout from "./components/layouts/MovmentPlusLayout";
 import MatrimonialLayout from "./components/layouts/MatrimonialLayout";
@@ -28,7 +28,7 @@ import BusinessClaimForm from "./components/pages/BusinessClaimForm";
 import { ToastContainer } from "react-toastify";
 import PublicWeddingView from "./components/pages/WeddingPublicView";
 import ScrollToTop from "./components/ScrollToTop";
-import CookieConsent from "./components/ui/CookieConsent";
+import UserPreference from "./components/ui/UserPreference";
 import MovementPlusHome from "./components/pages/movments-plus/MovementPlusHome";
 import MovmentPlusGuestToken from "./components/pages/movments-plus/MovmentPlusGuestToken";
 import MovmentPlusUploadSelfie from "./components/pages/movments-plus/MovmentPlusUploadSelfie";
@@ -186,8 +186,6 @@ const CityActivities = lazy(
 );
 
 function App() {
-  const location = useLocation();
-
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -237,7 +235,7 @@ function App() {
   return (
     <LoaderProvider>
       <ScrollToTop />
-      <CookieConsent />
+      <UserPreference />
       <Suspense fallback={<Loader />}>
         <ToastContainer />
         <ToastProvider>
@@ -514,15 +512,27 @@ function App() {
               <Route path="/movment-plus/home" element={<MovementPlusHome />} />
               <Route
                 path="/movment-plus/guest-token"
-                element={<MovmentPlusGuestToken />}
+                element={
+                  <UserPrivateRoute>
+                    <MovmentPlusGuestToken />
+                  </UserPrivateRoute>
+                }
               />
               <Route
                 path="/movment-plus/upload-selfie"
-                element={<MovmentPlusUploadSelfie />}
+                element={
+                  <UserPrivateRoute>
+                    <MovmentPlusUploadSelfie />
+                  </UserPrivateRoute>
+                }
               />
               <Route
                 path="/movment-plus/gallery/:token"
-                element={<MovmentPlusGalleryPage />}
+                element={
+                  <UserPrivateRoute>
+                    <MovmentPlusGalleryPage />
+                  </UserPrivateRoute>
+                }
               />
             </Route>
           </Routes>

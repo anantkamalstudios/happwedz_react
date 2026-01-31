@@ -1,13 +1,41 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./guest-token.css";
 import useMovmentPlus from "../../hooks/useMovmentPlus";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { setGuestToken, removeGuestToken } from "../../redux/guestToken";
 
 const GuestTokenPage = () => {
   const [tokenInput, setTokenInput] = useState("");
   const { fetchGalleryByToken, loading } = useMovmentPlus();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { guestToken } = useSelector((state) => state.guestToken);
+
+  useEffect(() => {
+    if (guestToken) {
+      setTokenInput(guestToken);
+      verifyToken(guestToken);
+    }
+  }, [guestToken]);
+
+  const verifyToken = async (token) => {
+    try {
+      const response = await fetchGalleryByToken(token);
+      if (response && response.success) {
+        // Token is valid, redirect
+        navigate(`/movment-plus/gallery/${token}`, {
+          state: { galleryData: response },
+        });
+      } else {
+        // Token invalid, remove it
+        dispatch(removeGuestToken());
+      }
+    } catch (error) {
+      dispatch(removeGuestToken());
+    }
+  };
 
   const handleSubmit = async () => {
     if (!tokenInput.trim()) {
@@ -18,9 +46,8 @@ const GuestTokenPage = () => {
     try {
       const response = await fetchGalleryByToken(tokenInput);
       if (response && response.success) {
+        dispatch(setGuestToken(tokenInput));
         toast.success("Gallery accessed successfully!");
-        console.log("Gallery Data:", response);
-        // Navigate to the gallery page passing the data and token
         navigate(`/movment-plus/gallery/${tokenInput}`, {
           state: { galleryData: response },
         });
@@ -28,7 +55,6 @@ const GuestTokenPage = () => {
         toast.error("Invalid token or no gallery found.");
       }
     } catch (error) {
-      // console.error(error?.response?.data?.message || "An error occurred");
       toast.error(error?.response?.data?.message || "An error occurred");
     }
   };

@@ -1,26 +1,44 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import React, { useEffect, useState, useCallback, useRef } from "react";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import {
   FaArrowLeft,
   FaTimes,
   FaChevronLeft,
   FaChevronRight,
+  FaCamera,
+  FaUpload,
+  FaRedo,
+  FaCheck,
+  FaImage,
+  FaSignOutAlt,
 } from "react-icons/fa";
 import useMovmentPlus from "../../hooks/useMovmentPlus";
 import Loader from "../ui/Loader";
 import "./movment-plus-gallery.css";
+import { useDispatch } from "react-redux";
+import { removeGuestToken } from "../../redux/guestToken";
 
 const MovmentPlusGallery = () => {
   const { token } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { fetchGalleryByToken, loading, data, error } = useMovmentPlus();
   const [galleryData, setGalleryData] = useState(
     location.state?.galleryData || null,
   );
 
+  const handleLogout = () => {
+    dispatch(removeGuestToken());
+    navigate("/movment-plus/guest-token");
+  };
+
   // State for collection view and lightbox
   const [selectedCollection, setSelectedCollection] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const handleImgError = useCallback((e) => {
+    e.currentTarget.src = "/images/default-vendor.jpg";
+  }, []);
 
   useEffect(() => {
     if (!galleryData && token) {
@@ -144,6 +162,8 @@ const MovmentPlusGallery = () => {
                     alt={`Item ${index}`}
                     className="card_image"
                     loading="lazy"
+                    onError={handleImgError}
+                    referrerPolicy="no-referrer"
                   />
                 </div>
               </div>
@@ -178,6 +198,8 @@ const MovmentPlusGallery = () => {
                 src={images[lightboxIndex].url}
                 alt={`Full screen ${lightboxIndex}`}
                 className="lightbox_image"
+                onError={handleImgError}
+                referrerPolicy="no-referrer"
               />
               <div className="lightbox_counter">
                 {lightboxIndex + 1} / {images.length}
@@ -215,34 +237,23 @@ const MovmentPlusGallery = () => {
         <div className="gallery_grid">
           {collectionNames.map((name, index) => {
             const images = collections[name];
-            const coverImage = images && images.length > 0 ? images[0].url : "";
 
             return (
               <div
                 key={index}
-                className="collection_card"
+                className="gallery-card folder-card"
                 onClick={() => setSelectedCollection(name)}
-                style={{ cursor: "pointer" }}
               >
-                <div className="card_image_wrapper">
-                  {coverImage ? (
-                    <img
-                      src={coverImage}
-                      alt={name}
-                      className="card_image"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="d-flex align-items-center justify-content-center h-100 bg-light">
-                      <span className="text-muted">No Image</span>
-                    </div>
-                  )}
+                <div className="folder-icon-wrapper">
+                  <img src="/images/movments-plus/folder.png" alt="Folder" />
                 </div>
-                <div className="card_content">
-                  <h3 className="collection_title">{name}</h3>
-                  <span className="text-muted small">
+                <div className="folder-info">
+                  <p className="folder-name text-uppercase fw-bold fs-16 inter">
+                    {name}
+                  </p>
+                  <p className="gallery-folder-count fs-14 inter">
                     {images?.length || 0} items
-                  </span>
+                  </p>
                 </div>
               </div>
             );

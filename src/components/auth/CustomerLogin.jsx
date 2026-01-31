@@ -50,7 +50,12 @@ const CustomerLogin = () => {
         const res = await fetch("https://happywedz.com/api/login-cms");
         const data = await res.json();
         setLoginCms(data?.data || data || null);
-      } catch { }
+      } catch (err) {
+        console.error("Error fetching login CMS:", err);
+        setLoginCms(null);
+      } finally {
+        hideLoader();
+      }
     })();
   }, []);
 
@@ -79,7 +84,7 @@ const CustomerLogin = () => {
       ) {
         persistUserSession(authResponse.user, authResponse.token);
         dispatch(
-          loginUser({ user: authResponse.user, token: authResponse.token })
+          loginUser({ user: authResponse.user, token: authResponse.token }),
         );
         toast.success("Login successful!");
         navigate(from, { replace: true });
@@ -128,7 +133,7 @@ const CustomerLogin = () => {
           msg.toLowerCase().includes("wrong")
         ) {
           toast.error(
-            "Invalid credentials. Please check your email and password."
+            "Invalid credentials. Please check your email and password.",
           );
         } else if (
           msg.toLowerCase().includes("already exists") ||
@@ -155,11 +160,11 @@ const CustomerLogin = () => {
           style={{
             ...(loginCms?.image
               ? {
-                backgroundImage: `url(${normalizeUrl(loginCms?.image)})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                minHeight: "600px",
-              }
+                  backgroundImage: `url(${normalizeUrl(loginCms?.image)})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  minHeight: "600px",
+                }
               : {}),
           }}
         >

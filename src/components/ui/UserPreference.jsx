@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
 
-const CookieConsent = () => {
+const UserPreference = () => {
   const [visible, setVisible] = useState(() => {
     if (typeof window === "undefined") return true;
     const stored = window.localStorage.getItem("cookieConsent");
@@ -154,4 +153,4 @@ const CookieConsent = () => {
   );
 };
 
-export default CookieConsent;
+export default UserPreference;

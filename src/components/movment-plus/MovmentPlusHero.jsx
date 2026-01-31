@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./movment-plus.css";
+import { Link } from "react-router-dom";
 
 const MovmentPlusHero = () => {
   const heroImages = [
@@ -31,7 +32,10 @@ const MovmentPlusHero = () => {
                   View photos shared by your photographer
                 </p>
 
-                <button className="cta_btn_9j4l2">
+                <Link
+                  to="/movment-plus/guest-token"
+                  className="cta_btn_9j4l2 text-decoration-none"
+                >
                   <span>Have a private access code?</span>
                   <svg
                     width="24"
@@ -43,7 +47,7 @@ const MovmentPlusHero = () => {
                   >
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
-                </button>
+                </Link>
               </div>
 
               {/* Right Images Section */}
