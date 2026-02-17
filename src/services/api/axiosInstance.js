@@ -13,6 +13,10 @@ const API_BASE_URL =
 const AI_API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "https://www.happywedz.com/ai/api";
 
+const SHADI_AI_API_BASE_URL =
+  import.meta.env.VITE_SHADI_AI_API_BASE_URL ||
+  "https://shaadiai.happywedz.com/api";
+
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
@@ -87,7 +91,7 @@ const requestInterceptor = (config) => {
       }
 
       return Promise.reject(
-        new axios.Cancel("Vendor token expired. Redirecting to login.")
+        new axios.Cancel("Vendor token expired. Redirecting to login."),
       );
     }
 
@@ -118,11 +122,11 @@ const responseErrorInterceptor = (error) => {
 
 axiosInstance.interceptors.response.use(
   responseInterceptor,
-  responseErrorInterceptor
+  responseErrorInterceptor,
 );
 aiAxiosInstance.interceptors.response.use(
   responseInterceptor,
-  responseErrorInterceptor
+  responseErrorInterceptor,
 );
 
 axiosInstance.interceptors.response.use(
@@ -132,7 +136,7 @@ axiosInstance.interceptors.response.use(
   (error) => {
     handle401Error(error);
     return Promise.reject(error);
-  }
+  },
 );
 
 axios.interceptors.response.use(
@@ -142,7 +146,7 @@ axios.interceptors.response.use(
   (error) => {
     handle401Error(error);
     return Promise.reject(error);
-  }
+  },
 );
 
 export { axiosInstance, aiAxiosInstance };

@@ -31,12 +31,12 @@ const RecommandedPage = () => {
             headers: {
               Authorization: `Bearer ${token}`, // Assuming token might be needed, though previous code didn't use it for this endpoint but good practice
             },
-          }
+          },
         );
 
         if (response.data && response.data.vendor_categories) {
           const allItems = Object.values(
-            response.data.vendor_categories
+            response.data.vendor_categories,
           ).flatMap((category) => category.items || []);
           setRecommendations(allItems);
         }
