@@ -9,8 +9,17 @@ export const vendorsApi = {
     axiosInstance.get(`${API_BASE}/${id}`).then((res) => res.data),
   createVendor: (data) =>
     axiosInstance.post(`${API_BASE}/create`, data).then((res) => res.data),
-  updateVendor: (id, data) =>
-    axiosInstance.put(`${API_BASE}/${id}`, data).then((res) => res.data),
+  updateVendor: (id, data) => {
+    const config = {};
+    if (typeof FormData !== "undefined" && data instanceof FormData) {
+      config.headers = {
+        "Content-Type": "multipart/form-data",
+      };
+    }
+    return axiosInstance
+      .put(`${API_BASE}/${id}`, data, config)
+      .then((res) => res.data);
+  },
   deleteVendor: (id) =>
     axiosInstance.delete(`${API_BASE}/${id}`).then((res) => res.data),
 };
