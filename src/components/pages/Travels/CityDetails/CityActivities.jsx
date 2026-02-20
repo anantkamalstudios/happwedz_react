@@ -98,14 +98,22 @@ const CityActivities = () => {
           title: "All Rome attractions in one view",
           description:
             "Explore a curated list of the best things to do in Rome, from free walking tours to premium experiences.",
-          link: "https://www.getyourguide.com/s/?q=Rome&customerSearch=1", // Fallback generic search
+          link: "https://tiqets.tpk.lu/ohhcxDDy",
           buttonText: "View on Tiqets",
           tag: "Explore more",
-          // discount: "Top picks",
           highlights: [
-            "Compare activities across categories",
-            "Flexible durations and group sizes",
-            "Instant online booking",
+            {
+              text: "Colosseum tickets and tours on Tiqets",
+              link: "https://tiqets.tpk.lu/ohhcxDDy",
+            },
+            {
+              text: "Vatican Museums tickets on Tiqets",
+              link: "https://tiqets.tpk.lu/7SG695H5",
+            },
+            {
+              text: "Borghese Gallery tickets on Tiqets",
+              link: "https://tiqets.tpk.lu/89GVOgKp",
+            },
           ],
         },
       ],
@@ -177,13 +185,22 @@ const CityActivities = () => {
           title: "All Paris attractions in one view",
           description:
             "Compare Paris attractions and experiences in one place with flexible options.",
-          link: "https://www.getyourguide.com/s/?q=Paris&customerSearch=1",
-          buttonText: "Explore more",
+          link: "https://tiqets.tpk.lu/9EvuMkFx",
+          buttonText: "View on Tiqets",
           tag: "Explore more",
           highlights: [
-            "Curated list of top Paris attractions",
-            "Flexible durations and group sizes",
-            "Instant online booking",
+            {
+              text: "Seine River Cruises tickets on Tiqets",
+              link: "https://tiqets.tpk.lu/9EvuMkFx",
+            },
+            {
+              text: "Eiffel Tower tickets on Tiqets",
+              link: "https://tiqets.tpk.lu/m66ezp5e",
+            },
+            {
+              text: "Disneyland® Paris tickets on Tiqets",
+              link: "https://tiqets.tpk.lu/386CoF1y",
+            },
           ],
         },
       ],

@@ -3,7 +3,7 @@ import "./SectionTabs.css";
 
 const SectionTabs = ({ scrollToSection }) => {
   const [active, setActive] = useState("");
-  const sectionIds = ["about", "faq", "reviews", "map"];
+  const sectionIds = ["about", "FAQ", "reviews", "map"];
   const isProgrammaticScroll = useRef(false);
   const scrollTimer = useRef(null);
   const [stuck, setStuck] = useState(false);
@@ -49,7 +49,8 @@ const SectionTabs = ({ scrollToSection }) => {
         const byTop = entries
           .slice()
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        const nearTop = byTop.find((e) => e.boundingClientRect.top >= 0) || byTop[0];
+        const nearTop =
+          byTop.find((e) => e.boundingClientRect.top >= 0) || byTop[0];
         if (nearTop) {
           const id = nearTop.target.id;
           if (id && id !== active) setActive(id);
@@ -60,7 +61,7 @@ const SectionTabs = ({ scrollToSection }) => {
         root: null,
         rootMargin: "-110px 0px -60% 0px", // top offset for header/tabs; favor upper sections
         threshold: [0.15, 0.35, 0.55, 0.75],
-      }
+      },
     );
 
     targets.forEach((el) => observer.observe(el));
@@ -101,18 +102,18 @@ const SectionTabs = ({ scrollToSection }) => {
         className="section-tabs-sticky"
         style={isMobile ? { zIndex: stuck ? 1020 : "auto" } : undefined}
       >
-      <div className="d-flex flex-wrap gap-2 mb-0">
-        {["about", "faq", "reviews", "map"].map((item) => (
-          <button
-            key={item}
-            type="button"
-            className={`section-tab btn btn-sm ${active === item ? "active" : ""}`}
-            onClick={() => handleClick(item)}
-          >
-            {item.charAt(0).toUpperCase() + item.slice(1)}
-          </button>
-        ))}
-      </div>
+        <div className="d-flex flex-wrap gap-2 mb-0">
+          {["about", "FAQ", "reviews", "map"].map((item) => (
+            <button
+              key={item}
+              type="button"
+              className={`section-tab btn btn-sm ${active === item ? "active" : ""}`}
+              onClick={() => handleClick(item)}
+            >
+              {item.charAt(0).toUpperCase() + item.slice(1)}
+            </button>
+          ))}
+        </div>
       </div>
     </>
   );

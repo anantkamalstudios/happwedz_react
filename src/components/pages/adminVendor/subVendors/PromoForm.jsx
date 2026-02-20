@@ -117,7 +117,7 @@ export default function PromoForm({ formData, setFormData, onSave }) {
       localStorage.setItem("promoDraft", JSON.stringify(payload));
     } catch (err) {
       setServerError(
-        typeof err === "string" ? err : err?.message || "Failed to save"
+        typeof err === "string" ? err : err?.message || "Failed to save",
       );
     } finally {
       setSubmitting(false);

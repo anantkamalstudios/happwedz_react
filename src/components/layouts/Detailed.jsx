@@ -145,7 +145,7 @@ const Detailed = () => {
         amenities.push({
           icon: <FaStar />,
           name: `Outside Alcohol: ${capitalizeWords(
-            attributes.outside_alcohol
+            attributes.outside_alcohol,
           )}`,
         });
       }
@@ -157,7 +157,7 @@ const Detailed = () => {
       if (
         attributes.about_us &&
         attributes.about_us.includes(
-          "In house alcohol available, outside alcohol not permitted"
+          "In house alcohol available, outside alcohol not permitted",
         )
       ) {
         alcoholStatus = "In-house Only (Outside Not Permitted)";
@@ -189,7 +189,7 @@ const Detailed = () => {
         const areas = attributes.area.split(",").map((s) => s.trim());
         areas.forEach((area) => {
           const match = area.match(
-            /(\w+)\s*(\d+)\s*Seating\s*\|\s*(\d+)\s*Floating\s*(.*)/i
+            /(\w+)\s*(\d+)\s*Seating\s*\|\s*(\d+)\s*Floating\s*(.*)/i,
           );
           if (match) {
             const [, , seating, floating, locationPart] = match;
@@ -199,7 +199,7 @@ const Detailed = () => {
               venueName
                 .replace("Banquetpoolside", "Banquet Poolside")
                 .replace("Poolsideoutdoor", "Poolside/Outdoor")
-                .replace("Lawnoutdoor", "Lawn/Outdoor")
+                .replace("Lawnoutdoor", "Lawn/Outdoor"),
             );
 
             amenities.push({
@@ -228,7 +228,7 @@ const Detailed = () => {
           icon: <GrFormNextLink />,
           name: `Delivery: ${attributes.delivery_time.replace(
             "Delivery time: ",
-            ""
+            "",
           )}`,
         });
       }
@@ -394,7 +394,7 @@ const Detailed = () => {
               const sessionKey = `vendor_viewed_${data.vendor_id}`;
               if (!sessionStorage.getItem(sessionKey)) {
                 const incRes = await axios.post(
-                  `${API_BASE_URL}/api/vendor/increment-view/${data.vendor_id}`
+                  `${API_BASE_URL}/api/vendor/increment-view/${data.vendor_id}`,
                 );
                 try {
                   sessionStorage.setItem(sessionKey, Date.now().toString());
@@ -412,7 +412,7 @@ const Detailed = () => {
               } else {
                 // already counted this session — skip increment
                 console.debug(
-                  `skip increment-view for vendor ${data.vendor_id} (already viewed this session)`
+                  `skip increment-view for vendor ${data.vendor_id} (already viewed this session)`,
                 );
               }
             }
@@ -478,16 +478,16 @@ const Detailed = () => {
 
       try {
         const response = await axios.get(
-          `https://happywedz.com/api/faq-answers/${dynamicVendorId}`
+          `https://happywedz.com/api/faq-answers/${dynamicVendorId}`,
         );
         const answers = response.data || [];
 
         const answerMap = new Map(
-          answers.map((a) => [a.faq_question_id, a.answer])
+          answers.map((a) => [a.faq_question_id, a.answer]),
         );
 
         const vendorTypeKey = Object.keys(FaqQuestions).find(
-          (key) => FaqQuestions[key].vendor_type_id === dynamicVendorTypeId
+          (key) => FaqQuestions[key].vendor_type_id === dynamicVendorTypeId,
         );
 
         if (vendorTypeKey) {
@@ -603,7 +603,7 @@ const Detailed = () => {
   const mapSrc = hasCoords
     ? `https://maps.google.com/maps?q=${lat},${lng}&t=&z=13&ie=UTF8&iwloc=&output=embed`
     : `https://maps.google.com/maps?q=${encodeURIComponent(
-        displayLocation
+        displayLocation,
       )}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
 
   const activeVendor = {
@@ -668,7 +668,7 @@ const Detailed = () => {
                 getYouTubeVideoId(mainVideo) ? (
                   <iframe
                     src={`https://www.youtube.com/embed/${getYouTubeVideoId(
-                      mainVideo
+                      mainVideo,
                     )}`}
                     title="YouTube video player"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -908,7 +908,7 @@ const Detailed = () => {
                   style={{ textAlign: "justify" }}
                   dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(
-                      venueData?.attributes?.about_us || ""
+                      venueData?.attributes?.about_us || "",
                     ),
                   }}
                 />
@@ -979,7 +979,7 @@ const Detailed = () => {
 
             {/* FaqQuestionAnswer Detailed */}
 
-            <div id="faq" className="my-4 border p-3 rounded">
+            <div id="FAQ" className="my-4 border p-3 rounded">
               <h5 className="my-4 fs-16">Frequently Asked Questions</h5>
 
               {(() => {
@@ -991,7 +991,7 @@ const Detailed = () => {
                   }
                   if (typeof answer === "object") {
                     const values = Object.values(answer).filter(
-                      (v) => v != null && v !== ""
+                      (v) => v != null && v !== "",
                     );
                     if (values.length === 2)
                       return [`${values[0]} - ${values[1]}`];
@@ -1004,7 +1004,7 @@ const Detailed = () => {
 
                 // Only include FAQs with at least one non-empty answer
                 const validFaqs = (faqList || []).filter(
-                  (q) => parseAnswer(q.ans).length > 0
+                  (q) => parseAnswer(q.ans).length > 0,
                 );
 
                 if (validFaqs.length === 0) {
@@ -1201,7 +1201,7 @@ const Detailed = () => {
                       <div className="fw-bold fs-16 mt-1 primary-text">
                         {venueData.attributes?.veg_price
                           ? `₹ ${parseInt(
-                              venueData.attributes.veg_price.replace(/,/g, "")
+                              venueData.attributes.veg_price.replace(/,/g, ""),
                             ).toLocaleString()}`
                           : "Contact for pricing"}
                       </div>
@@ -1214,8 +1214,8 @@ const Detailed = () => {
                           ? `₹ ${parseInt(
                               venueData.attributes.non_veg_price.replace(
                                 /,/g,
-                                ""
-                              )
+                                "",
+                              ),
                             ).toLocaleString()} onwards`
                           : "Contact for pricing"}
                       </div>
@@ -1226,11 +1226,11 @@ const Detailed = () => {
                         {venueData.attributes?.vendor_type === "Makeup"
                           ? "Makeup Package (Starting)"
                           : venueData.attributes?.vendor_type === "Photography"
-                          ? "Photography Package (Starting)"
-                          : venueData.attributes?.vendor_type ===
-                            "Music And Dance"
-                          ? ""
-                          : ""}
+                            ? "Photography Package (Starting)"
+                            : venueData.attributes?.vendor_type ===
+                                "Music And Dance"
+                              ? ""
+                              : ""}
                       </span>
 
                       <div className="fs-16 fw-bold mt-1">
@@ -1243,16 +1243,16 @@ const Detailed = () => {
                           venueData.attributes.starting_price
                             ? venueData.attributes.PriceRange.replace(
                                 "Rs.",
-                                ""
+                                "",
                               ).trim() || venueData.attributes.starting_price
                             : venueData.attributes.photo_package_price
-                            ? `₹${parseInt(
-                                venueData.attributes.photo_package_price.replace(
-                                  /,/g,
-                                  ""
-                                )
-                              ).toLocaleString()} onwards`
-                            : "Contact for pricing"}
+                              ? `₹${parseInt(
+                                  venueData.attributes.photo_package_price.replace(
+                                    /,/g,
+                                    "",
+                                  ),
+                                ).toLocaleString()} onwards`
+                              : "Contact for pricing"}
                         </span>
                       </div>
 
@@ -1266,7 +1266,7 @@ const Detailed = () => {
                               ₹{" "}
                               {venueData.attributes.photo_video_package_price.replace(
                                 "Rs.",
-                                ""
+                                "",
                               )}
                             </span>
                           </div>

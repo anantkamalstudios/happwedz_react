@@ -184,6 +184,12 @@ const Travels = lazy(() => import("./components/pages/Travels/Travel"));
 const CityActivities = lazy(
   () => import("./components/pages/Travels/CityDetails/CityActivities"),
 );
+const HoneymoonHeroPage = lazy(
+  () => import("./components/pages/Travels/honeymoon/HeroPage"),
+);
+const HoneymoonHotelsPage = lazy(
+  () => import("./components/pages/Travels/honeymoon/HoneymoonHotelsPage"),
+);
 
 function App() {
   const dispatch = useDispatch();
@@ -316,6 +322,12 @@ function App() {
               <Route path="/sitemap" element={<SiteMap />} />
               <Route path="/top-rated" element={<TopRatedVendors />} />
               <Route path="/careers" element={<CareersPage />} />
+              <Route path="/honeymoon" element={<HoneymoonHeroPage />} />
+              <Route path="/honeymoon/hotels" element={<HoneymoonHotelsPage />} />
+              <Route
+                path="/honeymoon/hotels/:hotelId"
+                element={<HoneymoonHotelsPage />}
+              />
               {/* Try Flow */}
               <Route path="/try" element={<TryLanding />} />
               <Route

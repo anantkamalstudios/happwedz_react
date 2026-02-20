@@ -1091,12 +1091,6 @@ const Header = () => {
                                           image: "/images/couple.png",
                                           route: "/choose-template",
                                         },
-                                        {
-                                          title: "Travels",
-                                          desc: "Travel destinations offer culture, nature, and adventure.",
-                                          image: "/images/couple.png",
-                                          route: "/travels",
-                                        },
                                       ].map((item, i) => (
                                         <div
                                           key={i}
@@ -1634,8 +1628,24 @@ const Header = () => {
                           </div>
                         </li>
 
+                        {/* Shop */}
+                        <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
+                          <div className="dropdown-wrapper">
+                            <a
+                              className="nav-link text-white fs-16"
+                              href="https://store.happywedz.com/"
+                              id="shopLink"
+                              role="button"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Shop
+                            </a>
+                          </div>
+                        </li>
+
                         {/* Blog Dropdown */}
-                        <li
+                        {/* <li
                           className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
                           onMouseEnter={() => setOpenMenu("blog")}
                           onMouseLeave={() => setOpenMenu(null)}
@@ -1734,7 +1744,7 @@ const Header = () => {
                                     </ul>
                                   </div>
                                   <div className="col-12 col-md-3 d-flex flex-column align-items-center">
-                                    {/* Top Image */}
+                                    
                                     <img
                                       src="/blog1.jpg"
                                       alt="Top"
@@ -1760,7 +1770,7 @@ const Header = () => {
                               </div>
                             </div>
                           </div>
-                        </li>
+                        </li> */}
 
                         {/* Genie */}
                         <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
@@ -1777,8 +1787,22 @@ const Header = () => {
                           </div>
                         </li>
 
+                        {/* Honeymoon */}
+                        <li className="py-2 nav-item dropdown mega-dropdown-wrapper position-static">
+                          <div className="dropdown-wrapper">
+                            <Link
+                              className="nav-link text-white fs-16"
+                              to="/honeymoon"
+                              id="honeymoonLink"
+                              role="button"
+                            >
+                              Honeymoon
+                            </Link>
+                          </div>
+                        </li>
+
                         {/* Real Wedding Dropdown */}
-                        <li
+                        {/* <li
                           className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
                           onMouseEnter={() => setOpenMenu("real-wedding")}
                           onMouseLeave={() => setOpenMenu(null)}
@@ -1903,7 +1927,6 @@ const Header = () => {
                                     </ul>
                                   </div>
                                   <div className="col-12 col-md-3 d-flex flex-column align-items-center">
-                                    {/* Top Image */}
                                     <img
                                       src="/realweding1.jpg"
                                       alt="Top"
@@ -1929,7 +1952,7 @@ const Header = () => {
                               </div>
                             </div>
                           </div>
-                        </li>
+                        </li> */}
 
                         {/* Auth Links */}
                         {isUserLoggedIn ? (

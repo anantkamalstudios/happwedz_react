@@ -5,6 +5,7 @@ import SuccessModal from "../../../ui/SuccessModal";
 
 const PhotoGallery = ({ images = [], onImagesChange, onSave }) => {
   const [localImages, setLocalImages] = useState(images);
+  const [showAll, setShowAll] = useState(false);
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -38,7 +39,6 @@ const PhotoGallery = ({ images = [], onImagesChange, onSave }) => {
     setLocalImages((prev) => {
       const newImages = files
         .filter((file) => file.type.startsWith("image/"))
-        .slice(0, 8 - prev.length)
         .map((file) => ({
           file,
           preview: URL.createObjectURL(file),
@@ -132,27 +132,40 @@ const PhotoGallery = ({ images = [], onImagesChange, onSave }) => {
             <div className="mt-5">
               <h4 className="mb-4">Preview Images</h4>
               <div className="row g-4">
-                {localImages.map((image, index) => (
-                  <div key={index} className="col-md-3 col-6">
-                    <div className="card border-0 shadow-sm h-100">
-                      <div className="position-relative">
-                        <img
-                          src={getImageUrl(image)}
-                          alt="Preview"
-                          className="card-img-top object-fit-cover"
-                          style={{ height: "150px" }}
-                        />
-                        <button
-                          className="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle"
-                          onClick={() => handleRemoveImage(index)}
-                        >
-                          <FiX size={16} />
-                        </button>
+                {(showAll ? localImages : localImages.slice(0, 8)).map(
+                  (image, index) => (
+                    <div key={index} className="col-md-3 col-6">
+                      <div className="card border-0 shadow-sm h-100">
+                        <div className="position-relative">
+                          <img
+                            src={getImageUrl(image)}
+                            alt="Preview"
+                            className="card-img-top object-fit-cover"
+                            style={{ height: "150px" }}
+                          />
+                          <button
+                            className="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle"
+                            onClick={() => handleRemoveImage(index)}
+                          >
+                            <FiX size={16} />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ),
+                )}
               </div>
+              {localImages.length > 8 && (
+                <div className="mt-3 text-center">
+                  <button
+                    type="button"
+                    className="btn btn-outline-primary btn-sm fs-14"
+                    onClick={() => setShowAll((prev) => !prev)}
+                  >
+                    {showAll ? "Show less" : "Show more"}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

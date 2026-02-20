@@ -115,54 +115,50 @@
 // export const beautyApi = new BeautyApiService();
 // export { BeautyApiService };
 
-import { aiAxiosInstance } from "./axiosInstance";
+const BEAUTY_API_BASE_URL = "https://www.happywedz.com/ai/api";
 
 class BeautyApiService {
   async makeJsonRequest(path, options = {}) {
-    try {
-      const { signal, ...rest } = options;
-      const response = await aiAxiosInstance({
-        method: rest.method || "GET",
-        url: path,
-        data: rest.body ? JSON.parse(rest.body) : undefined,
-        params: rest.params,
-        signal,
-        headers: {
-          "Content-Type": "application/json",
-          ...(rest.headers || {}),
-        },
-      });
-      return response.data;
-    } catch (error) {
-      if (error.response) {
-        const errorMessage = error.response.data?.message || error.message;
-        throw new Error(`HTTP ${error.response.status}: ${errorMessage}`);
-      }
-      throw error;
+    const { signal, ...rest } = options;
+    const url = `${BEAUTY_API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+    const response = await fetch(url, {
+      method: rest.method || "GET",
+      body: rest.body,
+      signal,
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        ...(rest.headers || {}),
+      },
+    });
+    if (!response.ok) {
+      const text = await response.text().catch(() => "");
+      throw new Error(
+        `HTTP ${response.status}: ${text || response.statusText}`,
+      );
     }
+    return response.json().catch(() => ({}));
   }
 
   async makeFormRequest(path, formData, options = {}) {
-    try {
-      const { signal, ...rest } = options;
-      const response = await aiAxiosInstance({
-        method: "POST",
-        url: path,
-        data: formData,
-        signal,
-        headers: {
-          "Content-Type": "multipart/form-data",
-          ...(rest.headers || {}),
-        },
-      });
-      return response.data;
-    } catch (error) {
-      if (error.response) {
-        const errorMessage = error.response.data?.message || error.message;
-        throw new Error(`HTTP ${error.response.status}: ${errorMessage}`);
-      }
-      throw error;
+    const { signal, ...rest } = options;
+    const url = `${BEAUTY_API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+    const response = await fetch(url, {
+      method: "POST",
+      body: formData,
+      signal,
+      headers: {
+        Accept: "application/json",
+        ...(rest.headers || {}),
+      },
+    });
+    if (!response.ok) {
+      const text = await response.text().catch(() => "");
+      throw new Error(
+        `HTTP ${response.status}: ${text || response.statusText}`,
+      );
     }
+    return response.json().catch(() => ({}));
   }
 
   async getFilteredProducts(category, detailedCategory) {
@@ -188,10 +184,17 @@ class BeautyApiService {
   }
 
   async applyMakeup(payload, signal) {
+    let finalPayload = payload;
+    try {
+      const userInfo = JSON.parse(localStorage.getItem("userInfo")) || {};
+      if (userInfo.role) {
+        finalPayload = { ...payload, user: userInfo.role };
+      }
+    } catch {}
+
     return this.makeJsonRequest("/images/apply-makeup", {
       method: "POST",
-      method: "POST",
-      body: JSON.stringify(payload),
+      body: JSON.stringify(finalPayload),
       signal,
     });
   }
