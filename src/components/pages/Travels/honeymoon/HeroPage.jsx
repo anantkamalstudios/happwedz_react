@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { Plane, MapPin, Users, CalendarSearch, Loader2 } from "lucide-react";
+import { searchAirports, searchFlights } from "../../../../services/api/flightApi";
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500&display=swap');
@@ -112,6 +114,8 @@ const styles = `
     border-radius: 20px;
     padding: 24px;
     box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 100;
   }
 
   .trip-radio label {
@@ -139,12 +143,20 @@ const styles = `
 
   .search-fields {
     display: grid;
-    grid-template-columns: 1fr auto 1fr 1fr 1fr auto;
+    grid-template-columns: 1fr auto 1fr 1fr 1fr 1fr auto;
     gap: 0;
     border: 2px solid #ed1173;
     border-radius: 14px;
-    overflow: hidden;
+    overflow: visible;
     align-items: stretch;
+    position: relative;
+    z-index: 200;
+  }
+
+  @media (max-width: 1199px) {
+    .search-fields {
+      grid-template-columns: 1fr auto 1fr 1fr 1fr auto;
+    }
   }
 
   @media (max-width: 991px) {
@@ -249,6 +261,11 @@ const styles = `
 
   .explore-btn:hover { background: linear-gradient(135deg, #ff2a8a, #ed1173); transform: scale(1.02); }
 
+  .explore-btn.loading {
+    opacity: 0.9;
+    cursor: wait;
+  }
+
   .stats-row {
     display: flex;
     gap: 40px;
@@ -332,6 +349,417 @@ const styles = `
     font-size: 13px;
     color: rgba(255, 255, 255, 0.8);
   }
+
+  .airport-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #ed1173;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 9999;
+    margin-top: 8px;
+    backdrop-filter: blur(10px);
+    animation: slideDown 0.2s ease-out;
+    min-width: 350px;
+    width: auto;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .suggestion-item {
+    padding: 14px 18px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .suggestion-item:hover {
+    background: linear-gradient(135deg, rgba(237, 17, 115, 0.05), rgba(255, 107, 157, 0.05));
+    border-left: 3px solid #ed1173;
+    padding-left: 15px;
+  }
+
+  .suggestion-item:last-child {
+    border-bottom: none;
+  }
+
+  .suggestion-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .suggestion-iata {
+    font-weight: 800;
+    color: #ed1173;
+    font-size: 14px;
+    background: rgba(237, 17, 115, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    min-width: 35px;
+    text-align: center;
+  }
+
+  .suggestion-name {
+    font-weight: 700;
+    color: #1a1a2e;
+    font-size: 14px;
+  }
+
+  .suggestion-city {
+    font-size: 12px;
+    color: #666;
+    margin-left: 43px;
+    font-weight: 500;
+  }
+
+  .field-wrapper {
+    position: relative;
+    z-index: 1;
+  }
+
+  .travelers-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #ed1173;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    z-index: 9999;
+    margin-top: 8px;
+    padding: 20px;
+    min-width: 300px;
+    animation: slideDown 0.2s ease-out;
+  }
+
+  .traveler-type {
+    margin-bottom: 16px;
+  }
+
+  .traveler-type:last-child {
+    margin-bottom: 0;
+  }
+
+  .traveler-label {
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  .traveler-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .traveler-button {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #ed1173;
+    background: white;
+    color: #ed1173;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.2s ease;
+  }
+
+  .traveler-button:hover {
+    background: #ed1173;
+    color: white;
+  }
+
+  .traveler-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .traveler-count {
+    min-width: 40px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 16px;
+    color: #1a1a2e;
+  }
+
+  .flight-results {
+    margin-top: 24px;
+    background: white;
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    border: 1px solid rgba(237, 17, 115, 0.1);
+  }
+
+  .flight-item {
+    border: 2px solid #f8f9fa;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .flight-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ed1173, #ff6b9d);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .flight-item:hover {
+    border-color: #ed1173;
+    box-shadow: 0 15px 40px rgba(237, 17, 115, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .flight-item:hover::before {
+    opacity: 1;
+  }
+
+  .flight-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f8f9fa;
+  }
+
+  .flight-airline {
+    font-weight: 800;
+    color: #1a1a2e;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .airline-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #ed1173, #ff6b9d);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .flight-price {
+    font-size: 24px;
+    font-weight: 900;
+    color: #ed1173;
+    text-shadow: 0 2px 4px rgba(237, 17, 115, 0.1);
+  }
+
+  .flight-details {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 30px;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .flight-time {
+    text-align: center;
+    position: relative;
+  }
+
+  .flight-time::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -15px;
+    width: 30px;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, #ddd, #ddd 3px, transparent 3px, transparent 6px);
+    transform: translateY(-50%);
+  }
+
+  .flight-time:last-child::after {
+    display: none;
+  }
+
+  .flight-time-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin-bottom: 4px;
+  }
+
+  .flight-time-label {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 2px;
+    font-weight: 600;
+  }
+
+  .flight-time-date {
+    font-size: 12px;
+    color: #999;
+    font-weight: 500;
+  }
+
+  .flight-duration {
+    text-align: center;
+    color: #666;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 12px 16px;
+    background: rgba(237, 17, 115, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(237, 17, 115, 0.1);
+  }
+
+  .flight-stops {
+    font-size: 12px;
+    color: #ed1173;
+    margin-top: 6px;
+    font-weight: 700;
+  }
+
+  .flight-amenities {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .amenity-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #f8f9fa;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    border: 1px solid #e9ecef;
+  }
+
+  .amenity-badge.direct {
+    background: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+    border-color: rgba(76, 175, 80, 0.2);
+  }
+
+  .amenity-badge.stops {
+    background: rgba(255, 152, 0, 0.1);
+    color: #ff9800;
+    border-color: rgba(255, 152, 0, 0.2);
+  }
+
+  .seats-badge {
+    background: rgba(233, 30, 99, 0.1);
+    color: #e91e63;
+    border-color: rgba(233, 30, 99, 0.2);
+  }
+
+  .select-button {
+    background: linear-gradient(135deg, #ed1173, #ff6b9d);
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(237, 17, 115, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .select-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(237, 17, 115, 0.4);
+  }
+
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f8f9fa;
+  }
+
+  .results-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin: 0;
+  }
+
+  .results-count {
+    background: linear-gradient(135deg, #ed1173, #ff6b9d);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+  }
+
+  .spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #ed1173;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .spin {
+    animation: spin 1s linear infinite;
+  }
 `;
 
 export default function FlightHero() {
@@ -339,14 +767,146 @@ export default function FlightHero() {
   const [tripType, setTripType] = useState("round");
   const [from, setFrom] = useState("Mumbai");
   const [to, setTo] = useState("");
-  const [dates, setDates] = useState("");
+  const [departureDate, setDepartureDate] = useState("");
+  const [returnDate, setReturnDate] = useState("");
   const [direct, setDirect] = useState(false);
   const [cabinClass, setCabinClass] = useState("Economy");
+  const [adults, setAdults] = useState(1);
+  const [children, setChildren] = useState(0);
+  const [showTravelersDropdown, setShowTravelersDropdown] = useState(false);
+  const [showFromSuggestions, setShowFromSuggestions] = useState(false);
+  const [showToSuggestions, setShowToSuggestions] = useState(false);
+  const [fromSuggestions, setFromSuggestions] = useState([]);
+  const [toSuggestions, setToSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const fromInputRef = useRef(null);
+  const toInputRef = useRef(null);
+  const travelersRef = useRef(null);
 
   const swapCities = () => {
     setFrom(to || "");
     setTo(from);
   };
+
+  // Airport search API
+  const handleAirportSearch = async (keyword, type) => {
+    if (keyword.length < 2) {
+      if (type === 'from') {
+        setFromSuggestions([]);
+        setShowFromSuggestions(false);
+      } else {
+        setToSuggestions([]);
+        setShowToSuggestions(false);
+      }
+      return;
+    }
+
+    try {
+      const data = await searchAirports(keyword);
+
+      if (data.status && data.data) {
+        if (type === 'from') {
+          setFromSuggestions(data.data);
+          setShowFromSuggestions(true);
+        } else {
+          setToSuggestions(data.data);
+          setShowToSuggestions(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error searching airports:', error);
+    }
+  };
+
+  // Handle search click - call API then navigate to results page with params + data
+  const handleSearchFlights = async () => {
+    if (!from || !to || !departureDate) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    if (tripType === 'round' && !returnDate) {
+      alert('Please select return date for round trip');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const searchParams = {
+        from: from,
+        to: to,
+        date: departureDate,
+        adults: adults
+      };
+
+      // Add return date for round trip
+      if (tripType === 'round') {
+        searchParams.return_date = returnDate;
+      }
+
+      // Add children if any
+      if (children > 0) {
+        searchParams.children = children;
+      }
+
+      // Add cabin class if specified
+      if (cabinClass !== 'Economy') {
+        searchParams.cabin_class = cabinClass.toLowerCase();
+      }
+
+      // Add direct flight preference
+      if (direct) {
+        searchParams.direct = true;
+      }
+
+      // Call backend flight search API
+      const response = await searchFlights(searchParams);
+
+      // Navigate to results page with search parameters and initial API response
+      navigate('/honeymoon/flights', {
+        state: { searchParams, initialResults: response }
+      });
+
+    } catch (error) {
+      console.error('Error searching flights:', error);
+      alert('Error searching flights');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle airport selection
+  const selectAirport = (airport, type) => {
+    if (type === 'from') {
+      setFrom(airport.iata);
+      setShowFromSuggestions(false);
+      setFromSuggestions([]);
+    } else {
+      setTo(airport.iata);
+      setShowToSuggestions(false);
+      setToSuggestions([]);
+    }
+  };
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (fromInputRef.current && !fromInputRef.current.contains(event.target)) {
+        setShowFromSuggestions(false);
+      }
+      if (toInputRef.current && !toInputRef.current.contains(event.target)) {
+        setShowToSuggestions(false);
+      }
+      if (travelersRef.current && !travelersRef.current.contains(event.target)) {
+        setShowTravelersDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <>
@@ -402,11 +962,9 @@ export default function FlightHero() {
 
           <div className="row align-items-start">
             <div className="col-12 mb-5">
-              <div className="explore-badge">
-                <span className="dot"></span>✨ Best fares across 500+ airlines
-              </div>
+
               <h1 className="hero-title">
-                book cheap flight tickets with ease
+                Book Cheap Flight Tickets With Ease
                 <br />
               </h1>
               <p className="hero-subtitle">
@@ -428,33 +986,7 @@ export default function FlightHero() {
               </div>
             </div>
 
-            <div className="col-12">
-              <div className="recommended-section">
-                <div className="recommended-title">Recommended Picks</div>
-                <div className="recommended-grid">
-                  <div
-                    className="recommended-card"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => navigate("/honeymoon/hotels")}
-                  >
-                    <div className="recommended-tag">Recommended hotel</div>
-                    <div className="recommended-name">
-                      Romantic Beachfront Resort
-                    </div>
-                    <div className="recommended-meta">4.8 • Goa • ₹₹₹</div>
-                  </div>
-                  <div className="recommended-card">
-                    <div className="recommended-tag">Recommended activity</div>
-                    <div className="recommended-name">
-                      Sunset cruise and candlelight dinner
-                    </div>
-                    <div className="recommended-meta">
-                      4.9 • Popular for couples
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+
 
             <div className="col-12">
               <div className="search-card">
@@ -462,7 +994,7 @@ export default function FlightHero() {
                   {[
                     ["round", "Round-trip"],
                     ["oneway", "One-way"],
-                    ["multi", "Multi-city"],
+                    // ["multi", "Multi-city"],
                   ].map(([val, label]) => (
                     <label key={val}>
                       <input
@@ -475,7 +1007,7 @@ export default function FlightHero() {
                       {label}
                     </label>
                   ))}
-                  <select
+                  {/* <select
                     className="class-select ms-1"
                     value={cabinClass}
                     onChange={(e) => setCabinClass(e.target.value)}
@@ -496,20 +1028,47 @@ export default function FlightHero() {
                       onChange={(e) => setDirect(e.target.checked)}
                     />
                     Direct flights only
-                  </label>
+                  </label> */}
                 </div>
 
                 {/* Search fields */}
                 <div className="search-fields">
                   {/* From */}
-                  <div className="field-box">
-                    <div className="field-label">✈ Leaving from</div>
-                    <input
-                      className="field-input"
-                      placeholder="City or airport"
-                      value={from}
-                      onChange={(e) => setFrom(e.target.value)}
-                    />
+                  <div className="field-box" ref={fromInputRef}>
+                    <div className="field-label">
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        <Plane size={14} /> Leaving from
+                      </span>
+                    </div>
+                    <div className="field-wrapper">
+                      <input
+                        className="field-input"
+                        placeholder="City or airport"
+                        value={from}
+                        onChange={(e) => {
+                          setFrom(e.target.value);
+                          handleAirportSearch(e.target.value, 'from');
+                        }}
+                        onFocus={() => from.length >= 2 && setShowFromSuggestions(true)}
+                      />
+                      {showFromSuggestions && fromSuggestions.length > 0 && (
+                        <div className="airport-suggestions">
+                          {fromSuggestions.map((airport, index) => (
+                            <div
+                              key={index}
+                              className="suggestion-item"
+                              onClick={() => selectAirport(airport, 'from')}
+                            >
+                              <div className="suggestion-main">
+                                <span className="suggestion-iata">{airport.iata}</span>
+                                <span className="suggestion-name">{airport.name}</span>
+                              </div>
+                              <div className="suggestion-city">{airport.city}, {airport.country}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <div className="field-sub">All airports</div>
                   </div>
 
@@ -525,26 +1084,57 @@ export default function FlightHero() {
                   </div>
 
                   {/* To */}
-                  <div className="field-box">
-                    <div className="field-label">🛬 Going to</div>
-                    <input
-                      className="field-input"
-                      placeholder="City or airport"
-                      value={to}
-                      onChange={(e) => setTo(e.target.value)}
-                    />
+                  <div className="field-box" ref={toInputRef}>
+                    <div className="field-label">
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        <MapPin size={14} /> Going to
+                      </span>
+                    </div>
+                    <div className="field-wrapper">
+                      <input
+                        className="field-input"
+                        placeholder="City or airport"
+                        value={to}
+                        onChange={(e) => {
+                          setTo(e.target.value);
+                          handleAirportSearch(e.target.value, 'to');
+                        }}
+                        onFocus={() => to.length >= 2 && setShowToSuggestions(true)}
+                      />
+                      {showToSuggestions && toSuggestions.length > 0 && (
+                        <div className="airport-suggestions">
+                          {toSuggestions.map((airport, index) => (
+                            <div
+                              key={index}
+                              className="suggestion-item"
+                              onClick={() => selectAirport(airport, 'to')}
+                            >
+                              <div className="suggestion-main">
+                                <span className="suggestion-iata">{airport.iata}</span>
+                                <span className="suggestion-name">{airport.name}</span>
+                              </div>
+                              <div className="suggestion-city">{airport.city}, {airport.country}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <div className="field-sub">&nbsp;</div>
                   </div>
 
                   {/* Dates */}
                   <div className="field-box">
-                    <div className="field-label">📅 Travel dates</div>
+                    <div className="field-label">
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        <CalendarSearch size={14} /> Departure
+                      </span>
+                    </div>
                     <input
                       className="field-input"
                       type="text"
-                      placeholder="Add dates"
-                      value={dates}
-                      onChange={(e) => setDates(e.target.value)}
+                      placeholder="Add departure date"
+                      value={departureDate}
+                      onChange={(e) => setDepartureDate(e.target.value)}
                       onFocus={(e) => (e.target.type = "date")}
                       onBlur={(e) => {
                         if (!e.target.value) e.target.type = "text";
@@ -552,15 +1142,110 @@ export default function FlightHero() {
                     />
                   </div>
 
+                  {/* Return Date - Show only for round trip */}
+                  {tripType === 'round' && (
+                    <div className="field-box">
+                      <div className="field-label">
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                          <CalendarSearch size={14} /> Return
+                        </span>
+                      </div>
+                      <input
+                        className="field-input"
+                        type="text"
+                        placeholder="Add return date"
+                        value={returnDate}
+                        onChange={(e) => setReturnDate(e.target.value)}
+                        onFocus={(e) => (e.target.type = "date")}
+                        onBlur={(e) => {
+                          if (!e.target.value) e.target.type = "text";
+                        }}
+                        min={departureDate}
+                      />
+                    </div>
+                  )}
+
                   {/* Travelers */}
-                  <div className="field-box">
-                    <div className="field-label">👤 Travelers</div>
-                    <div className="field-value">1 adult</div>
+                  <div className="field-box" ref={travelersRef}>
+                    <div className="field-label">
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        <Users size={14} /> Travelers
+                      </span>
+                    </div>
+                    <div className="field-wrapper">
+                      <div
+                        className="field-value"
+                        style={{ cursor: 'pointer', padding: '8px 0' }}
+                        onClick={() => setShowTravelersDropdown(!showTravelersDropdown)}
+                      >
+                        {adults + children} {adults + children === 1 ? 'traveler' : 'travelers'}
+                        {adults > 0 && `, ${adults} ${adults === 1 ? 'adult' : 'adults'}`}
+                        {children > 0 && `, ${children} ${children === 1 ? 'child' : 'children'}`}
+                      </div>
+                      {showTravelersDropdown && (
+                        <div className="travelers-dropdown">
+                          <div className="traveler-type">
+                            <div className="traveler-label">Adults</div>
+                            <div className="traveler-controls">
+                              <button
+                                className="traveler-button"
+                                onClick={() => setAdults(Math.max(1, adults - 1))}
+                                disabled={adults <= 1}
+                              >
+                                -
+                              </button>
+                              <div className="traveler-count">{adults}</div>
+                              <button
+                                className="traveler-button"
+                                onClick={() => setAdults(adults + 1)}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                          <div className="traveler-type">
+                            <div className="traveler-label">Children</div>
+                            <div className="traveler-controls">
+                              <button
+                                className="traveler-button"
+                                onClick={() => setChildren(Math.max(0, children - 1))}
+                                disabled={children <= 0}
+                              >
+                                -
+                              </button>
+                              <div className="traveler-count">{children}</div>
+                              <button
+                                className="traveler-button"
+                                onClick={() => setChildren(children + 1)}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     <div className="field-sub">{cabinClass}</div>
                   </div>
 
                   {/* Explore Button */}
-                  <button className="explore-btn">🔍 Explore</button>
+                  <button
+                    className={`explore-btn ${loading ? "loading" : ""}`}
+                    onClick={handleSearchFlights}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <Loader2 size={18} className="spin" />
+                        Searching flights...
+                      </span>
+                    ) : (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <Plane size={18} />
+                        Search flights
+                      </span>
+                    )}
+                  </button>
                 </div>
               </div>
             </div>
@@ -569,4 +1254,4 @@ export default function FlightHero() {
       </div>
     </>
   );
-}
+};

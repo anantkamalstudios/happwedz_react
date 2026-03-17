@@ -190,6 +190,9 @@ const HoneymoonHeroPage = lazy(
 const HoneymoonHotelsPage = lazy(
   () => import("./components/pages/Travels/honeymoon/HoneymoonHotelsPage"),
 );
+const FlightSearchResults = lazy(
+  () => import("./components/pages/Travels/honeymoon/FlightSearchResults"),
+);
 
 function App() {
   const dispatch = useDispatch();
@@ -323,6 +326,7 @@ function App() {
               <Route path="/top-rated" element={<TopRatedVendors />} />
               <Route path="/careers" element={<CareersPage />} />
               <Route path="/honeymoon" element={<HoneymoonHeroPage />} />
+              <Route path="/honeymoon/flights" element={<FlightSearchResults />} />
               <Route path="/honeymoon/hotels" element={<HoneymoonHotelsPage />} />
               <Route
                 path="/honeymoon/hotels/:hotelId"

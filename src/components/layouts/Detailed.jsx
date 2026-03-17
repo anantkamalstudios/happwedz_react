@@ -24,6 +24,8 @@ import {
   FaParking,
   FaGlassCheers,
   FaCalendarAlt,
+  FaChevronDown,
+  FaChevronUp,
 } from "react-icons/fa";
 import { GrFormNextLink } from "react-icons/gr";
 import ReviewSection from "../pages/ReviewSection";
@@ -68,6 +70,7 @@ const Detailed = () => {
   const [selectedVendorId, setSelectedVendorId] = useState(null);
   const [showClaimForm, setShowClaimForm] = useState(false);
   const [showAllFaqs, setShowAllFaqs] = useState(false);
+  const [showStartingPrice, setShowStartingPrice] = useState(false);
   const navigate = useNavigate();
   const handleShowPricingModal = (vendorId) => {
     setSelectedVendorId(vendorId);
@@ -1202,6 +1205,7 @@ const Detailed = () => {
                         {venueData.attributes?.veg_price
                           ? `₹ ${parseInt(
                               venueData.attributes.veg_price.replace(/,/g, ""),
+                              10,
                             ).toLocaleString()}`
                           : "Contact for pricing"}
                       </div>
@@ -1216,9 +1220,40 @@ const Detailed = () => {
                                 /,/g,
                                 "",
                               ),
+                              10,
                             ).toLocaleString()} onwards`
                           : "Contact for pricing"}
                       </div>
+
+                      {venueData.attributes?.starting_price && (
+                        <div
+                          className="mt-3 d-flex align-items-center justify-content-between"
+                          style={{ cursor: "pointer" }}
+                          onClick={() => setShowStartingPrice((prev) => !prev)}
+                        >
+                          <span className="fw-semibold fs-14">
+                            Venue starting price
+                          </span>
+                          <span className="d-flex align-items-center primary-text fs-14">
+                            {showStartingPrice && (
+                              <span className="me-2">
+                                ₹{" "}
+                                {parseInt(
+                                  String(
+                                    venueData.attributes.starting_price,
+                                  ).replace(/[^0-9]/g, ""),
+                                  10,
+                                ).toLocaleString()}
+                              </span>
+                            )}
+                            {showStartingPrice ? (
+                              <FaChevronUp size={14} />
+                            ) : (
+                              <FaChevronDown size={14} />
+                            )}
+                          </span>
+                        </div>
+                      )}
                     </>
                   ) : (
                     <>
