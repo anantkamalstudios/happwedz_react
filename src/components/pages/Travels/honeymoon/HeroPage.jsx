@@ -1,5 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import FightIcon from "../../../../assets/trevel_icon/airplane.png"
+import HotelIcon from "../../../../assets/trevel_icon/hotel.png"
+import CarIcon from "../../../../assets/trevel_icon/sedan.png"
+import ActivityIcon from "../../../../assets/trevel_icon/checklist.png"
+import CruiseIcon from "../../../../assets/trevel_icon/cruise-ship.png"
 import { Plane, MapPin, Users, CalendarSearch, Loader2 } from "lucide-react";
 import { searchAirports, searchFlights } from "../../../../services/api/flightApi";
 
@@ -70,28 +75,54 @@ const styles = `
   }
 
   .nav-tab {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 8px 18px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 10px 20px;
     border-radius: 25px;
-    color: rgba(255,255,255,0.75);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    border: none;
-    background: transparent;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    white-space: nowrap;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
-  .nav-tab:hover { color: #fff; background: rgba(255,255,255,0.1); }
+  .nav-tab span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-tab img {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    filter: brightness(1) invert(1);
+  }
+
+  .nav-tab.active {
+    background: rgba(255,255,255,0.25);
+    border-color: rgba(255,255,255,0.4);
+    transform: scale(1.05);
+  }
+
+  .nav-tab:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.3);
+    transform: translateY(-1px);
+  }
 
   .nav-tab.active {
     color: #ed1173;
     background: #fff;
     font-weight: 600;
+  }
+
+  .nav-tab.active img {
+    filter: none;
   }
 
   .hero-title {
@@ -765,7 +796,7 @@ const styles = `
 export default function FlightHero() {
   const navigate = useNavigate();
   const [tripType, setTripType] = useState("round");
-  const [from, setFrom] = useState("Mumbai");
+  const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [departureDate, setDepartureDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
@@ -918,12 +949,12 @@ export default function FlightHero() {
             <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
               <div className="d-flex align-items-center gap-1 flex-wrap">
                 {[
-                  { icon: "🛏️", label: "Stays" },
-                  { icon: "✈️", label: "Flights", active: true },
-                  { icon: "🏨", label: "Flight + Hotel" },
-                  { icon: "🚗", label: "Car rental" },
+                  { icon: { src: HotelIcon, alt: "Hotels" }, label: "Hotels" },
+                  { icon: { src: FightIcon, alt: "Flights" }, label: "Flights", active: true },
+                  { icon: { src: CruiseIcon, alt: "cruise" }, label: "cruise" },
+                  { icon: { src: CarIcon, alt: "Car rental" }, label: "Car rental" },
                   {
-                    icon: "🎡",
+                    icon: { src: ActivityIcon, alt: "Activities" },
                     label: "Activities",
                     onClick: () => navigate("/travels"),
                   },
@@ -933,7 +964,13 @@ export default function FlightHero() {
                     className={`nav-tab ${tab.active ? "active" : ""}`}
                     onClick={tab.onClick}
                   >
-                    <span>{tab.icon}</span> {tab.label}
+                    <span>
+                      {typeof tab.icon === 'object' ? (
+                        <img src={tab.icon.src} alt={tab.icon.alt} />
+                      ) : (
+                        tab.icon
+                      )}
+                    </span> {tab.label}
                   </button>
                 ))}
               </div>
@@ -1037,13 +1074,13 @@ export default function FlightHero() {
                   <div className="field-box" ref={fromInputRef}>
                     <div className="field-label">
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                        <Plane size={14} /> Leaving from
+                        <Plane size={14} /> Departure
                       </span>
                     </div>
                     <div className="field-wrapper">
                       <input
                         className="field-input"
-                        placeholder="City or airport"
+                        placeholder="Enter departure city or airport"
                         value={from}
                         onChange={(e) => {
                           setFrom(e.target.value);
@@ -1087,13 +1124,13 @@ export default function FlightHero() {
                   <div className="field-box" ref={toInputRef}>
                     <div className="field-label">
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                        <MapPin size={14} /> Going to
+                        <MapPin size={14} /> Destination
                       </span>
                     </div>
                     <div className="field-wrapper">
                       <input
                         className="field-input"
-                        placeholder="City or airport"
+                        placeholder="Enter destination city or airport"
                         value={to}
                         onChange={(e) => {
                           setTo(e.target.value);
@@ -1126,13 +1163,14 @@ export default function FlightHero() {
                   <div className="field-box">
                     <div className="field-label">
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        <CalendarSearch size={14} /> Departure Date
                         <CalendarSearch size={14} /> Departure
                       </span>
                     </div>
                     <input
                       className="field-input"
                       type="text"
-                      placeholder="Add departure date"
+                      placeholder="Select departure date"
                       value={departureDate}
                       onChange={(e) => setDepartureDate(e.target.value)}
                       onFocus={(e) => (e.target.type = "date")}
@@ -1153,7 +1191,7 @@ export default function FlightHero() {
                       <input
                         className="field-input"
                         type="text"
-                        placeholder="Add return date"
+                        placeholder="Select return date"
                         value={returnDate}
                         onChange={(e) => setReturnDate(e.target.value)}
                         onFocus={(e) => (e.target.type = "date")}
