@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import FightIcon from "../../../../assets/trevel_icon/airplane.png"
-import HotelIcon from "../../../../assets/trevel_icon/hotel.png"
-import CarIcon from "../../../../assets/trevel_icon/sedan.png"
-import ActivityIcon from "../../../../assets/trevel_icon/checklist.png"
-import CruiseIcon from "../../../../assets/trevel_icon/cruise-ship.png"
+import FightIcon from "../../../../assets/trevel_icon/airplane.png";
+import HotelIcon from "../../../../assets/trevel_icon/hotel.png";
+import CarIcon from "../../../../assets/trevel_icon/sedan.png";
+import ActivityIcon from "../../../../assets/trevel_icon/checklist.png";
+import CruiseIcon from "../../../../assets/trevel_icon/cruise-ship.png";
 import { Plane, MapPin, Users, CalendarSearch, Loader2 } from "lucide-react";
-import { searchAirports, searchFlights } from "../../../../services/api/flightApi";
+import {
+  searchAirports,
+  searchFlights,
+} from "../../../../services/api/flightApi";
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500&display=swap');
@@ -822,7 +825,7 @@ export default function FlightHero() {
   // Airport search API
   const handleAirportSearch = async (keyword, type) => {
     if (keyword.length < 2) {
-      if (type === 'from') {
+      if (type === "from") {
         setFromSuggestions([]);
         setShowFromSuggestions(false);
       } else {
@@ -836,7 +839,7 @@ export default function FlightHero() {
       const data = await searchAirports(keyword);
 
       if (data.status && data.data) {
-        if (type === 'from') {
+        if (type === "from") {
           setFromSuggestions(data.data);
           setShowFromSuggestions(true);
         } else {
@@ -845,19 +848,19 @@ export default function FlightHero() {
         }
       }
     } catch (error) {
-      console.error('Error searching airports:', error);
+      console.error("Error searching airports:", error);
     }
   };
 
   // Handle search click - call API then navigate to results page with params + data
   const handleSearchFlights = async () => {
     if (!from || !to || !departureDate) {
-      alert('Please fill in all required fields');
+      alert("Please fill in all required fields");
       return;
     }
 
-    if (tripType === 'round' && !returnDate) {
-      alert('Please select return date for round trip');
+    if (tripType === "round" && !returnDate) {
+      alert("Please select return date for round trip");
       return;
     }
 
@@ -867,11 +870,11 @@ export default function FlightHero() {
         from: from,
         to: to,
         date: departureDate,
-        adults: adults
+        adults: adults,
       };
 
       // Add return date for round trip
-      if (tripType === 'round') {
+      if (tripType === "round") {
         searchParams.return_date = returnDate;
       }
 
@@ -881,7 +884,7 @@ export default function FlightHero() {
       }
 
       // Add cabin class if specified
-      if (cabinClass !== 'Economy') {
+      if (cabinClass !== "Economy") {
         searchParams.cabin_class = cabinClass.toLowerCase();
       }
 
@@ -894,13 +897,12 @@ export default function FlightHero() {
       const response = await searchFlights(searchParams);
 
       // Navigate to results page with search parameters and initial API response
-      navigate('/honeymoon/flights', {
-        state: { searchParams, initialResults: response }
+      navigate("/honeymoon/flights", {
+        state: { searchParams, initialResults: response },
       });
-
     } catch (error) {
-      console.error('Error searching flights:', error);
-      alert('Error searching flights');
+      console.error("Error searching flights:", error);
+      alert("Error searching flights");
     } finally {
       setLoading(false);
     }
@@ -908,7 +910,7 @@ export default function FlightHero() {
 
   // Handle airport selection
   const selectAirport = (airport, type) => {
-    if (type === 'from') {
+    if (type === "from") {
       setFrom(airport.iata);
       setShowFromSuggestions(false);
       setFromSuggestions([]);
@@ -922,20 +924,26 @@ export default function FlightHero() {
   // Close suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (fromInputRef.current && !fromInputRef.current.contains(event.target)) {
+      if (
+        fromInputRef.current &&
+        !fromInputRef.current.contains(event.target)
+      ) {
         setShowFromSuggestions(false);
       }
       if (toInputRef.current && !toInputRef.current.contains(event.target)) {
         setShowToSuggestions(false);
       }
-      if (travelersRef.current && !travelersRef.current.contains(event.target)) {
+      if (
+        travelersRef.current &&
+        !travelersRef.current.contains(event.target)
+      ) {
         setShowTravelersDropdown(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -950,9 +958,16 @@ export default function FlightHero() {
               <div className="d-flex align-items-center gap-1 flex-wrap">
                 {[
                   { icon: { src: HotelIcon, alt: "Hotels" }, label: "Hotels" },
-                  { icon: { src: FightIcon, alt: "Flights" }, label: "Flights", active: true },
+                  {
+                    icon: { src: FightIcon, alt: "Flights" },
+                    label: "Flights",
+                    active: true,
+                  },
                   { icon: { src: CruiseIcon, alt: "cruise" }, label: "cruise" },
-                  { icon: { src: CarIcon, alt: "Car rental" }, label: "Car rental" },
+                  {
+                    icon: { src: CarIcon, alt: "Car rental" },
+                    label: "Car rental",
+                  },
                   {
                     icon: { src: ActivityIcon, alt: "Activities" },
                     label: "Activities",
@@ -965,12 +980,13 @@ export default function FlightHero() {
                     onClick={tab.onClick}
                   >
                     <span>
-                      {typeof tab.icon === 'object' ? (
+                      {typeof tab.icon === "object" ? (
                         <img src={tab.icon.src} alt={tab.icon.alt} />
                       ) : (
                         tab.icon
                       )}
-                    </span> {tab.label}
+                    </span>{" "}
+                    {tab.label}
                   </button>
                 ))}
               </div>
@@ -999,7 +1015,6 @@ export default function FlightHero() {
 
           <div className="row align-items-start">
             <div className="col-12 mb-5">
-
               <h1 className="hero-title">
                 Book Cheap Flight Tickets With Ease
                 <br />
@@ -1022,8 +1037,6 @@ export default function FlightHero() {
                 ))}
               </div>
             </div>
-
-
 
             <div className="col-12">
               <div className="search-card">
@@ -1073,7 +1086,13 @@ export default function FlightHero() {
                   {/* From */}
                   <div className="field-box" ref={fromInputRef}>
                     <div className="field-label">
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                      >
                         <Plane size={14} /> Departure
                       </span>
                     </div>
@@ -1084,9 +1103,11 @@ export default function FlightHero() {
                         value={from}
                         onChange={(e) => {
                           setFrom(e.target.value);
-                          handleAirportSearch(e.target.value, 'from');
+                          handleAirportSearch(e.target.value, "from");
                         }}
-                        onFocus={() => from.length >= 2 && setShowFromSuggestions(true)}
+                        onFocus={() =>
+                          from.length >= 2 && setShowFromSuggestions(true)
+                        }
                       />
                       {showFromSuggestions && fromSuggestions.length > 0 && (
                         <div className="airport-suggestions">
@@ -1094,13 +1115,19 @@ export default function FlightHero() {
                             <div
                               key={index}
                               className="suggestion-item"
-                              onClick={() => selectAirport(airport, 'from')}
+                              onClick={() => selectAirport(airport, "from")}
                             >
                               <div className="suggestion-main">
-                                <span className="suggestion-iata">{airport.iata}</span>
-                                <span className="suggestion-name">{airport.name}</span>
+                                <span className="suggestion-iata">
+                                  {airport.iata}
+                                </span>
+                                <span className="suggestion-name">
+                                  {airport.name}
+                                </span>
                               </div>
-                              <div className="suggestion-city">{airport.city}, {airport.country}</div>
+                              <div className="suggestion-city">
+                                {airport.city}, {airport.country}
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -1123,7 +1150,13 @@ export default function FlightHero() {
                   {/* To */}
                   <div className="field-box" ref={toInputRef}>
                     <div className="field-label">
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                      >
                         <MapPin size={14} /> Destination
                       </span>
                     </div>
@@ -1134,9 +1167,11 @@ export default function FlightHero() {
                         value={to}
                         onChange={(e) => {
                           setTo(e.target.value);
-                          handleAirportSearch(e.target.value, 'to');
+                          handleAirportSearch(e.target.value, "to");
                         }}
-                        onFocus={() => to.length >= 2 && setShowToSuggestions(true)}
+                        onFocus={() =>
+                          to.length >= 2 && setShowToSuggestions(true)
+                        }
                       />
                       {showToSuggestions && toSuggestions.length > 0 && (
                         <div className="airport-suggestions">
@@ -1144,13 +1179,19 @@ export default function FlightHero() {
                             <div
                               key={index}
                               className="suggestion-item"
-                              onClick={() => selectAirport(airport, 'to')}
+                              onClick={() => selectAirport(airport, "to")}
                             >
                               <div className="suggestion-main">
-                                <span className="suggestion-iata">{airport.iata}</span>
-                                <span className="suggestion-name">{airport.name}</span>
+                                <span className="suggestion-iata">
+                                  {airport.iata}
+                                </span>
+                                <span className="suggestion-name">
+                                  {airport.name}
+                                </span>
                               </div>
-                              <div className="suggestion-city">{airport.city}, {airport.country}</div>
+                              <div className="suggestion-city">
+                                {airport.city}, {airport.country}
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -1162,7 +1203,13 @@ export default function FlightHero() {
                   {/* Dates */}
                   <div className="field-box">
                     <div className="field-label">
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                      >
                         <CalendarSearch size={14} /> Departure Date
                         <CalendarSearch size={14} /> Departure
                       </span>
@@ -1181,10 +1228,16 @@ export default function FlightHero() {
                   </div>
 
                   {/* Return Date - Show only for round trip */}
-                  {tripType === 'round' && (
+                  {tripType === "round" && (
                     <div className="field-box">
                       <div className="field-label">
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 4,
+                          }}
+                        >
                           <CalendarSearch size={14} /> Return
                         </span>
                       </div>
@@ -1206,19 +1259,30 @@ export default function FlightHero() {
                   {/* Travelers */}
                   <div className="field-box" ref={travelersRef}>
                     <div className="field-label">
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                      >
                         <Users size={14} /> Travelers
                       </span>
                     </div>
                     <div className="field-wrapper">
                       <div
                         className="field-value"
-                        style={{ cursor: 'pointer', padding: '8px 0' }}
-                        onClick={() => setShowTravelersDropdown(!showTravelersDropdown)}
+                        style={{ cursor: "pointer", padding: "8px 0" }}
+                        onClick={() =>
+                          setShowTravelersDropdown(!showTravelersDropdown)
+                        }
                       >
-                        {adults + children} {adults + children === 1 ? 'traveler' : 'travelers'}
-                        {adults > 0 && `, ${adults} ${adults === 1 ? 'adult' : 'adults'}`}
-                        {children > 0 && `, ${children} ${children === 1 ? 'child' : 'children'}`}
+                        {adults + children}{" "}
+                        {adults + children === 1 ? "traveler" : "travelers"}
+                        {adults > 0 &&
+                          `, ${adults} ${adults === 1 ? "adult" : "adults"}`}
+                        {children > 0 &&
+                          `, ${children} ${children === 1 ? "child" : "children"}`}
                       </div>
                       {showTravelersDropdown && (
                         <div className="travelers-dropdown">
@@ -1227,7 +1291,9 @@ export default function FlightHero() {
                             <div className="traveler-controls">
                               <button
                                 className="traveler-button"
-                                onClick={() => setAdults(Math.max(1, adults - 1))}
+                                onClick={() =>
+                                  setAdults(Math.max(1, adults - 1))
+                                }
                                 disabled={adults <= 1}
                               >
                                 -
@@ -1246,7 +1312,9 @@ export default function FlightHero() {
                             <div className="traveler-controls">
                               <button
                                 className="traveler-button"
-                                onClick={() => setChildren(Math.max(0, children - 1))}
+                                onClick={() =>
+                                  setChildren(Math.max(0, children - 1))
+                                }
                                 disabled={children <= 0}
                               >
                                 -
@@ -1273,12 +1341,24 @@ export default function FlightHero() {
                     disabled={loading}
                   >
                     {loading ? (
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
+                      >
                         <Loader2 size={18} className="spin" />
                         Searching flights...
                       </span>
                     ) : (
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
+                      >
                         <Plane size={18} />
                         Search flights
                       </span>
@@ -1292,4 +1372,4 @@ export default function FlightHero() {
       </div>
     </>
   );
-};
+}

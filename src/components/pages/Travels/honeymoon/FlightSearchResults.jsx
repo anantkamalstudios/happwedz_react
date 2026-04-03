@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Plane, MapPin, Clock, ArrowRight, Luggage, Filter, SlidersHorizontal } from 'lucide-react';
-import { searchFlights } from '../../../../services/api/flightApi';
+import { searchFlights, verifyOffer, createFlightPaymentOrder, verifyAndBookFlight } from '../../../../services/api/flightApi';
 import FlightFiltersSidebar from './FlightFiltersSidebar';
+import BookingForm from './BookingForm';
 
 const FlightSearchResults = () => {
   const location = useLocation();
@@ -12,6 +13,13 @@ const FlightSearchResults = () => {
   const [error, setError] = useState(null);
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [sortBy, setSortBy] = useState('price'); // price, duration, departure
+  const [verifyingFlight, setVerifyingFlight] = useState(null);
+  const [verificationError, setVerificationError] = useState(null);
+  const [showBookingForm, setShowBookingForm] = useState(false);
+  const [verifiedFlightData, setVerifiedFlightData] = useState(null);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingError, setBookingError] = useState(null);
+  const [pendingBookingPayload, setPendingBookingPayload] = useState(null);
   const [filters, setFilters] = useState({
     stops: [],
     airlines: [],
@@ -29,6 +37,22 @@ const FlightSearchResults = () => {
   // Get search parameters and any initial results from location state
   const searchParams = location.state?.searchParams;
   const initialResults = location.state?.initialResults;
+
+  useEffect(() => {
+    // Load Razorpay Checkout script (required for window.Razorpay)
+    const existing = document.querySelector('script[data-razorpay="checkout"]');
+    if (existing) return;
+
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.dataset.razorpay = 'checkout';
+
+    script.onload = () => console.log('Razorpay checkout loaded');
+    script.onerror = () => console.error('Failed to load Razorpay checkout');
+
+    document.body.appendChild(script);
+  }, []);
 
   useEffect(() => {
     if (!searchParams) {
@@ -109,15 +133,141 @@ const FlightSearchResults = () => {
     });
   };
 
-  const handleFlightSelect = (flight, fare) => {
-    setSelectedFlight({ ...flight, selectedFare: fare });
-    // Navigate to booking page or show booking modal
-    navigate('/honeymoon/flight-booking', {
-      state: {
-        flight: { ...flight, selectedFare: fare },
-        searchParams: searchParams
+  const handleFlightSelect = async (flight, fare) => {
+    const flightId = `${flight.flight_no}-${fare.offer_id}`;
+    setVerifyingFlight(flightId);
+    setVerificationError(null);
+    
+    try {
+      // Verify the flight offer first
+      const verification = await verifyOffer(fare.provider, fare.offer_id);
+      
+      if (verification.status) {
+        // Verification successful, show booking form
+        setSelectedFlight({ ...flight, selectedFare: fare });
+        setVerifiedFlightData(verification);
+        setShowBookingForm(true);
+      } else {
+        // Verification failed
+        setVerificationError(verification.message || 'Flight verification failed. Please try again.');
       }
-    });
+    } catch (err) {
+      console.error('Flight verification error:', err);
+      setVerificationError(err.response?.data?.message || err.message || 'Failed to verify flight. Please try again.');
+    } finally {
+      setVerifyingFlight(null);
+    }
+  };
+
+  const handleBookingSubmit = async (paymentData) => {
+    setBookingLoading(true);
+    setBookingError(null);
+    
+    try {
+      // Keep a copy so we can prefill Razorpay and verify+book on success
+      setPendingBookingPayload(paymentData);
+      const paymentResponse = await createFlightPaymentOrder(paymentData);
+      
+      if (paymentResponse.status) {
+        // Payment order created successfully
+        console.log('Payment order created:', paymentResponse);
+        
+        // Open Razorpay payment modal
+        if (paymentResponse.razorpay_order_id && paymentResponse.key_id) {
+          openRazorpayPayment(paymentResponse, paymentData);
+        } else {
+          alert('Payment order created! Please proceed with payment.');
+          setShowBookingForm(false);
+        }
+      } else {
+        setBookingError(paymentResponse.message || 'Payment order creation failed. Please try again.');
+      }
+    } catch (err) {
+      console.error('Payment order error:', err);
+      setBookingError(err.response?.data?.message || err.message || 'Failed to create payment order. Please try again.');
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
+  const openRazorpayPayment = (orderData, bookingPayload) => {
+    // Check if Razorpay is loaded
+    if (!window.Razorpay) {
+      console.error('Razorpay not loaded yet');
+      alert('Payment gateway is loading. Please try again in a moment.');
+      return;
+    }
+
+    // Add a small delay to ensure Razorpay is fully initialized
+    setTimeout(() => {
+      const options = {
+        key: orderData.key_id,
+        amount: Math.round(orderData.amount * 100), // INR -> paise
+        currency: orderData.currency || 'INR',
+        name: 'Flight Booking',
+        description: bookingPayload
+          ? `Flight ${bookingPayload.from} to ${bookingPayload.to}`
+          : 'Flight booking payment',
+        order_id: orderData.razorpay_order_id,
+        prefill: bookingPayload?.contact ? {
+          email: bookingPayload.contact.email,
+          contact: bookingPayload.contact.phone,
+        } : undefined,
+        handler: async function (response) {
+          console.log('Razorpay payment success:', response);
+          
+          try {
+            if (!response?.razorpay_payment_id) {
+              alert('Payment failed. Please try again.');
+              return;
+            }
+
+            setBookingLoading(true);
+
+            const verifyPayload = {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            };
+
+            const verifyRes = await verifyAndBookFlight(verifyPayload);
+
+            if (verifyRes?.status) {
+              alert(`Payment successful! Flight booked. PNR: ${verifyRes.pnr || ''}`);
+              setShowBookingForm(false);
+              setPendingBookingPayload(null);
+            } else {
+              alert(verifyRes?.message || 'Payment verified but booking failed.');
+            }
+          } catch (err) {
+            console.error('verify_and_book error:', err);
+            alert(err.response?.data?.message || err.message || 'Payment verification failed.');
+          } finally {
+            setBookingLoading(false);
+          }
+        },
+        modal: {
+          ondismiss: function() {
+            console.log('Razorpay modal closed');
+          }
+        }
+      };
+
+      try {
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+      } catch (error) {
+        console.error('Razorpay initialization error:', error);
+        alert('Payment initialization failed. Please refresh and try again.');
+      }
+    }, 150); // small delay
+  };
+
+  const closeBookingForm = () => {
+    setShowBookingForm(false);
+    setSelectedFlight(null);
+    setVerifiedFlightData(null);
+    setBookingError(null);
   };
 
   const handleFilterChange = (filterType, value) => {
@@ -193,13 +343,15 @@ const FlightSearchResults = () => {
                 <Plane size={22} />
                 Flight Search Results
               </h2>
-              <p className="text-muted">
-                <MapPin size={14} className="me-1" />
-                {searchParams.from} <ArrowRight size={14} className="mx-1" /> {searchParams.to} • {formatDate(searchParams.date)} •
-                {searchParams.return_date ? ` Return: ${formatDate(searchParams.return_date)}` : ' One-way'} •
-                {searchParams.adults} {searchParams.adults === 1 ? 'Adult' : 'Adults'}
-                {searchParams.children > 0 && `, ${searchParams.children} ${searchParams.children === 1 ? 'Child' : 'Children'}`}
-              </p>
+              {searchParams && (
+                <p className="text-muted">
+                  <MapPin size={14} className="me-1" />
+                  {searchParams.from} <ArrowRight size={14} className="mx-1" /> {searchParams.to} • {formatDate(searchParams.date)} •
+                  {searchParams.return_date ? ` Return: ${formatDate(searchParams.return_date)}` : ' One-way'} •
+                  {searchParams.adults} {searchParams.adults === 1 ? 'Adult' : 'Adults'}
+                  {searchParams.children > 0 && `, ${searchParams.children} ${searchParams.children === 1 ? 'Child' : 'Children'}`}
+                </p>
+              )}
             </div>
 
             <div className="d-flex align-items-center gap-3">
@@ -377,12 +529,27 @@ const FlightSearchResults = () => {
 
                       <span style={{ fontWeight: '600', marginLeft: '8px' }}>Aircraft:</span> {flight.aircraft_name || flight.aircraft}
                     </div>
-                    <button
+                    <button 
                       className="select-button"
                       onClick={() => handleFlightSelect(flight, flight.fares[0])}
+                      disabled={verifyingFlight === `${flight.flight_no}-${flight.fares[0]?.offer_id}`}
                     >
-                      Select Flight
+                      {verifyingFlight === `${flight.flight_no}-${flight.fares[0]?.offer_id}` ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                          Verifying...
+                        </>
+                      ) : (
+                        'Select Flight'
+                      )}
                     </button>
+                    
+                    {/* Show verification error for this flight */}
+                    {verificationError && verifyingFlight === null && (
+                      <div className="verification-error mt-2">
+                        <small className="text-danger">{verificationError}</small>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -431,6 +598,51 @@ const FlightSearchResults = () => {
           )}
         </div>
       </div>
+
+      {/* Booking Form Modal */}
+      {showBookingForm && selectedFlight && (
+        <div className="booking-modal-overlay" onClick={closeBookingForm}>
+          <div className="booking-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="booking-modal-header">
+              <h4>Complete Your Booking</h4>
+              <button className="close-btn" onClick={closeBookingForm}>×</button>
+            </div>
+            
+            <div className="booking-modal-body">
+              {/* Flight Summary */}
+              <div className="flight-summary-card">
+                <div className="d-flex align-items-center mb-3">
+                  <img src={selectedFlight.airline_logo} alt={selectedFlight.airline_name} style={{ width: '40px', height: '40px', marginRight: '12px' }} />
+                  <div>
+                    <h6 className="mb-0">{selectedFlight.airline_name} {selectedFlight.flight_no}</h6>
+                    <small className="text-muted">{selectedFlight.origin} → {selectedFlight.destination}</small>
+                  </div>
+                </div>
+                <div className="d-flex justify-content-between align-items-center">
+                  <div>
+                    <div className="h6 mb-0">{formatTime(selectedFlight.departure)} - {formatTime(selectedFlight.arrival)}</div>
+                    <small className="text-muted">{formatDate(selectedFlight.departure)}</small>
+                  </div>
+                  <div className="text-end">
+                    <div className="h5 mb-0 text-primary">₹{verifiedFlightData?.price || selectedFlight.selectedFare?.price}</div>
+                    <small className="text-muted">Verified Price</small>
+                  </div>
+                </div>
+              </div>
+
+              {/* Booking Form */}
+              <BookingForm 
+                flight={selectedFlight}
+                verifiedData={verifiedFlightData}
+                searchParams={searchParams}
+                onSubmit={handleBookingSubmit}
+                loading={bookingLoading}
+                error={bookingError}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .flight-results {
@@ -600,11 +812,114 @@ const FlightSearchResults = () => {
           box-shadow: 0 4px 15px rgba(237, 17, 115, 0.3);
           text-transform: uppercase;
           letter-spacing: 0.5px;
+          min-width: 140px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        .select-button:hover {
+        .select-button:hover:not(:disabled) {
           transform: translateY(-2px);
           box-shadow: 0 8px 25px rgba(237, 17, 115, 0.4);
+        }
+
+        .select-button:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        .verification-error {
+          background: #f8d7da;
+          border: 1px solid #f5c6cb;
+          border-radius: 8px;
+          padding: 8px 12px;
+          margin-top: 8px;
+        }
+
+        .spinner-border-sm {
+          width: 16px;
+          height: 16px;
+          border-width: 2px;
+        }
+
+        /* Booking Modal Styles */
+        .booking-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.7);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          padding: 20px;
+        }
+
+        .booking-modal {
+          background: white;
+          border-radius: 16px;
+          max-width: 600px;
+          width: 100%;
+          max-height: 90vh;
+          overflow-y: auto;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .booking-modal-header {
+          padding: 20px 24px;
+          border-bottom: 1px solid #e9ecef;
+          display: flex;
+          justify-content: between;
+          align-items: center;
+        }
+
+        .booking-modal-header h4 {
+          margin: 0;
+          color: #333;
+        }
+
+        .close-btn {
+          background: none;
+          border: none;
+          font-size: 24px;
+          cursor: pointer;
+          color: #666;
+          padding: 0;
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .close-btn:hover {
+          background: #f8f9fa;
+          color: #333;
+        }
+
+        .booking-modal-body {
+          padding: 24px;
+        }
+
+        .flight-summary-card {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 20px;
+          border-radius: 12px;
+          margin-bottom: 24px;
+        }
+
+        .flight-summary-card .h6,
+        .flight-summary-card .h5 {
+          color: white;
+        }
+
+        .flight-summary-card small {
+          color: rgba(255, 255, 255, 0.8);
         }
       `}</style>
     </div>
