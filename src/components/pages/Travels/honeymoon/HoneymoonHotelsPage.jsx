@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Modal } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 const mapHotelFromApi = (hotel) => {
   const images = Array.isArray(hotel.images) ? hotel.images : [];
@@ -137,6 +137,7 @@ const mapHotelFromApi = (hotel) => {
 
 export default function HoneymoonHotelsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { hotelId } = useParams();
 
   const [apiHotels, setApiHotels] = useState([]);
@@ -146,6 +147,16 @@ export default function HoneymoonHotelsPage() {
   const [activeRoom, setActiveRoom] = useState(null);
 
   useEffect(() => {
+    const stateHotels = Array.isArray(location.state?.hotels)
+      ? location.state.hotels
+      : [];
+    if (stateHotels.length > 0) {
+      setApiHotels(stateHotels);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     let active = true;
     setLoading(true);
     fetch("https://happywedz.com/api/manage/hotel")
@@ -171,7 +182,7 @@ export default function HoneymoonHotelsPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [location.state]);
 
   const hotels = apiHotels;
 
@@ -181,6 +192,15 @@ export default function HoneymoonHotelsPage() {
   );
 
   if (selectedHotel) {
+    const safeTags = Array.isArray(selectedHotel.tags) ? selectedHotel.tags : [];
+    const safeGallery = Array.isArray(selectedHotel.gallery)
+      ? selectedHotel.gallery.filter(Boolean)
+      : [];
+    const safeFacilities = Array.isArray(selectedHotel.facilities)
+      ? selectedHotel.facilities
+      : [];
+    const safeRooms = Array.isArray(selectedHotel.rooms) ? selectedHotel.rooms : [];
+
     return (
       <>
         <div className="container py-4 py-md-5">
@@ -244,12 +264,27 @@ export default function HoneymoonHotelsPage() {
                       <div className="text-muted fs-14">
                         {selectedHotel.location}
                       </div>
+                    {selectedHotel.meta?.categoryName && (
+                      <div className="fs-13 text-muted mt-1">
+                        {selectedHotel.meta.categoryName}
+                        {selectedHotel.meta.destinationName
+                          ? ` · ${selectedHotel.meta.destinationName}`
+                          : ""}
+                        {selectedHotel.meta.zoneName ? ` · ${selectedHotel.meta.zoneName}` : ""}
+                      </div>
+                    )}
+                    {(selectedHotel.meta?.latitude || selectedHotel.meta?.longitude) && (
+                      <div className="fs-12 text-muted mt-1">
+                        Location: {selectedHotel.meta?.latitude ?? "—"},{" "}
+                        {selectedHotel.meta?.longitude ?? "—"}
+                      </div>
+                    )}
                     </div>
                     <div className="text-end">
                       <div className="d-inline-flex flex-column align-items-end">
                         <div className="badge bg-success text-white px-2 py-1 rounded-3 mb-1">
                           <span className="fw-bold me-1">
-                            {selectedHotel.rating.toFixed(1)}
+                          {(Number(selectedHotel.rating) || 0).toFixed(1)}
                           </span>
                           <span className="fs-12">
                             {selectedHotel.ratingLabel}
@@ -273,7 +308,7 @@ export default function HoneymoonHotelsPage() {
                   </p>
 
                   <div className="d-flex flex-wrap gap-2 mb-3">
-                    {selectedHotel.tags.map((tag) => (
+                    {safeTags.map((tag) => (
                       <span
                         key={tag}
                         className="badge rounded-pill bg-light text-dark border"
@@ -292,6 +327,15 @@ export default function HoneymoonHotelsPage() {
                         ))}
                       </ul>
                     </div>
+                  )}
+
+                  {selectedHotel.raw && (
+                    <details className="mt-3">
+                      <summary className="fs-14">Raw API payload</summary>
+                      <pre className="mt-2 mb-0 fs-12 bg-light border rounded-3 p-2 overflow-auto">
+                        {JSON.stringify(selectedHotel.raw, null, 2)}
+                      </pre>
+                    </details>
                   )}
                 </div>
               </div>
@@ -346,12 +390,12 @@ export default function HoneymoonHotelsPage() {
                 </div>
               </div>
 
-              {selectedHotel.facilities && (
+              {safeFacilities.length > 0 && (
                 <div className="card border-0 shadow-sm rounded-4 mt-4">
                   <div className="card-body p-3 p-md-4">
                     <h2 className="h6 mb-3 fs-14">Most popular facilities</h2>
                     <div className="row g-2 fs-14 text-muted">
-                      {selectedHotel.facilities.map((item) => (
+                      {safeFacilities.map((item) => (
                         <div
                           key={item}
                           className="col-6 d-flex align-items-center"
@@ -365,19 +409,26 @@ export default function HoneymoonHotelsPage() {
                 </div>
               )}
 
-              {selectedHotel.rooms && selectedHotel.rooms.length > 0 && (
+              {safeRooms.length > 0 && (
                 <div className="card border-0 shadow-sm rounded-4 mt-4">
                   <div className="card-body p-3 p-md-4">
-                    <h2 className="h6 mb-3 fs-14">Rooms</h2>
+                    <h2 className="h6 mb-3 fs-14">Rooms & rates</h2>
                     <div className="d-flex flex-column gap-3">
-                      {selectedHotel.rooms.map((room) => {
-                        const priceValue = room.totalPrice || room.basePrice;
-                        const numericRoomPrice = priceValue
-                          ? parseFloat(String(priceValue))
-                          : null;
-                        const formattedRoomPrice = numericRoomPrice
-                          ? `₹ ${numericRoomPrice.toLocaleString("en-IN")}`
-                          : null;
+                      {safeRooms.map((room) => {
+                        const firstRate = Array.isArray(room?.rates) ? room.rates[0] : null;
+                        const priceValue =
+                          room.totalPrice ||
+                          room.basePrice ||
+                          firstRate?.net ||
+                          firstRate?.sellingRate;
+                        const numericRoomPrice =
+                          priceValue !== undefined && priceValue !== null
+                            ? parseFloat(String(priceValue))
+                            : null;
+                        const formattedRoomPrice =
+                          Number.isFinite(numericRoomPrice) && numericRoomPrice !== null
+                            ? `₹ ${numericRoomPrice.toLocaleString("en-IN")}`
+                            : null;
                         const maxGuests =
                           (room.maxAdults || 0) + (room.maxChildren || 0);
                         return (
@@ -413,6 +464,11 @@ export default function HoneymoonHotelsPage() {
                                       {room.viewType}
                                     </div>
                                   )}
+                                  {firstRate?.boardName && (
+                                    <div className="fs-12 text-muted">
+                                      {firstRate.boardName}
+                                    </div>
+                                  )}
                                 </div>
                                 {formattedRoomPrice && (
                                   <div className="text-end">
@@ -442,6 +498,9 @@ export default function HoneymoonHotelsPage() {
                                 )}
                                 {room.refundable && (
                                   <span>Free cancellation</span>
+                                )}
+                                {Array.isArray(room?.rates) && room.rates.length > 1 && (
+                                  <span>{room.rates.length} rates</span>
                                 )}
                               </div>
                             </div>
@@ -502,7 +561,12 @@ export default function HoneymoonHotelsPage() {
                         <div className="h5 mb-0 primary-text">
                           {(() => {
                             const priceValue =
-                              activeRoom.totalPrice || activeRoom.basePrice;
+                              activeRoom.totalPrice ||
+                              activeRoom.basePrice ||
+                              (Array.isArray(activeRoom?.rates) ? activeRoom.rates[0]?.net : null) ||
+                              (Array.isArray(activeRoom?.rates)
+                                ? activeRoom.rates[0]?.sellingRate
+                                : null);
                             const numeric = priceValue
                               ? parseFloat(String(priceValue))
                               : null;
@@ -562,6 +626,58 @@ export default function HoneymoonHotelsPage() {
                           </div>
                         </div>
                       )}
+
+                    {Array.isArray(activeRoom?.rates) && activeRoom.rates.length > 0 && (
+                      <div className="mt-3">
+                        <div className="fs-12 mb-2">Available rates</div>
+                        <div className="d-flex flex-column gap-2">
+                          {activeRoom.rates.slice(0, 6).map((rate) => (
+                            <div key={rate.rateKey || JSON.stringify(rate)} className="border rounded-3 p-2">
+                              <div className="d-flex justify-content-between">
+                                <div className="fw-semibold fs-13">
+                                  {rate.boardName || rate.boardCode || "Rate"}
+                                </div>
+                                <div className="fw-bold fs-13">
+                                  {rate.net !== null && rate.net !== undefined
+                                    ? `${rate.currency || ""} ${rate.net}`
+                                    : "—"}
+                                </div>
+                              </div>
+                              <div className="fs-12 text-muted">
+                                {rate.paymentType ? `Payment: ${rate.paymentType}` : ""}
+                                {rate.rateType ? ` · Type: ${rate.rateType}` : ""}
+                              </div>
+                              {Array.isArray(rate.cancellationPolicies) &&
+                                rate.cancellationPolicies.length > 0 && (
+                                  <div className="fs-12 text-muted mt-1">
+                                    Cancellation:{" "}
+                                    {rate.cancellationPolicies
+                                      .map((p) => `${p.from || "—"} (${p.amount ?? "—"} ${p.currency || ""})`)
+                                      .slice(0, 2)
+                                      .join(" · ")}
+                                  </div>
+                                )}
+                              {Array.isArray(rate.taxes) && rate.taxes.length > 0 && (
+                                <div className="fs-12 text-muted mt-1">
+                                  Taxes: {rate.taxes.length} item(s)
+                                </div>
+                              )}
+                              {Array.isArray(rate.promotions) &&
+                                rate.promotions.length > 0 && (
+                                  <div className="fs-12 text-muted mt-1">
+                                    Promotions:{" "}
+                                    {rate.promotions
+                                      .map((p) => p.name || p.code)
+                                      .filter(Boolean)
+                                      .slice(0, 2)
+                                      .join(", ")}
+                                  </div>
+                                )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -588,6 +704,14 @@ export default function HoneymoonHotelsPage() {
       </div>
 
       <div className="row g-3 g-md-4">
+        {!loading && hotels.length === 0 && (
+          <div className="col-12">
+            <div className="alert alert-light border rounded-3 mb-0">
+              No hotels found for the selected filters. Try different dates or
+              destination.
+            </div>
+          </div>
+        )}
         {hotels.map((hotel) => (
           <div key={hotel.id} className="col-12">
             <div
@@ -612,12 +736,20 @@ export default function HoneymoonHotelsPage() {
                       <div>
                         <h2 className="h5 mb-1 fs-16">{hotel.name}</h2>
                         <div className="text-muted fs-14">{hotel.location}</div>
+                        {hotel.meta?.categoryName && (
+                          <div className="fs-12 text-muted mt-1">
+                            {hotel.meta.categoryName}
+                            {hotel.meta.destinationName
+                              ? ` · ${hotel.meta.destinationName}`
+                              : ""}
+                          </div>
+                        )}
                       </div>
                       <div className="text-end">
                         <div className="d-inline-flex flex-column align-items-end">
                           <div className="badge bg-success text-white px-2 py-1 rounded-3 mb-1">
                             <span className="fw-bold me-1">
-                              {hotel.rating.toFixed(1)}
+                              {(Number(hotel.rating) || 0).toFixed(1)}
                             </span>
                             <span className="fs-12">{hotel.ratingLabel}</span>
                           </div>
@@ -633,7 +765,7 @@ export default function HoneymoonHotelsPage() {
                     </p>
 
                     <div className="d-flex flex-wrap gap-2 mb-2">
-                      {hotel.tags.map((tag) => (
+                      {(Array.isArray(hotel.tags) ? hotel.tags : []).map((tag) => (
                         <span
                           key={tag}
                           className="badge rounded-pill bg-light text-dark border"

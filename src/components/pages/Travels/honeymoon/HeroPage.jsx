@@ -10,6 +10,12 @@ import {
   searchAirports,
   searchFlights,
 } from "../../../../services/api/flightApi";
+import {
+  getHotelCountries,
+  getHotelDestinations,
+  getHotelImages,
+  searchHotels,
+} from "../../../../services/api/hotelApi";
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500&display=swap');
@@ -796,8 +802,213 @@ const styles = `
   }
 `;
 
+const readArray = (payload, primaryKey) => {
+  if (Array.isArray(payload?.[primaryKey])) return payload[primaryKey];
+  if (Array.isArray(payload?.data?.[primaryKey])) return payload.data[primaryKey];
+  // Some APIs nest lists under an object (e.g. { hotels: { hotels: [] } })
+  const nested = payload?.[primaryKey];
+  if (nested && typeof nested === "object") {
+    if (Array.isArray(nested?.[primaryKey])) return nested[primaryKey];
+    if (Array.isArray(nested?.items)) return nested.items;
+    if (Array.isArray(nested?.results)) return nested.results;
+    if (Array.isArray(nested?.data)) return nested.data;
+    // Common hotelbeds-ish keys
+    if (Array.isArray(nested?.hotels)) return nested.hotels;
+    if (Array.isArray(nested?.images)) return nested.images;
+  }
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.results)) return payload.results;
+  return [];
+};
+
+const getPriceValue = (hotel) => {
+  const candidateValues = [
+    hotel?.minRate,
+    hotel?.price?.amount,
+    hotel?.amount,
+    hotel?.totalRate,
+    hotel?.rate,
+  ];
+  const parsed = candidateValues
+    .map((value) => parseFloat(String(value)))
+    .find((value) => Number.isFinite(value));
+  return parsed ?? null;
+};
+
+const readFirst = (...values) => values.find((v) => v !== undefined && v !== null);
+
+const mapCancellationPolicies = (rate) => {
+  const policies = readArray(rate, "cancellationPolicies");
+  return policies.map((p) => ({
+    from: p?.from || p?.dateFrom || null,
+    amount: readFirst(p?.amount, p?.price?.amount, p?.value, null),
+    currency: p?.currency || p?.price?.currency || null,
+    type: p?.type || null,
+  }));
+};
+
+const mapTaxes = (rate) => {
+  const taxes = readArray(rate, "taxes");
+  return taxes.map((t) => ({
+    included: t?.included ?? null,
+    percent: readFirst(t?.percent, t?.percentage, null),
+    amount: readFirst(t?.amount, t?.value, null),
+    currency: t?.currency || null,
+    type: t?.type || t?.code || null,
+    description: t?.description?.content || t?.description || null,
+  }));
+};
+
+const mapPromotions = (rate) => {
+  const promotions = readArray(rate, "promotions");
+  return promotions.map((promo) => ({
+    code: promo?.code || null,
+    name: promo?.name || promo?.description?.content || promo?.description || null,
+  }));
+};
+
+const mapRoomRates = (room) => {
+  const rates = readArray(room, "rates");
+  return rates.map((rate) => ({
+    rateKey: rate?.rateKey || rate?.key || null,
+    boardCode: rate?.boardCode || null,
+    boardName: rate?.boardName || null,
+    rateClass: rate?.rateClass || null,
+    rateType: rate?.rateType || null,
+    rooms: rate?.rooms ?? null,
+    adults: rate?.adults ?? null,
+    children: rate?.children ?? null,
+    net: readFirst(rate?.net, rate?.price?.net, rate?.amount, null),
+    sellingRate: readFirst(rate?.sellingRate, rate?.price?.sellingRate, null),
+    currency: rate?.currency || rate?.price?.currency || null,
+    allotment: rate?.allotment ?? null,
+    paymentType: rate?.paymentType || null,
+    packaging: rate?.packaging ?? null,
+    hotelMandatory: rate?.hotelMandatory ?? null,
+    offers: readArray(rate, "offers"),
+    taxes: mapTaxes(rate),
+    promotions: mapPromotions(rate),
+    cancellationPolicies: mapCancellationPolicies(rate),
+  }));
+};
+
+const mapRooms = (hotel) => {
+  const rooms = readArray(hotel, "rooms");
+  return rooms.map((room, idx) => ({
+    id: String(room?.code || room?.roomCode || room?.id || idx),
+    code: room?.code || room?.roomCode || null,
+    name: room?.name || room?.description?.content || room?.type || "Room",
+    rates: mapRoomRates(room),
+  }));
+};
+
+const normalizeImageUrl = (url) => {
+  if (!url) return null;
+  const text = String(url).trim();
+  if (!text) return null;
+  // Prevent mixed-content issues on HTTPS pages.
+  if (text.startsWith("http://")) return `https://${text.slice(7)}`;
+  return text;
+};
+
+const mapHotelSearchResult = (hotel, imagePayload) => {
+  const hotelCode = hotel?.hotelCode || hotel?.code || hotel?.id || hotel?.hotel_id;
+  const imageHotelCode = String(imagePayload?.hotelCode || "");
+  const currentHotelCode = String(hotelCode || "");
+  // If API includes hotelCode in payload, only map when it matches current hotel.
+  const shouldUseImagePayload =
+    !imageHotelCode || !currentHotelCode || imageHotelCode === currentHotelCode;
+
+  const rawImages = shouldUseImagePayload ? readArray(imagePayload, "images") : [];
+  const sortedImages = [...rawImages].sort((a, b) => {
+    const aType = a?.type === "GEN" ? 0 : 1;
+    const bType = b?.type === "GEN" ? 0 : 1;
+    if (aType !== bType) return aType - bType;
+    const aVisual = Number(a?.visualOrder ?? Number.MAX_SAFE_INTEGER);
+    const bVisual = Number(b?.visualOrder ?? Number.MAX_SAFE_INTEGER);
+    if (aVisual !== bVisual) return aVisual - bVisual;
+    const aOrder = Number(a?.order ?? Number.MAX_SAFE_INTEGER);
+    const bOrder = Number(b?.order ?? Number.MAX_SAFE_INTEGER);
+    return aOrder - bOrder;
+  });
+
+  const imageUrls = sortedImages
+    .map((image) =>
+      normalizeImageUrl(
+        image?.url || image?.path || image?.image || image?.imageUrl || null,
+      ),
+    )
+    .filter(Boolean);
+  const mainImage =
+    imageUrls[0] ||
+    hotel?.image ||
+    hotel?.thumbnail ||
+    "";
+
+  const price = getPriceValue(hotel);
+  const rawRating =
+    parseFloat(
+      String(hotel?.rating ?? hotel?.reviewScore ?? hotel?.stars ?? "0"),
+    ) || 0;
+  const rating =
+    rawRating > 5 && rawRating <= 100 ? Number((rawRating / 20).toFixed(1)) : rawRating;
+
+  let ratingLabel = "No reviews";
+  if (rating >= 4.5) ratingLabel = "Excellent";
+  else if (rating >= 4.0) ratingLabel = "Very good";
+  else if (rating >= 3.5) ratingLabel = "Good";
+  else if (rating > 0) ratingLabel = "Pleasant";
+
+  const locationParts = [
+    hotel?.address,
+    hotel?.city,
+    hotel?.destinationName,
+    hotel?.countryName,
+  ].filter(Boolean);
+
+  const rooms = mapRooms(hotel);
+  const firstRateNet = rooms?.[0]?.rates?.[0]?.net;
+  const derivedPrice = readFirst(price, firstRateNet, null);
+
+  return {
+    id: String(hotelCode || hotel?.name || "hotel"),
+    name: hotel?.name || hotel?.hotelName || "Hotel",
+    location: locationParts.join(", "),
+    rating,
+    ratingLabel,
+    reviews: hotel?.reviews ?? 0,
+    locationScore: undefined,
+    priceFrom:
+      derivedPrice !== null
+        ? `₹ ${Number(derivedPrice).toLocaleString("en-IN")}`
+        : "Price not available",
+    image: mainImage,
+    gallery: imageUrls.length ? imageUrls : mainImage ? [mainImage] : [],
+    tags: [hotel?.categoryName, hotel?.boardName].filter(Boolean),
+    shortDescription: hotel?.description || hotel?.zoneName || "",
+    overview: [hotel?.address, hotel?.zoneName].filter(Boolean),
+    breakfastInfo: hotel?.boardName || null,
+    facilities: [],
+    propertyHighlights: [hotel?.destinationName, hotel?.categoryName].filter(Boolean),
+    rooms: rooms.length ? rooms : undefined,
+    meta: {
+      hotelCode: hotelCode ? String(hotelCode) : null,
+      categoryCode: hotel?.categoryCode || null,
+      categoryName: hotel?.categoryName || null,
+      destinationCode: hotel?.destinationCode || null,
+      destinationName: hotel?.destinationName || null,
+      zoneCode: hotel?.zoneCode || null,
+      zoneName: hotel?.zoneName || null,
+      latitude: hotel?.latitude ?? hotel?.location?.latitude ?? null,
+      longitude: hotel?.longitude ?? hotel?.location?.longitude ?? null,
+    },
+    raw: hotel,
+  };
+};
+
 export default function FlightHero() {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("Flights");
   const [tripType, setTripType] = useState("round");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -813,6 +1024,17 @@ export default function FlightHero() {
   const [fromSuggestions, setFromSuggestions] = useState([]);
   const [toSuggestions, setToSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [hotelCountries, setHotelCountries] = useState([]);
+  const [hotelDestinations, setHotelDestinations] = useState([]);
+  const [hotelCountryCode, setHotelCountryCode] = useState("");
+  const [hotelDestinationCode, setHotelDestinationCode] = useState("");
+  const [hotelCheckIn, setHotelCheckIn] = useState("");
+  const [hotelCheckOut, setHotelCheckOut] = useState("");
+  const [hotelRooms, setHotelRooms] = useState(1);
+  const [hotelAdults, setHotelAdults] = useState(2);
+  const [hotelChildren, setHotelChildren] = useState(0);
+  const [hotelSearchLoading, setHotelSearchLoading] = useState(false);
+  const [hotelMetaLoading, setHotelMetaLoading] = useState(false);
   const fromInputRef = useRef(null);
   const toInputRef = useRef(null);
   const travelersRef = useRef(null);
@@ -908,6 +1130,113 @@ export default function FlightHero() {
     }
   };
 
+  useEffect(() => {
+    if (activeTab !== "Hotels" || hotelCountries.length > 0) return;
+
+    let active = true;
+    setHotelMetaLoading(true);
+    getHotelCountries()
+      .then((response) => {
+        if (!active) return;
+        const countries = readArray(response, "countries");
+        setHotelCountries(countries);
+        if (countries.length > 0) {
+          setHotelCountryCode(countries[0]?.code || "");
+        }
+      })
+      .catch((error) => {
+        console.error("Unable to load hotel countries", error);
+      })
+      .finally(() => {
+        if (active) {
+          setHotelMetaLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [activeTab, hotelCountries.length]);
+
+  useEffect(() => {
+    if (!hotelCountryCode || activeTab !== "Hotels") return;
+
+    let active = true;
+    setHotelMetaLoading(true);
+    getHotelDestinations(hotelCountryCode)
+      .then((response) => {
+        if (!active) return;
+        const destinations = readArray(response, "destinations");
+        setHotelDestinations(destinations);
+      })
+      .catch((error) => {
+        console.error("Unable to load hotel destinations", error);
+        if (active) {
+          setHotelDestinations([]);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setHotelMetaLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [activeTab, hotelCountryCode]);
+
+  const handleSearchHotels = async () => {
+    const code = hotelDestinationCode.trim().toUpperCase();
+    if (!code || !hotelCheckIn || !hotelCheckOut) {
+      alert("Please enter destination code and travel dates");
+      return;
+    }
+
+    setHotelSearchLoading(true);
+    try {
+      const payload = {
+        destinationCode: code,
+        checkIn: hotelCheckIn,
+        checkOut: hotelCheckOut,
+        roomCount: hotelRooms,
+        adults: hotelAdults,
+        children: hotelChildren,
+        maxHotels: 50,
+      };
+
+      const response = await searchHotels(payload);
+      const hotels = readArray(response, "hotels");
+      const mappedHotels = await Promise.all(
+        hotels.map(async (hotel) => {
+          const code = hotel?.hotelCode || hotel?.code || hotel?.id;
+          let imagePayload = null;
+          if (code) {
+            try {
+              imagePayload = await getHotelImages(code);
+            } catch (error) {
+              imagePayload = null;
+            }
+          }
+          return mapHotelSearchResult(hotel, imagePayload);
+        }),
+      );
+
+      navigate("/hotelbeds/hotels", {
+        state: {
+          hotels: mappedHotels,
+          hotelSearchParams: payload,
+          hotelSearchResponse: response,
+        },
+      });
+    } catch (error) {
+      console.error("Error searching hotels:", error);
+      alert("Error searching hotels");
+    } finally {
+      setHotelSearchLoading(false);
+    }
+  };
+
   // Handle airport selection
   const selectAirport = (airport, type) => {
     if (type === "from") {
@@ -957,11 +1286,15 @@ export default function FlightHero() {
             <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
               <div className="d-flex align-items-center gap-1 flex-wrap">
                 {[
-                  { icon: { src: HotelIcon, alt: "Hotels" }, label: "Hotels" },
+                  {
+                    icon: { src: HotelIcon, alt: "Hotels" },
+                    label: "Hotels",
+                    onClick: () => setActiveTab("Hotels"),
+                  },
                   {
                     icon: { src: FightIcon, alt: "Flights" },
                     label: "Flights",
-                    active: true,
+                    onClick: () => setActiveTab("Flights"),
                   },
                   { icon: { src: CruiseIcon, alt: "cruise" }, label: "cruise" },
                   {
@@ -976,7 +1309,7 @@ export default function FlightHero() {
                 ].map((tab) => (
                   <button
                     key={tab.label}
-                    className={`nav-tab ${tab.active ? "active" : ""}`}
+                    className={`nav-tab ${activeTab === tab.label ? "active" : ""}`}
                     onClick={tab.onClick}
                   >
                     <span>
@@ -1016,11 +1349,15 @@ export default function FlightHero() {
           <div className="row align-items-start">
             <div className="col-12 mb-5">
               <h1 className="hero-title">
-                Book Cheap Flight Tickets With Ease
+                {activeTab === "Flights"
+                  ? "Book Cheap Flight Tickets With Ease"
+                  : "Find Romantic Honeymoon Hotels"}
                 <br />
               </h1>
               <p className="hero-subtitle">
-                Discover your next dream destination
+                {activeTab === "Flights"
+                  ? "Discover your next dream destination"
+                  : "Search stays by country and destination"}
               </p>
 
               {/* Stats */}
@@ -1040,331 +1377,404 @@ export default function FlightHero() {
 
             <div className="col-12">
               <div className="search-card">
-                <div className="d-flex align-items-center flex-wrap gap-3 mb-3 trip-radio">
-                  {[
-                    ["round", "Round-trip"],
-                    ["oneway", "One-way"],
-                    // ["multi", "Multi-city"],
-                  ].map(([val, label]) => (
-                    <label key={val}>
-                      <input
-                        type="radio"
-                        name="trip"
-                        value={val}
-                        checked={tripType === val}
-                        onChange={() => setTripType(val)}
-                      />
-                      {label}
-                    </label>
-                  ))}
-                  {/* <select
-                    className="class-select ms-1"
-                    value={cabinClass}
-                    onChange={(e) => setCabinClass(e.target.value)}
-                  >
-                    {[
-                      "Economy",
-                      "Business",
-                      "First Class",
-                      "Premium Economy",
-                    ].map((c) => (
-                      <option key={c}>{c}</option>
-                    ))}
-                  </select>
-                  <label className="ms-auto trip-radio">
-                    <input
-                      type="checkbox"
-                      checked={direct}
-                      onChange={(e) => setDirect(e.target.checked)}
-                    />
-                    Direct flights only
-                  </label> */}
-                </div>
-
-                {/* Search fields */}
-                <div className="search-fields">
-                  {/* From */}
-                  <div className="field-box" ref={fromInputRef}>
-                    <div className="field-label">
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 4,
-                        }}
-                      >
-                        <Plane size={14} /> Departure
-                      </span>
+                {activeTab === "Flights" ? (
+                  <>
+                    <div className="d-flex align-items-center flex-wrap gap-3 mb-3 trip-radio">
+                      {[
+                        ["round", "Round-trip"],
+                        ["oneway", "One-way"],
+                      ].map(([val, label]) => (
+                        <label key={val}>
+                          <input
+                            type="radio"
+                            name="trip"
+                            value={val}
+                            checked={tripType === val}
+                            onChange={() => setTripType(val)}
+                          />
+                          {label}
+                        </label>
+                      ))}
                     </div>
-                    <div className="field-wrapper">
-                      <input
-                        className="field-input"
-                        placeholder="Enter departure city or airport"
-                        value={from}
-                        onChange={(e) => {
-                          setFrom(e.target.value);
-                          handleAirportSearch(e.target.value, "from");
-                        }}
-                        onFocus={() =>
-                          from.length >= 2 && setShowFromSuggestions(true)
-                        }
-                      />
-                      {showFromSuggestions && fromSuggestions.length > 0 && (
-                        <div className="airport-suggestions">
-                          {fromSuggestions.map((airport, index) => (
-                            <div
-                              key={index}
-                              className="suggestion-item"
-                              onClick={() => selectAirport(airport, "from")}
-                            >
-                              <div className="suggestion-main">
-                                <span className="suggestion-iata">
-                                  {airport.iata}
-                                </span>
-                                <span className="suggestion-name">
-                                  {airport.name}
-                                </span>
-                              </div>
-                              <div className="suggestion-city">
-                                {airport.city}, {airport.country}
-                              </div>
-                            </div>
-                          ))}
+
+                    <div className="search-fields">
+                      <div className="field-box" ref={fromInputRef}>
+                        <div className="field-label">
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                            <Plane size={14} /> Departure
+                          </span>
                         </div>
-                      )}
-                    </div>
-                    <div className="field-sub">All airports</div>
-                  </div>
-
-                  {/* Swap */}
-                  <div className="swap-btn-wrap">
-                    <button
-                      className="swap-btn"
-                      onClick={swapCities}
-                      title="Swap cities"
-                    >
-                      ⇄
-                    </button>
-                  </div>
-
-                  {/* To */}
-                  <div className="field-box" ref={toInputRef}>
-                    <div className="field-label">
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 4,
-                        }}
-                      >
-                        <MapPin size={14} /> Destination
-                      </span>
-                    </div>
-                    <div className="field-wrapper">
-                      <input
-                        className="field-input"
-                        placeholder="Enter destination city or airport"
-                        value={to}
-                        onChange={(e) => {
-                          setTo(e.target.value);
-                          handleAirportSearch(e.target.value, "to");
-                        }}
-                        onFocus={() =>
-                          to.length >= 2 && setShowToSuggestions(true)
-                        }
-                      />
-                      {showToSuggestions && toSuggestions.length > 0 && (
-                        <div className="airport-suggestions">
-                          {toSuggestions.map((airport, index) => (
-                            <div
-                              key={index}
-                              className="suggestion-item"
-                              onClick={() => selectAirport(airport, "to")}
-                            >
-                              <div className="suggestion-main">
-                                <span className="suggestion-iata">
-                                  {airport.iata}
-                                </span>
-                                <span className="suggestion-name">
-                                  {airport.name}
-                                </span>
-                              </div>
-                              <div className="suggestion-city">
-                                {airport.city}, {airport.country}
-                              </div>
+                        <div className="field-wrapper">
+                          <input
+                            className="field-input"
+                            placeholder="Enter departure city or airport"
+                            value={from}
+                            onChange={(e) => {
+                              setFrom(e.target.value);
+                              handleAirportSearch(e.target.value, "from");
+                            }}
+                            onFocus={() =>
+                              from.length >= 2 && setShowFromSuggestions(true)
+                            }
+                          />
+                          {showFromSuggestions && fromSuggestions.length > 0 && (
+                            <div className="airport-suggestions">
+                              {fromSuggestions.map((airport, index) => (
+                                <div
+                                  key={index}
+                                  className="suggestion-item"
+                                  onClick={() => selectAirport(airport, "from")}
+                                >
+                                  <div className="suggestion-main">
+                                    <span className="suggestion-iata">
+                                      {airport.iata}
+                                    </span>
+                                    <span className="suggestion-name">
+                                      {airport.name}
+                                    </span>
+                                  </div>
+                                  <div className="suggestion-city">
+                                    {airport.city}, {airport.country}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                          ))}
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div className="field-sub">&nbsp;</div>
-                  </div>
-
-                  {/* Dates */}
-                  <div className="field-box">
-                    <div className="field-label">
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 4,
-                        }}
-                      >
-                        <CalendarSearch size={14} /> Departure Date
-                        <CalendarSearch size={14} /> Departure
-                      </span>
-                    </div>
-                    <input
-                      className="field-input"
-                      type="text"
-                      placeholder="Select departure date"
-                      value={departureDate}
-                      onChange={(e) => setDepartureDate(e.target.value)}
-                      onFocus={(e) => (e.target.type = "date")}
-                      onBlur={(e) => {
-                        if (!e.target.value) e.target.type = "text";
-                      }}
-                    />
-                  </div>
-
-                  {/* Return Date - Show only for round trip */}
-                  {tripType === "round" && (
-                    <div className="field-box">
-                      <div className="field-label">
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 4,
-                          }}
-                        >
-                          <CalendarSearch size={14} /> Return
-                        </span>
+                        <div className="field-sub">All airports</div>
                       </div>
+
+                      <div className="swap-btn-wrap">
+                        <button
+                          className="swap-btn"
+                          onClick={swapCities}
+                          title="Swap cities"
+                        >
+                          ⇄
+                        </button>
+                      </div>
+
+                      <div className="field-box" ref={toInputRef}>
+                        <div className="field-label">
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                            <MapPin size={14} /> Destination
+                          </span>
+                        </div>
+                        <div className="field-wrapper">
+                          <input
+                            className="field-input"
+                            placeholder="Enter destination city or airport"
+                            value={to}
+                            onChange={(e) => {
+                              setTo(e.target.value);
+                              handleAirportSearch(e.target.value, "to");
+                            }}
+                            onFocus={() =>
+                              to.length >= 2 && setShowToSuggestions(true)
+                            }
+                          />
+                          {showToSuggestions && toSuggestions.length > 0 && (
+                            <div className="airport-suggestions">
+                              {toSuggestions.map((airport, index) => (
+                                <div
+                                  key={index}
+                                  className="suggestion-item"
+                                  onClick={() => selectAirport(airport, "to")}
+                                >
+                                  <div className="suggestion-main">
+                                    <span className="suggestion-iata">
+                                      {airport.iata}
+                                    </span>
+                                    <span className="suggestion-name">
+                                      {airport.name}
+                                    </span>
+                                  </div>
+                                  <div className="suggestion-city">
+                                    {airport.city}, {airport.country}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="field-sub">&nbsp;</div>
+                      </div>
+
+                      <div className="field-box">
+                        <div className="field-label">
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                            <CalendarSearch size={14} /> Departure
+                          </span>
+                        </div>
+                        <input
+                          className="field-input"
+                          type="text"
+                          placeholder="Select departure date"
+                          value={departureDate}
+                          onChange={(e) => setDepartureDate(e.target.value)}
+                          onFocus={(e) => (e.target.type = "date")}
+                          onBlur={(e) => {
+                            if (!e.target.value) e.target.type = "text";
+                          }}
+                        />
+                      </div>
+
+                      {tripType === "round" && (
+                        <div className="field-box">
+                          <div className="field-label">
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                              <CalendarSearch size={14} /> Return
+                            </span>
+                          </div>
+                          <input
+                            className="field-input"
+                            type="text"
+                            placeholder="Select return date"
+                            value={returnDate}
+                            onChange={(e) => setReturnDate(e.target.value)}
+                            onFocus={(e) => (e.target.type = "date")}
+                            onBlur={(e) => {
+                              if (!e.target.value) e.target.type = "text";
+                            }}
+                            min={departureDate}
+                          />
+                        </div>
+                      )}
+
+                      <div className="field-box" ref={travelersRef}>
+                        <div className="field-label">
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                            <Users size={14} /> Travelers
+                          </span>
+                        </div>
+                        <div className="field-wrapper">
+                          <div
+                            className="field-value"
+                            style={{ cursor: "pointer", padding: "8px 0" }}
+                            onClick={() =>
+                              setShowTravelersDropdown(!showTravelersDropdown)
+                            }
+                          >
+                            {adults + children}{" "}
+                            {adults + children === 1 ? "traveler" : "travelers"}
+                            {adults > 0 &&
+                              `, ${adults} ${adults === 1 ? "adult" : "adults"}`}
+                            {children > 0 &&
+                              `, ${children} ${children === 1 ? "child" : "children"}`}
+                          </div>
+                          {showTravelersDropdown && (
+                            <div className="travelers-dropdown">
+                              <div className="traveler-type">
+                                <div className="traveler-label">Adults</div>
+                                <div className="traveler-controls">
+                                  <button
+                                    className="traveler-button"
+                                    onClick={() =>
+                                      setAdults(Math.max(1, adults - 1))
+                                    }
+                                    disabled={adults <= 1}
+                                  >
+                                    -
+                                  </button>
+                                  <div className="traveler-count">{adults}</div>
+                                  <button
+                                    className="traveler-button"
+                                    onClick={() => setAdults(adults + 1)}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              </div>
+                              <div className="traveler-type">
+                                <div className="traveler-label">Children</div>
+                                <div className="traveler-controls">
+                                  <button
+                                    className="traveler-button"
+                                    onClick={() =>
+                                      setChildren(Math.max(0, children - 1))
+                                    }
+                                    disabled={children <= 0}
+                                  >
+                                    -
+                                  </button>
+                                  <div className="traveler-count">{children}</div>
+                                  <button
+                                    className="traveler-button"
+                                    onClick={() => setChildren(children + 1)}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="field-sub">{cabinClass}</div>
+                      </div>
+
+                      <button
+                        className={`explore-btn ${loading ? "loading" : ""}`}
+                        onClick={handleSearchFlights}
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 8,
+                            }}
+                          >
+                            <Loader2 size={18} className="spin" />
+                            Searching flights...
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 8,
+                            }}
+                          >
+                            <Plane size={18} />
+                            Search flights
+                          </span>
+                        )}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="search-fields">
+                    <div className="field-box">
+                      <div className="field-label">Country</div>
+                      <select
+                        className="field-input"
+                        value={hotelCountryCode}
+                        onChange={(e) => setHotelCountryCode(e.target.value)}
+                        disabled={hotelMetaLoading}
+                      >
+                        <option value="">Select country</option>
+                        {hotelCountries.map((country) => (
+                          <option key={country.code} value={country.code}>
+                            {country?.description?.content || country?.name || country.code}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="field-box">
+                      <div className="field-label">Destination code</div>
                       <input
                         className="field-input"
                         type="text"
-                        placeholder="Select return date"
-                        value={returnDate}
-                        onChange={(e) => setReturnDate(e.target.value)}
-                        onFocus={(e) => (e.target.type = "date")}
-                        onBlur={(e) => {
-                          if (!e.target.value) e.target.type = "text";
-                        }}
-                        min={departureDate}
+                        placeholder="e.g. PMI"
+                        autoComplete="off"
+                        value={hotelDestinationCode}
+                        onChange={(e) => setHotelDestinationCode(e.target.value)}
+                      />
+                      <div className="field-sub">IATA-style code sent to the API</div>
+                    </div>
+
+                    {hotelCountryCode && hotelDestinations.length > 0 && (
+                      <div className="field-box">
+                        <div className="field-label">Or pick destination</div>
+                        <select
+                          className="field-input"
+                          value=""
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            if (v) setHotelDestinationCode(v);
+                          }}
+                          disabled={hotelMetaLoading}
+                        >
+                          <option value="">
+                            Choose to fill destination code…
+                          </option>
+                          {hotelDestinations.map((destination) => (
+                            <option key={destination.code} value={destination.code}>
+                              {(destination?.name?.content ||
+                                destination?.description?.content ||
+                                destination?.name ||
+                                destination.code) + ` (${destination.code})`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    <div className="field-box">
+                      <div className="field-label">Check-in</div>
+                      <input
+                        className="field-input"
+                        type="date"
+                        value={hotelCheckIn}
+                        onChange={(e) => setHotelCheckIn(e.target.value)}
                       />
                     </div>
-                  )}
 
-                  {/* Travelers */}
-                  <div className="field-box" ref={travelersRef}>
-                    <div className="field-label">
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 4,
-                        }}
-                      >
-                        <Users size={14} /> Travelers
-                      </span>
+                    <div className="field-box">
+                      <div className="field-label">Check-out</div>
+                      <input
+                        className="field-input"
+                        type="date"
+                        min={hotelCheckIn || undefined}
+                        value={hotelCheckOut}
+                        onChange={(e) => setHotelCheckOut(e.target.value)}
+                      />
                     </div>
-                    <div className="field-wrapper">
-                      <div
-                        className="field-value"
-                        style={{ cursor: "pointer", padding: "8px 0" }}
-                        onClick={() =>
-                          setShowTravelersDropdown(!showTravelersDropdown)
-                        }
-                      >
-                        {adults + children}{" "}
-                        {adults + children === 1 ? "traveler" : "travelers"}
-                        {adults > 0 &&
-                          `, ${adults} ${adults === 1 ? "adult" : "adults"}`}
-                        {children > 0 &&
-                          `, ${children} ${children === 1 ? "child" : "children"}`}
-                      </div>
-                      {showTravelersDropdown && (
-                        <div className="travelers-dropdown">
-                          <div className="traveler-type">
-                            <div className="traveler-label">Adults</div>
-                            <div className="traveler-controls">
-                              <button
-                                className="traveler-button"
-                                onClick={() =>
-                                  setAdults(Math.max(1, adults - 1))
-                                }
-                                disabled={adults <= 1}
-                              >
-                                -
-                              </button>
-                              <div className="traveler-count">{adults}</div>
-                              <button
-                                className="traveler-button"
-                                onClick={() => setAdults(adults + 1)}
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-                          <div className="traveler-type">
-                            <div className="traveler-label">Children</div>
-                            <div className="traveler-controls">
-                              <button
-                                className="traveler-button"
-                                onClick={() =>
-                                  setChildren(Math.max(0, children - 1))
-                                }
-                                disabled={children <= 0}
-                              >
-                                -
-                              </button>
-                              <div className="traveler-count">{children}</div>
-                              <button
-                                className="traveler-button"
-                                onClick={() => setChildren(children + 1)}
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-                        </div>
+
+                    <div className="field-box">
+                      <div className="field-label">Rooms</div>
+                      <input
+                        className="field-input"
+                        type="number"
+                        min={1}
+                        value={hotelRooms}
+                        onChange={(e) => setHotelRooms(Math.max(1, Number(e.target.value) || 1))}
+                      />
+                    </div>
+
+                    <div className="field-box">
+                      <div className="field-label">Adults</div>
+                      <input
+                        className="field-input"
+                        type="number"
+                        min={1}
+                        value={hotelAdults}
+                        onChange={(e) => setHotelAdults(Math.max(1, Number(e.target.value) || 1))}
+                      />
+                    </div>
+
+                    <div className="field-box">
+                      <div className="field-label">Children</div>
+                      <input
+                        className="field-input"
+                        type="number"
+                        min={0}
+                        value={hotelChildren}
+                        onChange={(e) => setHotelChildren(Math.max(0, Number(e.target.value) || 0))}
+                      />
+                    </div>
+
+                    <button
+                      className={`explore-btn ${hotelSearchLoading ? "loading" : ""}`}
+                      onClick={handleSearchHotels}
+                      disabled={hotelSearchLoading}
+                    >
+                      {hotelSearchLoading ? (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                          <Loader2 size={18} className="spin" />
+                          Searching hotels...
+                        </span>
+                      ) : (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                          <MapPin size={18} />
+                          Search hotels
+                        </span>
                       )}
-                    </div>
-                    <div className="field-sub">{cabinClass}</div>
+                    </button>
                   </div>
-
-                  {/* Explore Button */}
-                  <button
-                    className={`explore-btn ${loading ? "loading" : ""}`}
-                    onClick={handleSearchFlights}
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 8,
-                        }}
-                      >
-                        <Loader2 size={18} className="spin" />
-                        Searching flights...
-                      </span>
-                    ) : (
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 8,
-                        }}
-                      >
-                        <Plane size={18} />
-                        Search flights
-                      </span>
-                    )}
-                  </button>
-                </div>
+                )}
               </div>
             </div>
           </div>
