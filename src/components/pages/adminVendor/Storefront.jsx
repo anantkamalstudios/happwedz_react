@@ -53,6 +53,9 @@ import SocialDetails from "./subVendors/SocialDetails";
 import axiosInstance from "../../../services/api/axiosInstance";
 import { TbView360Number } from "react-icons/tb";
 import View360 from "./subVendors/View360";
+import VenueMasterProfile from "./subVendors/VenueMasterProfile";
+import CatererMasterProfile from "./subVendors/CatererMasterProfile";
+import PhotographerMasterProfile from "./subVendors/PhotographerMasterProfile";
 
 // Reusable New Tag component
 const NewTag = () => (
@@ -400,6 +403,10 @@ const Storefront = ({ setCompletion }) => {
                 dJ_policy: actualData.attributes.dJ_policy || "",
                 video: actualData.attributes.video || [],
                 availableSlots: actualData.attributes.available_slots || [],
+                venue_master: actualData.attributes.venue_master || {},
+                caterer_master: actualData.attributes.caterer_master || {},
+                photographer_master:
+                  actualData.attributes.photographer_master || {},
 
                 attributes: {
                   ...prev.attributes,
@@ -650,6 +657,18 @@ const Storefront = ({ setCompletion }) => {
       start_venue: formData.start_venue || "",
       space: formData.space || "",
       dJ_policy: formData.dJ_policy || "",
+      venue_master:
+        formData.venue_master ||
+        formData.attributes?.venue_master ||
+        undefined,
+      caterer_master:
+        formData.caterer_master ||
+        formData.attributes?.caterer_master ||
+        undefined,
+      photographer_master:
+        formData.photographer_master ||
+        formData.attributes?.photographer_master ||
+        undefined,
     };
 
     // Remove undefined keys
@@ -938,10 +957,57 @@ const Storefront = ({ setCompletion }) => {
       sections.push({ id: "vendor-menus", fields: ["attributes.menus"] });
     }
 
+    if (normalizedVendorTypeName.includes("venue")) {
+      sections.push({ id: "venue-master", fields: ["venue_master"] });
+    }
+    if (normalizedVendorTypeName.includes("cater")) {
+      sections.push({ id: "caterer-master", fields: ["caterer_master"] });
+    }
+    if (normalizedVendorTypeName.includes("photograph")) {
+      sections.push({
+        id: "photographer-master",
+        fields: ["photographer_master"],
+      });
+    }
+
+    const venueMasterHasData = (vm) => {
+      if (!vm || typeof vm !== "object") return false;
+      const walk = (obj) => {
+        for (const v of Object.values(obj)) {
+          if (v == null) continue;
+          if (typeof v === "string" && v.trim()) return true;
+          if (typeof v === "number" && !Number.isNaN(v)) return true;
+          if (Array.isArray(v)) {
+            for (const item of v) {
+              if (item == null) continue;
+              if (typeof item === "object" && walk(item)) return true;
+              if (typeof item === "string" && item.trim()) return true;
+              if (typeof item === "number" && !Number.isNaN(item)) return true;
+            }
+          } else if (typeof v === "object" && walk(v)) return true;
+        }
+        return false;
+      };
+      return walk(vm);
+    };
+
     let completed = 0;
     sections.forEach((section) => {
       let hasData = false;
-      if (section.id === "faq") {
+      if (section.id === "venue-master") {
+        const vm =
+          formData.venue_master || formData.attributes?.venue_master;
+        hasData = venueMasterHasData(vm);
+      } else if (section.id === "caterer-master") {
+        const cm =
+          formData.caterer_master || formData.attributes?.caterer_master;
+        hasData = venueMasterHasData(cm);
+      } else if (section.id === "photographer-master") {
+        const pm =
+          formData.photographer_master ||
+          formData.attributes?.photographer_master;
+        hasData = venueMasterHasData(pm);
+      } else if (section.id === "faq") {
         // Count FAQ completed only if at least one non-empty answer exists
         const faqs = formData?.faqs;
         if (faqs && typeof faqs === "object") {
@@ -1040,6 +1106,33 @@ const Storefront = ({ setCompletion }) => {
       label: "Basic Information",
       icon: <IoIosInformationCircleOutline size={20} />,
     },
+    ...(normalizedVendorTypeName.includes("venue")
+      ? [
+          {
+            id: "venue-master",
+            label: "Venue master profile",
+            icon: <FaRegBuilding size={20} />,
+          },
+        ]
+      : []),
+    ...(normalizedVendorTypeName.includes("cater")
+      ? [
+          {
+            id: "caterer-master",
+            label: "Caterer master profile",
+            icon: <PiForkKnife size={20} />,
+          },
+        ]
+      : []),
+    ...(normalizedVendorTypeName.includes("photograph")
+      ? [
+          {
+            id: "photographer-master",
+            label: "Photographer master profile",
+            icon: <IoCameraOutline size={20} />,
+          },
+        ]
+      : []),
     { id: "faq", label: "FAQ", icon: <CiCircleQuestion size={20} /> },
     {
       id: "vendor-contact",
@@ -1165,6 +1258,33 @@ const Storefront = ({ setCompletion }) => {
       case "vendor-basic":
         return (
           <VendorBasicInfo
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+            onShowSuccess={showSuccessModal}
+          />
+        );
+      case "venue-master":
+        return (
+          <VenueMasterProfile
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+            onShowSuccess={showSuccessModal}
+          />
+        );
+      case "caterer-master":
+        return (
+          <CatererMasterProfile
+            formData={formData}
+            setFormData={setFormData}
+            onSave={handleSave}
+            onShowSuccess={showSuccessModal}
+          />
+        );
+      case "photographer-master":
+        return (
+          <PhotographerMasterProfile
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}

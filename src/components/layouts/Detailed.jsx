@@ -43,6 +43,18 @@ const capitalizeWords = (str) => {
   return str.replace(/^(.)|\s+(.)/g, (c) => c.toUpperCase());
 };
 
+const formatList = (list, limit = 5) => {
+  if (!Array.isArray(list) || list.length === 0) return "";
+  return list.slice(0, limit).join(", ");
+};
+
+const pushFeature = (arr, icon, label, value) => {
+  if (value === undefined || value === null) return;
+  const text = String(value).trim();
+  if (!text) return;
+  arr.push({ icon, name: `${label}: ${text}` });
+};
+
 const getYouTubeVideoId = (url) => {
   if (!url) return null;
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -83,6 +95,10 @@ const Detailed = () => {
     const attributes = data.attributes;
     const amenities = [];
     const vendorType = attributes.vendor_type;
+    const normalizedVendorType = String(vendorType || "").toLowerCase();
+    const venueMaster = attributes.venue_master || {};
+    const catererMaster = attributes.caterer_master || {};
+    const photographerMaster = attributes.photographer_master || {};
 
     if (attributes.payment_terms) {
       amenities.push({
@@ -217,6 +233,149 @@ const Detailed = () => {
           }
         });
       }
+    }
+
+    // --- VENUE MASTER ATTRIBUTES ---
+    if (venueMaster && Object.keys(venueMaster).length > 0) {
+      const vc = venueMaster.categories || {};
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Venue Categories",
+        formatList(
+          [
+            ...(vc.premium || []),
+            ...(vc.locationBased || []),
+            ...(vc.capacityBased || []),
+            ...(vc.budgetBased || []),
+            ...(vc.functionSpecific || []),
+          ],
+          6,
+        ),
+      );
+
+      const vSpace = venueMaster.space_capacity || {};
+      pushFeature(amenities, <FaUsers />, "Guest Capacity", vSpace.max_guests);
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Space Types",
+        formatList(vSpace.space_types),
+      );
+
+      const vFood = venueMaster.food || {};
+      pushFeature(
+        amenities,
+        <FaUtensils />,
+        "Cuisine",
+        formatList(vFood.cuisines, 4),
+      );
+      pushFeature(
+        amenities,
+        <FaUtensils />,
+        "Veg/Non-Veg",
+        vFood.veg_non_veg,
+      );
+    }
+
+    // --- CATERER MASTER ATTRIBUTES ---
+    if (
+      (normalizedVendorType.includes("cater") ||
+        normalizedVendorType.includes("catering")) &&
+      catererMaster &&
+      Object.keys(catererMaster).length > 0
+    ) {
+      const ci = catererMaster.identity || {};
+      const cs = catererMaster.service_type || {};
+      const cc = catererMaster.cuisine_intelligence || {};
+      const cp = catererMaster.pricing_structure || {};
+      const cl = catererMaster.venue_logistics || {};
+
+      pushFeature(amenities, <FaStar />, "Caterer Type", ci.caterer_type);
+      pushFeature(
+        amenities,
+        <FaMapMarkerAlt />,
+        "Coverage",
+        ci.service_coverage,
+      );
+      pushFeature(
+        amenities,
+        <FaUtensils />,
+        "Catering Style",
+        formatList(cs.catering_style, 4),
+      );
+      pushFeature(
+        amenities,
+        <FaUtensils />,
+        "Cuisine Types",
+        formatList(cc.cuisine_types, 5),
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Best Known For",
+        formatList(cc.best_known_for, 4),
+      );
+      pushFeature(
+        amenities,
+        <FaUsers />,
+        "Max Guests",
+        catererMaster.scale_execution?.maximum_pax,
+      );
+      pushFeature(amenities, <FaStar />, "Price Range", cp.price_range);
+      pushFeature(
+        amenities,
+        <FaMapMarkerAlt />,
+        "Outdoor Catering",
+        cl.outdoor_catering_supported,
+      );
+    }
+
+    // --- PHOTOGRAPHER MASTER ATTRIBUTES ---
+    if (
+      normalizedVendorType.includes("photo") &&
+      photographerMaster &&
+      Object.keys(photographerMaster).length > 0
+    ) {
+      const pi = photographerMaster.identity || {};
+      const ps = photographerMaster.style_intelligence || {};
+      const pt = photographerMaster.team_coverage || {};
+      const pd = photographerMaster.deliverables || {};
+      const pe = photographerMaster.equipment || {};
+
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Services",
+        formatList(pi.services_offered, 5),
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Photography Style",
+        formatList(ps.photography_style, 4),
+      );
+      pushFeature(amenities, <FaStar />, "Editing Style", ps.editing_style);
+      pushFeature(amenities, <FaUsers />, "Team Size", pt.team_size);
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Photos Delivered",
+        pd.photos_delivered,
+      );
+      pushFeature(
+        amenities,
+        <FaCalendarAlt />,
+        "Delivery Time",
+        pd.delivery_time,
+      );
+      pushFeature(amenities, <FaStar />, "Camera Type", pe.camera_type);
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Drone Available",
+        pe.drone_available,
+      );
     }
 
     // --- PHOTOGRAPHER/OTHER VENDOR SPECIFIC FEATURES ---
@@ -401,7 +560,7 @@ const Detailed = () => {
                 );
                 try {
                   sessionStorage.setItem(sessionKey, Date.now().toString());
-                } catch {}
+                } catch { }
                 if (incRes?.data?.vendor?.profileViews !== undefined) {
                   setVenueData((prev) => ({
                     ...prev,
@@ -587,12 +746,12 @@ const Detailed = () => {
 
   const displayLocation = isVenue
     ? venueData.attributes?.address ||
-      venueData.attributes?.city ||
-      "Location not specified"
+    venueData.attributes?.city ||
+    "Location not specified"
     : venueData.attributes?.address ||
-      venueData.attributes?.city ||
-      venueData.vendor?.city ||
-      "Location not specified";
+    venueData.attributes?.city ||
+    venueData.vendor?.city ||
+    "Location not specified";
 
   // Prefer precise coordinates if present
   const latRaw =
@@ -606,8 +765,8 @@ const Detailed = () => {
   const mapSrc = hasCoords
     ? `https://maps.google.com/maps?q=${lat},${lng}&t=&z=13&ie=UTF8&iwloc=&output=embed`
     : `https://maps.google.com/maps?q=${encodeURIComponent(
-        displayLocation,
-      )}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+      displayLocation,
+    )}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
 
   const activeVendor = {
     id: id,
@@ -791,112 +950,108 @@ const Detailed = () => {
 
             {mediaTab === "gallery"
               ? images.length > 0 && (
-                  <div className="thumbnail-gallery mb-5">
-                    <Swiper
-                      modules={[Autoplay]}
-                      spaceBetween={10}
-                      slidesPerView={4}
-                      autoplay={{
-                        delay: 3000,
-                        disableOnInteraction: false,
-                      }}
-                      loop={images.length > 4}
-                      grabCursor={true}
-                      freeMode={true}
-                    >
-                      {images.map((img, idx) => (
-                        <SwiperSlide key={idx}>
-                          <div
-                            className={`thumbnail-item ${
-                              mainImage === img ? "active" : ""
-                            } ${
-                              hoveredIndex !== null && hoveredIndex !== idx
-                                ? "blurred"
-                                : ""
+                <div className="thumbnail-gallery mb-5">
+                  <Swiper
+                    modules={[Autoplay]}
+                    spaceBetween={10}
+                    slidesPerView={4}
+                    autoplay={{
+                      delay: 3000,
+                      disableOnInteraction: false,
+                    }}
+                    loop={images.length > 4}
+                    grabCursor={true}
+                    freeMode={true}
+                  >
+                    {images.map((img, idx) => (
+                      <SwiperSlide key={idx}>
+                        <div
+                          className={`thumbnail-item ${mainImage === img ? "active" : ""
+                            } ${hoveredIndex !== null && hoveredIndex !== idx
+                              ? "blurred"
+                              : ""
                             }`}
-                            onClick={() => setMainImage(img)}
-                            onMouseEnter={() => setHoveredIndex(idx)}
-                            onMouseLeave={() => setHoveredIndex(null)}
-                          >
-                            <img
-                              src={img}
-                              alt={`Thumbnail ${idx + 1}`}
-                              className="img-fluid rounded"
-                              style={{
-                                cursor: "pointer",
-                                height: "100%",
-                                objectFit: "cover",
-                              }}
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = "/images/imageNotFound.jpg";
-                              }}
-                            />
-                          </div>
-                        </SwiperSlide>
-                      ))}
-                    </Swiper>
-                  </div>
-                )
-              : videos.length > 0 && (
-                  <div className="mb-5">
-                    <div className="d-flex gap-2 flex-wrap">
-                      {videos.map((vid, idx) => {
-                        const youtubeId = getYouTubeVideoId(vid);
-                        return youtubeId ? (
-                          <div
-                            key={idx}
-                            onClick={() => setMainVideo(vid)}
-                            className={`rounded overflow-hidden position-relative ${
-                              mainVideo === vid ? "border border-primary" : ""
-                            }`}
+                          onClick={() => setMainImage(img)}
+                          onMouseEnter={() => setHoveredIndex(idx)}
+                          onMouseLeave={() => setHoveredIndex(null)}
+                        >
+                          <img
+                            src={img}
+                            alt={`Thumbnail ${idx + 1}`}
+                            className="img-fluid rounded"
                             style={{
-                              width: "160px",
-                              height: "100px",
-                              backgroundColor: "#000",
                               cursor: "pointer",
-                              backgroundImage: `url(https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg)`,
-                              backgroundSize: "cover",
-                              backgroundPosition: "center",
-                            }}
-                          >
-                            <div
-                              className="d-flex align-items-center justify-content-center h-100"
-                              style={{ backgroundColor: "rgba(0,0,0,0.3)" }}
-                            >
-                              <svg
-                                width="32"
-                                height="32"
-                                viewBox="0 0 24 24"
-                                fill="white"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M8 5V19L19 12L8 5Z" />
-                              </svg>
-                            </div>
-                          </div>
-                        ) : (
-                          <video
-                            key={idx}
-                            src={vid}
-                            muted
-                            onClick={() => setMainVideo(vid)}
-                            className={`rounded ${
-                              mainVideo === vid ? "border border-primary" : ""
-                            }`}
-                            style={{
-                              width: "160px",
-                              height: "100px",
+                              height: "100%",
                               objectFit: "cover",
-                              backgroundColor: "#000",
-                              cursor: "pointer",
+                            }}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "/images/imageNotFound.jpg";
                             }}
                           />
-                        );
-                      })}
-                    </div>
+                        </div>
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                </div>
+              )
+              : videos.length > 0 && (
+                <div className="mb-5">
+                  <div className="d-flex gap-2 flex-wrap">
+                    {videos.map((vid, idx) => {
+                      const youtubeId = getYouTubeVideoId(vid);
+                      return youtubeId ? (
+                        <div
+                          key={idx}
+                          onClick={() => setMainVideo(vid)}
+                          className={`rounded overflow-hidden position-relative ${mainVideo === vid ? "border border-primary" : ""
+                            }`}
+                          style={{
+                            width: "160px",
+                            height: "100px",
+                            backgroundColor: "#000",
+                            cursor: "pointer",
+                            backgroundImage: `url(https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg)`,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                          }}
+                        >
+                          <div
+                            className="d-flex align-items-center justify-content-center h-100"
+                            style={{ backgroundColor: "rgba(0,0,0,0.3)" }}
+                          >
+                            <svg
+                              width="32"
+                              height="32"
+                              viewBox="0 0 24 24"
+                              fill="white"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path d="M8 5V19L19 12L8 5Z" />
+                            </svg>
+                          </div>
+                        </div>
+                      ) : (
+                        <video
+                          key={idx}
+                          src={vid}
+                          muted
+                          onClick={() => setMainVideo(vid)}
+                          className={`rounded ${mainVideo === vid ? "border border-primary" : ""
+                            }`}
+                          style={{
+                            width: "160px",
+                            height: "100px",
+                            objectFit: "cover",
+                            backgroundColor: "#000",
+                            cursor: "pointer",
+                          }}
+                        />
+                      );
+                    })}
                   </div>
-                )}
+                </div>
+              )}
 
             {/* In-page navigation */}
             <SectionTabs scrollToSection={scrollToSection} />
@@ -1126,15 +1281,14 @@ const Detailed = () => {
                   </div>
 
                   <div
-                    className={`d-flex ${
-                      (
+                    className={`d-flex ${(
                         venueData?.attributes?.address ||
                         venueData?.attributes?.city ||
                         ""
                       ).length > 38
                         ? "align-items-start"
                         : "align-items-center"
-                    } my-2 fs-14 text-black`}
+                      } my-2 fs-14 text-black`}
                   >
                     <FaLocationDot
                       className="me-1"
@@ -1204,9 +1358,9 @@ const Detailed = () => {
                       <div className="fw-bold fs-16 mt-1 primary-text">
                         {venueData.attributes?.veg_price
                           ? `₹ ${parseInt(
-                              venueData.attributes.veg_price.replace(/,/g, ""),
-                              10,
-                            ).toLocaleString()}`
+                            venueData.attributes.veg_price.replace(/,/g, ""),
+                            10,
+                          ).toLocaleString()}`
                           : "Contact for pricing"}
                       </div>
 
@@ -1216,12 +1370,12 @@ const Detailed = () => {
                       <div className="fw-bold fs-16 mt-1 primary-text">
                         {venueData.attributes?.non_veg_price
                           ? `₹ ${parseInt(
-                              venueData.attributes.non_veg_price.replace(
-                                /,/g,
-                                "",
-                              ),
-                              10,
-                            ).toLocaleString()} onwards`
+                            venueData.attributes.non_veg_price.replace(
+                              /,/g,
+                              "",
+                            ),
+                            10,
+                          ).toLocaleString()} onwards`
                           : "Contact for pricing"}
                       </div>
 
@@ -1263,7 +1417,7 @@ const Detailed = () => {
                           : venueData.attributes?.vendor_type === "Photography"
                             ? "Photography Package (Starting)"
                             : venueData.attributes?.vendor_type ===
-                                "Music And Dance"
+                              "Music And Dance"
                               ? ""
                               : ""}
                       </span>
@@ -1275,18 +1429,18 @@ const Detailed = () => {
                         <span className="primary-text">
                           ₹{" "}
                           {venueData.attributes?.PriceRange ||
-                          venueData.attributes.starting_price
+                            venueData.attributes.starting_price
                             ? venueData.attributes.PriceRange.replace(
-                                "Rs.",
-                                "",
-                              ).trim() || venueData.attributes.starting_price
+                              "Rs.",
+                              "",
+                            ).trim() || venueData.attributes.starting_price
                             : venueData.attributes.photo_package_price
                               ? `₹${parseInt(
-                                  venueData.attributes.photo_package_price.replace(
-                                    /,/g,
-                                    "",
-                                  ),
-                                ).toLocaleString()} onwards`
+                                venueData.attributes.photo_package_price.replace(
+                                  /,/g,
+                                  "",
+                                ),
+                              ).toLocaleString()} onwards`
                               : "Contact for pricing"}
                         </span>
                       </div>
