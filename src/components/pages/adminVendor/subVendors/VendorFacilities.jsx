@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
+import VenueMasterProfile from "./VenueMasterProfile";
+import CatererMasterProfile from "./CatererMasterProfile";
+import PhotographerMasterProfile from "./PhotographerMasterProfile";
 
 const VendorFacilities = ({
   formData,
@@ -41,6 +44,9 @@ const VendorFacilities = ({
     normalizedType.includes("lawn") ||
     normalizedType.includes("palace") ||
     normalizedType.includes("fort");
+
+  const isCaterer = normalizedType.includes("cater");
+  const isPhotographer = normalizedType.includes("photograph");
 
   const capacity = formData.capacity || { min: "", max: "" };
 
@@ -299,6 +305,31 @@ const VendorFacilities = ({
           Save Facilities Details
         </button>
       </div>
+
+      {isVenue && (
+        <VenueMasterProfile
+          formData={formData}
+          setFormData={setFormData}
+          onSave={onSave}
+          onShowSuccess={onShowSuccess}
+        />
+      )}
+      {isCaterer && (
+        <CatererMasterProfile
+          formData={formData}
+          setFormData={setFormData}
+          onSave={onSave}
+          onShowSuccess={onShowSuccess}
+        />
+      )}
+      {isPhotographer && (
+        <PhotographerMasterProfile
+          formData={formData}
+          setFormData={setFormData}
+          onSave={onSave}
+          onShowSuccess={onShowSuccess}
+        />
+      )}
     </div>
   );
 };

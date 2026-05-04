@@ -1,7 +1,6 @@
 import { IMAGE_BASE_URL } from "../../../config/constants.js";
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
-import { FaRegBuilding } from "react-icons/fa";
 import { Nav } from "react-bootstrap";
 import {
   CiBullhorn,
@@ -53,9 +52,6 @@ import SocialDetails from "./subVendors/SocialDetails";
 import axiosInstance from "../../../services/api/axiosInstance";
 import { TbView360Number } from "react-icons/tb";
 import View360 from "./subVendors/View360";
-import VenueMasterProfile from "./subVendors/VenueMasterProfile";
-import CatererMasterProfile from "./subVendors/CatererMasterProfile";
-import PhotographerMasterProfile from "./subVendors/PhotographerMasterProfile";
 
 // Reusable New Tag component
 const NewTag = () => (
@@ -957,19 +953,6 @@ const Storefront = ({ setCompletion }) => {
       sections.push({ id: "vendor-menus", fields: ["attributes.menus"] });
     }
 
-    if (normalizedVendorTypeName.includes("venue")) {
-      sections.push({ id: "venue-master", fields: ["venue_master"] });
-    }
-    if (normalizedVendorTypeName.includes("cater")) {
-      sections.push({ id: "caterer-master", fields: ["caterer_master"] });
-    }
-    if (normalizedVendorTypeName.includes("photograph")) {
-      sections.push({
-        id: "photographer-master",
-        fields: ["photographer_master"],
-      });
-    }
-
     const venueMasterHasData = (vm) => {
       if (!vm || typeof vm !== "object") return false;
       const walk = (obj) => {
@@ -994,19 +977,31 @@ const Storefront = ({ setCompletion }) => {
     let completed = 0;
     sections.forEach((section) => {
       let hasData = false;
-      if (section.id === "venue-master") {
-        const vm =
-          formData.venue_master || formData.attributes?.venue_master;
-        hasData = venueMasterHasData(vm);
-      } else if (section.id === "caterer-master") {
-        const cm =
-          formData.caterer_master || formData.attributes?.caterer_master;
-        hasData = venueMasterHasData(cm);
-      } else if (section.id === "photographer-master") {
-        const pm =
-          formData.photographer_master ||
-          formData.attributes?.photographer_master;
-        hasData = venueMasterHasData(pm);
+      if (section.id === "vendor-facilities") {
+        hasData = section.fields.some((field) => {
+          const keys = field.split(".");
+          let value = formData;
+          for (const key of keys) {
+            value = value?.[key];
+          }
+          return value && value !== "" && value !== null && value !== undefined;
+        });
+        if (!hasData) {
+          if (normalizedVendorTypeName.includes("venue")) {
+            const vm =
+              formData.venue_master || formData.attributes?.venue_master;
+            hasData = venueMasterHasData(vm);
+          } else if (normalizedVendorTypeName.includes("cater")) {
+            const cm =
+              formData.caterer_master || formData.attributes?.caterer_master;
+            hasData = venueMasterHasData(cm);
+          } else if (normalizedVendorTypeName.includes("photograph")) {
+            const pm =
+              formData.photographer_master ||
+              formData.attributes?.photographer_master;
+            hasData = venueMasterHasData(pm);
+          }
+        }
       } else if (section.id === "faq") {
         // Count FAQ completed only if at least one non-empty answer exists
         const faqs = formData?.faqs;
@@ -1106,33 +1101,6 @@ const Storefront = ({ setCompletion }) => {
       label: "Basic Information",
       icon: <IoIosInformationCircleOutline size={20} />,
     },
-    ...(normalizedVendorTypeName.includes("venue")
-      ? [
-          {
-            id: "venue-master",
-            label: "Venue master profile",
-            icon: <FaRegBuilding size={20} />,
-          },
-        ]
-      : []),
-    ...(normalizedVendorTypeName.includes("cater")
-      ? [
-          {
-            id: "caterer-master",
-            label: "Caterer master profile",
-            icon: <PiForkKnife size={20} />,
-          },
-        ]
-      : []),
-    ...(normalizedVendorTypeName.includes("photograph")
-      ? [
-          {
-            id: "photographer-master",
-            label: "Photographer master profile",
-            icon: <IoCameraOutline size={20} />,
-          },
-        ]
-      : []),
     { id: "faq", label: "FAQ", icon: <CiCircleQuestion size={20} /> },
     {
       id: "vendor-contact",
@@ -1258,33 +1226,6 @@ const Storefront = ({ setCompletion }) => {
       case "vendor-basic":
         return (
           <VendorBasicInfo
-            formData={formData}
-            setFormData={setFormData}
-            onSave={handleSave}
-            onShowSuccess={showSuccessModal}
-          />
-        );
-      case "venue-master":
-        return (
-          <VenueMasterProfile
-            formData={formData}
-            setFormData={setFormData}
-            onSave={handleSave}
-            onShowSuccess={showSuccessModal}
-          />
-        );
-      case "caterer-master":
-        return (
-          <CatererMasterProfile
-            formData={formData}
-            setFormData={setFormData}
-            onSave={handleSave}
-            onShowSuccess={showSuccessModal}
-          />
-        );
-      case "photographer-master":
-        return (
-          <PhotographerMasterProfile
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
