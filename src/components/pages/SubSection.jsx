@@ -232,10 +232,6 @@ const SubSection = () => {
     );
   }
 
-  if (loading && dataToSend.length === 0) {
-    return <Loader />;
-  }
-
   return (
     <div className="container-fluid">
       <MainSearch
@@ -245,9 +241,11 @@ const SubSection = () => {
         onCityChange={handleCityChange}
       />
 
-      {loading && dataToSend.length === 0 ? (
+      {error ? (
+        <ErrorState error={error} />
+      ) : loading && dataToSend.length === 0 ? (
         <Loader />
-      ) : dataToSend.length === 0 ? (
+      ) : !loading && dataToSend.length === 0 ? (
         <EmptyState section={section} title={title} />
       ) : (
         <>

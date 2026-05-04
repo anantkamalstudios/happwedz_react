@@ -1109,8 +1109,7 @@ const Detailed = () => {
               </h3>
               {venueData.attributes?.about_us ? (
                 <div
-                  className="description-text text-black fs-14"
-                  style={{ textAlign: "justify" }}
+                  className="description-text text-black fs-14 vendor-about-html"
                   dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(
                       venueData?.attributes?.about_us || "",

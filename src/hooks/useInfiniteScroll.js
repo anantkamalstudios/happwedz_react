@@ -20,7 +20,8 @@ const useInfiniteScroll = (
   filters = {}
 ) => {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  /** Start true so listing pages never flash "empty" before the first fetch runs. */
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
@@ -193,6 +194,9 @@ const useInfiniteScroll = (
       setLoading(true);
       setError(null);
 
+      /** When true, `finally` must not call setLoading(false) — avoids races when navigation aborts the previous request while a new one is loading. */
+      let skipLoadingComplete = false;
+
       try {
         const subCategory = slug
           ? slug
@@ -328,17 +332,19 @@ const useInfiniteScroll = (
         // Check cache first
         if (cacheRef.current.has(cacheKey)) {
           const cached = cacheRef.current.get(cacheKey);
-          setData((prevData) => {
-            // Avoid duplicates
-            const existingIds = new Set(prevData.map((item) => item.id));
-            const newItems = cached.data.filter(
-              (item) => !existingIds.has(item.id)
-            );
-            return [...prevData, ...newItems];
-          });
+          if (pageNum === 1) {
+            setData(cached.data);
+          } else {
+            setData((prevData) => {
+              const existingIds = new Set(prevData.map((item) => item.id));
+              const newItems = cached.data.filter(
+                (item) => !existingIds.has(item.id)
+              );
+              return [...prevData, ...newItems];
+            });
+          }
           setHasMore(cached.hasMore);
           loadedPagesRef.current.add(pageNum);
-          setLoading(false);
           return;
         }
 
@@ -384,26 +390,31 @@ const useInfiniteScroll = (
         // Add to loaded pages
         loadedPagesRef.current.add(pageNum);
 
-        // Append to existing data
-        setData((prevData) => {
-          // Avoid duplicates
-          const existingIds = new Set(prevData.map((item) => item.id));
-          const newItems = transformed.filter(
-            (item) => !existingIds.has(item.id)
-          );
-          return [...prevData, ...newItems];
-        });
+        if (pageNum === 1) {
+          setData(transformed);
+        } else {
+          setData((prevData) => {
+            const existingIds = new Set(prevData.map((item) => item.id));
+            const newItems = transformed.filter(
+              (item) => !existingIds.has(item.id)
+            );
+            return [...prevData, ...newItems];
+          });
+        }
 
         setHasMore(hasMorePages);
       } catch (err) {
         if (err.name === "AbortError") {
+          skipLoadingComplete = true;
           return;
         }
         console.error(`❌ Error loading ${section} data:`, err);
         setError(`Failed to load ${section} data from API: ${err.message}`);
         setHasMore(false);
       } finally {
-        setLoading(false);
+        if (!skipLoadingComplete) {
+          setLoading(false);
+        }
       }
     },
     [section, slug, city, vendorType, initialLimit, transformApiData]
@@ -435,6 +446,7 @@ const useInfiniteScroll = (
     setHasMore(true);
     setError(null);
     loadedPagesRef.current.clear();
+    setLoading(true);
   }, []);
 
   // Initial load - reset and fetch when section, slug, city, vendorType, or filters change
