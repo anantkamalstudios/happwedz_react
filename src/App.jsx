@@ -179,6 +179,12 @@ const RecommandPage = lazy(() => import("./components/home/RecommandedPage"));
 const WriteReviewPage = lazy(
   () => import("./components/pages/WriteReviewPage"),
 );
+const ShaadiAI = lazy(() => import("./components/pages/ShaadiAI"));
+const AIFeaturesHub = lazy(() => import("./components/pages/AIFeaturesHub"));
+const CultureBlender = lazy(() => import("./components/pages/CultureBlender"));
+const PersonalityQuiz = lazy(() => import("./components/pages/PersonalityQuiz"));
+const ConflictResolver = lazy(() => import("./components/pages/ConflictResolver"));
+const TimelineGenerator = lazy(() => import("./components/pages/TimelineGenerator"));
 
 const Travels = lazy(() => import("./components/pages/Travels/Travel"));
 const CityActivities = lazy(
@@ -295,6 +301,12 @@ function App() {
                   </UserPrivateRoute>
                 }
               />
+              <Route path="/ai-features" element={<AIFeaturesHub />} />
+              <Route path="/shaadi-ai" element={<ShaadiAI />} />
+              <Route path="/culture-blender" element={<CultureBlender />} />
+              <Route path="/personality-quiz" element={<PersonalityQuiz />} />
+              <Route path="/conflict-resolver" element={<ConflictResolver />} />
+              <Route path="/timeline-generator" element={<TimelineGenerator />} />
               <Route path="/customer-login" element={<CustomerLogin />} />
               <Route path="/customer-register" element={<CustomerRegister />} />
               <Route path="/contact-us" element={<ContactUs />} />
