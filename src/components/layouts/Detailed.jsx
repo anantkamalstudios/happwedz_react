@@ -99,6 +99,7 @@ const Detailed = () => {
     const venueMaster = attributes.venue_master || {};
     const catererMaster = attributes.caterer_master || {};
     const photographerMaster = attributes.photographer_master || {};
+    const makeupArtistMaster = attributes.makeup_artist_master || {};
 
     if (attributes.payment_terms) {
       amenities.push({
@@ -375,6 +376,52 @@ const Detailed = () => {
         <FaStar />,
         "Drone Available",
         pe.drone_available,
+      );
+    }
+
+    // --- MAKEUP ARTIST MASTER ATTRIBUTES ---
+    if (
+      (normalizedVendorType.includes("makeup") ||
+        vendorType === "Makeup Artists") &&
+      makeupArtistMaster &&
+      Object.keys(makeupArtistMaster).length > 0
+    ) {
+      const mi = makeupArtistMaster.identity || {};
+      const ms = makeupArtistMaster.makeup_style_intelligence || {};
+      const msk = makeupArtistMaster.skin_hair_expertise || {};
+      const mp = makeupArtistMaster.pricing_structure || {};
+
+      pushFeature(amenities, <FaStar />, "Artist", mi.brand_artist_name);
+      pushFeature(amenities, <FaStar />, "Artist Type", mi.artist_type);
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Services",
+        formatList(mi.services_offered, 6),
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Signature Makeup",
+        formatList(ms.signature_makeup_style, 5),
+      );
+      pushFeature(
+        amenities,
+        <FaMapMarkerAlt />,
+        "Travel",
+        mi.travel_availability,
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Skin Types",
+        formatList(msk.skin_types_handled, 5),
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Starting Price",
+        mp.bridal_makeup_starting_price,
       );
     }
 

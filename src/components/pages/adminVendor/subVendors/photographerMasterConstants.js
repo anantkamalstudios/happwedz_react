@@ -1,4 +1,3 @@
-export const PHOTOGRAPHER_TYPE = ["Individual", "Studio", "Agency"];
 export const SERVICES_OFFERED = [
   "Wedding Photography",
   "Pre-Wedding Shoot",
@@ -96,8 +95,6 @@ export const BEST_FOR = [
 export function emptyPhotographerMaster() {
   return {
     identity: {
-      brand_studio_name: "",
-      photographer_type: "",
       services_offered: [],
       also_available_for: "",
       years_of_experience: "",

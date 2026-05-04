@@ -92,7 +92,13 @@ function MultiCheck({ label, options, value, onChange }) {
   );
 }
 
-const CatererMasterProfile = ({ formData, setFormData, onSave, onShowSuccess }) => {
+const CatererMasterProfile = ({
+  formData,
+  setFormData,
+  onSave,
+  onShowSuccess,
+  embedded = false,
+}) => {
   const cm = useMemo(() => {
     const raw = formData.caterer_master || formData.attributes?.caterer_master;
     if (raw && typeof raw === "object") return mergeDeep(emptyCatererMaster(), raw);
@@ -114,9 +120,8 @@ const CatererMasterProfile = ({ formData, setFormData, onSave, onShowSuccess }) 
     if (onShowSuccess) onShowSuccess();
   };
 
-  return (
-    <div className="my-5">
-      <div className="p-3 border rounded bg-white">
+  const inner = (
+    <>
         <h4 className="mb-2 fw-bold">Caterer master profile</h4>
         <p className="text-muted fs-14 mb-4">Structured caterer attributes for storefront filters and AI FAQ.</p>
         <Accordion alwaysOpen flush defaultActiveKey={["0", "1"]}>
@@ -224,7 +229,15 @@ const CatererMasterProfile = ({ formData, setFormData, onSave, onShowSuccess }) 
         <button type="button" className="btn btn-primary mt-3 fs-14" onClick={save}>
           Save caterer master profile
         </button>
-      </div>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="pt-4 mt-3 border-top">{inner}</div>;
+  }
+  return (
+    <div className="my-5">
+      <div className="p-3 border rounded bg-white">{inner}</div>
     </div>
   );
 };

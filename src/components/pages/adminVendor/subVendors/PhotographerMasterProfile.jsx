@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo } from "react";
 import { Accordion, Form } from "react-bootstrap";
 import {
-  PHOTOGRAPHER_TYPE,
   SERVICES_OFFERED,
   ALSO_AVAILABLE_FOR,
   TRAVEL_AVAILABILITY,
@@ -90,7 +89,13 @@ const YesNoField = ({ label, value, onChange, groupName }) => (
   </div>
 );
 
-const PhotographerMasterProfile = ({ formData, setFormData, onSave, onShowSuccess }) => {
+const PhotographerMasterProfile = ({
+  formData,
+  setFormData,
+  onSave,
+  onShowSuccess,
+  embedded = false,
+}) => {
   const pm = useMemo(() => {
     const raw = formData.photographer_master || formData.attributes?.photographer_master;
     if (raw && typeof raw === "object") return mergeDeep(emptyPhotographerMaster(), raw);
@@ -119,20 +124,14 @@ const PhotographerMasterProfile = ({ formData, setFormData, onSave, onShowSucces
     if (onShowSuccess) onShowSuccess();
   };
 
-  return (
-    <div className="my-5">
-      <div className="p-3 border rounded bg-white">
+  const inner = (
+    <>
         <h4 className="mb-2 fw-bold">Wedding photographer master profile</h4>
         <p className="text-muted fs-14 mb-4">Structured photographer attributes for storefront and AI FAQ matching.</p>
         <Accordion alwaysOpen flush defaultActiveKey={["0", "1"]}>
           <Accordion.Item eventKey="0">
             <Accordion.Header>Section 1 — Basic identity</Accordion.Header>
             <Accordion.Body>
-              <div className="mb-3">
-                <label className="form-label fw-semibold">Brand / Studio name</label>
-                <Form.Control value={pm.identity.brand_studio_name} onChange={(e) => patchPm({ identity: { ...pm.identity, brand_studio_name: e.target.value } })} />
-              </div>
-              <SelectField label="Photographer type" options={PHOTOGRAPHER_TYPE} value={pm.identity.photographer_type} onChange={(v) => patchPm({ identity: { ...pm.identity, photographer_type: v } })} />
               <MultiCheck label="Services offered" options={SERVICES_OFFERED} value={pm.identity.services_offered} onChange={(v) => patchPm({ identity: { ...pm.identity, services_offered: v } })} />
               <SelectField label="Also available for" options={ALSO_AVAILABLE_FOR} value={pm.identity.also_available_for} onChange={(v) => patchPm({ identity: { ...pm.identity, also_available_for: v } })} />
               <div className="mb-3">
@@ -211,7 +210,15 @@ const PhotographerMasterProfile = ({ formData, setFormData, onSave, onShowSucces
         <button type="button" className="btn btn-primary mt-3 fs-14" onClick={save}>
           Save photographer master profile
         </button>
-      </div>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="pt-4 mt-3 border-top">{inner}</div>;
+  }
+  return (
+    <div className="my-5">
+      <div className="p-3 border rounded bg-white">{inner}</div>
     </div>
   );
 };

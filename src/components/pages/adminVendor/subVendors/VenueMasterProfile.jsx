@@ -156,7 +156,13 @@ function YesNoField({ label, value, onChange, groupName }) {
   );
 }
 
-const VenueMasterProfile = ({ formData, setFormData, onSave, onShowSuccess }) => {
+const VenueMasterProfile = ({
+  formData,
+  setFormData,
+  onSave,
+  onShowSuccess,
+  embedded = false,
+}) => {
   const vm = useMemo(() => {
     const raw = formData.venue_master || formData.attributes?.venue_master;
     if (raw && typeof raw === "object") {
@@ -226,9 +232,8 @@ const VenueMasterProfile = ({ formData, setFormData, onSave, onShowSuccess }) =>
     patchVm({ rooms: { ...vm.rooms, room_type_counts } });
   };
 
-  return (
-    <div className="my-5">
-      <div className="p-3 border rounded bg-white">
+  const inner = (
+    <>
         <h4 className="mb-2 fw-bold">Venue master profile</h4>
         <p className="text-muted fs-14 mb-4">
           Structured venue data for search, filters, and AI FAQ. City and map pin
@@ -1639,7 +1644,15 @@ const VenueMasterProfile = ({ formData, setFormData, onSave, onShowSuccess }) =>
         <button className="btn btn-primary mt-4 fs-14" type="button" onClick={handleSave}>
           Save venue master profile
         </button>
-      </div>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="pt-4 mt-3 border-top">{inner}</div>;
+  }
+  return (
+    <div className="my-5">
+      <div className="p-3 border rounded bg-white">{inner}</div>
     </div>
   );
 };
