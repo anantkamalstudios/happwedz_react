@@ -4,6 +4,18 @@ import { Modal, Toast } from "react-bootstrap";
 import axios from "axios";
 import SummernoteEditor from "../../../ui/SummernoteEditor";
 
+const normalizeUiStatus = (value) => {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "publish" || normalized === "published") return "publish";
+  if (
+    normalized === "hide" ||
+    normalized === "draft" ||
+    normalized === "archived"
+  )
+    return "hide";
+  return "hide";
+};
+
 const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
   const vendorAuth = useSelector((state) => state.vendorAuth);
   const { vendor } = vendorAuth || {};
@@ -45,7 +57,7 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
           // subtitle: prev.attributes?.subtitle || "",
           about_us: prev.attributes?.about_us || "",
         },
-        status: prev.status || vendor.status || "draft",
+        status: normalizeUiStatus(prev.status || vendor.status),
       }));
     }
   }, [vendor, setFormData]);
@@ -205,20 +217,19 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
             </div>
           </div>
 
-          {/* Status */}
-          {/* <div className="col-md-6 mb-3">
-            <label className="form-label fw-semibold fs-16">Status</label>
+          {/* Ad Status */}
+          <div className="col-md-6 mb-3">
+            <label className="form-label fw-semibold fs-16">Ad Status</label>
             <select
               name="status"
               className="form-select"
-              value={formData.status || "draft"}
+              value={normalizeUiStatus(formData.status)}
               onChange={handleRootChange}
             >
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-              <option value="archived">Archived</option>
+              <option value="publish">Published</option>
+              <option value="hide">Hidden</option>
             </select>
-          </div> */}
+          </div>
         </div>
         <button type="button" className="btn btn-primary mt-2" onClick={onSave}>
           Save Basic Info

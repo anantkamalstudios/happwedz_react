@@ -70,6 +70,18 @@ const NewTag = () => (
   </span>
 );
 
+const normalizeServiceStatus = (value) => {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "publish" || normalized === "published") return "publish";
+  if (
+    normalized === "hide" ||
+    normalized === "draft" ||
+    normalized === "archived"
+  )
+    return "hide";
+  return "";
+};
+
 const Storefront = ({ setCompletion }) => {
   const [active, setActive] = useState("business");
   const [showModal, setShowModal] = useState(false);
@@ -299,6 +311,7 @@ const Storefront = ({ setCompletion }) => {
               setFormData((prev) => ({
                 ...prev,
                 ...actualData,
+                status: normalizeServiceStatus(actualData.status),
                 deals: actualData.attributes.deals || [],
                 contact: actualData.attributes.contact
                   ? {
@@ -727,7 +740,8 @@ const Storefront = ({ setCompletion }) => {
     if (vendorId) fd.append("vendor_id", `${vendorId}`);
     if (formData.vendor_subcategory_id)
       fd.append("vendor_subcategory_id", `${formData.vendor_subcategory_id}`);
-    if (formData.status) fd.append("status", formData.status);
+    const normalizedStatus = normalizeServiceStatus(formData.status);
+    if (normalizedStatus) fd.append("status", normalizedStatus);
 
     const attrs = buildAttributes();
     // Ensure attributes do not accidentally include a media key

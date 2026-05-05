@@ -19,6 +19,18 @@ const useInfiniteScroll = (
   initialLimit = 9,
   filters = {}
 ) => {
+  const normalizeServiceStatus = (value) => {
+    const normalized = String(value || "").trim().toLowerCase();
+    if (normalized === "publish" || normalized === "published") return "publish";
+    if (
+      normalized === "hide" ||
+      normalized === "draft" ||
+      normalized === "archived"
+    )
+      return "hide";
+    return "hide";
+  };
+
   const [data, setData] = useState([]);
   /** Start true so listing pages never flash "empty" before the first fetch runs. */
   const [loading, setLoading] = useState(true);
@@ -108,6 +120,7 @@ const useInfiniteScroll = (
 
       return {
         id,
+        status: normalizeServiceStatus(item.status),
         vendor_id: item.vendor_id || vendor.id || null,
         name:
           attributes.vendor_name ||
@@ -325,6 +338,10 @@ const useInfiniteScroll = (
         if (nonPriceFilters && Object.keys(nonPriceFilters).length > 0) {
           params.append("filters", JSON.stringify(nonPriceFilters));
         }
+
+        // Only return vendors whose first media image is confirmed to exist in S3.
+        // The batch job (verify-vendor-images.js) sets image_exists = TRUE after verification.
+        params.append("image_exists", "true");
 
         const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
         const cacheKey = apiUrl;

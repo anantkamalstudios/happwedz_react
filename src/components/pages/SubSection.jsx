@@ -18,6 +18,18 @@ import Loader from "../ui/Loader";
 const toTitleCase = (str) =>
   str.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
+const normalizeServiceStatus = (value) => {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "publish" || normalized === "published") return "publish";
+  if (
+    normalized === "hide" ||
+    normalized === "draft" ||
+    normalized === "archived"
+  )
+    return "hide";
+  return "hide";
+};
+
 const SubSection = () => {
   const { section, slug } = useParams();
   const location = useLocation();
@@ -152,7 +164,9 @@ const SubSection = () => {
       return [];
     }
 
-    return apiData;
+    return apiData.filter(
+      (item) => normalizeServiceStatus(item?.status) === "publish"
+    );
   }, [section, apiData, error]);
 
   useEffect(() => {
