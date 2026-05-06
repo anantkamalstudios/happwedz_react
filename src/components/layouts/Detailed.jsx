@@ -48,6 +48,18 @@ const formatList = (list, limit = 5) => {
   return list.slice(0, limit).join(", ");
 };
 
+const formatKeyValuePairs = (obj, limit = 4) => {
+  if (!obj || typeof obj !== "object" || Array.isArray(obj)) return "";
+  const entries = Object.entries(obj).filter(
+    ([key, value]) => key && String(value || "").trim(),
+  );
+  if (!entries.length) return "";
+  return entries
+    .slice(0, limit)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(", ");
+};
+
 const pushFeature = (arr, icon, label, value) => {
   if (value === undefined || value === null) return;
   const text = String(value).trim();
@@ -82,6 +94,7 @@ const Detailed = () => {
   const [selectedVendorId, setSelectedVendorId] = useState(null);
   const [showClaimForm, setShowClaimForm] = useState(false);
   const [showAllFaqs, setShowAllFaqs] = useState(false);
+  const [showAllFeatures, setShowAllFeatures] = useState(false);
   const [showStartingPrice, setShowStartingPrice] = useState(false);
   const navigate = useNavigate();
   const handleShowPricingModal = (vendorId) => {
@@ -244,14 +257,10 @@ const Detailed = () => {
         <FaStar />,
         "Venue Categories",
         formatList(
-          [
-            ...(vc.premium || []),
-            ...(vc.locationBased || []),
-            ...(vc.capacityBased || []),
-            ...(vc.budgetBased || []),
-            ...(vc.functionSpecific || []),
-          ],
-          6,
+          Object.values(vc)
+            .filter(Array.isArray)
+            .flat(),
+          12,
         ),
       );
 
@@ -277,15 +286,103 @@ const Detailed = () => {
         "Veg/Non-Veg",
         vFood.veg_non_veg,
       );
+
+      pushFeature(amenities, <FaUtensils />, "Catering Policy", vFood.catering_policy);
+      pushFeature(amenities, <FaUtensils />, "Per Plate Cost", vFood.per_plate_cost_range);
+      pushFeature(
+        amenities,
+        <FaUtensils />,
+        "Outside Catering Charges",
+        vFood.outside_catering_charges,
+      );
+      pushFeature(amenities, <FaUtensils />, "Jain Food", vFood.jain_food);
+
+      const vDecor = venueMaster.decor || {};
+      pushFeature(amenities, <FaStar />, "Decor Policy", vDecor.policy);
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Decor Capabilities",
+        formatList(vDecor.capabilities, 4),
+      );
+      pushFeature(amenities, <FaStar />, "Decor Lighting", formatList(vDecor.lighting, 3));
+      pushFeature(amenities, <FaStar />, "Decor Sound", formatList(vDecor.sound, 3));
+
+      const vRooms = venueMaster.rooms || {};
+      pushFeature(amenities, <FaBed />, "Number of Rooms", vRooms.num_rooms);
+      pushFeature(amenities, <FaBed />, "Room Types", formatList(vRooms.room_types, 4));
+      pushFeature(amenities, <FaBed />, "Room Price Range", vRooms.room_price_range);
+      pushFeature(amenities, <FaBed />, "Complimentary Rooms", vRooms.complimentary_rooms);
+      pushFeature(
+        amenities,
+        <FaBed />,
+        "Room Type Counts",
+        formatKeyValuePairs(vRooms.room_type_counts, 3),
+      );
+
+      const vAlcohol = venueMaster.alcohol || {};
+      pushFeature(amenities, <FaGlassCheers />, "Alcohol Policy", vAlcohol.policy);
+      pushFeature(amenities, <FaGlassCheers />, "Corkage", vAlcohol.corkage);
+      pushFeature(amenities, <FaGlassCheers />, "Bar Setup", formatList(vAlcohol.bar_setup, 3));
+
+      const vFacilities = venueMaster.facilities || {};
+      pushFeature(amenities, <FaParking />, "Parking Capacity", vFacilities.parking_capacity);
+      pushFeature(amenities, <FaParking />, "Valet", vFacilities.valet);
+      pushFeature(amenities, <FaStar />, "Power Backup", formatList(vFacilities.power_backup, 3));
+      pushFeature(amenities, <FaStar />, "Air Conditioning", vFacilities.ac);
+      pushFeature(amenities, <FaStar />, "Washroom Quality", vFacilities.washroom);
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Additional Facilities",
+        formatList(vFacilities.additional, 4),
+      );
+
+      const vEntertainment = venueMaster.entertainment || {};
+      pushFeature(amenities, <FaCalendarAlt />, "DJ Policy", vEntertainment.dj_policy);
+      pushFeature(
+        amenities,
+        <FaCalendarAlt />,
+        "Entertainment Supported",
+        formatList(vEntertainment.supported, 4),
+      );
+      pushFeature(amenities, <FaCalendarAlt />, "Noise Restriction", vEntertainment.noise);
+
+      const vSuitability = venueMaster.suitability || {};
+      pushFeature(
+        amenities,
+        <FaUsers />,
+        "Suitable For",
+        formatList(vSuitability.suitable_for, 4),
+      );
+      pushFeature(amenities, <FaUsers />, "Best For", formatList(vSuitability.best_for, 4));
+      pushFeature(
+        amenities,
+        <FaUsers />,
+        "Ideal Guest Range",
+        formatList(vSuitability.ideal_guest_range, 3),
+      );
+
+      const vIdentity = venueMaster.identity || {};
+      pushFeature(amenities, <FaMapMarkerAlt />, "Location Type", vIdentity.location_type);
+      pushFeature(amenities, <FaMapMarkerAlt />, "Ownership", vIdentity.property_ownership);
+      pushFeature(amenities, <FaStar />, "Years of Operation", vIdentity.years_of_operation);
+
+      const vPricing = venueMaster.pricing_booking || {};
+      pushFeature(amenities, <FaStar />, "Pricing Model", formatList(vPricing.pricing_model, 3));
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Starting Venue Price",
+        vPricing.starting_venue_price,
+      );
+      pushFeature(amenities, <FaStar />, "Advance Payment", vPricing.advance_payment_range);
+      pushFeature(amenities, <FaStar />, "Cancellation", vPricing.cancellation);
+      pushFeature(amenities, <FaStar />, "Refund Timeline", vPricing.refund_timeline);
     }
 
     // --- CATERER MASTER ATTRIBUTES ---
-    if (
-      (normalizedVendorType.includes("cater") ||
-        normalizedVendorType.includes("catering")) &&
-      catererMaster &&
-      Object.keys(catererMaster).length > 0
-    ) {
+    if (catererMaster && Object.keys(catererMaster).length > 0) {
       const ci = catererMaster.identity || {};
       const cs = catererMaster.service_type || {};
       const cc = catererMaster.cuisine_intelligence || {};
@@ -324,25 +421,44 @@ const Detailed = () => {
         catererMaster.scale_execution?.maximum_pax,
       );
       pushFeature(amenities, <FaStar />, "Price Range", cp.price_range);
+      pushFeature(amenities, <FaStar />, "Pricing Type", cp.pricing_type);
+      pushFeature(
+        amenities,
+        <FaUtensils />,
+        "Dietary Options",
+        formatList(cs.special_dietary_options, 4),
+      );
+      pushFeature(
+        amenities,
+        <FaUtensils />,
+        "Live Counters",
+        formatList(catererMaster.menu_customization?.popular_live_counters, 4),
+      );
       pushFeature(
         amenities,
         <FaMapMarkerAlt />,
         "Outdoor Catering",
         cl.outdoor_catering_supported,
       );
+      pushFeature(
+        amenities,
+        <FaCalendarAlt />,
+        "Functions Covered",
+        formatList(catererMaster.event_suitability?.functions_suitable_for, 6),
+      );
     }
 
     // --- PHOTOGRAPHER MASTER ATTRIBUTES ---
-    if (
-      normalizedVendorType.includes("photo") &&
-      photographerMaster &&
-      Object.keys(photographerMaster).length > 0
-    ) {
+    if (photographerMaster && Object.keys(photographerMaster).length > 0) {
       const pi = photographerMaster.identity || {};
       const ps = photographerMaster.style_intelligence || {};
       const pt = photographerMaster.team_coverage || {};
       const pd = photographerMaster.deliverables || {};
       const pe = photographerMaster.equipment || {};
+      const pp = photographerMaster.pricing || {};
+      const pw = photographerMaster.workflow || {};
+      const ppre = photographerMaster.prewedding_specialization || {};
+      const pes = photographerMaster.event_suitability || {};
 
       pushFeature(
         amenities,
@@ -357,7 +473,25 @@ const Detailed = () => {
         formatList(ps.photography_style, 4),
       );
       pushFeature(amenities, <FaStar />, "Editing Style", ps.editing_style);
+      pushFeature(amenities, <FaStar />, "Best Known For", formatList(ps.best_known_for, 5));
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Ideal Wedding Type",
+        formatList(ps.ideal_wedding_type, 5),
+      );
+      pushFeature(amenities, <FaMapMarkerAlt />, "Travel Availability", pi.travel_availability);
+      pushFeature(amenities, <FaStar />, "Also Available For", pi.also_available_for);
+      pushFeature(amenities, <FaStar />, "Years of Experience", pi.years_of_experience);
       pushFeature(amenities, <FaUsers />, "Team Size", pt.team_size);
+      pushFeature(amenities, <FaUsers />, "Max Events Per Day", pt.max_events_per_day);
+      pushFeature(amenities, <FaUsers />, "Backup Team", pt.backup_team_available);
+      pushFeature(
+        amenities,
+        <FaUsers />,
+        "Female Photographer",
+        pt.female_photographer_available,
+      );
       pushFeature(
         amenities,
         <FaStar />,
@@ -366,26 +500,99 @@ const Detailed = () => {
       );
       pushFeature(
         amenities,
+        <FaStar />,
+        "Videos Delivered",
+        formatList(pd.videos_delivered, 3),
+      );
+      pushFeature(amenities, <FaStar />, "Album Included", pd.album_included);
+      pushFeature(amenities, <FaStar />, "Album Type", pd.album_type);
+      pushFeature(amenities, <FaStar />, "Raw Data Provided", pd.raw_data_provided);
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Express Delivery",
+        pd.express_delivery_available,
+      );
+      pushFeature(
+        amenities,
         <FaCalendarAlt />,
         "Delivery Time",
         pd.delivery_time,
       );
       pushFeature(amenities, <FaStar />, "Camera Type", pe.camera_type);
+      pushFeature(amenities, <FaStar />, "Lighting Setup", pe.lighting_setup);
       pushFeature(
         amenities,
         <FaStar />,
         "Drone Available",
         pe.drone_available,
       );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Live Streaming Setup",
+        pe.live_streaming_setup,
+      );
+      pushFeature(amenities, <FaStar />, "Starting Price", pp.starting_price);
+      pushFeature(amenities, <FaStar />, "Pricing Type", pp.pricing_type);
+      pushFeature(amenities, <FaMapMarkerAlt />, "Travel Charges", pp.travel_charges);
+      pushFeature(
+        amenities,
+        <FaMapMarkerAlt />,
+        "Accommodation Required",
+        pp.accommodation_required,
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Pre-Wedding Shoot Cost",
+        pp.pre_wedding_shoot_cost,
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Booking Advance Required",
+        pw.booking_advance_required,
+      );
+      pushFeature(amenities, <FaStar />, "Advance Percentage", pw.advance_percentage);
+      pushFeature(amenities, <FaStar />, "Revision Allowed", pw.revision_allowed);
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Number of Revisions",
+        pw.number_of_revisions,
+      );
+      pushFeature(amenities, <FaStar />, "Cancellation Policy", pw.cancellation_policy);
+      pushFeature(
+        amenities,
+        <FaCalendarAlt />,
+        "Functions Covered",
+        formatList(pes.functions_covered, 7),
+      );
+      pushFeature(amenities, <FaStar />, "Best For", formatList(pes.best_for, 5));
+      pushFeature(
+        amenities,
+        <FaMapMarkerAlt />,
+        "Pre-Wedding Locations",
+        ppre.locations_supported,
+      );
+      pushFeature(amenities, <FaStar />, "Props Provided", ppre.props_provided);
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Concept Shoot Available",
+        ppre.concept_shoot_available,
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Location Scouting Support",
+        ppre.location_scouting_support,
+      );
     }
 
     // --- MAKEUP ARTIST MASTER ATTRIBUTES ---
-    if (
-      (normalizedVendorType.includes("makeup") ||
-        vendorType === "Makeup Artists") &&
-      makeupArtistMaster &&
-      Object.keys(makeupArtistMaster).length > 0
-    ) {
+    if (makeupArtistMaster && Object.keys(makeupArtistMaster).length > 0) {
       const mi = makeupArtistMaster.identity || {};
       const ms = makeupArtistMaster.makeup_style_intelligence || {};
       const msk = makeupArtistMaster.skin_hair_expertise || {};
@@ -422,6 +629,24 @@ const Detailed = () => {
         <FaStar />,
         "Starting Price",
         mp.bridal_makeup_starting_price,
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Cities",
+        formatList(mi.cities, 4),
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Skin Tone Expertise",
+        formatList(msk.skin_tone_expertise, 4),
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Product Category",
+        makeupArtistMaster.products_brands?.product_category,
       );
     }
 
@@ -831,6 +1056,11 @@ const Detailed = () => {
   // Aliases to match JSX usage
   const faqList = _faqList || [];
   const parseDbValue = _parseDbValue;
+  const vendorFeatures = getVendorFeatures(venueData);
+  const hasManyFeatures = vendorFeatures.length > 9;
+  const featuresToRender = showAllFeatures
+    ? vendorFeatures
+    : vendorFeatures.slice(0, 9);
 
   // Smooth scroll to section by id
   const scrollToSection = (sectionId) => {
@@ -1132,8 +1362,8 @@ const Detailed = () => {
             {/* DYNAMIC AMENITIES / SERVICES */}
             <div className="venue-amenities mb-5">
               <Row>
-                {getVendorFeatures(venueData).length > 0 ? (
-                  getVendorFeatures(venueData).map((item, index) => {
+                {vendorFeatures.length > 0 ? (
+                  featuresToRender.map((item, index) => {
                     const raw = item.name || "";
                     const isSub = raw.startsWith("-");
                     const trimmed = isSub
@@ -1179,6 +1409,17 @@ const Detailed = () => {
                   </Col>
                 )}
               </Row>
+              {hasManyFeatures && (
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    className="btn btn-link p-0 text-dark fw-semibold text-decoration-underline fs-14"
+                    onClick={() => setShowAllFeatures((prev) => !prev)}
+                  >
+                    {showAllFeatures ? "Show Less" : "Read More"}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* FaqQuestionAnswer Detailed */}
@@ -1312,7 +1553,7 @@ const Detailed = () => {
 
           <Col lg={4} className="ps-lg-5">
             <div
-              className="venue-details-card p-4 border rounded sticky-top z-0"
+              className="venue-details-card p-4 border rounded z-0"
               style={{ top: "20px" }}
             >
               <div className="venue-info">
@@ -1328,12 +1569,12 @@ const Detailed = () => {
 
                   <div
                     className={`d-flex ${(
-                        venueData?.attributes?.address ||
-                        venueData?.attributes?.city ||
-                        ""
-                      ).length > 38
-                        ? "align-items-start"
-                        : "align-items-center"
+                      venueData?.attributes?.address ||
+                      venueData?.attributes?.city ||
+                      ""
+                    ).length > 38
+                      ? "align-items-start"
+                      : "align-items-center"
                       } my-2 fs-14 text-black`}
                   >
                     <FaLocationDot
@@ -1511,9 +1752,9 @@ const Detailed = () => {
                   )}
                 </div>
 
-                <div>
+                <div className="details-action-group">
                   <button
-                    className="btn btn-outline-primary w-100 py-2 fs-14 mt-0 rounded-2"
+                    className="btn btn-outline-primary details-action-btn rounded-2"
                     onClick={() => setShowClaimForm(true)}
                   >
                     Claim Your Business
@@ -1522,19 +1763,13 @@ const Detailed = () => {
 
                 <hr />
 
-                <div className="mb-3">
-                  <div className="d-flex">
-                    <div style={{ width: "100%" }}>
-                      <button
-                        className="btn btn-outline-primary w-100 py-2 fs-14 mt-0 rounded-2"
-                        onClick={() =>
-                          handleShowPricingModal(venueData.vendor_id)
-                        }
-                      >
-                        Request Pricing & Availability
-                      </button>
-                    </div>
-                  </div>
+                <div className="details-action-group mb-3">
+                  <button
+                    className="btn btn-outline-primary details-action-btn rounded-2"
+                    onClick={() => handleShowPricingModal(venueData.vendor_id)}
+                  >
+                    Request Pricing & Availability
+                  </button>
                 </div>
               </div>
             </div>
