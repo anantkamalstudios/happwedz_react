@@ -19,11 +19,15 @@ import { BsLightningCharge } from "react-icons/bs";
 import { LuUsers } from "react-icons/lu";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import Asideview from "./Asideview";
+import QuickInquiryModal from "../QuickInquiryModal";
 // import { subVenuesData } from "../../../data/subVendorsData";
 
 const GridView = ({ subVendorsData }) => {
   const [favorites, setFavorites] = useState({});
   const [filter, setFilter] = useState("all");
+  const [showQuickInquiry, setShowQuickInquiry] = useState(false);
+  const [selectedVendorId, setSelectedVendorId] = useState(null);
+  const [selectedVendorName, setSelectedVendorName] = useState("");
 
   const toggleFavorite = (id) => {
     setFavorites((prev) => ({
@@ -36,6 +40,10 @@ const GridView = ({ subVendorsData }) => {
     filter === "all"
       ? subVendorsData
       : subVendorsData.filter((venue) => venue.type === filter);
+
+  // Debug: Log to see if data is coming through
+  console.log("GridView - filteredVenues:", filteredVenues);
+  console.log("GridView - showQuickInquiry:", showQuickInquiry);
 
   return (
     <Row>
@@ -72,6 +80,7 @@ const GridView = ({ subVendorsData }) => {
                       <FaRegHeart className="text-white flip-icon" />
                     )}
                   </button>
+                  
                   {/* Price tag: show venue veg/non-veg or starting price for other vendors */}
                   <div className="price-tag">
                     {v.vegPrice || v.nonVegPrice ? (
@@ -117,11 +126,41 @@ const GridView = ({ subVendorsData }) => {
                     </div>
                   </div>
 
-                  <div className="mt-auto">
-                    <button className="w-100 details-btn">
-                      Request Pricing
-                    </button>
-                  </div>
+                  {/* Quick Inquiry Button at Bottom */}
+                  <button
+                    className="w-100 mt-3"
+                    style={{
+                      backgroundColor: '#e83e8c',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '10px 20px',
+                      fontWeight: '600',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(232, 62, 140, 0.3)',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log("Quick Inquiry clicked!", v);
+                      setSelectedVendorId(v.vendor_id || v.id);
+                      setSelectedVendorName(v.name || "");
+                      setShowQuickInquiry(true);
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = '#c2185b';
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 6px 16px rgba(232, 62, 140, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = '#e83e8c';
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 12px rgba(232, 62, 140, 0.3)';
+                    }}
+                  >
+                    ⚡ Quick Inquiry
+                  </button>
 
                   <div
                     className="text-muted small venue-location d-flex justify-content-center mt-2"
@@ -142,6 +181,12 @@ const GridView = ({ subVendorsData }) => {
           ))}
         </Row>
       </Col>
+      <QuickInquiryModal
+        show={showQuickInquiry}
+        handleClose={() => setShowQuickInquiry(false)}
+        vendorId={selectedVendorId}
+        vendorName={selectedVendorName}
+      />
     </Row>
   );
 };

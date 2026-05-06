@@ -18430,6 +18430,33 @@ input:checked + .slider:before {
   background: linear-gradient(145deg, #fff, #ffe6f0);
 }
 
+/* Prevent card hover effect when hovering the Quick Inquiry button */
+.main-grid-cards:has(.quick-inquiry-btn:hover) {
+  box-shadow: none;
+  transform: none;
+  background: none;
+}
+
+.quick-inquiry-btn {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  background-color: #e83e8c;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.quick-inquiry-btn:hover {
+  background-color: #c2185b !important;
+}
 /* ============================================
    E-INVITE STYLES
    ============================================ */

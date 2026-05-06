@@ -48,6 +48,8 @@ const VendorForgotPassword = lazy(
 const Vendor360View = lazy(() => import("./components/pages/Vendor360View"));
 const MainSection = lazy(() => import("./components/pages/MainSection"));
 const SubSection = lazy(() => import("./components/pages/SubSection"));
+const TestInteractionsPage = lazy(() => import("./pages/TestInteractionsPage"));
+const DemoRecentlyViewed = lazy(() => import("./pages/DemoRecentlyViewed"));
 const Detailed = lazy(() => import("./components/layouts/Detailed"));
 const Main = lazy(() => import("./components/pages/adminVendor/Main"));
 const Search = lazy(() => import("./components/pages/matrimonial/Search"));
@@ -529,6 +531,12 @@ function App() {
               />
 
               <Route path="/about-us" element={<AboutUs />} />
+              
+              {/* Test Interactions Page */}
+              <Route path="/test-interactions" element={<TestInteractionsPage />} />
+              
+              {/* Demo Recently Viewed - Add sample data */}
+              <Route path="/demo-recently-viewed" element={<DemoRecentlyViewed />} />
 
               <Route path="*" element={<NotFound />} />
               <Route path="/travels" element={<Travels />} />
