@@ -16,6 +16,7 @@ import {
   getHotelImages,
   searchHotels,
 } from "../../../../services/api/hotelApi";
+import airportsData from "../../../../config/airports.json";
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500&display=swap');
@@ -395,17 +396,17 @@ const styles = `
     top: 100%;
     left: 0;
     right: 0;
-    background: white;
-    border: 2px solid #ed1173;
-    border-radius: 12px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    max-height: 250px;
+    background: #ffffff;
+    border: 1px solid rgba(237, 17, 115, 0.28);
+    border-radius: 14px;
+    box-shadow: 0 16px 35px rgba(18, 22, 33, 0.18);
+    max-height: 280px;
     overflow-y: auto;
     z-index: 9999;
     margin-top: 8px;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
     animation: slideDown 0.2s ease-out;
-    min-width: 350px;
+    min-width: 380px;
     width: auto;
   }
 
@@ -421,9 +422,9 @@ const styles = `
   }
 
   .suggestion-item {
-    padding: 14px 18px;
+    padding: 13px 16px;
     cursor: pointer;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f3f4f8;
     transition: all 0.2s ease;
     display: flex;
     flex-direction: column;
@@ -431,9 +432,9 @@ const styles = `
   }
 
   .suggestion-item:hover {
-    background: linear-gradient(135deg, rgba(237, 17, 115, 0.05), rgba(255, 107, 157, 0.05));
+    background: linear-gradient(135deg, rgba(237, 17, 115, 0.09), rgba(255, 107, 157, 0.08));
     border-left: 3px solid #ed1173;
-    padding-left: 15px;
+    padding-left: 13px;
   }
 
   .suggestion-item:last-child {
@@ -443,7 +444,14 @@ const styles = `
   .suggestion-main {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+  }
+
+  .suggestion-airport-icon {
+    width: 20px;
+    height: 20px;
+    color: #ed1173;
+    flex-shrink: 0;
   }
 
   .suggestion-iata {
@@ -461,13 +469,70 @@ const styles = `
     font-weight: 700;
     color: #1a1a2e;
     font-size: 14px;
+    line-height: 1.2;
   }
 
   .suggestion-city {
     font-size: 12px;
-    color: #666;
-    margin-left: 43px;
+    color: #5f6472;
+    margin-left: 65px;
     font-weight: 500;
+  }
+
+  .date-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .date-chip {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(237, 17, 115, 0.1);
+    color: #ed1173;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .flight-date-input {
+    border: 1px solid #efe6ec;
+    border-radius: 10px;
+    background: #fff;
+    padding: 6px 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a2e;
+    width: 100%;
+    min-height: 38px;
+    font-family: 'Poppins', sans-serif;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+
+  .flight-date-input:focus {
+    border-color: #ed1173;
+    box-shadow: 0 0 0 3px rgba(237, 17, 115, 0.12);
+  }
+
+  .flight-date-input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.85;
+  }
+
+  .selected-date-pill {
+    font-size: 11px;
+    font-weight: 700;
+    color: #b00061;
+    background: rgba(237, 17, 115, 0.12);
+    border: 1px solid rgba(237, 17, 115, 0.2);
+    border-radius: 999px;
+    padding: 4px 9px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .field-wrapper {
@@ -1006,6 +1071,36 @@ const mapHotelSearchResult = (hotel, imagePayload) => {
   };
 };
 
+const searchLocalAirports = (keyword) => {
+  const query = String(keyword || "").trim().toLowerCase();
+  if (query.length < 2) return [];
+  return airportsData
+    .filter((airport) => {
+      const iata = String(airport.iata || "").toLowerCase();
+      const city = String(airport.city || "").toLowerCase();
+      const name = String(airport.name || "").toLowerCase();
+      const country = String(airport.country || "").toLowerCase();
+      return (
+        iata.includes(query) ||
+        city.includes(query) ||
+        name.includes(query) ||
+        country.includes(query)
+      );
+    })
+    .slice(0, 12);
+};
+
+const formatSelectedDate = (dateValue) => {
+  if (!dateValue) return "Select date";
+  const d = new Date(dateValue);
+  if (Number.isNaN(d.getTime())) return "Select date";
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
 export default function FlightHero() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Flights");
@@ -1057,20 +1152,40 @@ export default function FlightHero() {
       return;
     }
 
+    // Instant local dropdown suggestions (city/name/IATA) from static config.
+    const localMatches = searchLocalAirports(keyword);
+    if (type === "from") {
+      setFromSuggestions(localMatches);
+      setShowFromSuggestions(localMatches.length > 0);
+    } else {
+      setToSuggestions(localMatches);
+      setShowToSuggestions(localMatches.length > 0);
+    }
+
     try {
       const data = await searchAirports(keyword);
 
       if (data.status && data.data) {
+        const merged = [...localMatches, ...data.data].reduce((acc, curr) => {
+          const key = `${curr.iata}-${curr.city}-${curr.country}`;
+          if (!acc.map.has(key)) {
+            acc.map.add(key);
+            acc.items.push(curr);
+          }
+          return acc;
+        }, { map: new Set(), items: [] }).items.slice(0, 12);
+
         if (type === "from") {
-          setFromSuggestions(data.data);
-          setShowFromSuggestions(true);
+          setFromSuggestions(merged);
+          setShowFromSuggestions(merged.length > 0);
         } else {
-          setToSuggestions(data.data);
-          setShowToSuggestions(true);
+          setToSuggestions(merged);
+          setShowToSuggestions(merged.length > 0);
         }
       }
     } catch (error) {
-      console.error("Error searching airports:", error);
+      // Keep local dropdown suggestions even if API fails.
+      console.error("Error searching airports, using local airport list:", error);
     }
   };
 
@@ -1426,6 +1541,7 @@ export default function FlightHero() {
                                   onClick={() => selectAirport(airport, "from")}
                                 >
                                   <div className="suggestion-main">
+                                    <Plane className="suggestion-airport-icon" size={18} />
                                     <span className="suggestion-iata">
                                       {airport.iata}
                                     </span>
@@ -1482,6 +1598,7 @@ export default function FlightHero() {
                                   onClick={() => selectAirport(airport, "to")}
                                 >
                                   <div className="suggestion-main">
+                                    <Plane className="suggestion-airport-icon" size={18} />
                                     <span className="suggestion-iata">
                                       {airport.iata}
                                     </span>
@@ -1506,17 +1623,20 @@ export default function FlightHero() {
                             <CalendarSearch size={14} /> Departure
                           </span>
                         </div>
-                        <input
-                          className="field-input"
-                          type="text"
-                          placeholder="Select departure date"
-                          value={departureDate}
-                          onChange={(e) => setDepartureDate(e.target.value)}
-                          onFocus={(e) => (e.target.type = "date")}
-                          onBlur={(e) => {
-                            if (!e.target.value) e.target.type = "text";
-                          }}
-                        />
+                        <div className="date-input-wrap">
+                          <span className="date-chip">
+                            <CalendarSearch size={14} />
+                          </span>
+                          <input
+                            className="flight-date-input"
+                            type="date"
+                            value={departureDate}
+                            onChange={(e) => setDepartureDate(e.target.value)}
+                          />
+                          <span className="selected-date-pill">
+                            {formatSelectedDate(departureDate)}
+                          </span>
+                        </div>
                       </div>
 
                       {tripType === "round" && (
@@ -1526,18 +1646,21 @@ export default function FlightHero() {
                               <CalendarSearch size={14} /> Return
                             </span>
                           </div>
-                          <input
-                            className="field-input"
-                            type="text"
-                            placeholder="Select return date"
-                            value={returnDate}
-                            onChange={(e) => setReturnDate(e.target.value)}
-                            onFocus={(e) => (e.target.type = "date")}
-                            onBlur={(e) => {
-                              if (!e.target.value) e.target.type = "text";
-                            }}
-                            min={departureDate}
-                          />
+                          <div className="date-input-wrap">
+                            <span className="date-chip">
+                              <CalendarSearch size={14} />
+                            </span>
+                            <input
+                              className="flight-date-input"
+                              type="date"
+                              value={returnDate}
+                              onChange={(e) => setReturnDate(e.target.value)}
+                              min={departureDate}
+                            />
+                            <span className="selected-date-pill">
+                              {formatSelectedDate(returnDate)}
+                            </span>
+                          </div>
                         </div>
                       )}
 
