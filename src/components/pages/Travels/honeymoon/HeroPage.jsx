@@ -482,8 +482,17 @@ const styles = `
   .date-input-wrap {
     position: relative;
     display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .date-input-row {
+    display: flex;
     align-items: center;
     gap: 8px;
+    width: 100%;
   }
 
   .date-chip {
@@ -507,7 +516,7 @@ const styles = `
     font-weight: 600;
     color: #1a1a2e;
     width: 100%;
-    min-height: 38px;
+    min-height: 40px;
     font-family: 'Poppins', sans-serif;
     outline: none;
     transition: all 0.2s ease;
@@ -530,9 +539,12 @@ const styles = `
     background: rgba(237, 17, 115, 0.12);
     border: 1px solid rgba(237, 17, 115, 0.2);
     border-radius: 999px;
-    padding: 4px 9px;
+    padding: 4px 10px;
     white-space: nowrap;
-    flex-shrink: 0;
+    align-self: flex-start;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .field-wrapper {
@@ -1624,15 +1636,17 @@ export default function FlightHero() {
                           </span>
                         </div>
                         <div className="date-input-wrap">
-                          <span className="date-chip">
-                            <CalendarSearch size={14} />
-                          </span>
-                          <input
-                            className="flight-date-input"
-                            type="date"
-                            value={departureDate}
-                            onChange={(e) => setDepartureDate(e.target.value)}
-                          />
+                          <div className="date-input-row">
+                            <span className="date-chip">
+                              <CalendarSearch size={14} />
+                            </span>
+                            <input
+                              className="flight-date-input"
+                              type="date"
+                              value={departureDate}
+                              onChange={(e) => setDepartureDate(e.target.value)}
+                            />
+                          </div>
                           <span className="selected-date-pill">
                             {formatSelectedDate(departureDate)}
                           </span>
@@ -1647,16 +1661,18 @@ export default function FlightHero() {
                             </span>
                           </div>
                           <div className="date-input-wrap">
-                            <span className="date-chip">
-                              <CalendarSearch size={14} />
-                            </span>
-                            <input
-                              className="flight-date-input"
-                              type="date"
-                              value={returnDate}
-                              onChange={(e) => setReturnDate(e.target.value)}
-                              min={departureDate}
-                            />
+                            <div className="date-input-row">
+                              <span className="date-chip">
+                                <CalendarSearch size={14} />
+                              </span>
+                              <input
+                                className="flight-date-input"
+                                type="date"
+                                value={returnDate}
+                                onChange={(e) => setReturnDate(e.target.value)}
+                                min={departureDate}
+                              />
+                            </div>
                             <span className="selected-date-pill">
                               {formatSelectedDate(returnDate)}
                             </span>
