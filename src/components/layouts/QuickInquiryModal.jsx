@@ -64,9 +64,9 @@ const QuickInquiryModal = ({ show, handleClose, vendorId, vendorName }) => {
     };
 
     try {
-      const apiUrl = import.meta.env.VITE_API_BASE_URL || "https://happywedz.com";
+      const apiUrl = import.meta.env.VITE_API_URL|| "https://happywedz.com";
       const response = await fetch(
-        `${apiUrl}/api/request-pricing`,
+        `${apiUrl}/request-pricing`,
         {
           method: "POST",
           headers: {

@@ -23,7 +23,7 @@ function formatTime(iso) {
 }
 
 const Avatar = ({ name, size = 36, imageUrl }) => {
-  const fallback = "/images/no-image.png";
+  const fallback = "/images/npProfile.png";
   return (
     <img
       src={imageUrl || fallback}
