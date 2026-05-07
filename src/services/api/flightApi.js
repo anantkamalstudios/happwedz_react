@@ -1,6 +1,8 @@
 import axiosInstance from './axiosInstance';
 
-const BASE_URL = 'https://happywedz.com/api/Flight_booking';
+const BASE_URL = (
+  import.meta.env.VITE_FLIGHT_API_URL || 'http://localhost:4000/Flight_booking'
+).replace(/\/$/, '');
 
 // Airport search API
 export const searchAirports = async (keyword) => {
@@ -125,7 +127,7 @@ export const createFlightPaymentOrder = async (bookingData) => {
       passengers: bookingData.passengers,
       contact: bookingData.contact
     };
-    
+
     const response = await axiosInstance.post('/flight_payment/create_order', paymentPayload);
     return response.data;
   } catch (error) {
