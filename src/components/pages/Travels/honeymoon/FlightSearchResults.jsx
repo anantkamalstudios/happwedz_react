@@ -137,11 +137,11 @@ const FlightSearchResults = () => {
     const flightId = `${flight.flight_no}-${fare.offer_id}`;
     setVerifyingFlight(flightId);
     setVerificationError(null);
-    
+
     try {
       // Verify the flight offer first
       const verification = await verifyOffer(fare.provider, fare.offer_id);
-      
+
       if (verification.status) {
         // Verification successful, show booking form
         setSelectedFlight({ ...flight, selectedFare: fare });
@@ -162,16 +162,16 @@ const FlightSearchResults = () => {
   const handleBookingSubmit = async (paymentData) => {
     setBookingLoading(true);
     setBookingError(null);
-    
+
     try {
       // Keep a copy so we can prefill Razorpay and verify+book on success
       setPendingBookingPayload(paymentData);
       const paymentResponse = await createFlightPaymentOrder(paymentData);
-      
+
       if (paymentResponse.status) {
         // Payment order created successfully
         console.log('Payment order created:', paymentResponse);
-        
+
         // Open Razorpay payment modal
         if (paymentResponse.razorpay_order_id && paymentResponse.key_id) {
           openRazorpayPayment(paymentResponse, paymentData);
@@ -215,7 +215,7 @@ const FlightSearchResults = () => {
         } : undefined,
         handler: async function (response) {
           console.log('Razorpay payment success:', response);
-          
+
           try {
             if (!response?.razorpay_payment_id) {
               alert('Payment failed. Please try again.');
@@ -247,7 +247,7 @@ const FlightSearchResults = () => {
           }
         },
         modal: {
-          ondismiss: function() {
+          ondismiss: function () {
             console.log('Razorpay modal closed');
           }
         }
@@ -529,7 +529,7 @@ const FlightSearchResults = () => {
 
                       <span style={{ fontWeight: '600', marginLeft: '8px' }}>Aircraft:</span> {flight.aircraft_name || flight.aircraft}
                     </div>
-                    <button 
+                    <button
                       className="select-button"
                       onClick={() => handleFlightSelect(flight, flight.fares[0])}
                       disabled={verifyingFlight === `${flight.flight_no}-${flight.fares[0]?.offer_id}`}
@@ -543,7 +543,7 @@ const FlightSearchResults = () => {
                         'Select Flight'
                       )}
                     </button>
-                    
+
                     {/* Show verification error for this flight */}
                     {verificationError && verifyingFlight === null && (
                       <div className="verification-error mt-2">
@@ -607,7 +607,7 @@ const FlightSearchResults = () => {
               <h4>Complete Your Booking</h4>
               <button className="close-btn" onClick={closeBookingForm}>×</button>
             </div>
-            
+
             <div className="booking-modal-body">
               {/* Flight Summary */}
               <div className="flight-summary-card">
@@ -631,7 +631,7 @@ const FlightSearchResults = () => {
               </div>
 
               {/* Booking Form */}
-              <BookingForm 
+              <BookingForm
                 flight={selectedFlight}
                 verifiedData={verifiedFlightData}
                 searchParams={searchParams}

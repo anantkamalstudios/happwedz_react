@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
+import VenueMasterProfile from "./VenueMasterProfile";
+import CatererMasterProfile from "./CatererMasterProfile";
+import PhotographerMasterProfile from "./PhotographerMasterProfile";
+import MakeupArtistMasterProfile from "./MakeupArtistMasterProfile";
 
 const VendorFacilities = ({
   formData,
@@ -41,6 +45,13 @@ const VendorFacilities = ({
     normalizedType.includes("lawn") ||
     normalizedType.includes("palace") ||
     normalizedType.includes("fort");
+
+  const isCaterer = normalizedType.includes("cater");
+  const isPhotographer = normalizedType.includes("photograph");
+  const isMakeupArtist =
+    normalizedType.includes("makeup") ||
+    (normalizedType.includes("bridal") && normalizedType.includes("artist")) ||
+    normalizedType.includes("mua");
 
   const capacity = formData.capacity || { min: "", max: "" };
 
@@ -295,7 +306,54 @@ const VendorFacilities = ({
             </div>
           )}
         </div>
-        <button className="btn btn-primary mt-2 fs-14" onClick={handleSave}>
+
+        {(isVenue || isCaterer || isPhotographer || isMakeupArtist) && (
+          <>
+            <hr className="my-4" />
+            <h5 className="fw-bold mb-3">Vendor master profile</h5>
+            <p className="text-muted fs-14 mb-3">
+              Structured fields for search, filters, and storefront matching.
+            </p>
+            {isVenue && (
+              <VenueMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isCaterer && (
+              <CatererMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isPhotographer && (
+              <PhotographerMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isMakeupArtist && (
+              <MakeupArtistMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+          </>
+        )}
+
+        <button className="btn btn-primary mt-4 fs-14" onClick={handleSave}>
           Save Facilities Details
         </button>
       </div>

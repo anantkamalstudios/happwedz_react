@@ -70,16 +70,32 @@ function Faq({ formData, setFormData, onSave }) {
     }));
   };
 
+  const flattenOtherRadioAnswers = (raw) => {
+    const out = { ...raw };
+    const suffix = "_other";
+    Object.keys(raw).forEach((key) => {
+      if (!String(key).endsWith(suffix)) return;
+      const baseId = String(key).slice(0, -suffix.length);
+      const detail = raw[key];
+      if (out[baseId] === "Other" && detail && String(detail).trim()) {
+        out[baseId] = `Other: ${String(detail).trim()}`;
+      }
+      delete out[key];
+    });
+    return out;
+  };
+
   // Save answers to backend
   const handleSave = async () => {
     if (!vendor?.id || !vendor?.vendor_type_id) {
       console.error("Cannot save: Vendor ID or Vendor Type ID is missing.");
       return;
     }
+    const mergedAnswers = flattenOtherRadioAnswers(answers);
     const payload = {
       vendorId: vendor.id,
       vendorTypeId: vendor.vendor_type_id,
-      answers: Object.entries(answers).map(([faqQuestionId, answer]) => ({
+      answers: Object.entries(mergedAnswers).map(([faqQuestionId, answer]) => ({
         faqQuestionId,
         answer,
       })),
@@ -208,6 +224,17 @@ function Faq({ formData, setFormData, onSave }) {
                 </label>
               ))}
             </div>
+            {q.allowOther && answers[q.id] === "Other" && (
+              <input
+                type="text"
+                className="form-control fs-14 mt-2"
+                placeholder="Please specify"
+                value={answers[`${q.id}_other`] || ""}
+                onChange={(e) =>
+                  handleAnswerChange(`${q.id}_other`, e.target.value)
+                }
+              />
+            )}
           </div>
         );
       case "checkbox":

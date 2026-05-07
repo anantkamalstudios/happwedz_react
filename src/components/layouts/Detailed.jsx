@@ -43,6 +43,30 @@ const capitalizeWords = (str) => {
   return str.replace(/^(.)|\s+(.)/g, (c) => c.toUpperCase());
 };
 
+const formatList = (list, limit = 5) => {
+  if (!Array.isArray(list) || list.length === 0) return "";
+  return list.slice(0, limit).join(", ");
+};
+
+const formatKeyValuePairs = (obj, limit = 4) => {
+  if (!obj || typeof obj !== "object" || Array.isArray(obj)) return "";
+  const entries = Object.entries(obj).filter(
+    ([key, value]) => key && String(value || "").trim(),
+  );
+  if (!entries.length) return "";
+  return entries
+    .slice(0, limit)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(", ");
+};
+
+const pushFeature = (arr, icon, label, value) => {
+  if (value === undefined || value === null) return;
+  const text = String(value).trim();
+  if (!text) return;
+  arr.push({ icon, name: `${label}: ${text}` });
+};
+
 const getYouTubeVideoId = (url) => {
   if (!url) return null;
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -70,6 +94,7 @@ const Detailed = () => {
   const [selectedVendorId, setSelectedVendorId] = useState(null);
   const [showClaimForm, setShowClaimForm] = useState(false);
   const [showAllFaqs, setShowAllFaqs] = useState(false);
+  const [showAllFeatures, setShowAllFeatures] = useState(false);
   const [showStartingPrice, setShowStartingPrice] = useState(false);
   const navigate = useNavigate();
   const handleShowPricingModal = (vendorId) => {
@@ -83,6 +108,11 @@ const Detailed = () => {
     const attributes = data.attributes;
     const amenities = [];
     const vendorType = attributes.vendor_type;
+    const normalizedVendorType = String(vendorType || "").toLowerCase();
+    const venueMaster = attributes.venue_master || {};
+    const catererMaster = attributes.caterer_master || {};
+    const photographerMaster = attributes.photographer_master || {};
+    const makeupArtistMaster = attributes.makeup_artist_master || {};
 
     if (attributes.payment_terms) {
       amenities.push({
@@ -217,6 +247,407 @@ const Detailed = () => {
           }
         });
       }
+    }
+
+    // --- VENUE MASTER ATTRIBUTES ---
+    if (venueMaster && Object.keys(venueMaster).length > 0) {
+      const vc = venueMaster.categories || {};
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Venue Categories",
+        formatList(
+          Object.values(vc)
+            .filter(Array.isArray)
+            .flat(),
+          12,
+        ),
+      );
+
+      const vSpace = venueMaster.space_capacity || {};
+      pushFeature(amenities, <FaUsers />, "Guest Capacity", vSpace.max_guests);
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Space Types",
+        formatList(vSpace.space_types),
+      );
+
+      const vFood = venueMaster.food || {};
+      pushFeature(
+        amenities,
+        <FaUtensils />,
+        "Cuisine",
+        formatList(vFood.cuisines, 4),
+      );
+      pushFeature(
+        amenities,
+        <FaUtensils />,
+        "Veg/Non-Veg",
+        vFood.veg_non_veg,
+      );
+
+      pushFeature(amenities, <FaUtensils />, "Catering Policy", vFood.catering_policy);
+      pushFeature(amenities, <FaUtensils />, "Per Plate Cost", vFood.per_plate_cost_range);
+      pushFeature(
+        amenities,
+        <FaUtensils />,
+        "Outside Catering Charges",
+        vFood.outside_catering_charges,
+      );
+      pushFeature(amenities, <FaUtensils />, "Jain Food", vFood.jain_food);
+
+      const vDecor = venueMaster.decor || {};
+      pushFeature(amenities, <FaStar />, "Decor Policy", vDecor.policy);
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Decor Capabilities",
+        formatList(vDecor.capabilities, 4),
+      );
+      pushFeature(amenities, <FaStar />, "Decor Lighting", formatList(vDecor.lighting, 3));
+      pushFeature(amenities, <FaStar />, "Decor Sound", formatList(vDecor.sound, 3));
+
+      const vRooms = venueMaster.rooms || {};
+      pushFeature(amenities, <FaBed />, "Number of Rooms", vRooms.num_rooms);
+      pushFeature(amenities, <FaBed />, "Room Types", formatList(vRooms.room_types, 4));
+      pushFeature(amenities, <FaBed />, "Room Price Range", vRooms.room_price_range);
+      pushFeature(amenities, <FaBed />, "Complimentary Rooms", vRooms.complimentary_rooms);
+      pushFeature(
+        amenities,
+        <FaBed />,
+        "Room Type Counts",
+        formatKeyValuePairs(vRooms.room_type_counts, 3),
+      );
+
+      const vAlcohol = venueMaster.alcohol || {};
+      pushFeature(amenities, <FaGlassCheers />, "Alcohol Policy", vAlcohol.policy);
+      pushFeature(amenities, <FaGlassCheers />, "Corkage", vAlcohol.corkage);
+      pushFeature(amenities, <FaGlassCheers />, "Bar Setup", formatList(vAlcohol.bar_setup, 3));
+
+      const vFacilities = venueMaster.facilities || {};
+      pushFeature(amenities, <FaParking />, "Parking Capacity", vFacilities.parking_capacity);
+      pushFeature(amenities, <FaParking />, "Valet", vFacilities.valet);
+      pushFeature(amenities, <FaStar />, "Power Backup", formatList(vFacilities.power_backup, 3));
+      pushFeature(amenities, <FaStar />, "Air Conditioning", vFacilities.ac);
+      pushFeature(amenities, <FaStar />, "Washroom Quality", vFacilities.washroom);
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Additional Facilities",
+        formatList(vFacilities.additional, 4),
+      );
+
+      const vEntertainment = venueMaster.entertainment || {};
+      pushFeature(amenities, <FaCalendarAlt />, "DJ Policy", vEntertainment.dj_policy);
+      pushFeature(
+        amenities,
+        <FaCalendarAlt />,
+        "Entertainment Supported",
+        formatList(vEntertainment.supported, 4),
+      );
+      pushFeature(amenities, <FaCalendarAlt />, "Noise Restriction", vEntertainment.noise);
+
+      const vSuitability = venueMaster.suitability || {};
+      pushFeature(
+        amenities,
+        <FaUsers />,
+        "Suitable For",
+        formatList(vSuitability.suitable_for, 4),
+      );
+      pushFeature(amenities, <FaUsers />, "Best For", formatList(vSuitability.best_for, 4));
+      pushFeature(
+        amenities,
+        <FaUsers />,
+        "Ideal Guest Range",
+        formatList(vSuitability.ideal_guest_range, 3),
+      );
+
+      const vIdentity = venueMaster.identity || {};
+      pushFeature(amenities, <FaMapMarkerAlt />, "Location Type", vIdentity.location_type);
+      pushFeature(amenities, <FaMapMarkerAlt />, "Ownership", vIdentity.property_ownership);
+      pushFeature(amenities, <FaStar />, "Years of Operation", vIdentity.years_of_operation);
+
+      const vPricing = venueMaster.pricing_booking || {};
+      pushFeature(amenities, <FaStar />, "Pricing Model", formatList(vPricing.pricing_model, 3));
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Starting Venue Price",
+        vPricing.starting_venue_price,
+      );
+      pushFeature(amenities, <FaStar />, "Advance Payment", vPricing.advance_payment_range);
+      pushFeature(amenities, <FaStar />, "Cancellation", vPricing.cancellation);
+      pushFeature(amenities, <FaStar />, "Refund Timeline", vPricing.refund_timeline);
+    }
+
+    // --- CATERER MASTER ATTRIBUTES ---
+    if (catererMaster && Object.keys(catererMaster).length > 0) {
+      const ci = catererMaster.identity || {};
+      const cs = catererMaster.service_type || {};
+      const cc = catererMaster.cuisine_intelligence || {};
+      const cp = catererMaster.pricing_structure || {};
+      const cl = catererMaster.venue_logistics || {};
+
+      pushFeature(amenities, <FaStar />, "Caterer Type", ci.caterer_type);
+      pushFeature(
+        amenities,
+        <FaMapMarkerAlt />,
+        "Coverage",
+        ci.service_coverage,
+      );
+      pushFeature(
+        amenities,
+        <FaUtensils />,
+        "Catering Style",
+        formatList(cs.catering_style, 4),
+      );
+      pushFeature(
+        amenities,
+        <FaUtensils />,
+        "Cuisine Types",
+        formatList(cc.cuisine_types, 5),
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Best Known For",
+        formatList(cc.best_known_for, 4),
+      );
+      pushFeature(
+        amenities,
+        <FaUsers />,
+        "Max Guests",
+        catererMaster.scale_execution?.maximum_pax,
+      );
+      pushFeature(amenities, <FaStar />, "Price Range", cp.price_range);
+      pushFeature(amenities, <FaStar />, "Pricing Type", cp.pricing_type);
+      pushFeature(
+        amenities,
+        <FaUtensils />,
+        "Dietary Options",
+        formatList(cs.special_dietary_options, 4),
+      );
+      pushFeature(
+        amenities,
+        <FaUtensils />,
+        "Live Counters",
+        formatList(catererMaster.menu_customization?.popular_live_counters, 4),
+      );
+      pushFeature(
+        amenities,
+        <FaMapMarkerAlt />,
+        "Outdoor Catering",
+        cl.outdoor_catering_supported,
+      );
+      pushFeature(
+        amenities,
+        <FaCalendarAlt />,
+        "Functions Covered",
+        formatList(catererMaster.event_suitability?.functions_suitable_for, 6),
+      );
+    }
+
+    // --- PHOTOGRAPHER MASTER ATTRIBUTES ---
+    if (photographerMaster && Object.keys(photographerMaster).length > 0) {
+      const pi = photographerMaster.identity || {};
+      const ps = photographerMaster.style_intelligence || {};
+      const pt = photographerMaster.team_coverage || {};
+      const pd = photographerMaster.deliverables || {};
+      const pe = photographerMaster.equipment || {};
+      const pp = photographerMaster.pricing || {};
+      const pw = photographerMaster.workflow || {};
+      const ppre = photographerMaster.prewedding_specialization || {};
+      const pes = photographerMaster.event_suitability || {};
+
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Services",
+        formatList(pi.services_offered, 5),
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Photography Style",
+        formatList(ps.photography_style, 4),
+      );
+      pushFeature(amenities, <FaStar />, "Editing Style", ps.editing_style);
+      pushFeature(amenities, <FaStar />, "Best Known For", formatList(ps.best_known_for, 5));
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Ideal Wedding Type",
+        formatList(ps.ideal_wedding_type, 5),
+      );
+      pushFeature(amenities, <FaMapMarkerAlt />, "Travel Availability", pi.travel_availability);
+      pushFeature(amenities, <FaStar />, "Also Available For", pi.also_available_for);
+      pushFeature(amenities, <FaStar />, "Years of Experience", pi.years_of_experience);
+      pushFeature(amenities, <FaUsers />, "Team Size", pt.team_size);
+      pushFeature(amenities, <FaUsers />, "Max Events Per Day", pt.max_events_per_day);
+      pushFeature(amenities, <FaUsers />, "Backup Team", pt.backup_team_available);
+      pushFeature(
+        amenities,
+        <FaUsers />,
+        "Female Photographer",
+        pt.female_photographer_available,
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Photos Delivered",
+        pd.photos_delivered,
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Videos Delivered",
+        formatList(pd.videos_delivered, 3),
+      );
+      pushFeature(amenities, <FaStar />, "Album Included", pd.album_included);
+      pushFeature(amenities, <FaStar />, "Album Type", pd.album_type);
+      pushFeature(amenities, <FaStar />, "Raw Data Provided", pd.raw_data_provided);
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Express Delivery",
+        pd.express_delivery_available,
+      );
+      pushFeature(
+        amenities,
+        <FaCalendarAlt />,
+        "Delivery Time",
+        pd.delivery_time,
+      );
+      pushFeature(amenities, <FaStar />, "Camera Type", pe.camera_type);
+      pushFeature(amenities, <FaStar />, "Lighting Setup", pe.lighting_setup);
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Drone Available",
+        pe.drone_available,
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Live Streaming Setup",
+        pe.live_streaming_setup,
+      );
+      pushFeature(amenities, <FaStar />, "Starting Price", pp.starting_price);
+      pushFeature(amenities, <FaStar />, "Pricing Type", pp.pricing_type);
+      pushFeature(amenities, <FaMapMarkerAlt />, "Travel Charges", pp.travel_charges);
+      pushFeature(
+        amenities,
+        <FaMapMarkerAlt />,
+        "Accommodation Required",
+        pp.accommodation_required,
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Pre-Wedding Shoot Cost",
+        pp.pre_wedding_shoot_cost,
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Booking Advance Required",
+        pw.booking_advance_required,
+      );
+      pushFeature(amenities, <FaStar />, "Advance Percentage", pw.advance_percentage);
+      pushFeature(amenities, <FaStar />, "Revision Allowed", pw.revision_allowed);
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Number of Revisions",
+        pw.number_of_revisions,
+      );
+      pushFeature(amenities, <FaStar />, "Cancellation Policy", pw.cancellation_policy);
+      pushFeature(
+        amenities,
+        <FaCalendarAlt />,
+        "Functions Covered",
+        formatList(pes.functions_covered, 7),
+      );
+      pushFeature(amenities, <FaStar />, "Best For", formatList(pes.best_for, 5));
+      pushFeature(
+        amenities,
+        <FaMapMarkerAlt />,
+        "Pre-Wedding Locations",
+        ppre.locations_supported,
+      );
+      pushFeature(amenities, <FaStar />, "Props Provided", ppre.props_provided);
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Concept Shoot Available",
+        ppre.concept_shoot_available,
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Location Scouting Support",
+        ppre.location_scouting_support,
+      );
+    }
+
+    // --- MAKEUP ARTIST MASTER ATTRIBUTES ---
+    if (makeupArtistMaster && Object.keys(makeupArtistMaster).length > 0) {
+      const mi = makeupArtistMaster.identity || {};
+      const ms = makeupArtistMaster.makeup_style_intelligence || {};
+      const msk = makeupArtistMaster.skin_hair_expertise || {};
+      const mp = makeupArtistMaster.pricing_structure || {};
+
+      pushFeature(amenities, <FaStar />, "Artist", mi.brand_artist_name);
+      pushFeature(amenities, <FaStar />, "Artist Type", mi.artist_type);
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Services",
+        formatList(mi.services_offered, 6),
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Signature Makeup",
+        formatList(ms.signature_makeup_style, 5),
+      );
+      pushFeature(
+        amenities,
+        <FaMapMarkerAlt />,
+        "Travel",
+        mi.travel_availability,
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Skin Types",
+        formatList(msk.skin_types_handled, 5),
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Starting Price",
+        mp.bridal_makeup_starting_price,
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Cities",
+        formatList(mi.cities, 4),
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Skin Tone Expertise",
+        formatList(msk.skin_tone_expertise, 4),
+      );
+      pushFeature(
+        amenities,
+        <FaStar />,
+        "Product Category",
+        makeupArtistMaster.products_brands?.product_category,
+      );
     }
 
     // --- PHOTOGRAPHER/OTHER VENDOR SPECIFIC FEATURES ---
@@ -401,7 +832,7 @@ const Detailed = () => {
                 );
                 try {
                   sessionStorage.setItem(sessionKey, Date.now().toString());
-                } catch {}
+                } catch { }
                 if (incRes?.data?.vendor?.profileViews !== undefined) {
                   setVenueData((prev) => ({
                     ...prev,
@@ -587,12 +1018,12 @@ const Detailed = () => {
 
   const displayLocation = isVenue
     ? venueData.attributes?.address ||
-      venueData.attributes?.city ||
-      "Location not specified"
+    venueData.attributes?.city ||
+    "Location not specified"
     : venueData.attributes?.address ||
-      venueData.attributes?.city ||
-      venueData.vendor?.city ||
-      "Location not specified";
+    venueData.attributes?.city ||
+    venueData.vendor?.city ||
+    "Location not specified";
 
   // Prefer precise coordinates if present
   const latRaw =
@@ -606,8 +1037,8 @@ const Detailed = () => {
   const mapSrc = hasCoords
     ? `https://maps.google.com/maps?q=${lat},${lng}&t=&z=13&ie=UTF8&iwloc=&output=embed`
     : `https://maps.google.com/maps?q=${encodeURIComponent(
-        displayLocation,
-      )}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+      displayLocation,
+    )}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
 
   const activeVendor = {
     id: id,
@@ -625,6 +1056,11 @@ const Detailed = () => {
   // Aliases to match JSX usage
   const faqList = _faqList || [];
   const parseDbValue = _parseDbValue;
+  const vendorFeatures = getVendorFeatures(venueData);
+  const hasManyFeatures = vendorFeatures.length > 9;
+  const featuresToRender = showAllFeatures
+    ? vendorFeatures
+    : vendorFeatures.slice(0, 9);
 
   // Smooth scroll to section by id
   const scrollToSection = (sectionId) => {
@@ -791,112 +1227,108 @@ const Detailed = () => {
 
             {mediaTab === "gallery"
               ? images.length > 0 && (
-                  <div className="thumbnail-gallery mb-5">
-                    <Swiper
-                      modules={[Autoplay]}
-                      spaceBetween={10}
-                      slidesPerView={4}
-                      autoplay={{
-                        delay: 3000,
-                        disableOnInteraction: false,
-                      }}
-                      loop={images.length > 4}
-                      grabCursor={true}
-                      freeMode={true}
-                    >
-                      {images.map((img, idx) => (
-                        <SwiperSlide key={idx}>
-                          <div
-                            className={`thumbnail-item ${
-                              mainImage === img ? "active" : ""
-                            } ${
-                              hoveredIndex !== null && hoveredIndex !== idx
-                                ? "blurred"
-                                : ""
+                <div className="thumbnail-gallery mb-5">
+                  <Swiper
+                    modules={[Autoplay]}
+                    spaceBetween={10}
+                    slidesPerView={4}
+                    autoplay={{
+                      delay: 3000,
+                      disableOnInteraction: false,
+                    }}
+                    loop={images.length > 4}
+                    grabCursor={true}
+                    freeMode={true}
+                  >
+                    {images.map((img, idx) => (
+                      <SwiperSlide key={idx}>
+                        <div
+                          className={`thumbnail-item ${mainImage === img ? "active" : ""
+                            } ${hoveredIndex !== null && hoveredIndex !== idx
+                              ? "blurred"
+                              : ""
                             }`}
-                            onClick={() => setMainImage(img)}
-                            onMouseEnter={() => setHoveredIndex(idx)}
-                            onMouseLeave={() => setHoveredIndex(null)}
-                          >
-                            <img
-                              src={img}
-                              alt={`Thumbnail ${idx + 1}`}
-                              className="img-fluid rounded"
-                              style={{
-                                cursor: "pointer",
-                                height: "100%",
-                                objectFit: "cover",
-                              }}
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = "/images/imageNotFound.jpg";
-                              }}
-                            />
-                          </div>
-                        </SwiperSlide>
-                      ))}
-                    </Swiper>
-                  </div>
-                )
-              : videos.length > 0 && (
-                  <div className="mb-5">
-                    <div className="d-flex gap-2 flex-wrap">
-                      {videos.map((vid, idx) => {
-                        const youtubeId = getYouTubeVideoId(vid);
-                        return youtubeId ? (
-                          <div
-                            key={idx}
-                            onClick={() => setMainVideo(vid)}
-                            className={`rounded overflow-hidden position-relative ${
-                              mainVideo === vid ? "border border-primary" : ""
-                            }`}
+                          onClick={() => setMainImage(img)}
+                          onMouseEnter={() => setHoveredIndex(idx)}
+                          onMouseLeave={() => setHoveredIndex(null)}
+                        >
+                          <img
+                            src={img}
+                            alt={`Thumbnail ${idx + 1}`}
+                            className="img-fluid rounded"
                             style={{
-                              width: "160px",
-                              height: "100px",
-                              backgroundColor: "#000",
                               cursor: "pointer",
-                              backgroundImage: `url(https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg)`,
-                              backgroundSize: "cover",
-                              backgroundPosition: "center",
-                            }}
-                          >
-                            <div
-                              className="d-flex align-items-center justify-content-center h-100"
-                              style={{ backgroundColor: "rgba(0,0,0,0.3)" }}
-                            >
-                              <svg
-                                width="32"
-                                height="32"
-                                viewBox="0 0 24 24"
-                                fill="white"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M8 5V19L19 12L8 5Z" />
-                              </svg>
-                            </div>
-                          </div>
-                        ) : (
-                          <video
-                            key={idx}
-                            src={vid}
-                            muted
-                            onClick={() => setMainVideo(vid)}
-                            className={`rounded ${
-                              mainVideo === vid ? "border border-primary" : ""
-                            }`}
-                            style={{
-                              width: "160px",
-                              height: "100px",
+                              height: "100%",
                               objectFit: "cover",
-                              backgroundColor: "#000",
-                              cursor: "pointer",
+                            }}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "/images/imageNotFound.jpg";
                             }}
                           />
-                        );
-                      })}
-                    </div>
+                        </div>
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                </div>
+              )
+              : videos.length > 0 && (
+                <div className="mb-5">
+                  <div className="d-flex gap-2 flex-wrap">
+                    {videos.map((vid, idx) => {
+                      const youtubeId = getYouTubeVideoId(vid);
+                      return youtubeId ? (
+                        <div
+                          key={idx}
+                          onClick={() => setMainVideo(vid)}
+                          className={`rounded overflow-hidden position-relative ${mainVideo === vid ? "border border-primary" : ""
+                            }`}
+                          style={{
+                            width: "160px",
+                            height: "100px",
+                            backgroundColor: "#000",
+                            cursor: "pointer",
+                            backgroundImage: `url(https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg)`,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                          }}
+                        >
+                          <div
+                            className="d-flex align-items-center justify-content-center h-100"
+                            style={{ backgroundColor: "rgba(0,0,0,0.3)" }}
+                          >
+                            <svg
+                              width="32"
+                              height="32"
+                              viewBox="0 0 24 24"
+                              fill="white"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path d="M8 5V19L19 12L8 5Z" />
+                            </svg>
+                          </div>
+                        </div>
+                      ) : (
+                        <video
+                          key={idx}
+                          src={vid}
+                          muted
+                          onClick={() => setMainVideo(vid)}
+                          className={`rounded ${mainVideo === vid ? "border border-primary" : ""
+                            }`}
+                          style={{
+                            width: "160px",
+                            height: "100px",
+                            objectFit: "cover",
+                            backgroundColor: "#000",
+                            cursor: "pointer",
+                          }}
+                        />
+                      );
+                    })}
                   </div>
-                )}
+                </div>
+              )}
 
             {/* In-page navigation */}
             <SectionTabs scrollToSection={scrollToSection} />
@@ -907,8 +1339,7 @@ const Detailed = () => {
               </h3>
               {venueData.attributes?.about_us ? (
                 <div
-                  className="description-text text-black fs-14"
-                  style={{ textAlign: "justify" }}
+                  className="description-text text-black fs-14 vendor-about-html"
                   dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(
                       venueData?.attributes?.about_us || "",
@@ -931,8 +1362,8 @@ const Detailed = () => {
             {/* DYNAMIC AMENITIES / SERVICES */}
             <div className="venue-amenities mb-5">
               <Row>
-                {getVendorFeatures(venueData).length > 0 ? (
-                  getVendorFeatures(venueData).map((item, index) => {
+                {vendorFeatures.length > 0 ? (
+                  featuresToRender.map((item, index) => {
                     const raw = item.name || "";
                     const isSub = raw.startsWith("-");
                     const trimmed = isSub
@@ -978,6 +1409,17 @@ const Detailed = () => {
                   </Col>
                 )}
               </Row>
+              {hasManyFeatures && (
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    className="btn btn-link p-0 text-dark fw-semibold text-decoration-underline fs-14"
+                    onClick={() => setShowAllFeatures((prev) => !prev)}
+                  >
+                    {showAllFeatures ? "Show Less" : "Read More"}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* FaqQuestionAnswer Detailed */}
@@ -1111,7 +1553,7 @@ const Detailed = () => {
 
           <Col lg={4} className="ps-lg-5">
             <div
-              className="venue-details-card p-4 border rounded sticky-top z-0"
+              className="venue-details-card p-4 border rounded z-0"
               style={{ top: "20px" }}
             >
               <div className="venue-info">
@@ -1126,15 +1568,14 @@ const Detailed = () => {
                   </div>
 
                   <div
-                    className={`d-flex ${
-                      (
-                        venueData?.attributes?.address ||
-                        venueData?.attributes?.city ||
-                        ""
-                      ).length > 38
-                        ? "align-items-start"
-                        : "align-items-center"
-                    } my-2 fs-14 text-black`}
+                    className={`d-flex ${(
+                      venueData?.attributes?.address ||
+                      venueData?.attributes?.city ||
+                      ""
+                    ).length > 38
+                      ? "align-items-start"
+                      : "align-items-center"
+                      } my-2 fs-14 text-black`}
                   >
                     <FaLocationDot
                       className="me-1"
@@ -1204,9 +1645,9 @@ const Detailed = () => {
                       <div className="fw-bold fs-16 mt-1 primary-text">
                         {venueData.attributes?.veg_price
                           ? `₹ ${parseInt(
-                              venueData.attributes.veg_price.replace(/,/g, ""),
-                              10,
-                            ).toLocaleString()}`
+                            venueData.attributes.veg_price.replace(/,/g, ""),
+                            10,
+                          ).toLocaleString()}`
                           : "Contact for pricing"}
                       </div>
 
@@ -1216,12 +1657,12 @@ const Detailed = () => {
                       <div className="fw-bold fs-16 mt-1 primary-text">
                         {venueData.attributes?.non_veg_price
                           ? `₹ ${parseInt(
-                              venueData.attributes.non_veg_price.replace(
-                                /,/g,
-                                "",
-                              ),
-                              10,
-                            ).toLocaleString()} onwards`
+                            venueData.attributes.non_veg_price.replace(
+                              /,/g,
+                              "",
+                            ),
+                            10,
+                          ).toLocaleString()} onwards`
                           : "Contact for pricing"}
                       </div>
 
@@ -1263,7 +1704,7 @@ const Detailed = () => {
                           : venueData.attributes?.vendor_type === "Photography"
                             ? "Photography Package (Starting)"
                             : venueData.attributes?.vendor_type ===
-                                "Music And Dance"
+                              "Music And Dance"
                               ? ""
                               : ""}
                       </span>
@@ -1275,18 +1716,18 @@ const Detailed = () => {
                         <span className="primary-text">
                           ₹{" "}
                           {venueData.attributes?.PriceRange ||
-                          venueData.attributes.starting_price
+                            venueData.attributes.starting_price
                             ? venueData.attributes.PriceRange.replace(
-                                "Rs.",
-                                "",
-                              ).trim() || venueData.attributes.starting_price
+                              "Rs.",
+                              "",
+                            ).trim() || venueData.attributes.starting_price
                             : venueData.attributes.photo_package_price
                               ? `₹${parseInt(
-                                  venueData.attributes.photo_package_price.replace(
-                                    /,/g,
-                                    "",
-                                  ),
-                                ).toLocaleString()} onwards`
+                                venueData.attributes.photo_package_price.replace(
+                                  /,/g,
+                                  "",
+                                ),
+                              ).toLocaleString()} onwards`
                               : "Contact for pricing"}
                         </span>
                       </div>
@@ -1311,9 +1752,9 @@ const Detailed = () => {
                   )}
                 </div>
 
-                <div>
+                <div className="details-action-group">
                   <button
-                    className="btn btn-outline-primary w-100 py-2 fs-14 mt-0 rounded-2"
+                    className="btn btn-outline-primary details-action-btn rounded-2"
                     onClick={() => setShowClaimForm(true)}
                   >
                     Claim Your Business
@@ -1322,19 +1763,13 @@ const Detailed = () => {
 
                 <hr />
 
-                <div className="mb-3">
-                  <div className="d-flex">
-                    <div style={{ width: "100%" }}>
-                      <button
-                        className="btn btn-outline-primary w-100 py-2 fs-14 mt-0 rounded-2"
-                        onClick={() =>
-                          handleShowPricingModal(venueData.vendor_id)
-                        }
-                      >
-                        Request Pricing & Availability
-                      </button>
-                    </div>
-                  </div>
+                <div className="details-action-group mb-3">
+                  <button
+                    className="btn btn-outline-primary details-action-btn rounded-2"
+                    onClick={() => handleShowPricingModal(venueData.vendor_id)}
+                  >
+                    Request Pricing & Availability
+                  </button>
                 </div>
               </div>
             </div>

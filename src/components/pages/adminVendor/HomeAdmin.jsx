@@ -692,12 +692,12 @@ const HomeAdmin = () => {
                 {dateFilter === "this_week"
                   ? "This Week"
                   : dateFilter === "this_month"
-                  ? "This Month"
-                  : dateFilter === "last_month"
-                  ? "Last Month"
-                  : dateFilter === "custom"
-                  ? "Custom Range"
-                  : "All Data"}
+                    ? "This Month"
+                    : dateFilter === "last_month"
+                      ? "Last Month"
+                      : dateFilter === "custom"
+                        ? "Custom Range"
+                        : "All Data"}
               </Dropdown.Toggle>
 
               <Dropdown.Menu>
@@ -823,9 +823,8 @@ const HomeAdmin = () => {
                     <h5 className="pt-4">{data.value}</h5>
                   </div>
                   <div
-                    className={`icon-circle bg-${
-                      data.trend === "up" ? "success" : "danger"
-                    }-light`}
+                    className={`icon-circle bg-${data.trend === "up" ? "success" : "danger"
+                      }-light`}
                   >
                     {data.icon}
                   </div>
@@ -838,13 +837,12 @@ const HomeAdmin = () => {
             <Col xl={3} md={6} key={key} className="mb-4">
               {key === "leads" ? (
                 <Link
-                  to={`/vendor-dashboard/total-leads?dateFilter=${dateFilter}${
-                    dateFilter === "custom" && customStart && customEnd
+                  to={`/vendor-dashboard/total-leads?dateFilter=${dateFilter}${dateFilter === "custom" && customStart && customEnd
                       ? `&customStart=${encodeURIComponent(
-                          customStart
-                        )}&customEnd=${encodeURIComponent(customEnd)}`
+                        customStart
+                      )}&customEnd=${encodeURIComponent(customEnd)}`
                       : ""
-                  }`}
+                    }`}
                   style={{ textDecoration: "none" }}
                 >
                   {cardContent}
