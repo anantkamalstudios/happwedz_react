@@ -210,7 +210,7 @@ const Herosection = () => {
   // Clear location handler
   const handleClearLocation = (e) => {
     e.stopPropagation(); // Prevent dropdown toggle
-    dispatch(setLocation(null)); // Clear Redux state
+    dispatch(setLocation("")); // Clear Redux state with empty string
   };
 
   const handleSearch = (e) => {
@@ -264,7 +264,7 @@ const Herosection = () => {
         </Row>
         <Row className="justify-content-center mt-4">
           <Col xs={12} md={10}>
-            {reduxLocation ? (
+            {reduxLocation && reduxLocation !== "null" && reduxLocation.trim() !== "" ? (
               <div className="position-relative">
                 <button
                   ref={buttonRef}
