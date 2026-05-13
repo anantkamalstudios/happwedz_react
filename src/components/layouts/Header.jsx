@@ -1,34 +1,719 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import LocationModalWithCategories from "./LocationModalWithCategories";
 import { RiMenuFill } from "react-icons/ri";
 import { IoClose } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/authSlice";
 import { vendorLogout } from "../../redux/vendorAuthSlice";
-import { setLocation } from "../../redux/locationSlice";
-import { FaArrowRightLong, FaChevronDown, FaChevronUp } from "react-icons/fa6";
+import { setLocation, clearLocation } from "../../redux/locationSlice";
+import { FaChevronDown, FaChevronUp, FaSearch, FaMapMarkerAlt } from "react-icons/fa";
+import { FaArrowRightLong } from "react-icons/fa6";
 import usePhotography from "../../hooks/usePhotography";
 import { useFilter } from "../../context/realWedding.context";
 import axiosInstance from "../../services/api/axiosInstance";
 
-const Header = () => {
-  // Add state to track window width for responsive UI
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+/* ─────────────────────────────────────────────────────────────
+   Inline styles injected once (CSS vars + drawer transitions)
+───────────────────────────────────────────────────────────── */
+const MOBILE_STYLES = `
+  :root {
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+  }
 
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  /* Overlay */
+  .hw-mob-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Drawer */
+  .hw-mob-drawer {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 88%;
+    max-width: 400px;
+    background: #fff;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(-100%);
+    transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
+    overflow: hidden;
+  }
+  .hw-mob-drawer.open {
+    transform: translateX(0);
+  }
+
+  /* Drawer body scroll */
+  .hw-mob-drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: var(--space-4);
+    padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Touch targets */
+  .hw-touch {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Accordion item */
+  .hw-acc-btn {
+    width: 100%;
+    background: #f8f9fa;
+    border: none;
+    border-radius: 8px;
+    padding: 0 var(--space-4);
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #212529;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.18s;
+  }
+  .hw-acc-btn:hover, .hw-acc-btn:focus { background: #f0e8f5; }
+
+  .hw-acc-body {
+    padding: 0.5rem 0 0.5rem var(--space-4);
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease;
+  }
+  .hw-acc-body.open { max-height: 1200px; }
+
+  /* City bottom sheet */
+  .hw-city-sheet-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1100;
+    transition: opacity 0.25s;
+  }
+  .hw-city-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    z-index: 1101;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: var(--space-4) var(--space-6);
+    padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  .hw-city-sheet.open { transform: translateY(0); }
+
+  /* Auth buttons */
+  .hw-auth-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.18s;
+    width: 100%;
+  }
+  .hw-auth-btn:hover { opacity: 0.88; }
+  .hw-auth-btn-primary { background: #ed1173; color: #fff; }
+  .hw-auth-btn-outline { background: transparent; color: #ed1173; border: 2px solid #ed1173; }
+  .hw-auth-btn-danger  { background: #dc3545; color: #fff; }
+
+  .hw-nav-link {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.3rem 0;
+    font-size: 0.875rem;
+    color: #212529;
+    text-decoration: none;
+  }
+  .hw-nav-link:hover { color: #ed1173; }
+
+  .hw-section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #ed1173;
+    margin: 0.75rem 0 0.25rem;
+  }
+
+  /* Search Overlay */
+  .hw-mob-search-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    z-index: 1200;
+    padding: var(--space-4);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  .hw-mob-search-overlay.open {
+    transform: translateY(0);
+  }
+  .hw-search-input {
+    width: 100%;
+    height: 48px;
+    border: 2px solid #ed1173;
+    border-radius: 12px;
+    padding: 0 1rem;
+    font-size: 1rem;
+    outline: none;
+  }
+
+  /* Hide drawer on desktop */
+  @media (min-width: 1024px) {
+    .hw-mob-overlay,
+    .hw-mob-drawer,
+    .hw-mob-topbar,
+    .hw-mob-search-overlay { display: none !important; }
+  }
+  /* Hide desktop nav on mobile */
+  @media (max-width: 1023px) {
+    .hw-desktop-nav { display: none !important; }
+  }
+`;
+
+/* ─────────────────────────────────────────────────────────────
+   MobileMenuDrawer Component
+───────────────────────────────────────────────────────────── */
+const MobileMenuDrawer = ({
+  open,
+  onClose,
+  /* auth */
+  isUserLoggedIn,
+  isVendorLoggedIn,
+  isLoggedIn,
+  handleLogout,
+  /* city */
+  selectedCity,
+  dispatch,
+  setLocation,
+  /* nav data */
+  tabs,
+  venueSubcategories,
+  vendorCategories,
+  photography,
+  einviteCategories,
+  browseByCategory,
+  popularSections,
+  mostSearchedBlogs,
+  byCity,
+  cultures,
+  themes,
+  reduxLocation,
+  /* filter context */
+  setSelectCity,
+  setSelectedCulture,
+  setSelectedTheme,
+  /* helpers */
+  toSlug,
+  formatName,
+  navigate,
+}) => {
+  const [activeAcc, setActiveAcc] = useState(null);
+  const [citySheetOpen, setCitySheetOpen] = useState(false);
+  const drawerRef = useRef(null);
+
+  // Close on route change is handled by parent (useEffect on location)
+  const toggleAcc = (key) => setActiveAcc(activeAcc === key ? null : key);
+
+  const closeAll = () => {
+    onClose();
+    setActiveAcc(null);
+    setCitySheetOpen(false);
+  };
+
+  const cities = ["All Cities", "Mumbai", "Bangalore", "Pune", "Kolkata", "Jaipur", "Lucknow", "Hyderabad", "Delhi", "Others"];
+
+  const handleCitySelect = (city) => {
+    if (city === "All Cities") {
+      dispatch(clearLocation());
+    } else {
+      dispatch(setLocation(city));
+    }
+    setCitySheetOpen(false);
+  };
+
+  return (
+    <>
+      {/* Overlay */}
+      {open && (
+        <div
+          className="hw-mob-overlay"
+          onClick={closeAll}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Drawer */}
+      <div
+        className={`hw-mob-drawer${open ? " open" : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+        ref={drawerRef}
+      >
+        {/* Drawer Header */}
+        <div
+          style={{
+            background: "#ed1173",
+            padding: "0 var(--space-4)",
+            minHeight: "56px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexShrink: 0,
+          }}
+        >
+          <Link to="/" onClick={closeAll}>
+            <img src="/images/logo.webp" alt="HappyWedz" height="32" />
+          </Link>
+          <button
+            className="hw-touch"
+            onClick={closeAll}
+            aria-label="Close menu"
+            style={{ background: "none", border: "none", padding: "0 4px" }}
+          >
+            <IoClose color="white" size={28} />
+          </button>
+        </div>
+
+        {/* Scrollable body */}
+        <div className="hw-mob-drawer-body">
+          {/* ── Auth Section ── */}
+          <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
+            {isUserLoggedIn ? (
+              <>
+                <Link
+                  to="/user-dashboard"
+                  className="hw-auth-btn hw-auth-btn-primary"
+                  onClick={closeAll}
+                  style={{ flex: 1 }}
+                >
+                  My Dashboard
+                </Link>
+                <button
+                  className="hw-auth-btn hw-auth-btn-danger"
+                  onClick={() => { handleLogout(); closeAll(); }}
+                  style={{ flex: 0.6 }}
+                >
+                  Logout
+                </button>
+              </>
+            ) : isVendorLoggedIn ? (
+              <>
+                <Link
+                  to="/vendor-dashboard"
+                  className="hw-auth-btn hw-auth-btn-primary"
+                  onClick={closeAll}
+                  style={{ flex: 1 }}
+                >
+                  Vendor Dashboard
+                </Link>
+                <button
+                  className="hw-auth-btn hw-auth-btn-danger"
+                  onClick={() => { handleLogout(); closeAll(); }}
+                  style={{ flex: 0.6 }}
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/customer-login"
+                  className="hw-auth-btn hw-auth-btn-primary"
+                  onClick={closeAll}
+                  style={{ flex: 1 }}
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/vendor-login"
+                  className="hw-auth-btn hw-auth-btn-outline"
+                  onClick={closeAll}
+                  style={{ flex: 1 }}
+                >
+                  Vendor Login
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* ── City Selector ── */}
+          <button
+            className="hw-touch"
+            onClick={() => setCitySheetOpen(true)}
+            aria-label="Select city"
+            style={{
+              width: "100%",
+              background: "#f8f9fa",
+              border: "1.5px solid #e0e0e0",
+              borderRadius: "10px",
+              padding: "0 var(--space-4)",
+              marginBottom: "1rem",
+              justifyContent: "space-between",
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              color: "#212529",
+              cursor: "pointer",
+            }}
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <FaMapMarkerAlt color="#ed1173" size={14} />
+              {selectedCity || "Select City"}
+            </span>
+            <FaChevronDown size={12} color="#888" />
+          </button>
+
+          {/* ── Accordion Nav ── */}
+          <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+
+            {/* Planning Tools */}
+            <li style={{ marginBottom: "0.5rem" }}>
+              <button className="hw-acc-btn" onClick={() => toggleAcc("planning")} aria-expanded={activeAcc === "planning"}>
+                <span>Planning Tools</span>
+                {activeAcc === "planning" ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+              </button>
+              <div className={`hw-acc-body${activeAcc === "planning" ? " open" : ""}`}>
+                {tabs.map((tab) => (
+                  <Link
+                    key={tab.id}
+                    to={`/user-dashboard/${tab.slug}`}
+                    className="hw-nav-link"
+                    onClick={closeAll}
+                    style={{ gap: "0.6rem" }}
+                  >
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#ed1173", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <img src={tab.img} alt="" style={{ width: 22, height: 22, objectFit: "contain" }} />
+                    </div>
+                    {tab.label}
+                  </Link>
+                ))}
+              </div>
+            </li>
+
+            {/* Venues */}
+            <li style={{ marginBottom: "0.5rem" }}>
+              <button className="hw-acc-btn" onClick={() => toggleAcc("venues")} aria-expanded={activeAcc === "venues"}>
+                <span onClick={(e) => { e.stopPropagation(); navigate("/venues"); closeAll(); }}>Venues</span>
+                {activeAcc === "venues" ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+              </button>
+              <div className={`hw-acc-body${activeAcc === "venues" ? " open" : ""}`}>
+                <p className="hw-section-label">By Type</p>
+                {(venueSubcategories.length > 0
+                  ? [...venueSubcategories.map((s) => s.name), "View All Venues"]
+                  : ["Banquet Halls", "Marriage Garden / Lawns", "Wedding Resorts", "Small Function / Party Halls", "Destination Wedding Venues", "Kalyana Mandapams", "4 Star & Above Wedding Hotels", "Venue Concierge Services", "View All Venues"]
+                ).map((item, i) => {
+                  const isAll = item === "View All Venues";
+                  const path = isAll ? "/venues" : `/venues/${item.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")}`;
+                  return (
+                    <Link key={i} to={path} className="hw-nav-link" onClick={closeAll} style={{ fontWeight: isAll ? 700 : 400, color: isAll ? "#ed1173" : undefined }}>
+                      {item}
+                    </Link>
+                  );
+                })}
+                <p className="hw-section-label">By City</p>
+                {["Mumbai", "Bangalore", "Pune", "Kolkata", "Jaipur", "Lucknow", "Hyderabad", "More"].map((city, i) => {
+                  const isMore = city === "More";
+                  return (
+                    <Link
+                      key={i}
+                      to={isMore ? "/venues" : `/venues?city=${encodeURIComponent(city)}`}
+                      className="hw-nav-link"
+                      onClick={() => { if (!isMore) dispatch(setLocation(city)); closeAll(); }}
+                      style={{ fontWeight: isMore ? 700 : 400, color: isMore ? "#ed1173" : undefined }}
+                    >
+                      {city}
+                    </Link>
+                  );
+                })}
+              </div>
+            </li>
+
+            {/* Vendors */}
+            <li style={{ marginBottom: "0.5rem" }}>
+              <button className="hw-acc-btn" onClick={() => toggleAcc("vendors")} aria-expanded={activeAcc === "vendors"}>
+                <span onClick={(e) => { e.stopPropagation(); navigate("/vendors"); closeAll(); }}>Vendors</span>
+                {activeAcc === "vendors" ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+              </button>
+              <div className={`hw-acc-body${activeAcc === "vendors" ? " open" : ""}`}>
+                {vendorCategories.length > 0 && vendorCategories.map((cat, i) => (
+                  <div key={cat.id || i} style={{ marginBottom: "0.75rem" }}>
+                    <p className="hw-section-label">{cat.name}</p>
+                    {Array.isArray(cat.subcategories) && cat.subcategories.map((sub, j) => (
+                      <Link
+                        key={sub.id || j}
+                        to={`/vendors/${toSlug(sub.name)}${reduxLocation ? `?city=${encodeURIComponent(reduxLocation)}` : ""}`}
+                        className="hw-nav-link"
+                        onClick={closeAll}
+                      >
+                        {formatName(sub.name)}
+                      </Link>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </li>
+
+            {/* Photography */}
+            <li style={{ marginBottom: "0.5rem" }}>
+              <button className="hw-acc-btn" onClick={() => toggleAcc("photography")} aria-expanded={activeAcc === "photography"}>
+                <span onClick={(e) => { e.stopPropagation(); navigate("/photography"); closeAll(); }}>Photography</span>
+                {activeAcc === "photography" ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+              </button>
+              <div className={`hw-acc-body${activeAcc === "photography" ? " open" : ""}`}>
+                {photography.length > 0 && photography.map((cat, i) => (
+                  <div key={cat.id || i} style={{ marginBottom: "0.75rem" }}>
+                    <p className="hw-section-label">{cat.name}</p>
+                    {Array.isArray(cat.categories) && cat.categories.map((sub, j) => (
+                      <Link
+                        key={sub.id || j}
+                        to={`/photography/${toSlug(sub.name)}`}
+                        className="hw-nav-link"
+                        onClick={closeAll}
+                      >
+                        {formatName(sub.name)}
+                      </Link>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </li>
+
+            {/* E-Invites */}
+            <li style={{ marginBottom: "0.5rem" }}>
+              <button className="hw-acc-btn" onClick={() => toggleAcc("einvites")} aria-expanded={activeAcc === "einvites"}>
+                <span onClick={(e) => { e.stopPropagation(); navigate("/einvites"); closeAll(); }}>E-Invites</span>
+                {activeAcc === "einvites" ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+              </button>
+              <div className={`hw-acc-body${activeAcc === "einvites" ? " open" : ""}`}>
+                {einviteCategories.map((sub, j) => (
+                  <Link
+                    key={sub.cardType || j}
+                    to={`/einvites/category/${sub.cardType}`}
+                    className="hw-nav-link"
+                    onClick={closeAll}
+                  >
+                    {formatName(sub.title)}
+                  </Link>
+                ))}
+              </div>
+            </li>
+
+            {/* Blog */}
+            <li style={{ marginBottom: "0.5rem" }}>
+              <button className="hw-acc-btn" onClick={() => toggleAcc("blog")} aria-expanded={activeAcc === "blog"}>
+                <span onClick={(e) => { e.stopPropagation(); navigate("/blog"); closeAll(); }}>Blog</span>
+                {activeAcc === "blog" ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+              </button>
+              <div className={`hw-acc-body${activeAcc === "blog" ? " open" : ""}`}>
+                {browseByCategory.length > 0 && (
+                  <>
+                    <p className="hw-section-label">Browse by Category</p>
+                    {browseByCategory.map((topic, index) => (
+                      <Link key={index} to="/blog" className="hw-nav-link" onClick={closeAll}>
+                        {topic?.name || String(topic)}
+                      </Link>
+                    ))}
+                  </>
+                )}
+                {popularSections.length > 0 && (
+                  <>
+                    <p className="hw-section-label">Popular Sections</p>
+                    {popularSections.map((cat, index) => (
+                      <Link key={index} to="/blog" className="hw-nav-link" onClick={closeAll}>
+                        {cat?.name || String(cat)}
+                      </Link>
+                    ))}
+                  </>
+                )}
+                {mostSearchedBlogs.length > 0 && (
+                  <>
+                    <p className="hw-section-label">Most Searched</p>
+                    {mostSearchedBlogs.map((idea, index) => (
+                      <Link key={index} to="/blog" className="hw-nav-link" onClick={closeAll}>
+                        {idea?.name || String(idea)}
+                      </Link>
+                    ))}
+                  </>
+                )}
+              </div>
+            </li>
+
+            {/* Real Wedding */}
+            <li style={{ marginBottom: "0.5rem" }}>
+              <button className="hw-acc-btn" onClick={() => toggleAcc("real-wedding")} aria-expanded={activeAcc === "real-wedding"}>
+                <span onClick={(e) => { e.stopPropagation(); navigate("/real-wedding"); closeAll(); }}>Real Wedding</span>
+                {activeAcc === "real-wedding" ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+              </button>
+              <div className={`hw-acc-body${activeAcc === "real-wedding" ? " open" : ""}`}>
+                <p className="hw-section-label">By City</p>
+                {byCity.map((city, index) => (
+                  <Link
+                    key={index}
+                    to="/real-wedding"
+                    className="hw-nav-link"
+                    onClick={() => { setSelectCity(city); setSelectedCulture("All Cultures"); setSelectedTheme("All Themes"); navigate("/real-wedding"); closeAll(); }}
+                  >
+                    {city}
+                  </Link>
+                ))}
+                {cultures.length > 0 && (
+                  <>
+                    <p className="hw-section-label">By Culture</p>
+                    {cultures.map((culture, index) => (
+                      <Link
+                        key={index}
+                        to="/real-wedding"
+                        className="hw-nav-link"
+                        onClick={() => { setSelectedCulture(culture?.name || culture); setSelectCity("All Cities"); setSelectedTheme("All Themes"); navigate("/real-wedding"); closeAll(); }}
+                      >
+                        {culture?.name || String(culture)}
+                      </Link>
+                    ))}
+                  </>
+                )}
+                {themes.length > 0 && (
+                  <>
+                    <p className="hw-section-label">By Theme</p>
+                    {themes.map((theme, index) => (
+                      <Link
+                        key={index}
+                        to="/real-wedding"
+                        className="hw-nav-link"
+                        onClick={() => { setSelectedTheme(theme); setSelectCity("All Cities"); setSelectedCulture("All Cultures"); navigate("/real-wedding"); closeAll(); }}
+                      >
+                        {theme}
+                      </Link>
+                    ))}
+                  </>
+                )}
+              </div>
+            </li>
+
+            {/* Flat links */}
+            {[
+              { label: "ShaadiAI", to: "/shaadi-ai" },
+              { label: "Honeymoon", to: "/honeymoon" },
+              { label: "Shop", to: "https://store.happywedz.com/", external: true },
+            ].map((item) => (
+              <li key={item.label} style={{ marginBottom: "0.5rem" }}>
+                {item.external ? (
+                  <a
+                    href={item.to}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hw-acc-btn"
+                    style={{ textDecoration: "none" }}
+                    onClick={closeAll}
+                  >
+                    {item.label}
+                  </a>
+                ) : (
+                  <Link to={item.to} className="hw-acc-btn" style={{ textDecoration: "none" }} onClick={closeAll}>
+                    {item.label}
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
+
+          {/* App download */}
+          <div style={{ marginTop: "1.25rem", paddingTop: "1rem", borderTop: "1px solid #f0f0f0" }}>
+            <p style={{ fontWeight: 600, fontSize: "0.85rem", marginBottom: "0.5rem", color: "#555" }}>Get the App</p>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <img src="/images/header/playstore.png" alt="Play Store" style={{ maxHeight: 34, cursor: "pointer" }} />
+              <img src="/images/header/appstore.png" alt="App Store" style={{ maxHeight: 34, cursor: "pointer" }} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* City Bottom Sheet */}
+      {citySheetOpen && (
+        <div className="hw-city-sheet-overlay" onClick={() => setCitySheetOpen(false)} aria-hidden="true" />
+      )}
+      <div className={`hw-city-sheet${citySheetOpen ? " open" : ""}`} role="dialog" aria-label="Select your city">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+          <h6 style={{ margin: 0, fontWeight: 700, fontSize: "1rem" }}>Select Your City</h6>
+          <button
+            onClick={() => setCitySheetOpen(false)}
+            className="hw-touch"
+            style={{ background: "none", border: "none", padding: 0 }}
+            aria-label="Close city selector"
+          >
+            <IoClose size={24} />
+          </button>
+        </div>
+        {cities.map((city) => (
+          <button
+            key={city}
+            className="hw-touch"
+            style={{
+              width: "100%",
+              background: (selectedCity === city || (!selectedCity && city === "All Cities")) ? "#fdf0f7" : "transparent",
+              border: "none",
+              borderBottom: "1px solid #f5f5f5",
+              padding: "0 0.5rem",
+              justifyContent: "space-between",
+              fontWeight: (selectedCity === city || (!selectedCity && city === "All Cities")) ? 700 : 400,
+              color: (selectedCity === city || (!selectedCity && city === "All Cities")) ? "#ed1173" : "#212529",
+              cursor: "pointer",
+              fontSize: "0.95rem",
+            }}
+            onClick={() => handleCitySelect(city)}
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <FaMapMarkerAlt size={13} color="#ed1173" />
+              {city}
+            </span>
+            {(selectedCity === city || (!selectedCity && city === "All Cities")) && <span style={{ fontSize: "0.7rem", color: "#ed1173" }}>✓ Selected</span>}
+          </button>
+        ))}
+      </div>
+    </>
+  );
+};
+
+const Header = () => {
   const dispatch = useDispatch();
-  const { slug } = useParams();
   const reduxLocation = useSelector((state) => state.location.selectedLocation);
-  const [activeTab, setActiveTab] = useState("");
   const [selectedCity, setSelectedCity] = useState(reduxLocation);
   const [openMenu, setOpenMenu] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mobileSubmenu, setMobileSubmenu] = useState(null);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Sync local selectedCity whenever Redux location changes (e.g. after mobile city sheet selection)
+  useEffect(() => {
+    setSelectedCity(reduxLocation);
+  }, [reduxLocation]);
   const navigate = useNavigate();
   const {
     setSelectCity,
@@ -101,11 +786,19 @@ const Header = () => {
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9\-]/g, "") || "";
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/vendors/all?q=${encodeURIComponent(searchQuery.trim())}`);
+      setMobileSearchOpen(false);
+      setSearchQuery("");
+    }
+  };
+
   const location = window.location.pathname;
 
   useEffect(() => {
     setMobileMenuOpen(false);
-    setMobileSubmenu(null);
   }, [location]);
 
   useEffect(() => {
@@ -252,643 +945,120 @@ const Header = () => {
     setPhotography(typesWithCategories);
   }, [typesWithCategories]);
 
-  const vendorType = encodeURIComponent("Venues");
-  const cityParam = selectedCity
-    ? `&city=${encodeURIComponent(selectedCity)}`
-    : "";
 
-  const targetURL = `/vendors/all?vendorType=${vendorType}${cityParam}`;
-
-  const toggleMobileSubmenu = (menu) => {
-    setMobileSubmenu(mobileSubmenu === menu ? null : menu);
-  };
-
-  const handleMobileLinkClick = () => {
-    setMobileMenuOpen(false);
-    setMobileSubmenu(null);
-  };
 
   return (
     <>
-      {mobileMenuOpen && (
-        <div
-          className="position-fixed top-0 start-0 w-100 h-100 bg-dark"
-          style={{
-            opacity: 0.5,
-            zIndex: 1049,
-            transition: "opacity 0.3s ease",
-          }}
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
+      {/* Inject mobile CSS once */}
+      <style>{MOBILE_STYLES}</style>
+
+      {/* ── NEW: MobileMenuDrawer (< 1024px) ── */}
+      <MobileMenuDrawer
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        isUserLoggedIn={isUserLoggedIn}
+        isVendorLoggedIn={isVendorLoggedIn}
+        isLoggedIn={isLoggedIn}
+        handleLogout={handleLogout}
+        selectedCity={selectedCity}
+        dispatch={dispatch}
+        setLocation={setLocation}
+        tabs={tabs}
+        venueSubcategories={venueSubcategories}
+        vendorCategories={vendorCategories}
+        photography={photography}
+        einviteCategories={einviteCategories}
+        browseByCategory={browseByCategory}
+        popularSections={popularSections}
+        mostSearchedBlogs={mostSearchedBlogs}
+        byCity={byCity}
+        cultures={cultures}
+        themes={themes}
+        reduxLocation={reduxLocation}
+        setSelectCity={setSelectCity}
+        setSelectedCulture={setSelectedCulture}
+        setSelectedTheme={setSelectedTheme}
+        toSlug={toSlug}
+        formatName={formatName}
+        navigate={navigate}
+      />
 
       <nav className="navbar navbar-expand-lg navbar-light shadow-sm primary-bg p-0">
         <div className="container-fluid p-0">
-          <div className="d-flex d-lg-none justify-content-between align-items-center w-100 py-2 px-3">
-            <Link
-              className="navbar-brand m-0"
-              to="/"
-              onClick={handleMobileLinkClick}
-            >
-              <img src="/images/logo.webp" alt="HappyWedz" height="30" />
-            </Link>
 
-            {windowWidth <= 1299 && (
-              <button
-                className="navbar-toggler border-0 p-0"
-                type="button"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label="Toggle navigation"
-              >
-                <RiMenuFill color="white" size={35} />
-              </button>
-            )}
-          </div>
-
-          {/* Mobile Side Drawer */}
+          {/* ── Mobile Topbar: logo + hamburger only (< 1024px) ── */}
           <div
-            className={`position-fixed top-0 start-0 h-100 bg-white shadow-lg d-lg-none ${
-              mobileMenuOpen ? "mobile-drawer-open" : ""
-            }`}
+            className="hw-mob-topbar"
             style={{
-              width: "85%",
-              maxWidth: "400px",
-              zIndex: 1050,
-              transform: mobileMenuOpen ? "translateX(0)" : "translateX(-100%)",
-              transition: "transform 0.3s ease-in-out",
-              overflowY: "auto",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "0.5rem var(--space-4)",
+              width: "100%",
             }}
           >
-            {/* Drawer Header */}
-            <div className="d-flex justify-content-between align-items-center p-3 primary-bg">
-              <Link to="/" onClick={handleMobileLinkClick}>
-                <img src="/images/logo.webp" alt="HappyWedz" height="30" />
-              </Link>
+            <Link to="/" onClick={() => setMobileMenuOpen(false)}>
+              <img src="/images/logo.webp" alt="HappyWedz" height="34" />
+            </Link>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
               <button
-                className="btn border-0 p-0"
-                onClick={() => setMobileMenuOpen(false)}
-                aria-label="Close menu"
-                style={{ textAlign: "end" }}
+                className="hw-touch"
+                onClick={() => setMobileSearchOpen(true)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: "0 6px",
+                  borderRadius: "8px",
+                }}
+                aria-label="Search"
               >
-                <IoClose color="white" size={30} />
+                <FaSearch color="white" size={18} />
+              </button>
+
+              <button
+                className="hw-touch"
+                onClick={() => setMobileMenuOpen(true)}
+                aria-label="Open navigation menu"
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: "0 4px",
+                  borderRadius: "8px",
+                }}
+              >
+                <RiMenuFill color="white" size={26} />
               </button>
             </div>
+          </div>
 
-            {/* Drawer Content */}
-            <div className="p-3">
-              {/* Location Selector */}
-              <div className="mb-3 d-flex align-items-center justify-content-between">
-                <LocationModalWithCategories />
-                <div>
-                  <Link
-                    to="/try"
-                    state={{ title: "Try" }}
-                    onClick={handleMobileLinkClick}
-                  >
-                    <img
-                      src="/images/header/tryimg.png"
-                      alt="Design Studio"
-                      className="img-fluid"
-                      style={{ maxHeight: "40px", cursor: "pointer" }}
-                    />
-                  </Link>
-                </div>
-              </div>
-
-              {/* Menu Items */}
-              <ul className="list-unstyled mb-0">
-                {/* Planning Tools */}
-                <li className="mb-2">
-                  <button
-                    className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                    onClick={() => toggleMobileSubmenu("planning")}
-                  >
-                    <span className="fw-semibold">Planning Tools</span>
-                    {mobileSubmenu === "planning" ? (
-                      <FaChevronUp />
-                    ) : (
-                      <FaChevronDown />
-                    )}
-                  </button>
-                  {mobileSubmenu === "planning" && (
-                    <div className="ps-3 mt-2">
-                      {tabs.map((tab) => (
-                        <Link
-                          key={tab.id}
-                          to={`/user-dashboard/${tab.slug}`}
-                          className="d-flex align-items-center py-2 text-decoration-none text-dark"
-                          onClick={handleMobileLinkClick}
-                        >
-                          <div
-                            className="d-flex align-items-center justify-content-center me-2"
-                            style={{
-                              width: "35px",
-                              height: "35px",
-                              borderRadius: "50%",
-                              backgroundColor: "#ed1173",
-                            }}
-                          >
-                            <img
-                              src={tab.img}
-                              alt=""
-                              style={{
-                                height: "25px",
-                                width: "25px",
-                                objectFit: "contain",
-                              }}
-                            />
-                          </div>
-                          <span className="small">{tab.label}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </li>
-
-                {/* Venues */}
-                <li className="mb-2">
-                  <button
-                    className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                    // onClick={() => toggleMobileSubmenu("venues")}
-                  >
-                    <span
-                      className="fw-semibold"
-                      onClick={() => navigate("/venues")}
-                    >
-                      Venues
-                    </span>
-                    {mobileSubmenu === "venues" ? (
-                      <FaChevronUp
-                        onClick={() => toggleMobileSubmenu("venues")}
-                      />
-                    ) : (
-                      <FaChevronDown
-                        onClick={() => toggleMobileSubmenu("venues")}
-                      />
-                    )}
-                  </button>
-                  {mobileSubmenu === "venues" && (
-                    <div className="ps-3 mt-2">
-                      <h6 className="fw-bold small text-uppercase primary-text mb-2">
-                        By Type
-                      </h6>
-                      {(venueSubcategories.length > 0
-                        ? [
-                            ...venueSubcategories.map((s) => s.name),
-                            "View All Venues",
-                          ]
-                        : [
-                            "Banquet Halls",
-                            "Marriage Garden / Lawns",
-                            "Wedding Resorts",
-                            "Small Function / Party Halls",
-                            "Destination Wedding Venues",
-                            "Kalyana Mandapams",
-                            "4 Star & Above Wedding Hotels",
-                            "Venue Concierge Services",
-                            "View All Venues",
-                          ]
-                      ).map((item, i) => {
-                        const isShowMore = item === "View All Venues";
-                        const path = isShowMore
-                          ? "/venues"
-                          : `/venues/${item
-                              .toLowerCase()
-                              .replace(/\s+/g, "-")
-                              .replace(/[^a-z0-9\-]/g, "")}`;
-                        return (
-                          <Link
-                            key={i}
-                            to={path}
-                            className="d-block py-2 text-decoration-none text-dark small"
-                            onClick={handleMobileLinkClick}
-                          >
-                            {item}
-                          </Link>
-                        );
-                      })}
-
-                      <h6 className="fw-bold small text-uppercase primary-text mt-3 mb-2">
-                        By City
-                      </h6>
-                      {[
-                        "Mumbai",
-                        "Bangalore",
-                        "Pune",
-                        "Kolkata",
-                        "Jaipur",
-                        "Lucknow",
-                        "Hyderabad",
-                        "More",
-                      ].map((city, i) => {
-                        const isMore = city === "More";
-                        const path = isMore
-                          ? "/venues"
-                          : `/venues?city=${encodeURIComponent(city)}`;
-                        return (
-                          <Link
-                            key={i}
-                            to={path}
-                            onClick={() => {
-                              if (!isMore) {
-                                dispatch(setLocation(city));
-                              }
-                              handleMobileLinkClick();
-                            }}
-                            className="d-block py-2 text-decoration-none text-dark small"
-                          >
-                            {city}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </li>
-
-                {/* Vendors */}
-                <li className="mb-2">
-                  <button
-                    className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                    // onClick={() => toggleMobileSubmenu("vendors")}
-                  >
-                    <span
-                      className="fw-semibold"
-                      role="button"
-                      onClick={() => navigate("/vendors")}
-                    >
-                      Vendors
-                    </span>
-                    {mobileSubmenu === "vendors" ? (
-                      <FaChevronUp
-                        onClick={() => toggleMobileSubmenu("vendors")}
-                      />
-                    ) : (
-                      <FaChevronDown
-                        onClick={() => toggleMobileSubmenu("vendors")}
-                      />
-                    )}
-                  </button>
-                  {mobileSubmenu === "vendors" && (
-                    <div
-                      className="ps-3 mt-2"
-                      style={{ maxHeight: "400px", overflowY: "auto" }}
-                    >
-                      {vendorCategories.length > 0 &&
-                        vendorCategories.map((cat, i) => (
-                          <div key={cat.id || i} className="mb-3">
-                            <h6 className="fw-bold small text-uppercase primary-text mb-2">
-                              {cat.name}
-                            </h6>
-                            {Array.isArray(cat.subcategories) &&
-                              cat.subcategories.length > 0 && (
-                                <div>
-                                  {cat.subcategories.map((sub, j) => (
-                                    <Link
-                                      key={sub.id || j}
-                                      to={`/vendors/${toSlug(sub.name)}${
-                                        reduxLocation
-                                          ? `?city=${encodeURIComponent(
-                                              reduxLocation,
-                                            )}`
-                                          : ""
-                                      }`}
-                                      className="d-block py-2 text-decoration-none text-dark small"
-                                      onClick={handleMobileLinkClick}
-                                    >
-                                      {formatName(sub.name)}
-                                    </Link>
-                                  ))}
-                                </div>
-                              )}
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </li>
-
-                {/* Photography */}
-                <li className="mb-2">
-                  <button
-                    className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                    // onClick={() => toggleMobileSubmenu("photography")}
-                  >
-                    <span
-                      className="fw-semibold"
-                      role="button"
-                      onClick={() => navigate("/photography")}
-                    >
-                      Photography
-                    </span>
-                    {mobileSubmenu === "photography" ? (
-                      <FaChevronUp
-                        onClick={() => toggleMobileSubmenu("photography")}
-                      />
-                    ) : (
-                      <FaChevronDown
-                        onClick={() => toggleMobileSubmenu("photography")}
-                      />
-                    )}
-                  </button>
-                  {mobileSubmenu === "photography" && (
-                    <div
-                      className="ps-3 mt-2"
-                      style={{ maxHeight: "400px", overflowY: "auto" }}
-                    >
-                      {photography.length > 0 &&
-                        photography.map((cat, i) => (
-                          <div key={cat.id || i} className="mb-3">
-                            <h6 className="fw-bold small text-uppercase primary-text mb-2">
-                              {cat.name}
-                            </h6>
-                            {Array.isArray(cat.categories) &&
-                              cat.categories.length > 0 && (
-                                <div>
-                                  {cat.categories.map((sub, j) => (
-                                    <Link
-                                      key={sub.id || j}
-                                      to={`/photography/${toSlug(sub.name)}`}
-                                      className="d-block py-2 text-decoration-none text-dark small"
-                                      onClick={handleMobileLinkClick}
-                                    >
-                                      {formatName(sub.name)}
-                                    </Link>
-                                  ))}
-                                </div>
-                              )}
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </li>
-
-                {/* E-Invites */}
-                <li className="mb-2">
-                  <button
-                    className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                    // onClick={() => toggleMobileSubmenu("einvites")}
-                  >
-                    <span
-                      className="fw-semibold"
-                      role="button"
-                      onClick={() => navigate("/einvites")}
-                    >
-                      E-Invites
-                    </span>
-                    {mobileSubmenu === "einvites" ? (
-                      <FaChevronUp
-                        onClick={() => toggleMobileSubmenu("einvites")}
-                      />
-                    ) : (
-                      <FaChevronDown
-                        onClick={() => toggleMobileSubmenu("einvites")}
-                      />
-                    )}
-                  </button>
-                  {mobileSubmenu === "einvites" && (
-                    <div className="ps-3 mt-2">
-                      {einviteCategories.map((sub, j) => (
-                        <Link
-                          key={sub.cardType || j}
-                          to={`/einvites/category/${sub.cardType}`}
-                          className="d-block py-2 text-decoration-none text-dark small"
-                          onClick={handleMobileLinkClick}
-                        >
-                          {formatName(sub.title)}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </li>
-
-                {/* Blog */}
-                <li className="mb-2">
-                  <button
-                    className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light"
-                    // onClick={() => toggleMobileSubmenu("blog")}
-                  >
-                    <span
-                      className="fw-semibold"
-                      role="button"
-                      onClick={() => navigate("/blog")}
-                    >
-                      Blog
-                    </span>
-                    {mobileSubmenu === "blog" ? (
-                      <FaChevronUp
-                        onClick={() => toggleMobileSubmenu("blog")}
-                      />
-                    ) : (
-                      <FaChevronDown
-                        onClick={() => toggleMobileSubmenu("blog")}
-                      />
-                    )}
-                  </button>
-                  {mobileSubmenu === "blog" && (
-                    <div
-                      className="ps-3 mt-2"
-                      style={{ maxHeight: "400px", overflowY: "auto" }}
-                    >
-                      <h6 className="fw-bold small text-uppercase primary-text mb-2">
-                        Browse by Category
-                      </h6>
-                      {browseByCategory.map((topic, index) => (
-                        <Link
-                          key={index}
-                          to="/blog"
-                          className="d-block py-2 text-decoration-none text-dark small"
-                          onClick={handleMobileLinkClick}
-                        >
-                          {topic}
-                        </Link>
-                      ))}
-
-                      <h6 className="fw-bold small text-uppercase primary-text mt-3 mb-2">
-                        Popular Sections
-                      </h6>
-                      {popularSections.map((category, index) => (
-                        <Link
-                          key={index}
-                          to="/blog"
-                          className="d-block py-2 text-decoration-none text-dark small"
-                          onClick={handleMobileLinkClick}
-                        >
-                          {category}
-                        </Link>
-                      ))}
-
-                      <h6 className="fw-bold small text-uppercase primary-text mt-3 mb-2">
-                        Most Searched Blogs
-                      </h6>
-                      {mostSearchedBlogs.map((idea, index) => (
-                        <Link
-                          key={index}
-                          to="/blog"
-                          className="d-block py-2 text-decoration-none text-dark small"
-                          onClick={handleMobileLinkClick}
-                        >
-                          {idea}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </li>
-
-                {/* Genie */}
-                <li className="mb-2">
-                  <Link
-                    to="/shaadi-ai"
-                    className="btn w-100 text-start p-3 border-0 bg-light fw-semibold text-dark"
-                    onClick={handleMobileLinkClick}
-                  >
-                    ShaadiAI
-                  </Link>
-                </li>
-
-                {/* Real Wedding */}
-                <li className="mb-2">
-                  <button className="btn w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-light">
-                    <span
-                      className="fw-semibold"
-                      role="button"
-                      onClick={() => navigate("real-wedding")}
-                    >
-                      Real Wedding
-                    </span>
-                    {mobileSubmenu === "real-wedding" ? (
-                      <FaChevronUp
-                        onClick={() => toggleMobileSubmenu("real-wedding")}
-                      />
-                    ) : (
-                      <FaChevronDown
-                        onClick={() => toggleMobileSubmenu("real-wedding")}
-                      />
-                    )}
-                  </button>
-                  {mobileSubmenu === "real-wedding" && (
-                    <div className="ps-3 mt-2">
-                      <h6 className="fw-bold small text-uppercase primary-text mb-2">
-                        By City
-                      </h6>
-                      {byCity.map((city, index) => (
-                        <Link
-                          key={index}
-                          to="/real-wedding"
-                          className="d-block py-2 text-decoration-none text-dark small"
-                          onClick={() => {
-                            setSelectCity(city);
-                            setSelectedCulture("All Cultures");
-                            setSelectedTheme("All Themes");
-                            navigate("/real-wedding");
-                            handleMobileLinkClick();
-                          }}
-                        >
-                          {city}
-                        </Link>
-                      ))}
-
-                      <h6 className="fw-bold small text-uppercase primary-text mt-3 mb-2">
-                        By Culture
-                      </h6>
-                      {cultures.map((culture, index) => (
-                        <Link
-                          key={index}
-                          to="/real-wedding"
-                          className="d-block py-2 text-decoration-none text-dark small"
-                          onClick={() => {
-                            setSelectedCulture(culture?.name || culture);
-                            setSelectCity("All Cities");
-                            setSelectedTheme("All Themes");
-                            navigate("/real-wedding");
-                            handleMobileLinkClick();
-                          }}
-                        >
-                          {culture?.name || String(culture)}
-                        </Link>
-                      ))}
-
-                      <h6 className="fw-bold small text-uppercase primary-text mt-3 mb-2">
-                        By Theme
-                      </h6>
-                      {themes.map((theme, index) => (
-                        <Link
-                          key={index}
-                          to="/real-wedding"
-                          className="d-block py-2 text-decoration-none text-dark small"
-                          onClick={() => {
-                            setSelectedTheme(theme);
-                            setSelectCity("All Cities");
-                            setSelectedCulture("All Cultures");
-                            navigate("/real-wedding");
-                            handleMobileLinkClick();
-                          }}
-                        >
-                          {theme}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </li>
-
-                {/* Auth Links */}
-                <li className="mb-2">
-                  {isUserLoggedIn ? (
-                    <Link
-                      to="/user-dashboard"
-                      className="btn w-100 text-start p-3 border-0 bg-light fw-semibold text-dark"
-                      onClick={handleMobileLinkClick}
-                    >
-                      User Dashboard
-                    </Link>
-                  ) : isVendorLoggedIn ? (
-                    <Link
-                      to="/vendor-dashboard"
-                      className="btn w-100 text-start p-3 border-0 bg-light fw-semibold text-dark"
-                      onClick={handleMobileLinkClick}
-                    >
-                      Vendor Dashboard
-                    </Link>
-                  ) : (
-                    <Link
-                      to="/customer-login"
-                      className="btn w-100 text-start p-3 border-0 bg-light fw-semibold text-dark"
-                      onClick={handleMobileLinkClick}
-                    >
-                      Login
-                    </Link>
-                  )}
-                </li>
-
-                {isLoggedIn && (
-                  <li className="mb-2">
-                    <button
-                      onClick={handleLogout}
-                      className="btn w-100 text-start p-3 border-0 bg-danger text-white fw-semibold"
-                    >
-                      Logout
-                    </button>
-                  </li>
-                )}
-              </ul>
-
-              {/* App Download Section */}
-              <div className="mt-4 pt-3 border-top">
-                <h6 className="fw-semibold mb-3">Get the App</h6>
-                <div className="d-flex gap-2 mb-3">
-                  <img
-                    src="/images/header/playstore.png"
-                    alt="Play Store"
-                    className="img-fluid"
-                    style={{ maxHeight: "35px", cursor: "pointer" }}
-                  />
-                  <img
-                    src="/images/header/appstore.png"
-                    alt="App Store"
-                    className="img-fluid"
-                    style={{ maxHeight: "35px", cursor: "pointer" }}
-                  />
-                </div>
-              </div>
-            </div>
+          {/* MOBILE SEARCH OVERLAY */}
+          {mobileSearchOpen && (
+            <div
+              className="hw-mob-overlay"
+              style={{ zIndex: 1199 }}
+              onClick={() => setMobileSearchOpen(false)}
+            />
+          )}
+          <div className={`hw-mob-search-overlay${mobileSearchOpen ? " open" : ""}`}>
+            <form onSubmit={handleSearchSubmit} style={{ display: "flex", gap: "0.5rem" }}>
+              <input
+                type="text"
+                className="hw-search-input"
+                placeholder="Search vendors, venues..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus={mobileSearchOpen}
+              />
+              <button
+                type="button"
+                className="hw-touch"
+                onClick={() => setMobileSearchOpen(false)}
+                style={{ background: "#f8f9fa", border: "none", borderRadius: "10px", padding: "0 10px" }}
+              >
+                <IoClose size={24} color="#666" />
+              </button>
+            </form>
           </div>
 
           {/* DESKTOP VIEW */}
