@@ -378,7 +378,7 @@ const Herosection = () => {
             ) : (
               <>
                 {/* Vendor Direct Search */}
-                <div className="mb-3 position-relative">
+                <div className="mb-3 p-3 position-relative">
                   <div
                     ref={vendorInputRef}
                     style={{
@@ -405,9 +405,9 @@ const Herosection = () => {
                       style={{
                         fontSize: "14px",
                         padding: "0.75rem 1rem 0.75rem 2.5rem",
-                        borderRadius: "8px",
-                        border: "2px solid #e83581",
                         backgroundColor: "white",
+                        borderRadius: "6px",
+                        border: "1px solid #ddd",
                       }}
                     />
                   </div>
@@ -844,6 +844,11 @@ const Herosection = () => {
         .search-form .form-control,
         .search-form .form-select {
           border-radius: 6px;
+        }
+        .form-control:focus {
+          border-color: #ddd;
+          box-shadow: none;
+          outline: none;
         }
         .btn-find {
           background: #e83581;
