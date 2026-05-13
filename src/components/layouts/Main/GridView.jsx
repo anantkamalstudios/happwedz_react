@@ -6,13 +6,30 @@ import { TbView360Number } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { toggleWishlist } from "../../../redux/authSlice";
+import QuickInquiryModal from "../QuickInquiryModal";
+import { trackView } from "../../../services/localStorageService";
+import { prioritizeRecentlyViewed, isRecentlyViewed } from "../../../utils/recentlyViewedHelper";
 
 const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
   const [favorites, setFavorites] = useState({});
   const [wishlistIds, setWishlistIds] = useState(new Set());
+  const [showQuickInquiry, setShowQuickInquiry] = useState(false);
+  const [selectedVendorId, setSelectedVendorId] = useState(null);
+  const [selectedVendorName, setSelectedVendorName] = useState("");
+  const [displayData, setDisplayData] = useState([]);
   const dispatch = useDispatch();
   const { token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+
+  // Reorder: recently viewed first, then rest
+  useEffect(() => {
+    if (subVenuesData && subVenuesData.length > 0) {
+      const reordered = prioritizeRecentlyViewed(subVenuesData);
+      setDisplayData(reordered);
+    } else {
+      setDisplayData(subVenuesData || []);
+    }
+  }, [subVenuesData]);
 
   // Fetch wishlist on component mount to initialize favorites
   useEffect(() => {
@@ -101,6 +118,18 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
   };
 
   const handleCardClick = async (venue) => {
+    // Track to localStorage on click (works without auth)
+    trackView({
+      id: venue.id,
+      name: venue.name,
+      category: venue.vendor_type || venue.category,
+      type: venue.vendor_type || 'vendor',
+      location: venue.city || venue.address || venue.location,
+      image: venue.image,
+      price_range: venue.starting_price || venue.vegPrice || venue.nonVegPrice,
+      slug: venue.slug || venue.id
+    });
+
     if (token) {
       try {
         await fetch(`https://happywedz.com/api/interactions/add`, {
@@ -124,8 +153,10 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
   return (
     <Container fluid={fluid}>
       <Row>
-        {subVenuesData && subVenuesData.length > 0 ? (
-          subVenuesData.map((venue) => (
+        {displayData && displayData.length > 0 ? (
+          displayData.map((venue) => {
+            const wasViewed = isRecentlyViewed(venue.id);
+            return (
             <Col key={venue.id} xs={12} sm={6} lg={colLg || 4} className="mb-4">
               <Card
                 className="border-0 main-grid-cards rounded-4 overflow-hidden p-2 h-100"
@@ -151,6 +182,30 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
                       e.target.src = "/images/imageNotFound.jpg";
                     }}
                   />
+
+                  {/* Recently Viewed Badge */}
+                  {wasViewed && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: "10px",
+                        left: "10px",
+                        background: "rgba(231, 76, 60, 0.92)",
+                        color: "white",
+                        padding: "4px 10px",
+                        borderRadius: "20px",
+                        fontSize: "11px",
+                        fontWeight: "600",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        backdropFilter: "blur(4px)",
+                        zIndex: 2,
+                      }}
+                    >
+                      👁️ Recently Viewed
+                    </div>
+                  )}
 
                   {((venue.vendor_type || "").toLowerCase().includes("venue") ||
                     venue.vegPrice !== null ||
@@ -348,16 +403,40 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
                       )}
                     </div>
                   </Link>
+
+                  {/* Quick Inquiry Button */}
+                  <button
+                    className="quick-inquiry-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedVendorId(venue.vendor_id || venue.id);
+                      setSelectedVendorName(venue.name || "");
+                      setShowQuickInquiry(true);
+                    }}
+                    onMouseEnter={(e) => e.stopPropagation()}
+                    onMouseLeave={(e) => e.stopPropagation()}
+                    onMouseOver={(e) => e.stopPropagation()}
+                    onMouseOut={(e) => e.stopPropagation()}
+                  >
+                    ⚡ Quick Inquiry
+                  </button>
                 </Card.Body>
               </Card>
             </Col>
-          ))
+            );
+          })
         ) : (
           <Col xs={12} className="text-center py-5">
             <p className="text-muted">No venues available</p>
           </Col>
         )}
       </Row>
+      <QuickInquiryModal
+        show={showQuickInquiry}
+        handleClose={() => setShowQuickInquiry(false)}
+        vendorId={selectedVendorId}
+        vendorName={selectedVendorName}
+      />
     </Container>
   );
 };
