@@ -581,12 +581,22 @@ const ShaadiAI = () => {
                                                                 key={i} 
                                                                 className={styles.vendorCard}
                                                                 onClick={() => {
-                                                                    if (vendor.vendor_id) {
-                                                                        window.location.href = `/details/info/${vendor.vendor_id}`;
+                                                                    if (vendor.id) {
+                                                                        window.location.href = `/details/info/${vendor.id}`;
                                                                     }
                                                                 }}
-                                                                style={{ cursor: vendor.vendor_id ? 'pointer' : 'default' }}
+                                                                style={{ cursor: vendor.id ? 'pointer' : 'default' }}
                                                             >
+                                                                {vendor.image && (
+                                                                    <div className={styles.vendorImage}>
+                                                                        <img
+                                                                            src={vendor.image}
+                                                                            alt={vendor.name}
+                                                                            onError={e => { e.currentTarget.parentElement.style.display = 'none'; }}
+                                                                            style={{ width: '100%', height: '160px', objectFit: 'cover', borderRadius: '8px 8px 0 0', display: 'block' }}
+                                                                        />
+                                                                    </div>
+                                                                )}
                                                                 <div className={styles.vendorHeader}>
                                                                     <h4>{vendor.name}</h4>
                                                                     <span className={styles.vendorCategory}>{vendor.category}</span>
