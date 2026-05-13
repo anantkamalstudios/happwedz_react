@@ -1,0 +1,586 @@
+You are a Senior Frontend Performance Engineer, UI Architecture Expert, and Mobile Optimization Specialist.
+
+I already have a complete PROJECT_CONTEXT.md file of my project.
+
+Your task is to deeply analyze that PROJECT_CONTEXT.md and generate a COMPLETE implementation plan to solve these two critical production issues:
+
+1. Poor mobile responsiveness
+   - Website does not adjust properly on mobile phones
+   - Layout breaks on smaller screens
+   - Components overflow
+   - Inconsistent spacing/scaling
+   - Bad touch UX
+   - Typography not responsive
+   - Images not optimized for mobile
+   - Navigation issues on mobile
+
+2. Slow loading and lag
+   - Pages open slowly
+   - UI lag during navigation
+   - Heavy rendering
+   - Poor frontend performance
+   - Large bundle size
+   - Slow API handling
+   - Excessive rerenders
+   - Unoptimized assets
+   - Poor lazy loading strategy
+   - Performance bottlenecks
+
+IMPORTANT:
+Do NOT provide generic recommendations.
+
+You MUST generate:
+- project-specific analysis
+- implementation strategy
+- exact fixes
+- exact architecture improvements
+- exact frontend improvements
+- exact optimization techniques
+- exact responsive system strategy
+
+You must behave like a real senior engineer auditing a production application.
+
+--------------------------------------------------
+PHASE 1 — PROJECT ANALYSIS
+--------------------------------------------------
+
+First deeply analyze:
+
+- frontend architecture
+- component structure
+- routing
+- layouts
+- CSS architecture
+- styling system
+- responsiveness patterns
+- rendering flow
+- asset loading
+- API calls
+- state management
+- performance bottlenecks
+- bundle issues
+- mobile UX issues
+- image handling
+- animation performance
+- lazy loading strategy
+- caching strategy
+- layout patterns
+
+Then identify:
+
+# RESPONSIVENESS PROBLEMS
+
+Find:
+- fixed width containers
+- px-based layouts
+- broken grids
+- overflow issues
+- non-responsive typography
+- large spacing issues
+- broken navbar
+- broken forms
+- broken modals
+- bad mobile tables
+- image overflow
+- horizontal scroll causes
+- non-touch-friendly buttons
+- viewport issues
+- z-index issues
+- poor responsive breakpoints
+- inconsistent mobile behavior
+
+# PERFORMANCE PROBLEMS
+
+Find:
+- unnecessary rerenders
+- large components
+- bad state structure
+- heavy API requests
+- repeated API calls
+- missing memoization
+- heavy images/videos
+- unnecessary dependencies
+- blocking renders
+- slow initial load
+- large JS bundles
+- unnecessary imports
+- poor code splitting
+- bad lazy loading
+- animation lag
+- excessive DOM rendering
+- poor virtualization
+- memory leaks
+- bad useEffect patterns
+- expensive computations
+- hydration issues
+- slow route transitions
+
+--------------------------------------------------
+PHASE 2 — ROOT CAUSE ANALYSIS
+--------------------------------------------------
+
+For EVERY issue explain:
+
+- root cause
+- affected files
+- severity
+- impact on UX
+- impact on performance
+- impact on SEO
+- impact on mobile users
+- scalability concerns
+
+IMPORTANT:
+Explain REAL causes from code architecture.
+
+--------------------------------------------------
+PHASE 3 — COMPLETE RESPONSIVE ARCHITECTURE PLAN
+--------------------------------------------------
+
+Create a COMPLETE enterprise-level responsive strategy.
+
+Explain:
+
+# Responsive Design System
+
+- breakpoint strategy
+- container system
+- spacing system
+- typography scaling
+- responsive grids
+- responsive flex layouts
+- mobile-first architecture
+- adaptive layouts
+- responsive cards
+- responsive forms
+- responsive tables
+- responsive modals
+- responsive navbar
+- responsive sidebar
+- responsive images
+- responsive sections
+
+# Mobile UX Improvements
+
+- touch targets
+- thumb-friendly layouts
+- mobile navigation
+- bottom navigation if needed
+- gesture improvements
+- scroll optimization
+- mobile animation optimization
+
+# Styling Improvements
+
+Analyze current styling system and suggest:
+- Tailwind improvements
+- CSS module improvements
+- SCSS improvements
+- design token system
+- reusable responsive utilities
+
+# FULL DEVICE COVERAGE REQUIREMENTS
+
+IMPORTANT:
+The responsiveness implementation MUST support ALL practical screen sizes and device categories — not just common breakpoints.
+
+The system must be production-grade and adaptive across:
+
+## Small Phones
+- 240px
+- 280px
+- 320px
+- 360px
+
+## Standard Phones
+- 375px
+- 390px
+- 414px
+- 430px
+
+## Large Phones
+- 480px
+- 540px
+- 600px
+
+## Foldables
+- Samsung Fold resolutions
+- split-screen widths
+- dynamic viewport changes
+
+## Tablets
+- 768px
+- 820px
+- 853px
+- 912px
+- 1024px
+
+## Small Laptops
+- 1280px
+- 1366px
+
+## Standard Desktop
+- 1440px
+- 1536px
+- 1600px
+
+## Large Desktop
+- 1728px
+- 1920px
+- 2560px
+
+## Ultra-wide Displays
+- 3440px
+- 3840px
+
+--------------------------------------------------
+
+# RESPONSIVE ENGINEERING REQUIREMENTS
+
+The implementation MUST:
+
+- use mobile-first architecture
+- avoid fixed widths
+- avoid hardcoded heights
+- avoid px-only scaling
+- use fluid layouts
+- use clamp() typography
+- use minmax() grids
+- use adaptive containers
+- use responsive spacing systems
+- support orientation changes
+- support browser zoom
+- support accessibility font scaling
+- support landscape mobile mode
+- support split-screen mode
+- support foldable viewport resizing
+- prevent overflow on all screens
+- prevent horizontal scrolling
+- maintain proper touch targets
+- maintain visual hierarchy across all devices
+
+--------------------------------------------------
+
+# RESPONSIVE TESTING MATRIX
+
+Generate fixes validated against:
+
+## Browsers
+- Chrome
+- Safari
+- Firefox
+- Edge
+
+## Mobile Browsers
+- iOS Safari
+- Android Chrome
+- Samsung Internet
+
+## Device Modes
+- portrait
+- landscape
+- split-screen
+- foldable mode
+
+--------------------------------------------------
+
+# RESPONSIVE IMPLEMENTATION EXPECTATIONS
+
+You MUST generate:
+- fluid responsive layouts
+- adaptive grids
+- scalable typography
+- responsive images
+- responsive navigation
+- responsive forms
+- responsive cards
+- responsive tables
+- responsive modals
+- responsive sidebars
+- responsive spacing systems
+
+The final architecture should behave correctly across ALL viewport ranges instead of only common breakpoints.
+
+# NO PARTIAL RESPONSIVENESS RULE
+
+The implementation MUST NOT optimize only:
+- homepage
+- landing pages
+- major layouts
+- common components
+
+The AI MUST audit and optimize:
+- every route
+- every page
+- every modal
+- every drawer
+- every form
+- every table
+- every card
+- every navigation state
+- every dashboard section
+- every popup
+- every sidebar
+- every carousel
+- every slider
+- every dropdown
+- every data visualization
+- every grid
+- every mobile interaction
+
+INCLUDING:
+- edge-case layouts
+- admin screens
+- nested layouts
+- hidden states
+- loading states
+- empty states
+- error states
+- dynamic API-driven layouts
+
+No screen should remain partially responsive.
+
+IMPORTANT:
+Provide EXACT implementation patterns.
+
+--------------------------------------------------
+PHASE 4 — COMPLETE PERFORMANCE OPTIMIZATION PLAN
+--------------------------------------------------
+
+Create a FULL frontend optimization strategy.
+
+Include:
+
+# Bundle Optimization
+
+- code splitting
+- route-based splitting
+- dynamic imports
+- tree shaking
+- dependency optimization
+- vendor chunk optimization
+
+# Rendering Optimization
+
+- React.memo
+- useMemo
+- useCallback
+- virtualization
+- selective rendering
+- suspense optimization
+
+# Asset Optimization
+
+- image optimization
+- WebP/AVIF conversion
+- responsive images
+- lazy image loading
+- CDN strategy
+- font optimization
+
+# API Optimization
+
+- request batching
+- caching
+- query optimization
+- debounce/throttle
+- pagination
+- optimistic updates
+
+# React Performance
+
+- rerender prevention
+- state normalization
+- context optimization
+- store optimization
+
+# Navigation Performance
+
+- route prefetching
+- lazy route loading
+- transition optimization
+
+# SEO + Core Web Vitals
+
+Improve:
+- LCP
+- CLS
+- FID
+- INP
+- TTFB
+
+Explain EXACTLY how to improve them.
+
+--------------------------------------------------
+PHASE 5 — FILE-BY-FILE IMPLEMENTATION PLAN
+--------------------------------------------------
+
+VERY IMPORTANT.
+
+Generate a detailed implementation roadmap.
+
+For EACH important file mention:
+
+- what is wrong
+- what should change
+- how to refactor
+- exact optimization approach
+- exact responsive fixes
+- expected improvement
+
+Format:
+
+FILE:
+Current Issue:
+Root Cause:
+Implementation Fix:
+Performance Impact:
+Mobile Impact:
+Priority:
+
+--------------------------------------------------
+PHASE 6 — ANTIGRAVITY EXECUTION PROMPTS
+--------------------------------------------------
+
+This is VERY IMPORTANT.
+
+Generate separate HIGH-QUALITY prompts for Antigravity AI.
+
+Create prompts for:
+
+1. Mobile responsiveness fixes
+2. Performance optimization
+3. Bundle optimization
+4. Responsive navbar fixes
+5. Responsive layout fixes
+6. Image optimization
+7. React rerender optimization
+8. Lazy loading implementation
+9. Mobile form optimization
+10. Core Web Vitals optimization
+
+Each prompt should:
+- be implementation-ready
+- reference project architecture
+- avoid breaking existing functionality
+- follow industry standards
+- preserve current design system
+- preserve backend compatibility
+
+--------------------------------------------------
+PHASE 7 — SAFE IMPLEMENTATION STRATEGY
+--------------------------------------------------
+
+Explain:
+- what should be done first
+- risky areas
+- safe migration strategy
+- regression prevention
+- testing strategy
+- responsive testing checklist
+- performance testing checklist
+
+--------------------------------------------------
+PHASE 8 — FINAL ENTERPRISE RECOMMENDATIONS
+--------------------------------------------------
+
+Provide:
+- enterprise-level improvements
+- scalability upgrades
+- future-proof responsive architecture
+- frontend architecture improvements
+- performance roadmap
+- maintainability improvements
+
+--------------------------------------------------
+OUTPUT FORMAT
+--------------------------------------------------
+
+Generate output in this exact structure:
+
+1. Executive Summary
+2. Mobile Responsiveness Audit
+3. Performance Audit
+4. Root Cause Analysis
+5. Responsive Architecture Plan
+6. Performance Optimization Plan
+7. File-by-File Refactoring Plan
+8. Antigravity AI Prompts
+9. Safe Migration Strategy
+10. Testing Checklist
+11. Enterprise Recommendations
+
+IMPORTANT:
+- Be EXTREMELY detailed
+- Use project-specific analysis
+- Use actual architecture understanding
+- Explain implementation deeply
+- Think like a senior production engineer
+- Do NOT give generic advice
+- Prioritize production-safe improvements
+- Preserve existing business logic
+- Preserve existing backend contracts
+- Preserve existing APIs
+
+
+# PRODUCTION SAFETY RULES
+
+The implementation MUST:
+- preserve existing business logic
+- preserve backend integrations
+- preserve API contracts
+- preserve routing behavior
+- preserve authentication flow
+- preserve current functionality
+- preserve current data flow
+- avoid unnecessary rewrites
+- avoid breaking reusable components
+- avoid changing existing UX flows unless required
+- avoid modifying stable backend systems
+
+Changes should be:
+- incremental
+- production-safe
+- modular
+- testable
+- rollback-friendly
+
+The AI should prioritize:
+1. architecture-safe fixes
+2. reusable responsive systems
+3. performance-safe optimizations
+4. minimal regression risk
+
+# PERFORMANCE TARGETS
+
+The optimization strategy should target:
+
+## Lighthouse Targets
+- Performance: 90+
+- Accessibility: 95+
+- Best Practices: 95+
+- SEO: 95+
+
+## Core Web Vitals Targets
+- LCP < 2.5s
+- CLS < 0.1
+- INP < 200ms
+- FCP < 1.8s
+- TBT < 200ms
+
+## Frontend Targets
+- reduce unnecessary rerenders
+- reduce bundle size
+- reduce initial JS execution
+- improve route transition speed
+- improve mobile FPS
+- reduce layout shifts
+- reduce blocking resources
+
+The AI must explain:
+- expected gains
+- estimated impact
+- optimization priority
+- implementation difficulty
+
+Now analyze the provided PROJECT_CONTEXT.md deeply and generate the complete production optimization plan.
