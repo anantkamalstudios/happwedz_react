@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { MdExpandMore, MdExpandLess } from "react-icons/md";
+import { MdExpandMore, MdExpandLess, MdClose } from "react-icons/md";
+import { CiLocationOn, CiStar, CiSearch } from "react-icons/ci";
+import axios from "axios";
 import { setLocation } from "../../redux/locationSlice";
 import { useVendorType } from "../../hooks/useVendorType";
 import { useHome } from "../../hooks/useHome";
@@ -72,6 +74,15 @@ const Herosection = () => {
   const categoryDropdownRef = useRef(null);
   const categoryButtonRef = useRef(null);
 
+  // Vendor Search States
+  const [vendorQuery, setVendorQuery] = useState("");
+  const [vendorLoading, setVendorLoading] = useState(false);
+  const [vendorResults, setVendorResults] = useState([]);
+  const [showVendorDropdown, setShowVendorDropdown] = useState(false);
+  const vendorDebounceRef = useRef(null);
+  const vendorDropdownRef = useRef(null);
+  const vendorInputRef = useRef(null);
+
   const toSlug = (t) =>
     t?.replace(/\s+/g, "-").replace(/[^A-Za-z0-9-]/g, "") || "";
   const formatName = (n) => n.replace(/\band\b/gi, "&");
@@ -119,9 +130,88 @@ const Herosection = () => {
     return () => document.removeEventListener("mousedown", handleOutside);
   }, [showCategoryDropdown]);
 
+  // Vendor Search - Click Outside Handler
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (
+        vendorDropdownRef.current &&
+        !vendorDropdownRef.current.contains(e.target) &&
+        vendorInputRef.current &&
+        !vendorInputRef.current.contains(e.target)
+      )
+        setShowVendorDropdown(false);
+    };
+    if (showVendorDropdown)
+      document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, [showVendorDropdown]);
+
+  // Vendor Search - API Call
+  const performVendorSearch = async (searchQuery) => {
+    if (!searchQuery || searchQuery.trim().length < 2) {
+      setVendorResults([]);
+      setShowVendorDropdown(false);
+      return;
+    }
+    setVendorLoading(true);
+    setShowVendorDropdown(true); // Show dropdown immediately when search starts
+    try {
+      const apiUrl = `https://happywedz.com/api/vendor-services?search=${encodeURIComponent(
+        searchQuery
+      )}&limit=10`;
+      const { data } = await axios.get(apiUrl);
+      const items = data?.data || [];
+      setVendorResults(items);
+    } catch (e) {
+      console.error("Vendor search error:", e);
+      setVendorResults([]);
+    } finally {
+      setVendorLoading(false);
+    }
+  };
+
+  // Vendor Search - Debounced Input Handler
+  const handleVendorQueryChange = (e) => {
+    const value = e.target.value;
+    setVendorQuery(value);
+    
+    // Show dropdown immediately if user is typing
+    if (value.trim().length >= 2) {
+      setShowVendorDropdown(true);
+    } else {
+      setShowVendorDropdown(false);
+    }
+    
+    if (vendorDebounceRef.current) clearTimeout(vendorDebounceRef.current);
+    vendorDebounceRef.current = setTimeout(() => performVendorSearch(value), 400);
+  };
+
+  // Vendor Search - Cleanup
+  useEffect(() => {
+    return () => {
+      if (vendorDebounceRef.current) clearTimeout(vendorDebounceRef.current);
+    };
+  }, []);
+
+  // Vendor Search - Navigate to Vendor Detail
+  const handleVendorSelect = (vendor) => {
+    const vendorId = vendor?.id ?? vendor?.vendor_services_id;
+    setShowVendorDropdown(false);
+    setVendorQuery("");
+    setVendorResults([]);
+    // Navigate to vendor detail page
+    navigate(`/details/info/${vendorId}`);
+  };
+
   const filteredCities = cities.filter((city) =>
     city.toLowerCase().includes(citySearch.toLowerCase())
   );
+
+  // Clear location handler
+  const handleClearLocation = (e) => {
+    e.stopPropagation(); // Prevent dropdown toggle
+    dispatch(setLocation("")); // Clear Redux state with empty string
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -174,7 +264,7 @@ const Herosection = () => {
         </Row>
         <Row className="justify-content-center mt-4">
           <Col xs={12} md={10}>
-            {reduxLocation ? (
+            {reduxLocation && reduxLocation !== "null" && reduxLocation.trim() !== "" ? (
               <div className="position-relative">
                 <button
                   ref={buttonRef}
@@ -190,11 +280,30 @@ const Herosection = () => {
                   }}
                 >
                   <span>Find Vendors in {reduxLocation}</span>
-                  {showDropdown ? (
-                    <MdExpandLess size={24} />
-                  ) : (
-                    <MdExpandMore size={24} />
-                  )}
+                  <div className="d-flex align-items-center gap-2">
+                    <MdClose
+                      size={24}
+                      onClick={handleClearLocation}
+                      style={{
+                        cursor: "pointer",
+                        padding: "2px",
+                        borderRadius: "50%",
+                        transition: "background-color 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "rgba(232, 53, 129, 0.1)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }}
+                      title="Clear location and show search"
+                    />
+                    {showDropdown ? (
+                      <MdExpandLess size={24} />
+                    ) : (
+                      <MdExpandMore size={24} />
+                    )}
+                  </div>
                 </button>
                 {showDropdown && (
                   <div
@@ -267,7 +376,236 @@ const Herosection = () => {
                 )}
               </div>
             ) : (
-              <Form className="search-form" onSubmit={handleSearch}>
+              <>
+                {/* Vendor Direct Search */}
+                <div className="mb-3 p-3 position-relative">
+                  <div
+                    ref={vendorInputRef}
+                    style={{
+                      position: "relative",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    <CiSearch
+                      size={20}
+                      style={{
+                        position: "absolute",
+                        left: "1rem",
+                        color: "#666",
+                        zIndex: 1,
+                      }}
+                    />
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={vendorQuery}
+                      onChange={handleVendorQueryChange}
+                      placeholder="Search for specific vendors (e.g., photographer name, makeup artist...)"
+                      style={{
+                        fontSize: "14px",
+                        padding: "0.75rem 1rem 0.75rem 2.5rem",
+                        backgroundColor: "white",
+                        borderRadius: "6px",
+                        border: "1px solid #ddd",
+                      }}
+                    />
+                  </div>
+
+                  {/* Vendor Search Results Dropdown */}
+                  {showVendorDropdown && vendorQuery.trim().length >= 2 && (
+                    <div
+                      ref={vendorDropdownRef}
+                      style={{
+                        position: "absolute",
+                        top: "calc(100% + 8px)",
+                        left: 0,
+                        right: 0,
+                        backgroundColor: "white",
+                        borderRadius: "8px",
+                        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
+                        maxHeight: "400px",
+                        overflowY: "auto",
+                        zIndex: 1000,
+                        animation: "slideDown 0.3s ease-out",
+                      }}
+                    >
+                      {vendorLoading ? (
+                        <div
+                          style={{
+                            padding: "1.5rem",
+                            textAlign: "center",
+                            color: "#e83581",
+                            fontWeight: "500",
+                          }}
+                        >
+                          <div
+                            className="spinner-border spinner-border-sm me-2"
+                            role="status"
+                            style={{ 
+                              borderColor: "#e83581",
+                              borderRightColor: "transparent"
+                            }}
+                          >
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                          Searching...
+                        </div>
+                      ) : vendorResults.length === 0 ? (
+                        <div
+                          style={{
+                            padding: "1.5rem",
+                            textAlign: "center",
+                            color: "#666",
+                          }}
+                        >
+                          No vendors found
+                        </div>
+                      ) : (
+                        <div style={{ padding: "0.5rem 0" }}>
+                          {vendorResults.map((vendor) => {
+                            const vendorId =
+                              vendor?.id ?? vendor?.vendor_services_id;
+                            const vendorName =
+                              vendor?.attributes?.vendor_name ||
+                              vendor?.attributes?.name ||
+                              vendor?.vendor?.businessName ||
+                              `Vendor ${vendorId}`;
+                            const city =
+                              vendor?.attributes?.city ||
+                              vendor?.vendor?.city ||
+                              "";
+                            const image =
+                              vendor?.attributes?.image ||
+                              vendor?.attributes?.profile_image ||
+                              vendor?.vendor?.profileImage;
+                            const rating = vendor?.attributes?.rating;
+
+                            return (
+                              <div
+                                key={vendorId}
+                                onClick={() => handleVendorSelect(vendor)}
+                                style={{
+                                  padding: "0.75rem 1rem",
+                                  cursor: "pointer",
+                                  borderBottom: "1px solid #eee",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "0.75rem",
+                                  transition: "background-color 0.2s",
+                                }}
+                                onMouseEnter={(e) =>
+                                  (e.currentTarget.style.backgroundColor =
+                                    "#f5f5f5")
+                                }
+                                onMouseLeave={(e) =>
+                                  (e.currentTarget.style.backgroundColor =
+                                    "white")
+                                }
+                              >
+                                {image && (
+                                  <img
+                                    src={image}
+                                    alt={vendorName}
+                                    style={{
+                                      width: "50px",
+                                      height: "50px",
+                                      objectFit: "cover",
+                                      borderRadius: "6px",
+                                      flexShrink: 0,
+                                    }}
+                                    onError={(e) => {
+                                      e.target.style.display = "none";
+                                    }}
+                                  />
+                                )}
+                                <div style={{ flex: 1 }}>
+                                  <div
+                                    style={{
+                                      fontWeight: "600",
+                                      fontSize: "14px",
+                                      color: "#333",
+                                      marginBottom: "0.25rem",
+                                    }}
+                                  >
+                                    {vendorName}
+                                  </div>
+                                  {city && (
+                                    <div
+                                      style={{
+                                        fontSize: "12px",
+                                        color: "#666",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "0.25rem",
+                                      }}
+                                    >
+                                      <CiLocationOn size={14} /> {city}
+                                    </div>
+                                  )}
+                                </div>
+                                {rating != null && (
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "0.25rem",
+                                      fontSize: "12px",
+                                      color: "#666",
+                                      backgroundColor: "#f8f9fa",
+                                      padding: "0.25rem 0.5rem",
+                                      borderRadius: "4px",
+                                    }}
+                                  >
+                                    <CiStar color="#e83581" size={14} />
+                                    {rating}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Divider */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "1rem",
+                    margin: "1.5rem 0",
+                  }}
+                >
+                  <div
+                    style={{
+                      flex: 1,
+                      height: "1px",
+                      backgroundColor: "rgba(255, 255, 255, 0.3)",
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      color: "rgba(255, 255, 255, 0.8)",
+                      fontWeight: "500",
+                    }}
+                  >
+                    OR BROWSE BY CATEGORY
+                  </span>
+                  <div
+                    style={{
+                      flex: 1,
+                      height: "1px",
+                      backgroundColor: "rgba(255, 255, 255, 0.3)",
+                    }}
+                  />
+                </div>
+
+                {/* Category + City Search Form */}
+                <Form className="search-form" onSubmit={handleSearch}>
                 <Row className="g-3">
                   <Col xs={12} md={5} className="position-relative">
                     <button
@@ -479,6 +817,7 @@ const Herosection = () => {
                   </Col>
                 </Row>
               </Form>
+              </>
             )}
           </Col>
         </Row>
@@ -505,6 +844,11 @@ const Herosection = () => {
         .search-form .form-control,
         .search-form .form-select {
           border-radius: 6px;
+        }
+        .form-control:focus {
+          border-color: #ddd;
+          box-shadow: none;
+          outline: none;
         }
         .btn-find {
           background: #e83581;
