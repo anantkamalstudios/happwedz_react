@@ -1,19 +1,19 @@
-import { useState, useEffect, useRef } from "react";
+import { forwardRef, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import FightIcon from "../../../../assets/trevel_icon/airplane.png";
 import HotelIcon from "../../../../assets/trevel_icon/hotel.png";
 import CarIcon from "../../../../assets/trevel_icon/sedan.png";
 import ActivityIcon from "../../../../assets/trevel_icon/checklist.png";
 import CruiseIcon from "../../../../assets/trevel_icon/cruise-ship.png";
-import { Plane, MapPin, Users, CalendarSearch, Loader2 } from "lucide-react";
+import { Plane, MapPin, Users, CalendarSearch, Loader2, X } from "lucide-react";
 import {
   searchAirports,
   searchFlights,
 } from "../../../../services/api/flightApi";
 import {
-  getHotelCountries,
-  getHotelDestinations,
-  getHotelImages,
+  suggestHotels,
   searchHotels,
 } from "../../../../services/api/hotelApi";
 import airportsData from "../../../../config/airports.json";
@@ -477,6 +477,196 @@ const styles = `
     color: #5f6472;
     margin-left: 65px;
     font-weight: 500;
+  }
+
+  .hotel-suggestion-box {
+    position: relative;
+  }
+
+  .hotel-clear-btn {
+    position: absolute;
+    top: 2px;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    color: #8d95a1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+  }
+
+  .hotel-clear-btn:hover {
+    color: #ff7a1a;
+    background: rgba(255, 122, 26, 0.08);
+  }
+
+  .hotel-suggestions {
+    min-width: 100%;
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid #dcdfe6;
+    box-shadow: 0 20px 40px rgba(18, 22, 33, 0.18);
+    margin-top: 10px;
+    overflow: hidden;
+  }
+
+  .hotel-suggestion-item {
+    padding: 12px 16px;
+    gap: 2px;
+  }
+
+  .hotel-suggestion-item:hover {
+    background: #fff7f0;
+    border-left: 3px solid #ff7a1a;
+    padding-left: 13px;
+  }
+
+  .hotel-suggestion-main {
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .hotel-suggestion-icon {
+    width: 16px;
+    height: 16px;
+    color: #ff7a1a;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .hotel-suggestion-name {
+    font-weight: 800;
+    color: #303540;
+    font-size: 14px;
+    line-height: 1.15;
+    text-transform: uppercase;
+  }
+
+  .hotel-suggestion-sub {
+    font-size: 11px;
+    color: #6f7480;
+    margin-left: 24px;
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 1.25;
+  }
+
+  .hotel-date-trigger {
+    width: 100%;
+    border: none;
+    background: transparent;
+    padding: 0;
+    text-align: left;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .hotel-date-trigger:focus {
+    outline: none;
+  }
+
+  .hotel-date-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a2e;
+    line-height: 1.15;
+  }
+
+  .hotel-date-value.empty {
+    color: #b4bac3;
+  }
+
+  .hotel-date-strip {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 8px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #ff952f, #ff6d00);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    box-shadow: 0 8px 18px rgba(255, 109, 0, 0.18);
+  }
+
+  .hotel-date-strip.muted {
+    background: #f4f0ea;
+    color: #8a909a;
+    box-shadow: none;
+  }
+
+  .hotel-calendar {
+    border: 1px solid #ece5dc !important;
+    border-radius: 16px !important;
+    font-family: 'Poppins', sans-serif !important;
+    box-shadow: 0 18px 36px rgba(18, 22, 33, 0.18);
+    overflow: hidden;
+  }
+
+  .hotel-calendar .react-datepicker__header {
+    background: #fff !important;
+    border-bottom: 1px solid #f1ebe3 !important;
+    padding-top: 14px !important;
+  }
+
+  .hotel-calendar .react-datepicker__current-month {
+    font-size: 14px;
+    font-weight: 800;
+    color: #525866;
+  }
+
+  .hotel-calendar .react-datepicker__day-name {
+    color: #8e95a3;
+    font-size: 11px;
+    font-weight: 700;
+    width: 2rem;
+    line-height: 2rem;
+  }
+
+  .hotel-calendar .react-datepicker__day {
+    width: 2rem;
+    line-height: 2rem;
+    margin: 0.18rem;
+    border-radius: 10px;
+    color: #29303a;
+    font-weight: 700;
+  }
+
+  .hotel-calendar .react-datepicker__day:hover {
+    background: #fff0e2;
+  }
+
+  .hotel-calendar .react-datepicker__day--keyboard-selected {
+    background: #fff0e2 !important;
+    color: #29303a !important;
+  }
+
+  .hotel-calendar .react-datepicker__day--outside-month {
+    color: #c7ccd5;
+  }
+
+  .hotel-calendar .hotel-range-day {
+    background: #ff8d2c;
+    color: #fff;
+    border-radius: 0;
+  }
+
+  .hotel-calendar .hotel-range-start {
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+  }
+
+  .hotel-calendar .hotel-range-end {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+  }
+
+  .hotel-calendar .hotel-range-single {
+    border-radius: 10px;
   }
 
   .date-input-wrap {
@@ -1113,6 +1303,131 @@ const formatSelectedDate = (dateValue) => {
   });
 };
 
+const parseIsoDate = (value) => {
+  if (!value) return null;
+  const [year, month, day] = String(value).split("-").map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+};
+
+const formatIsoDate = (date) => {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const isSameDay = (left, right) =>
+  left instanceof Date &&
+  right instanceof Date &&
+  left.getFullYear() === right.getFullYear() &&
+  left.getMonth() === right.getMonth() &&
+  left.getDate() === right.getDate();
+
+const isDayBetween = (day, start, end) => {
+  if (!(day instanceof Date) || !(start instanceof Date) || !(end instanceof Date)) {
+    return false;
+  }
+
+  const dayValue = new Date(day.getFullYear(), day.getMonth(), day.getDate()).getTime();
+  const startValue = new Date(start.getFullYear(), start.getMonth(), start.getDate()).getTime();
+  const endValue = new Date(end.getFullYear(), end.getMonth(), end.getDate()).getTime();
+
+  return dayValue > startValue && dayValue < endValue;
+};
+
+const HotelDateInput = forwardRef(function HotelDateInput(
+  { value, label, selected, onClick },
+  ref,
+) {
+  return (
+    <button
+      type="button"
+      className="hotel-date-trigger"
+      ref={ref}
+      onClick={onClick}
+    >
+      <div className={`hotel-date-value ${selected ? "" : "empty"}`}>
+        {value || label}
+      </div>
+      <div className={`hotel-date-strip ${selected ? "" : "muted"}`}>
+        {selected ? formatSelectedDate(selected) : label}
+      </div>
+    </button>
+  );
+});
+
+const createCorrelationId = () => {
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+  return `corr-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+};
+
+const readSuggestionItems = (payload) => {
+  const candidates = [
+    payload,
+    payload?.suggestions,
+    payload?.data?.suggestions,
+    payload?.data,
+    payload?.items,
+    payload?.results,
+  ];
+  const match = candidates.find((value) => Array.isArray(value));
+  return Array.isArray(match) ? match : [];
+};
+
+const normalizeHotelSuggestion = (suggestion) => {
+  const searchType =
+    suggestion?.searchType ||
+    suggestion?.searchRegionType ||
+    suggestion?.regionType ||
+    suggestion?.type ||
+    "CITY";
+
+  const city =
+    suggestion?.city ||
+    suggestion?.cityId ||
+    suggestion?.regionId ||
+    suggestion?.searchRegionId ||
+    suggestion?.id ||
+    "";
+
+  const displayName =
+    suggestion?.name ||
+    suggestion?.displayName ||
+    suggestion?.label ||
+    suggestion?.searchRegionName ||
+    suggestion?.cityName ||
+    suggestion?.keyword ||
+    "";
+
+  const rawTjids = suggestion?.tjids || suggestion?.hids || suggestion?.hotelIds || [];
+  const tjids = Array.isArray(rawTjids)
+    ? rawTjids.map((item) => String(item)).filter(Boolean)
+    : [];
+
+  return {
+    id: String(city || displayName || ""),
+    city: String(city || ""),
+    searchType: String(searchType || "CITY").toUpperCase(),
+    searchRegionType: String(searchType || "CITY").toUpperCase(),
+    searchRegionName: String(displayName || "").trim(),
+    displayName: String(displayName || "").trim(),
+    countryName:
+      suggestion?.countryName ||
+      suggestion?.country ||
+      (suggestion?.subtitle ? String(suggestion.subtitle).split(",").slice(-1)[0]?.trim() : ""),
+    stateName:
+      suggestion?.stateName ||
+      suggestion?.state ||
+      (suggestion?.subtitle ? String(suggestion.subtitle).split(",")[0]?.trim() : ""),
+    tjids,
+    raw: suggestion,
+  };
+};
+
 export default function FlightHero() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Flights");
@@ -1131,9 +1446,10 @@ export default function FlightHero() {
   const [fromSuggestions, setFromSuggestions] = useState([]);
   const [toSuggestions, setToSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [hotelCountries, setHotelCountries] = useState([]);
-  const [hotelDestinations, setHotelDestinations] = useState([]);
-  const [hotelCountryCode, setHotelCountryCode] = useState("");
+  const [hotelLocation, setHotelLocation] = useState("");
+  const [hotelSuggestions, setHotelSuggestions] = useState([]);
+  const [showHotelSuggestions, setShowHotelSuggestions] = useState(false);
+  const [selectedHotelSuggestion, setSelectedHotelSuggestion] = useState(null);
   const [hotelDestinationCode, setHotelDestinationCode] = useState("");
   const [hotelCheckIn, setHotelCheckIn] = useState("");
   const [hotelCheckOut, setHotelCheckOut] = useState("");
@@ -1141,10 +1457,16 @@ export default function FlightHero() {
   const [hotelAdults, setHotelAdults] = useState(2);
   const [hotelChildren, setHotelChildren] = useState(0);
   const [hotelSearchLoading, setHotelSearchLoading] = useState(false);
-  const [hotelMetaLoading, setHotelMetaLoading] = useState(false);
+  const [hotelSuggestLoading, setHotelSuggestLoading] = useState(false);
+  const hotelCountryCode = "";
+  const hotelDestinations = [];
+  const hotelMetaLoading = false;
   const fromInputRef = useRef(null);
   const toInputRef = useRef(null);
   const travelersRef = useRef(null);
+  const hotelInputRef = useRef(null);
+  const hotelCheckInDate = parseIsoDate(hotelCheckIn);
+  const hotelCheckOutDate = parseIsoDate(hotelCheckOut);
 
   const swapCities = () => {
     setFrom(to || "");
@@ -1258,102 +1580,110 @@ export default function FlightHero() {
   };
 
   useEffect(() => {
-    if (activeTab !== "Hotels" || hotelCountries.length > 0) return;
+    if (activeTab !== "Hotels") return undefined;
+
+    const keyword = hotelLocation.trim();
+    if (keyword.length < 2) {
+      setHotelSuggestions([]);
+      setShowHotelSuggestions(false);
+      setHotelSuggestLoading(false);
+      return undefined;
+    }
 
     let active = true;
-    setHotelMetaLoading(true);
-    getHotelCountries()
-      .then((response) => {
+    const timer = window.setTimeout(async () => {
+      setHotelSuggestLoading(true);
+      try {
+        const response = await suggestHotels({ keyword });
         if (!active) return;
-        const countries = readArray(response, "countries");
-        setHotelCountries(countries);
-        if (countries.length > 0) {
-          setHotelCountryCode(countries[0]?.code || "");
-        }
-      })
-      .catch((error) => {
-        console.error("Unable to load hotel countries", error);
-      })
-      .finally(() => {
+
+        const suggestions = readSuggestionItems(response)
+          .map(normalizeHotelSuggestion)
+          .filter((item) => item.id && item.displayName);
+
+        setHotelSuggestions(suggestions);
+        setShowHotelSuggestions(suggestions.length > 0);
+      } catch (error) {
         if (active) {
-          setHotelMetaLoading(false);
+          setHotelSuggestions([]);
+          setShowHotelSuggestions(false);
         }
-      });
+        console.error("Unable to load hotel suggestions", error);
+      } finally {
+        if (active) {
+          setHotelSuggestLoading(false);
+        }
+      }
+    }, 300);
 
     return () => {
       active = false;
+      window.clearTimeout(timer);
     };
-  }, [activeTab, hotelCountries.length]);
-
-  useEffect(() => {
-    if (!hotelCountryCode || activeTab !== "Hotels") return;
-
-    let active = true;
-    setHotelMetaLoading(true);
-    getHotelDestinations(hotelCountryCode)
-      .then((response) => {
-        if (!active) return;
-        const destinations = readArray(response, "destinations");
-        setHotelDestinations(destinations);
-      })
-      .catch((error) => {
-        console.error("Unable to load hotel destinations", error);
-        if (active) {
-          setHotelDestinations([]);
-        }
-      })
-      .finally(() => {
-        if (active) {
-          setHotelMetaLoading(false);
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [activeTab, hotelCountryCode]);
+  }, [activeTab, hotelLocation]);
 
   const handleSearchHotels = async () => {
-    const code = hotelDestinationCode.trim().toUpperCase();
-    if (!code || !hotelCheckIn || !hotelCheckOut) {
-      alert("Please enter destination code and travel dates");
+    if (!selectedHotelSuggestion || !hotelCheckIn || !hotelCheckOut) {
+      alert("Please select a destination and travel dates");
       return;
     }
 
     setHotelSearchLoading(true);
     try {
       const payload = {
-        destinationCode: code,
-        checkIn: hotelCheckIn,
-        checkOut: hotelCheckOut,
-        roomCount: hotelRooms,
-        adults: hotelAdults,
-        children: hotelChildren,
-        maxHotels: 50,
+        searchQuery: {
+          checkinDate: hotelCheckIn,
+          checkoutDate: hotelCheckOut,
+          roomInfo: Array.from({ length: hotelRooms }, () => ({
+            numberOfAdults: hotelAdults,
+            numberOfChild: hotelChildren,
+          })),
+          searchCriteria: {
+            city: selectedHotelSuggestion.city,
+            tjids: selectedHotelSuggestion.tjids,
+            nationality: "106",
+            countryOfResidence: "106",
+            currency: "INR",
+            searchRegionName: selectedHotelSuggestion.searchRegionName,
+            searchRegionType: selectedHotelSuggestion.searchRegionType,
+          },
+          searchType: selectedHotelSuggestion.searchType,
+          gstApplied: false,
+        },
+        allOptions: true,
+        appliedFilters: {
+          ratings: [],
+          propertyType: [],
+          mealType: [],
+          priceRange: [],
+          cancellationPolicy: [],
+          ramadanMeal: [],
+          suppliers: [],
+          amenities: [],
+          brand: [],
+          distance: [],
+          popularPlaces: [],
+          roomViews: [],
+          gstApplicable: [],
+          onlyFavorites: false,
+        },
+        pagination: {
+          pageSize: 15,
+          lastHotelId: "",
+        },
+        searchId: "",
+        correlationId: createCorrelationId(),
+        filterType: "BOTH",
+        sortOrder: "popularity",
       };
 
       const response = await searchHotels(payload);
-      const hotels = readArray(response, "hotels");
-      const mappedHotels = await Promise.all(
-        hotels.map(async (hotel) => {
-          const code = hotel?.hotelCode || hotel?.code || hotel?.id;
-          let imagePayload = null;
-          if (code) {
-            try {
-              imagePayload = await getHotelImages(code);
-            } catch (error) {
-              imagePayload = null;
-            }
-          }
-          return mapHotelSearchResult(hotel, imagePayload);
-        }),
-      );
 
-      navigate("/hotelbeds/hotels", {
+      navigate("/hotels", {
         state: {
-          hotels: mappedHotels,
-          hotelSearchParams: payload,
+          hotelSearchPayload: payload,
           hotelSearchResponse: response,
+          selectedHotelSuggestion,
         },
       });
     } catch (error) {
@@ -1362,6 +1692,13 @@ export default function FlightHero() {
     } finally {
       setHotelSearchLoading(false);
     }
+  };
+
+  const selectHotelSuggestion = (suggestion) => {
+    setSelectedHotelSuggestion(suggestion);
+    setHotelLocation(suggestion.displayName);
+    setHotelSuggestions([]);
+    setShowHotelSuggestions(false);
   };
 
   // Handle airport selection
@@ -1394,6 +1731,12 @@ export default function FlightHero() {
         !travelersRef.current.contains(event.target)
       ) {
         setShowTravelersDropdown(false);
+      }
+      if (
+        hotelInputRef.current &&
+        !hotelInputRef.current.contains(event.target)
+      ) {
+        setShowHotelSuggestions(false);
       }
     };
 
@@ -1455,7 +1798,7 @@ export default function FlightHero() {
                 <span className="navbar-recommended-label">Recommended</span>
                 <div
                   className="navbar-recommended-pill"
-                  onClick={() => navigate("/honeymoon/hotels")}
+                  onClick={() => navigate("/hotels")}
                 >
                   <span>🏨</span>
                   <span>Recommended hotel</span>
@@ -1484,7 +1827,7 @@ export default function FlightHero() {
               <p className="hero-subtitle">
                 {activeTab === "Flights"
                   ? "Discover your next dream destination"
-                  : "Search stays by country and destination"}
+                  : "Search stays with live destination suggestions"}
               </p>
 
               {/* Stats */}
@@ -1784,24 +2127,83 @@ export default function FlightHero() {
                   </>
                 ) : (
                   <div className="search-fields">
-                    <div className="field-box">
-                      <div className="field-label">Country</div>
-                      <select
-                        className="field-input"
-                        value={hotelCountryCode}
-                        onChange={(e) => setHotelCountryCode(e.target.value)}
-                        disabled={hotelMetaLoading}
-                      >
-                        <option value="">Select country</option>
-                        {hotelCountries.map((country) => (
-                          <option key={country.code} value={country.code}>
-                            {country?.description?.content || country?.name || country.code}
-                          </option>
-                        ))}
-                      </select>
+                    <div className="field-box" ref={hotelInputRef}>
+                      <div className="field-label">Destination</div>
+                      <div className="field-wrapper hotel-suggestion-box">
+                        <input
+                          className="field-input"
+                          type="text"
+                          placeholder="Type city, neighborhood or place"
+                          autoComplete="off"
+                          value={hotelLocation}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setHotelLocation(value);
+                            setSelectedHotelSuggestion(null);
+                            setShowHotelSuggestions(value.trim().length >= 2);
+                          }}
+                          onFocus={() =>
+                            hotelLocation.trim().length >= 2 &&
+                            setShowHotelSuggestions(true)
+                          }
+                        />
+                        {hotelLocation ? (
+                          <button
+                            type="button"
+                            className="hotel-clear-btn"
+                            onClick={() => {
+                              setHotelLocation("");
+                              setSelectedHotelSuggestion(null);
+                              setHotelSuggestions([]);
+                              setShowHotelSuggestions(false);
+                            }}
+                            aria-label="Clear destination"
+                          >
+                            <X size={16} />
+                          </button>
+                        ) : null}
+                        <div className="field-sub">
+                          {selectedHotelSuggestion
+                            ? `${selectedHotelSuggestion.searchRegionType} · ${selectedHotelSuggestion.city}`
+                            : "Choose a TripJack suggestion before searching"}
+                        </div>
+                        {showHotelSuggestions && (
+                          <div className="airport-suggestions hotel-suggestions">
+                            {hotelSuggestLoading && hotelSuggestions.length === 0 ? (
+                              <div className="suggestion-item hotel-suggestion-item">
+                                <div className="suggestion-name hotel-suggestion-name">Loading destinations...</div>
+                              </div>
+                            ) : hotelSuggestions.length > 0 ? (
+                              hotelSuggestions.map((suggestion, index) => (
+                                <div
+                                  key={`${suggestion.id}-${index}`}
+                                  className="suggestion-item hotel-suggestion-item"
+                                  onClick={() => selectHotelSuggestion(suggestion)}
+                                >
+                                  <div className="suggestion-main hotel-suggestion-main">
+                                    <MapPin className="hotel-suggestion-icon" size={16} />
+                                    <span className="suggestion-name hotel-suggestion-name">
+                                      {suggestion.displayName}
+                                    </span>
+                                  </div>
+                                  <div className="hotel-suggestion-sub">
+                                    {[suggestion.stateName, suggestion.countryName]
+                                      .filter(Boolean)
+                                      .join(", ") || "India"}
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="suggestion-item hotel-suggestion-item">
+                                <div className="suggestion-name hotel-suggestion-name">No destinations found</div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="field-box">
+                    <div className="field-box d-none">
                       <div className="field-label">Destination code</div>
                       <input
                         className="field-input"
@@ -1814,7 +2216,7 @@ export default function FlightHero() {
                       <div className="field-sub">IATA-style code sent to the API</div>
                     </div>
 
-                    {hotelCountryCode && hotelDestinations.length > 0 && (
+                    {false && hotelCountryCode && hotelDestinations.length > 0 && (
                       <div className="field-box">
                         <div className="field-label">Or pick destination</div>
                         <select
@@ -1843,22 +2245,91 @@ export default function FlightHero() {
 
                     <div className="field-box">
                       <div className="field-label">Check-in</div>
-                      <input
-                        className="field-input"
-                        type="date"
-                        value={hotelCheckIn}
-                        onChange={(e) => setHotelCheckIn(e.target.value)}
+                      <DatePicker
+                        selected={hotelCheckInDate}
+                        onChange={(date) => {
+                          const nextValue = formatIsoDate(date);
+                          setHotelCheckIn(nextValue);
+                          if (
+                            hotelCheckOutDate &&
+                            date &&
+                            hotelCheckOutDate.getTime() <= date.getTime()
+                          ) {
+                            setHotelCheckOut("");
+                          }
+                        }}
+                        minDate={new Date()}
+                        selectsStart
+                        startDate={hotelCheckInDate}
+                        endDate={hotelCheckOutDate}
+                        calendarClassName="hotel-calendar"
+                        dayClassName={(date) => {
+                          const classes = [];
+                          if (hotelCheckInDate && isSameDay(date, hotelCheckInDate)) {
+                            classes.push("hotel-range-day", "hotel-range-start");
+                          }
+                          if (hotelCheckOutDate && isSameDay(date, hotelCheckOutDate)) {
+                            classes.push("hotel-range-day", "hotel-range-end");
+                          }
+                          if (
+                            hotelCheckInDate &&
+                            hotelCheckOutDate &&
+                            isSameDay(hotelCheckInDate, hotelCheckOutDate)
+                          ) {
+                            if (isSameDay(date, hotelCheckInDate)) {
+                              classes.push("hotel-range-single");
+                            }
+                          } else if (isDayBetween(date, hotelCheckInDate, hotelCheckOutDate)) {
+                            classes.push("hotel-range-day");
+                          }
+                          return classes.join(" ");
+                        }}
+                        customInput={
+                          <HotelDateInput
+                            label="Select check-in"
+                            selected={hotelCheckInDate}
+                          />
+                        }
                       />
                     </div>
 
                     <div className="field-box">
                       <div className="field-label">Check-out</div>
-                      <input
-                        className="field-input"
-                        type="date"
-                        min={hotelCheckIn || undefined}
-                        value={hotelCheckOut}
-                        onChange={(e) => setHotelCheckOut(e.target.value)}
+                      <DatePicker
+                        selected={hotelCheckOutDate}
+                        onChange={(date) => setHotelCheckOut(formatIsoDate(date))}
+                        minDate={hotelCheckInDate || new Date()}
+                        selectsEnd
+                        startDate={hotelCheckInDate}
+                        endDate={hotelCheckOutDate}
+                        calendarClassName="hotel-calendar"
+                        dayClassName={(date) => {
+                          const classes = [];
+                          if (hotelCheckInDate && isSameDay(date, hotelCheckInDate)) {
+                            classes.push("hotel-range-day", "hotel-range-start");
+                          }
+                          if (hotelCheckOutDate && isSameDay(date, hotelCheckOutDate)) {
+                            classes.push("hotel-range-day", "hotel-range-end");
+                          }
+                          if (
+                            hotelCheckInDate &&
+                            hotelCheckOutDate &&
+                            isSameDay(hotelCheckInDate, hotelCheckOutDate)
+                          ) {
+                            if (isSameDay(date, hotelCheckInDate)) {
+                              classes.push("hotel-range-single");
+                            }
+                          } else if (isDayBetween(date, hotelCheckInDate, hotelCheckOutDate)) {
+                            classes.push("hotel-range-day");
+                          }
+                          return classes.join(" ");
+                        }}
+                        customInput={
+                          <HotelDateInput
+                            label="Select check-out"
+                            selected={hotelCheckOutDate}
+                          />
+                        }
                       />
                     </div>
 

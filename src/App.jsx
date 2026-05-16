@@ -342,6 +342,14 @@ function App() {
                 element={<HoneymoonHotelsPage />}
               />
               <Route
+                path="/hotels"
+                element={<HotelbedsHotelsPage />}
+              />
+              <Route
+                path="/hotels/:hotelId"
+                element={<HotelbedsHotelsPage />}
+              />
+              <Route
                 path="/hotelbeds/hotels"
                 element={<HotelbedsHotelsPage />}
               />
