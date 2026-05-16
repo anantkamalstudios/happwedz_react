@@ -16,7 +16,7 @@ const normalizeUiStatus = (value) => {
   return "hide";
 };
 
-const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
+const VendorBasicInfo = ({ formData, setFormData, onSave, onSaveSuccess }) => {
   const vendorAuth = useSelector((state) => state.vendorAuth);
   const { vendor } = vendorAuth || {};
 
@@ -231,7 +231,10 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
             </select>
           </div>
         </div>
-        <button type="button" className="btn btn-primary mt-2" onClick={onSave}>
+        <button type="button" className="btn btn-primary mt-2" onClick={async () => {
+          if (onSave) await onSave();
+          if (onSaveSuccess) await onSaveSuccess();
+        }}>
           Save Basic Info
         </button>
       </div>

@@ -117,6 +117,10 @@ const Storefront = ({ setCompletion }) => {
           vendor.id,
           token
         );
+        
+        const actualData = serviceData 
+          ? (Array.isArray(serviceData) ? serviceData[0] : serviceData) 
+          : null;
 
         // Fetch vendor type name from API (like VendorBasicInfo)
         if (vendor.vendor_type_id) {
@@ -124,8 +128,16 @@ const Storefront = ({ setCompletion }) => {
             const response = await axiosInstance.get(
               `/vendor-types/${vendor.vendor_type_id}`
             );
-            const vendorTypeData = response.data;
-            setVendorTypeName(vendorTypeData?.name || "");
+            const vendorTypeData = response.data || {};
+            const subcategoryId = actualData?.vendor_subcategory_id || vendor.vendor_subcategory_id;
+            const subcats = vendorTypeData.subcategories || [];
+            const subcat = subcats.find(s => s.id == subcategoryId);
+            
+            if (subcat && subcat.name) {
+              setVendorTypeName(subcat.name);
+            } else {
+              setVendorTypeName(vendorTypeData.name || "");
+            }
           } catch (err) {
             setVendorTypeName("");
           }
@@ -133,10 +145,6 @@ const Storefront = ({ setCompletion }) => {
 
         // If data exists, merge it into formData.
         if (serviceData) {
-          const actualData = Array.isArray(serviceData)
-            ? serviceData[0]
-            : serviceData;
-
           if (actualData) {
             let gallery = [];
             let videos = [];
@@ -422,6 +430,22 @@ const Storefront = ({ setCompletion }) => {
                   actualData.attributes.photographer_master || {},
                 makeup_artist_master:
                   actualData.attributes.makeup_artist_master || {},
+                wedding_planner_master:
+                  actualData.attributes.wedding_planner_master || {},
+                decorator_master:
+                  actualData.attributes.decorator_master || {},
+                trousseau_master:
+                  actualData.attributes.trousseau_master || {},
+                gift_master:
+                  actualData.attributes.gift_master || {},
+                favor_master:
+                  actualData.attributes.favor_master || {},
+                invitation_master:
+                  actualData.attributes.invitation_master || {},
+                wedding_suit_master:
+                  actualData.attributes.wedding_suit_master || {},
+                sherwani_master:
+                  actualData.attributes.sherwani_master || {},
 
                 attributes: {
                   ...prev.attributes,
@@ -484,21 +508,29 @@ const Storefront = ({ setCompletion }) => {
 
   const handleSave = async () => {
     localStorage.setItem("vendorFormData", JSON.stringify(formData));
-    if (formData.id) {
-      try {
-        const fd = buildFormData();
-        await vendorServicesApi.createOrUpdateService(fd, token, formData.id);
-      } catch (e) {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: `Failed to update. ${typeof e === "string" ? e : e?.message || "Unknown error"
-            }`,
-          timer: "3000",
-          confirmButtonText: "OK",
-          confirmButtonColor: "#C31162",
-        });
+    try {
+      const fd = buildFormData();
+      const response = await vendorServicesApi.createOrUpdateService(
+        fd,
+        token,
+        formData.id || null
+      );
+      // If we just created a new service, save the ID so subsequent saves use PUT
+      if (!formData.id && response?.data?.id) {
+        setFormData((prev) => ({ ...prev, id: response.data.id }));
       }
+    } catch (e) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: `Failed to update. ${
+          typeof e === "string" ? e : e?.message || "Unknown error"
+        }`,
+        timer: "3000",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#C31162",
+      });
+      return; // Do not show success modal on failure
     }
     setShowModal(true);
   };
@@ -686,6 +718,38 @@ const Storefront = ({ setCompletion }) => {
       makeup_artist_master:
         formData.makeup_artist_master ||
         formData.attributes?.makeup_artist_master ||
+        undefined,
+      wedding_planner_master:
+        formData.wedding_planner_master ||
+        formData.attributes?.wedding_planner_master ||
+        undefined,
+      decorator_master:
+        formData.decorator_master ||
+        formData.attributes?.decorator_master ||
+        undefined,
+      trousseau_master:
+        formData.trousseau_master ||
+        formData.attributes?.trousseau_master ||
+        undefined,
+      gift_master:
+        formData.gift_master ||
+        formData.attributes?.gift_master ||
+        undefined,
+      favor_master:
+        formData.favor_master ||
+        formData.attributes?.favor_master ||
+        undefined,
+      invitation_master:
+        formData.invitation_master ||
+        formData.attributes?.invitation_master ||
+        undefined,
+      wedding_suit_master:
+        formData.wedding_suit_master ||
+        formData.attributes?.wedding_suit_master ||
+        undefined,
+      sherwani_master:
+        formData.sherwani_master ||
+        formData.attributes?.sherwani_master ||
         undefined,
     };
 
@@ -1267,6 +1331,7 @@ const Storefront = ({ setCompletion }) => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onSaveSuccess={fetchServiceData}
             onShowSuccess={showSuccessModal}
           />
         );

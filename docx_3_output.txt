@@ -1,0 +1,819 @@
+# 💌 Invitations (Category #17) — WeddingkaAI Vendor Schema
+
+
+
+---
+
+
+
+## 1. Basic Identity Layer
+
+
+
+**Vendor Type**
+
+
+
+* Invitation Designer (Digital)
+
+* Invitation Printer (Physical)
+
+* Full-Service Invitation Studio
+
+* Luxury Invitation Brand
+
+* DIY Template Provider
+
+
+
+**Brand Name** *(Text – unavoidable)*
+
+
+
+**Years of Experience**
+
+
+
+* 0–1
+
+* 1–3
+
+* 3–5
+
+* 5–10
+
+* 10+
+
+
+
+**Primary City**
+
+
+
+* Dropdown (All Cities)
+
+
+
+**Service Cities**
+
+
+
+* Multi-select -Cities
+
+* Pan-India
+
+* International
+
+
+
+**Service Mode**
+
+
+
+* Digital Only
+
+* Physical Only
+
+* Hybrid
+
+
+
+**Delivery Model**
+
+
+
+* Courier
+
+* Pickup
+
+* Pan-India Shipping
+
+* International Shipping
+
+
+
+---
+
+
+
+## 2. Services Offered
+
+
+
+**Invitation Types (Multi-select)**
+
+
+
+* Save the Date
+
+* Wedding Invite Card
+
+* E-Invite
+
+* Video Invite
+
+* WhatsApp Invite
+
+* Website Invite
+
+* Box Invitations
+
+
+
+**Event Coverage (Multi-select)**
+
+
+
+* Engagement
+
+* Mehendi
+
+* Haldi
+
+* Sangeet
+
+* Wedding
+
+* Reception
+
+* Multi-day Wedding Suite
+
+
+
+**Design Formats**
+
+
+
+* Static Design
+
+* Animated Invite
+
+* Video Invite
+
+* Interactive Website
+
+
+
+**Language Options (Multi-select)**
+
+
+
+* English
+
+* Hindi
+
+* Marathi
+
+* Gujarati
+
+* Punjabi
+
+* Tamil
+
+* Telugu
+
+* Bengali
+
+* Multi-language
+
+
+
+---
+
+
+
+## 3. Core Intelligence Layer (Invitation-Specific)
+
+
+
+**Design Style (Multi-select)**
+
+
+
+* Royal / Regal
+
+* Minimal / Elegant
+
+* Floral / Pastel
+
+* Modern / Contemporary
+
+* Traditional / Cultural
+
+* Illustrated / Caricature
+
+
+
+**Customization Level**
+
+
+
+* Fully Custom
+
+* Semi-Custom
+
+* Template-Based
+
+
+
+**Theme Matching Capability**
+
+
+
+* Yes (Full wedding theme sync)
+
+* Partial
+
+* No
+
+
+
+**Personalization Options (Multi-select)**
+
+
+
+* Names
+
+* Monogram
+
+* Couple Story
+
+* Photos
+
+* Venue Illustration
+
+* Custom Artwork
+
+
+
+**Print Material Options (Multi-select)**
+
+
+
+* Paper (Matte / Gloss)
+
+* Handmade Paper
+
+* Acrylic
+
+* Fabric (Silk)
+
+* Wood
+
+* Metal
+
+
+
+**Special Features (Multi-select)**
+
+
+
+* Laser Cut
+
+* Foil Printing
+
+* Embossing / Debossing
+
+* UV Print
+
+* Scented Invites
+
+* LED / Music Box Invites
+
+
+
+---
+
+
+
+## 4. Digital Intelligence Layer
+
+
+
+**E-Invite Formats**
+
+
+
+* PDF
+
+* GIF
+
+* MP4 Video
+
+* Interactive Link
+
+
+
+**Website Invite Features (Multi-select)**
+
+
+
+* RSVP Management
+
+* Event Schedule
+
+* Google Maps Integration
+
+* Photo Gallery
+
+* Countdown Timer
+
+* Guest Messaging
+
+
+
+**RSVP Tracking**
+
+
+
+* Yes
+
+* No
+
+
+
+**WhatsApp Integration**
+
+
+
+* Yes
+
+* No
+
+
+
+**QR Code Integration**
+
+
+
+* Yes
+
+* No
+
+
+
+---
+
+
+
+## 5. Production &amp; Logistics
+
+
+
+**Minimum Order Quantity (Physical)**
+
+
+
+* 1–50
+
+* 50–100
+
+* 100–300
+
+* 300+
+
+
+
+**Maximum Order Capacity**
+
+
+
+* 100
+
+* 100–500
+
+* 500–1000
+
+* 1000+
+
+
+
+**Turnaround Time**
+
+
+
+* 2–5 days (Digital)
+
+* 5–10 days
+
+* 10–20 days
+
+* 20+ days
+
+
+
+**Sample Availability**
+
+
+
+* Yes
+
+* No
+
+
+
+**Proofing Process**
+
+
+
+* Digital Proof
+
+* Physical Sample
+
+* Both
+
+
+
+**Packaging Options**
+
+
+
+* Basic Packaging
+
+* Premium Boxes
+
+* Customized Boxes
+
+
+
+---
+
+
+
+## 6. Pricing Logic
+
+
+
+**Pricing Model**
+
+
+
+* Per Card
+
+* Per Design
+
+* Per Video
+
+* Package
+
+
+
+**Starting Price Range**
+
+
+
+* ₹20–₹50/card
+
+* ₹50–₹150/card
+
+* ₹150–₹500/card
+
+* ₹500–₹2000/card
+
+* ₹2000+ (Luxury)
+
+
+
+**Digital Invite Pricing**
+
+
+
+* ₹500–₹2k
+
+* ₹2k–₹5k
+
+* ₹5k–₹15k
+
+* ₹15k+
+
+
+
+**Includes (Multi-select)**
+
+
+
+* Design
+
+* Printing
+
+* Packaging
+
+* Delivery
+
+* Revisions
+
+
+
+**Add-ons (Multi-select)**
+
+
+
+* Extra Revisions
+
+* Express Delivery
+
+* Premium Materials
+
+* Custom Artwork
+
+
+
+**Negotiation Flexibility**
+
+
+
+* Fixed
+
+* Moderate
+
+* Flexible
+
+
+
+---
+
+
+
+## 7. Scale &amp; Operations
+
+
+
+**Orders Per Month Capacity**
+
+
+
+* &lt;50
+
+* 50–200
+
+* 200–500
+
+* 500+
+
+
+
+**Team Size**
+
+
+
+* Solo
+
+* 2–5
+
+* 5–10
+
+* 10+
+
+
+
+**Parallel Order Handling**
+
+
+
+* Yes
+
+* No
+
+
+
+---
+
+
+
+## 8. Workflow &amp; Booking
+
+
+
+**Advance Booking Time**
+
+
+
+* &lt;1 week
+
+* 1–2 weeks
+
+* 2–4 weeks
+
+* 1–2 months
+
+
+
+**Booking Advance %**
+
+
+
+* 25%
+
+* 50%
+
+* 75%
+
+* 100%
+
+
+
+**Cancellation Policy**
+
+
+
+* Non-refundable
+
+* Partial refund
+
+* Flexible
+
+
+
+**Client Coordination**
+
+
+
+* WhatsApp
+
+* Call
+
+* Email
+
+* App-based
+
+
+
+---
+
+
+
+## 9. Portfolio Tagging (AI Layer)
+
+
+
+**Design Tags**
+
+
+
+* Luxury Invitations
+
+* Budget Friendly
+
+* Minimal
+
+* Royal
+
+* Modern
+
+
+
+**Format Tags**
+
+
+
+* Digital First
+
+* Printed Cards
+
+* Box Invites
+
+* Video Invites
+
+
+
+**Event Tags**
+
+
+
+* Big Fat Wedding
+
+* Intimate Wedding
+
+* Destination Wedding
+
+
+
+---
+
+
+
+# 10. AI FAQ Layer (Structured)
+
+
+
+**Q1. Can vendor create digital invites?**
+
+
+
+* Yes / No
+
+
+
+**Q2. Does vendor print physical cards?**
+
+
+
+* Yes / No
+
+
+
+**Q3. Are invitations customizable?**
+
+
+
+* Yes / No
+
+
+
+**Q4. Can invites match wedding theme?**
+
+
+
+* Yes / No
+
+
+
+**Q5. Is RSVP tracking available?**
+
+
+
+* Yes / No
+
+
+
+**Q6. Can vendor deliver across India?**
+
+
+
+* Yes / No
+
+
+
+**Q7. Are luxury materials available?**
+
+
+
+* Yes / No
+
+
+
+**Q8. Can invites include couple story or photos?**
+
+
+
+* Yes / No
+
+
+
+**Q9. Is WhatsApp invite supported?**
+
+
+
+* Yes / No
+
+
+
+**Q10. Can vendor create website invites?**
+
+
+
+* Yes / No
+
+
+
+**Q11. Are samples available before order?**
+
+
+
+* Yes / No
+
+
+
+**Q12. Can vendor handle bulk orders (300+)?**
+
+
+
+* Yes / No
+
+
+
+**Q13. Is express delivery available?**
+
+
+
+* Yes / No
+
+
+
+**Q14. Are revisions included in pricing?**
+
+
+
+* Yes / No
+
+
+
+**Q15. Can invites be multilingual?**
+
+
+
+* Yes / No
+
+
+
+---

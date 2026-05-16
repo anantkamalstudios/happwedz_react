@@ -1,0 +1,777 @@
+# 🎁 Trousseau Packers (Category #16) — WeddingkaAI Vendor Schema
+
+
+
+---
+
+
+
+## 1. Basic Identity Layer
+
+
+
+**Vendor Type**
+
+
+
+* Individual Artist
+
+* Packaging Studio
+
+* Luxury Packaging Brand
+
+* Bulk Supplier + Customization
+
+
+
+**Brand Name** *(Text – unavoidable)*
+
+
+
+**Years of Experience**
+
+
+
+* 0–1
+
+* 1–3
+
+* 3–5
+
+* 5–10
+
+* 10+
+
+
+
+**Primary City**
+
+
+
+* Dropdown (All Cities)
+
+
+
+**Service Cities**
+
+
+
+* Multi-select
+
+* Pan-India (Courier)
+
+* International Shipping
+
+
+
+**Service Mode**
+
+
+
+* On-site Packing
+
+* Studio-based Packing
+
+* Pickup &amp; Delivery
+
+* Courier Only
+
+
+
+**Travel Policy**
+
+
+
+* Included (local)
+
+* Fixed Cost
+
+* Per Km
+
+* Not Applicable
+
+
+
+---
+
+
+
+## 2. Services Offered
+
+
+
+**Packaging Types (Multi-select)**
+
+
+
+* Bridal Trousseau Packing
+
+* Groom Trousseau Packing
+
+* Saree Packing
+
+* Lehenga Packing
+
+* Jewelry Packing
+
+* Gift Packing
+
+* Dry Fruit Packing
+
+* Return Gifts Packing
+
+
+
+**Product Formats (Multi-select)**
+
+
+
+* Boxes
+
+* Trunks
+
+* Suitcases
+
+* Baskets
+
+* Potlis
+
+* Hampers
+
+* Trays
+
+* Envelopes
+
+
+
+**Occasion Coverage**
+
+
+
+* Wedding
+
+* Engagement
+
+* Mehendi
+
+* Haldi
+
+* Baby Shower
+
+* Festive Gifting
+
+
+
+---
+
+
+
+## 3. Core Intelligence Layer (Packaging-Specific)
+
+
+
+**Design Style (Multi-select)**
+
+
+
+* Royal Traditional
+
+* Minimal Elegant
+
+* Floral Theme
+
+* Modern Luxury
+
+* Customized Theme
+
+* Cultural Regional
+
+
+
+**Customization Level**
+
+
+
+* Fully Custom
+
+* Semi-Custom
+
+* Pre-designed Catalog
+
+
+
+**Material Types (Multi-select)**
+
+
+
+* Fabric (Silk, Velvet)
+
+* MDF / Wood
+
+* Acrylic
+
+* Metal
+
+* Paper / Cardboard
+
+* Jute / Eco-friendly
+
+
+
+**Color Palette Options**
+
+
+
+* Pastels
+
+* Bright Traditional
+
+* Metallic (Gold/Silver)
+
+* Neutral Tones
+
+* Custom
+
+
+
+**Personalization Options (Multi-select)**
+
+
+
+* Name Printing
+
+* Initials / Monogram
+
+* Photos
+
+* Quotes / Messages
+
+* Theme Matching
+
+
+
+**Embellishments (Multi-select)**
+
+
+
+* Gota Patti
+
+* Zari Work
+
+* Mirror Work
+
+* Floral Decor
+
+* Lace
+
+* Tassels
+
+* Beads
+
+
+
+---
+
+
+
+## 4. Product &amp; Capacity Layer
+
+
+
+**Minimum Order Quantity**
+
+
+
+* 1–10
+
+* 10–50
+
+* 50–100
+
+* 100+
+
+
+
+**Maximum Order Handling**
+
+
+
+* Up to 50
+
+* 50–200
+
+* 200–500
+
+* 500+
+
+
+
+**Bulk Order Capability**
+
+
+
+* Yes
+
+* No
+
+
+
+**Ready Stock Availability**
+
+
+
+* Yes
+
+* No
+
+
+
+**Customization Turnaround Time**
+
+
+
+* 1–3 days
+
+* 3–7 days
+
+* 7–14 days
+
+* 14+ days
+
+
+
+---
+
+
+
+## 5. Logistics &amp; Execution
+
+
+
+**Delivery Options**
+
+
+
+* Pickup
+
+* Home Delivery
+
+* Courier
+
+
+
+**Packaging Assembly**
+
+
+
+* Vendor Studio
+
+* On-site (Client Location)
+
+* Hybrid
+
+
+
+**Fragile Handling**
+
+
+
+* Yes
+
+* No
+
+
+
+**Storage Support**
+
+
+
+* Yes
+
+* No
+
+
+
+**Urgent Order Handling**
+
+
+
+* Yes
+
+* No
+
+
+
+---
+
+
+
+## 6. Pricing Logic
+
+
+
+**Pricing Model**
+
+
+
+* Per Piece
+
+* Per Set
+
+* Bulk Pricing
+
+* Package
+
+
+
+**Starting Price Range (Per Unit)**
+
+
+
+* ₹200–₹500
+
+* ₹500–₹1000
+
+* ₹1000–₹3000
+
+* ₹3000–₹7000
+
+* ₹7000+
+
+
+
+**Includes (Multi-select)**
+
+
+
+* Base Packaging
+
+* Decoration
+
+* Personalization
+
+* Packing Service
+
+
+
+**Add-ons (Multi-select)**
+
+
+
+* Premium Materials
+
+* Custom Design
+
+* Urgent Delivery
+
+* Logistics
+
+
+
+**Negotiation Flexibility**
+
+
+
+* Fixed
+
+* Moderate
+
+* Flexible
+
+
+
+---
+
+
+
+## 7. Scale &amp; Operations
+
+
+
+**Orders Per Day Capacity**
+
+
+
+* 1–10
+
+* 10–50
+
+* 50–100
+
+* 100+
+
+
+
+**Team Size**
+
+
+
+* Solo
+
+* 2–5
+
+* 5–10
+
+* 10+
+
+
+
+**Parallel Order Handling**
+
+
+
+* Yes
+
+* No
+
+
+
+---
+
+
+
+## 8. Workflow &amp; Booking
+
+
+
+**Advance Booking Time**
+
+
+
+* &lt;1 week
+
+* 1–2 weeks
+
+* 2–4 weeks
+
+* 1–2 months
+
+
+
+**Booking Advance %**
+
+
+
+* 25%
+
+* 50%
+
+* 75%
+
+* 100%
+
+
+
+**Cancellation Policy**
+
+
+
+* Non-refundable
+
+* Partial refund
+
+* Flexible
+
+
+
+**Client Coordination**
+
+
+
+* WhatsApp
+
+* Call
+
+* In-person
+
+* App-based
+
+
+
+**Sample Availability**
+
+
+
+* Yes
+
+* No
+
+
+
+---
+
+
+
+## 9. Portfolio Tagging (AI Layer)
+
+
+
+**Packaging Tags**
+
+
+
+* Luxury Packaging
+
+* Budget Friendly
+
+* Eco-friendly
+
+* Traditional
+
+* Modern
+
+
+
+**Occasion Tags**
+
+
+
+* Bridal Trousseau
+
+* Groom Packaging
+
+* Return Gifts
+
+* Festive Hampers
+
+
+
+**Style Tags**
+
+
+
+* Floral
+
+* Royal
+
+* Minimal
+
+* Personalized
+
+
+
+---
+
+
+
+# 10. AI FAQ Layer (Structured)
+
+
+
+**Q1. Can vendor handle bulk orders (100+)?**
+
+
+
+* Yes / No
+
+
+
+**Q2. Is customization available?**
+
+
+
+* Yes / No
+
+
+
+**Q3. Can packaging be personalized with names/photos?**
+
+
+
+* Yes / No
+
+
+
+**Q4. Does vendor provide eco-friendly packaging?**
+
+
+
+* Yes / No
+
+
+
+**Q5. Is urgent delivery possible?**
+
+
+
+* Yes / No
+
+
+
+**Q6. Can vendor deliver across cities?**
+
+
+
+* Yes / No
+
+
+
+**Q7. Is on-site packing available?**
+
+
+
+* Yes / No
+
+
+
+**Q8. Are materials premium quality?**
+
+
+
+* Yes / No
+
+
+
+**Q9. Can vendor match wedding theme?**
+
+
+
+* Yes / No
+
+
+
+**Q10. Are samples available before booking?**
+
+
+
+* Yes / No
+
+
+
+**Q11. Does vendor handle fragile items?**
+
+
+
+* Yes / No
+
+
+
+**Q12. Is minimum order required?**
+
+
+
+* Yes / No
+
+
+
+**Q13. Can vendor manage last-minute orders?**
+
+
+
+* Yes / No
+
+
+
+**Q14. Are delivery charges included?**
+
+
+
+* Yes / No
+
+
+
+**Q15. Is packaging reusable?**
+
+
+
+* Yes / No

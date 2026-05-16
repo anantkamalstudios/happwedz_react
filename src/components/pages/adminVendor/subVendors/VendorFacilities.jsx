@@ -5,6 +5,14 @@ import VenueMasterProfile from "./VenueMasterProfile";
 import CatererMasterProfile from "./CatererMasterProfile";
 import PhotographerMasterProfile from "./PhotographerMasterProfile";
 import MakeupArtistMasterProfile from "./MakeupArtistMasterProfile";
+import WeddingPlannerMasterProfile from "./WeddingPlannerMasterProfile";
+import DecoratorMasterProfile from "./DecoratorMasterProfile";
+import TrousseauPackerMasterProfile from "./TrousseauPackerMasterProfile";
+import GiftMasterProfile from "./GiftMasterProfile";
+import FavorMasterProfile from "./FavorMasterProfile";
+import InvitationMasterProfile from "./InvitationMasterProfile";
+import WeddingSuitMasterProfile from "./WeddingSuitMasterProfile";
+import SherwaniMasterProfile from "./SherwaniMasterProfile";
 
 const VendorFacilities = ({
   formData,
@@ -24,14 +32,23 @@ const VendorFacilities = ({
           const response = await axios.get(
             `https://happywedz.com/api/vendor-types/${vendor.vendor_type_id}`,
           );
-          setFetchedVendorTypeName(response.data?.name || "");
+          const typeData = response.data || {};
+          const subcategoryId = formData.vendor_subcategory_id || vendor?.vendor_subcategory_id;
+          const subcats = typeData.subcategories || [];
+          const subcat = subcats.find(s => s.id == subcategoryId);
+          
+          if (subcat && subcat.name) {
+            setFetchedVendorTypeName(subcat.name);
+          } else {
+            setFetchedVendorTypeName(typeData.name || "");
+          }
         } catch (err) {
           console.error("Error fetching vendor type:", err);
         }
       }
     };
     fetchVendorType();
-  }, [vendor?.vendor_type_id]);
+  }, [vendor?.vendor_type_id, formData.vendor_subcategory_id, vendor?.vendor_subcategory_id]);
 
   const finalVendorTypeName = propVendorTypeName || fetchedVendorTypeName;
   const normalizedType = (finalVendorTypeName || "").toLowerCase();
@@ -53,8 +70,27 @@ const VendorFacilities = ({
     (normalizedType.includes("bridal") && normalizedType.includes("artist")) ||
     normalizedType.includes("mua");
 
+  const isWeddingPlanner =
+    normalizedType.includes("planner") ||
+    normalizedType.includes("event management") ||
+    normalizedType.includes("wedding planning") ||
+    normalizedType.includes("planning");
+
+  const isDecorator =
+    normalizedType.includes("decorator") ||
+    normalizedType.includes("decor") ||
+    normalizedType.includes("event styling");
+
+  const isTrousseauPacker = normalizedType.includes("trousseau packer") || normalizedType.includes("trousseau pack");
+  const isGift = normalizedType === "gifts" || normalizedType === "gift" || normalizedType.includes("gifting") || normalizedType === "invitation gifts";
+  const isFavor = normalizedType.includes("favor") || normalizedType.includes("favour");
+  const isInvitation = (normalizedType.includes("invitation") || normalizedType.includes("invite")) && !isGift;
+  
+  const isWeddingSuit = normalizedType.includes("wedding suit") || normalizedType.includes("suit");
+  const isSherwani = normalizedType.includes("sherwani");
+
   const hasMasterProfile =
-    isVenue || isCaterer || isPhotographer || isMakeupArtist;
+    isVenue || isCaterer || isPhotographer || isMakeupArtist || isWeddingPlanner || isDecorator || isTrousseauPacker || isGift || isFavor || isInvitation || isWeddingSuit || isSherwani;
 
   const handleSave = async () => {
     if (onSave) await onSave();
@@ -96,6 +132,78 @@ const VendorFacilities = ({
             )}
             {isMakeupArtist && (
               <MakeupArtistMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isWeddingPlanner && (
+              <WeddingPlannerMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isDecorator && (
+              <DecoratorMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isTrousseauPacker && (
+              <TrousseauPackerMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isGift && (
+              <GiftMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isFavor && (
+              <FavorMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isInvitation && (
+              <InvitationMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isWeddingSuit && (
+              <WeddingSuitMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isSherwani && (
+              <SherwaniMasterProfile
                 formData={formData}
                 setFormData={setFormData}
                 onSave={onSave}

@@ -1,0 +1,775 @@
+# 🎁 Gifts (Category #18) — WeddingkaAI Vendor Schema
+
+
+
+---
+
+
+
+## 1. Basic Identity Layer
+
+
+
+**Vendor Type**
+
+
+
+* Retail Brand
+
+* Custom Gift Studio
+
+* Bulk Supplier
+
+* Luxury Gift Curator
+
+* Marketplace Aggregator
+
+
+
+**Brand Name** *(Text – unavoidable)*
+
+
+
+**Years of Experience**
+
+
+
+* 0–1
+
+* 1–3
+
+* 3–5
+
+* 5–10
+
+* 10+
+
+
+
+**Primary City**
+
+
+
+* Dropdown (All Cities)
+
+
+
+**Service Cities**
+
+
+
+* Multi-select
+
+* Pan-India Shipping
+
+* International Shipping
+
+
+
+**Business Model**
+
+
+
+* Ready Stock
+
+* Made-to-Order
+
+* Hybrid
+
+
+
+---
+
+
+
+## 2. Product Catalog (Core Offering)
+
+
+
+**Gift Categories (Multi-select)**
+
+
+
+* Dry Fruits
+
+* Chocolates
+
+* Gourmet Hampers
+
+* Home Decor
+
+* Utility Gifts
+
+* Kitchenware
+
+* Apparel Gifts
+
+* Wellness Products
+
+* Religious Items
+
+* Luxury Items
+
+
+
+**Occasion Suitability (Multi-select)**
+
+
+
+* Wedding Return Gifts
+
+* Mehendi Gifts
+
+* Haldi Gifts
+
+* Engagement Gifts
+
+* Corporate Gifting
+
+* Festive Gifting
+
+
+
+**Target Audience**
+
+
+
+* Guests
+
+* Close Family
+
+* VIP Guests
+
+* Corporate Guests
+
+* Kids
+
+
+
+---
+
+
+
+## 3. Core Intelligence Layer (Gift-Specific)
+
+
+
+**Gift Type Classification**
+
+
+
+* Consumable
+
+* Non-Consumable
+
+* Experience-Based
+
+* Personalized
+
+
+
+**Customization Options (Multi-select)**
+
+
+
+* Name Personalization
+
+* Initials / Monogram
+
+* Photo Printing
+
+* Custom Message
+
+* Branding (for corporate)
+
+
+
+**Theme Compatibility**
+
+
+
+* Royal Wedding
+
+* Minimal Elegant
+
+* Traditional
+
+* Modern Luxury
+
+* Eco-friendly
+
+* Destination Wedding
+
+
+
+**Shelf Life (for consumables)**
+
+
+
+* &lt;7 days
+
+* 7–15 days
+
+* 15–30 days
+
+* 30–90 days
+
+* 90+ days
+
+
+
+**Packaging Included**
+
+
+
+* Yes
+
+* No
+
+
+
+**Eco-Friendly Options**
+
+
+
+* Yes
+
+* No
+
+
+
+**Premium / Luxury Tag**
+
+
+
+* Budget
+
+* Mid-range
+
+* Premium
+
+* Ultra Luxury
+
+
+
+---
+
+
+
+## 4. Product &amp; Capacity Layer
+
+
+
+**Minimum Order Quantity**
+
+
+
+* 1–50
+
+* 50–100
+
+* 100–300
+
+* 300–500
+
+* 500+
+
+
+
+**Maximum Order Capacity**
+
+
+
+* 100
+
+* 100–500
+
+* 500–1000
+
+* 1000+
+
+
+
+**Bulk Order Handling**
+
+
+
+* Yes
+
+* No
+
+
+
+**Ready Stock Availability**
+
+
+
+* Yes
+
+* No
+
+
+
+**Customization Turnaround Time**
+
+
+
+* 1–3 days
+
+* 3–7 days
+
+* 7–14 days
+
+* 14+ days
+
+
+
+---
+
+
+
+## 5. Logistics &amp; Fulfillment
+
+
+
+**Delivery Options**
+
+
+
+* Pickup
+
+* Home Delivery
+
+* Courier
+
+
+
+**Shipping Coverage**
+
+
+
+* Local
+
+* Pan-India
+
+* International
+
+
+
+**Fragile Handling**
+
+
+
+* Yes
+
+* No
+
+
+
+**Temperature-Control (if required)**
+
+
+
+* Yes
+
+* No
+
+
+
+**Storage Support**
+
+
+
+* Yes
+
+* No
+
+
+
+**Urgent Orders**
+
+
+
+* Yes
+
+* No
+
+
+
+---
+
+
+
+## 6. Pricing Logic
+
+
+
+**Pricing Model**
+
+
+
+* Per Unit
+
+* Per Hamper
+
+* Bulk Pricing
+
+* Package
+
+
+
+**Starting Price Range (Per Unit)**
+
+
+
+* ₹100–₹300
+
+* ₹300–₹700
+
+* ₹700–₹1500
+
+* ₹1500–₹5000
+
+* ₹5000+
+
+
+
+**Includes (Multi-select)**
+
+
+
+* Product
+
+* Packaging
+
+* Personalization
+
+* Delivery
+
+
+
+**Add-ons (Multi-select)**
+
+
+
+* Premium Packaging
+
+* Custom Branding
+
+* Express Delivery
+
+* Gift Wrapping
+
+
+
+**Negotiation Flexibility**
+
+
+
+* Fixed
+
+* Moderate
+
+* Flexible
+
+
+
+---
+
+
+
+## 7. Scale &amp; Operations
+
+
+
+**Orders Per Day Capacity**
+
+
+
+* 1–50
+
+* 50–200
+
+* 200–500
+
+* 500+
+
+
+
+**Team Size**
+
+
+
+* Solo
+
+* 2–5
+
+* 5–10
+
+* 10+
+
+
+
+**Parallel Orders**
+
+
+
+* Yes
+
+* No
+
+
+
+---
+
+
+
+## 8. Workflow &amp; Booking
+
+
+
+**Advance Booking Time**
+
+
+
+* &lt;1 week
+
+* 1–2 weeks
+
+* 2–4 weeks
+
+* 1–2 months
+
+
+
+**Booking Advance %**
+
+
+
+* 25%
+
+* 50%
+
+* 75%
+
+* 100%
+
+
+
+**Cancellation Policy**
+
+
+
+* Non-refundable
+
+* Partial refund
+
+* Flexible
+
+
+
+**Client Coordination**
+
+
+
+* WhatsApp
+
+* Call
+
+* Email
+
+* App-based
+
+
+
+**Sample Availability**
+
+
+
+* Yes
+
+* No
+
+
+
+---
+
+
+
+## 9. Portfolio Tagging (AI Layer)
+
+
+
+**Gift Tags**
+
+
+
+* Luxury Gifts
+
+* Budget Gifts
+
+* Eco-friendly Gifts
+
+* Personalized Gifts
+
+* Premium Hampers
+
+
+
+**Occasion Tags**
+
+
+
+* Wedding Return
+
+* Mehendi Favours
+
+* Corporate Gifts
+
+* Festive Hampers
+
+
+
+**Style Tags**
+
+
+
+* Traditional
+
+* Modern
+
+* Minimal
+
+* Royal
+
+
+
+---
+
+
+
+# 10. AI FAQ Layer (Structured)
+
+
+
+**Q1. Can vendor handle bulk orders (300+)?**
+
+
+
+* Yes / No
+
+
+
+**Q2. Are gifts customizable?**
+
+
+
+* Yes / No
+
+
+
+**Q3. Is packaging included in pricing?**
+
+
+
+* Yes / No
+
+
+
+**Q4. Are eco-friendly gift options available?**
+
+
+
+* Yes / No
+
+
+
+**Q5. Can vendor deliver across India?**
+
+
+
+* Yes / No
+
+
+
+**Q6. Are consumable gifts available?**
+
+
+
+* Yes / No
+
+
+
+**Q7. What is the shelf life of consumables?**
+
+
+
+* &lt;7 days / 7–30 days / 30+ days
+
+
+
+**Q8. Are luxury gift options available?**
+
+
+
+* Yes / No
+
+
+
+**Q9. Can vendor handle urgent orders?**
+
+
+
+* Yes / No
+
+
+
+**Q10. Are samples available before order?**
+
+
+
+* Yes / No
+
+
+
+**Q11. Can gifts be branded for corporate use?**
+
+
+
+* Yes / No
+
+
+
+**Q12. Is minimum order quantity required?**
+
+
+
+* Yes / No
+
+
+
+**Q13. Are fragile items safely handled?**
+
+
+
+* Yes / No
+
+
+
+**Q14. Can vendor provide temperature-controlled delivery?**
+
+
+
+* Yes / No
+
+
+
+**Q15. Are gifts suitable for all guest categories?**
+
+
+
+* Yes / No
+
+
+
+---
