@@ -46,6 +46,7 @@ import {
   IMAGE_SETUP_TYPE,
   IMAGE_BUDGET_RANGE,
   emptyVenueMaster,
+  SHOW_VENUE_IMAGE_INTELLIGENCE,
 } from "./venueMasterConstants";
 
 const yesNo = ["Yes", "No"];
@@ -234,14 +235,16 @@ const VenueMasterProfile = ({
 
   const inner = (
     <>
-        <h4 className="mb-2 fw-bold">Venue master profile</h4>
-        <p className="text-muted fs-14 mb-4">
-          Structured venue data for search, filters, and AI FAQ. City and map pin
-          stay in Location; use this for categories, capacity, policies, and
-          suitability.
-        </p>
+        {!embedded && (
+          <>
+            <h4 className="mb-2 fw-bold">Venue master profile</h4>
+            <p className="text-muted fs-14 mb-4">
+              Structured venue data for search, filters, and AI FAQ.
+            </p>
+          </>
+        )}
 
-        <Accordion defaultActiveKey={["0", "1"]} alwaysOpen flush>
+        <Accordion defaultActiveKey={["0", "1"]} alwaysOpen flush className="venue-master-accordion">
           <Accordion.Item eventKey="0">
             <Accordion.Header>Section 1 — Identity & categories</Accordion.Header>
             <Accordion.Body>
@@ -289,39 +292,6 @@ const VenueMasterProfile = ({
                           },
                         })
                       }
-                    />
-                  </div>
-                </Col>
-                <Col md={12}>
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold">Exact location (text)</label>
-                    <Form.Control
-                      className="fs-14"
-                      value={vm.identity.exact_location_text}
-                      onChange={(e) =>
-                        patchVm({
-                          identity: {
-                            ...vm.identity,
-                            exact_location_text: e.target.value,
-                          },
-                        })
-                      }
-                      placeholder="Landmark, sector, pin to map separately in Location"
-                    />
-                  </div>
-                </Col>
-                <Col md={6}>
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold">Google Map link / pin URL</label>
-                    <Form.Control
-                      className="fs-14"
-                      value={vm.identity.map_pin_url}
-                      onChange={(e) =>
-                        patchVm({
-                          identity: { ...vm.identity, map_pin_url: e.target.value },
-                        })
-                      }
-                      placeholder="https://maps.google.com/…"
                     />
                   </div>
                 </Col>
@@ -621,11 +591,17 @@ const VenueMasterProfile = ({
                   />
                 </Col>
               </Row>
-              <div className="d-flex justify-content-between align-items-center mb-2">
-                <label className="form-label fw-semibold mb-0">
+              <div className="mb-3">
+                <label className="form-label fw-semibold d-block mb-2">
                   Space-wise configuration
                 </label>
-                <Button variant="outline-primary" size="sm" type="button" onClick={addSpaceRow}>
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  type="button"
+                  className="venue-add-space-btn"
+                  onClick={addSpaceRow}
+                >
                   Add space
                 </Button>
               </div>
@@ -728,14 +704,15 @@ const VenueMasterProfile = ({
                         onChange={(e) => updateSpaceRow(idx, "notes", e.target.value)}
                       />
                     </Col>
-                    <Col md={12} className="mt-2">
+                    <Col xs={12} className="mt-2">
                       <Button
                         variant="outline-danger"
                         size="sm"
                         type="button"
+                        className="venue-remove-space-btn"
                         onClick={() => removeSpaceRow(idx)}
                       >
-                        Remove space
+                        Remove
                       </Button>
                     </Col>
                   </Row>
@@ -1516,6 +1493,7 @@ const VenueMasterProfile = ({
             </Accordion.Body>
           </Accordion.Item>
 
+          {SHOW_VENUE_IMAGE_INTELLIGENCE && (
           <Accordion.Item eventKey="10">
             <Accordion.Header>Section 11 — Image intelligence (tagging)</Accordion.Header>
             <Accordion.Body>
@@ -1639,16 +1617,35 @@ const VenueMasterProfile = ({
               </Row>
             </Accordion.Body>
           </Accordion.Item>
+          )}
         </Accordion>
 
-        <button className="btn btn-primary mt-4 fs-14" type="button" onClick={handleSave}>
-          Save venue master profile
-        </button>
+        {!embedded && (
+          <button
+            className="btn btn-primary mt-4 fs-14"
+            type="button"
+            onClick={handleSave}
+          >
+            Save venue master profile
+          </button>
+        )}
     </>
   );
 
   if (embedded) {
-    return <div className="pt-4 mt-3 border-top">{inner}</div>;
+    return (
+      <>
+        <style>{`
+          .venue-master-embedded .venue-add-space-btn,
+          .venue-master-embedded .venue-remove-space-btn {
+            width: auto;
+            max-width: 9rem;
+            white-space: nowrap;
+          }
+        `}</style>
+        <div className="venue-master-embedded">{inner}</div>
+      </>
+    );
   }
   return (
     <div className="my-5">

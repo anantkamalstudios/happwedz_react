@@ -339,7 +339,12 @@ const Storefront = ({ setCompletion }) => {
                     pincode: actualData.attributes.location.pincode || "",
                     latitude: actualData.attributes.latitude || "",
                     longitude: actualData.attributes.longitude || "",
-
+                    exact_location_text:
+                      actualData.attributes.venue_master?.identity
+                        ?.exact_location_text || "",
+                    map_pin_url:
+                      actualData.attributes.venue_master?.identity
+                        ?.map_pin_url || "",
                     serviceAreas:
                       actualData.attributes.location.serviceAreas || [],
                   }
@@ -955,7 +960,7 @@ const Storefront = ({ setCompletion }) => {
         id: "vendor-pricing",
         fields: ["startingPrice", "priceRange.min", "priceRange.max"],
       },
-      { id: "vendor-facilities", fields: ["capacity.min", "capacity.max"] },
+      { id: "vendor-facilities", fields: [] },
       { id: "promotions", fields: ["deals"] },
       {
         id: "vendor-policies",
@@ -995,27 +1000,19 @@ const Storefront = ({ setCompletion }) => {
     sections.forEach((section) => {
       let hasData = false;
       if (section.id === "vendor-facilities") {
-        hasData = section.fields.some((field) => {
-          const keys = field.split(".");
-          let value = formData;
-          for (const key of keys) {
-            value = value?.[key];
-          }
-          return value && value !== "" && value !== null && value !== undefined;
-        });
         if (normalizedVendorTypeName.includes("venue")) {
           const vm =
             formData.venue_master || formData.attributes?.venue_master;
-          hasData = hasData && venueMasterHasData(vm);
+          hasData = venueMasterHasData(vm);
         } else if (normalizedVendorTypeName.includes("cater")) {
           const cm =
             formData.caterer_master || formData.attributes?.caterer_master;
-          hasData = hasData && venueMasterHasData(cm);
+          hasData = venueMasterHasData(cm);
         } else if (normalizedVendorTypeName.includes("photograph")) {
           const pm =
             formData.photographer_master ||
             formData.attributes?.photographer_master;
-          hasData = hasData && venueMasterHasData(pm);
+          hasData = venueMasterHasData(pm);
         } else if (
           normalizedVendorTypeName.includes("makeup") ||
           (normalizedVendorTypeName.includes("bridal") &&
@@ -1025,7 +1022,14 @@ const Storefront = ({ setCompletion }) => {
           const mum =
             formData.makeup_artist_master ||
             formData.attributes?.makeup_artist_master;
-          hasData = hasData && venueMasterHasData(mum);
+          hasData = venueMasterHasData(mum);
+        } else {
+          hasData = !!(
+            formData.happywedz_since ||
+            formData.offerings ||
+            formData.travel_info ||
+            formData.delivery_time
+          );
         }
       } else if (section.id === "faq") {
         // Count FAQ completed only if at least one non-empty answer exists
@@ -1282,6 +1286,7 @@ const Storefront = ({ setCompletion }) => {
             setFormData={setFormData}
             onSave={handleSave}
             onShowSuccess={showSuccessModal}
+            vendorTypeName={vendorTypeName}
           />
         );
       case "photos":
