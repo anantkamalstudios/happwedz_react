@@ -204,6 +204,15 @@ const HotelbedsHotelsPage = lazy(
 const FlightSearchResults = lazy(
   () => import("./components/pages/Travels/honeymoon/FlightSearchResults"),
 );
+const TravelInsuranceResults = lazy(
+  () => import("./components/pages/Travels/honeymoon/TravelInsuranceResults"),
+);
+const InsuranceBookingPage = lazy(
+  () => import("./components/pages/Travels/honeymoon/InsuranceBookingPage"),
+);
+const InsuranceBookingDetailsPage = lazy(
+  () => import("./components/pages/Travels/honeymoon/InsuranceBookingDetailsPage"),
+);
 
 function App() {
   const dispatch = useDispatch();
@@ -346,6 +355,18 @@ function App() {
               <Route
                 path="/honeymoon/flights"
                 element={<FlightSearchResults />}
+              />
+              <Route
+                path="/honeymoon/insurance"
+                element={<TravelInsuranceResults />}
+              />
+              <Route
+                path="/honeymoon/insurance/book"
+                element={<InsuranceBookingPage />}
+              />
+              <Route
+                path="/honeymoon/insurance/booking/:bookingId"
+                element={<InsuranceBookingDetailsPage />}
               />
               <Route
                 path="/honeymoon/hotels"

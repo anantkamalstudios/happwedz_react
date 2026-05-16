@@ -5,7 +5,8 @@ import HotelIcon from "../../../../assets/trevel_icon/hotel.png";
 import CarIcon from "../../../../assets/trevel_icon/sedan.png";
 import ActivityIcon from "../../../../assets/trevel_icon/checklist.png";
 import CruiseIcon from "../../../../assets/trevel_icon/cruise-ship.png";
-import { Plane, MapPin, Users, CalendarSearch, Loader2 } from "lucide-react";
+import { Plane, MapPin, Users, CalendarSearch, Loader2, Shield } from "lucide-react";
+import InsuranceSearchPanel from "./InsuranceSearchPanel";
 import {
   searchAirports,
   searchFlights,
@@ -1423,6 +1424,12 @@ export default function FlightHero() {
                     label: "Flights",
                     onClick: () => setActiveTab("Flights"),
                   },
+                  {
+                    icon: null,
+                    lucide: Shield,
+                    label: "Insurance",
+                    onClick: () => setActiveTab("Insurance"),
+                  },
                   { icon: { src: CruiseIcon, alt: "cruise" }, label: "cruise" },
                   {
                     icon: { src: CarIcon, alt: "Car rental" },
@@ -1440,7 +1447,9 @@ export default function FlightHero() {
                     onClick={tab.onClick}
                   >
                     <span>
-                      {typeof tab.icon === "object" ? (
+                      {tab.lucide ? (
+                        <tab.lucide size={18} />
+                      ) : typeof tab.icon === "object" ? (
                         <img src={tab.icon.src} alt={tab.icon.alt} />
                       ) : (
                         tab.icon
@@ -1478,13 +1487,17 @@ export default function FlightHero() {
               <h1 className="hero-title">
                 {activeTab === "Flights"
                   ? "Book Cheap Flight Tickets With Ease"
-                  : "Find Romantic Honeymoon Hotels"}
+                  : activeTab === "Insurance"
+                    ? "Travel Insurance For Your Trip"
+                    : "Find Romantic Honeymoon Hotels"}
                 <br />
               </h1>
               <p className="hero-subtitle">
                 {activeTab === "Flights"
                   ? "Discover your next dream destination"
-                  : "Search stays by country and destination"}
+                  : activeTab === "Insurance"
+                    ? "Compare international, student & multi-trip plans"
+                    : "Search stays by country and destination"}
               </p>
 
               {/* Stats */}
@@ -1782,7 +1795,7 @@ export default function FlightHero() {
                       </button>
                     </div>
                   </>
-                ) : (
+                ) : activeTab === "Hotels" ? (
                   <div className="search-fields">
                     <div className="field-box">
                       <div className="field-label">Country</div>
@@ -1913,7 +1926,9 @@ export default function FlightHero() {
                       )}
                     </button>
                   </div>
-                )}
+                ) : activeTab === "Insurance" ? (
+                  <InsuranceSearchPanel formatSelectedDate={formatSelectedDate} />
+                ) : null}
               </div>
             </div>
           </div>
