@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "../../services/api/axiosInstance";
 import styles from "./ShaadiAI.module.css";
-import { FaPaperPlane, FaMagic, FaUser, FaRobot, FaMapMarkerAlt, FaStar, FaTags, FaWallet, FaPlus, FaTrash, FaBars, FaTimes, FaComment } from "react-icons/fa";
+import { FaPaperPlane, FaMagic, FaUser, FaRobot, FaMapMarkerAlt, FaTags, FaWallet, FaPlus, FaTrash, FaBars, FaTimes, FaComment } from "react-icons/fa";
 import { 
     PersonalityQuizInline, 
     CultureBlenderInline, 
@@ -594,7 +594,6 @@ const ShaadiAI = () => {
                                                                 <div className={styles.vendorDetails}>
                                                                     <p><FaMapMarkerAlt /> {vendor.location}</p>
                                                                     <p className={styles.price}>{vendor.price_range}</p>
-                                                                    <p><FaStar className={styles.starIcon} /> {vendor.rating}</p>
                                                                 </div>
                                                                 <div className={styles.vendorWhy}>
                                                                     <FaTags /> <span>{vendor.why_recommended?.join(" • ")}</span>
@@ -616,7 +615,6 @@ const ShaadiAI = () => {
                                                                         <h4>{comp.vendor_1.name}</h4>
                                                                         <p><strong>Price:</strong> {comp.vendor_1.price}</p>
                                                                         <p><strong>Capacity:</strong> {comp.vendor_1.capacity}</p>
-                                                                        <p><strong>Rating:</strong> {comp.vendor_1.rating}</p>
                                                                         <p><strong>Setup:</strong> {comp.vendor_1.indoor_outdoor}</p>
                                                                     </div>
                                                                     <div className={styles.compVs}>VS</div>
@@ -624,7 +622,6 @@ const ShaadiAI = () => {
                                                                         <h4>{comp.vendor_2.name}</h4>
                                                                         <p><strong>Price:</strong> {comp.vendor_2.price}</p>
                                                                         <p><strong>Capacity:</strong> {comp.vendor_2.capacity}</p>
-                                                                        <p><strong>Rating:</strong> {comp.vendor_2.rating}</p>
                                                                         <p><strong>Setup:</strong> {comp.vendor_2.indoor_outdoor}</p>
                                                                     </div>
                                                                 </div>
