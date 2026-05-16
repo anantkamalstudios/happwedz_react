@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Plane, MapPin, Clock, ArrowRight, Luggage, Filter, SlidersHorizontal } from 'lucide-react';
-import { searchFlights, verifyOffer, createFlightPaymentOrder, verifyAndBookFlight } from '../../../../services/api/flightApi';
+import { searchFlights, createFlightPaymentOrder, verifyAndBookFlight } from '../../../../services/api/flightApi';
+import { buildTripJackSearchQuery, mapTripJackFlight } from '../../../../utils/flightSearchUtils';
 import FlightFiltersSidebar from './FlightFiltersSidebar';
 import BookingForm from './BookingForm';
 
@@ -36,6 +37,7 @@ const FlightSearchResults = () => {
 
   // Get search parameters and any initial results from location state
   const searchParams = location.state?.searchParams;
+  const searchQuery = location.state?.searchQuery;
   const initialResults = location.state?.initialResults;
 
   useEffect(() => {
@@ -55,46 +57,68 @@ const FlightSearchResults = () => {
   }, []);
 
   useEffect(() => {
-    if (!searchParams) {
+    if (!searchParams || !searchQuery) {
       navigate('/honeymoon');
       return;
     }
 
-    // If hero page already fetched results, use them without re-calling API
-    if (initialResults && initialResults.status && initialResults.data) {
-      setFlights(initialResults.data);
-      setFiltersMeta(initialResults.filters_meta);
-      setActiveFilters(initialResults.active_filters);
-      setPagination(initialResults.pagination);
-      setCurrentPage(initialResults.pagination?.current_page || 1);
+    // If hero page already fetched results, process them
+    if (initialResults && (initialResults.direct || initialResults.connecting)) {
+      processInitialResults(initialResults);
       setLoading(false);
     } else {
       searchFlightsData();
     }
-  }, [searchParams, initialResults]);
+  }, [searchParams, searchQuery, initialResults]);
 
-  const searchFlightsData = async (page = 1, appliedFilters = filters) => {
+  const processInitialResults = (results) => {
+    // Extract tripInfos from TripJack response
+    const directTrips = results.direct?.searchResult?.tripInfos || {};
+    const connectingTrips = results.connecting?.searchResult?.tripInfos || {};
+
+    // Merge ONWARD, RETURN, COMBO arrays
+    const mergedFlights = {
+      ONWARD: [...(directTrips.ONWARD || []), ...(connectingTrips.ONWARD || [])],
+      RETURN: [...(directTrips.RETURN || []), ...(connectingTrips.RETURN || [])],
+      COMBO: [...(directTrips.COMBO || []), ...(connectingTrips.COMBO || [])],
+    };
+
+    // For now, just use ONWARD flights (or COMBO for multi-city)
+    const flightList = mergedFlights.ONWARD.length > 0 ? mergedFlights.ONWARD : mergedFlights.COMBO;
+    
+    // Map TripJack flights to display format
+    const mappedFlights = flightList.map(mapTripJackFlight).filter(Boolean);
+    
+    setFlights(mappedFlights);
+  };
+
+  const searchFlightsData = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const requestParams = {
-        ...searchParams,
-        page: page,
-        filters: appliedFilters
+      // Use the searchQuery that was built with buildTripJackSearchQuery
+      const directQuery = {
+        ...searchQuery,
+        searchModifiers: { isDirectFlight: true, isConnectingFlight: false },
+      };
+      
+      const connectingQuery = {
+        ...searchQuery,
+        searchModifiers: { isDirectFlight: false, isConnectingFlight: true },
       };
 
-      const response = await searchFlights(requestParams);
+      const [d, c] = await Promise.allSettled([
+        searchFlights(directQuery),
+        searchFlights(connectingQuery),
+      ]);
 
-      if (response.status && response.data) {
-        setFlights(response.data);
-        setFiltersMeta(response.filters_meta);
-        setActiveFilters(response.active_filters);
-        setPagination(response.pagination);
-        setCurrentPage(response.pagination?.current_page || 1);
-      } else {
-        setError('No flights found for your search criteria');
-      }
+      const results = {
+        direct: d.status === "fulfilled" ? d.value : null,
+        connecting: c.status === "fulfilled" ? c.value : null,
+      };
+
+      processInitialResults(results);
     } catch (err) {
       setError('Failed to search flights. Please try again.');
       console.error('Flight search error:', err);
@@ -139,21 +163,13 @@ const FlightSearchResults = () => {
     setVerificationError(null);
     
     try {
-      // Verify the flight offer first
-      const verification = await verifyOffer(fare.provider, fare.offer_id);
-      
-      if (verification.status) {
-        // Verification successful, show booking form
-        setSelectedFlight({ ...flight, selectedFare: fare });
-        setVerifiedFlightData(verification);
-        setShowBookingForm(true);
-      } else {
-        // Verification failed
-        setVerificationError(verification.message || 'Flight verification failed. Please try again.');
-      }
+      // Show booking form directly
+      setSelectedFlight({ ...flight, selectedFare: fare });
+      setVerifiedFlightData({ price: fare.price });
+      setShowBookingForm(true);
     } catch (err) {
-      console.error('Flight verification error:', err);
-      setVerificationError(err.response?.data?.message || err.message || 'Failed to verify flight. Please try again.');
+      console.error('Flight selection error:', err);
+      setVerificationError(err.response?.data?.message || err.message || 'Failed to select flight. Please try again.');
     } finally {
       setVerifyingFlight(null);
     }
@@ -284,11 +300,12 @@ const FlightSearchResults = () => {
     }
 
     setFilters(newFilters);
-    searchFlightsData(1, newFilters);
+    // Filters are applied client-side in the render, not sent to API
   };
 
   const handlePageChange = (page) => {
-    searchFlightsData(page, filters);
+    setCurrentPage(page);
+    // Pagination is client-side for now
   };
 
   const clearFilters = () => {
@@ -302,7 +319,6 @@ const FlightSearchResults = () => {
       refundable: true
     };
     setFilters(defaultFilters);
-    searchFlightsData(1, defaultFilters);
   };
 
   const handleBackToSearch = () => {
