@@ -5,6 +5,14 @@ import VenueMasterProfile from "./VenueMasterProfile";
 import CatererMasterProfile from "./CatererMasterProfile";
 import PhotographerMasterProfile from "./PhotographerMasterProfile";
 import MakeupArtistMasterProfile from "./MakeupArtistMasterProfile";
+import MehndiArtistMasterProfile from "./MehndiArtistMasterProfile";
+import FloristMasterProfile from "./FloristMasterProfile";
+import PanditMasterProfile from "./PanditMasterProfile";
+import DjMasterProfile from "./DjMasterProfile";
+import SangeetChoreographerMasterProfile from "./SangeetChoreographerMasterProfile";
+import WeddingEntertainerMasterProfile from "./WeddingEntertainerMasterProfile";
+import PreWeddingLocationMasterProfile from "./PreWeddingLocationMasterProfile";
+import PreWeddingPhotographerMasterProfile from "./PreWeddingPhotographerMasterProfile";
 
 const VendorFacilities = ({
   formData,
@@ -16,6 +24,8 @@ const VendorFacilities = ({
 }) => {
   const { vendor } = useSelector((state) => state.vendorAuth || {});
   const [fetchedVendorTypeName, setFetchedVendorTypeName] = useState("");
+  const [subcategories, setSubcategories] = useState([]);
+  const [typeLoaded, setTypeLoaded] = useState(false);
 
   useEffect(() => {
     const fetchVendorType = async () => {
@@ -25,9 +35,15 @@ const VendorFacilities = ({
             `https://happywedz.com/api/vendor-types/${vendor.vendor_type_id}`,
           );
           setFetchedVendorTypeName(response.data?.name || "");
+          // Subcategories are embedded in the vendor type response
+          setSubcategories(response.data?.subcategories || []);
         } catch (err) {
           console.error("Error fetching vendor type:", err);
+        } finally {
+          setTypeLoaded(true);
         }
+      } else {
+        setTypeLoaded(true);
       }
     };
     fetchVendorType();
@@ -35,6 +51,21 @@ const VendorFacilities = ({
 
   const finalVendorTypeName = propVendorTypeName || fetchedVendorTypeName;
   const normalizedType = (finalVendorTypeName || "").toLowerCase();
+
+  // Resolve subcategory name from the embedded subcategories list.
+  // vendor.vendor_subcategory_id is the most reliable source — formData may not
+  // have it populated until the user saves Basic Info.
+  const activeSubcategoryId =
+    formData.vendor_subcategory_id ||
+    vendor?.vendor_subcategory_id;
+
+  const resolvedSubcategoryName =
+    subcategories.find(
+      (s) => String(s.id) === String(activeSubcategoryId)
+    )?.name || "";
+
+  const normalizedSubcategory = resolvedSubcategoryName.toLowerCase();
+
   const isVenue =
     propIsVenue ||
     normalizedType.includes("venue") ||
@@ -53,13 +84,92 @@ const VendorFacilities = ({
     (normalizedType.includes("bridal") && normalizedType.includes("artist")) ||
     normalizedType.includes("mua");
 
+  const isMehndi =
+    normalizedType.includes("mehndi") ||
+    normalizedType.includes("mehendi") ||
+    normalizedType.includes("henna");
+
+  const isFlorist =
+    normalizedType.includes("florist") ||
+    normalizedType.includes("florists") ||
+    normalizedType.includes("flower");
+
+  const isPandit =
+    normalizedType.includes("pandit") ||
+    normalizedType.includes("purohit") ||
+    normalizedType.includes("priest");
+
+  // Music & Dance subcategory detection — driven by subcategory name
+  const isMusicAndDance =
+    normalizedType.includes("music") ||
+    normalizedType.includes("dance") ||
+    normalizedType.includes("entertainment");
+
+  const isDj =
+    isMusicAndDance &&
+    (normalizedSubcategory.includes("dj") ||
+      normalizedSubcategory.includes("disc jockey"));
+
+  const isSangeetChoreographer =
+    isMusicAndDance &&
+    (normalizedSubcategory.includes("choreograph") ||
+      normalizedSubcategory.includes("sangeet choreograph") ||
+      normalizedSubcategory.includes("dance choreograph"));
+
+  const isWeddingEntertainer =
+    isMusicAndDance &&
+    (normalizedSubcategory.includes("entertainer") ||
+      normalizedSubcategory.includes("entertainment") ||
+      normalizedSubcategory.includes("performer"));
+
+  // Pre-Wedding Shoot — subcategory-driven detection
+  const isPreWeddingShoot =
+    normalizedType.includes("pre-wedding") ||
+    normalizedType.includes("pre wedding");
+
+  const isPreWeddingLocation =
+    isPreWeddingShoot &&
+    (normalizedSubcategory.includes("location") ||
+      normalizedSubcategory.includes("shoot location") ||
+      normalizedSubcategory.includes("pre-wedding shoot location") ||
+      normalizedSubcategory.includes("pre wedding shoot location"));
+
+  const isPreWeddingPhotographer =
+    isPreWeddingShoot &&
+    (normalizedSubcategory.includes("photographer") ||
+      normalizedSubcategory.includes("pre-wedding photographer") ||
+      normalizedSubcategory.includes("pre wedding photographer"));
+
   const hasMasterProfile =
-    isVenue || isCaterer || isPhotographer || isMakeupArtist;
+    isVenue ||
+    isCaterer ||
+    isPhotographer ||
+    isMakeupArtist ||
+    isMehndi ||
+    isFlorist ||
+    isPandit ||
+    isDj ||
+    isSangeetChoreographer ||
+    isWeddingEntertainer ||
+    isPreWeddingLocation ||
+    isPreWeddingPhotographer;
 
   const handleSave = async () => {
     if (onSave) await onSave();
     if (onShowSuccess) onShowSuccess();
   };
+
+  // Wait for vendor type + subcategories to load before deciding which profile to show.
+  // This prevents the generic fallback from flashing before the correct profile renders.
+  if (!typeLoaded) {
+    return (
+      <div className="my-5">
+        <div className="p-3 border rounded bg-white text-center text-muted fs-14 py-5">
+          Loading facilities...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="my-5">
@@ -96,6 +206,78 @@ const VendorFacilities = ({
             )}
             {isMakeupArtist && (
               <MakeupArtistMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isMehndi && (
+              <MehndiArtistMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isFlorist && (
+              <FloristMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isPandit && (
+              <PanditMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isDj && (
+              <DjMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isSangeetChoreographer && (
+              <SangeetChoreographerMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isWeddingEntertainer && (
+              <WeddingEntertainerMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isPreWeddingLocation && (
+              <PreWeddingLocationMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isPreWeddingPhotographer && (
+              <PreWeddingPhotographerMasterProfile
                 formData={formData}
                 setFormData={setFormData}
                 onSave={onSave}

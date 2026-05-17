@@ -422,6 +422,32 @@ const Storefront = ({ setCompletion }) => {
                   actualData.attributes.photographer_master || {},
                 makeup_artist_master:
                   actualData.attributes.makeup_artist_master || {},
+                mehndi_artist_master:
+                  actualData.attributes.mehndi_artist_master || {},
+                florist_master:
+                  actualData.attributes.florist_master || {},
+                pandit_master:
+                  actualData.attributes.pandit_master || {},
+                dj_master:
+                  actualData.attributes.dj_master ||
+                  actualData.dj_master ||
+                  {},
+                sangeet_choreographer_master:
+                  actualData.attributes.sangeet_choreographer_master ||
+                  actualData.sangeet_choreographer_master ||
+                  {},
+                wedding_entertainer_master:
+                  actualData.attributes.wedding_entertainer_master ||
+                  actualData.wedding_entertainer_master ||
+                  {},
+                pre_wedding_location_master:
+                  actualData.attributes.pre_wedding_location_master || null,
+                pre_wedding_photographer_master:
+                  actualData.attributes.pre_wedding_photographer_master || null,
+                vendor_subcategory_id:
+                  actualData.vendor_subcategory_id ||
+                  vendor?.vendor_subcategory_id ||
+                  "",
 
                 attributes: {
                   ...prev.attributes,
@@ -488,6 +514,7 @@ const Storefront = ({ setCompletion }) => {
       try {
         const fd = buildFormData();
         await vendorServicesApi.createOrUpdateService(fd, token, formData.id);
+        setShowModal(true);
       } catch (e) {
         Swal.fire({
           icon: "error",
@@ -499,8 +526,9 @@ const Storefront = ({ setCompletion }) => {
           confirmButtonColor: "#C31162",
         });
       }
+    } else {
+      setShowModal(true);
     }
-    setShowModal(true);
   };
 
   // Expose show success modal to subcomponents
@@ -687,6 +715,38 @@ const Storefront = ({ setCompletion }) => {
         formData.makeup_artist_master ||
         formData.attributes?.makeup_artist_master ||
         undefined,
+      mehndi_artist_master:
+        formData.mehndi_artist_master ||
+        formData.attributes?.mehndi_artist_master ||
+        undefined,
+      florist_master:
+        formData.florist_master ||
+        formData.attributes?.florist_master ||
+        undefined,
+      pandit_master:
+        formData.pandit_master ||
+        formData.attributes?.pandit_master ||
+        undefined,
+      dj_master: (() => {
+        const v = formData.dj_master || formData.attributes?.dj_master;
+        return v && typeof v === "object" && Object.keys(v).length > 0 ? v : undefined;
+      })(),
+      sangeet_choreographer_master: (() => {
+        const v = formData.sangeet_choreographer_master || formData.attributes?.sangeet_choreographer_master;
+        return v && typeof v === "object" && Object.keys(v).length > 0 ? v : undefined;
+      })(),
+      wedding_entertainer_master: (() => {
+        const v = formData.wedding_entertainer_master || formData.attributes?.wedding_entertainer_master;
+        return v && typeof v === "object" && Object.keys(v).length > 0 ? v : undefined;
+      })(),
+      pre_wedding_location_master: (() => {
+        const v = formData.pre_wedding_location_master || formData.attributes?.pre_wedding_location_master;
+        return v && typeof v === "object" && Object.keys(v).length > 0 ? v : undefined;
+      })(),
+      pre_wedding_photographer_master: (() => {
+        const v = formData.pre_wedding_photographer_master || formData.attributes?.pre_wedding_photographer_master;
+        return v && typeof v === "object" && Object.keys(v).length > 0 ? v : undefined;
+      })(),
     };
 
     // Remove undefined keys
