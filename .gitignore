@@ -11,7 +11,7 @@ node_modules
 dist
 dist1
 distoriginal
-
+dist.zip
 dist-ssr
 *.local
 
