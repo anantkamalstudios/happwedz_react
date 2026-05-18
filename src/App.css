@@ -1,15 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=Geologica:wght@100..900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Golos+Text:wght@400..900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Stack+Sans+Headline:wght@200..700&display=swap");
+/* Optimized Google Fonts - Only load fonts actually used in the application */
+/* Reduced from 12 font families to 2, and limited to essential weights (400, 600, 700) */
+/* Added display=swap to prevent render blocking and improve FCP */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
 
 @font-face {
   font-family: "AirbnbCereal";
@@ -18448,6 +18441,33 @@ input:checked+.slider:before {
   background: linear-gradient(145deg, #fff, #ffe6f0);
 }
 
+/* Prevent card hover effect when hovering the Quick Inquiry button */
+.main-grid-cards:has(.quick-inquiry-btn:hover) {
+  box-shadow: none;
+  transform: none;
+  background: none;
+}
+
+.quick-inquiry-btn {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  background-color: #e83e8c;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.quick-inquiry-btn:hover {
+  background-color: #c2185b !important;
+}
 /* ============================================
    E-INVITE STYLES
    ============================================ */
@@ -21896,4 +21916,335 @@ body.mobile-menu-active {
 
 .sidebar-item:hover .label-text {
   color: #2c3e50;
+}
+
+/* ─── TripJack Flight Search & Results ──────────────────────────────────────── */
+
+/* Flight result card */
+.tj-flight-card {
+  border: 2px solid #f0f0f0;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  background: #fff;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.tj-flight-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #ed1173, #ff6b9d);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.tj-flight-card:hover {
+  border-color: #ed1173;
+  box-shadow: 0 12px 36px rgba(237, 17, 115, 0.12);
+  transform: translateY(-2px);
+}
+
+.tj-flight-card:hover::before { opacity: 1; }
+
+/* Airline logo placeholder */
+.tj-airline-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ed1173, #ff6b9d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* Route row */
+.tj-route-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.tj-time {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1a2e;
+  line-height: 1;
+}
+
+.tj-airport {
+  font-size: 13px;
+  color: #888;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.tj-duration-col {
+  text-align: center;
+  padding: 10px 14px;
+  background: rgba(237, 17, 115, 0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(237, 17, 115, 0.1);
+}
+
+.tj-duration {
+  font-size: 13px;
+  font-weight: 700;
+  color: #555;
+}
+
+.tj-stops {
+  font-size: 11px;
+  color: #ed1173;
+  font-weight: 700;
+  margin-top: 3px;
+}
+
+/* Fare badge */
+.tj-fare-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.tj-fare-badge.refundable {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.tj-fare-badge.non-refundable {
+  background: rgba(244, 67, 54, 0.08);
+  color: #f44336;
+  border: 1px solid rgba(244, 67, 54, 0.15);
+}
+
+.tj-fare-badge.special {
+  background: rgba(255, 152, 0, 0.1);
+  color: #ff9800;
+  border: 1px solid rgba(255, 152, 0, 0.2);
+}
+
+/* Price */
+.tj-price {
+  font-size: 22px;
+  font-weight: 900;
+  color: #ed1173;
+}
+
+.tj-price-label {
+  font-size: 11px;
+  color: #aaa;
+  font-weight: 500;
+}
+
+/* Baggage info */
+.tj-baggage {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #666;
+  background: #f8f9fa;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid #e9ecef;
+}
+
+/* Select button */
+.tj-select-btn {
+  background: linear-gradient(135deg, #ed1173, #c0006a);
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.tj-select-btn:hover {
+  background: linear-gradient(135deg, #ff2a8a, #ed1173);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(237, 17, 115, 0.35);
+}
+
+/* Results header */
+.tj-results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid #f8f9fa;
+}
+
+.tj-results-count {
+  background: linear-gradient(135deg, #ed1173, #ff6b9d);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+/* Filter sidebar */
+.tj-filter-sidebar {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0e0e8;
+  position: sticky;
+  top: 80px;
+}
+
+.tj-filter-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f8f9fa;
+}
+
+.tj-filter-section {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.tj-filter-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.tj-filter-section-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 10px;
+}
+
+/* Segment timeline (multi-stop) */
+.tj-segment-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.tj-segment-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ed1173;
+  flex-shrink: 0;
+}
+
+.tj-segment-dash {
+  flex: 1;
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg, #ddd, #ddd 4px, transparent 4px, transparent 8px
+  );
+}
+
+/* Tab switcher for ONWARD / RETURN / COMBO */
+.tj-tab-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  background: #f8f9fa;
+  padding: 6px;
+  border-radius: 12px;
+}
+
+.tj-tab {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: transparent;
+  color: #888;
+}
+
+.tj-tab.active {
+  background: #fff;
+  color: #ed1173;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tj-tab:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.6);
+  color: #555;
+}
+
+/* Empty / loading states */
+.tj-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #aaa;
+}
+
+.tj-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+.tj-loading-bar {
+  height: 4px;
+  background: linear-gradient(90deg, #ed1173 0%, #ff6b9d 50%, #ed1173 100%);
+  background-size: 200% 100%;
+  animation: tj-shimmer 1.4s linear infinite;
+  border-radius: 2px;
+  margin-bottom: 20px;
+}
+
+@keyframes tj-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tj-route-row {
+    grid-template-columns: 1fr auto 1fr;
+    gap: 8px;
+  }
+
+  .tj-time { font-size: 18px; }
+  .tj-price { font-size: 18px; }
+
+  .tj-flight-card { padding: 14px 16px; }
+
+  .tj-select-btn {
+    width: 100%;
+    margin-top: 12px;
+  }
 }

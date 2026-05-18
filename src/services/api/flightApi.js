@@ -1,14 +1,27 @@
 import axiosInstance from './axiosInstance';
 
-const BASE_URL = (
-  import.meta.env.VITE_FLIGHT_API_URL || 'http://localhost:4000/Flight_booking'
-).replace(/\/$/, '');
+const LEGACY_BASE_URL = 'https://happywedz.com/api/Flight_booking';
+// const LEGACY_BASE_URL = 'http://localhost:4000/Flight_booking';
 
-// Airport search API
-export const searchAirports = async (keyword) => {
+const isTripJackSearchQuery = (payload) =>
+  Boolean(payload?.routeInfos || payload?.searchModifiers);
+
+// --- Location search (TripJack) ---
+
+export const searchLocations = async (q, signal) => {
+  const response = await axiosInstance.get('/tj/meta/locations', {
+    params: { q },
+    signal,
+  });
+  return response.data;
+};
+
+/** Legacy airport search; hooks use searchLocations */
+export const searchAirports = async (keyword, signal) => {
   try {
-    const response = await axiosInstance.get(`${BASE_URL}/airports`, {
-      params: { keyword }
+    const response = await axiosInstance.get(`${LEGACY_BASE_URL}/airports`, {
+      params: { keyword },
+      signal,
     });
     return response.data;
   } catch (error) {
@@ -17,10 +30,24 @@ export const searchAirports = async (keyword) => {
   }
 };
 
-// Flight search API
-export const searchFlights = async (searchParams) => {
+// --- Flight search ---
+
+export const searchFlights = async (searchQueryOrParams, signal) => {
+  if (isTripJackSearchQuery(searchQueryOrParams)) {
+    const response = await axiosInstance.post(
+      '/tj/fms/search',
+      { searchQuery: searchQueryOrParams },
+      signal ? { signal } : undefined
+    );
+    return response.data;
+  }
+
   try {
-    const response = await axiosInstance.post(`${BASE_URL}/search`, searchParams);
+    const response = await axiosInstance.post(
+      `${LEGACY_BASE_URL}/search`,
+      searchQueryOrParams,
+      signal ? { signal } : undefined
+    );
     return response.data;
   } catch (error) {
     console.error('Error searching flights:', error);
@@ -28,121 +55,119 @@ export const searchFlights = async (searchParams) => {
   }
 };
 
-// Get flight details by offer ID
-export const getFlightDetails = async (offerId) => {
-  try {
-    const response = await axiosInstance.get(`${BASE_URL}/flight/${offerId}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error getting flight details:', error);
-    throw error;
-  }
+// --- TripJack FMS ---
+
+export const reviewFlight = async (priceIds) => {
+  const response = await axiosInstance.post('/tj/fms/review', { priceIds });
+  return response.data;
 };
 
-// Book flight
-export const bookFlight = async (bookingData) => {
-  try {
-    const response = await axiosInstance.post(`${BASE_URL}/book`, bookingData);
-    return response.data;
-  } catch (error) {
-    console.error('Error booking flight:', error);
-    throw error;
-  }
+export const getFareRule = async (id, flowType) => {
+  const response = await axiosInstance.post('/tj/fms/farerule', { id, flowType });
+  return response.data;
 };
 
-// Get booking details
+export const getSeatMap = async (bookingId) => {
+  const response = await axiosInstance.post('/tj/fms/seat', { bookingId });
+  return response.data;
+};
+
+// --- TripJack OMS ---
+
+export const bookFlight = async (payload) => {
+  const response = await axiosInstance.post('/tj/oms/book', payload);
+  return response.data;
+};
+
+export const fareValidate = async (payload) => {
+  const response = await axiosInstance.post('/tj/oms/fare-validate', payload);
+  return response.data;
+};
+
+export const confirmBook = async (payload) => {
+  const response = await axiosInstance.post('/tj/oms/confirm-book', payload);
+  return response.data;
+};
+
 export const getBookingDetails = async (bookingId) => {
-  try {
-    const response = await axiosInstance.get(`${BASE_URL}/booking/${bookingId}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error getting booking details:', error);
-    throw error;
-  }
+  const response = await axiosInstance.post('/tj/oms/booking-details', { bookingId });
+  return response.data;
 };
 
-// Cancel booking
-export const cancelBooking = async (bookingId) => {
-  try {
-    const response = await axiosInstance.post(`${BASE_URL}/booking/${bookingId}/cancel`);
-    return response.data;
-  } catch (error) {
-    console.error('Error cancelling booking:', error);
-    throw error;
-  }
+export const getAmendmentCharges = async (payload) => {
+  const response = await axiosInstance.post('/tj/oms/amendment/charges', payload);
+  return response.data;
 };
 
-// Get popular routes
-export const getPopularRoutes = async () => {
-  try {
-    const response = await axiosInstance.get(`${BASE_URL}/popular-routes`);
-    return response.data;
-  } catch (error) {
-    console.error('Error getting popular routes:', error);
-    throw error;
-  }
+export const submitAmendment = async (payload) => {
+  const response = await axiosInstance.post('/tj/oms/amendment/submit', payload);
+  return response.data;
 };
 
-// Get flight deals
-export const getFlightDeals = async () => {
-  try {
-    const response = await axiosInstance.get(`${BASE_URL}/deals`);
-    return response.data;
-  } catch (error) {
-    console.error('Error getting flight deals:', error);
-    throw error;
-  }
+export const pollAmendment = async (amendmentId) => {
+  const response = await axiosInstance.post('/tj/oms/amendment/poll', { amendmentId });
+  return response.data;
 };
 
-// Verify flight offer
+// --- Legacy helpers ---
+
+export const getFlightDetails = async (offerId) => {
+  const response = await axiosInstance.get(`${LEGACY_BASE_URL}/flight/${offerId}`);
+  return response.data;
+};
+
 export const verifyOffer = async (provider, offerId) => {
-  try {
-    const response = await axiosInstance.post(`${BASE_URL}/verify`, {
-      provider,
-      offer_id: offerId
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error verifying offer:', error);
-    throw error;
-  }
+  const response = await axiosInstance.post(`${LEGACY_BASE_URL}/verify`, {
+    provider,
+    offer_id: offerId,
+  });
+  return response.data;
 };
 
-// Create payment order for flight booking
+export const cancelBooking = async (bookingId) => {
+  const response = await axiosInstance.post(
+    `${LEGACY_BASE_URL}/booking/${bookingId}/cancel`
+  );
+  return response.data;
+};
+
+export const getPopularRoutes = async () => {
+  const response = await axiosInstance.get(`${LEGACY_BASE_URL}/popular-routes`);
+  return response.data;
+};
+
+export const getFlightDeals = async () => {
+  const response = await axiosInstance.get(`${LEGACY_BASE_URL}/deals`);
+  return response.data;
+};
+
+// --- Payment ---
+
 export const createFlightPaymentOrder = async (bookingData) => {
-  try {
-    // Extract required fields for payment API
-    const paymentPayload = {
-      offer_id: bookingData.offer_id,
-      provider: bookingData.provider,
-      amount: bookingData.price,
-      trip_type: bookingData.trip_type,
-      from: bookingData.from,
-      to: bookingData.to,
-      departure: bookingData.departure,
-      arrival: bookingData.arrival,
-      flight_no: bookingData.flight_no,
-      airline: bookingData.airline,
-      cabin_class: bookingData.cabin_class,
-      passengers: bookingData.passengers,
-      contact: bookingData.contact
-    };
+  const paymentPayload = {
+    offer_id: bookingData.offer_id,
+    provider: bookingData.provider,
+    amount: bookingData.price,
+    trip_type: bookingData.trip_type,
+    from: bookingData.from,
+    to: bookingData.to,
+    departure: bookingData.departure,
+    arrival: bookingData.arrival,
+    flight_no: bookingData.flight_no,
+    airline: bookingData.airline,
+    cabin_class: bookingData.cabin_class,
+    passengers: bookingData.passengers,
+    contact: bookingData.contact,
+  };
 
-    const response = await axiosInstance.post('/flight_payment/create_order', paymentPayload);
-    return response.data;
-  } catch (error) {
-    console.error('Error creating payment order:', error);
-    throw error;
-  }
+  const response = await axiosInstance.post(
+    '/flight_payment/create_order',
+    paymentPayload
+  );
+  return response.data;
 };
 
-// Verify Razorpay payment and book flight
 export const verifyAndBookFlight = async (payload) => {
-  try {
-    const response = await axiosInstance.post('/flight_payment/verify_and_book', payload);
-    return response.data;
-  } catch (error) {
-    console.error('Error verifying payment / booking flight:', error);
-    throw error;
-  }
+  const response = await axiosInstance.post('/flight_payment/verify_and_book', payload);
+  return response.data;
 };

@@ -154,9 +154,6 @@ const BusinessDetails = ({ formData, setFormData }) => {
       twitter_link: a.twitter_link || null,
       pinterest_link: a.pinterest_link || null,
       vendor_type_id: a.vendor_type_id ? Number(a.vendor_type_id) : null,
-      years_in_business: a.years_in_business
-        ? Number(a.years_in_business)
-        : null,
       firstName: a.firstName || null,
       lastName: a.lastName || null,
     };
@@ -530,17 +527,6 @@ const BusinessDetails = ({ formData, setFormData }) => {
           )}
         </div>
 
-        <div className="mb-3">
-          <label className="form-label fs-16">Years in Business</label>
-          <input
-            name="years_in_business"
-            type="number"
-            className="form-control fs-14"
-            placeholder="e.g. 5"
-            value={formData.attributes?.years_in_business || ""}
-            onChange={handleAttributeChange}
-          />
-        </div>
         <div className="mb-3">
           <label className="form-label fs-16">First Name</label>
           <input

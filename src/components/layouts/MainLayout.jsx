@@ -13,7 +13,7 @@ export default function MainLayout() {
     <>
       <MyProvider>
         <FilterProvider>
-          <Header />
+          {params.section !== "shaadi-ai" && <Header />}
           <main style={{ minHeight: "70vh" }}>
             <Outlet />
           </main>
@@ -29,7 +29,7 @@ export default function MainLayout() {
               <HomeGennie />
             </div>
           )}
-          <Footer />
+          {params.section !== "shaadi-ai" && <Footer />}
         </FilterProvider>
       </MyProvider>
     </>
