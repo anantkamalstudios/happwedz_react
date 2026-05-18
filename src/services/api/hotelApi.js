@@ -51,3 +51,73 @@ export const getHotelDetail = async (payload) => {
     throw error;
   }
 };
+
+export const reviewHotelBooking = async (payload) => {
+  try {
+    const response = await axiosInstance.post("/hotels/review", payload);
+    return response.data;
+  } catch (error) {
+    console.error(getErrorMessage(error, "Error reviewing hotel booking"));
+    throw error;
+  }
+};
+
+export const getHotelCancellationPolicy = async (payload) => {
+  try {
+    const response = await axiosInstance.post("/hotels/cancellation-policy", payload);
+    return response.data;
+  } catch (error) {
+    console.error(getErrorMessage(error, "Error fetching hotel cancellation policy"));
+    throw error;
+  }
+};
+
+export const bookHotel = async (payload) => {
+  try {
+    const response = await axiosInstance.post("/hotels/book", payload);
+    return response.data;
+  } catch (error) {
+    console.error(getErrorMessage(error, "Error creating hotel booking"));
+    throw error;
+  }
+};
+
+export const holdHotelBooking = async (payload) => {
+  try {
+    const response = await axiosInstance.post("/hotels/hold", payload);
+    return response.data;
+  } catch (error) {
+    console.error(getErrorMessage(error, "Error creating hotel hold booking"));
+    throw error;
+  }
+};
+
+export const confirmHotelBooking = async (payload) => {
+  try {
+    const response = await axiosInstance.post("/hotels/confirm-book", payload);
+    return response.data;
+  } catch (error) {
+    console.error(getErrorMessage(error, "Error confirming hotel booking"));
+    throw error;
+  }
+};
+
+export const getHotelBookingDetails = async (payload) => {
+  try {
+    const response = await axiosInstance.post("/hotels/booking-details", payload);
+    return response.data;
+  } catch (error) {
+    console.error(getErrorMessage(error, "Error fetching hotel booking details"));
+    throw error;
+  }
+};
+
+export const cancelHotelBooking = async (bookingId) => {
+  try {
+    const response = await axiosInstance.post(`/hotels/cancel-booking/${bookingId}`);
+    return response.data;
+  } catch (error) {
+    console.error(getErrorMessage(error, "Error cancelling hotel booking"));
+    throw error;
+  }
+};
