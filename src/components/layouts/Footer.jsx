@@ -1,11 +1,12 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import React from "react";
-import { useContext } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { MyContext } from "../../context/useContext";
 
 const Footer = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const trustpilotRef = useRef(null);
 
   const {
     selectedCategory,
@@ -14,6 +15,12 @@ const Footer = () => {
     setSelectedCategoryName,
     types,
   } = useContext(MyContext);
+
+  useEffect(() => {
+    if (window.Trustpilot && trustpilotRef.current) {
+      window.Trustpilot.loadFromElement(trustpilotRef.current, true);
+    }
+  }, [location.pathname]);
 
   const findCategoryIdByName = (categoryName) => {
     if (!types || !Array.isArray(types)) return null;
@@ -246,6 +253,30 @@ const Footer = () => {
         </div>
 
         <hr className="my-4 opacity-50" style={{ background: "#fff" }} />
+
+        <div className="row mb-4">
+          <div className="col-12">
+            <div
+              ref={trustpilotRef}
+              className="trustpilot-widget"
+              data-locale="en-US"
+              data-template-id="56278e9abfbbba0bdcd568bc"
+              data-businessunit-id="69f89f5e283c86a87547e5f3"
+              data-style-height="52px"
+              data-style-width="100%"
+              data-token="e35fc7f8-5dea-4218-9fb3-beab0c86bffb"
+            >
+              <a
+                href="https://www.trustpilot.com/review/happywedz.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "#fff" }}
+              >
+                Trustpilot
+              </a>
+            </div>
+          </div>
+        </div>
 
         <div className="row gy-4 text-center text-md-start">
           <div className="col-12 col-md-8 d-flex justify-content-center justify-content-md-start">

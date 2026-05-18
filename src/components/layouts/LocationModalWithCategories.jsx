@@ -27,22 +27,26 @@ const LocationModalWithAPI = () => {
       "Bangalore",
       "Chennai",
       "Pune",
-      "Lucknow",
+      // "Lucknow",
       "Jaipur",
       "Kolkata",
       "Hyderabad",
+      "Ahmedabad",
+      "Goa"
     ],
     popularCities: [
-      "Gurgaon",
+      // "Gurgaon",
+      "Mumbai",
+      "Bangalore",
+      "Chennai",
+      "Pune",
+      "Jaipur",
+      "Kolkata",
+      "Hyderabad",
+      "Ahmedabad",
       "Goa",
       "Udaipur",
-      "Jim Corbett",
-      "Indore",
-      "Agra",
-      "Kanpur",
-      "Ahmedabad",
-      "Navi Mumbai",
-      "Kochi",
+
     ],
     otherCities: [
       "Nagpur",
@@ -93,8 +97,8 @@ const LocationModalWithAPI = () => {
 
   const filterCities = searchTerm.trim()
     ? cities.filter((city) =>
-        city.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      city.toLowerCase().includes(searchTerm.toLowerCase())
+    )
     : [];
 
   const handleCityClick = (city) => {
@@ -108,8 +112,7 @@ const LocationModalWithAPI = () => {
     document.body.style.overflow = "auto";
 
     navigate(
-      `/vendors/all${
-        city !== "All Cities" ? `?city=${encodeURIComponent(city)}` : ""
+      `/vendors/all${city !== "All Cities" ? `?city=${encodeURIComponent(city)}` : ""
       }`
     );
   };
@@ -283,16 +286,9 @@ const LocationModalWithAPI = () => {
                   </h6>
                   {staticCityData.otherCities.map((city) => (
                     <div key={city} className="mb-2">
-                      <a
-                        href="#"
-                        className="text-dark text-decoration-none d-block fs-14"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleCityClick(city);
-                        }}
-                      >
+                      <span className="text-muted d-block fs-14">
                         {city}
-                      </a>
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -302,16 +298,9 @@ const LocationModalWithAPI = () => {
                   <h6 className="primary-text fw-bold mb-3 mt-2">States</h6>
                   {staticCityData.states.map((state) => (
                     <div key={state} className="mb-2">
-                      <a
-                        href="#"
-                        className="text-dark text-decoration-none d-block fs-14"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleCityClick(state);
-                        }}
-                      >
+                      <span className="text-muted d-block fs-14">
                         {state}
-                      </a>
+                      </span>
                     </div>
                   ))}
 
@@ -320,16 +309,9 @@ const LocationModalWithAPI = () => {
                   </h6>
                   {staticCityData.internationalCities.map((city) => (
                     <div key={city} className="mb-2">
-                      <a
-                        href="#"
-                        className="text-dark text-decoration-none d-block fs-14"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleCityClick(city);
-                        }}
-                      >
+                      <span className="text-muted d-block fs-14">
                         {city}
-                      </a>
+                      </span>
                     </div>
                   ))}
                 </div>

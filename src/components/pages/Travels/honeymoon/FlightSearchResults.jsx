@@ -516,11 +516,6 @@ export default function FlightSearchResults() {
                     <div className="tj-column-title">
                       {searchParams?.from} → {searchParams?.to} <span className="tj-column-date">{formatDate(searchParams?.departureDate)}</span>
                     </div>
-                    {/* <div className="tj-share-icons">
-                      <MdShare size={15} className="tj-share-icon" />
-                      <MdEmail size={15} className="tj-share-icon" />
-                      <MdVisibility size={15} className="tj-share-icon" />
-                    </div> */}
                   </div>
 
                   <div className="tj-sort-tabs">
@@ -555,11 +550,6 @@ export default function FlightSearchResults() {
                       <div className="tj-column-title">
                         {searchParams?.to} → {searchParams?.from} <span className="tj-column-date">{formatDate(searchParams?.returnDate)}</span>
                       </div>
-                      {/* <div className="tj-share-icons">
-                        <MdShare size={15} className="tj-share-icon" />
-                        <MdEmail size={15} className="tj-share-icon" />
-                        <MdVisibility size={15} className="tj-share-icon" />
-                      </div> */}
                     </div>
 
                     <div className="tj-sort-tabs">

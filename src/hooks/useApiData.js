@@ -10,6 +10,17 @@ import {
 } from "../utils/priceFilterUtils";
 
 const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
+const normalizeServiceStatus = (value) => {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "publish" || normalized === "published") return "publish";
+  if (
+    normalized === "hide" ||
+    normalized === "draft" ||
+    normalized === "archived"
+  )
+    return "hide";
+  return "hide";
+};
 
 const useApiData = (
   section,
@@ -169,6 +180,10 @@ const useApiData = (
         if (nonPriceFilters && Object.keys(nonPriceFilters).length > 0) {
           params.append("filters", JSON.stringify(nonPriceFilters));
         }
+
+        // Only return vendors whose first media image is confirmed to exist in S3.
+        // The batch job (verify-vendor-images.js) sets image_exists = TRUE after verification.
+        params.append("image_exists", "true");
 
         const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
 
@@ -393,6 +408,7 @@ const transformApiData = (items) => {
 
     return {
       id,
+      status: normalizeServiceStatus(item.status),
       vendor_id: item.vendor_id || vendor.id || null,
       name:
         attributes.name ||
