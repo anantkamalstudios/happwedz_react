@@ -140,8 +140,8 @@ const MehndiArtistMasterProfile = ({
       setFormData((prev) => {
         const next = mergeDeep(
           prev.mehndi_artist_master ||
-            prev.attributes?.mehndi_artist_master ||
-            emptyMehndiArtistMaster(),
+          prev.attributes?.mehndi_artist_master ||
+          emptyMehndiArtistMaster(),
           partial
         );
         return {
@@ -171,7 +171,7 @@ const MehndiArtistMasterProfile = ({
         <Accordion.Item eventKey="0">
           <Accordion.Header>Section 1 — Basic identity</Accordion.Header>
           <Accordion.Body>
-            <div className="mb-3">
+            {/* <div className="mb-3">
               <label className="form-label fw-semibold">Artist / Brand name</label>
               <Form.Control
                 className="fs-14"
@@ -181,7 +181,7 @@ const MehndiArtistMasterProfile = ({
                   patchMm({ identity: { ...mm.identity, artist_brand_name: e.target.value } })
                 }
               />
-            </div>
+            </div> */}
             <SelectField
               label="Artist type"
               options={ARTIST_TYPE}
@@ -611,166 +611,6 @@ const MehndiArtistMasterProfile = ({
           </Accordion.Body>
         </Accordion.Item>
 
-        {/* ── Section 12 — AI FAQ ── */}
-        <Accordion.Item eventKey="11">
-          <Accordion.Header>Section 12 — AI FAQ (mandatory structured)</Accordion.Header>
-          <Accordion.Body>
-            <p className="text-muted fs-14 mb-3">
-              These answers power the AI assistant. Fill every field so customers get
-              accurate instant answers.
-            </p>
-
-            {/* Q1 */}
-            <YesNoField
-              groupName="faq_bridalMehendi"
-              label="1. Do you provide bridal mehendi?"
-              value={mm.ai_faq.bridal_mehendi_provided}
-              onChange={(v) =>
-                patchMm({ ai_faq: { ...mm.ai_faq, bridal_mehendi_provided: v } })
-              }
-            />
-
-            {/* Q2 */}
-            <YesNoField
-              groupName="faq_guestMehendi"
-              label="2. Guest mehendi available?"
-              value={mm.ai_faq.guest_mehendi_available}
-              onChange={(v) =>
-                patchMm({ ai_faq: { ...mm.ai_faq, guest_mehendi_available: v } })
-              }
-            />
-
-            {/* Q3 */}
-            <SelectField
-              label="3. Max guests covered?"
-              options={FAQ_MAX_GUESTS_COVERED}
-              value={mm.ai_faq.max_guests_covered}
-              onChange={(v) =>
-                patchMm({ ai_faq: { ...mm.ai_faq, max_guests_covered: v } })
-              }
-            />
-
-            {/* Q4 */}
-            <SelectField
-              label="4. Mehendi type used?"
-              options={FAQ_MEHENDI_TYPE}
-              value={mm.ai_faq.mehendi_type_used}
-              onChange={(v) =>
-                patchMm({ ai_faq: { ...mm.ai_faq, mehendi_type_used: v } })
-              }
-            />
-
-            {/* Q5 */}
-            <YesNoField
-              groupName="faq_customDesigns"
-              label="5. Custom designs available?"
-              value={mm.ai_faq.custom_designs_available}
-              onChange={(v) =>
-                patchMm({ ai_faq: { ...mm.ai_faq, custom_designs_available: v } })
-              }
-            />
-
-            {/* Q6 */}
-            <YesNoField
-              groupName="faq_portraitMehendi"
-              label="6. Portrait mehendi available?"
-              value={mm.ai_faq.portrait_mehendi_available}
-              onChange={(v) =>
-                patchMm({ ai_faq: { ...mm.ai_faq, portrait_mehendi_available: v } })
-              }
-            />
-
-            {/* Q7 */}
-            <SelectField
-              label="7. Bridal coverage type?"
-              options={FAQ_BRIDAL_COVERAGE}
-              value={mm.ai_faq.bridal_coverage_type}
-              onChange={(v) =>
-                patchMm({ ai_faq: { ...mm.ai_faq, bridal_coverage_type: v } })
-              }
-            />
-
-            {/* Q8 */}
-            <SelectField
-              label="8. Duration required?"
-              options={FAQ_BRIDAL_DURATION}
-              value={mm.ai_faq.duration_required}
-              onChange={(v) =>
-                patchMm({ ai_faq: { ...mm.ai_faq, duration_required: v } })
-              }
-            />
-
-            {/* Q9 */}
-            <YesNoField
-              groupName="faq_colorGuarantee"
-              label="9. Color guarantee?"
-              value={mm.ai_faq.color_guarantee}
-              onChange={(v) =>
-                patchMm({ ai_faq: { ...mm.ai_faq, color_guarantee: v } })
-              }
-            />
-
-            {/* Q10 */}
-            <YesNoField
-              groupName="faq_aftercare"
-              label="10. Aftercare instructions provided?"
-              value={mm.ai_faq.aftercare_instructions_provided}
-              onChange={(v) =>
-                patchMm({ ai_faq: { ...mm.ai_faq, aftercare_instructions_provided: v } })
-              }
-            />
-
-            {/* Q11 */}
-            <YesNoField
-              groupName="faq_travelAvailable"
-              label="11. Travel available?"
-              value={mm.ai_faq.travel_available}
-              onChange={(v) =>
-                patchMm({ ai_faq: { ...mm.ai_faq, travel_available: v } })
-              }
-            />
-
-            {/* Q12 */}
-            <YesNoField
-              groupName="faq_teamAvailable"
-              label="12. Team available?"
-              value={mm.ai_faq.team_available}
-              onChange={(v) =>
-                patchMm({ ai_faq: { ...mm.ai_faq, team_available: v } })
-              }
-            />
-
-            {/* Q13 */}
-            <SelectField
-              label="13. Pricing model?"
-              options={FAQ_PRICING_MODEL}
-              value={mm.ai_faq.pricing_model}
-              onChange={(v) =>
-                patchMm({ ai_faq: { ...mm.ai_faq, pricing_model: v } })
-              }
-            />
-
-            {/* Q14 */}
-            <YesNoField
-              groupName="faq_advanceRequired"
-              label="14. Advance required?"
-              value={mm.ai_faq.advance_required}
-              onChange={(v) =>
-                patchMm({ ai_faq: { ...mm.ai_faq, advance_required: v } })
-              }
-            />
-
-            {/* Q15 */}
-            <SelectField
-              label="15. Cancellation policy?"
-              options={FAQ_CANCELLATION_POLICY}
-              value={mm.ai_faq.cancellation_policy}
-              onChange={(v) =>
-                patchMm({ ai_faq: { ...mm.ai_faq, cancellation_policy: v } })
-              }
-            />
-          </Accordion.Body>
-        </Accordion.Item>
       </Accordion>
 
       {!embedded && (

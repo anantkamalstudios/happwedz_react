@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useEffect } from "react";
 import { Accordion, Form } from "react-bootstrap";
 import {
   CHOREO_VENDOR_TYPE,
@@ -129,26 +129,35 @@ const SangeetChoreographerMasterProfile = ({
   embedded = false,
 }) => {
   const sc = useMemo(() => {
-    const raw =
-      formData.sangeet_choreographer_master ||
-      formData.attributes?.sangeet_choreographer_master;
-    if (raw && typeof raw === "object")
-      return mergeDeep(emptySangeetChoreographerMaster(), raw);
-    return emptySangeetChoreographerMaster();
-  }, [
-    formData.sangeet_choreographer_master,
-    formData.attributes?.sangeet_choreographer_master,
-  ]);
+    const raw = formData.sangeet_choreographer_master || formData.attributes?.sangeet_choreographer_master;
+    const base = emptySangeetChoreographerMaster();
+
+    if (raw && typeof raw === "object") {
+      const migrated = mergeDeep(base, raw);
+
+      // Migrate identity
+      if (raw.brand_name && !raw.identity?.brand_name) migrated.identity.brand_name = raw.brand_name;
+      if (raw.primary_city && !raw.identity?.primary_city) migrated.identity.primary_city = raw.primary_city;
+      if (raw.service_cities && !raw.identity?.service_cities) migrated.identity.service_cities = raw.service_cities;
+      if (raw.vendor_type && !raw.identity?.vendor_type) migrated.identity.vendor_type = raw.vendor_type;
+      if (raw.years_of_experience && !raw.identity?.years_of_experience) migrated.identity.years_of_experience = raw.years_of_experience;
+      if (raw.travel_policy && !raw.identity?.travel_policy) migrated.identity.travel_policy = raw.travel_policy;
+      if (raw.languages && !raw.identity?.languages) migrated.identity.languages = raw.languages;
+
+      return migrated;
+    }
+    return base;
+  }, [formData.sangeet_choreographer_master, formData.attributes?.sangeet_choreographer_master]);
 
   const patchSc = useCallback(
-    (partial) => {
+    (partial, replace = false) => {
       setFormData((prev) => {
-        const next = mergeDeep(
+        const base = replace ? emptySangeetChoreographerMaster() : (
           prev.sangeet_choreographer_master ||
-            prev.attributes?.sangeet_choreographer_master ||
-            emptySangeetChoreographerMaster(),
-          partial
+          prev.attributes?.sangeet_choreographer_master ||
+          emptySangeetChoreographerMaster()
         );
+        const next = mergeDeep(base, partial);
         return {
           ...prev,
           sangeet_choreographer_master: next,
@@ -161,6 +170,17 @@ const SangeetChoreographerMasterProfile = ({
     },
     [setFormData]
   );
+
+  useEffect(() => {
+    const raw = formData.sangeet_choreographer_master || formData.attributes?.sangeet_choreographer_master;
+    if (raw && typeof raw === "object") {
+      if (raw.brand_name && !raw.identity?.brand_name) {
+        patchSc(sc, true);
+      } else if (raw.event_types && !raw.services?.event_types) {
+        patchSc(sc, true);
+      }
+    }
+  }, [sc, formData.sangeet_choreographer_master, formData.attributes?.sangeet_choreographer_master, patchSc]);
 
   const save = async () => {
     if (onSave) await onSave();
@@ -179,7 +199,7 @@ const SangeetChoreographerMasterProfile = ({
         <Accordion.Item eventKey="0">
           <Accordion.Header>Section 1 — Basic identity</Accordion.Header>
           <Accordion.Body>
-            <div className="mb-3">
+            {/* <div className="mb-3">
               <label className="form-label fw-semibold">
                 Brand / Stage Name
               </label>
@@ -194,7 +214,7 @@ const SangeetChoreographerMasterProfile = ({
                 }
                 placeholder="Enter Brand / Stage Name"
               />
-            </div>
+            </div> */}
             <SelectField
               label="Primary City"
               options={[
@@ -837,209 +857,6 @@ const SangeetChoreographerMasterProfile = ({
           </Accordion.Body>
         </Accordion.Item>
 
-        {/* Section 10 — AI FAQ Layer */}
-        <Accordion.Item eventKey="9">
-          <Accordion.Header>
-            Section 10 — AI FAQ layer (structured)
-          </Accordion.Header>
-          <Accordion.Body>
-            <YesNoField
-              groupName="sc_faq_non_dancers"
-              label="Q1. Can choreographer handle non-dancers?"
-              value={sc.ai_faq_layer?.handle_non_dancers}
-              onChange={(v) =>
-                patchSc({
-                  ai_faq_layer: {
-                    ...sc.ai_faq_layer,
-                    handle_non_dancers: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="sc_faq_kids_seniors"
-              label="Q2. Does choreographer teach kids and seniors?"
-              value={sc.ai_faq_layer?.teach_kids_seniors}
-              onChange={(v) =>
-                patchSc({
-                  ai_faq_layer: {
-                    ...sc.ai_faq_layer,
-                    teach_kids_seniors: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="sc_faq_couple"
-              label="Q3. Can they choreograph couple performances?"
-              value={sc.ai_faq_layer?.couple_performances}
-              onChange={(v) =>
-                patchSc({
-                  ai_faq_layer: {
-                    ...sc.ai_faq_layer,
-                    couple_performances: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="sc_faq_music_edit"
-              label="Q4. Is music editing included?"
-              value={sc.ai_faq_layer?.music_editing_included}
-              onChange={(v) =>
-                patchSc({
-                  ai_faq_layer: {
-                    ...sc.ai_faq_layer,
-                    music_editing_included: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="sc_faq_rehearsal_flex"
-              label="Q5. Are rehearsal sessions flexible?"
-              value={sc.ai_faq_layer?.rehearsal_flexible}
-              onChange={(v) =>
-                patchSc({
-                  ai_faq_layer: {
-                    ...sc.ai_faq_layer,
-                    rehearsal_flexible: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="sc_faq_online"
-              label="Q6. Can rehearsals be done online?"
-              value={sc.ai_faq_layer?.online_rehearsals}
-              onChange={(v) =>
-                patchSc({
-                  ai_faq_layer: {
-                    ...sc.ai_faq_layer,
-                    online_rehearsals: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="sc_faq_event_day"
-              label="Q7. Will choreographer be present on event day?"
-              value={sc.ai_faq_layer?.present_on_event_day}
-              onChange={(v) =>
-                patchSc({
-                  ai_faq_layer: {
-                    ...sc.ai_faq_layer,
-                    present_on_event_day: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="sc_faq_story"
-              label="Q8. Can they create story-based performances?"
-              value={sc.ai_faq_layer?.story_based_performances}
-              onChange={(v) =>
-                patchSc({
-                  ai_faq_layer: {
-                    ...sc.ai_faq_layer,
-                    story_based_performances: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="sc_faq_assistants"
-              label="Q9. Do they provide assistants?"
-              value={sc.ai_faq_layer?.provide_assistants}
-              onChange={(v) =>
-                patchSc({
-                  ai_faq_layer: {
-                    ...sc.ai_faq_layer,
-                    provide_assistants: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="sc_faq_large_groups"
-              label="Q10. Can they handle large groups (20+)?"
-              value={sc.ai_faq_layer?.handle_large_groups}
-              onChange={(v) =>
-                patchSc({
-                  ai_faq_layer: {
-                    ...sc.ai_faq_layer,
-                    handle_large_groups: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="sc_faq_props"
-              label="Q11. Are props included in choreography?"
-              value={sc.ai_faq_layer?.props_included}
-              onChange={(v) =>
-                patchSc({
-                  ai_faq_layer: {
-                    ...sc.ai_faq_layer,
-                    props_included: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="sc_faq_costumes"
-              label="Q12. Do they help with costumes?"
-              value={sc.ai_faq_layer?.help_with_costumes}
-              onChange={(v) =>
-                patchSc({
-                  ai_faq_layer: {
-                    ...sc.ai_faq_layer,
-                    help_with_costumes: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="sc_faq_last_minute"
-              label="Q13. Is last-minute choreography possible?"
-              value={sc.ai_faq_layer?.last_minute_choreography}
-              onChange={(v) =>
-                patchSc({
-                  ai_faq_layer: {
-                    ...sc.ai_faq_layer,
-                    last_minute_choreography: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="sc_faq_multiple"
-              label="Q14. Can they handle multiple performances in one event?"
-              value={sc.ai_faq_layer?.multiple_performances}
-              onChange={(v) =>
-                patchSc({
-                  ai_faq_layer: {
-                    ...sc.ai_faq_layer,
-                    multiple_performances: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="sc_faq_beginner"
-              label="Q15. Is choreography beginner-friendly?"
-              value={sc.ai_faq_layer?.beginner_friendly}
-              onChange={(v) =>
-                patchSc({
-                  ai_faq_layer: {
-                    ...sc.ai_faq_layer,
-                    beginner_friendly: v,
-                  },
-                })
-              }
-            />
-          </Accordion.Body>
-        </Accordion.Item>
       </Accordion>
 
       {!embedded && (

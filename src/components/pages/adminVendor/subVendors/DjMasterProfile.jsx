@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useEffect } from "react";
 import { Accordion, Form } from "react-bootstrap";
 import {
   DJ_VENDOR_TYPE,
@@ -151,22 +151,83 @@ const DjMasterProfile = ({
   embedded = false,
 }) => {
   const dm = useMemo(() => {
-    const raw =
-      formData.dj_master || formData.attributes?.dj_master;
-    if (raw && typeof raw === "object")
-      return mergeDeep(emptyDjMaster(), raw);
-    return emptyDjMaster();
+    const raw = formData.dj_master || formData.attributes?.dj_master;
+    const base = emptyDjMaster();
+
+    if (raw && typeof raw === "object") {
+      // If the data already has the new nested structure, mergeDeep will handle it.
+      // But we also need to migrate any old flat data into the nested structure.
+      const migrated = mergeDeep(base, raw);
+
+      // Migrate identity
+      if (raw.brand_name && !raw.identity?.brand_name) migrated.identity.brand_name = raw.brand_name;
+      if (raw.primary_city && !raw.identity?.primary_city) migrated.identity.primary_city = raw.primary_city;
+      if (raw.service_cities && !raw.identity?.service_cities) migrated.identity.service_cities = raw.service_cities;
+      if (raw.vendor_type && !raw.identity?.vendor_type) migrated.identity.vendor_type = raw.vendor_type;
+      if (raw.years_of_experience && !raw.identity?.years_of_experience) migrated.identity.years_of_experience = raw.years_of_experience;
+      if (raw.travel_policy && !raw.identity?.travel_policy) migrated.identity.travel_policy = raw.travel_policy;
+      if (raw.languages && !raw.identity?.languages) migrated.identity.languages = raw.languages;
+
+      // Migrate services
+      if (raw.event_types && !raw.services?.event_types) migrated.services.event_types = raw.event_types;
+      if (raw.dj_formats && !raw.services?.dj_formats) migrated.services.dj_formats = raw.dj_formats;
+      if (raw.additional_services && !raw.services?.additional_services) migrated.services.additional_services = raw.additional_services;
+
+      // Migrate core_intelligence
+      if (raw.music_genres && !raw.core_intelligence?.music_genres) migrated.core_intelligence.music_genres = raw.music_genres;
+      if (raw.crowd_handling && !raw.core_intelligence?.crowd_handling) migrated.core_intelligence.crowd_handling = raw.crowd_handling;
+      if (raw.specialization_style && !raw.core_intelligence?.specialization_style) migrated.core_intelligence.specialization_style = raw.specialization_style;
+      if (raw.live_mixing_capability && !raw.core_intelligence?.live_mixing_capability) migrated.core_intelligence.live_mixing_capability = raw.live_mixing_capability;
+      if (raw.custom_playlist_support && !raw.core_intelligence?.custom_playlist_support) migrated.core_intelligence.custom_playlist_support = raw.custom_playlist_support;
+      if (raw.song_request_handling && !raw.core_intelligence?.song_request_handling) migrated.core_intelligence.song_request_handling = raw.song_request_handling;
+      if (raw.entry_sync && !raw.core_intelligence?.entry_sync) migrated.core_intelligence.entry_sync = raw.entry_sync;
+      if (raw.baraat_dj_setup && !raw.core_intelligence?.baraat_dj_setup) migrated.core_intelligence.baraat_dj_setup = raw.baraat_dj_setup;
+      if (raw.backup_dj_available && !raw.core_intelligence?.backup_dj_available) migrated.core_intelligence.backup_dj_available = raw.backup_dj_available;
+
+      // Migrate technical_setup
+      if (raw.equipment_ownership && !raw.technical_setup?.equipment_ownership) migrated.technical_setup.equipment_ownership = raw.equipment_ownership;
+      if (raw.sound_setup_capability && !raw.technical_setup?.sound_setup_capability) migrated.technical_setup.sound_setup_capability = raw.sound_setup_capability;
+      if (raw.lighting_setup && !raw.technical_setup?.lighting_setup) migrated.technical_setup.lighting_setup = raw.lighting_setup;
+      if (raw.console_types && !raw.technical_setup?.console_types) migrated.technical_setup.console_types = raw.console_types;
+      if (raw.power_backup && !raw.technical_setup?.power_backup) migrated.technical_setup.power_backup = raw.power_backup;
+      if (raw.setup_time_required && !raw.technical_setup?.setup_time_required) migrated.technical_setup.setup_time_required = raw.setup_time_required;
+      if (raw.technical_team_size && !raw.technical_setup?.technical_team_size) migrated.technical_setup.technical_team_size = raw.technical_team_size;
+
+      // Migrate pricing
+      if (raw.pricing_model && !raw.pricing?.pricing_model) migrated.pricing.pricing_model = raw.pricing_model;
+      if (raw.starting_price_range && !raw.pricing?.starting_price_range) migrated.pricing.starting_price_range = raw.starting_price_range;
+      if (raw.includes && !raw.pricing?.includes) migrated.pricing.includes = raw.includes;
+      if (raw.addon_charges && !raw.pricing?.addon_charges) migrated.pricing.addon_charges = raw.addon_charges;
+      if (raw.peak_season_pricing && !raw.pricing?.peak_season_pricing) migrated.pricing.peak_season_pricing = raw.peak_season_pricing;
+      if (raw.negotiation_flexibility && !raw.pricing?.negotiation_flexibility) migrated.pricing.negotiation_flexibility = raw.negotiation_flexibility;
+
+      // Migrate scale_capacity
+      if (raw.max_events_per_day && !raw.scale_capacity?.max_events_per_day) migrated.scale_capacity.max_events_per_day = raw.max_events_per_day;
+      if (raw.concurrent_events && !raw.scale_capacity?.concurrent_events) migrated.scale_capacity.concurrent_events = raw.concurrent_events;
+      if (raw.team_multi_event && !raw.scale_capacity?.team_multi_event) migrated.scale_capacity.team_multi_event = raw.team_multi_event;
+
+      // Migrate workflow
+      if (raw.advance_booking_time && !raw.workflow?.advance_booking_time) migrated.workflow.advance_booking_time = raw.advance_booking_time;
+      if (raw.booking_advance_percent && !raw.workflow?.booking_advance_percent) migrated.workflow.booking_advance_percent = raw.booking_advance_percent;
+      if (raw.cancellation_policy && !raw.workflow?.cancellation_policy) migrated.workflow.cancellation_policy = raw.cancellation_policy;
+      if (raw.coordination_mode && !raw.workflow?.coordination_mode) migrated.workflow.coordination_mode = raw.coordination_mode;
+      if (raw.pre_event_planning_call && !raw.workflow?.pre_event_planning_call) migrated.workflow.pre_event_planning_call = raw.pre_event_planning_call;
+
+      // Migrate portfolio_tagging
+      if (raw.event_mood_tags && !raw.portfolio_tagging?.event_mood_tags) migrated.portfolio_tagging.event_mood_tags = raw.event_mood_tags;
+      if (raw.music_style_tags && !raw.portfolio_tagging?.music_style_tags) migrated.portfolio_tagging.music_style_tags = raw.music_style_tags;
+      if (raw.celebrity_big_event_experience && !raw.portfolio_tagging?.celebrity_big_event_experience) migrated.portfolio_tagging.celebrity_big_event_experience = raw.celebrity_big_event_experience;
+
+      return migrated;
+    }
+    return base;
   }, [formData.dj_master, formData.attributes?.dj_master]);
 
   const patchDm = useCallback(
-    (partial) => {
+    (partial, replace = false) => {
       setFormData((prev) => {
-        const next = mergeDeep(
-          prev.dj_master ||
-            prev.attributes?.dj_master ||
-            emptyDjMaster(),
-          partial
-        );
+        const base = replace ? emptyDjMaster() : (prev.dj_master || prev.attributes?.dj_master || emptyDjMaster());
+        const next = mergeDeep(base, partial);
         return {
           ...prev,
           dj_master: next,
@@ -176,6 +237,21 @@ const DjMasterProfile = ({
     },
     [setFormData]
   );
+
+  // Sync migrated data back to formData so that hitting "Save" without editing
+  // still saves the newly structured data correctly.
+  useEffect(() => {
+    const raw = formData.dj_master || formData.attributes?.dj_master;
+    if (raw && typeof raw === "object") {
+      // Check if it's the old flat format by looking for a root property
+      // that should be nested (e.g. brand_name without identity.brand_name)
+      if (raw.brand_name && !raw.identity?.brand_name) {
+        patchDm(dm, true); // replace with the fully migrated 'dm'
+      } else if (raw.event_types && !raw.services?.event_types) {
+        patchDm(dm, true);
+      }
+    }
+  }, [dm, formData.dj_master, formData.attributes?.dj_master, patchDm]);
 
   const save = async () => {
     if (onSave) await onSave();
@@ -194,7 +270,7 @@ const DjMasterProfile = ({
         <Accordion.Item eventKey="0">
           <Accordion.Header>Section 1 — Basic identity</Accordion.Header>
           <Accordion.Body>
-            <div className="mb-3">
+            {/* <div className="mb-3">
               <label className="form-label fw-semibold">
                 Brand / Stage Name
               </label>
@@ -209,7 +285,7 @@ const DjMasterProfile = ({
                 }
                 placeholder="Enter Brand / Stage Name"
               />
-            </div>
+            </div> */}
             <SelectField
               label="Primary City"
               options={[
@@ -781,39 +857,6 @@ const DjMasterProfile = ({
           </Accordion.Body>
         </Accordion.Item>
 
-        {/* Section 9 — AI FAQ Layer */}
-        <Accordion.Item eventKey="8">
-          <Accordion.Header>
-            Section 9 — AI FAQ layer (structured)
-          </Accordion.Header>
-          <Accordion.Body>
-            <p className="text-muted fs-14 mb-3">
-              These answers power the AI FAQ matching on the vendor storefront.
-              Answer all 15 questions for best results.
-            </p>
-            {DJ_FAQ_QUESTIONS.map((q) => {
-              let options;
-              if (q.options === "song_request") options = DJ_FAQ_SONG_REQUEST_OPTIONS;
-              else if (q.options === "skill_level") options = DJ_FAQ_SKILL_LEVEL;
-              else options = DJ_FAQ_YES_NO;
-
-              return (
-                <FaqRadioField
-                  key={q.key}
-                  groupName={`dj_faq_${q.key}`}
-                  label={q.label}
-                  options={options}
-                  value={dm.ai_faq[q.key]}
-                  onChange={(v) =>
-                    patchDm({
-                      ai_faq: { ...dm.ai_faq, [q.key]: v },
-                    })
-                  }
-                />
-              );
-            })}
-          </Accordion.Body>
-        </Accordion.Item>
       </Accordion>
 
       {!embedded && (

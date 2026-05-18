@@ -146,8 +146,8 @@ const PreWeddingPhotographerMasterProfile = ({
       setFormData((prev) => {
         const next = mergeDeep(
           prev.pre_wedding_photographer_master ||
-            prev.attributes?.pre_wedding_photographer_master ||
-            emptyPreWeddingPhotographerMaster(),
+          prev.attributes?.pre_wedding_photographer_master ||
+          emptyPreWeddingPhotographerMaster(),
           partial
         );
         return {
@@ -196,7 +196,7 @@ const PreWeddingPhotographerMasterProfile = ({
                 patchPm({ identity: { ...pm.identity, vendor_type: v } })
               }
             />
-            <div className="mb-3">
+            {/* <div className="mb-3">
               <label className="form-label fw-semibold">Brand name</label>
               <Form.Control
                 type="text"
@@ -209,7 +209,7 @@ const PreWeddingPhotographerMasterProfile = ({
                 }
                 placeholder="Enter brand / studio name"
               />
-            </div>
+            </div> */}
             <MultiCheck
               label="Service presence"
               options={PWP_SERVICE_PRESENCE}
@@ -748,164 +748,6 @@ const PreWeddingPhotographerMasterProfile = ({
           </Accordion.Body>
         </Accordion.Item>
 
-        {/* Section 9 — AI FAQ Layer */}
-        <Accordion.Item eventKey="8">
-          <Accordion.Header>
-            Section 9 — AI FAQ layer (structured)
-          </Accordion.Header>
-          <Accordion.Body>
-            <YesNoField
-              groupName="pwp_faq_provide_shoots"
-              label="1. Do you provide pre-wedding photoshoots?"
-              value={pm.ai_faq_layer?.provide_pre_wedding_photoshoots}
-              onChange={(v) =>
-                patchPm({
-                  ai_faq_layer: { ...pm.ai_faq_layer, provide_pre_wedding_photoshoots: v },
-                })
-              }
-            />
-            <YesNoField
-              groupName="pwp_faq_cinematic"
-              label="2. Do you offer cinematic video shoots?"
-              value={pm.ai_faq_layer?.offer_cinematic_video_shoots}
-              onChange={(v) =>
-                patchPm({
-                  ai_faq_layer: { ...pm.ai_faq_layer, offer_cinematic_video_shoots: v },
-                })
-              }
-            />
-            <YesNoField
-              groupName="pwp_faq_drone"
-              label="3. Is drone shooting available?"
-              value={pm.ai_faq_layer?.drone_shooting_available}
-              onChange={(v) =>
-                patchPm({
-                  ai_faq_layer: { ...pm.ai_faq_layer, drone_shooting_available: v },
-                })
-              }
-            />
-            <YesNoField
-              groupName="pwp_faq_concepts"
-              label="4. Do you help with shoot concepts?"
-              value={pm.ai_faq_layer?.help_with_shoot_concepts}
-              onChange={(v) =>
-                patchPm({
-                  ai_faq_layer: { ...pm.ai_faq_layer, help_with_shoot_concepts: v },
-                })
-              }
-            />
-            <YesNoField
-              groupName="pwp_faq_travel"
-              label="5. Is travel included in your package?"
-              value={pm.ai_faq_layer?.travel_included}
-              onChange={(v) =>
-                patchPm({
-                  ai_faq_layer: { ...pm.ai_faq_layer, travel_included: v },
-                })
-              }
-            />
-            <YesNoField
-              groupName="pwp_faq_reels"
-              label="6. Can I get reels for Instagram?"
-              value={pm.ai_faq_layer?.reels_for_instagram}
-              onChange={(v) =>
-                patchPm({
-                  ai_faq_layer: { ...pm.ai_faq_layer, reels_for_instagram: v },
-                })
-              }
-            />
-            <YesNoField
-              groupName="pwp_faq_raw"
-              label="7. Do you provide raw images?"
-              value={pm.ai_faq_layer?.provide_raw_images}
-              onChange={(v) =>
-                patchPm({
-                  ai_faq_layer: { ...pm.ai_faq_layer, provide_raw_images: v },
-                })
-              }
-            />
-            <YesNoField
-              groupName="pwp_faq_same_day"
-              label="8. Is same-day shoot possible?"
-              value={pm.ai_faq_layer?.same_day_shoot_possible}
-              onChange={(v) =>
-                patchPm({
-                  ai_faq_layer: { ...pm.ai_faq_layer, same_day_shoot_possible: v },
-                })
-              }
-            />
-            <YesNoField
-              groupName="pwp_faq_destination"
-              label="9. Do you offer destination shoots?"
-              value={pm.ai_faq_layer?.offer_destination_shoots}
-              onChange={(v) =>
-                patchPm({
-                  ai_faq_layer: { ...pm.ai_faq_layer, offer_destination_shoots: v },
-                })
-              }
-            />
-            <YesNoField
-              groupName="pwp_faq_7_days"
-              label="10. Can I get edited photos within 7 days?"
-              value={pm.ai_faq_layer?.edited_photos_within_7_days}
-              onChange={(v) =>
-                patchPm({
-                  ai_faq_layer: { ...pm.ai_faq_layer, edited_photos_within_7_days: v },
-                })
-              }
-            />
-            <YesNoField
-              groupName="pwp_faq_outfit"
-              label="11. Do you provide outfit guidance?"
-              value={pm.ai_faq_layer?.provide_outfit_guidance}
-              onChange={(v) =>
-                patchPm({
-                  ai_faq_layer: { ...pm.ai_faq_layer, provide_outfit_guidance: v },
-                })
-              }
-            />
-            <YesNoField
-              groupName="pwp_faq_advance"
-              label="12. Is advance booking required?"
-              value={pm.ai_faq_layer?.advance_booking_required}
-              onChange={(v) =>
-                patchPm({
-                  ai_faq_layer: { ...pm.ai_faq_layer, advance_booking_required: v },
-                })
-              }
-            />
-            <YesNoField
-              groupName="pwp_faq_4k"
-              label="13. Do you shoot in 4K video?"
-              value={pm.ai_faq_layer?.shoot_in_4k_video}
-              onChange={(v) =>
-                patchPm({
-                  ai_faq_layer: { ...pm.ai_faq_layer, shoot_in_4k_video: v },
-                })
-              }
-            />
-            <YesNoField
-              groupName="pwp_faq_multi_day"
-              label="14. Can you handle multi-day shoots?"
-              value={pm.ai_faq_layer?.handle_multi_day_shoots}
-              onChange={(v) =>
-                patchPm({
-                  ai_faq_layer: { ...pm.ai_faq_layer, handle_multi_day_shoots: v },
-                })
-              }
-            />
-            <YesNoField
-              groupName="pwp_faq_full_package"
-              label="15. Do you provide full shoot packages (photo + video)?"
-              value={pm.ai_faq_layer?.provide_full_shoot_packages}
-              onChange={(v) =>
-                patchPm({
-                  ai_faq_layer: { ...pm.ai_faq_layer, provide_full_shoot_packages: v },
-                })
-              }
-            />
-          </Accordion.Body>
-        </Accordion.Item>
       </Accordion>
 
       {!embedded && (

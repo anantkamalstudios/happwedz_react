@@ -165,7 +165,7 @@ const FloristMasterProfile = ({
               value={fm.identity.vendor_type}
               onChange={(v) => patchFm({ identity: { ...fm.identity, vendor_type: v } })}
             />
-            <div className="mb-3">
+            {/* <div className="mb-3">
               <label className="form-label fw-semibold">Brand name</label>
               <Form.Control
                 type="text"
@@ -173,7 +173,7 @@ const FloristMasterProfile = ({
                 value={fm.identity.brand_name}
                 onChange={(e) => patchFm({ identity: { ...fm.identity, brand_name: e.target.value } })}
               />
-            </div>
+            </div> */}
             <MultiCheck
               label="Service presence"
               options={SERVICE_PRESENCE}
@@ -475,27 +475,6 @@ const FloristMasterProfile = ({
           </Accordion.Body>
         </Accordion.Item>
 
-        {/* Section 9 — AI FAQ Layer */}
-        <Accordion.Item eventKey="8">
-          <Accordion.Header>Section 9 — AI FAQ layer</Accordion.Header>
-          <Accordion.Body>
-            <YesNoField groupName="faqFreshFlowers" label="Do you provide fresh flowers?" value={fm.ai_faq.provides_fresh_flowers} onChange={(v) => patchFm({ ai_faq: { ...fm.ai_faq, provides_fresh_flowers: v } })} />
-            <YesNoField groupName="faqWeddingFloralDecor" label="Do you handle wedding floral decor?" value={fm.ai_faq.handles_wedding_floral_decor} onChange={(v) => patchFm({ ai_faq: { ...fm.ai_faq, handles_wedding_floral_decor: v } })} />
-            <YesNoField groupName="faqSameDayDelivery" label="Is same-day delivery available?" value={fm.ai_faq.same_day_delivery_available} onChange={(v) => patchFm({ ai_faq: { ...fm.ai_faq, same_day_delivery_available: v } })} />
-            <YesNoField groupName="faqBridalBouquets" label="Do you provide bridal bouquets?" value={fm.ai_faq.provides_bridal_bouquets} onChange={(v) => patchFm({ ai_faq: { ...fm.ai_faq, provides_bridal_bouquets: v } })} />
-            <YesNoField groupName="faqExoticFlowers" label="Are exotic/imported flowers available?" value={fm.ai_faq.exotic_imported_flowers_available} onChange={(v) => patchFm({ ai_faq: { ...fm.ai_faq, exotic_imported_flowers_available: v } })} />
-            <YesNoField groupName="faqBulkSupply" label="Do you offer bulk flower supply?" value={fm.ai_faq.offers_bulk_flower_supply} onChange={(v) => patchFm({ ai_faq: { ...fm.ai_faq, offers_bulk_flower_supply: v } })} />
-            <YesNoField groupName="faqCustomization" label="Is customization available for arrangements?" value={fm.ai_faq.customization_available} onChange={(v) => patchFm({ ai_faq: { ...fm.ai_faq, customization_available: v } })} />
-            <YesNoField groupName="faqGarlands" label="Do you provide flower garlands (var mala)?" value={fm.ai_faq.provides_flower_garlands} onChange={(v) => patchFm({ ai_faq: { ...fm.ai_faq, provides_flower_garlands: v } })} />
-            <YesNoField groupName="faqSetupIncluded" label="Is setup included for events?" value={fm.ai_faq.setup_included_for_events} onChange={(v) => patchFm({ ai_faq: { ...fm.ai_faq, setup_included_for_events: v } })} />
-            <YesNoField groupName="faqCarDecor" label="Do you provide car decoration flowers?" value={fm.ai_faq.provides_car_decoration_flowers} onChange={(v) => patchFm({ ai_faq: { ...fm.ai_faq, provides_car_decoration_flowers: v } })} />
-            <YesNoField groupName="faqPreservedFlowers" label="Are preserved flowers available?" value={fm.ai_faq.preserved_flowers_available} onChange={(v) => patchFm({ ai_faq: { ...fm.ai_faq, preserved_flowers_available: v } })} />
-            <YesNoField groupName="faqDeliveryIncluded" label="Is delivery included in pricing?" value={fm.ai_faq.delivery_included_in_pricing} onChange={(v) => patchFm({ ai_faq: { ...fm.ai_faq, delivery_included_in_pricing: v } })} />
-            <YesNoField groupName="faqEcoFriendly" label="Do you offer eco-friendly flower options?" value={fm.ai_faq.eco_friendly_options} onChange={(v) => patchFm({ ai_faq: { ...fm.ai_faq, eco_friendly_options: v } })} />
-            <YesNoField groupName="faqLargeWedding" label="Can you handle large wedding orders?" value={fm.ai_faq.handles_large_wedding_orders} onChange={(v) => patchFm({ ai_faq: { ...fm.ai_faq, handles_large_wedding_orders: v } })} />
-            <YesNoField groupName="faqPremiumPackaging" label="Do you provide premium packaging options?" value={fm.ai_faq.provides_premium_packaging} onChange={(v) => patchFm({ ai_faq: { ...fm.ai_faq, provides_premium_packaging: v } })} />
-          </Accordion.Body>
-        </Accordion.Item>
       </Accordion>
 
       {!embedded && (

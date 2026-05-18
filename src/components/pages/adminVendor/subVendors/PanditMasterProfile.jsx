@@ -159,7 +159,7 @@ const PanditMasterProfile = ({
               value={pm.identity.vendor_type}
               onChange={(v) => patchPm({ identity: { ...pm.identity, vendor_type: v } })}
             />
-            <div className="mb-3">
+            {/* <div className="mb-3">
               <label className="form-label fw-semibold">Pandit name</label>
               <Form.Control
                 type="text"
@@ -167,7 +167,7 @@ const PanditMasterProfile = ({
                 value={pm.identity.pandit_name}
                 onChange={(e) => patchPm({ identity: { ...pm.identity, pandit_name: e.target.value } })}
               />
-            </div>
+            </div> */}
             <MultiCheck
               label="Service presence"
               options={SERVICE_PRESENCE}
@@ -487,27 +487,6 @@ const PanditMasterProfile = ({
           </Accordion.Body>
         </Accordion.Item>
 
-        {/* Section 9 — AI FAQ Layer */}
-        <Accordion.Item eventKey="8">
-          <Accordion.Header>Section 9 — AI FAQ layer</Accordion.Header>
-          <Accordion.Body>
-            <YesNoField groupName="faqFullWeddingRituals" label="Do you perform full wedding rituals?" value={pm.ai_faq.performs_full_wedding_rituals} onChange={(v) => patchPm({ ai_faq: { ...pm.ai_faq, performs_full_wedding_rituals: v } })} />
-            <YesNoField groupName="faqPoojasamagri" label="Do you provide pooja samagri?" value={pm.ai_faq.provides_pooja_samagri} onChange={(v) => patchPm({ ai_faq: { ...pm.ai_faq, provides_pooja_samagri: v } })} />
-            <YesNoField groupName="faqDestinationWeddings" label="Can you conduct destination weddings?" value={pm.ai_faq.conducts_destination_weddings} onChange={(v) => patchPm({ ai_faq: { ...pm.ai_faq, conducts_destination_weddings: v } })} />
-            <YesNoField groupName="faqExplainsRituals" label="Do you explain rituals during ceremony?" value={pm.ai_faq.explains_rituals_during_ceremony} onChange={(v) => patchPm({ ai_faq: { ...pm.ai_faq, explains_rituals_during_ceremony: v } })} />
-            <YesNoField groupName="faqKundliMatching" label="Is kundli matching available?" value={pm.ai_faq.kundli_matching_available} onChange={(v) => patchPm({ ai_faq: { ...pm.ai_faq, kundli_matching_available: v } })} />
-            <YesNoField groupName="faqCustomizedByFamily" label="Can rituals be customized based on family traditions?" value={pm.ai_faq.rituals_customized_by_family_tradition} onChange={(v) => patchPm({ ai_faq: { ...pm.ai_faq, rituals_customized_by_family_tradition: v } })} />
-            <YesNoField groupName="faqInterfaithWeddings" label="Do you perform interfaith weddings?" value={pm.ai_faq.performs_interfaith_weddings} onChange={(v) => patchPm({ ai_faq: { ...pm.ai_faq, performs_interfaith_weddings: v } })} />
-            <YesNoField groupName="faqHavanIncluded" label="Is havan included in ceremony?" value={pm.ai_faq.havan_included} onChange={(v) => patchPm({ ai_faq: { ...pm.ai_faq, havan_included: v } })} />
-            <YesNoField groupName="faqAssistantPandits" label="Do you provide assistant pandits?" value={pm.ai_faq.provides_assistant_pandits} onChange={(v) => patchPm({ ai_faq: { ...pm.ai_faq, provides_assistant_pandits: v } })} />
-            <YesNoField groupName="faqAdvanceBooking" label="Is advance booking required?" value={pm.ai_faq.advance_booking_required} onChange={(v) => patchPm({ ai_faq: { ...pm.ai_faq, advance_booking_required: v } })} />
-            <YesNoField groupName="faqRegionalLanguage" label="Can ceremony be conducted in regional language?" value={pm.ai_faq.ceremony_in_regional_language} onChange={(v) => patchPm({ ai_faq: { ...pm.ai_faq, ceremony_in_regional_language: v } })} />
-            <YesNoField groupName="faqTravelsOutstation" label="Do you travel outstation for weddings?" value={pm.ai_faq.travels_outstation} onChange={(v) => patchPm({ ai_faq: { ...pm.ai_faq, travels_outstation: v } })} />
-            <YesNoField groupName="faqSameDayBooking" label="Is same-day booking possible?" value={pm.ai_faq.same_day_booking_possible} onChange={(v) => patchPm({ ai_faq: { ...pm.ai_faq, same_day_booking_possible: v } })} />
-            <YesNoField groupName="faqMuhuratGuidance" label="Do you provide muhurat guidance?" value={pm.ai_faq.provides_muhurat_guidance} onChange={(v) => patchPm({ ai_faq: { ...pm.ai_faq, provides_muhurat_guidance: v } })} />
-            <YesNoField groupName="faqMicrophoneSetup" label="Is microphone/audio setup required?" value={pm.ai_faq.microphone_audio_setup_required} onChange={(v) => patchPm({ ai_faq: { ...pm.ai_faq, microphone_audio_setup_required: v } })} />
-          </Accordion.Body>
-        </Accordion.Item>
       </Accordion>
 
       {!embedded && (

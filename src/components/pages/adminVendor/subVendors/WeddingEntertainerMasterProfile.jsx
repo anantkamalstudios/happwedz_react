@@ -142,8 +142,8 @@ const WeddingEntertainerMasterProfile = ({
       setFormData((prev) => {
         const next = mergeDeep(
           prev.wedding_entertainer_master ||
-            prev.attributes?.wedding_entertainer_master ||
-            emptyWeddingEntertainerMaster(),
+          prev.attributes?.wedding_entertainer_master ||
+          emptyWeddingEntertainerMaster(),
           partial
         );
         return {
@@ -176,7 +176,7 @@ const WeddingEntertainerMasterProfile = ({
         <Accordion.Item eventKey="0">
           <Accordion.Header>Section 1 — Basic identity</Accordion.Header>
           <Accordion.Body>
-            <div className="mb-3">
+            {/* <div className="mb-3">
               <label className="form-label fw-semibold">
                 Brand / Stage Name
               </label>
@@ -191,7 +191,7 @@ const WeddingEntertainerMasterProfile = ({
                 }
                 placeholder="Enter Brand / Stage Name"
               />
-            </div>
+            </div> */}
             <SelectField
               label="Primary City"
               options={[
@@ -784,209 +784,6 @@ const WeddingEntertainerMasterProfile = ({
           </Accordion.Body>
         </Accordion.Item>
 
-        {/* Section 9 — AI FAQ Layer */}
-        <Accordion.Item eventKey="8">
-          <Accordion.Header>
-            Section 9 — AI FAQ layer (structured)
-          </Accordion.Header>
-          <Accordion.Body>
-            <YesNoField
-              groupName="we_faq_kids"
-              label="Q1. Is entertainer suitable for kids?"
-              value={we.ai_faq_layer?.suitable_for_kids}
-              onChange={(v) =>
-                patchWe({
-                  ai_faq_layer: {
-                    ...we.ai_faq_layer,
-                    suitable_for_kids: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="we_faq_large_crowds"
-              label="Q2. Can entertainer engage large crowds (300+)?"
-              value={we.ai_faq_layer?.engage_large_crowds}
-              onChange={(v) =>
-                patchWe({
-                  ai_faq_layer: {
-                    ...we.ai_faq_layer,
-                    engage_large_crowds: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="we_faq_interactive"
-              label="Q3. Is performance interactive?"
-              value={we.ai_faq_layer?.performance_interactive}
-              onChange={(v) =>
-                patchWe({
-                  ai_faq_layer: {
-                    ...we.ai_faq_layer,
-                    performance_interactive: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="we_faq_stage"
-              label="Q4. Does entertainer require stage setup?"
-              value={we.ai_faq_layer?.require_stage_setup}
-              onChange={(v) =>
-                patchWe({
-                  ai_faq_layer: {
-                    ...we.ai_faq_layer,
-                    require_stage_setup: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="we_faq_equipment"
-              label="Q5. Does entertainer provide own equipment?"
-              value={we.ai_faq_layer?.provide_own_equipment}
-              onChange={(v) =>
-                patchWe({
-                  ai_faq_layer: {
-                    ...we.ai_faq_layer,
-                    provide_own_equipment: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="we_faq_customized"
-              label="Q6. Can performance be customized?"
-              value={we.ai_faq_layer?.performance_customized}
-              onChange={(v) =>
-                patchWe({
-                  ai_faq_layer: {
-                    ...we.ai_faq_layer,
-                    performance_customized: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="we_faq_cocktail"
-              label="Q7. Is entertainer suitable for cocktail events?"
-              value={we.ai_faq_layer?.suitable_cocktail_events}
-              onChange={(v) =>
-                patchWe({
-                  ai_faq_layer: {
-                    ...we.ai_faq_layer,
-                    suitable_cocktail_events: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="we_faq_slots"
-              label="Q8. Can entertainer perform multiple slots?"
-              value={we.ai_faq_layer?.perform_multiple_slots}
-              onChange={(v) =>
-                patchWe({
-                  ai_faq_layer: {
-                    ...we.ai_faq_layer,
-                    perform_multiple_slots: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="we_faq_energy"
-              label="Q9. Is this a high-energy act?"
-              value={we.ai_faq_layer?.high_energy_act}
-              onChange={(v) =>
-                patchWe({
-                  ai_faq_layer: {
-                    ...we.ai_faq_layer,
-                    high_energy_act: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="we_faq_travel"
-              label="Q10. Does entertainer travel outside city?"
-              value={we.ai_faq_layer?.travel_outside_city}
-              onChange={(v) =>
-                patchWe({
-                  ai_faq_layer: {
-                    ...we.ai_faq_layer,
-                    travel_outside_city: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="we_faq_sound"
-              label="Q11. Is sound system required from client?"
-              value={we.ai_faq_layer?.sound_system_required}
-              onChange={(v) =>
-                patchWe({
-                  ai_faq_layer: {
-                    ...we.ai_faq_layer,
-                    sound_system_required: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="we_faq_mixed_audience"
-              label="Q12. Can entertainer handle mixed audience?"
-              value={we.ai_faq_layer?.handle_mixed_audience}
-              onChange={(v) =>
-                patchWe({
-                  ai_faq_layer: {
-                    ...we.ai_faq_layer,
-                    handle_mixed_audience: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="we_faq_costume"
-              label="Q13. Are costume changes included?"
-              value={we.ai_faq_layer?.costume_changes_included}
-              onChange={(v) =>
-                patchWe({
-                  ai_faq_layer: {
-                    ...we.ai_faq_layer,
-                    costume_changes_included: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="we_faq_outdoor"
-              label="Q14. Is performance suitable for outdoor venues?"
-              value={we.ai_faq_layer?.suitable_outdoor_venues}
-              onChange={(v) =>
-                patchWe({
-                  ai_faq_layer: {
-                    ...we.ai_faq_layer,
-                    suitable_outdoor_venues: v,
-                  },
-                })
-              }
-            />
-            <YesNoField
-              groupName="we_faq_last_minute"
-              label="Q15. Can entertainer handle last-minute bookings?"
-              value={we.ai_faq_layer?.handle_last_minute}
-              onChange={(v) =>
-                patchWe({
-                  ai_faq_layer: {
-                    ...we.ai_faq_layer,
-                    handle_last_minute: v,
-                  },
-                })
-              }
-            />
-          </Accordion.Body>
-        </Accordion.Item>
       </Accordion>
 
       {!embedded && (
