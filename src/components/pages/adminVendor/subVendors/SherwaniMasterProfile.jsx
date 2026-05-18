@@ -145,11 +145,6 @@ const SherwaniMasterProfile = ({
         <Accordion.Item eventKey="0">
           <Accordion.Header>Section 1 — Basic Identity</Accordion.Header>
           <Accordion.Body>
-            <SelectField label="Vendor Type" options={SHERWANI_VENDOR_TYPE} value={dm.identity.vendor_type} onChange={(v) => patchDm({ identity: { ...dm.identity, vendor_type: v } })} />
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Brand Name</label>
-              <Form.Control className="fs-14" value={dm.identity.brand_name} onChange={(e) => patchDm({ identity: { ...dm.identity, brand_name: e.target.value } })} />
-            </div>
             <Form.Check
               type="switch"
               label="Sell on E-commerce"
@@ -253,26 +248,6 @@ const SherwaniMasterProfile = ({
           </Accordion.Body>
         </Accordion.Item>
 
-        <Accordion.Item eventKey="8">
-          <Accordion.Header>Section 9 — AI FAQ Layer</Accordion.Header>
-          <Accordion.Body>
-            <YesNoField groupName="shFaq1" label="Do you offer sherwanis for groom?" value={dm.ai_faq.sherwanis_for_groom} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, sherwanis_for_groom: v } })} />
-            <YesNoField groupName="shFaq2" label="Is customization available?" value={dm.ai_faq.customization_available} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, customization_available: v } })} />
-            <YesNoField groupName="shFaq3" label="Do you provide rental sherwanis?" value={dm.ai_faq.rental_sherwanis} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, rental_sherwanis: v } })} />
-            <YesNoField groupName="shFaq4" label="Are heavy embroidered sherwanis available?" value={dm.ai_faq.heavy_embroidered_sherwanis} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, heavy_embroidered_sherwanis: v } })} />
-            <YesNoField groupName="shFaq5" label="Do you offer indo-western sherwanis?" value={dm.ai_faq.indo_western_sherwanis} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, indo_western_sherwanis: v } })} />
-            <YesNoField groupName="shFaq6" label="Is trial available before purchase?" value={dm.ai_faq.trial_available_before_purchase} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, trial_available_before_purchase: v } })} />
-            <YesNoField groupName="shFaq7" label="Do you provide safa and accessories?" value={dm.ai_faq.safa_and_accessories} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, safa_and_accessories: v } })} />
-            <YesNoField groupName="shFaq8" label="Can I get sherwani within 7 days?" value={dm.ai_faq.sherwani_within_7_days} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, sherwani_within_7_days: v } })} />
-            <YesNoField groupName="shFaq9" label="Are plus sizes available?" value={dm.ai_faq.plus_sizes_available} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, plus_sizes_available: v } })} />
-            <YesNoField groupName="shFaq10" label="Do you provide home measurement services?" value={dm.ai_faq.home_measurement_services} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, home_measurement_services: v } })} />
-            <YesNoField groupName="shFaq11" label="Is alteration included?" value={dm.ai_faq.alteration_included} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, alteration_included: v } })} />
-            <YesNoField groupName="shFaq12" label="Do you offer groom squad outfits?" value={dm.ai_faq.groom_squad_outfits} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, groom_squad_outfits: v } })} />
-            <YesNoField groupName="shFaq13" label="Are velvet sherwanis available?" value={dm.ai_faq.velvet_sherwanis} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, velvet_sherwanis: v } })} />
-            <YesNoField groupName="shFaq14" label="Do you provide complete set (top + bottom)?" value={dm.ai_faq.complete_set_top_bottom} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, complete_set_top_bottom: v } })} />
-            <YesNoField groupName="shFaq15" label="Is express delivery available?" value={dm.ai_faq.express_delivery} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, express_delivery: v } })} />
-          </Accordion.Body>
-        </Accordion.Item>
       </Accordion>
 
       {!embedded && (

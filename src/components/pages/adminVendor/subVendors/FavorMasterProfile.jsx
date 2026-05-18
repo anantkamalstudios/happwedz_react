@@ -136,11 +136,6 @@ const FavorMasterProfile = ({
         <Accordion.Item eventKey="0">
           <Accordion.Header>Section 1 — Basic Identity</Accordion.Header>
           <Accordion.Body>
-            <SelectField label="Vendor Type" options={FAVOR_VENDOR_TYPE} value={dm.identity.vendor_type} onChange={(v) => patchDm({ identity: { ...dm.identity, vendor_type: v } })} />
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Brand Name</label>
-              <Form.Control className="fs-14" value={dm.identity.brand_name} onChange={(e) => patchDm({ identity: { ...dm.identity, brand_name: e.target.value } })} />
-            </div>
             <SelectField label="Years of Experience" options={YEARS_OF_EXPERIENCE} value={dm.identity.years_of_experience} onChange={(v) => patchDm({ identity: { ...dm.identity, years_of_experience: v } })} />
             <div className="mb-3">
               <label className="form-label fw-semibold">Primary City</label>
@@ -246,28 +241,6 @@ const FavorMasterProfile = ({
             </div>
           </Accordion.Body>
         </Accordion.Item>
-
-        <Accordion.Item eventKey="9">
-          <Accordion.Header>Section 10 — AI FAQ</Accordion.Header>
-          <Accordion.Body>
-            <YesNoField groupName="faqFvBulk" label="Can vendor handle bulk orders (500+)?" value={dm.ai_faq.handle_bulk_orders} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, handle_bulk_orders: v } })} />
-            <YesNoField groupName="faqFvCust" label="Are favors customizable?" value={dm.ai_faq.favors_customizable} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, favors_customizable: v } })} />
-            <YesNoField groupName="faqFvEdi" label="Are edible favors available?" value={dm.ai_faq.edible_favors_available} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, edible_favors_available: v } })} />
-            <SelectField label="What is shelf life of edible favors?" options={["<7 days", "7–30 days", "30+ days"]} value={dm.ai_faq.shelf_life_of_edible} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, shelf_life_of_edible: v } })} />
-            <YesNoField groupName="faqFvEco" label="Are eco-friendly favors available?" value={dm.ai_faq.eco_friendly_favors} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, eco_friendly_favors: v } })} />
-            <YesNoField groupName="faqFvName" label="Can favors be personalized with names or tags?" value={dm.ai_faq.personalized_with_names} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, personalized_with_names: v } })} />
-            <YesNoField groupName="faqFvPack" label="Does vendor provide packaging?" value={dm.ai_faq.provide_packaging} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, provide_packaging: v } })} />
-            <YesNoField groupName="faqFvDel" label="Can vendor deliver across India?" value={dm.ai_faq.deliver_across_india} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, deliver_across_india: v } })} />
-            <YesNoField groupName="faqFvReu" label="Are favors reusable?" value={dm.ai_faq.favors_reusable} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, favors_reusable: v } })} />
-            <YesNoField groupName="faqFvMin" label="Is minimum order quantity required?" value={dm.ai_faq.minimum_order_quantity_required} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, minimum_order_quantity_required: v } })} />
-            <YesNoField groupName="faqFvUrg" label="Can vendor handle urgent orders?" value={dm.ai_faq.handle_urgent_orders} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, handle_urgent_orders: v } })} />
-            <YesNoField groupName="faqFvFrag" label="Are fragile items safely packed?" value={dm.ai_faq.fragile_items_safely_packed} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, fragile_items_safely_packed: v } })} />
-            <YesNoField groupName="faqFvThem" label="Can vendor match wedding theme?" value={dm.ai_faq.match_wedding_theme} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, match_wedding_theme: v } })} />
-            <YesNoField groupName="faqFvKid" label="Are favors suitable for kids?" value={dm.ai_faq.suitable_for_kids} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, suitable_for_kids: v } })} />
-            <YesNoField groupName="faqFvLux" label="Are premium/luxury favors available?" value={dm.ai_faq.premium_luxury_favors_available} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, premium_luxury_favors_available: v } })} />
-          </Accordion.Body>
-        </Accordion.Item>
-
       </Accordion>
 
       {!embedded && (

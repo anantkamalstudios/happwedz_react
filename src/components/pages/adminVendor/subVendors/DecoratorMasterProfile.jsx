@@ -135,11 +135,6 @@ const DecoratorMasterProfile = ({
           <Accordion.Header>Section 1 — Basic Identity</Accordion.Header>
           <Accordion.Body>
             <div className="mb-3">
-              <label className="form-label fw-semibold">Brand / Company Name</label>
-              <Form.Control className="fs-14" value={dm.identity.brand_company_name} onChange={(e) => patchDm({ identity: { ...dm.identity, brand_company_name: e.target.value } })} />
-            </div>
-            <SelectField label="Decorator Type" options={DECORATOR_TYPE} value={dm.identity.decorator_type} onChange={(v) => patchDm({ identity: { ...dm.identity, decorator_type: v } })} />
-            <div className="mb-3">
               <label className="form-label fw-semibold">Years of Experience</label>
               <Form.Control type="number" className="fs-14" value={dm.identity.years_of_experience} onChange={(e) => patchDm({ identity: { ...dm.identity, years_of_experience: e.target.value } })} />
             </div>
@@ -256,28 +251,7 @@ const DecoratorMasterProfile = ({
               <Form.Control as="textarea" rows={3} className="fs-14" value={dm.portfolio.notes} onChange={(e) => patchDm({ portfolio: { ...dm.portfolio, notes: e.target.value } })} />
             </div>
           </Accordion.Body>
-        </Accordion.Item>
-
-        <Accordion.Item eventKey="11">
-          <Accordion.Header>Section 12 — AI FAQ</Accordion.Header>
-          <Accordion.Body>
-            <YesNoField groupName="faqDecFull" label="Do you provide full venue decor?" value={dm.ai_faq.full_venue_decor} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, full_venue_decor: v } })} />
-            <YesNoField groupName="faqDecFresh" label="Fresh flowers used?" value={dm.ai_faq.fresh_flowers_used} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, fresh_flowers_used: v } })} />
-            <YesNoField groupName="faqDecCustom" label="Custom themes available?" value={dm.ai_faq.custom_themes} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, custom_themes: v } })} />
-            <YesNoField groupName="faqDecMood" label="Moodboard provided?" value={dm.ai_faq.moodboard_provided} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, moodboard_provided: v } })} />
-            <YesNoField groupName="faqDec3d" label="3D design available?" value={dm.ai_faq.three_d_design} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, three_d_design: v } })} />
-            <YesNoField groupName="faqDecOut" label="Outdoor setups supported?" value={dm.ai_faq.outdoor_supported} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, outdoor_supported: v } })} />
-            <YesNoField groupName="faqDecDest" label="Destination weddings supported?" value={dm.ai_faq.destination_weddings} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, destination_weddings: v } })} />
-            <YesNoField groupName="faqDecLight" label="Lighting included?" value={dm.ai_faq.lighting_included} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, lighting_included: v } })} />
-            <YesNoField groupName="faqDecSpec" label="Special effects available?" value={dm.ai_faq.special_effects_available} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, special_effects_available: v } })} />
-            <SelectField label="Setup time required?" options={SETUP_TIME_REQUIRED} value={dm.ai_faq.setup_time_required} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, setup_time_required: v } })} />
-            <SelectField label="Budget range handled?" options={BUDGET_RANGE_HANDLED} value={dm.ai_faq.budget_range} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, budget_range: v } })} />
-            <YesNoField groupName="faqDecMulti" label="Multiple events handled?" value={dm.ai_faq.multiple_events} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, multiple_events: v } })} />
-            <YesNoField groupName="faqDecAdv" label="Advance required?" value={dm.ai_faq.advance_required} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, advance_required: v } })} />
-            <SelectField label="Cancellation policy?" options={CANCELLATION_POLICY_DECORATOR} value={dm.ai_faq.cancellation_policy} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, cancellation_policy: v } })} />
-            <SelectField label="Best known for?" options={BEST_KNOWN_FOR_DECORATOR} value={dm.ai_faq.best_known_for} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, best_known_for: v } })} />
-          </Accordion.Body>
-        </Accordion.Item>
+          </Accordion.Item>
 
       </Accordion>
 

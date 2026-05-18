@@ -45,6 +45,31 @@ function Faq({ formData, setFormData, onSave }) {
     fetchAnswers();
   }, [vendor?.id]);
 
+  const [subcatName, setSubcatName] = useState("");
+
+  useEffect(() => {
+    const fetchSubcategory = async () => {
+      if (vendor?.vendor_type_id) {
+        try {
+          const res = await fetch(`https://happywedz.com/api/vendor-types/${vendor.vendor_type_id}`);
+          if (!res.ok) return;
+          const typeData = await res.json();
+          const subcategoryId = formData.vendor_subcategory_id || vendor?.vendor_subcategory_id;
+          const subcats = typeData.subcategories || [];
+          const subcat = subcats.find(s => s.id == subcategoryId);
+          if (subcat && subcat.name) {
+            setSubcatName(subcat.name);
+          } else {
+            setSubcatName(typeData.name || "");
+          }
+        } catch (err) {
+          console.error("Error fetching subcategory for FAQs:", err);
+        }
+      }
+    };
+    fetchSubcategory();
+  }, [vendor?.vendor_type_id, formData.vendor_subcategory_id, vendor?.vendor_subcategory_id]);
+
   useEffect(() => {
     if (vendor?.vendor_type_id) {
       const vendorTypeKey = Object.keys(FaqQuestions).find(
@@ -52,12 +77,71 @@ function Faq({ formData, setFormData, onSave }) {
       );
 
       if (vendorTypeKey) {
-        setQuestions(FaqQuestions[vendorTypeKey].questions);
+        const allQuestions = FaqQuestions[vendorTypeKey].questions || [];
+        const normSubcat = (subcatName || "").trim().toLowerCase();
+
+        // 1. Groomwear (vendor_type_id: 11)
+        if (vendor.vendor_type_id === 11) {
+          const isSherwani = normSubcat.includes("sherwani");
+          const isWeddingSuit = normSubcat.includes("suit") || normSubcat.includes("wedding suite");
+
+          const filtered = allQuestions.filter(q => {
+            const qid = q.id;
+            // Standard questions (401 - 410) are always shown
+            if (qid >= 401 && qid <= 410) return true;
+            // Sherwani questions (411 - 425)
+            if (qid >= 411 && qid <= 425) return isSherwani;
+            // Wedding suit questions (426 - 435)
+            if (qid >= 426 && qid <= 435) return isWeddingSuit;
+            return true;
+          });
+          setQuestions(filtered);
+        }
+        // 2. Decorators (vendor_type_id: 4)
+        else if (vendor.vendor_type_id === 4) {
+          const isDecorator = normSubcat.includes("decorator") || normSubcat.includes("decor") || normSubcat.includes("event styling");
+          // Wedding Planners (normSubcat includes "planner" or "planning") has no AI FAQs
+          const filtered = allQuestions.filter(q => {
+            const qid = q.id;
+            // Standard questions (1201 - 1212) are always shown
+            if (qid >= 1201 && qid <= 1212) return true;
+            // Decorator questions (1213 - 1225)
+            if (qid >= 1213 && qid <= 1225) return isDecorator;
+            return true;
+          });
+          setQuestions(filtered);
+        }
+        // 3. Invites & Gifts (vendor_type_id: 9)
+        else if (vendor.vendor_type_id === 9) {
+          const isTrousseauPacker = normSubcat.includes("trousseau packer") || normSubcat.includes("trousseau pack");
+          const isGift = normSubcat === "gifts" || normSubcat === "gift" || normSubcat.includes("gifting") || normSubcat === "invitation gifts";
+          const isFavor = normSubcat.includes("favor") || normSubcat.includes("favour");
+          const isInvitation = (normSubcat.includes("invitation") || normSubcat.includes("invite")) && !isGift;
+
+          const filtered = allQuestions.filter(q => {
+            const qid = q.id;
+            // Standard questions (1501 - 1515) are always shown
+            if (qid >= 1501 && qid <= 1515) return true;
+            // Trousseau Packer questions (2116 - 2129)
+            if (qid >= 2116 && qid <= 2129) return isTrousseauPacker;
+            // Gifts questions (2130 - 2144)
+            if (qid >= 2130 && qid <= 2144) return isGift;
+            // Favors questions (2145 - 2159)
+            if (qid >= 2145 && qid <= 2159) return isFavor;
+            // Invitations questions (2160 - 2172)
+            if (qid >= 2160 && qid <= 2172) return isInvitation;
+            return true;
+          });
+          setQuestions(filtered);
+        }
+        else {
+          setQuestions(allQuestions);
+        }
       } else {
         setQuestions([]);
       }
     }
-  }, [vendor?.vendor_type_id]);
+  }, [vendor?.vendor_type_id, subcatName]);
 
   useEffect(() => {
     setFormData((prev) => ({ ...prev, faqs: answers }));

@@ -146,11 +146,6 @@ const WeddingSuitMasterProfile = ({
         <Accordion.Item eventKey="0">
           <Accordion.Header>Section 1 — Basic Identity</Accordion.Header>
           <Accordion.Body>
-            <SelectField label="Vendor Type" options={SUIT_VENDOR_TYPE} value={dm.identity.vendor_type} onChange={(v) => patchDm({ identity: { ...dm.identity, vendor_type: v } })} />
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Brand Name</label>
-              <Form.Control className="fs-14" value={dm.identity.brand_name} onChange={(e) => patchDm({ identity: { ...dm.identity, brand_name: e.target.value } })} />
-            </div>
             <Form.Check
               type="switch"
               label="Sell on E-commerce"
@@ -255,26 +250,6 @@ const WeddingSuitMasterProfile = ({
           </Accordion.Body>
         </Accordion.Item>
 
-        <Accordion.Item eventKey="8">
-          <Accordion.Header>Section 9 — AI FAQ Layer</Accordion.Header>
-          <Accordion.Body>
-            <YesNoField groupName="wsFaq1" label="Do you offer custom tailored suits?" value={dm.ai_faq.custom_tailored_suits} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, custom_tailored_suits: v } })} />
-            <YesNoField groupName="wsFaq2" label="Are tuxedos available?" value={dm.ai_faq.tuxedos_available} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, tuxedos_available: v } })} />
-            <YesNoField groupName="wsFaq3" label="Do you provide home measurement services?" value={dm.ai_faq.home_measurement_services} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, home_measurement_services: v } })} />
-            <YesNoField groupName="wsFaq4" label="Is trial available before final delivery?" value={dm.ai_faq.trial_available} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, trial_available: v } })} />
-            <YesNoField groupName="wsFaq5" label="Can I get a suit within 7 days?" value={dm.ai_faq.suit_within_7_days} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, suit_within_7_days: v } })} />
-            <YesNoField groupName="wsFaq6" label="Do you offer three-piece suits?" value={dm.ai_faq.three_piece_suits} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, three_piece_suits: v } })} />
-            <YesNoField groupName="wsFaq7" label="Is fabric included in pricing?" value={dm.ai_faq.fabric_included_pricing} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, fabric_included_pricing: v } })} />
-            <YesNoField groupName="wsFaq8" label="Do you provide accessories with suits?" value={dm.ai_faq.accessories_with_suits} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, accessories_with_suits: v } })} />
-            <YesNoField groupName="wsFaq9" label="Are slim fit suits available?" value={dm.ai_faq.slim_fit_suits} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, slim_fit_suits: v } })} />
-            <YesNoField groupName="wsFaq10" label="Do you offer indo-western suits?" value={dm.ai_faq.indo_western_suits} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, indo_western_suits: v } })} />
-            <YesNoField groupName="wsFaq11" label="Is alteration included?" value={dm.ai_faq.alteration_included} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, alteration_included: v } })} />
-            <YesNoField groupName="wsFaq12" label="Do you provide premium hand-stitched suits?" value={dm.ai_faq.premium_hand_stitched} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, premium_hand_stitched: v } })} />
-            <YesNoField groupName="wsFaq13" label="Can I order suits for group/bulk?" value={dm.ai_faq.group_bulk_suits} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, group_bulk_suits: v } })} />
-            <YesNoField groupName="wsFaq14" label="Is express delivery available?" value={dm.ai_faq.express_delivery} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, express_delivery: v } })} />
-            <YesNoField groupName="wsFaq15" label="Do you offer winter-specific suits like velvet?" value={dm.ai_faq.winter_specific_suits} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, winter_specific_suits: v } })} />
-          </Accordion.Body>
-        </Accordion.Item>
       </Accordion>
 
       {!embedded && (

@@ -113,6 +113,7 @@ const Detailed = () => {
     const catererMaster = attributes.caterer_master || {};
     const photographerMaster = attributes.photographer_master || {};
     const makeupArtistMaster = attributes.makeup_artist_master || {};
+    const sherwaniMaster = attributes.sherwani_master || {};
 
     if (attributes.payment_terms) {
       amenities.push({
@@ -650,6 +651,56 @@ const Detailed = () => {
       );
     }
 
+    // --- DYNAMIC MASTER PROFILE EXTRACTION ---
+    const mapMasterProfile = (masterData) => {
+      if (!masterData || typeof masterData !== "object") return;
+      const skipSections = ["ai_faq"];
+      const formatKey = (key) =>
+        key.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+
+      Object.keys(masterData).forEach((sectionKey) => {
+        if (skipSections.includes(sectionKey)) return;
+        const sectionData = masterData[sectionKey];
+        if (typeof sectionData === "object" && !Array.isArray(sectionData) && sectionData !== null) {
+          Object.keys(sectionData).forEach((fieldKey) => {
+            if (fieldKey === "vendor_type" || fieldKey === "brand_name") return;
+            let val = sectionData[fieldKey];
+            if (val === true) val = "Yes";
+            if (
+              val === false ||
+              val === null ||
+              val === "" ||
+              (Array.isArray(val) && val.length === 0)
+            )
+              return;
+
+            const displayVal = Array.isArray(val)
+              ? formatList(val, 10)
+              : String(val);
+            pushFeature(amenities, <FaStar />, formatKey(fieldKey), displayVal);
+          });
+        }
+      });
+    };
+
+    const dynamicMasters = [
+      attributes.wedding_planner_master,
+      attributes.decorator_master,
+      attributes.trousseau_master,
+      attributes.invitation_gift_master,
+      attributes.gift_master,
+      attributes.favor_master,
+      attributes.invitation_master,
+      attributes.wedding_suit_master,
+      attributes.sherwani_master,
+    ];
+
+    dynamicMasters.forEach((master) => {
+      if (master && Object.keys(master).length > 0) {
+        mapMasterProfile(master);
+      }
+    });
+
     // --- PHOTOGRAPHER/OTHER VENDOR SPECIFIC FEATURES ---
     if (
       vendorType === "Photographers" ||
@@ -857,21 +908,35 @@ const Detailed = () => {
         })();
 
         // Handle images from new API structure
-        if (data.media && Array.isArray(data.media) && data.media.length > 0) {
-          // New structure: media is already an array of full URLs
-          setImages(data.media);
-          setMainImage(data.media[0]);
-        } else if (data.attributes?.Portfolio) {
+        let parsedImages = [];
+        if (data.media) {
+          if (Array.isArray(data.media)) {
+            parsedImages = data.media.map((item) =>
+              typeof item === "string" ? item : item.url || item.path || null
+            ).filter(Boolean);
+          } else if (typeof data.media === "object" && Array.isArray(data.media.gallery)) {
+            parsedImages = data.media.gallery.map((item) =>
+              typeof item === "string" ? item : item.url || item.path || null
+            ).filter(Boolean);
+          }
+        }
+
+        if (!parsedImages.length && data.attributes?.Portfolio) {
           // Fallback: parse Portfolio field (pipe-separated URLs)
-          const portfolioUrls = data.attributes.Portfolio.split("|")
+          parsedImages = data.attributes.Portfolio.split("|")
             .map((url) => url.trim())
             .filter((url) => url);
-          if (portfolioUrls.length > 0) {
-            setImages(portfolioUrls);
-            setMainImage(portfolioUrls[0]);
-          } else {
-            setMainImage("/images/default-vendor.jpg");
-          }
+        }
+
+        if (parsedImages.length > 0) {
+          parsedImages = parsedImages.map(img => {
+            if (typeof img === 'string' && img.startsWith('/uploads/')) {
+              return `https://happywedz.com${img}`;
+            }
+            return img;
+          });
+          setImages(parsedImages);
+          setMainImage(parsedImages[0]);
         } else {
           setMainImage("/images/default-vendor.jpg");
         }
@@ -925,8 +990,53 @@ const Detailed = () => {
         );
 
         if (vendorTypeKey) {
-          const questions = FaqQuestions[vendorTypeKey].questions;
-          const mergedFaqs = questions.map((q) => ({
+          const questions = FaqQuestions[vendorTypeKey].questions || [];
+          const normSubcat = (venueData?.subcategory?.name || "").trim().toLowerCase();
+
+          let filteredQuestions = questions;
+
+          // 1. Groomwear (vendor_type_id: 11)
+          if (dynamicVendorTypeId === 11) {
+            const isSherwani = normSubcat.includes("sherwani");
+            const isWeddingSuit = normSubcat.includes("suit") || normSubcat.includes("wedding suite");
+
+            filteredQuestions = questions.filter(q => {
+              const qid = q.id;
+              if (qid >= 401 && qid <= 410) return true;
+              if (qid >= 411 && qid <= 425) return isSherwani;
+              if (qid >= 426 && qid <= 435) return isWeddingSuit;
+              return true;
+            });
+          }
+          // 2. Decorators (vendor_type_id: 4)
+          else if (dynamicVendorTypeId === 4) {
+            const isDecorator = normSubcat.includes("decorator") || normSubcat.includes("decor") || normSubcat.includes("event styling");
+            filteredQuestions = questions.filter(q => {
+              const qid = q.id;
+              if (qid >= 1201 && qid <= 1212) return true;
+              if (qid >= 1213 && qid <= 1225) return isDecorator;
+              return true;
+            });
+          }
+          // 3. Invites & Gifts (vendor_type_id: 9)
+          else if (dynamicVendorTypeId === 9) {
+            const isTrousseauPacker = normSubcat.includes("trousseau packer") || normSubcat.includes("trousseau pack");
+            const isGift = normSubcat === "gifts" || normSubcat === "gift" || normSubcat.includes("gifting") || normSubcat === "invitation gifts";
+            const isFavor = normSubcat.includes("favor") || normSubcat.includes("favour");
+            const isInvitation = (normSubcat.includes("invitation") || normSubcat.includes("invite")) && !isGift;
+
+            filteredQuestions = questions.filter(q => {
+              const qid = q.id;
+              if (qid >= 1501 && qid <= 1515) return true;
+              if (qid >= 2116 && qid <= 2129) return isTrousseauPacker;
+              if (qid >= 2130 && qid <= 2144) return isGift;
+              if (qid >= 2145 && qid <= 2159) return isFavor;
+              if (qid >= 2160 && qid <= 2172) return isInvitation;
+              return true;
+            });
+          }
+
+          const mergedFaqs = filteredQuestions.map((q) => ({
             ...q,
             ans: answerMap.get(q.id) || "",
           }));
@@ -1361,6 +1471,9 @@ const Detailed = () => {
 
             {/* DYNAMIC AMENITIES / SERVICES */}
             <div className="venue-amenities mb-5">
+              <h3 className="details-section-title fw-bold fs-22 mb-4">
+                Features and Facilities
+              </h3>
               <Row>
                 {vendorFeatures.length > 0 ? (
                   featuresToRender.map((item, index) => {
@@ -1379,7 +1492,7 @@ const Detailed = () => {
                         md={isSub ? 12 : 4}
                         sm={isSub ? 12 : 6}
                         xs={12}
-                        className={isSub ? "" : "mb-3"}
+                        className={isSub ? "mb-2" : "mb-4"}
                       >
                         <div className={`amenity-item ${isSub ? "ms-4" : ""}`}>
                           <div className="d-flex flex-column">

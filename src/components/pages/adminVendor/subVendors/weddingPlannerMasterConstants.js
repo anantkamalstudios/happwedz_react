@@ -100,20 +100,20 @@ export const DESTINATIONS_COVERED = [
 ];
 
 export const MINIMUM_BUDGET_HANDLED = [
-  "Below ₹15L",
-  "₹15L-₹110L",
-  "₹110L-₹125L",
-  "₹125L-₹150L",
-  "₹150L+",
+  "Below ₹5L",
+  "₹5L-₹10L",
+  "₹10L-₹25L",
+  "₹25L-₹50L",
+  "₹50L+",
   "Other"
 ];
 
 export const MAXIMUM_BUDGET_HANDLED = [
-  "₹110L",
-  "₹125L",
-  "₹150L",
-  "₹11Cr",
-  "₹11Cr+",
+  "₹10L",
+  "₹25L",
+  "₹50L",
+  "₹1Cr",
+  "₹1Cr+",
   "Other"
 ];
 
@@ -125,11 +125,11 @@ export const PRICING_MODEL = [
 ];
 
 export const PLANNING_FEES_RANGE = [
-  "Below ₹150K",
-  "₹150K-₹11L",
-  "₹11L-₹13L",
-  "₹13L-₹15L",
-  "₹15L+",
+  "Below ₹50K",
+  "₹50K-₹1L",
+  "₹1L-13L",
+  "₹3L-₹5L",
+  "₹5L+",
   "Other"
 ];
 

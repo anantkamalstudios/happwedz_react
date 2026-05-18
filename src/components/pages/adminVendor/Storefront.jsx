@@ -516,8 +516,9 @@ const Storefront = ({ setCompletion }) => {
         formData.id || null
       );
       // If we just created a new service, save the ID so subsequent saves use PUT
-      if (!formData.id && response?.data?.id) {
-        setFormData((prev) => ({ ...prev, id: response.data.id }));
+      const newId = response?.id || response?.data?.id;
+      if (!formData.id && newId) {
+        setFormData((prev) => ({ ...prev, id: newId }));
       }
     } catch (e) {
       Swal.fire({
@@ -555,13 +556,23 @@ const Storefront = ({ setCompletion }) => {
   }, [videoDrafts]);
 
   const buildAttributes = () => {
+    const vendorName =
+      formData.attributes?.businessName ||
+      formData.attributes?.name ||
+      formData.attributes?.Name ||
+      "";
+
+    const injectBrandName = (masterObj, fieldName) => {
+      if (!masterObj) return undefined;
+      const newObj = JSON.parse(JSON.stringify(masterObj));
+      if (!newObj.identity) newObj.identity = {};
+      newObj.identity[fieldName] = vendorName;
+      return newObj;
+    };
+
     const attrs = {
       // tnc: formData.tnc,
-      name:
-        formData.attributes?.businessName ||
-        formData.attributes?.name ||
-        formData.attributes?.Name ||
-        "",
+      name: vendorName,
       slug: formData.attributes?.slug || "",
       // tags: formData.tags || [],
       deals: formData.deals || [],
@@ -652,12 +663,8 @@ const Storefront = ({ setCompletion }) => {
       //   (formData.within24HrAvailable || "No").toString().toLowerCase() ===
       //   "yes",
       // New attributes from Detailed.jsx
-      // vendor_name:
-      //   formData.attributes?.vendor_name ||
-      //   formData.attributes?.Name ||
-      //   formData.attributes?.businessName ||
-      //   "",
-      // vendor_type: formData.vendorTypeName || vendorTypeName || "",
+      vendor_name: vendorName,
+      vendor_type: formData.vendorTypeName || vendorTypeName || "",
       veg_price: formData.veg_price || "",
       non_veg_price: formData.non_veg_price || "",
       photo_package_price: formData.photo_package_price || "",
@@ -703,54 +710,54 @@ const Storefront = ({ setCompletion }) => {
       start_venue: formData.start_venue || "",
       space: formData.space || "",
       dJ_policy: formData.dJ_policy || "",
-      venue_master:
-        formData.venue_master ||
-        formData.attributes?.venue_master ||
-        undefined,
-      caterer_master:
-        formData.caterer_master ||
-        formData.attributes?.caterer_master ||
-        undefined,
+      venue_master: injectBrandName(
+        formData.venue_master || formData.attributes?.venue_master,
+        "chain_brand_name"
+      ),
+      caterer_master: injectBrandName(
+        formData.caterer_master || formData.attributes?.caterer_master,
+        "brand_name"
+      ),
       photographer_master:
         formData.photographer_master ||
         formData.attributes?.photographer_master ||
         undefined,
-      makeup_artist_master:
-        formData.makeup_artist_master ||
-        formData.attributes?.makeup_artist_master ||
-        undefined,
-      wedding_planner_master:
-        formData.wedding_planner_master ||
-        formData.attributes?.wedding_planner_master ||
-        undefined,
-      decorator_master:
-        formData.decorator_master ||
-        formData.attributes?.decorator_master ||
-        undefined,
-      trousseau_master:
-        formData.trousseau_master ||
-        formData.attributes?.trousseau_master ||
-        undefined,
-      gift_master:
-        formData.gift_master ||
-        formData.attributes?.gift_master ||
-        undefined,
-      favor_master:
-        formData.favor_master ||
-        formData.attributes?.favor_master ||
-        undefined,
-      invitation_master:
-        formData.invitation_master ||
-        formData.attributes?.invitation_master ||
-        undefined,
-      wedding_suit_master:
-        formData.wedding_suit_master ||
-        formData.attributes?.wedding_suit_master ||
-        undefined,
-      sherwani_master:
-        formData.sherwani_master ||
-        formData.attributes?.sherwani_master ||
-        undefined,
+      makeup_artist_master: injectBrandName(
+        formData.makeup_artist_master || formData.attributes?.makeup_artist_master,
+        "brand_artist_name"
+      ),
+      wedding_planner_master: injectBrandName(
+        formData.wedding_planner_master || formData.attributes?.wedding_planner_master,
+        "company_name"
+      ),
+      decorator_master: injectBrandName(
+        formData.decorator_master || formData.attributes?.decorator_master,
+        "brand_company_name"
+      ),
+      trousseau_master: injectBrandName(
+        formData.trousseau_master || formData.attributes?.trousseau_master,
+        "brand_name"
+      ),
+      gift_master: injectBrandName(
+        formData.gift_master || formData.attributes?.gift_master,
+        "brand_name"
+      ),
+      favor_master: injectBrandName(
+        formData.favor_master || formData.attributes?.favor_master,
+        "brand_name"
+      ),
+      invitation_master: injectBrandName(
+        formData.invitation_master || formData.attributes?.invitation_master,
+        "brand_name"
+      ),
+      wedding_suit_master: injectBrandName(
+        formData.wedding_suit_master || formData.attributes?.wedding_suit_master,
+        "brand_name"
+      ),
+      sherwani_master: injectBrandName(
+        formData.sherwani_master || formData.attributes?.sherwani_master,
+        "brand_name"
+      ),
     };
 
     // Remove undefined keys

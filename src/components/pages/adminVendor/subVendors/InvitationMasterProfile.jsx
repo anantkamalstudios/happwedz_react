@@ -142,11 +142,6 @@ const InvitationMasterProfile = ({
         <Accordion.Item eventKey="0">
           <Accordion.Header>Section 1 — Basic Identity</Accordion.Header>
           <Accordion.Body>
-            <SelectField label="Vendor Type" options={INVITATION_VENDOR_TYPE} value={dm.identity.vendor_type} onChange={(v) => patchDm({ identity: { ...dm.identity, vendor_type: v } })} />
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Brand Name</label>
-              <Form.Control className="fs-14" value={dm.identity.brand_name} onChange={(e) => patchDm({ identity: { ...dm.identity, brand_name: e.target.value } })} />
-            </div>
             <SelectField label="Years of Experience" options={YEARS_OF_EXPERIENCE} value={dm.identity.years_of_experience} onChange={(v) => patchDm({ identity: { ...dm.identity, years_of_experience: v } })} />
             <div className="mb-3">
               <label className="form-label fw-semibold">Primary City</label>
@@ -254,26 +249,6 @@ const InvitationMasterProfile = ({
             </div>
           </Accordion.Body>
         </Accordion.Item>
-
-        <Accordion.Item eventKey="9">
-          <Accordion.Header>Section 10 — AI FAQ</Accordion.Header>
-          <Accordion.Body>
-            <YesNoField groupName="faqInvDig" label="Can vendor create digital invites?" value={dm.ai_faq.create_digital_invites} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, create_digital_invites: v } })} />
-            <YesNoField groupName="faqInvPhy" label="Does vendor print physical cards?" value={dm.ai_faq.print_physical_cards} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, print_physical_cards: v } })} />
-            <YesNoField groupName="faqInvCust" label="Are invitations customizable?" value={dm.ai_faq.invitations_customizable} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, invitations_customizable: v } })} />
-            <YesNoField groupName="faqInvTheme" label="Can invites match wedding theme?" value={dm.ai_faq.match_wedding_theme} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, match_wedding_theme: v } })} />
-            <YesNoField groupName="faqInvRsvp" label="Is RSVP tracking available?" value={dm.ai_faq.rsvp_tracking_available} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, rsvp_tracking_available: v } })} />
-            <YesNoField groupName="faqInvDel" label="Can vendor deliver across India?" value={dm.ai_faq.deliver_across_india} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, deliver_across_india: v } })} />
-            <YesNoField groupName="faqInvLux" label="Are luxury materials available?" value={dm.ai_faq.luxury_materials_available} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, luxury_materials_available: v } })} />
-            <YesNoField groupName="faqInvStory" label="Can invites include couple story or photos?" value={dm.ai_faq.include_couple_story} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, include_couple_story: v } })} />
-            <YesNoField groupName="faqInvWa" label="Is WhatsApp invite supported?" value={dm.ai_faq.whatsapp_invite_supported} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, whatsapp_invite_supported: v } })} />
-            <YesNoField groupName="faqInvWeb" label="Can vendor create website invites?" value={dm.ai_faq.create_website_invites} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, create_website_invites: v } })} />
-            <YesNoField groupName="faqInvSamp" label="Are samples available before order?" value={dm.ai_faq.samples_available_before_order} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, samples_available_before_order: v } })} />
-            <YesNoField groupName="faqInvBulk" label="Can vendor handle bulk orders (300+)?" value={dm.ai_faq.handle_bulk_orders} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, handle_bulk_orders: v } })} />
-            <YesNoField groupName="faqInvExp" label="Is express delivery available?" value={dm.ai_faq.express_delivery_available} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, express_delivery_available: v } })} />
-          </Accordion.Body>
-        </Accordion.Item>
-
       </Accordion>
 
       {!embedded && (

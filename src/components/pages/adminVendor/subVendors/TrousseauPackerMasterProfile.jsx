@@ -138,11 +138,6 @@ const TrousseauPackerMasterProfile = ({
         <Accordion.Item eventKey="0">
           <Accordion.Header>Section 1 — Basic Identity</Accordion.Header>
           <Accordion.Body>
-            <SelectField label="Vendor Type" options={TROUSSEAU_VENDOR_TYPE} value={dm.identity.vendor_type} onChange={(v) => patchDm({ identity: { ...dm.identity, vendor_type: v } })} />
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Brand Name</label>
-              <Form.Control className="fs-14" value={dm.identity.brand_name} onChange={(e) => patchDm({ identity: { ...dm.identity, brand_name: e.target.value } })} />
-            </div>
             <SelectField label="Years of Experience" options={YEARS_OF_EXPERIENCE} value={dm.identity.years_of_experience} onChange={(v) => patchDm({ identity: { ...dm.identity, years_of_experience: v } })} />
             <div className="mb-3">
               <label className="form-label fw-semibold">Primary City</label>
@@ -248,28 +243,6 @@ const TrousseauPackerMasterProfile = ({
             </div>
           </Accordion.Body>
         </Accordion.Item>
-
-        <Accordion.Item eventKey="9">
-          <Accordion.Header>Section 10 — AI FAQ</Accordion.Header>
-          <Accordion.Body>
-            <YesNoField groupName="faqTpBulk" label="Can vendor handle bulk orders (100+)?" value={dm.ai_faq.handle_bulk_orders} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, handle_bulk_orders: v } })} />
-            <YesNoField groupName="faqTpCust" label="Is customization available?" value={dm.ai_faq.customization_available} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, customization_available: v } })} />
-            <YesNoField groupName="faqTpNames" label="Can packaging be personalized with names/photos?" value={dm.ai_faq.personalized_with_names} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, personalized_with_names: v } })} />
-            <YesNoField groupName="faqTpEco" label="Does vendor provide eco-friendly packaging?" value={dm.ai_faq.eco_friendly_packaging} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, eco_friendly_packaging: v } })} />
-            <YesNoField groupName="faqTpUrg" label="Is urgent delivery possible?" value={dm.ai_faq.urgent_delivery_possible} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, urgent_delivery_possible: v } })} />
-            <YesNoField groupName="faqTpCit" label="Can vendor deliver across cities?" value={dm.ai_faq.deliver_across_cities} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, deliver_across_cities: v } })} />
-            <YesNoField groupName="faqTpSite" label="Is on-site packing available?" value={dm.ai_faq.on_site_packing_available} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, on_site_packing_available: v } })} />
-            <YesNoField groupName="faqTpPrem" label="Are materials premium quality?" value={dm.ai_faq.materials_premium_quality} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, materials_premium_quality: v } })} />
-            <YesNoField groupName="faqTpTheme" label="Can vendor match wedding theme?" value={dm.ai_faq.match_wedding_theme} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, match_wedding_theme: v } })} />
-            <YesNoField groupName="faqTpSamp" label="Are samples available before booking?" value={dm.ai_faq.samples_available_before_booking} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, samples_available_before_booking: v } })} />
-            <YesNoField groupName="faqTpFrag" label="Does vendor handle fragile items?" value={dm.ai_faq.handle_fragile_items} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, handle_fragile_items: v } })} />
-            <YesNoField groupName="faqTpMin" label="Is minimum order required?" value={dm.ai_faq.minimum_order_required} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, minimum_order_required: v } })} />
-            <YesNoField groupName="faqTpLast" label="Can vendor manage last-minute orders?" value={dm.ai_faq.manage_last_minute_orders} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, manage_last_minute_orders: v } })} />
-            <YesNoField groupName="faqTpDel" label="Are delivery charges included?" value={dm.ai_faq.delivery_charges_included} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, delivery_charges_included: v } })} />
-            <YesNoField groupName="faqTpReu" label="Is packaging reusable?" value={dm.ai_faq.packaging_reusable} onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, packaging_reusable: v } })} />
-          </Accordion.Body>
-        </Accordion.Item>
-
       </Accordion>
 
       {!embedded && (
