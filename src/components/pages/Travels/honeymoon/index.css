@@ -1153,6 +1153,403 @@
   font-weight: 600;
 }
 
+/* ─── Insurance plan tab icons ─────────────────────────────────────────── */
+.ins-tab-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* ─── Where are you travelling label ──────────────────────────────────── */
+.ins-where-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #222;
+  margin: 0 0 12px;
+}
+
+.ins-duration-label {
+  margin-top: 16px;
+}
+
+.ins-info-icon {
+  display: inline-flex;
+  align-items: center;
+  color: #888;
+  cursor: help;
+  margin-left: 4px;
+}
+
+/* ─── Student: flight booking row ─────────────────────────────────────── */
+.ins-student-flight-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f9f9f9;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+}
+
+.ins-student-flight-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #222;
+  white-space: nowrap;
+}
+
+.ins-student-flight-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: #555;
+}
+
+.ins-student-getinfo-btn {
+  padding: 8px 18px;
+  border: 2px solid #f97316;
+  border-radius: 8px;
+  background: transparent;
+  color: #f97316;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+}
+
+.ins-student-getinfo-btn:hover {
+  background: #f97316;
+  color: #fff;
+}
+
+/* ─── Student / AMT: date row ─────────────────────────────────────────── */
+.ins-student-date-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* 3-column layout for Student: Start Date | Duration | End Date */
+.ins-student-date-row.ins-student-date-row-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.ins-student-date-box,
+.ins-student-duration-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 2px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #fff;
+  position: relative;
+  transition: border-color 0.2s;
+}
+
+.ins-student-date-box:focus-within,
+.ins-student-duration-box:focus-within {
+  border-color: #ed1173;
+}
+
+.ins-student-date-icon {
+  color: #4a6fa5;
+  flex-shrink: 0;
+}
+
+.ins-student-date-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #333;
+  background: transparent;
+  min-width: 0;
+}
+
+.ins-student-date-pill {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  white-space: nowrap;
+}
+
+.ins-student-duration-select {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #333;
+  background: transparent;
+  cursor: pointer;
+  min-width: 0;
+}
+
+/* ─── Traveller card (Student & AMT) ──────────────────────────────────── */
+.ins-traveller-card {
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+  background: #fff;
+}
+
+.ins-traveller-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.ins-traveller-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #222;
+}
+
+.ins-traveller-card-title svg {
+  color: #4a6fa5;
+}
+
+.ins-traveller-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ins-stepper-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: #f5f5f5;
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ins-stepper-btn:hover:not(:disabled) {
+  background: #ffe8f3;
+  color: #ed1173;
+}
+
+.ins-stepper-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ins-stepper-count {
+  min-width: 36px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: #222;
+  padding: 0 4px;
+}
+
+/* ─── Traveller row (DOB / Age / Passport) ────────────────────────────── */
+.ins-traveller-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ins-traveller-info-box {
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.ins-traveller-row-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.ins-traveller-dob-age {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ins-dob-input {
+  flex: 1;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: #333;
+  outline: none;
+  min-width: 0;
+  transition: border-color 0.2s;
+}
+
+.ins-dob-input:focus {
+  border-color: #ed1173;
+}
+
+.ins-or-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: #888;
+  white-space: nowrap;
+}
+
+.ins-age-select {
+  flex: 1;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: #333;
+  outline: none;
+  background: #fff;
+  cursor: pointer;
+  min-width: 0;
+  transition: border-color 0.2s;
+}
+
+.ins-age-select:focus {
+  border-color: #ed1173;
+}
+
+.ins-passport-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: #fafafa;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.ins-passport-btn:hover {
+  border-color: #ed1173;
+  background: rgba(237, 17, 115, 0.04);
+}
+
+.ins-passport-btn svg {
+  color: #888;
+  flex-shrink: 0;
+}
+
+.ins-passport-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.ins-passport-sub {
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+}
+
+.ins-traveller-hints {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: #999;
+}
+
+/* DOB auto-calculated age hint */
+.ins-dob-age-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ed1173;
+}
+
+/* ─── AMT: destination & duration radios ─────────────────────────────── */
+.ins-amt-dest-radios,
+.ins-amt-duration-radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ins-amt-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+  cursor: pointer;
+  padding: 8px 16px;
+  border: 2px solid #e8e8e8;
+  border-radius: 999px;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.ins-amt-radio-label input[type='radio'] {
+  accent-color: #f97316;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.ins-amt-radio-label.active {
+  border-color: #f97316;
+  color: #f97316;
+}
+
+/* ─── View Packages button (Student / AMT standalone) ─────────────────── */
+.ins-view-packages-btn {
+  width: 100%;
+  border-radius: 12px !important;
+  margin-top: 4px;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 575px) {
+  .ins-student-date-row,
+  .ins-student-date-row.ins-student-date-row-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .ins-traveller-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ins-student-flight-row {
+    flex-wrap: wrap;
+  }
+
+  .ins-amt-dest-radios,
+  .ins-amt-duration-radios {
+    gap: 8px;
+  }
+}
+
 .ins-country-select-wrap {
   position: relative;
   margin-bottom: 16px;

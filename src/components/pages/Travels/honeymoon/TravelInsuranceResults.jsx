@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Shield,
@@ -45,7 +45,6 @@ const TravelInsuranceResults = () => {
   const initialResults = location.state?.initialResults;
 
   const [packages] = useState(initialResults?.data || []);
-  const [sortBy, setSortBy] = useState('price_low');
   const [benefitsModal, setBenefitsModal] = useState({ open: false, pkg: null });
   const [selectingId, setSelectingId] = useState(null);
   const [selectError, setSelectError] = useState(null);
@@ -56,18 +55,7 @@ const TravelInsuranceResults = () => {
     }
   }, [searchParams, navigate]);
 
-  const sortedPackages = useMemo(() => {
-    const list = [...packages];
-    if (sortBy === 'price_high') {
-      return list.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
-    }
-    if (sortBy === 'coverage') {
-      return list.sort((a, b) =>
-        String(b.coverageAmount).localeCompare(String(a.coverageAmount))
-      );
-    }
-    return list.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
-  }, [packages, sortBy]);
+  const sortedPackages = [...packages].sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
 
   const handleSelectPlan = async (pkg) => {
     const key = `${pkg.plid}-${pkg.pid}`;
@@ -136,15 +124,6 @@ const TravelInsuranceResults = () => {
               </p>
             </div>
 
-            <select
-              className="form-select form-select-sm ins-sort-select"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="price_low">Price: Low to High</option>
-              <option value="price_high">Price: High to Low</option>
-              <option value="coverage">Coverage Amount</option>
-            </select>
           </div>
 
           {selectError && (
@@ -174,11 +153,15 @@ const TravelInsuranceResults = () => {
                               <Plane size={11} className="ts-shield-plane" />
                             </span>
                             <span className="ts-plan-name">
-                              TripSafe <strong>{pkg.planLabel}</strong>
+                              TripSafe <strong>{pkg.planLabel?.toUpperCase()}</strong>
                             </span>
                           </div>
                           <div className="ts-plan-pricing">
-                            <span className="ts-earn-badge">Earn ₹0*</span>
+                            {pkg.earnAmount > 0 && (
+                              <span className="ts-earn-badge">
+                                Earn ₹{pkg.earnAmount.toLocaleString('en-IN')}*
+                              </span>
+                            )}
                             <div className="ts-price-block">
                               <span className="ts-price">{formatPrice(pkg.price)}</span>
                               <span className="ts-price-gst">Inc. GST</span>
@@ -187,18 +170,20 @@ const TravelInsuranceResults = () => {
                         </header>
 
                         <div className="ts-plan-body">
+                          {/* Assistance column */}
                           <div className="ts-plan-col">
                             <h6 className="ts-col-title">24/7 Assistance</h6>
                             <p className="ts-col-sub">
                               Assistance by {pkg.assistancePartner || 'TripSafe partners'}
                             </p>
-                            <div className="ts-tags-wrap">
+                            <div className="ts-tags-grid">
                               {assistanceTags.map((tag) => (
                                 <BenefitTag key={tag} text={tag} />
                               ))}
                             </div>
                           </div>
 
+                          {/* Coverage column */}
                           <div className="ts-plan-col">
                             <h6 className="ts-col-title">
                               {pkg.coverageAmount || '$50,000'} Travel Cover
@@ -206,7 +191,7 @@ const TravelInsuranceResults = () => {
                             <p className="ts-col-sub">
                               Insurance by {pkg.insurerLabel || pkg.insurer}
                             </p>
-                            <div className="ts-tags-wrap">
+                            <div className="ts-tags-grid">
                               {coverageTags.map((tag) => (
                                 <BenefitTag key={tag} text={tag} />
                               ))}
@@ -419,6 +404,11 @@ const TravelInsuranceResults = () => {
           flex-direction: column;
           gap: 8px;
         }
+        .ts-tags-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
         .ts-benefit-tag {
           display: inline-flex;
           align-items: flex-start;
@@ -539,6 +529,9 @@ const TravelInsuranceResults = () => {
           }
           .ts-plan-col {
             padding-right: 0;
+          }
+          .ts-tags-grid {
+            grid-template-columns: 1fr;
           }
         }
         @media (max-width: 575px) {

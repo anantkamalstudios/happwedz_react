@@ -81,6 +81,8 @@ const InsuranceBookingPage = () => {
   if (!searchParams || !selectedPlan || !reviewMeta?.bookingId) return null;
 
   const totalPrice = reviewMeta.price || selectedPlan.price;
+  const bd = selectedPlan.priceBreakdown || {};
+  const earnAmount = selectedPlan.earnAmount || 0;
 
   const updateTraveller = (index, field, value) => {
     setTravellers((prev) => {
@@ -362,41 +364,92 @@ const InsuranceBookingPage = () => {
           <div className="col-lg-4">
             <div className="ins-plan-summary sticky-top">
               <h5 className="mb-3">Plan Summary</h5>
-              <div className="ins-summary-row">
-                <span>Destination</span>
-                <strong>{destinationLabel}</strong>
-              </div>
-              <div className="ins-summary-row">
-                <span>Start Date</span>
-                <strong>{formatDate(searchParams?.isq?.sd)}</strong>
-              </div>
-              <div className="ins-summary-row">
-                <span>End Date</span>
-                <strong>{formatDate(searchParams?.isq?.ed)}</strong>
+
+              {/* Trip info */}
+              <div className="ins-summary-trip-grid">
+                <div>
+                  <div className="ins-summary-label">Destination</div>
+                  <div className="ins-summary-value">{destinationLabel}</div>
+                </div>
+                <div>
+                  <div className="ins-summary-label">Start Date</div>
+                  <div className="ins-summary-value">{formatDate(searchParams?.isq?.sd)}</div>
+                </div>
+                <div>
+                  <div className="ins-summary-label">End Date</div>
+                  <div className="ins-summary-value">{formatDate(searchParams?.isq?.ed)}</div>
+                </div>
               </div>
 
+              {/* Plan card */}
               <div className="ins-summary-plan mt-3">
                 <small className="text-muted">
                   Plan for: Traveller 1 | {travellers[0]?.age} yrs
                 </small>
-                <div className="ins-summary-plan-badge mt-2">
-                  <div className="ins-summary-plan-name">{selectedPlan.planLabel}</div>
-                  <div className="ins-summary-plan-meta">
-                    {selectedPlan.coverageAmount} · {selectedPlan.regionName}
+                <div className="ins-summary-plan-row mt-2">
+                  <div className="ins-summary-plan-badge">
+                    <div className="ins-summary-plan-name">
+                      TripSafe {selectedPlan.planLabel?.toUpperCase()}
+                    </div>
+                    <div className="ins-summary-plan-meta">
+                      24/7 Assistance | {selectedPlan.coverageAmount} Travel Cover
+                    </div>
                   </div>
-                </div>
-                <div className="ins-summary-price mt-3">
-                  {formatPrice(totalPrice)}
-                  <small className="d-block text-muted">Inc. GST</small>
+                  <div className="ins-summary-plan-price-col">
+                    <div className="ins-summary-price">{formatPrice(totalPrice)}</div>
+                    <small className="text-muted">Inc. GST</small>
+                    {earnAmount > 0 && (
+                      <div className="ins-earn-pill mt-1">
+                        <span className="ins-earn-icon">%</span>
+                        Earn ₹{earnAmount.toLocaleString('en-IN')}*
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="ins-summary-total">
-                <span>Total</span>
-                <span className="d-flex align-items-center gap-1">
-                  {formatPrice(totalPrice)}
-                  <ChevronDown size={16} />
-                </span>
+              {/* Price breakdown */}
+              <div className="ins-summary-breakdown mt-3">
+                <div className="ins-breakdown-total">
+                  <span className="d-flex align-items-center gap-1">
+                    Total <ChevronDown size={16} />
+                  </span>
+                  <span>{formatPrice(totalPrice)}</span>
+                </div>
+                {bd.sp > 0 && (
+                  <div className="ins-breakdown-row">
+                    <span>TripSafe Fee</span>
+                    <span>+ {formatPrice(bd.sp)}</span>
+                  </div>
+                )}
+                {bd.spGst > 0 && (
+                  <div className="ins-breakdown-row">
+                    <span>TripSafe GST</span>
+                    <span>+ {formatPrice(bd.spGst)}</span>
+                  </div>
+                )}
+                {bd.bxp > 0 && (
+                  <div className="ins-breakdown-row">
+                    <span>BOXX Premium</span>
+                    <span>+ {formatPrice(bd.bxp)}</span>
+                  </div>
+                )}
+                {bd.bxpGst > 0 && (
+                  <div className="ins-breakdown-row">
+                    <span>BOXX GST</span>
+                    <span>+ {formatPrice(bd.bxpGst)}</span>
+                  </div>
+                )}
+                {earnAmount > 0 && (
+                  <div className="ins-breakdown-row ins-breakdown-earn">
+                    <span>TripSafe Earnings</span>
+                    <span>- {formatPrice(earnAmount)}</span>
+                  </div>
+                )}
+                <div className="ins-breakdown-row ins-breakdown-net">
+                  <span>Net Price</span>
+                  <span>{formatPrice(Math.max(0, totalPrice - earnAmount))}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -460,45 +513,107 @@ const InsuranceBookingPage = () => {
           padding: 20px;
           top: 24px;
         }
-        .ins-summary-row {
-          display: flex;
-          justify-content: space-between;
-          gap: 12px;
-          font-size: 14px;
-          margin-bottom: 10px;
+        .ins-summary-trip-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 8px;
+          background: #f8f8f8;
+          border-radius: 8px;
+          padding: 12px;
         }
-        .ins-summary-row span {
-          color: #888;
+        .ins-summary-label {
+          font-size: 11px;
+          color: #999;
+          margin-bottom: 2px;
+        }
+        .ins-summary-value {
+          font-size: 13px;
+          font-weight: 700;
+          color: #222;
+        }
+        .ins-summary-plan-row {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
         }
         .ins-summary-plan-badge {
-          background: linear-gradient(135deg, #4a4a4a, #2a2a2a);
+          flex: 1;
+          background: linear-gradient(135deg, #4a4a4a, #1a1a1a);
           color: #fff;
           border-radius: 10px;
-          padding: 14px;
+          padding: 12px 14px;
         }
         .ins-summary-plan-name {
           font-weight: 700;
-          font-size: 16px;
+          font-size: 14px;
         }
         .ins-summary-plan-meta {
-          font-size: 12px;
-          opacity: 0.85;
+          font-size: 11px;
+          opacity: 0.8;
           margin-top: 4px;
         }
-        .ins-summary-price {
-          font-size: 1.5rem;
-          font-weight: 800;
-          color: #ed1173;
+        .ins-summary-plan-price-col {
+          text-align: right;
+          flex-shrink: 0;
         }
-        .ins-summary-total {
+        .ins-summary-price {
+          font-size: 1.2rem;
+          font-weight: 800;
+          color: #111;
+        }
+        .ins-earn-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: #e8f5e9;
+          color: #2e7d32;
+          font-size: 12px;
+          font-weight: 600;
+          padding: 3px 8px;
+          border-radius: 20px;
+        }
+        .ins-earn-icon {
+          background: #2e7d32;
+          color: #fff;
+          border-radius: 50%;
+          width: 16px;
+          height: 16px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 10px;
+          font-weight: 700;
+        }
+        .ins-summary-breakdown {
+          background: #f8f8f8;
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        .ins-breakdown-total {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-top: 16px;
-          padding-top: 16px;
-          border-top: 1px solid #eee;
+          padding: 12px 14px;
           font-weight: 700;
-          font-size: 1.1rem;
+          font-size: 15px;
+          border-bottom: 1px solid #eee;
+          background: #fff;
+        }
+        .ins-breakdown-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 8px 14px;
+          font-size: 13px;
+          color: #555;
+          border-bottom: 1px solid #f0f0f0;
+        }
+        .ins-breakdown-earn {
+          color: #2e7d32;
+        }
+        .ins-breakdown-net {
+          font-weight: 700;
+          color: #111;
+          border-bottom: none;
         }
         .ins-booking-success {
           text-align: center;

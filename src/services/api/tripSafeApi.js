@@ -14,12 +14,41 @@ const getInsurerLabel = (code) =>
   INSURER_LABELS[String(code || '').toUpperCase()] ||
   (code ? `${code} Insurance` : 'Insurance partner');
 
-const getProductPrice = (product) => {
-  const fromTraveller = product?.iti?.[0]?.fd?.ifc?.TF;
+const getProductPrice = (product, travellerCount = 1) => {
+  const ppdf = product?.pfd?.ppd?.ppdf || {};
+  // Use the key matching traveller count, fall back to "1"
+  const key = String(travellerCount);
+  const ifc = (ppdf[key]?.[0] || ppdf['1']?.[0])?.ifc || {};
+  const perTravellerTF = Number(ifc.TF || 0);
+  if (perTravellerTF) return perTravellerTF * travellerCount;
+
+  // Fallbacks
   const fromTotal = product?.tfd?.ifc?.TF;
-  const fromPpdf = product?.pfd?.ppd?.ppdf?.['1']?.[0]?.ifc?.TF;
+  const fromTraveller = product?.iti?.[0]?.fd?.ifc?.TF;
   const fallback = product?.ptf;
-  return Number(fromTraveller || fromTotal || fromPpdf || fallback || 0);
+  return Number(fromTotal || fromTraveller || fallback || 0);
+};
+
+/** Extract full price breakdown using the correct ppdf key for traveller count */
+const getPriceBreakdown = (product, travellerCount = 1) => {
+  const ppdf = product?.pfd?.ppd?.ppdf || {};
+  const key = String(travellerCount);
+  const ifc = (ppdf[key]?.[0] || ppdf['1']?.[0])?.ifc || {};
+  const perTF = Number(ifc.TF || 0);
+  return {
+    sp: Number(ifc.SP || 0) * travellerCount,
+    spGst: Number(ifc.SPGST || 0),           // GST is already total in response
+    tf: perTF * travellerCount,               // Total fare
+    perTravellerTf: perTF,                    // Per-traveller price
+    ac: Number(ifc.AC || 0),                  // Agent commission (earn) — already total
+    bxp: Number(ifc.BXP || 0),
+    bxpGst: Number(ifc.BXPGST || 0),
+    ip: Number(ifc.IP || 0),
+    ipGst: Number(ifc.IPGST || 0),
+    ap: Number(ifc.AP || 0),
+    apGst: Number(ifc.APGST || 0),
+    bf: Number(ifc.BF || 0),
+  };
 };
 
 const mapBenefits = (product) => {
@@ -47,7 +76,16 @@ const mapBenefits = (product) => {
 
 export const mapTripSafeSearchResponse = (payload) => {
   const raw = payload?.data || payload;
-  const pli = raw?.isr?.iinfo?.pli || [];
+
+  // TripJack wraps student/AMT results the same way but sometimes under data.data
+  const dataRoot = raw?.data || raw;
+  const pli =
+    dataRoot?.isr?.iinfo?.pli ||
+    raw?.isr?.iinfo?.pli ||
+    [];
+
+  // Traveller count from the search query
+  const travellerCount = Math.max(1, (dataRoot?.isq?.iti || raw?.isq?.iti || []).length);
   const packages = [];
 
   pli.forEach((plan) => {
@@ -69,9 +107,29 @@ export const mapTripSafeSearchResponse = (payload) => {
         .filter((b) => String(b.type).toUpperCase().includes('INSURANCE'))
         .map((b) => b.name);
 
+      // BANNER benefits for the card display (shown as checkmark tags)
+      const bannerAssistance = (product?.pbft || [])
+        .filter((b) => String(b?.bv || '').toUpperCase() === 'BANNER' &&
+          String(b?.type || '').toUpperCase().includes('ASSISTANCE'))
+        .map((b) => b?.name)
+        .filter(Boolean);
+
+      const bannerCoverage = (product?.pbft || [])
+        .filter((b) => String(b?.bv || '').toUpperCase() === 'BANNER' &&
+          String(b?.type || '').toUpperCase().includes('INSURANCE'))
+        .map((b) => b?.name)
+        .filter(Boolean);
+
       const partners = Array.isArray(product?.aps) ? product.aps : [];
       const assistancePartner =
         partners.find((p) => /assist|boxx|zetexa|brb/i.test(p)) || partners[0] || '';
+
+      // Earn amount: AC field from ppdf (already total for all travellers)
+      const earnAmount = Number(
+        (product?.pfd?.ppd?.ppdf?.[String(travellerCount)]?.[0] ||
+         product?.pfd?.ppd?.ppdf?.['1']?.[0])?.ifc?.AC || 0
+      );
+      const priceBreakdown = getPriceBreakdown(product, travellerCount);
 
       packages.push({
         plid,
@@ -83,17 +141,14 @@ export const mapTripSafeSearchResponse = (payload) => {
         insurerLabel: getInsurerLabel(product?.ip),
         partners,
         assistancePartner,
-        price: getProductPrice(product),
+        price: getProductPrice(product, travellerCount),
+        travellerCount,
+        earnAmount,
+        priceBreakdown,
         highlights,
         benefits,
-        assistanceTags: assistanceBenefits.slice(0, 2).length
-          ? assistanceBenefits.slice(0, 2)
-          : highlights.slice(0, 2),
-        coverageTags: coverageBenefits.slice(0, 2).length
-          ? coverageBenefits.slice(0, 2)
-          : highlights.slice(2, 4).length
-            ? highlights.slice(2, 4)
-            : highlights.slice(0, 2),
+        assistanceTags: bannerAssistance.length ? bannerAssistance : assistanceBenefits.slice(0, 3),
+        coverageTags: bannerCoverage.length ? bannerCoverage : coverageBenefits.slice(0, 3),
         benefitsCount: benefits.length,
         rawProduct: product,
       });
@@ -117,13 +172,14 @@ export const extractInsuranceBookingId = (reviewPayload) => {
   return raw?.bid || raw?.bookingId || null;
 };
 
-export const extractReviewPlanPrice = (reviewPayload, pid) => {
+export const extractReviewPlanPrice = (reviewPayload, pid, travellerCount = 1) => {
   const raw = reviewPayload?.data || reviewPayload;
   const pli = raw?.iinfo?.pli || [];
+  const count = Math.max(1, travellerCount || (raw?.isq?.iti || []).length || 1);
   for (const plan of pli) {
     const products = Array.isArray(plan?.pi) ? plan.pi : [];
     const match = products.find((p) => p.pid === pid) || products[0];
-    if (match) return getProductPrice(match);
+    if (match) return getProductPrice(match, count);
   }
   return 0;
 };
@@ -134,6 +190,8 @@ export const searchTripSafeInsurance = async (searchPayload, options = {}) => {
   const response = await axios.post(`${TRIPSAFE_BASE}${endpoint}`, searchPayload);
   const body = response.data;
 
+  // Backend wraps as { status: true, data: <tripjack_response> }
+  // TripJack itself has { status: { success: true } } inside data
   if (!body?.status) {
     return {
       status: false,
@@ -142,7 +200,20 @@ export const searchTripSafeInsurance = async (searchPayload, options = {}) => {
     };
   }
 
-  return mapTripSafeSearchResponse(body.data || body);
+  const tripjackData = body.data || body;
+
+  // Check TripJack-level status
+  if (tripjackData?.status && !tripjackData.status?.success) {
+    return {
+      status: false,
+      message: tripjackData?.status?.httpStatus
+        ? `TripJack error: ${tripjackData.status.httpStatus}`
+        : 'Insurance search failed',
+      details: tripjackData,
+    };
+  }
+
+  return mapTripSafeSearchResponse(tripjackData);
 };
 
 export const reviewTripSafeInsurance = async (reviewPayload) => {
@@ -336,7 +407,10 @@ export const reviewInsurancePlan = async (pkg) => {
   }
 
   const bookingId = extractInsuranceBookingId(response.data || response);
-  const price = extractReviewPlanPrice(response.data || response, pkg.pid) || pkg.price;
+  // Use travellerCount from the original search package
+  const price =
+    extractReviewPlanPrice(response.data || response, pkg.pid, pkg.travellerCount) ||
+    pkg.price;
 
   return {
     status: true,
