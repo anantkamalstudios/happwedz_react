@@ -341,7 +341,7 @@ const useInfiniteScroll = (
 
         // Only return vendors whose first media image is confirmed to exist in S3.
         // The batch job (verify-vendor-images.js) sets image_exists = TRUE after verification.
-        params.append("image_exists", "true");
+        // params.append("image_exists", "true");
 
         const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
         const cacheKey = apiUrl;

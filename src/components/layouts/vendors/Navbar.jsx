@@ -45,11 +45,9 @@ const Navbar = () => {
   // Fetch storefront completion from backend API
   useEffect(() => {
     const fetchCompletion = async () => {
-      // First, get the service ID from vendor ID if needed
-      let serviceId = localStorage.getItem("vendorServiceId");
-
-      if (!serviceId && vendor?.id && token) {
-        // Fetch service ID using vendor ID
+      // Always resolve service ID from logged-in vendor (avoid stale localStorage)
+      let serviceId = null;
+      if (vendor?.id && token) {
         serviceId = await vendorServicesApi.getServiceIdByVendorId(
           vendor.id,
           token

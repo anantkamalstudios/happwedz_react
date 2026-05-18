@@ -47,17 +47,51 @@ function Faq({ formData, setFormData, onSave }) {
 
   useEffect(() => {
     if (vendor?.vendor_type_id) {
-      const vendorTypeKey = Object.keys(FaqQuestions).find(
+      let vendorTypeKey = Object.keys(FaqQuestions).find(
         (key) => FaqQuestions[key].vendor_type_id === vendor.vendor_type_id
       );
 
-      if (vendorTypeKey) {
+      // Subcategory overrides since they share vendor_type_id
+      if (formData?.accessories_master && Object.keys(formData.accessories_master).length > 0) {
+        vendorTypeKey = "accessories";
+      } else if (formData?.jewellery_rental_master && Object.keys(formData.jewellery_rental_master).length > 0) {
+        vendorTypeKey = "jewelleryrental";
+      } else if (formData?.bridal_outfit_master && Object.keys(formData.bridal_outfit_master).length > 0) {
+        // Detect Kanjeevaram Silk Saree vs generic Bridal Outfit
+        const subcatName = (
+          formData?.vendor_subcategory_name ||
+          formData?.attributes?.vendor_subcategory_name ||
+          ""
+        ).toLowerCase();
+        const vendorName = (
+          formData?.name ||
+          formData?.attributes?.name ||
+          ""
+        ).toLowerCase();
+        const isKanjeevaram =
+          subcatName.includes("kanjeevaram") ||
+          subcatName.includes("silk saree") ||
+          subcatName.includes("silk") ||
+          vendorName.includes("kanjeevaram") ||
+          vendorName.includes("silk saree");
+        vendorTypeKey = isKanjeevaram ? "kanjeevaramsilksaree" : "bridaloutfit";
+      }
+
+      if (vendorTypeKey && FaqQuestions[vendorTypeKey]) {
         setQuestions(FaqQuestions[vendorTypeKey].questions);
       } else {
         setQuestions([]);
       }
     }
-  }, [vendor?.vendor_type_id]);
+  }, [
+    vendor?.vendor_type_id,
+    formData?.accessories_master,
+    formData?.jewellery_rental_master,
+    formData?.bridal_outfit_master,
+    formData?.vendor_subcategory_name,
+    formData?.attributes?.vendor_subcategory_name,
+    formData?.name,
+  ]);
 
   useEffect(() => {
     setFormData((prev) => ({ ...prev, faqs: answers }));

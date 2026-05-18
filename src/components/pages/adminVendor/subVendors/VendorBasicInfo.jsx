@@ -231,7 +231,11 @@ const VendorBasicInfo = ({ formData, setFormData, onSave }) => {
             </select>
           </div>
         </div>
-        <button type="button" className="btn btn-primary mt-2" onClick={onSave}>
+        <button
+          type="button"
+          className="btn btn-primary mt-2"
+          onClick={() => onSave?.()}
+        >
           Save Basic Info
         </button>
       </div>
