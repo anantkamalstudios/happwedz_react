@@ -14,7 +14,7 @@ const getErrorMessage = (error, fallback) => {
 
 export const suggestHotels = async (payload) => {
   try {
-    const response = await axiosInstance.post("/hotels/suggestions", payload);
+    const response = await axiosInstance.post("hotels/suggestions", payload);
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error fetching hotel suggestions"));
@@ -24,7 +24,7 @@ export const suggestHotels = async (payload) => {
 
 export const searchHotels = async (payload) => {
   try {
-    const response = await axiosInstance.post("/hotels/search", payload);
+    const response = await axiosInstance.post("hotels/search", payload);
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error searching hotels"));
@@ -34,7 +34,7 @@ export const searchHotels = async (payload) => {
 
 export const getHotelFilters = async (payload) => {
   try {
-    const response = await axiosInstance.post("/hotels/filters", payload);
+    const response = await axiosInstance.post("hotels/filters", payload);
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error fetching hotel filters"));
@@ -44,7 +44,7 @@ export const getHotelFilters = async (payload) => {
 
 export const getHotelDetail = async (payload) => {
   try {
-    const response = await axiosInstance.post("/hotels/detail", payload);
+    const response = await axiosInstance.post("hotels/detail", payload);
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error fetching hotel detail"));
@@ -52,9 +52,29 @@ export const getHotelDetail = async (payload) => {
   }
 };
 
+export const getHotelStaticContent = async (payload) => {
+  try {
+    const response = await axiosInstance.post("hotels/static-content", payload);
+    return response.data;
+  } catch (error) {
+    console.error(getErrorMessage(error, "Error fetching hotel static content"));
+    throw error;
+  }
+};
+
+export const trackHotelAnalyticsEvent = async (payload) => {
+  try {
+    const response = await axiosInstance.post("hotels/analytics-event", payload);
+    return response.data;
+  } catch (error) {
+    console.error(getErrorMessage(error, "Error tracking hotel analytics event"));
+    throw error;
+  }
+};
+
 export const reviewHotelBooking = async (payload) => {
   try {
-    const response = await axiosInstance.post("/hotels/review", payload);
+    const response = await axiosInstance.post("hotels/review", payload);
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error reviewing hotel booking"));
@@ -64,7 +84,7 @@ export const reviewHotelBooking = async (payload) => {
 
 export const getHotelCancellationPolicy = async (payload) => {
   try {
-    const response = await axiosInstance.post("/hotels/cancellation-policy", payload);
+    const response = await axiosInstance.post("hotels/cancellation-policy", payload);
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error fetching hotel cancellation policy"));
@@ -74,7 +94,7 @@ export const getHotelCancellationPolicy = async (payload) => {
 
 export const bookHotel = async (payload) => {
   try {
-    const response = await axiosInstance.post("/hotels/book", payload);
+    const response = await axiosInstance.post("hotels/book", payload);
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error creating hotel booking"));
@@ -84,7 +104,7 @@ export const bookHotel = async (payload) => {
 
 export const holdHotelBooking = async (payload) => {
   try {
-    const response = await axiosInstance.post("/hotels/hold", payload);
+    const response = await axiosInstance.post("hotels/hold", payload);
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error creating hotel hold booking"));
@@ -94,7 +114,7 @@ export const holdHotelBooking = async (payload) => {
 
 export const confirmHotelBooking = async (payload) => {
   try {
-    const response = await axiosInstance.post("/hotels/confirm-book", payload);
+    const response = await axiosInstance.post("hotels/confirm-book", payload);
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error confirming hotel booking"));
@@ -104,7 +124,7 @@ export const confirmHotelBooking = async (payload) => {
 
 export const getHotelBookingDetails = async (payload) => {
   try {
-    const response = await axiosInstance.post("/hotels/booking-details", payload);
+    const response = await axiosInstance.post("hotels/booking-details", payload);
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error fetching hotel booking details"));
@@ -114,7 +134,7 @@ export const getHotelBookingDetails = async (payload) => {
 
 export const cancelHotelBooking = async (bookingId) => {
   try {
-    const response = await axiosInstance.post(`/hotels/cancel-booking/${bookingId}`);
+    const response = await axiosInstance.post(`hotels/cancel-booking/${bookingId}`);
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error cancelling hotel booking"));
