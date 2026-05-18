@@ -1,0 +1,1280 @@
+/* TripJack Flight Search UI Styles */
+
+:root {
+  --tj-orange: #ed1173;
+  --tj-orange-dark: #c0006a;
+  --tj-navy: #1a1f36;
+  --tj-charcoal: #2d3142;
+  --tj-light: #f5f6fa;
+  --tj-border: #e0e3ef;
+  --tj-muted: #8b8fa8;
+  --tj-green: #27ae60;
+  --tj-blue: #2980b9;
+  --tj-purple: #8e44ad;
+}
+
+/* Flight Search Form */
+.tj-flight-search-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.tj-trip-type-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+.tj-trip-tab {
+  padding: 12px 32px;
+  border-radius: 25px;
+  background: white;
+  color: var(--tj-charcoal);
+  border: 1px solid var(--tj-border);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.tj-trip-tab.active {
+  background: var(--tj-navy);
+  color: white;
+  border-color: var(--tj-navy);
+}
+
+.tj-trip-tab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tj-search-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  position: relative;
+  overflow: visible;
+}
+
+.tj-search-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  border: 2px solid var(--tj-border);
+  border-radius: 12px;
+  overflow: visible;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.tj-field-group {
+  flex: 1;
+  padding: 14px 18px;
+  border-right: 1px solid var(--tj-border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  min-width: 0;
+  background: white;
+}
+
+.tj-field-group:last-child {
+  border-right: none;
+}
+
+.tj-field-icon {
+  color: var(--tj-muted);
+  flex-shrink: 0;
+}
+
+.tj-field-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.tj-field-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tj-charcoal);
+  background: transparent;
+}
+
+.tj-field-input::placeholder {
+  color: var(--tj-muted);
+  font-weight: 400;
+}
+
+.tj-field-sublabel {
+  font-size: 11px;
+  color: var(--tj-muted);
+  margin-top: 2px;
+}
+
+.tj-swap-btn {
+  position: relative;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--tj-orange);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;  
+}
+
+.tj-swap-btn:hover {
+  background: var(--tj-orange-dark);
+  transform: rotate(180deg);
+}
+
+.tj-pax-field {
+  cursor: pointer;
+}
+
+.tj-search-btn {
+  background: var(--tj-orange);
+  color: white;
+  border: none;
+  padding: 0 40px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 0 10px 10px 0;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tj-search-btn:hover {
+  background: var(--tj-orange-dark);
+}
+
+.tj-search-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.tj-suggestions-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid var(--tj-orange);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 2000;
+  min-width: 300px;
+}
+
+.tj-suggestion-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--tj-light);
+  transition: background 0.2s ease;
+}
+
+.tj-suggestion-item:hover {
+  background: var(--tj-light);
+}
+
+.tj-suggestion-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.tj-suggestion-iata {
+  font-weight: 700;
+  color: var(--tj-orange);
+  font-size: 14px;
+}
+
+.tj-suggestion-name {
+  font-weight: 600;
+  color: var(--tj-charcoal);
+  font-size: 14px;
+}
+
+.tj-suggestion-city {
+  font-size: 12px;
+  color: var(--tj-muted);
+}
+
+.tj-travelers-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  border: 1px solid var(--tj-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  z-index: 1000;
+  margin-top: 8px;
+  min-width: 280px;
+}
+
+.tj-traveler-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.tj-counter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tj-counter button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--tj-border);
+  background: white;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.tj-counter button:hover {
+  background: var(--tj-orange);
+  color: white;
+  border-color: var(--tj-orange);
+}
+
+.tj-class-selector select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--tj-border);
+  border-radius: 6px;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.tj-options-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.tj-option-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tj-airline-select {
+  padding: 8px 16px;
+  border: 1px solid var(--tj-border);
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+}
+
+.tj-option-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tj-charcoal);
+}
+
+.tj-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tj-checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Results Page */
+.tj-results-page {
+  background: var(--tj-light);
+  min-height: 100vh;
+  padding-bottom: 100px;
+}
+
+.tj-nav-bar {
+  background: var(--tj-charcoal);
+  color: white;
+  padding: 16px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.tj-nav-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.tj-nav-route {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.tj-nav-dates,
+.tj-nav-pax,
+.tj-nav-airline {
+  font-size: 14px;
+}
+
+.tj-modify-btn {
+  margin-left: auto;
+  padding: 8px 20px;
+  border: 1px solid white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.tj-modify-btn:hover {
+  background: white;
+  color: var(--tj-charcoal);
+}
+
+.tj-modify-panel {
+  background: white;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--tj-border);
+}
+
+.tj-quickselect-strip {
+  background: #f8f9fa;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--tj-border);
+}
+
+.tj-quickselect-group {
+  display: flex;
+  gap: 16px;
+}
+
+.tj-quickselect-item {
+  flex: 1;
+  background: white;
+  border: 1px solid var(--tj-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tj-quickselect-item:hover {
+  border-color: var(--tj-orange);
+  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.15);
+}
+
+.tj-quickselect-label {
+  font-size: 12px;
+  color: var(--tj-muted);
+  font-weight: 600;
+}
+
+.tj-quickselect-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--tj-orange);
+}
+
+.tj-quickselect-duration {
+  font-size: 12px;
+  color: var(--tj-muted);
+}
+
+/* Filters Sidebar */
+.tj-filters-sidebar {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  /* max-height: calc(100vh - 200px); */
+  overflow-y: auto;
+}
+
+.tj-filters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--tj-border);
+}
+
+.tj-filters-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.tj-reset-btn {
+  background: none;
+  border: none;
+  color: var(--tj-orange);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.tj-reset-btn:hover {
+  text-decoration: underline;
+}
+
+.tj-filter-section {
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--tj-light);
+  padding-bottom: 12px;
+}
+
+.tj-filter-section:last-child {
+  border-bottom: none;
+}
+
+.tj-filter-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 10px;
+  user-select: none;
+}
+
+.tj-filter-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tj-charcoal);
+}
+
+.tj-filter-section-body {
+  margin-top: 10px;
+}
+
+.tj-price-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tj-checkbox-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tj-checkbox-inline input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.tj-route-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tj-route-pill {
+  padding: 6px 14px;
+  border: 1px solid var(--tj-border);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tj-route-pill.active {
+  background: var(--tj-orange);
+  color: white;
+  border-color: var(--tj-orange);
+}
+
+.tj-stop-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tj-stop-pill {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  border: 1px solid var(--tj-border);
+  border-radius: 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #fff;
+  min-width: 52px;
+  line-height: 1.3;
+}
+
+.tj-stop-pill.active {
+  background: var(--tj-orange);
+  color: white;
+  border-color: var(--tj-orange);
+}
+
+.tj-stop-pill-label {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.tj-stop-pill-price {
+  font-size: 9px;
+  color: var(--tj-muted);
+  line-height: 1.2;
+  font-weight: 400;
+  margin-top: 1px;
+}
+
+.tj-stop-pill.active .tj-stop-pill-price {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.tj-return-special-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border: 1px solid var(--tj-border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.tj-airline-logo-sm {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.tj-return-special-price {
+  font-weight: 700;
+  color: var(--tj-orange);
+}
+
+.tj-time-slots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.tj-time-slot {
+  padding: 8px 4px;
+  border: 1px solid var(--tj-border);
+  border-radius: 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.tj-time-slot.active {
+  background: var(--tj-orange);
+  color: white;
+  border-color: var(--tj-orange);
+}
+
+.tj-time-slot-icon {
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tj-time-slot.active .tj-time-slot-icon {
+  color: white;
+}
+
+.tj-time-slot-label {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.tj-time-link {
+  font-size: 11px;
+  color: var(--tj-orange);
+  cursor: pointer;
+  text-decoration: underline;
+  margin-top: 4px;
+}
+
+.tj-airline-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tj-airline-logo-xs {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.tj-airline-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tj-airline-count {
+  color: var(--tj-muted);
+  font-size: 11px;
+}
+
+.tj-airline-price {
+  font-size: 10px;
+  color: var(--tj-muted);
+  display: block;
+  margin-left: 24px;
+}
+
+.tj-price-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.tj-price-input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--tj-border);
+  border-radius: 6px;
+  font-size: 12px;
+  min-width: 0;
+  width: 100%;
+}
+
+.tj-price-input:focus {
+  outline: none;
+  border-color: var(--tj-orange);
+}
+
+.tj-price-separator {
+  color: var(--tj-muted);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* Flights Column */
+.tj-flights-column {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.tj-column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--tj-border);
+}
+
+.tj-column-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--tj-charcoal);
+}
+
+.tj-share-icons {
+  display: flex;
+  gap: 12px;
+}
+
+.tj-share-icon {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tj-share-icon.whatsapp {
+  color: #25d366;
+}
+
+.tj-share-icon.email {
+  color: var(--tj-blue);
+}
+
+.tj-share-icon.eye {
+  color: var(--tj-muted);
+}
+
+.tj-share-icon:hover {
+  transform: scale(1.2);
+}
+
+.tj-sort-tabs {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.tj-sort-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tj-muted);
+}
+
+.tj-sort-tab {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tj-charcoal);
+  cursor: pointer;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.tj-sort-tab.active {
+  color: var(--tj-orange);
+  border-bottom-color: var(--tj-orange);
+}
+
+.tj-flights-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Column Header */
+.tj-column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--tj-border);
+}
+
+.tj-column-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--tj-charcoal);
+}
+
+.tj-share-icons {
+  display: flex;
+  gap: 12px;
+}
+
+.tj-share-icon {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tj-share-icon.whatsapp {
+  color: #25d366;
+}
+
+.tj-share-icon.email {
+  color: var(--tj-blue);
+}
+
+.tj-share-icon.eye {
+  color: var(--tj-muted);
+}
+
+.tj-share-icon:hover {
+  transform: scale(1.2);
+}
+.tj-flight-card {
+  background: #fff;
+  border: 1px solid #e8eaf0;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, border-color 0.2s;
+  border-left: 3px solid transparent;
+}
+
+.tj-flight-card:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  border-color: #d0d3df;
+}
+
+.tj-flight-card.selected {
+  border-left-color: var(--tj-orange);
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(237, 17, 115, 0.08);
+}
+
+.tj-flight-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.tj-airline-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.tj-airline-fallback {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--tj-navy);
+  color: white;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.tj-airline-info {
+  flex: 1;
+}
+
+.tj-airline-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--tj-charcoal);
+}
+
+.tj-flight-number {
+  font-size: 12px;
+  color: var(--tj-muted);
+}
+
+.tj-flight-route {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.tj-flight-time {
+  text-align: center;
+}
+
+.tj-time-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--tj-charcoal);
+  margin-bottom: 4px;
+}
+
+.tj-time-date {
+  font-size: 11px;
+  color: var(--tj-muted);
+}
+
+.tj-flight-duration {
+  text-align: center;
+  position: relative;
+}
+
+.tj-duration-line {
+  height: 2px;
+  background: var(--tj-border);
+  margin-bottom: 8px;
+}
+
+.tj-duration-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tj-muted);
+  margin-bottom: 4px;
+}
+
+.tj-stops-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #fff3cd;
+  color: #856404;
+}
+
+.tj-stops-badge.nonstop {
+  background: #d4edda;
+  color: #155724;
+}
+
+.tj-fare-options {
+  margin-bottom: 16px;
+}
+
+.tj-fare-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  border-top: 1px solid #f5f5f5;
+  transition: all 0.2s ease;
+}
+
+.tj-fare-option:first-child {
+  border-top: none;
+}
+
+.tj-fare-option:hover {
+  background: transparent;
+}
+
+.tj-fare-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--tj-orange);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 90px;
+}
+
+.tj-fare-edit {
+  font-size: 14px;
+  cursor: pointer;
+  color: #aaa;
+  flex-shrink: 0;
+}
+
+.tj-fare-edit:hover {
+  color: var(--tj-orange);
+}
+
+.tj-fare-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.tj-fare-badge.published {
+  background: #e8f0fe;
+  color: #1a56db;
+}
+
+.tj-fare-badge.sme {
+  background: #f3e8fd;
+  color: #7b1fa2;
+}
+
+.tj-fare-badge.special {
+  background: #e6f4ea;
+  color: #137333;
+}
+
+.tj-fare-badge.promo {
+  background: #fce8e6;
+  color: #c5221f;
+}
+
+.tj-fare-details {
+  font-size: 12px;
+  color: var(--tj-muted);
+  flex: 1;
+}
+
+.tj-fare-expand {
+  font-size: 13px;
+  color: var(--tj-orange);
+  cursor: pointer;
+  font-weight: 600;
+  padding: 8px;
+  text-align: center;
+}
+
+.tj-fare-expand:hover {
+  text-decoration: underline;
+}
+
+.tj-flight-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--tj-light);
+}
+
+.tj-view-details {
+  font-size: 13px;
+  color: var(--tj-orange);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tj-view-details:hover {
+  text-decoration: underline;
+}
+
+.tj-seats-left {
+  font-size: 12px;
+  color: var(--tj-orange);
+}
+
+/* Booking Bar */
+.tj-booking-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--tj-charcoal);
+  color: white;
+  padding: 16px 0;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1050;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.tj-booking-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.tj-booking-flight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.tj-booking-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.tj-booking-flight-no {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.tj-booking-route {
+  font-size: 13px;
+}
+
+.tj-booking-cities {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.tj-booking-price {
+  font-weight: 700;
+  color: var(--tj-orange);
+}
+
+.tj-booking-total {
+  margin-left: auto;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.tj-book-btn {
+  background: var(--tj-orange);
+  color: white;
+  border: none;
+  padding: 14px 40px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+}
+
+.tj-book-btn:hover {
+  background: var(--tj-orange-dark);
+  transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+  .tj-search-row {
+    flex-direction: column;
+  }
+
+  .tj-field-group {
+    border-right: none;
+    border-bottom: 1px solid var(--tj-border);
+  }
+
+  .tj-field-group:last-child {
+    border-bottom: none;
+  }
+
+  .tj-search-btn {
+    border-radius: 0 0 10px 10px;
+  }
+
+  .tj-nav-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .tj-modify-btn {
+    margin-left: 0;
+    width: 100%;
+    text-align: center;
+  }
+
+  .tj-flight-route {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .tj-booking-content {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tj-booking-total {
+    margin-left: 0;
+  }
+
+  .tj-book-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .tj-trip-type-tabs {
+    flex-direction: column;
+  }
+
+  .tj-trip-tab {
+    width: 100%;
+    text-align: center;
+  }
+
+  .tj-stop-pills {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .tj-time-slots {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
+/* Shimmer Loading */
+@keyframes shimmer {
+  0% {
+    background-position: -800px 0;
+  }
+  100% {
+    background-position: 800px 0;
+  }
+}
+
+.shimmer-card {
+  background: #fff;
+  border: 1px solid var(--tj-border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.shimmer-line {
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+.shimmer-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+}
+
+.shimmer-title {
+  height: 14px;
+  width: 120px;
+  margin-bottom: 8px;
+}
+
+.shimmer-time {
+  height: 22px;
+  width: 60px;
+}
+
+.shimmer-badge {
+  height: 14px;
+  width: 80px;
+  border-radius: 10px;
+}
+
+.shimmer-price {
+  height: 16px;
+  width: 90px;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--tj-muted);
+  font-size: 14px;
+}

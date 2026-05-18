@@ -1,945 +1,654 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Plane, MapPin, Clock, ArrowRight, Luggage, Filter, SlidersHorizontal } from 'lucide-react';
-import { searchFlights, createFlightPaymentOrder, verifyAndBookFlight } from '../../../../services/api/flightApi';
-import { buildTripJackSearchQuery, mapTripJackFlight } from '../../../../utils/flightSearchUtils';
+import { FiEdit2 } from 'react-icons/fi';
 import FlightFiltersSidebar from './FlightFiltersSidebar';
-import BookingForm from './BookingForm';
+import FlightSearchForm from './components/FlightSearchForm';
+import { BsLightning } from "react-icons/bs";
 
-const FlightSearchResults = () => {
+const ShimmerCard = () => (
+  <div className="shimmer-card">
+    <div className="d-flex align-items-center gap-2 mb-3">
+      <div className="shimmer-line shimmer-logo" />
+      <div>
+        <div className="shimmer-line shimmer-title" />
+        <div className="shimmer-line" style={{height:'10px', width:'60px'}} />
+      </div>
+      <div className="ms-auto d-flex gap-4">
+        <div className="shimmer-line shimmer-time" />
+        <div className="shimmer-line" style={{height:'22px',width:'80px'}} />
+        <div className="shimmer-line shimmer-time" />
+      </div>
+    </div>
+    <div className="shimmer-line shimmer-price mb-2" />
+    <div className="shimmer-line shimmer-badge" />
+  </div>
+);
+
+export default function FlightSearchResults() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [flights, setFlights] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedFlight, setSelectedFlight] = useState(null);
-  const [sortBy, setSortBy] = useState('price'); // price, duration, departure
-  const [verifyingFlight, setVerifyingFlight] = useState(null);
-  const [verificationError, setVerificationError] = useState(null);
-  const [showBookingForm, setShowBookingForm] = useState(false);
-  const [verifiedFlightData, setVerifiedFlightData] = useState(null);
-  const [bookingLoading, setBookingLoading] = useState(false);
-  const [bookingError, setBookingError] = useState(null);
-  const [pendingBookingPayload, setPendingBookingPayload] = useState(null);
+  
+  const { searchParams, initialResults } = location.state || {};
+  
+  const [outboundFlights, setOutboundFlights] = useState([]);
+  const [returnFlights, setReturnFlights] = useState([]);
+  const [filteredOutbound, setFilteredOutbound] = useState([]);
+  const [filteredReturn, setFilteredReturn] = useState([]);
+  const [selectedOutbound, setSelectedOutbound] = useState(null);
+  const [selectedReturn, setSelectedReturn] = useState(null);
+  const [sortOutbound, setSortOutbound] = useState('price');
+  const [sortReturn, setSortReturn] = useState('price');
   const [filters, setFilters] = useState({
     stops: [],
     airlines: [],
     departure_time: [],
+    arrival_time: [],
+    departure_return_time: [],
+    arrival_return_time: [],
+    baggage: [],
     price_min: null,
     price_max: null,
-    baggage_included: true,
-    refundable: true
   });
   const [filtersMeta, setFiltersMeta] = useState(null);
-  const [activeFilters, setActiveFilters] = useState({});
-  const [pagination, setPagination] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  // Get search parameters and any initial results from location state
-  const searchParams = location.state?.searchParams;
-  const searchQuery = location.state?.searchQuery;
-  const initialResults = location.state?.initialResults;
+  const [expandedFares, setExpandedFares] = useState({});
+  const [modifyOpen, setModifyOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Load Razorpay Checkout script (required for window.Razorpay)
-    const existing = document.querySelector('script[data-razorpay="checkout"]');
-    if (existing) return;
-
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    script.dataset.razorpay = 'checkout';
-
-    script.onload = () => console.log('Razorpay checkout loaded');
-    script.onerror = () => console.error('Failed to load Razorpay checkout');
-
-    document.body.appendChild(script);
-  }, []);
-
-  useEffect(() => {
-    if (!searchParams || !searchQuery) {
+    if (!searchParams || !initialResults) {
       navigate('/honeymoon');
       return;
     }
 
-    // If hero page already fetched results, process them
-    if (initialResults && (initialResults.direct || initialResults.connecting)) {
-      processInitialResults(initialResults);
-      setLoading(false);
-    } else {
-      searchFlightsData();
-    }
-  }, [searchParams, searchQuery, initialResults]);
+    setLoading(true);
+    processInitialResults(initialResults);
+    setLoading(false);
+  }, [searchParams, initialResults, navigate]);
 
   const processInitialResults = (results) => {
-    // Extract tripInfos from TripJack response
     const directTrips = results.direct?.searchResult?.tripInfos || {};
     const connectingTrips = results.connecting?.searchResult?.tripInfos || {};
 
-    // Merge ONWARD, RETURN, COMBO arrays
-    const mergedFlights = {
-      ONWARD: [...(directTrips.ONWARD || []), ...(connectingTrips.ONWARD || [])],
-      RETURN: [...(directTrips.RETURN || []), ...(connectingTrips.RETURN || [])],
-      COMBO: [...(directTrips.COMBO || []), ...(connectingTrips.COMBO || [])],
-    };
+    const mergedOnward = dedupeFlights([
+      ...(directTrips.ONWARD || []),
+      ...(connectingTrips.ONWARD || []),
+    ]);
 
-    // For now, just use ONWARD flights (or COMBO for multi-city)
-    const flightList = mergedFlights.ONWARD.length > 0 ? mergedFlights.ONWARD : mergedFlights.COMBO;
-    
-    // Map TripJack flights to display format
-    const mappedFlights = flightList.map(mapTripJackFlight).filter(Boolean);
-    
-    setFlights(mappedFlights);
+    const mergedReturn = dedupeFlights([
+      ...(directTrips.RETURN || []),
+      ...(connectingTrips.RETURN || []),
+    ]);
+
+    setOutboundFlights(mergedOnward);
+    setReturnFlights(mergedReturn);
+    setFilteredOutbound(mergedOnward);
+    setFilteredReturn(mergedReturn);
+
+    computeFiltersMeta(mergedOnward, mergedReturn);
   };
 
-  const searchFlightsData = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Use the searchQuery that was built with buildTripJackSearchQuery
-      const directQuery = {
-        ...searchQuery,
-        searchModifiers: { isDirectFlight: true, isConnectingFlight: false },
-      };
-      
-      const connectingQuery = {
-        ...searchQuery,
-        searchModifiers: { isDirectFlight: false, isConnectingFlight: true },
-      };
-
-      const [d, c] = await Promise.allSettled([
-        searchFlights(directQuery),
-        searchFlights(connectingQuery),
-      ]);
-
-      const results = {
-        direct: d.status === "fulfilled" ? d.value : null,
-        connecting: c.status === "fulfilled" ? c.value : null,
-      };
-
-      processInitialResults(results);
-    } catch (err) {
-      setError('Failed to search flights. Please try again.');
-      console.error('Flight search error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const sortFlights = (flightsToSort) => {
-    const sorted = [...flightsToSort];
-
-    switch (sortBy) {
-      case 'price':
-        return sorted.sort((a, b) => a.price - b.price);
-      case 'duration':
-        return sorted.sort((a, b) => a.duration_minutes - b.duration_minutes);
-      case 'departure':
-        return sorted.sort((a, b) => new Date(a.departure) - new Date(b.departure));
-      default:
-        return sorted;
-    }
-  };
-
-  const formatTime = (dateString) => {
-    return new Date(dateString).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
+  const dedupeFlights = (flights) => {
+    const seen = new Set();
+    return flights.filter(flight => {
+      const key = getFlightKey(flight);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
     });
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
+  const getFlightKey = (flight) => {
+    const first = flight.sI[0];
+    const last = flight.sI[flight.sI.length - 1];
+    return `${first.fD.aI.code}${first.fD.fN}-${first.da.code}-${last.aa.code}-${first.dt}`;
+  };
+
+  const computeFiltersMeta = (onward, returnFlights) => {
+    const allFlights = [...onward, ...returnFlights];
+    
+    const stopsMap = new Map();
+    const airlinesMap = new Map();
+    let minPrice = Infinity;
+    let maxPrice = 0;
+
+    allFlights.forEach(flight => {
+      const stops = flight.sI.length - 1;
+      const airline = flight.sI[0].fD.aI;
+      const price = flight.totalPriceList[0]?.fd?.ADULT?.fC?.TF || 0;
+
+      if (!stopsMap.has(stops)) {
+        stopsMap.set(stops, { value: stops, count: 0, min_price: Infinity });
+      }
+      const stopData = stopsMap.get(stops);
+      stopData.count++;
+      stopData.min_price = Math.min(stopData.min_price, price);
+
+      if (!airlinesMap.has(airline.code)) {
+        airlinesMap.set(airline.code, {
+          code: airline.code,
+          name: airline.name,
+          logo: `https://airlines.airhex.com/airlines-logo/${airline.code.toLowerCase()}.png`,
+          count: 0,
+          min_price: Infinity,
+        });
+      }
+      const airlineData = airlinesMap.get(airline.code);
+      airlineData.count++;
+      airlineData.min_price = Math.min(airlineData.min_price, price);
+
+      minPrice = Math.min(minPrice, price);
+      maxPrice = Math.max(maxPrice, price);
+    });
+
+    setFiltersMeta({
+      stops: Array.from(stopsMap.values()),
+      airlines: Array.from(airlinesMap.values()),
+      price: { min: minPrice, max: maxPrice },
     });
   };
 
-  const handleFlightSelect = async (flight, fare) => {
-    const flightId = `${flight.flight_no}-${fare.offer_id}`;
-    setVerifyingFlight(flightId);
-    setVerificationError(null);
-    
-    try {
-      // Show booking form directly
-      setSelectedFlight({ ...flight, selectedFare: fare });
-      setVerifiedFlightData({ price: fare.price });
-      setShowBookingForm(true);
-    } catch (err) {
-      console.error('Flight selection error:', err);
-      setVerificationError(err.response?.data?.message || err.message || 'Failed to select flight. Please try again.');
-    } finally {
-      setVerifyingFlight(null);
-    }
+  useEffect(() => {
+    applyFiltersAndSort();
+  }, [filters, sortOutbound, sortReturn, outboundFlights, returnFlights]);
+
+  const applyFiltersAndSort = () => {
+    setFilteredOutbound(filterAndSort(outboundFlights, sortOutbound));
+    setFilteredReturn(filterAndSort(returnFlights, sortReturn));
   };
 
-  const handleBookingSubmit = async (paymentData) => {
-    setBookingLoading(true);
-    setBookingError(null);
-    
-    try {
-      // Keep a copy so we can prefill Razorpay and verify+book on success
-      setPendingBookingPayload(paymentData);
-      const paymentResponse = await createFlightPaymentOrder(paymentData);
+  const filterAndSort = (flights, sortBy) => {
+    let filtered = flights.filter(flight => {
+      const stops = flight.sI.length - 1;
+      const airline = flight.sI[0].fD.aI.code;
+      const price = flight.totalPriceList[0]?.fd?.ADULT?.fC?.TF || 0;
+      const depHour = parseInt(flight.sI[0].dt.split('T')[1].split(':')[0]);
+
+      if (filters.stops.length > 0 && !filters.stops.includes(stops)) return false;
+      if (filters.airlines.length > 0 && !filters.airlines.includes(airline)) return false;
+      if (filters.price_min && price < filters.price_min) return false;
+      if (filters.price_max && price > filters.price_max) return false;
       
-      if (paymentResponse.status) {
-        // Payment order created successfully
-        console.log('Payment order created:', paymentResponse);
-        
-        // Open Razorpay payment modal
-        if (paymentResponse.razorpay_order_id && paymentResponse.key_id) {
-          openRazorpayPayment(paymentResponse, paymentData);
-        } else {
-          alert('Payment order created! Please proceed with payment.');
-          setShowBookingForm(false);
-        }
-      } else {
-        setBookingError(paymentResponse.message || 'Payment order creation failed. Please try again.');
+      if (filters.departure_time.length > 0) {
+        const inRange = filters.departure_time.some(range => {
+          const [start, end] = range.split('-').map(Number);
+          return depHour >= start && depHour < end;
+        });
+        if (!inRange) return false;
       }
-    } catch (err) {
-      console.error('Payment order error:', err);
-      setBookingError(err.response?.data?.message || err.message || 'Failed to create payment order. Please try again.');
-    } finally {
-      setBookingLoading(false);
-    }
-  };
 
-  const openRazorpayPayment = (orderData, bookingPayload) => {
-    // Check if Razorpay is loaded
-    if (!window.Razorpay) {
-      console.error('Razorpay not loaded yet');
-      alert('Payment gateway is loading. Please try again in a moment.');
-      return;
-    }
+      return true;
+    });
 
-    // Add a small delay to ensure Razorpay is fully initialized
-    setTimeout(() => {
-      const options = {
-        key: orderData.key_id,
-        amount: Math.round(orderData.amount * 100), // INR -> paise
-        currency: orderData.currency || 'INR',
-        name: 'Flight Booking',
-        description: bookingPayload
-          ? `Flight ${bookingPayload.from} to ${bookingPayload.to}`
-          : 'Flight booking payment',
-        order_id: orderData.razorpay_order_id,
-        prefill: bookingPayload?.contact ? {
-          email: bookingPayload.contact.email,
-          contact: bookingPayload.contact.phone,
-        } : undefined,
-        handler: async function (response) {
-          console.log('Razorpay payment success:', response);
-          
-          try {
-            if (!response?.razorpay_payment_id) {
-              alert('Payment failed. Please try again.');
-              return;
-            }
+    filtered.sort((a, b) => {
+      const priceA = a.totalPriceList[0]?.fd?.ADULT?.fC?.TF || 0;
+      const priceB = b.totalPriceList[0]?.fd?.ADULT?.fC?.TF || 0;
+      const durationA = a.sI.reduce((sum, seg) => sum + seg.duration, 0);
+      const durationB = b.sI.reduce((sum, seg) => sum + seg.duration, 0);
 
-            setBookingLoading(true);
-
-            const verifyPayload = {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            };
-
-            const verifyRes = await verifyAndBookFlight(verifyPayload);
-
-            if (verifyRes?.status) {
-              alert(`Payment successful! Flight booked. PNR: ${verifyRes.pnr || ''}`);
-              setShowBookingForm(false);
-              setPendingBookingPayload(null);
-            } else {
-              alert(verifyRes?.message || 'Payment verified but booking failed.');
-            }
-          } catch (err) {
-            console.error('verify_and_book error:', err);
-            alert(err.response?.data?.message || err.message || 'Payment verification failed.');
-          } finally {
-            setBookingLoading(false);
-          }
-        },
-        modal: {
-          ondismiss: function() {
-            console.log('Razorpay modal closed');
-          }
-        }
-      };
-
-      try {
-        const rzp = new window.Razorpay(options);
-        rzp.open();
-      } catch (error) {
-        console.error('Razorpay initialization error:', error);
-        alert('Payment initialization failed. Please refresh and try again.');
+      switch (sortBy) {
+        case 'price':
+          return priceA - priceB;
+        case 'duration':
+          return durationA - durationB;
+        case 'departure':
+          return new Date(a.sI[0].dt) - new Date(b.sI[0].dt);
+        case 'arrival':
+          return new Date(a.sI[a.sI.length - 1].at) - new Date(b.sI[b.sI.length - 1].at);
+        default:
+          return 0;
       }
-    }, 150); // small delay
-  };
+    });
 
-  const closeBookingForm = () => {
-    setShowBookingForm(false);
-    setSelectedFlight(null);
-    setVerifiedFlightData(null);
-    setBookingError(null);
+    return filtered;
   };
 
   const handleFilterChange = (filterType, value) => {
-    const newFilters = { ...filters };
-
-    if (filterType === 'stops' || filterType === 'airlines' || filterType === 'departure_time') {
-      if (newFilters[filterType].includes(value)) {
-        newFilters[filterType] = newFilters[filterType].filter(item => item !== value);
+    setFilters(prev => {
+      const newFilters = { ...prev };
+      
+      if (['stops', 'airlines', 'departure_time', 'arrival_time', 'departure_return_time', 'arrival_return_time', 'baggage'].includes(filterType)) {
+        if (newFilters[filterType].includes(value)) {
+          newFilters[filterType] = newFilters[filterType].filter(v => v !== value);
+        } else {
+          newFilters[filterType] = [...newFilters[filterType], value];
+        }
       } else {
-        newFilters[filterType] = [...newFilters[filterType], value];
+        newFilters[filterType] = value;
       }
-    } else {
-      newFilters[filterType] = value;
-    }
-
-    setFilters(newFilters);
-    // Filters are applied client-side in the render, not sent to API
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    // Pagination is client-side for now
+      
+      return newFilters;
+    });
   };
 
   const clearFilters = () => {
-    const defaultFilters = {
+    setFilters({
       stops: [],
       airlines: [],
       departure_time: [],
+      arrival_time: [],
+      departure_return_time: [],
+      arrival_return_time: [],
+      baggage: [],
       price_min: null,
       price_max: null,
-      baggage_included: true,
-      refundable: true
-    };
-    setFilters(defaultFilters);
+    });
   };
 
-  const handleBackToSearch = () => {
-    navigate('/honeymoon');
+  const toggleFareExpansion = (flightId) => {
+    setExpandedFares(prev => ({ ...prev, [flightId]: !prev[flightId] }));
   };
 
-  const sortedFlights = sortFlights(flights);
+  const selectFlight = (flight, type) => {
+    if (type === 'outbound') {
+      setSelectedOutbound(selectedOutbound?.id === flight.id ? null : flight);
+    } else {
+      setSelectedReturn(selectedReturn?.id === flight.id ? null : flight);
+    }
+  };
 
-  if (error) {
+  const handleBook = async () => {
+    if (!selectedOutbound) {
+      alert('Please select an outbound flight');
+      return;
+    }
+    if (searchParams.tripType === 'round' && !selectedReturn) {
+      alert('Please select a return flight');
+      return;
+    }
+
+    navigate('/honeymoon/flights/booking', {
+      state: {
+        outbound: selectedOutbound,
+        return: selectedReturn,
+        searchParams,
+      },
+    });
+  };
+
+  const formatTime = (dateStr) => {
+    return new Date(dateStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  };
+
+  const formatDate = (dateStr) => {
+    return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  const formatDuration = (minutes) => {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return `${h}h ${m}m`;
+  };
+
+  const getCheapest = (flights) => {
+    if (!flights.length) return null;
+    return flights.reduce((min, f) => {
+      const price = f.totalPriceList[0]?.fd?.ADULT?.fC?.TF || Infinity;
+      const minPrice = min.totalPriceList[0]?.fd?.ADULT?.fC?.TF || Infinity;
+      return price < minPrice ? f : min;
+    });
+  };
+
+  const getFastest = (flights) => {
+    if (!flights.length) return null;
+    return flights.reduce((min, f) => {
+      const duration = f.sI.reduce((sum, seg) => sum + seg.duration, 0);
+      const minDuration = min.sI.reduce((sum, seg) => sum + seg.duration, 0);
+      return duration < minDuration ? f : min;
+    });
+  };
+
+  const renderFlight = (flight, type) => {
+    const first = flight.sI[0];
+    const last = flight.sI[flight.sI.length - 1];
+    const airline = first.fD.aI;
+    const stops = flight.sI.length - 1;
+    const duration = flight.sI.reduce((sum, seg) => sum + seg.duration, 0);
+    const isSelected = type === 'outbound' ? selectedOutbound?.id === flight.id : selectedReturn?.id === flight.id;
+    const flightId = flight.id || getFlightKey(flight);
+    const expanded = expandedFares[flightId];
+    const visibleFares = expanded ? flight.totalPriceList : flight.totalPriceList.slice(0, 2);
+
     return (
-      <div className="container py-5">
-        <div className="alert alert-danger text-center">
-          <h4>Error</h4>
-          <p>{error}</p>
-          <button className="btn btn-primary" onClick={handleBackToSearch}>
-            Back to Search
-          </button>
+      <div
+        key={flightId}
+        className={`tj-flight-card ${isSelected ? 'selected' : ''}`}
+        onClick={() => selectFlight({ ...flight, id: flightId }, type)}
+      >
+        <div className="tj-flight-header">
+          <img
+            src={`https://airlines.airhex.com/airlines-logo/${airline.code.toLowerCase()}.png`}
+            alt={airline.name}
+            className="tj-airline-logo"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+          <div className="tj-airline-fallback">{airline.code}</div>
+          <div className="tj-airline-info">
+            <div className="tj-airline-name">{airline.name}</div>
+            <div className="tj-flight-number">{first.fD.fN}</div>
+          </div>
+        </div>
+
+        <div className="tj-flight-route">
+          <div className="tj-flight-time">
+            <div className="tj-time-value">{formatTime(first.dt)}</div>
+            <div className="tj-time-date">{formatDate(first.dt).split(',')[0]}</div>
+          </div>
+
+          <div className="tj-flight-duration">
+            <div className="tj-duration-line"></div>
+            <div className="tj-duration-text">{formatDuration(duration)}</div>
+            <div className={`tj-stops-badge ${stops === 0 ? 'nonstop' : ''}`}>
+              {stops === 0 ? 'Non-Stop' : `${stops} Stop${stops > 1 ? 's' : ''}`}
+            </div>
+          </div>
+
+          <div className="tj-flight-time">
+            <div className="tj-time-value">{formatTime(last.at)}</div>
+            <div className="tj-time-date">{formatDate(last.at).split(',')[0]}</div>
+          </div>
+        </div>
+
+        <div className="tj-fare-options">
+          {visibleFares.map((fare, idx) => {
+            const price = fare.fd.ADULT.fC.TF;
+            const fareType = fare.fareIdentifier;
+            const badgeClass = fareType === 'PUBLISHED' ? 'published' : fareType === 'SME' ? 'sme' : fareType === 'SPECIAL_RETURN' ? 'special' : 'promo';
+            
+            return (
+              <div key={idx} className="tj-fare-option">
+                <div className="tj-fare-price">
+                  ₹{Number(price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  <FiEdit2 size={12} className="tj-fare-edit" />
+                </div>
+                <div className={`tj-fare-badge ${badgeClass}`}>
+                  {fareType === 'PUBLISHED' ? 'Published' : fareType === 'SME' ? 'SME' : fareType === 'SPECIAL_RETURN' ? 'Special Return' : fareType}
+                </div>
+                <div className="tj-fare-details">
+                  {fare.fd.ADULT.cc}, {fare.fd.ADULT.rT === 1 ? 'Refundable' : 'Non-Refundable'}
+                </div>
+              </div>
+            );
+          })}
+          
+          {flight.totalPriceList.length > 2 && (
+            <div className="tj-fare-expand" onClick={(e) => { e.stopPropagation(); toggleFareExpansion(flightId); }}>
+              {expanded ? 'Show less' : `+${flight.totalPriceList.length - 2} more fares`} {expanded ? '▲' : '▼'}
+            </div>
+          )}
+        </div>
+
+        <div className="tj-flight-footer">
+          <div className="tj-view-details">View Details +</div>
+          <div className="tj-seats-left">Seats left: {flight.totalPriceList[0]?.fd?.ADULT?.sR || 9}</div>
         </div>
       </div>
     );
-  }
+  };
+
+  const cheapestOutbound = getCheapest(filteredOutbound);
+  const fastestOutbound = getFastest(filteredOutbound);
+  const cheapestReturn = getCheapest(filteredReturn);
+  const fastestReturn = getFastest(filteredReturn);
+
+  const totalPrice = (selectedOutbound?.totalPriceList[0]?.fd?.ADULT?.fC?.TF || 0) + 
+                     (selectedReturn?.totalPriceList[0]?.fd?.ADULT?.fC?.TF || 0);
+
+  const isRoundTrip = searchParams?.tripType === 'round';
 
   return (
-    <div className="container py-4">
-      {/* Header */}
-      <div className="row mb-4">
-        <div className="col-12">
-          <button
-            className="btn btn-outline-secondary mb-3"
-            onClick={handleBackToSearch}
-          >
-            ← Back to Search
-          </button>
-
-          <div className="d-flex justify-content-between align-items-center">
-            <div>
-              <h2 className="mb-2 d-flex align-items-center gap-2">
-                <Plane size={22} />
-                Flight Search Results
-              </h2>
-              {searchParams && (
-                <p className="text-muted">
-                  <MapPin size={14} className="me-1" />
-                  {searchParams.from} <ArrowRight size={14} className="mx-1" /> {searchParams.to} • {formatDate(searchParams.date)} •
-                  {searchParams.return_date ? ` Return: ${formatDate(searchParams.return_date)}` : ' One-way'} •
-                  {searchParams.adults} {searchParams.adults === 1 ? 'Adult' : 'Adults'}
-                  {searchParams.children > 0 && `, ${searchParams.children} ${searchParams.children === 1 ? 'Child' : 'Children'}`}
-                </p>
-              )}
+    <div className="tj-results-page">
+      <div className="tj-nav-bar">
+        <div className="container-fluid">
+          <div className="tj-nav-content">
+            <div className="tj-nav-route">
+              {searchParams?.from} ⇄ {searchParams?.to}
             </div>
-
-            <div className="d-flex align-items-center gap-3">
-              {pagination && (
-                <span className="badge bg-success d-flex align-items-center gap-1">
-                  <SlidersHorizontal size={14} />
-                  {pagination.total} flights found
-                </span>
-              )}
-              <select
-                className="form-select form-select-sm"
-                style={{ width: 'auto' }}
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <option value="price">Sort by Price</option>
-                <option value="duration">Sort by Duration</option>
-                <option value="departure">Sort by Departure</option>
-              </select>
+            <div className="tj-nav-dates">
+              Departure Date: {formatDate(searchParams?.departureDate)}
+            </div>
+            {isRoundTrip && (
+              <div className="tj-nav-dates">
+                Return Date: {formatDate(searchParams?.returnDate)}
+              </div>
+            )}
+            <div className="tj-nav-pax">
+              {searchParams?.adults} Adult{searchParams?.adults > 1 ? 's' : ''} | {searchParams?.cabinClass?.toUpperCase()}
+            </div>
+            <div className="tj-nav-airline">
+              Preferred Airline: {searchParams?.preferredAirline || 'None'}
+            </div>
+            <div className="tj-modify-btn" onClick={() => setModifyOpen(!modifyOpen)}>
+              MODIFY SEARCH {modifyOpen ? '▲' : '▼'}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="row">
-        {/* Filters Sidebar */}
-        <div className="col-lg-3 mb-4">
-          <FlightFiltersSidebar
-            filtersMeta={filtersMeta}
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            onClearFilters={clearFilters}
-          />
-        </div>
-
-        {/* Flight Results */}
-        <div className="col-lg-9">
-          {loading ? (
-            // Skeleton cards while loading, filters stay visible
-            <div>
-              {[1, 2, 3].map((i) => (
-                <div className="flight-results mb-3" key={i}>
-                  <div className="flight-item placeholder-glow">
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                      <div className="d-flex align-items-center gap-3">
-                        <div className="airline-logo d-flex align-items-center justify-content-center">
-                          <Plane size={18} />
-                        </div>
-                        <div>
-                          <div className="placeholder col-6 mb-1"></div>
-                          <div className="placeholder col-4"></div>
-                        </div>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div className="placeholder col-4 mb-1"></div>
-                        <div className="placeholder col-6"></div>
-                      </div>
-                    </div>
-
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                      <div className="d-flex flex-column align-items-start gap-1">
-                        <span className="placeholder col-4"></span>
-                        <span className="placeholder col-3"></span>
-                      </div>
-                      <div className="d-flex flex-column align-items-center gap-1">
-                        <Clock size={18} className="text-muted" />
-                        <span className="placeholder col-4"></span>
-                      </div>
-                      <div className="d-flex flex-column align-items-end gap-1">
-                        <span className="placeholder col-4"></span>
-                        <span className="placeholder col-3"></span>
-                      </div>
-                    </div>
-
-                    <div className="d-flex justify-content-between align-items-center">
-                      <div className="d-flex align-items-center gap-2">
-                        <Luggage size={16} className="text-muted" />
-                        <span className="placeholder col-5"></span>
-                      </div>
-                      <button className="select-button" disabled>
-                        <span className="placeholder col-6"></span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : sortedFlights.length === 0 ? (
-            <div className="alert alert-info text-center">
-              <h4>No Flights Found</h4>
-              <p>Try adjusting your search criteria or filters.</p>
-            </div>
-          ) : (
-            <div className="flight-results">
-              {sortedFlights.map((flight, index) => (
-                <div key={index} className="flight-item">
-                  <div className="flight-header">
-                    <div className="flight-airline">
-                      <img src={flight.airline_logo} alt={flight.airline_name} style={{ width: '40px', height: '40px', marginRight: '12px' }} />
-                      <div>
-                        <div>{flight.airline_name} {flight.flight_no}</div>
-                        {flight.operating_airline !== flight.airline && (
-                          <div style={{ fontSize: '12px', color: '#999', marginTop: '2px' }}>
-                            Operated by {flight.operating_airline}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flight-price">
-                      ₹{flight.price.toFixed(0)}
-                      <div style={{ fontSize: '12px', color: '#999', fontWeight: '500', marginTop: '2px' }}>
-                        per adult
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flight-details">
-                    <div className="flight-time">
-                      <div className="flight-time-value">{formatTime(flight.departure)}</div>
-                      <div className="flight-time-label">{flight.origin}</div>
-                      <div className="flight-time-date">{formatDate(flight.departure)}</div>
-                      {flight.departure_terminal && (
-                        <div className="mt-1" style={{ fontSize: '11px', color: '#666' }}>
-                          Terminal {flight.departure_terminal}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flight-duration">
-                      <div>{flight.duration}</div>
-                      <div className="flight-stops">
-                        {flight.stops === 0 ? ' Direct' : ` ${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}
-                      </div>
-                      {flight.layovers && flight.layovers.length > 0 && (
-                        <div style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>
-                          via {flight.layovers[0].airport}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flight-time">
-                      <div className="flight-time-value">{formatTime(flight.arrival)}</div>
-                      <div className="flight-time-label">{flight.destination}</div>
-                      <div className="flight-time-date">{formatDate(flight.arrival)}</div>
-                      {flight.arrival_terminal && (
-                        <div className="mt-1" style={{ fontSize: '11px', color: '#666' }}>
-                          Terminal {flight.arrival_terminal}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flight-amenities">
-                    <div className="amenity-badge">
-                      {flight.fares[0]?.cabin_class || 'Economy'}
-                    </div>
-                    <div className="amenity-badge">
-                      {flight.fares[0]?.baggage || '15KG'}
-                    </div>
-                    <div className={`amenity-badge ${flight.stops === 0 ? 'direct' : 'stops'}`}>
-                      {flight.stops === 0 ? ' Direct Flight' : `${flight.stops} Stop${flight.stops > 1 ? 's' : ''}`}
-                    </div>
-                    <div className="amenity-badge seats-badge">
-                      {flight.fares[0]?.seats_available || 9} seats left
-                    </div>
-                    {flight.aircraft && (
-                      <div className="amenity-badge">
-                        ✈️ {flight.aircraft}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="d-flex justify-content-between align-items-center">
-                    <div style={{ fontSize: '13px', color: '#666' }}>
-
-                      <span style={{ fontWeight: '600', marginLeft: '8px' }}>Aircraft:</span> {flight.aircraft_name || flight.aircraft}
-                    </div>
-                    <button 
-                      className="select-button"
-                      onClick={() => handleFlightSelect(flight, flight.fares[0])}
-                      disabled={verifyingFlight === `${flight.flight_no}-${flight.fares[0]?.offer_id}`}
-                    >
-                      {verifyingFlight === `${flight.flight_no}-${flight.fares[0]?.offer_id}` ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                          Verifying...
-                        </>
-                      ) : (
-                        'Select Flight'
-                      )}
-                    </button>
-                    
-                    {/* Show verification error for this flight */}
-                    {verificationError && verifyingFlight === null && (
-                      <div className="verification-error mt-2">
-                        <small className="text-danger">{verificationError}</small>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-
-              {/* Pagination */}
-              {pagination && pagination.total_pages > 1 && (
-                <div className="d-flex justify-content-center mt-4">
-                  <nav>
-                    <ul className="pagination">
-                      <li className={`page-item ${!pagination.has_prev ? 'disabled' : ''}`}>
-                        <button
-                          className="page-link"
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={!pagination.has_prev}
-                        >
-                          Previous
-                        </button>
-                      </li>
-                      {[...Array(pagination.total_pages)].map((_, index) => {
-                        const page = index + 1;
-                        return (
-                          <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
-                            <button
-                              className="page-link"
-                              onClick={() => handlePageChange(page)}
-                            >
-                              {page}
-                            </button>
-                          </li>
-                        );
-                      })}
-                      <li className={`page-item ${!pagination.has_next ? 'disabled' : ''}`}>
-                        <button
-                          className="page-link"
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={!pagination.has_next}
-                        >
-                          Next
-                        </button>
-                      </li>
-                    </ul>
-                  </nav>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Booking Form Modal */}
-      {showBookingForm && selectedFlight && (
-        <div className="booking-modal-overlay" onClick={closeBookingForm}>
-          <div className="booking-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="booking-modal-header">
-              <h4>Complete Your Booking</h4>
-              <button className="close-btn" onClick={closeBookingForm}>×</button>
-            </div>
-            
-            <div className="booking-modal-body">
-              {/* Flight Summary */}
-              <div className="flight-summary-card">
-                <div className="d-flex align-items-center mb-3">
-                  <img src={selectedFlight.airline_logo} alt={selectedFlight.airline_name} style={{ width: '40px', height: '40px', marginRight: '12px' }} />
-                  <div>
-                    <h6 className="mb-0">{selectedFlight.airline_name} {selectedFlight.flight_no}</h6>
-                    <small className="text-muted">{selectedFlight.origin} → {selectedFlight.destination}</small>
-                  </div>
-                </div>
-                <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <div className="h6 mb-0">{formatTime(selectedFlight.departure)} - {formatTime(selectedFlight.arrival)}</div>
-                    <small className="text-muted">{formatDate(selectedFlight.departure)}</small>
-                  </div>
-                  <div className="text-end">
-                    <div className="h5 mb-0 text-primary">₹{verifiedFlightData?.price || selectedFlight.selectedFare?.price}</div>
-                    <small className="text-muted">Verified Price</small>
-                  </div>
-                </div>
-              </div>
-
-              {/* Booking Form */}
-              <BookingForm 
-                flight={selectedFlight}
-                verifiedData={verifiedFlightData}
-                searchParams={searchParams}
-                onSubmit={handleBookingSubmit}
-                loading={bookingLoading}
-                error={bookingError}
-              />
-            </div>
+      {modifyOpen && (
+        <div className="tj-modify-panel">
+          <div className="container">
+            <FlightSearchForm />
           </div>
         </div>
       )}
 
-      <style jsx>{`
-        .flight-results {
-          margin-top: 24px;
-          background: white;
-          border-radius: 20px;
-          padding: 32px;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-          border: 1px solid rgba(237, 17, 115, 0.1);
-        }
+      <div className="tj-quickselect-strip">
+        <div className="container">
+          <div className="row">
+            <div className={isRoundTrip ? 'col-lg-6' : 'col-12'}>
+              <div className="tj-quickselect-group">
+                {cheapestOutbound && (
+                  <div className="tj-quickselect-item" onClick={() => selectFlight({ ...cheapestOutbound, id: getFlightKey(cheapestOutbound) }, 'outbound')}>
+                    <span className="tj-quickselect-label">₹ Cheapest</span>
+                    <span className="tj-quickselect-price">
+                      ₹{Number(cheapestOutbound.totalPriceList[0].fd.ADULT.fC.TF).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </span>
+                    <span className="tj-quickselect-duration">
+                      Duration: {formatDuration(cheapestOutbound.sI.reduce((sum, seg) => sum + seg.duration, 0))}
+                    </span>
+                  </div>
+                )}
+                {fastestOutbound && (
+                  <div className="tj-quickselect-item" onClick={() => selectFlight({ ...fastestOutbound, id: getFlightKey(fastestOutbound) }, 'outbound')}>
+                    <span className="tj-quickselect-label"><BsLightning /> Fastest</span>
+                    <span className="tj-quickselect-price">
+                      ₹{Number(fastestOutbound.totalPriceList[0].fd.ADULT.fC.TF).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </span>
+                    <span className="tj-quickselect-duration">
+                      Duration: {formatDuration(fastestOutbound.sI.reduce((sum, seg) => sum + seg.duration, 0))}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+            {isRoundTrip && (
+              <div className="col-lg-6">
+                <div className="tj-quickselect-group">
+                  {cheapestReturn && (
+                    <div className="tj-quickselect-item" onClick={() => selectFlight({ ...cheapestReturn, id: getFlightKey(cheapestReturn) }, 'return')}>
+                      <span className="tj-quickselect-label">₹ Cheapest</span>
+                      <span className="tj-quickselect-price">
+                        ₹{Number(cheapestReturn.totalPriceList[0].fd.ADULT.fC.TF).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      </span>
+                      <span className="tj-quickselect-duration">
+                        Duration: {formatDuration(cheapestReturn.sI.reduce((sum, seg) => sum + seg.duration, 0))}
+                      </span>
+                    </div>
+                  )}
+                  {fastestReturn && (
+                    <div className="tj-quickselect-item" onClick={() => selectFlight({ ...fastestReturn, id: getFlightKey(fastestReturn) }, 'return')}>
+                      <span className="tj-quickselect-label">⚡ Fastest</span>
+                      <span className="tj-quickselect-price">
+                        ₹{Number(fastestReturn.totalPriceList[0].fd.ADULT.fC.TF).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      </span>
+                      <span className="tj-quickselect-duration">
+                        Duration: {formatDuration(fastestReturn.sI.reduce((sum, seg) => sum + seg.duration, 0))}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
-        .flight-item {
-          border: 2px solid #f8f9fa;
-          border-radius: 16px;
-          padding: 24px;
-          margin-bottom: 20px;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          cursor: pointer;
-          background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
-          position: relative;
-          overflow: hidden;
-        }
+      <div className="container mt-4">
+        <div className="row">
+          <div className="col-lg-3">
+            <FlightFiltersSidebar
+              filtersMeta={filtersMeta}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              onClearFilters={clearFilters}
+              searchParams={searchParams}
+            />
+          </div>
 
-        .flight-item:hover {
-          border-color: #ed1173;
-          box-shadow: 0 15px 40px rgba(237, 17, 115, 0.15);
-          transform: translateY(-2px);
-        }
+          <div className="col-lg-9 ">
+            <div className="row">
+              <div className={isRoundTrip ? 'col-lg-6' : 'col-12'}>
+                <div className="tj-flights-column">
+                  <div className="tj-column-header">
+                    <div className="tj-column-title">
+                      {searchParams?.from} → {searchParams?.to} <span className="tj-column-date">{formatDate(searchParams?.departureDate)}</span>
+                    </div>
+                    {/* <div className="tj-share-icons">
+                      <MdShare size={15} className="tj-share-icon" />
+                      <MdEmail size={15} className="tj-share-icon" />
+                      <MdVisibility size={15} className="tj-share-icon" />
+                    </div> */}
+                  </div>
 
-        .flight-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-          padding-bottom: 16px;
-          border-bottom: 2px solid #f8f9fa;
-        }
+                  <div className="tj-sort-tabs">
+                    <span className="tj-sort-label">Sort By:</span>
+                    {['duration', 'departure', 'arrival', 'price'].map(sort => (
+                      <div
+                        key={sort}
+                        className={`tj-sort-tab ${sortOutbound === sort ? 'active' : ''}`}
+                        onClick={() => setSortOutbound(sort)}
+                      >
+                        {sort.charAt(0).toUpperCase() + sort.slice(1)}
+                      </div>
+                    ))}
+                  </div>
 
-        .flight-airline {
-          font-weight: 800;
-          color: #1a1a2e;
-          font-size: 18px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
+                  <div className="tj-flights-list">
+                    {loading ? (
+                      [1, 2, 3, 4].map(i => <ShimmerCard key={i} />)
+                    ) : filteredOutbound.length === 0 ? (
+                      <div className="no-results">No flights found</div>
+                    ) : (
+                      filteredOutbound.map(flight => renderFlight(flight, 'outbound'))
+                    )}
+                  </div>
+                </div>
+              </div>
 
-        .airline-logo {
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
-          background: linear-gradient(135deg, #ed1173, #ff6b9d);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-weight: 700;
-          font-size: 14px;
-        }
+              {isRoundTrip && (
+                <div className="col-lg-6">
+                  <div className="tj-flights-column">
+                    <div className="tj-column-header">
+                      <div className="tj-column-title">
+                        {searchParams?.to} → {searchParams?.from} <span className="tj-column-date">{formatDate(searchParams?.returnDate)}</span>
+                      </div>
+                      {/* <div className="tj-share-icons">
+                        <MdShare size={15} className="tj-share-icon" />
+                        <MdEmail size={15} className="tj-share-icon" />
+                        <MdVisibility size={15} className="tj-share-icon" />
+                      </div> */}
+                    </div>
 
-        .flight-price {
-          font-size: 24px;
-          font-weight: 900;
-          color: #ed1173;
-          text-shadow: 0 2px 4px rgba(237, 17, 115, 0.1);
-        }
+                    <div className="tj-sort-tabs">
+                      <span className="tj-sort-label">Sort By:</span>
+                      {['duration', 'departure', 'arrival', 'price'].map(sort => (
+                        <div
+                          key={sort}
+                          className={`tj-sort-tab ${sortReturn === sort ? 'active' : ''}`}
+                          onClick={() => setSortReturn(sort)}
+                        >
+                          {sort.charAt(0).toUpperCase() + sort.slice(1)}
+                        </div>
+                      ))}
+                    </div>
 
-        .flight-details {
-          display: grid;
-          grid-template-columns: 1fr auto 1fr;
-          gap: 30px;
-          align-items: center;
-          margin-bottom: 20px;
-        }
+                    <div className="tj-flights-list">
+                      {loading ? (
+                        [1, 2, 3, 4].map(i => <ShimmerCard key={i} />)
+                      ) : filteredReturn.length === 0 ? (
+                        <div className="no-results">No flights found</div>
+                      ) : (
+                        filteredReturn.map(flight => renderFlight(flight, 'return'))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
 
-        .flight-time {
-          text-align: center;
-        }
+      {(selectedOutbound || selectedReturn) && (
+        <div className="tj-booking-bar">
+          <div className="container-fluid">
+            <div className="tj-booking-content">
+              {selectedOutbound && (
+                <div className="tj-booking-flight">
+                  <img
+                    src={`https://airlines.airhex.com/airlines-logo/${selectedOutbound.sI[0].fD.aI.code.toLowerCase()}.png`}
+                    alt={selectedOutbound.sI[0].fD.aI.name}
+                    className="tj-booking-logo"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                  <span className="tj-booking-flight-no">{selectedOutbound.sI[0].fD.fN}</span>
+                  <span className="tj-booking-route">
+                    {formatTime(selectedOutbound.sI[0].dt)} → {formatTime(selectedOutbound.sI[selectedOutbound.sI.length - 1].at)}
+                  </span>
+                  <span className="tj-booking-cities">
+                    {selectedOutbound.sI[0].da.code}→{selectedOutbound.sI[selectedOutbound.sI.length - 1].aa.code}
+                  </span>
+                  <span className="tj-booking-price">
+                    ₹{Number(selectedOutbound.totalPriceList[0].fd.ADULT.fC.TF).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              )}
 
-        .flight-time-value {
-          font-size: 22px;
-          font-weight: 800;
-          color: #1a1a2e;
-          margin-bottom: 4px;
-        }
+              {selectedReturn && (
+                <div className="tj-booking-flight">
+                  <img
+                    src={`https://airlines.airhex.com/airlines-logo/${selectedReturn.sI[0].fD.aI.code.toLowerCase()}.png`}
+                    alt={selectedReturn.sI[0].fD.aI.name}
+                    className="tj-booking-logo"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                  <span className="tj-booking-flight-no">{selectedReturn.sI[0].fD.fN}</span>
+                  <span className="tj-booking-route">
+                    {formatTime(selectedReturn.sI[0].dt)} → {formatTime(selectedReturn.sI[selectedReturn.sI.length - 1].at)}
+                  </span>
+                  <span className="tj-booking-cities">
+                    {selectedReturn.sI[0].da.code}→{selectedReturn.sI[selectedReturn.sI.length - 1].aa.code}
+                  </span>
+                  <span className="tj-booking-price">
+                    ₹{Number(selectedReturn.totalPriceList[0].fd.ADULT.fC.TF).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              )}
 
-        .flight-time-label {
-          font-size: 14px;
-          color: #666;
-          margin-bottom: 2px;
-          font-weight: 600;
-        }
+              <div className="tj-booking-total">
+                ₹{Number(totalPrice).toLocaleString('en-IN', { minimumFractionDigits: 2 })} total
+              </div>
 
-        .flight-time-date {
-          font-size: 12px;
-          color: #999;
-          font-weight: 500;
-        }
-
-        .flight-duration {
-          text-align: center;
-          color: #666;
-          font-size: 15px;
-          font-weight: 600;
-          padding: 12px 16px;
-          background: rgba(237, 17, 115, 0.05);
-          border-radius: 12px;
-          border: 1px solid rgba(237, 17, 115, 0.1);
-        }
-
-        .flight-stops {
-          font-size: 12px;
-          color: #ed1173;
-          margin-top: 6px;
-          font-weight: 700;
-        }
-
-        .flight-amenities {
-          display: flex;
-          gap: 16px;
-          align-items: center;
-          margin-bottom: 16px;
-          flex-wrap: wrap;
-        }
-
-        .amenity-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 12px;
-          background: #f8f9fa;
-          border-radius: 20px;
-          font-size: 12px;
-          font-weight: 600;
-          color: #666;
-          border: 1px solid #e9ecef;
-        }
-
-        .amenity-badge.direct {
-          background: rgba(76, 175, 80, 0.1);
-          color: #4caf50;
-          border-color: rgba(76, 175, 80, 0.2);
-        }
-
-        .amenity-badge.stops {
-          background: rgba(255, 152, 0, 0.1);
-          color: #ff9800;
-          border-color: rgba(255, 152, 0, 0.2);
-        }
-
-        .seats-badge {
-          background: rgba(233, 30, 99, 0.1);
-          color: #e91e63;
-          border-color: rgba(233, 30, 99, 0.2);
-        }
-
-        .select-button {
-          background: linear-gradient(135deg, #ed1173, #ff6b9d);
-          color: white;
-          border: none;
-          padding: 12px 28px;
-          border-radius: 12px;
-          font-weight: 700;
-          font-size: 14px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          box-shadow: 0 4px 15px rgba(237, 17, 115, 0.3);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          min-width: 140px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .select-button:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(237, 17, 115, 0.4);
-        }
-
-        .select-button:disabled {
-          opacity: 0.7;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-        .verification-error {
-          background: #f8d7da;
-          border: 1px solid #f5c6cb;
-          border-radius: 8px;
-          padding: 8px 12px;
-          margin-top: 8px;
-        }
-
-        .spinner-border-sm {
-          width: 16px;
-          height: 16px;
-          border-width: 2px;
-        }
-
-        /* Booking Modal Styles */
-        .booking-modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.7);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-          padding: 20px;
-        }
-
-        .booking-modal {
-          background: white;
-          border-radius: 16px;
-          max-width: 600px;
-          width: 100%;
-          max-height: 90vh;
-          overflow-y: auto;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .booking-modal-header {
-          padding: 20px 24px;
-          border-bottom: 1px solid #e9ecef;
-          display: flex;
-          justify-content: between;
-          align-items: center;
-        }
-
-        .booking-modal-header h4 {
-          margin: 0;
-          color: #333;
-        }
-
-        .close-btn {
-          background: none;
-          border: none;
-          font-size: 24px;
-          cursor: pointer;
-          color: #666;
-          padding: 0;
-          width: 30px;
-          height: 30px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .close-btn:hover {
-          background: #f8f9fa;
-          color: #333;
-        }
-
-        .booking-modal-body {
-          padding: 24px;
-        }
-
-        .flight-summary-card {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          padding: 20px;
-          border-radius: 12px;
-          margin-bottom: 24px;
-        }
-
-        .flight-summary-card .h6,
-        .flight-summary-card .h5 {
-          color: white;
-        }
-
-        .flight-summary-card small {
-          color: rgba(255, 255, 255, 0.8);
-        }
-      `}</style>
+              <button className="tj-book-btn" onClick={handleBook}>
+                BOOK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
-
-export default FlightSearchResults;
+}
