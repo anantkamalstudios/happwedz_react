@@ -576,6 +576,7 @@ const Storefront = ({ setCompletion }) => {
         base?.location?.city ||
         base?.attributes?.city ||
         base?.city ||
+        fjmi.city ||
         jrmi.city ||
         jCities[0] ||
         vendor?.city ||
@@ -801,6 +802,19 @@ const Storefront = ({ setCompletion }) => {
         fjmi?.brand_name ||
         vendor?.businessName ||
         "",
+      vendor_name:
+        data.attributes?.vendor_name ||
+        data.attributes?.businessName ||
+        data.attributes?.name ||
+        data.attributes?.Name ||
+        ji.brand_store_name ||
+        boi?.brand_name ||
+        roi?.brand_name ||
+        cgi?.brand_name ||
+        ami?.brand_name ||
+        fjmi?.brand_name ||
+        vendor?.businessName ||
+        "",
       slug: data.attributes?.slug || "",
       // tags: data.tags || [],
       deals: data.deals || [],
@@ -823,6 +837,7 @@ const Storefront = ({ setCompletion }) => {
       city:
         data.location?.city ||
         data.attributes?.city ||
+        fjmi?.city ||
         jCities[0] ||
         vendor?.city ||
         "",

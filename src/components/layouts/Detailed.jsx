@@ -119,6 +119,7 @@ const Detailed = () => {
     const flowerJewelleryMaster = attributes.flower_jewellery_master || {};
     const cocktailGownMaster = attributes.cocktail_gown_master || {};
     const bridalOutfitMaster = attributes.bridal_outfit_master || {};
+    const rentalOutfitMaster = attributes.rental_outfit_master || {};
 
     if (attributes.payment_terms) {
       amenities.push({
@@ -395,7 +396,6 @@ const Detailed = () => {
       const cp = catererMaster.pricing_structure || {};
       const cl = catererMaster.venue_logistics || {};
 
-      pushFeature(amenities, <FaStar />, "Caterer Type", ci.caterer_type);
       pushFeature(
         amenities,
         <FaMapMarkerAlt />,
@@ -604,8 +604,6 @@ const Detailed = () => {
       const msk = makeupArtistMaster.skin_hair_expertise || {};
       const mp = makeupArtistMaster.pricing_structure || {};
 
-      pushFeature(amenities, <FaStar />, "Artist", mi.brand_artist_name);
-      pushFeature(amenities, <FaStar />, "Artist Type", mi.artist_type);
       pushFeature(
         amenities,
         <FaStar />,
@@ -669,8 +667,6 @@ const Detailed = () => {
       const jes = jewelleryMaster.event_suitability || {};
       const jwb = jewelleryMaster.workflow_booking || {};
 
-      pushFeature(amenities, <FaStar />, "Brand", ji.brand_store_name);
-      pushFeature(amenities, <FaStar />, "Vendor Type", ji.vendor_type);
       pushFeature(
         amenities,
         <FaStar />,
@@ -793,8 +789,6 @@ const Detailed = () => {
       const jes = jewelleryRentalMaster.event_suitability || {};
       const jwb = jewelleryRentalMaster.workflow_booking || {};
 
-      pushFeature(amenities, <FaStar />, "Brand", ji.brand_name);
-      pushFeature(amenities, <FaStar />, "Vendor Type", ji.vendor_type);
       pushFeature(amenities, <FaStar />, "Experience", ji.years_of_experience ? `${ji.years_of_experience} years` : "");
       pushFeature(amenities, <FaMapMarkerAlt />, "City", ji.city);
       pushFeature(amenities, <FaStar />, "Service Mode", ji.service_mode);
@@ -856,8 +850,6 @@ const Detailed = () => {
       const aes = accessoriesMaster.event_suitability || {};
       const awb = accessoriesMaster.workflow || {};
 
-      pushFeature(amenities, <FaStar />, "Brand", ai.brand_name);
-      pushFeature(amenities, <FaStar />, "Vendor Type", ai.vendor_type);
       pushFeature(amenities, <FaStar />, "Experience", ai.years_of_experience ? `${ai.years_of_experience} years` : "");
       pushFeature(amenities, <FaMapMarkerAlt />, "City", ai.city);
       pushFeature(amenities, <FaStar />, "Service Mode", ai.service_mode);
@@ -915,8 +907,6 @@ const Detailed = () => {
       const so = cocktailGownMaster.scale_operations || {};
       const wb = cocktailGownMaster.workflow_booking || {};
 
-      pushFeature(amenities, <FaStar />, "Vendor Type", ci.vendor_type);
-      pushFeature(amenities, <FaStar />, "Brand Name", ci.brand_name);
       pushFeature(amenities, <FaStar />, "Experience", ci.years_of_experience ? `${ci.years_of_experience} years` : "");
       pushFeature(amenities, <FaMapMarkerAlt />, "Primary City", ci.primary_city);
       pushFeature(amenities, <FaStar />, "Store Presence", ci.store_presence);
@@ -981,8 +971,6 @@ const Detailed = () => {
       const bso = bridalOutfitMaster.scale_operations || {};
       const bwb = bridalOutfitMaster.workflow_booking || {};
 
-      pushFeature(amenities, <FaStar />, "Vendor Type", bi.vendor_type);
-      pushFeature(amenities, <FaStar />, "Brand Name", bi.brand_name);
       pushFeature(amenities, <FaStar />, "Experience", bi.years_of_experience ? `${bi.years_of_experience} years` : "");
       pushFeature(amenities, <FaMapMarkerAlt />, "Primary City", bi.primary_city);
       pushFeature(amenities, <FaStar />, "Store Presence", bi.store_presence);
@@ -1033,6 +1021,75 @@ const Detailed = () => {
       pushFeature(amenities, <FaStar />, "Client Coordination", formatList(bwb.client_coordination, 4));
     }
 
+    // --- RENTAL OUTFIT MASTER ATTRIBUTES (Bridal Lehenga on Rent) ---
+    if (rentalOutfitMaster && Object.keys(rentalOutfitMaster).length > 0) {
+      const ri = rentalOutfitMaster.identity || {};
+      const rs = rentalOutfitMaster.services || {};
+      const rci = rentalOutfitMaster.core_intelligence || {};
+      const rt = rentalOutfitMaster.technical || {};
+      const rp = rentalOutfitMaster.pricing || {};
+      const rsc = rentalOutfitMaster.scale || {};
+      const rw = rentalOutfitMaster.workflow || {};
+      const rpo = rentalOutfitMaster.portfolio || {};
+
+      pushFeature(amenities, <FaStar />, "Store Presence", formatList(ri.store_presence, 3));
+      pushFeature(amenities, <FaMapMarkerAlt />, "City", ri.city);
+      pushFeature(amenities, <FaStar />, "Store Access", ri.store_access_type);
+      pushFeature(amenities, <FaStar />, "Experience", ri.years_of_experience);
+      pushFeature(amenities, <FaStar />, "Specialization", formatList(ri.inventory_specialization, 4));
+
+      pushFeature(amenities, <FaStar />, "Rental Types", formatList(rs.rental_types, 3));
+      pushFeature(amenities, <FaStar />, "Trial Availability", rs.trial_availability);
+      pushFeature(amenities, <FaStar />, "Customization", rs.customization_alteration);
+      pushFeature(amenities, <FaStar />, "Styling Assistance", rs.styling_assistance);
+      pushFeature(amenities, <FaStar />, "Accessories Available", formatList(rs.accessory_rental, 5));
+      pushFeature(amenities, <FaStar />, "Dry Cleaning", rs.dry_cleaning_included);
+      pushFeature(amenities, <FaStar />, "Pickup & Delivery", rs.pickup_delivery_service);
+      pushFeature(amenities, <FaStar />, "Urgent Rental", rs.urgent_rental_availability);
+
+      pushFeature(amenities, <FaStar />, "Lehenga Styles", formatList(rci.lehenga_styles, 5));
+      pushFeature(amenities, <FaStar />, "Occasions", formatList(rci.occasion_suitability, 5));
+      pushFeature(amenities, <FaStar />, "Work Types", formatList(rci.work_type, 5));
+      pushFeature(amenities, <FaStar />, "Fabrics", formatList(rci.fabric_options, 5));
+      pushFeature(amenities, <FaStar />, "Colors", formatList(rci.color_palette, 5));
+      pushFeature(amenities, <FaStar />, "Designer Options", formatList(rci.designer_availability, 3));
+      pushFeature(amenities, <FaStar />, "Dupatta Styles", formatList(rci.dupatta_styles, 3));
+
+      pushFeature(amenities, <FaStar />, "Size Range", formatList(rt.size_range, 4));
+      pushFeature(amenities, <FaStar />, "Adjustability", rt.adjustability_range);
+      pushFeature(amenities, <FaStar />, "Weight Category", rt.lehenga_weight);
+      pushFeature(amenities, <FaStar />, "Blouse Types", formatList(rt.blouse_type, 3));
+      pushFeature(amenities, <FaStar />, "Can-Can Included", rt.can_can_included);
+      pushFeature(amenities, <FaStar />, "Dupatta Length", rt.dupatta_length);
+      pushFeature(amenities, <FaStar />, "Condition", rt.condition_quality);
+
+      pushFeature(amenities, <FaStar />, "Rental Price Range", rp.rental_price_range);
+      pushFeature(amenities, <FaStar />, "Security Deposit", rp.security_deposit_required);
+      pushFeature(amenities, <FaStar />, "Deposit Amount", rp.deposit_amount_range);
+      pushFeature(amenities, <FaStar />, "Late Charges", rp.late_return_charges);
+      pushFeature(amenities, <FaStar />, "Damage Policy", rp.damage_policy);
+      pushFeature(amenities, <FaStar />, "Cleaning Charges", rp.cleaning_charges);
+      pushFeature(amenities, <FaStar />, "Trial Charges", rp.trial_charges);
+
+      pushFeature(amenities, <FaStar />, "Inventory Size", rsc.inventory_size);
+      pushFeature(amenities, <FaStar />, "Daily Trial Capacity", rsc.daily_trial_capacity);
+      pushFeature(amenities, <FaStar />, "Rental Capacity", rsc.simultaneous_rentals);
+
+      pushFeature(amenities, <FaCalendarAlt />, "Advance Booking", rw.advance_booking_required);
+      pushFeature(amenities, <FaCalendarAlt />, "Booking Window", rw.booking_window);
+      pushFeature(amenities, <FaCalendarAlt />, "Trial Appointment", rw.trial_appointment_required);
+      pushFeature(amenities, <FaCalendarAlt />, "Fitting Timeline", rw.fitting_timeline);
+      pushFeature(amenities, <FaCalendarAlt />, "Pickup Timing", rw.pickup_timing);
+      pushFeature(amenities, <FaCalendarAlt />, "Return Timeline", rw.return_timeline);
+      pushFeature(amenities, <FaStar />, "Payment Modes", formatList(rw.payment_modes, 4));
+      pushFeature(amenities, <FaStar />, "Advance Payment", rw.advance_payment_percentage);
+
+      pushFeature(amenities, <FaStar />, "Style Tags", formatList(rpo.style_tags, 4));
+      pushFeature(amenities, <FaStar />, "Audience", formatList(rpo.audience_tags, 3));
+      pushFeature(amenities, <FaStar />, "Usage", formatList(rpo.usage_tags, 4));
+      pushFeature(amenities, <FaStar />, "Price Segment", formatList(rpo.price_segment_tags, 2));
+    }
+
     // --- FLOWER JEWELLERY MASTER ATTRIBUTES ---
     if (flowerJewelleryMaster && Object.keys(flowerJewelleryMaster).length > 0) {
       const fi = flowerJewelleryMaster.identity || {};
@@ -1047,8 +1104,6 @@ const Detailed = () => {
       const fia = flowerJewelleryMaster.inventory_availability || {};
       const fwb = flowerJewelleryMaster.workflow_booking || {};
 
-      pushFeature(amenities, <FaStar />, "Brand", fi.brand_name);
-      pushFeature(amenities, <FaStar />, "Vendor Type", fi.vendor_type);
       pushFeature(amenities, <FaStar />, "Experience", fi.years_of_experience ? `${fi.years_of_experience} years` : "");
       pushFeature(amenities, <FaMapMarkerAlt />, "City", fi.city);
       pushFeature(amenities, <FaStar />, "Service Coverage", fi.service_coverage);
@@ -1394,6 +1449,12 @@ const Detailed = () => {
         if (attrs.cocktail_gown_master?.ai_faq || venueData.vendor?.vendorType?.name === "Cocktails gowns" || venueData.vendor?.vendorType?.name === "Cocktail Gowns" || venueData.vendor?.vendorType?.name === "cocktails-gowns") {
           vendorTypeKey = "cocktailgowns";
         }
+        if (attrs.rental_outfit_master && Object.keys(attrs.rental_outfit_master).length > 0) {
+          vendorTypeKey = "rentaloutfit";
+        }
+        if (attrs.flower_jewellery_master && Object.keys(attrs.flower_jewellery_master).length > 0) {
+          vendorTypeKey = "flowerjewellery";
+        }
         // Bridal Outfit / Kanjeevaram Silk Saree detection
         const vendorTypeName = (venueData.vendor?.vendorType?.name || "").toLowerCase();
         const subcatName = (venueData.attributes?.vendor_subcategory_name || venueData.vendor?.vendorSubcategory?.name || "").toLowerCase();
@@ -1527,6 +1588,58 @@ const Detailed = () => {
                 case 7013: return bo.workflow_booking?.booking_advance_percent || "";
                 case 7014: return bo.workflow_booking?.cancellation_policy || "";
                 case 7015: return "";
+                default: return "";
+              }
+            } else if (vendorTypeKey === "flowerjewellery") {
+              const fi = attrs.flower_jewellery_master?.identity || {};
+              const fmt = attrs.flower_jewellery_master?.material_type || {};
+              const fsd = attrs.flower_jewellery_master?.style_design || {};
+              const ffs = attrs.flower_jewellery_master?.function_specific || {};
+              const fpl = attrs.flower_jewellery_master?.pricing_logic || {};
+              const fdt = attrs.flower_jewellery_master?.delivery_timing || {};
+              const fwb = attrs.flower_jewellery_master?.workflow_booking || {};
+              const fia = attrs.flower_jewellery_master?.inventory_availability || {};
+              switch (qId) {
+                case 8001: return fi.bridal_jewellery_available || "";
+                case 8002: return fmt.flower_type || "";
+                case 8003: return fsd.customization_available || "";
+                case 8004: return ffs.suitable_for || "";
+                case 8005: return fdt.delivery_available || "";
+                case 8006: return fdt.same_day_delivery || "";
+                case 8007: return fdt.durability || "";
+                case 8008: return fia.bulk_orders_supported || "";
+                case 8009: return fsd.outfit_matching_support || "";
+                case 8010: return fdt.preparation_time || "";
+                case 8011: return fwb.replacement_policy || "";
+                case 8012: return fwb.advance_required || "";
+                case 8013: return fwb.cancellation_policy || "";
+                case 8014: return fpl.price_range || "";
+                case 8015: return fsd.best_known_for || "";
+                default: return "";
+              }
+            } else if (vendorTypeKey === "rentaloutfit") {
+              const ri = attrs.rental_outfit_master?.identity || {};
+              const rs = attrs.rental_outfit_master?.services || {};
+              const rci = attrs.rental_outfit_master?.core_intelligence || {};
+              const rt = attrs.rental_outfit_master?.technical || {};
+              const rp = attrs.rental_outfit_master?.pricing || {};
+              const rw = attrs.rental_outfit_master?.workflow || {};
+              switch (qId) {
+                case 9001: return ri.bridal_lehenga_available || "Yes";
+                case 9002: return rs.customization_alteration || "";
+                case 9003: return rci.designer_availability || "";
+                case 9004: return rp.security_deposit_required || "";
+                case 9005: return rp.rental_price_range?.includes("2K–10K") || rp.rental_price_range?.includes("10K–25K") ? "Yes" : "";
+                case 9006: return rs.trial_availability || "";
+                case 9007: return rs.dry_cleaning_included || "";
+                case 9008: return rt.size_range?.includes("XL") || rt.size_range?.includes("XXL") ? "Yes" : "";
+                case 9009: return rs.rental_types?.includes("Multi-Day") ? "Yes" : "";
+                case 9010: return rs.accessory_rental ? "Yes" : "";
+                case 9011: return rw.booking_window?.includes("0–7") || rw.booking_window?.includes("7–30") ? "Yes" : "";
+                case 9012: return rt.adjustability_range || "";
+                case 9013: return rs.pickup_delivery_service || "";
+                case 9014: return rci.lehenga_weight?.includes("Heavy") ? "Yes" : "";
+                case 9015: return rw.trial_appointment_required || "";
                 default: return "";
               }
             }
@@ -1980,68 +2093,67 @@ const Detailed = () => {
               )} */}
             </div>
 
-            {/* DYNAMIC AMENITIES / SERVICES */}
-            <div className="venue-amenities mb-5">
-              <Row>
-                {vendorFeatures.length > 0 ? (
-                  featuresToRender.map((item, index) => {
-                    const raw = item.name || "";
-                    const isSub = raw.startsWith("-");
-                    const trimmed = isSub
-                      ? raw.replace(/^\-\s*/, "").trim()
-                      : raw.trim();
-                    const [labelPart, ...rest] = trimmed.split(":");
-                    const label = (labelPart || "").trim();
-                    const value = rest.join(":").trim();
+            {/* FACILITIES & FEATURES */}
+            {vendorFeatures.length > 0 && (
+              <div id="facilities" className="venue-facilities mb-5 p-2">
+                <h3 className="details-section-title fw-bold fs-22">
+                  Facilities & Features
+                </h3>
+                <div className="venue-amenities">
+                  <Row>
+                    {featuresToRender.map((item, index) => {
+                      const raw = item.name || "";
+                      const isSub = raw.startsWith("-");
+                      const trimmed = isSub
+                        ? raw.replace(/^\-\s*/, "").trim()
+                        : raw.trim();
+                      const [labelPart, ...rest] = trimmed.split(":");
+                      const label = (labelPart || "").trim();
+                      const value = rest.join(":").trim();
 
-                    return (
-                      <Col
-                        key={index}
-                        md={isSub ? 12 : 4}
-                        sm={isSub ? 12 : 6}
-                        xs={12}
-                        className={isSub ? "" : "mb-3"}
-                      >
-                        <div className={`amenity-item ${isSub ? "ms-4" : ""}`}>
-                          <div className="d-flex flex-column">
-                            <span className="fw-semibold text-dark fs-16">
-                              {label}
-                            </span>
-                            {value && (
-                              <span className="text-muted small mt-1 fs-14">
-                                {value}
+                      return (
+                        <Col
+                          key={index}
+                          md={isSub ? 12 : 4}
+                          sm={isSub ? 12 : 6}
+                          xs={12}
+                          className={isSub ? "" : "mb-3"}
+                        >
+                          <div className={`amenity-item ${isSub ? "ms-4" : ""}`}>
+                            <div className="d-flex flex-column">
+                              <span className="fw-semibold text-dark fs-16">
+                                {label}
                               </span>
-                            )}
-                            {!value && !label && (
-                              <span className="text-muted small fs-14">
-                                {trimmed}
-                              </span>
-                            )}
+                              {value && (
+                                <span className="text-muted small mt-1 fs-14">
+                                  {value}
+                                </span>
+                              )}
+                              {!value && !label && (
+                                <span className="text-muted small fs-14">
+                                  {trimmed}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </Col>
-                    );
-                  })
-                ) : (
-                  <Col>
-                    <p className="text-muted">
-                      No service or amenity information available.
-                    </p>
-                  </Col>
-                )}
-              </Row>
-              {hasManyFeatures && (
-                <div className="mt-2">
-                  <button
-                    type="button"
-                    className="btn btn-link p-0 text-dark fw-semibold text-decoration-underline fs-14"
-                    onClick={() => setShowAllFeatures((prev) => !prev)}
-                  >
-                    {showAllFeatures ? "Show Less" : "Read More"}
-                  </button>
+                        </Col>
+                      );
+                    })}
+                  </Row>
+                  {hasManyFeatures && (
+                    <div className="mt-2">
+                      <button
+                        type="button"
+                        className="btn btn-link p-0 text-dark fw-semibold text-decoration-underline fs-14"
+                        onClick={() => setShowAllFeatures((prev) => !prev)}
+                      >
+                        {showAllFeatures ? "Show Less" : "Read More"}
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* FaqQuestionAnswer Detailed */}
 

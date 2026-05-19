@@ -56,6 +56,10 @@ function Faq({ formData, setFormData, onSave }) {
         vendorTypeKey = "accessories";
       } else if (formData?.jewellery_rental_master && Object.keys(formData.jewellery_rental_master).length > 0) {
         vendorTypeKey = "jewelleryrental";
+      } else if (formData?.flower_jewellery_master && Object.keys(formData.flower_jewellery_master).length > 0) {
+        vendorTypeKey = "flowerjewellery";
+      } else if (formData?.rental_outfit_master && Object.keys(formData.rental_outfit_master).length > 0) {
+        vendorTypeKey = "rentaloutfit";
       } else if (formData?.bridal_outfit_master && Object.keys(formData.bridal_outfit_master).length > 0) {
         // Detect Kanjeevaram Silk Saree vs generic Bridal Outfit
         const subcatName = (
@@ -87,6 +91,8 @@ function Faq({ formData, setFormData, onSave }) {
     vendor?.vendor_type_id,
     formData?.accessories_master,
     formData?.jewellery_rental_master,
+    formData?.flower_jewellery_master,
+    formData?.rental_outfit_master,
     formData?.bridal_outfit_master,
     formData?.vendor_subcategory_name,
     formData?.attributes?.vendor_subcategory_name,

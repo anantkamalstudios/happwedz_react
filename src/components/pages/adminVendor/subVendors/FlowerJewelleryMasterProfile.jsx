@@ -475,279 +475,9 @@ function FlowerJewelleryMasterProfile({
           </Accordion.Body>
         </Accordion.Item>
 
-        {/* SECTION 6: PRICING & PACKAGE LOGIC */}
+        {/* SECTION 6: FAQ */}
         <Accordion.Item eventKey="6">
-          <Accordion.Header>Pricing & Package Logic</Accordion.Header>
-          <Accordion.Body>
-            <TextField
-              label="Starting Price"
-              type="number"
-              value={fjm.pricing_logic.starting_price}
-              onChange={(v) =>
-                patchFjm({
-                  pricing_logic: { ...fjm.pricing_logic, starting_price: v },
-                })
-              }
-            />
-            <SelectField
-              label="Pricing Type"
-              options={PRICING_TYPE}
-              value={fjm.pricing_logic.pricing_type}
-              onChange={(v) =>
-                patchFjm({
-                  pricing_logic: { ...fjm.pricing_logic, pricing_type: v },
-                })
-              }
-            />
-            <SelectField
-              label="Bridal Set Price Range"
-              options={BRIDAL_SET_PRICE_RANGE}
-              value={fjm.pricing_logic.bridal_set_price_range}
-              onChange={(v) =>
-                patchFjm({
-                  pricing_logic: {
-                    ...fjm.pricing_logic,
-                    bridal_set_price_range: v,
-                  },
-                })
-              }
-            />
-            <SelectField
-              label="Bulk Orders Supported"
-              options={YES_NO}
-              value={fjm.pricing_logic.bulk_orders_supported}
-              onChange={(v) =>
-                patchFjm({
-                  pricing_logic: {
-                    ...fjm.pricing_logic,
-                    bulk_orders_supported: v,
-                  },
-                })
-              }
-            />
-            <SelectField
-              label="Bulk Pricing"
-              options={BULK_PRICING}
-              value={fjm.pricing_logic.bulk_pricing}
-              onChange={(v) =>
-                patchFjm({
-                  pricing_logic: { ...fjm.pricing_logic, bulk_pricing: v },
-                })
-              }
-            />
-          </Accordion.Body>
-        </Accordion.Item>
-
-        {/* SECTION 7: DELIVERY & TIMING */}
-        <Accordion.Item eventKey="7">
-          <Accordion.Header>Delivery & Timing</Accordion.Header>
-          <Accordion.Body>
-            <SelectField
-              label="Order Preparation Time"
-              options={ORDER_PREP_TIME}
-              value={fjm.delivery_timing.order_prep_time}
-              onChange={(v) =>
-                patchFjm({
-                  delivery_timing: {
-                    ...fjm.delivery_timing,
-                    order_prep_time: v,
-                  },
-                })
-              }
-            />
-            <SelectField
-              label="Delivery Timing"
-              options={DELIVERY_TIMING}
-              value={fjm.delivery_timing.delivery_timing}
-              onChange={(v) =>
-                patchFjm({
-                  delivery_timing: { ...fjm.delivery_timing, delivery_timing: v },
-                })
-              }
-            />
-            <SelectField
-              label="Time Slot Delivery"
-              options={YES_NO}
-              value={fjm.delivery_timing.time_slot_delivery}
-              onChange={(v) =>
-                patchFjm({
-                  delivery_timing: {
-                    ...fjm.delivery_timing,
-                    time_slot_delivery: v,
-                  },
-                })
-              }
-            />
-            <SelectField
-              label="Early Morning Delivery"
-              options={YES_NO}
-              value={fjm.delivery_timing.early_morning_delivery}
-              onChange={(v) =>
-                patchFjm({
-                  delivery_timing: {
-                    ...fjm.delivery_timing,
-                    early_morning_delivery: v,
-                  },
-                })
-              }
-            />
-          </Accordion.Body>
-        </Accordion.Item>
-
-        {/* SECTION 8: STORAGE & HANDLING */}
-        <Accordion.Item eventKey="8">
-          <Accordion.Header>Storage & Handling</Accordion.Header>
-          <Accordion.Body>
-            <SelectField
-              label="Storage Instructions Provided"
-              options={YES_NO}
-              value={fjm.storage_handling.storage_instructions}
-              onChange={(v) =>
-                patchFjm({
-                  storage_handling: {
-                    ...fjm.storage_handling,
-                    storage_instructions: v,
-                  },
-                })
-              }
-            />
-            <SelectField
-              label="Replacement Policy"
-              options={YES_NO}
-              value={fjm.storage_handling.replacement_policy}
-              onChange={(v) =>
-                patchFjm({
-                  storage_handling: {
-                    ...fjm.storage_handling,
-                    replacement_policy: v,
-                  },
-                })
-              }
-            />
-            <SelectField
-              label="Damage Handling"
-              options={DAMAGE_HANDLING}
-              value={fjm.storage_handling.damage_handling}
-              onChange={(v) =>
-                patchFjm({
-                  storage_handling: {
-                    ...fjm.storage_handling,
-                    damage_handling: v,
-                  },
-                })
-              }
-            />
-          </Accordion.Body>
-        </Accordion.Item>
-
-        {/* SECTION 9: INVENTORY & AVAILABILITY */}
-        <Accordion.Item eventKey="9">
-          <Accordion.Header>Inventory & Availability</Accordion.Header>
-          <Accordion.Body>
-            <SelectField
-              label="Daily Order Capacity"
-              options={DAILY_ORDER_CAPACITY}
-              value={fjm.inventory_availability.daily_order_capacity}
-              onChange={(v) =>
-                patchFjm({
-                  inventory_availability: {
-                    ...fjm.inventory_availability,
-                    daily_order_capacity: v,
-                  },
-                })
-              }
-            />
-            <SelectField
-              label="Advance Booking Required"
-              options={YES_NO}
-              value={fjm.inventory_availability.advance_booking_required}
-              onChange={(v) =>
-                patchFjm({
-                  inventory_availability: {
-                    ...fjm.inventory_availability,
-                    advance_booking_required: v,
-                  },
-                })
-              }
-            />
-            <SelectField
-              label="Peak Season Availability"
-              options={PEAK_SEASON_AVAILABILITY}
-              value={fjm.inventory_availability.peak_season_availability}
-              onChange={(v) =>
-                patchFjm({
-                  inventory_availability: {
-                    ...fjm.inventory_availability,
-                    peak_season_availability: v,
-                  },
-                })
-              }
-            />
-          </Accordion.Body>
-        </Accordion.Item>
-
-        {/* SECTION 10: WORKFLOW & BOOKING */}
-        <Accordion.Item eventKey="10">
-          <Accordion.Header>Workflow & Booking</Accordion.Header>
-          <Accordion.Body>
-            <SelectField
-              label="Advance Required"
-              options={YES_NO}
-              value={fjm.workflow_booking.advance_required}
-              onChange={(v) =>
-                patchFjm({
-                  workflow_booking: {
-                    ...fjm.workflow_booking,
-                    advance_required: v,
-                  },
-                })
-              }
-            />
-            <SelectField
-              label="Advance Percentage"
-              options={ADVANCE_PERCENTAGE}
-              value={fjm.workflow_booking.advance_percentage}
-              onChange={(v) =>
-                patchFjm({
-                  workflow_booking: {
-                    ...fjm.workflow_booking,
-                    advance_percentage: v,
-                  },
-                })
-              }
-            />
-            <SelectField
-              label="Cancellation Policy"
-              options={CANCELLATION_POLICY}
-              value={fjm.workflow_booking.cancellation_policy}
-              onChange={(v) =>
-                patchFjm({
-                  workflow_booking: {
-                    ...fjm.workflow_booking,
-                    cancellation_policy: v,
-                  },
-                })
-              }
-            />
-            <SelectField
-              label="Refund Timeline"
-              options={REFUND_TIMELINE}
-              value={fjm.workflow_booking.refund_timeline}
-              onChange={(v) =>
-                patchFjm({
-                  workflow_booking: {
-                    ...fjm.workflow_booking,
-                    refund_timeline: v,
-                  },
-                })
-              }
-            />
-          </Accordion.Body>
-        </Accordion.Item>
-
-        {/* SECTION 11: AI FAQ */}
-        <Accordion.Item eventKey="11">
-          <Accordion.Header>AI FAQ</Accordion.Header>
+          <Accordion.Header>FAQ</Accordion.Header>
           <Accordion.Body>
             <SelectField
               label="Do you provide bridal flower jewellery?"
@@ -901,6 +631,277 @@ function FlowerJewelleryMasterProfile({
             />
           </Accordion.Body>
         </Accordion.Item>
+
+        {/* SECTION 7: PRICING & PACKAGE LOGIC */}
+        <Accordion.Item eventKey="7">
+          <Accordion.Header>Pricing & Package Logic</Accordion.Header>
+          <Accordion.Body>
+            <TextField
+              label="Starting Price"
+              type="number"
+              value={fjm.pricing_logic.starting_price}
+              onChange={(v) =>
+                patchFjm({
+                  pricing_logic: { ...fjm.pricing_logic, starting_price: v },
+                })
+              }
+            />
+            <SelectField
+              label="Pricing Type"
+              options={PRICING_TYPE}
+              value={fjm.pricing_logic.pricing_type}
+              onChange={(v) =>
+                patchFjm({
+                  pricing_logic: { ...fjm.pricing_logic, pricing_type: v },
+                })
+              }
+            />
+            <SelectField
+              label="Bridal Set Price Range"
+              options={BRIDAL_SET_PRICE_RANGE}
+              value={fjm.pricing_logic.bridal_set_price_range}
+              onChange={(v) =>
+                patchFjm({
+                  pricing_logic: {
+                    ...fjm.pricing_logic,
+                    bridal_set_price_range: v,
+                  },
+                })
+              }
+            />
+            <SelectField
+              label="Bulk Orders Supported"
+              options={YES_NO}
+              value={fjm.pricing_logic.bulk_orders_supported}
+              onChange={(v) =>
+                patchFjm({
+                  pricing_logic: {
+                    ...fjm.pricing_logic,
+                    bulk_orders_supported: v,
+                  },
+                })
+              }
+            />
+            <SelectField
+              label="Bulk Pricing"
+              options={BULK_PRICING}
+              value={fjm.pricing_logic.bulk_pricing}
+              onChange={(v) =>
+                patchFjm({
+                  pricing_logic: { ...fjm.pricing_logic, bulk_pricing: v },
+                })
+              }
+            />
+          </Accordion.Body>
+        </Accordion.Item>
+
+        {/* SECTION 8: DELIVERY & TIMING */}
+        <Accordion.Item eventKey="8">
+          <Accordion.Header>Delivery & Timing</Accordion.Header>
+          <Accordion.Body>
+            <SelectField
+              label="Order Preparation Time"
+              options={ORDER_PREP_TIME}
+              value={fjm.delivery_timing.order_prep_time}
+              onChange={(v) =>
+                patchFjm({
+                  delivery_timing: {
+                    ...fjm.delivery_timing,
+                    order_prep_time: v,
+                  },
+                })
+              }
+            />
+            <SelectField
+              label="Delivery Timing"
+              options={DELIVERY_TIMING}
+              value={fjm.delivery_timing.delivery_timing}
+              onChange={(v) =>
+                patchFjm({
+                  delivery_timing: { ...fjm.delivery_timing, delivery_timing: v },
+                })
+              }
+            />
+            <SelectField
+              label="Time Slot Delivery"
+              options={YES_NO}
+              value={fjm.delivery_timing.time_slot_delivery}
+              onChange={(v) =>
+                patchFjm({
+                  delivery_timing: {
+                    ...fjm.delivery_timing,
+                    time_slot_delivery: v,
+                  },
+                })
+              }
+            />
+            <SelectField
+              label="Early Morning Delivery"
+              options={YES_NO}
+              value={fjm.delivery_timing.early_morning_delivery}
+              onChange={(v) =>
+                patchFjm({
+                  delivery_timing: {
+                    ...fjm.delivery_timing,
+                    early_morning_delivery: v,
+                  },
+                })
+              }
+            />
+          </Accordion.Body>
+        </Accordion.Item>
+
+        {/* SECTION 9: STORAGE & HANDLING */}
+        <Accordion.Item eventKey="9">
+          <Accordion.Header>Storage & Handling</Accordion.Header>
+          <Accordion.Body>
+            <SelectField
+              label="Storage Instructions Provided"
+              options={YES_NO}
+              value={fjm.storage_handling.storage_instructions}
+              onChange={(v) =>
+                patchFjm({
+                  storage_handling: {
+                    ...fjm.storage_handling,
+                    storage_instructions: v,
+                  },
+                })
+              }
+            />
+            <SelectField
+              label="Replacement Policy"
+              options={YES_NO}
+              value={fjm.storage_handling.replacement_policy}
+              onChange={(v) =>
+                patchFjm({
+                  storage_handling: {
+                    ...fjm.storage_handling,
+                    replacement_policy: v,
+                  },
+                })
+              }
+            />
+            <SelectField
+              label="Damage Handling"
+              options={DAMAGE_HANDLING}
+              value={fjm.storage_handling.damage_handling}
+              onChange={(v) =>
+                patchFjm({
+                  storage_handling: {
+                    ...fjm.storage_handling,
+                    damage_handling: v,
+                  },
+                })
+              }
+            />
+          </Accordion.Body>
+        </Accordion.Item>
+
+        {/* SECTION 10: INVENTORY & AVAILABILITY */}
+        <Accordion.Item eventKey="10">
+          <Accordion.Header>Inventory & Availability</Accordion.Header>
+          <Accordion.Body>
+            <SelectField
+              label="Daily Order Capacity"
+              options={DAILY_ORDER_CAPACITY}
+              value={fjm.inventory_availability.daily_order_capacity}
+              onChange={(v) =>
+                patchFjm({
+                  inventory_availability: {
+                    ...fjm.inventory_availability,
+                    daily_order_capacity: v,
+                  },
+                })
+              }
+            />
+            <SelectField
+              label="Advance Booking Required"
+              options={YES_NO}
+              value={fjm.inventory_availability.advance_booking_required}
+              onChange={(v) =>
+                patchFjm({
+                  inventory_availability: {
+                    ...fjm.inventory_availability,
+                    advance_booking_required: v,
+                  },
+                })
+              }
+            />
+            <SelectField
+              label="Peak Season Availability"
+              options={PEAK_SEASON_AVAILABILITY}
+              value={fjm.inventory_availability.peak_season_availability}
+              onChange={(v) =>
+                patchFjm({
+                  inventory_availability: {
+                    ...fjm.inventory_availability,
+                    peak_season_availability: v,
+                  },
+                })
+              }
+            />
+          </Accordion.Body>
+        </Accordion.Item>
+
+        {/* SECTION 11: WORKFLOW & BOOKING */}
+        <Accordion.Item eventKey="11">
+          <Accordion.Header>Workflow & Booking</Accordion.Header>
+          <Accordion.Body>
+            <SelectField
+              label="Advance Required"
+              options={YES_NO}
+              value={fjm.workflow_booking.advance_required}
+              onChange={(v) =>
+                patchFjm({
+                  workflow_booking: {
+                    ...fjm.workflow_booking,
+                    advance_required: v,
+                  },
+                })
+              }
+            />
+            <SelectField
+              label="Advance Percentage"
+              options={ADVANCE_PERCENTAGE}
+              value={fjm.workflow_booking.advance_percentage}
+              onChange={(v) =>
+                patchFjm({
+                  workflow_booking: {
+                    ...fjm.workflow_booking,
+                    advance_percentage: v,
+                  },
+                })
+              }
+            />
+            <SelectField
+              label="Cancellation Policy"
+              options={CANCELLATION_POLICY}
+              value={fjm.workflow_booking.cancellation_policy}
+              onChange={(v) =>
+                patchFjm({
+                  workflow_booking: {
+                    ...fjm.workflow_booking,
+                    cancellation_policy: v,
+                  },
+                })
+              }
+            />
+            <SelectField
+              label="Refund Timeline"
+              options={REFUND_TIMELINE}
+              value={fjm.workflow_booking.refund_timeline}
+              onChange={(v) =>
+                patchFjm({
+                  workflow_booking: {
+                    ...fjm.workflow_booking,
+                    refund_timeline: v,
+                  },
+                })
+              }
+            />
+          </Accordion.Body>
+        </Accordion.Item>
+
       </Accordion>
 
       {!embedded && (
