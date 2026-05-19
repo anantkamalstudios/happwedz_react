@@ -21,6 +21,14 @@ import SangeetChoreographerMasterProfile from "./SangeetChoreographerMasterProfi
 import WeddingEntertainerMasterProfile from "./WeddingEntertainerMasterProfile";
 import PreWeddingLocationMasterProfile from "./PreWeddingLocationMasterProfile";
 import PreWeddingPhotographerMasterProfile from "./PreWeddingPhotographerMasterProfile";
+import JewelleryMasterProfile from "./JewelleryMasterProfile";
+import JewelleryRentalMasterProfile from "./JewelleryRentalMasterProfile";
+import AccessoriesMasterProfile from "./AccessoriesMasterProfile";
+import FlowerJewelleryMasterProfile from "./FlowerJewelleryMasterProfile";
+import BridalOutfitMasterProfile from "./BridalOutfitMasterProfile";
+import RentalOutfitMasterProfile from "./RentalOutfitMasterProfile";
+import CocktailGownMasterProfile from "./CocktailGownMasterProfile";
+
 const VendorFacilities = ({
   formData,
   setFormData,
@@ -31,34 +39,38 @@ const VendorFacilities = ({
 }) => {
   const { vendor } = useSelector((state) => state.vendorAuth || {});
   const [fetchedVendorTypeName, setFetchedVendorTypeName] = useState("");
+  const [fetchedSubcategoryName, setFetchedSubcategoryName] = useState("");
 
   useEffect(() => {
-    const fetchVendorType = async () => {
-      if (vendor?.vendor_type_id) {
-        try {
+    const fetchVendorTypeAndSubcat = async () => {
+      try {
+        if (vendor?.vendor_type_id) {
           const response = await axios.get(
             `https://happywedz.com/api/vendor-types/${vendor.vendor_type_id}`,
           );
           const typeData = response.data || {};
-          const subcategoryId = formData.vendor_subcategory_id || vendor?.vendor_subcategory_id;
+          setFetchedVendorTypeName(typeData.name || "");
+
+          // Fetch subcategories to map the current subcatId to a name
           const subcats = typeData.subcategories || [];
-          const subcat = subcats.find(s => s.id == subcategoryId);
-          
-          if (subcat && subcat.name) {
-            setFetchedVendorTypeName(subcat.name);
-          } else {
-            setFetchedVendorTypeName(typeData.name || "");
+          const curSubcatId = formData?.vendor_subcategory_id || vendor?.vendor_subcategory_id;
+
+          if (curSubcatId && subcats.length > 0) {
+            const matched = subcats.find(s => String(s.id) === String(curSubcatId));
+            if (matched) {
+              setFetchedSubcategoryName(matched.name || "");
+            }
           }
-        } catch (err) {
-          console.error("Error fetching vendor type:", err);
         }
+      } catch (err) {
+        console.error("Error fetching vendor type references:", err);
       }
     };
-    fetchVendorType();
-  }, [vendor?.vendor_type_id, formData.vendor_subcategory_id, vendor?.vendor_subcategory_id]);
+    fetchVendorTypeAndSubcat();
+  }, [vendor?.vendor_type_id, formData?.vendor_subcategory_id, vendor?.vendor_subcategory_id]);
 
-  const finalVendorTypeName = propVendorTypeName || fetchedVendorTypeName;
-  const normalizedType = (finalVendorTypeName || "").toLowerCase();
+  const finalVendorTypeName = `${propVendorTypeName || fetchedVendorTypeName} ${fetchedSubcategoryName}`;
+  const normalizedType = finalVendorTypeName.toLowerCase();
   const isVenue =
     propIsVenue ||
     normalizedType.includes("venue") ||
@@ -97,7 +109,7 @@ const VendorFacilities = ({
   const isSherwani = normalizedType.includes("sherwani");
 
   const isMehndi = normalizedType.includes("mehndi") || normalizedType.includes("mehendi") || normalizedType.includes("henna");
-  const isFlorist = normalizedType.includes("florist") || normalizedType.includes("flower");
+  const isFlorist = normalizedType.includes("florist") && !normalizedType.includes("jewel");
   const isPandit = normalizedType.includes("pandit") || normalizedType.includes("purohit") || normalizedType.includes("priest");
   const isDj = normalizedType.includes("dj") || normalizedType.includes("disc jockey");
   const isSangeetChoreographer = normalizedType.includes("choreograph");
@@ -105,12 +117,84 @@ const VendorFacilities = ({
   const isPreWeddingLocation = normalizedType.includes("location") && (normalizedType.includes("pre-wedding") || normalizedType.includes("pre wedding"));
   const isPreWeddingPhotographer = normalizedType.includes("photographer") && (normalizedType.includes("pre-wedding") || normalizedType.includes("pre wedding"));
 
+  // Sakshi's categories detection
+  const normalizedSubcat = (fetchedSubcategoryName || "").toLowerCase();
+
+  const isCocktailGown =
+    normalizedType.includes("cocktail") ||
+    normalizedType.includes("gown");
+
+  const isBridalOutfitRent =
+    normalizedType.includes("bridal outfit on rent") ||
+    normalizedType.includes("bridal lehenga on rent") ||
+    normalizedType.includes("bridal rental") ||
+    normalizedType.includes("rental outfit") ||
+    normalizedType.includes("lehenga on rent") ||
+    (!isCocktailGown && normalizedType.includes("wear") && normalizedType.includes("rent"));
+
+  const isBridalOutfit =
+    !isCocktailGown &&
+    !isBridalOutfitRent &&
+    (normalizedType.includes("bridal") ||
+      normalizedType.includes("outfit") ||
+      normalizedType.includes("lehenga") ||
+      normalizedType.includes("clothing") ||
+      normalizedType.includes("apparel") ||
+      normalizedType.includes("boutique") ||
+      normalizedType.includes("fashion") ||
+      normalizedType.includes("designer") ||
+      normalizedType.includes("wear") ||
+      normalizedType.includes("trousseau") ||
+      normalizedType.includes("kanjeevaram") ||
+      normalizedType.includes("saree") ||
+      normalizedType.includes("silk"));
+
+  const isAnyBridalOutfit = isBridalOutfit || isBridalOutfitRent || isCocktailGown;
+
+  // Jewellery Detection Logic
+  const hasJewellKeyword = normalizedType.includes("jewell") || normalizedType.includes("jewelry");
+  const hasFloralKeyword = normalizedType.includes("flower") || normalizedType.includes("floral");
+  const hasAccessorKeyword = normalizedType.includes("accessor");
+  const isRent = normalizedType.includes("rent");
+
+  const isVendorJewelleryContext = (hasJewellKeyword || hasFloralKeyword || hasAccessorKeyword) && !isAnyBridalOutfit && !isFlorist;
+
+  const isJewelleryRental = isVendorJewelleryContext && isRent;
+  const isFlowerJewellery = isVendorJewelleryContext && !isJewelleryRental && hasFloralKeyword;
+  const isAccessories = isVendorJewelleryContext && !isJewelleryRental && !isFlowerJewellery && (normalizedSubcat.includes("accessor") || normalizedType.includes("accessor"));
+  const isJewellery = isVendorJewelleryContext && !isJewelleryRental && !isFlowerJewellery && !isAccessories;
+
   const hasMasterProfile =
-    isVenue || isCaterer || isPhotographer || isMakeupArtist || isWeddingPlanner || isDecorator || isTrousseauPacker || isGift || isFavor || isInvitation || isWeddingSuit || isSherwani || isMehndi || isFlorist || isPandit || isDj || isSangeetChoreographer || isWeddingEntertainer || isPreWeddingLocation || isPreWeddingPhotographer;
+    isVenue ||
+    isCaterer ||
+    isPhotographer ||
+    isMakeupArtist ||
+    isWeddingPlanner ||
+    isDecorator ||
+    isTrousseauPacker ||
+    isGift ||
+    isFavor ||
+    isInvitation ||
+    isWeddingSuit ||
+    isSherwani ||
+    isMehndi ||
+    isFlorist ||
+    isPandit ||
+    isDj ||
+    isSangeetChoreographer ||
+    isWeddingEntertainer ||
+    isPreWeddingLocation ||
+    isPreWeddingPhotographer ||
+    isJewellery ||
+    isAccessories ||
+    isFlowerJewellery ||
+    isJewelleryRental ||
+    isBridalOutfit ||
+    isBridalOutfitRent ||
+    isCocktailGown;
 
   const handleSave = async () => {
-    if (onSave) await onSave();
-    if (onShowSuccess) onShowSuccess();
+    if (onSave) await onSave(formData);
   };
 
   return (
@@ -292,6 +376,69 @@ const VendorFacilities = ({
             )}
             {isPreWeddingPhotographer && (
               <PreWeddingPhotographerMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isJewellery && (
+              <JewelleryMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isAccessories && (
+              <AccessoriesMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isFlowerJewellery && (
+              <FlowerJewelleryMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isJewelleryRental && (
+              <JewelleryRentalMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isBridalOutfit && !isBridalOutfitRent && !isCocktailGown && (
+              <BridalOutfitMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isBridalOutfitRent && (
+              <RentalOutfitMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isCocktailGown && (
+              <CocktailGownMasterProfile
                 formData={formData}
                 setFormData={setFormData}
                 onSave={onSave}
