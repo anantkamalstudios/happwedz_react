@@ -1,7 +1,14 @@
 /**
  * Venue master profile — static option lists (aligned with product spec).
  * Persisted under service attributes as `venue_master` (JSON object).
+ *
+ * Location fields (edited on Location tab, synced into `identity`):
+ * - exact_location_text — Exact location (text)
+ * - map_pin_url — Google Map link / pin URL
  */
+
+/** Section 11 (image intelligence) hidden in vendor UI until per-image tagging ships. */
+export const SHOW_VENUE_IMAGE_INTELLIGENCE = false;
 
 export const VENUE_CATEGORY_GROUPS = [
   {

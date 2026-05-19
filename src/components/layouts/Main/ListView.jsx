@@ -11,9 +11,12 @@ import { TbView360Number } from "react-icons/tb";
 import { toggleWishlist } from "../../../redux/authSlice";
 import DOMPurify from "dompurify";
 import PricingModal from "../PricingModal";
+import QuickInquiryModal from "../QuickInquiryModal";
 import { fetchVendorTypesWithSubcategoriesApi } from "../../../services/api/vendorTypesWithSubcategoriesApi";
 import { IMAGE_BASE_URL } from "../../../config/constants";
 import { useParams } from "react-router-dom";
+import { trackView } from "../../../services/localStorageService";
+import { prioritizeRecentlyViewed, isRecentlyViewed } from "../../../utils/recentlyViewedHelper";
 
 const ListView = ({ subVenuesData, handleShow, section }) => {
   const dispatch = useDispatch();
@@ -23,11 +26,24 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
   const [favorites, setFavorites] = useState({});
   const [wishlistIds, setWishlistIds] = useState(new Set());
   const [vendorTypes, setVendorTypes] = useState([]);
+  const [displayData, setDisplayData] = useState([]);
   const navigate = useNavigate();
-  const { subcategory } = useParams(); // this will give slug like "banquet-hall"
+  const { subcategory } = useParams();
   const [activeSub, setActiveSub] = useState(subcategory || "");
   const [showPricingModal, setShowPricingModal] = useState(false);
+  const [showQuickInquiry, setShowQuickInquiry] = useState(false);
   const [selectedVendorId, setSelectedVendorId] = useState(null);
+  const [selectedVendorName, setSelectedVendorName] = useState("");
+
+  // Reorder: recently viewed first, then rest
+  useEffect(() => {
+    if (subVenuesData && subVenuesData.length > 0) {
+      const reordered = prioritizeRecentlyViewed(subVenuesData);
+      setDisplayData(reordered);
+    } else {
+      setDisplayData(subVenuesData || []);
+    }
+  }, [subVenuesData]);
 
   useEffect(() => {
     setActiveSub(subcategory || "");
@@ -141,8 +157,8 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
 
   const filteredVenues =
     filter === "all"
-      ? subVenuesData
-      : subVenuesData.filter((venue) => venue.type === filter);
+      ? displayData
+      : displayData.filter((venue) => venue.type === filter);
 
   return (
     <>
@@ -151,11 +167,26 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
           {/* Main list: take 9/12 on md+ screens to leave space for right sidebar */}
           <Col xs={12} lg={9} xl={9}>
             <Row>
-              {filteredVenues.map((venue) => (
+              {filteredVenues.map((venue) => {
+                const wasViewed = isRecentlyViewed(venue.id);
+                return (
                 <Col xs={12} key={venue.id}>
                   <Card
                     className="p-3 mb-4 border-0 shadow-lg rounded-5 overflow-hidden"
-                    onClick={() => navigate(`/details/info/${venue.id}`)}
+                    onClick={() => {
+                      // Track to localStorage on click
+                      trackView({
+                        id: venue.id,
+                        name: venue.name,
+                        category: venue.vendor_type || venue.category,
+                        type: venue.vendor_type || 'vendor',
+                        location: venue.location || venue.city,
+                        image: venue.image,
+                        price_range: venue.starting_price || venue.vegPrice || venue.nonVegPrice,
+                        slug: venue.slug || venue.id
+                      });
+                      navigate(`/details/info/${venue.id}`);
+                    }}
                     style={{ cursor: "pointer" }}
                   >
                     <Row className="g-0">
@@ -174,6 +205,29 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
                             e.target.src = "/images/imageNotFound.jpg";
                           }}
                         />
+
+                        {/* Recently Viewed Badge */}
+                        {wasViewed && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              bottom: "14px",
+                              left: "10px",
+                              background: "rgba(231, 76, 60, 0.92)",
+                              color: "white",
+                              padding: "4px 10px",
+                              borderRadius: "20px",
+                              fontSize: "11px",
+                              fontWeight: "600",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              zIndex: 2,
+                            }}
+                          >
+                            👁️ Recently Viewed
+                          </div>
+                        )}
 
                         {((venue.vendor_type || "")
                           .toLowerCase()
@@ -280,9 +334,34 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
                             }}
                           />
                         </Link>
-                        <div className="mt-auto text-end fs-14">
+                        <div className="mt-auto d-flex gap-2 fs-14">
+                          <Button
+                            variant="outline-primary"
+                            size="sm"
+                            className="flex-grow-1 fs-14"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const vid =
+                                venue.vendor_id ||
+                                (venue.vendor && venue.vendor.id) ||
+                                null;
+                              if (!vid) {
+                                console.error(
+                                  "Could not find vendor_id for venue:",
+                                  venue
+                                );
+                                return;
+                              }
+                              setSelectedVendorId(vid);
+                              setSelectedVendorName(venue.name || "");
+                              setShowQuickInquiry(true);
+                            }}
+                          >
+                            ⚡ Quick Inquiry
+                          </Button>
                           <Button
                             variant="danger"
+                            size="sm"
                             className="btn-primary fs-14"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -312,7 +391,8 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
                     </Row>
                   </Card>
                 </Col>
-              ))}
+                );
+              })}
             </Row>
           </Col>
 
@@ -400,6 +480,12 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
         show={showPricingModal}
         handleClose={() => setShowPricingModal(false)}
         vendorId={selectedVendorId}
+      />
+      <QuickInquiryModal
+        show={showQuickInquiry}
+        handleClose={() => setShowQuickInquiry(false)}
+        vendorId={selectedVendorId}
+        vendorName={selectedVendorName}
       />
     </>
   );

@@ -226,9 +226,11 @@ const CatererMasterProfile = ({
             </Accordion.Body>
           </Accordion.Item>
         </Accordion>
-        <button type="button" className="btn btn-primary mt-3 fs-14" onClick={save}>
-          Save caterer master profile
-        </button>
+        {!embedded && (
+          <button type="button" className="btn btn-primary mt-3 fs-14" onClick={save}>
+            Save caterer master profile
+          </button>
+        )}
     </>
   );
 

@@ -48,6 +48,8 @@ const VendorForgotPassword = lazy(
 const Vendor360View = lazy(() => import("./components/pages/Vendor360View"));
 const MainSection = lazy(() => import("./components/pages/MainSection"));
 const SubSection = lazy(() => import("./components/pages/SubSection"));
+const TestInteractionsPage = lazy(() => import("./pages/TestInteractionsPage"));
+const DemoRecentlyViewed = lazy(() => import("./pages/DemoRecentlyViewed"));
 const Detailed = lazy(() => import("./components/layouts/Detailed"));
 const Main = lazy(() => import("./components/pages/adminVendor/Main"));
 const Search = lazy(() => import("./components/pages/matrimonial/Search"));
@@ -179,6 +181,12 @@ const RecommandPage = lazy(() => import("./components/home/RecommandedPage"));
 const WriteReviewPage = lazy(
   () => import("./components/pages/WriteReviewPage"),
 );
+const ShaadiAI = lazy(() => import("./components/pages/ShaadiAI"));
+const AIFeaturesHub = lazy(() => import("./components/pages/AIFeaturesHub"));
+const CultureBlender = lazy(() => import("./components/pages/CultureBlender"));
+const PersonalityQuiz = lazy(() => import("./components/pages/PersonalityQuiz"));
+const ConflictResolver = lazy(() => import("./components/pages/ConflictResolver"));
+const TimelineGenerator = lazy(() => import("./components/pages/TimelineGenerator"));
 
 const Travels = lazy(() => import("./components/pages/Travels/Travel"));
 const CityActivities = lazy(
@@ -195,6 +203,15 @@ const HotelbedsHotelsPage = lazy(
 );
 const FlightSearchResults = lazy(
   () => import("./components/pages/Travels/honeymoon/FlightSearchResults"),
+);
+const TravelInsuranceResults = lazy(
+  () => import("./components/pages/Travels/honeymoon/TravelInsuranceResults"),
+);
+const InsuranceBookingPage = lazy(
+  () => import("./components/pages/Travels/honeymoon/InsuranceBookingPage"),
+);
+const InsuranceBookingDetailsPage = lazy(
+  () => import("./components/pages/Travels/honeymoon/InsuranceBookingDetailsPage"),
 );
 
 function App() {
@@ -295,6 +312,12 @@ function App() {
                   </UserPrivateRoute>
                 }
               />
+              <Route path="/ai-features" element={<AIFeaturesHub />} />
+              <Route path="/shaadi-ai" element={<ShaadiAI />} />
+              <Route path="/culture-blender" element={<CultureBlender />} />
+              <Route path="/personality-quiz" element={<PersonalityQuiz />} />
+              <Route path="/conflict-resolver" element={<ConflictResolver />} />
+              <Route path="/timeline-generator" element={<TimelineGenerator />} />
               <Route path="/customer-login" element={<CustomerLogin />} />
               <Route path="/customer-register" element={<CustomerRegister />} />
               <Route path="/contact-us" element={<ContactUs />} />
@@ -332,6 +355,18 @@ function App() {
               <Route
                 path="/honeymoon/flights"
                 element={<FlightSearchResults />}
+              />
+              <Route
+                path="/honeymoon/insurance"
+                element={<TravelInsuranceResults />}
+              />
+              <Route
+                path="/honeymoon/insurance/book"
+                element={<InsuranceBookingPage />}
+              />
+              <Route
+                path="/honeymoon/insurance/booking/:bookingId"
+                element={<InsuranceBookingDetailsPage />}
               />
               <Route
                 path="/honeymoon/hotels"
@@ -525,6 +560,12 @@ function App() {
               />
 
               <Route path="/about-us" element={<AboutUs />} />
+              
+              {/* Test Interactions Page */}
+              <Route path="/test-interactions" element={<TestInteractionsPage />} />
+              
+              {/* Demo Recently Viewed - Add sample data */}
+              <Route path="/demo-recently-viewed" element={<DemoRecentlyViewed />} />
 
               <Route path="*" element={<NotFound />} />
               <Route path="/travels" element={<Travels />} />
