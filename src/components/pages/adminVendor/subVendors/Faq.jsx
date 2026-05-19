@@ -94,7 +94,35 @@ function Faq({ formData, setFormData, onSave }) {
   useEffect(() => {
     let vendorTypeKey = null;
 
-      // 1. Sakshi's subcategory overrides first (based on form master keys)
+    const activeSubcategoryId = formData?.vendor_subcategory_id || vendor?.vendor_subcategory_id;
+    const resolvedSubcategoryName = subcategories.find(
+      (s) => String(s.id) === String(activeSubcategoryId)
+    )?.name || subcatName || formData?.vendor_subcategory_name || formData?.attributes?.vendor_subcategory_name || "";
+    const normalizedSub = resolvedSubcategoryName.toLowerCase();
+
+    // Direct subcategory-based matching first
+    if (normalizedSub.includes("flower jewellery") || normalizedSub.includes("floral jewellery") || normalizedSub.includes("flower jewelry") || normalizedSub.includes("floral jewelry")) {
+      vendorTypeKey = "flowerjewellery";
+    } else if (normalizedSub.includes("kanjeevaram") || normalizedSub.includes("silk saree")) {
+      vendorTypeKey = "kanjeevaramsilksaree";
+    } else if (normalizedSub.includes("rental outfit") || normalizedSub.includes("lehenga on rent") || normalizedSub.includes("on rent") || normalizedSub.includes("rent")) {
+      if (normalizedSub.includes("jewel")) {
+        vendorTypeKey = "jewelleryrental";
+      } else {
+        vendorTypeKey = "rentaloutfit";
+      }
+    } else if (normalizedSub.includes("accessories")) {
+      vendorTypeKey = "accessories";
+    } else if (normalizedSub.includes("jewellery rental") || normalizedSub.includes("jewel rental") || (normalizedSub.includes("jewell") && normalizedSub.includes("rent"))) {
+      vendorTypeKey = "jewelleryrental";
+    } else if (normalizedSub.includes("cocktail gown") || normalizedSub.includes("gowns")) {
+      vendorTypeKey = "cocktailgowns";
+    } else if (normalizedSub.includes("lehenga") || normalizedSub.includes("bridal outfit") || normalizedSub.includes("trousseau sarees") || normalizedSub.includes("trousseau")) {
+      vendorTypeKey = "bridaloutfit";
+    }
+
+    // 1. Fallback to Sakshi's subcategory overrides based on active master profiles
+    if (!vendorTypeKey) {
       if (formData?.accessories_master && Object.keys(formData.accessories_master).length > 0) {
         vendorTypeKey = "accessories";
       } else if (formData?.jewellery_rental_master && Object.keys(formData.jewellery_rental_master).length > 0) {
@@ -123,49 +151,44 @@ function Faq({ formData, setFormData, onSave }) {
           vendorNameVal.includes("silk saree");
         vendorTypeKey = isKanjeevaram ? "kanjeevaramsilksaree" : "bridaloutfit";
       }
+    }
 
-      // 2. If not matched by Sakshi's overrides, use HEAD's subcategory detection logic
-      if (!vendorTypeKey) {
-        const activeSubcategoryId = formData?.vendor_subcategory_id || vendor?.vendor_subcategory_id;
-        const resolvedSubcategoryName = subcategories.find(
-          (s) => String(s.id) === String(activeSubcategoryId)
-        )?.name || "";
-        const normalizedSub = resolvedSubcategoryName.toLowerCase();
+    // 2. If still not matched, use HEAD's subcategory detection logic
+    if (!vendorTypeKey) {
+      const isLocMaster = formData?.pre_wedding_location_master && Object.keys(formData.pre_wedding_location_master).length > 0;
+      const isPhotoMaster = formData?.pre_wedding_photographer_master && Object.keys(formData.pre_wedding_photographer_master).length > 0;
+      const isDjMaster = formData?.dj_master && Object.keys(formData.dj_master).length > 0;
+      const isChoreoMaster = formData?.sangeet_choreographer_master && Object.keys(formData.sangeet_choreographer_master).length > 0;
+      const isEntMaster = formData?.wedding_entertainer_master && Object.keys(formData.wedding_entertainer_master).length > 0;
 
-        const isLocMaster = formData?.pre_wedding_location_master && Object.keys(formData.pre_wedding_location_master).length > 0;
-        const isPhotoMaster = formData?.pre_wedding_photographer_master && Object.keys(formData.pre_wedding_photographer_master).length > 0;
-        const isDjMaster = formData?.dj_master && Object.keys(formData.dj_master).length > 0;
-        const isChoreoMaster = formData?.sangeet_choreographer_master && Object.keys(formData.sangeet_choreographer_master).length > 0;
-        const isEntMaster = formData?.wedding_entertainer_master && Object.keys(formData.wedding_entertainer_master).length > 0;
+      vendorTypeKey = Object.keys(FaqQuestions).find((key) => {
+        const entry = FaqQuestions[key];
+        if (entry.vendor_type_id !== vendor.vendor_type_id) return false;
+        if (entry.subcategory_keyword === "location") {
+          return normalizedSub.includes("location") || isLocMaster;
+        }
+        if (entry.subcategory_keyword === "photographer") {
+          return normalizedSub.includes("photographer") || isPhotoMaster;
+        }
+        if (entry.subcategory_keyword === "dj") {
+          return normalizedSub.includes("dj") || isDjMaster;
+        }
+        if (entry.subcategory_keyword === "choreographer") {
+          return normalizedSub.includes("choreographer") || isChoreoMaster;
+        }
+        if (entry.subcategory_keyword === "entertainer") {
+          return normalizedSub.includes("entertainment") || normalizedSub.includes("entertainer") || isEntMaster;
+        }
+        return true;
+      });
+    }
 
-        vendorTypeKey = Object.keys(FaqQuestions).find((key) => {
-          const entry = FaqQuestions[key];
-          if (entry.vendor_type_id !== vendor.vendor_type_id) return false;
-          if (entry.subcategory_keyword === "location") {
-            return normalizedSub.includes("location") || isLocMaster;
-          }
-          if (entry.subcategory_keyword === "photographer") {
-            return normalizedSub.includes("photographer") || isPhotoMaster;
-          }
-          if (entry.subcategory_keyword === "dj") {
-            return normalizedSub.includes("dj") || isDjMaster;
-          }
-          if (entry.subcategory_keyword === "choreographer") {
-            return normalizedSub.includes("choreographer") || isChoreoMaster;
-          }
-          if (entry.subcategory_keyword === "entertainer") {
-            return normalizedSub.includes("entertainment") || normalizedSub.includes("entertainer") || isEntMaster;
-          }
-          return true;
-        });
-      }
-
-      // 3. Fallback: if still no vendorTypeKey but we have a matching vendor_type_id
-      if (!vendorTypeKey) {
-        vendorTypeKey = Object.keys(FaqQuestions).find(
-          (key) => FaqQuestions[key].vendor_type_id === vendor.vendor_type_id
-        );
-      }
+    // 3. Fallback: if still no vendorTypeKey but we have a matching vendor_type_id
+    if (!vendorTypeKey) {
+      vendorTypeKey = Object.keys(FaqQuestions).find(
+        (key) => FaqQuestions[key].vendor_type_id === vendor.vendor_type_id
+      );
+    }
 
       if (vendorTypeKey && FaqQuestions[vendorTypeKey]) {
         const allQuestions = FaqQuestions[vendorTypeKey].questions || [];

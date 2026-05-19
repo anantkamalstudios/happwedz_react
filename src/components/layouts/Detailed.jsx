@@ -2107,38 +2107,61 @@ const Detailed = () => {
 
       let vendorTypeKey = null;
 
-      // 1. Sakshi's subcategory overrides based on attributes
-      const attrs = venueData.attributes || {};
-      if (attrs.jewellery_rental_master?.ai_faq || attrs.jewellery_master?.ai_faq) {
-        vendorTypeKey = "jewelleryrental";
-      } else if (attrs.accessories_master?.ai_faq) {
-        vendorTypeKey = "accessories";
-      } else if (attrs.cocktail_gown_master?.ai_faq || venueData.vendor?.vendorType?.name === "Cocktails gowns" || venueData.vendor?.vendorType?.name === "Cocktail Gowns" || venueData.vendor?.vendorType?.name === "cocktails-gowns") {
-        vendorTypeKey = "cocktailgowns";
-      } else if (attrs.rental_outfit_master && Object.keys(attrs.rental_outfit_master).length > 0) {
-        vendorTypeKey = "rentaloutfit";
-      } else if (attrs.flower_jewellery_master && Object.keys(attrs.flower_jewellery_master).length > 0) {
+      // Direct subcategory-based matching first
+      if (normalizedSub.includes("flower jewellery") || normalizedSub.includes("floral jewellery") || normalizedSub.includes("flower jewelry") || normalizedSub.includes("floral jewelry")) {
         vendorTypeKey = "flowerjewellery";
-      } else {
-        // Bridal Outfit / Kanjeevaram Silk Saree detection
-        const vendorTypeName = (venueData.vendor?.vendorType?.name || "").toLowerCase();
-        const subcatName = (venueData.attributes?.vendor_subcategory_name || venueData.vendor?.vendorSubcategory?.name || "").toLowerCase();
-        const serviceNameLower = (venueData.attributes?.name || venueData.attributes?.businessName || "").toLowerCase();
-        const isKanjeevaramVendor =
-          vendorTypeName.includes("kanjeevaram") ||
-          vendorTypeName.includes("silk saree") ||
-          subcatName.includes("kanjeevaram") ||
-          subcatName.includes("silk saree") ||
-          serviceNameLower.includes("kanjeevaram") ||
-          serviceNameLower.includes("silk saree");
-        const isBridalOutfitVendor =
-          attrs.bridal_outfit_master && Object.keys(attrs.bridal_outfit_master).length > 0 &&
-          !attrs.cocktail_gown_master?.ai_faq;
-        
-        if (isKanjeevaramVendor || (isBridalOutfitVendor && isKanjeevaramVendor)) {
-          vendorTypeKey = "kanjeevaramsilksaree";
-        } else if (isBridalOutfitVendor) {
-          vendorTypeKey = "bridaloutfit";
+      } else if (normalizedSub.includes("kanjeevaram") || normalizedSub.includes("silk saree")) {
+        vendorTypeKey = "kanjeevaramsilksaree";
+      } else if (normalizedSub.includes("rental outfit") || normalizedSub.includes("lehenga on rent") || normalizedSub.includes("on rent") || normalizedSub.includes("rent")) {
+        if (normalizedSub.includes("jewel")) {
+          vendorTypeKey = "jewelleryrental";
+        } else {
+          vendorTypeKey = "rentaloutfit";
+        }
+      } else if (normalizedSub.includes("accessories")) {
+        vendorTypeKey = "accessories";
+      } else if (normalizedSub.includes("jewellery rental") || normalizedSub.includes("jewel rental") || (normalizedSub.includes("jewell") && normalizedSub.includes("rent"))) {
+        vendorTypeKey = "jewelleryrental";
+      } else if (normalizedSub.includes("cocktail gown") || normalizedSub.includes("gowns")) {
+        vendorTypeKey = "cocktailgowns";
+      } else if (normalizedSub.includes("lehenga") || normalizedSub.includes("bridal outfit") || normalizedSub.includes("trousseau sarees") || normalizedSub.includes("trousseau")) {
+        vendorTypeKey = "bridaloutfit";
+      }
+
+      // 1. Fallback to Sakshi's subcategory overrides based on attributes
+      if (!vendorTypeKey) {
+        const attrs = venueData.attributes || {};
+        if (attrs.jewellery_rental_master?.ai_faq || attrs.jewellery_master?.ai_faq) {
+          vendorTypeKey = "jewelleryrental";
+        } else if (attrs.accessories_master?.ai_faq) {
+          vendorTypeKey = "accessories";
+        } else if (attrs.cocktail_gown_master?.ai_faq || venueData.vendor?.vendorType?.name === "Cocktails gowns" || venueData.vendor?.vendorType?.name === "Cocktail Gowns" || venueData.vendor?.vendorType?.name === "cocktails-gowns") {
+          vendorTypeKey = "cocktailgowns";
+        } else if (attrs.rental_outfit_master && Object.keys(attrs.rental_outfit_master).length > 0) {
+          vendorTypeKey = "rentaloutfit";
+        } else if (attrs.flower_jewellery_master && Object.keys(attrs.flower_jewellery_master).length > 0) {
+          vendorTypeKey = "flowerjewellery";
+        } else {
+          // Bridal Outfit / Kanjeevaram Silk Saree detection
+          const vendorTypeName = (venueData.vendor?.vendorType?.name || "").toLowerCase();
+          const subcatName = (venueData.attributes?.vendor_subcategory_name || venueData.vendor?.vendorSubcategory?.name || "").toLowerCase();
+          const serviceNameLower = (venueData.attributes?.name || venueData.attributes?.businessName || "").toLowerCase();
+          const isKanjeevaramVendor =
+            vendorTypeName.includes("kanjeevaram") ||
+            vendorTypeName.includes("silk saree") ||
+            subcatName.includes("kanjeevaram") ||
+            subcatName.includes("silk saree") ||
+            serviceNameLower.includes("kanjeevaram") ||
+            serviceNameLower.includes("silk saree");
+          const isBridalOutfitVendor =
+            attrs.bridal_outfit_master && Object.keys(attrs.bridal_outfit_master).length > 0 &&
+            !attrs.cocktail_gown_master?.ai_faq;
+          
+          if (isKanjeevaramVendor || (isBridalOutfitVendor && isKanjeevaramVendor)) {
+            vendorTypeKey = "kanjeevaramsilksaree";
+          } else if (isBridalOutfitVendor) {
+            vendorTypeKey = "bridaloutfit";
+          }
         }
       }
 
