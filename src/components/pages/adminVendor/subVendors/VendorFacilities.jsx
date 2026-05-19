@@ -13,7 +13,14 @@ import FavorMasterProfile from "./FavorMasterProfile";
 import InvitationMasterProfile from "./InvitationMasterProfile";
 import WeddingSuitMasterProfile from "./WeddingSuitMasterProfile";
 import SherwaniMasterProfile from "./SherwaniMasterProfile";
-
+import MehndiArtistMasterProfile from "./MehndiArtistMasterProfile";
+import FloristMasterProfile from "./FloristMasterProfile";
+import PanditMasterProfile from "./PanditMasterProfile";
+import DjMasterProfile from "./DjMasterProfile";
+import SangeetChoreographerMasterProfile from "./SangeetChoreographerMasterProfile";
+import WeddingEntertainerMasterProfile from "./WeddingEntertainerMasterProfile";
+import PreWeddingLocationMasterProfile from "./PreWeddingLocationMasterProfile";
+import PreWeddingPhotographerMasterProfile from "./PreWeddingPhotographerMasterProfile";
 const VendorFacilities = ({
   formData,
   setFormData,
@@ -89,8 +96,17 @@ const VendorFacilities = ({
   const isWeddingSuit = normalizedType.includes("wedding suit") || normalizedType.includes("suit");
   const isSherwani = normalizedType.includes("sherwani");
 
+  const isMehndi = normalizedType.includes("mehndi") || normalizedType.includes("mehendi") || normalizedType.includes("henna");
+  const isFlorist = normalizedType.includes("florist") || normalizedType.includes("flower");
+  const isPandit = normalizedType.includes("pandit") || normalizedType.includes("purohit") || normalizedType.includes("priest");
+  const isDj = normalizedType.includes("dj") || normalizedType.includes("disc jockey");
+  const isSangeetChoreographer = normalizedType.includes("choreograph");
+  const isWeddingEntertainer = normalizedType.includes("entertainer") || normalizedType.includes("entertainment") || normalizedType.includes("performer");
+  const isPreWeddingLocation = normalizedType.includes("location") && (normalizedType.includes("pre-wedding") || normalizedType.includes("pre wedding"));
+  const isPreWeddingPhotographer = normalizedType.includes("photographer") && (normalizedType.includes("pre-wedding") || normalizedType.includes("pre wedding"));
+
   const hasMasterProfile =
-    isVenue || isCaterer || isPhotographer || isMakeupArtist || isWeddingPlanner || isDecorator || isTrousseauPacker || isGift || isFavor || isInvitation || isWeddingSuit || isSherwani;
+    isVenue || isCaterer || isPhotographer || isMakeupArtist || isWeddingPlanner || isDecorator || isTrousseauPacker || isGift || isFavor || isInvitation || isWeddingSuit || isSherwani || isMehndi || isFlorist || isPandit || isDj || isSangeetChoreographer || isWeddingEntertainer || isPreWeddingLocation || isPreWeddingPhotographer;
 
   const handleSave = async () => {
     if (onSave) await onSave();
@@ -204,6 +220,78 @@ const VendorFacilities = ({
             )}
             {isSherwani && (
               <SherwaniMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isMehndi && (
+              <MehndiArtistMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isFlorist && (
+              <FloristMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isPandit && (
+              <PanditMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isDj && (
+              <DjMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isSangeetChoreographer && (
+              <SangeetChoreographerMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isWeddingEntertainer && (
+              <WeddingEntertainerMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isPreWeddingLocation && (
+              <PreWeddingLocationMasterProfile
+                formData={formData}
+                setFormData={setFormData}
+                onSave={onSave}
+                onShowSuccess={onShowSuccess}
+                embedded
+              />
+            )}
+            {isPreWeddingPhotographer && (
+              <PreWeddingPhotographerMasterProfile
                 formData={formData}
                 setFormData={setFormData}
                 onSave={onSave}

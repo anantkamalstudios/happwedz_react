@@ -446,6 +446,32 @@ const Storefront = ({ setCompletion }) => {
                   actualData.attributes.wedding_suit_master || {},
                 sherwani_master:
                   actualData.attributes.sherwani_master || {},
+                mehndi_artist_master:
+                  actualData.attributes.mehndi_artist_master || {},
+                florist_master:
+                  actualData.attributes.florist_master || {},
+                pandit_master:
+                  actualData.attributes.pandit_master || {},
+                dj_master:
+                  actualData.attributes.dj_master ||
+                  actualData.dj_master ||
+                  {},
+                sangeet_choreographer_master:
+                  actualData.attributes.sangeet_choreographer_master ||
+                  actualData.sangeet_choreographer_master ||
+                  {},
+                wedding_entertainer_master:
+                  actualData.attributes.wedding_entertainer_master ||
+                  actualData.wedding_entertainer_master ||
+                  {},
+                pre_wedding_location_master:
+                  actualData.attributes.pre_wedding_location_master || null,
+                pre_wedding_photographer_master:
+                  actualData.attributes.pre_wedding_photographer_master || null,
+                vendor_subcategory_id:
+                  actualData.vendor_subcategory_id ||
+                  vendor?.vendor_subcategory_id ||
+                  "",
 
                 attributes: {
                   ...prev.attributes,
@@ -520,6 +546,7 @@ const Storefront = ({ setCompletion }) => {
       if (!formData.id && newId) {
         setFormData((prev) => ({ ...prev, id: newId }));
       }
+      setShowModal(true);
     } catch (e) {
       Swal.fire({
         icon: "error",
@@ -533,7 +560,6 @@ const Storefront = ({ setCompletion }) => {
       });
       return; // Do not show success modal on failure
     }
-    setShowModal(true);
   };
 
   // Expose show success modal to subcomponents
@@ -758,6 +784,38 @@ const Storefront = ({ setCompletion }) => {
         formData.sherwani_master || formData.attributes?.sherwani_master,
         "brand_name"
       ),
+      mehndi_artist_master: injectBrandName(
+        formData.mehndi_artist_master || formData.attributes?.mehndi_artist_master,
+        "brand_name"
+      ),
+      florist_master: injectBrandName(
+        formData.florist_master || formData.attributes?.florist_master,
+        "brand_name"
+      ),
+      pandit_master: injectBrandName(
+        formData.pandit_master || formData.attributes?.pandit_master,
+        "brand_name"
+      ),
+      dj_master: (() => {
+        const v = formData.dj_master || formData.attributes?.dj_master;
+        return v && typeof v === "object" && Object.keys(v).length > 0 ? v : undefined;
+      })(),
+      sangeet_choreographer_master: (() => {
+        const v = formData.sangeet_choreographer_master || formData.attributes?.sangeet_choreographer_master;
+        return v && typeof v === "object" && Object.keys(v).length > 0 ? v : undefined;
+      })(),
+      wedding_entertainer_master: (() => {
+        const v = formData.wedding_entertainer_master || formData.attributes?.wedding_entertainer_master;
+        return v && typeof v === "object" && Object.keys(v).length > 0 ? v : undefined;
+      })(),
+      pre_wedding_location_master: (() => {
+        const v = formData.pre_wedding_location_master || formData.attributes?.pre_wedding_location_master;
+        return v && typeof v === "object" && Object.keys(v).length > 0 ? v : undefined;
+      })(),
+      pre_wedding_photographer_master: (() => {
+        const v = formData.pre_wedding_photographer_master || formData.attributes?.pre_wedding_photographer_master;
+        return v && typeof v === "object" && Object.keys(v).length > 0 ? v : undefined;
+      })(),
     };
 
     // Remove undefined keys

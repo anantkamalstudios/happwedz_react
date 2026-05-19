@@ -6,6 +6,10 @@ function Faq({ formData, setFormData, onSave }) {
   const { vendor } = useSelector((state) => state.vendorAuth);
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState(formData.faqs || {});
+  const [subcategories, setSubcategories] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState(null);
 
   useEffect(() => {
     if (!vendor?.id) return;
@@ -71,10 +75,56 @@ function Faq({ formData, setFormData, onSave }) {
   }, [vendor?.vendor_type_id, formData.vendor_subcategory_id, vendor?.vendor_subcategory_id]);
 
   useEffect(() => {
+    async function fetchVendorType() {
+      if (vendor?.vendor_type_id) {
+        try {
+          const res = await fetch(`https://happywedz.com/api/vendor-types/${vendor.vendor_type_id}`);
+          if (res.ok) {
+            const data = await res.json();
+            setSubcategories(data?.subcategories || []);
+          }
+        } catch (err) {
+          console.error("Error fetching vendor type:", err);
+        }
+      }
+    }
+    fetchVendorType();
+  }, [vendor?.vendor_type_id]);
+
+  useEffect(() => {
     if (vendor?.vendor_type_id) {
-      const vendorTypeKey = Object.keys(FaqQuestions).find(
-        (key) => FaqQuestions[key].vendor_type_id === vendor.vendor_type_id
-      );
+      const activeSubcategoryId = formData?.vendor_subcategory_id || vendor?.vendor_subcategory_id;
+      const resolvedSubcategoryName = subcategories.find(
+        (s) => String(s.id) === String(activeSubcategoryId)
+      )?.name || "";
+      const normalizedSub = resolvedSubcategoryName.toLowerCase();
+
+      const isLocMaster = formData?.pre_wedding_location_master && Object.keys(formData.pre_wedding_location_master).length > 0;
+      const isPhotoMaster = formData?.pre_wedding_photographer_master && Object.keys(formData.pre_wedding_photographer_master).length > 0;
+      const isDjMaster = formData?.dj_master && Object.keys(formData.dj_master).length > 0;
+      const isChoreoMaster = formData?.sangeet_choreographer_master && Object.keys(formData.sangeet_choreographer_master).length > 0;
+      const isEntMaster = formData?.wedding_entertainer_master && Object.keys(formData.wedding_entertainer_master).length > 0;
+
+      const vendorTypeKey = Object.keys(FaqQuestions).find((key) => {
+        const entry = FaqQuestions[key];
+        if (entry.vendor_type_id !== vendor.vendor_type_id) return false;
+        if (entry.subcategory_keyword === "location") {
+          return normalizedSub.includes("location") || isLocMaster;
+        }
+        if (entry.subcategory_keyword === "photographer") {
+          return normalizedSub.includes("photographer") || isPhotoMaster;
+        }
+        if (entry.subcategory_keyword === "dj") {
+          return normalizedSub.includes("dj") || isDjMaster;
+        }
+        if (entry.subcategory_keyword === "choreographer") {
+          return normalizedSub.includes("choreographer") || isChoreoMaster;
+        }
+        if (entry.subcategory_keyword === "entertainer") {
+          return normalizedSub.includes("entertainment") || normalizedSub.includes("entertainer") || isEntMaster;
+        }
+        return true;
+      });
 
       if (vendorTypeKey) {
         const allQuestions = FaqQuestions[vendorTypeKey].questions || [];
@@ -141,7 +191,7 @@ function Faq({ formData, setFormData, onSave }) {
         setQuestions([]);
       }
     }
-  }, [vendor?.vendor_type_id, subcatName]);
+  }, [vendor?.vendor_type_id, subcatName, formData?.vendor_subcategory_id, vendor?.vendor_subcategory_id, subcategories]);
 
   useEffect(() => {
     setFormData((prev) => ({ ...prev, faqs: answers }));
@@ -172,9 +222,13 @@ function Faq({ formData, setFormData, onSave }) {
   // Save answers to backend
   const handleSave = async () => {
     if (!vendor?.id || !vendor?.vendor_type_id) {
-      console.error("Cannot save: Vendor ID or Vendor Type ID is missing.");
+      setSaveError("Cannot save: Vendor ID or Vendor Type ID is missing.");
       return;
     }
+    setIsSaving(true);
+    setSaveSuccess(false);
+    setSaveError(null);
+
     const mergedAnswers = flattenOtherRadioAnswers(answers);
     const payload = {
       vendorId: vendor.id,
@@ -191,13 +245,17 @@ function Faq({ formData, setFormData, onSave }) {
         body: JSON.stringify(payload),
       });
       if (res.ok) {
-        // Optionally show success
+        setSaveSuccess(true);
         if (onSave) onSave();
+        setTimeout(() => setSaveSuccess(false), 5000);
       } else {
-        // Optionally show error
+        const errData = await res.json().catch(() => ({}));
+        setSaveError(errData.details || errData.error || "Failed to save FAQ answers. Please try again.");
       }
     } catch (err) {
-      // Optionally show error
+      setSaveError("Network error: Could not connect to server to save FAQ answers.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -432,13 +490,24 @@ function Faq({ formData, setFormData, onSave }) {
           </div>
         </div>
       ))}
+      {saveSuccess && (
+        <div className="alert alert-success text-center mb-3 fs-14 shadow-sm" role="alert">
+          FAQ answers saved successfully!
+        </div>
+      )}
+      {saveError && (
+        <div className="alert alert-danger text-center mb-3 fs-14 shadow-sm" role="alert">
+          {saveError}
+        </div>
+      )}
       <div className="w-100 fs-14 d-flex justify-content-center align-content-center">
         <button
           type="submit"
           onClick={handleSave}
+          disabled={isSaving}
           className="px-4 py-2 rounded btn-primary"
         >
-          Submit
+          {isSaving ? "Saving..." : "Submit"}
         </button>
       </div>
     </div>
