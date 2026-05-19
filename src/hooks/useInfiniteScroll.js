@@ -244,6 +244,10 @@ const useInfiniteScroll = (
         params.append("page", pageNum.toString());
         params.append("limit", limit.toString());
 
+        if (filtersRef.current?.search) {
+          params.append("search", filtersRef.current.search);
+        }
+
         // Extract price filters and add as minPrice/maxPrice query params
         const { minPrice, maxPrice } = extractPriceFilters(filtersRef.current);
         if (minPrice !== null && minPrice !== undefined) {
@@ -308,10 +312,11 @@ const useInfiniteScroll = (
 
         // Add other filters as JSON (excluding price filters)
         const nonPriceFilters = { ...filtersRef.current };
-        // Remove price/capacity/venue-type/food price/rooms/rating/reviews keys from filters JSON
+        // Remove search and price/capacity/venue-type/food price/rooms/rating/reviews keys from filters JSON
         Object.keys(nonPriceFilters).forEach((key) => {
           const lowerKey = key.toLowerCase();
           if (
+            lowerKey === "search" ||
             lowerKey.includes("price") ||
             lowerKey === "prices" ||
             lowerKey === "pricing" ||
@@ -339,9 +344,11 @@ const useInfiniteScroll = (
           params.append("filters", JSON.stringify(nonPriceFilters));
         }
 
-        // Only return vendors whose first media image is confirmed to exist in S3.
+        // Only return vendors whose first media image is confirmed to exist in S3 if no search query is specified.
         // The batch job (verify-vendor-images.js) sets image_exists = TRUE after verification.
-        params.append("image_exists", "true");
+        if (!filtersRef.current?.search) {
+          params.append("image_exists", "true");
+        }
 
         const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
         const cacheKey = apiUrl;

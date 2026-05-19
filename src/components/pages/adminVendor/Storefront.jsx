@@ -117,6 +117,10 @@ const Storefront = ({ setCompletion }) => {
           vendor.id,
           token
         );
+        
+        const actualData = serviceData 
+          ? (Array.isArray(serviceData) ? serviceData[0] : serviceData) 
+          : null;
 
         // Fetch vendor type name from API (like VendorBasicInfo)
         if (vendor.vendor_type_id) {
@@ -124,8 +128,16 @@ const Storefront = ({ setCompletion }) => {
             const response = await axiosInstance.get(
               `/vendor-types/${vendor.vendor_type_id}`
             );
-            const vendorTypeData = response.data;
-            setVendorTypeName(vendorTypeData?.name || "");
+            const vendorTypeData = response.data || {};
+            const subcategoryId = actualData?.vendor_subcategory_id || vendor.vendor_subcategory_id;
+            const subcats = vendorTypeData.subcategories || [];
+            const subcat = subcats.find(s => s.id == subcategoryId);
+            
+            if (subcat && subcat.name) {
+              setVendorTypeName(subcat.name);
+            } else {
+              setVendorTypeName(vendorTypeData.name || "");
+            }
           } catch (err) {
             setVendorTypeName("");
           }
@@ -133,10 +145,6 @@ const Storefront = ({ setCompletion }) => {
 
         // If data exists, merge it into formData.
         if (serviceData) {
-          const actualData = Array.isArray(serviceData)
-            ? serviceData[0]
-            : serviceData;
-
           if (actualData) {
             let gallery = [];
             let videos = [];
@@ -422,6 +430,48 @@ const Storefront = ({ setCompletion }) => {
                   actualData.attributes.photographer_master || {},
                 makeup_artist_master:
                   actualData.attributes.makeup_artist_master || {},
+                wedding_planner_master:
+                  actualData.attributes.wedding_planner_master || {},
+                decorator_master:
+                  actualData.attributes.decorator_master || {},
+                trousseau_master:
+                  actualData.attributes.trousseau_master || {},
+                gift_master:
+                  actualData.attributes.gift_master || {},
+                favor_master:
+                  actualData.attributes.favor_master || {},
+                invitation_master:
+                  actualData.attributes.invitation_master || {},
+                wedding_suit_master:
+                  actualData.attributes.wedding_suit_master || {},
+                sherwani_master:
+                  actualData.attributes.sherwani_master || {},
+                mehndi_artist_master:
+                  actualData.attributes.mehndi_artist_master || {},
+                florist_master:
+                  actualData.attributes.florist_master || {},
+                pandit_master:
+                  actualData.attributes.pandit_master || {},
+                dj_master:
+                  actualData.attributes.dj_master ||
+                  actualData.dj_master ||
+                  {},
+                sangeet_choreographer_master:
+                  actualData.attributes.sangeet_choreographer_master ||
+                  actualData.sangeet_choreographer_master ||
+                  {},
+                wedding_entertainer_master:
+                  actualData.attributes.wedding_entertainer_master ||
+                  actualData.wedding_entertainer_master ||
+                  {},
+                pre_wedding_location_master:
+                  actualData.attributes.pre_wedding_location_master || null,
+                pre_wedding_photographer_master:
+                  actualData.attributes.pre_wedding_photographer_master || null,
+                vendor_subcategory_id:
+                  actualData.vendor_subcategory_id ||
+                  vendor?.vendor_subcategory_id ||
+                  "",
 
                 attributes: {
                   ...prev.attributes,
@@ -484,23 +534,32 @@ const Storefront = ({ setCompletion }) => {
 
   const handleSave = async () => {
     localStorage.setItem("vendorFormData", JSON.stringify(formData));
-    if (formData.id) {
-      try {
-        const fd = buildFormData();
-        await vendorServicesApi.createOrUpdateService(fd, token, formData.id);
-      } catch (e) {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: `Failed to update. ${typeof e === "string" ? e : e?.message || "Unknown error"
-            }`,
-          timer: "3000",
-          confirmButtonText: "OK",
-          confirmButtonColor: "#C31162",
-        });
+    try {
+      const fd = buildFormData();
+      const response = await vendorServicesApi.createOrUpdateService(
+        fd,
+        token,
+        formData.id || null
+      );
+      // If we just created a new service, save the ID so subsequent saves use PUT
+      const newId = response?.id || response?.data?.id;
+      if (!formData.id && newId) {
+        setFormData((prev) => ({ ...prev, id: newId }));
       }
+      setShowModal(true);
+    } catch (e) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: `Failed to update. ${
+          typeof e === "string" ? e : e?.message || "Unknown error"
+        }`,
+        timer: "3000",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#C31162",
+      });
+      return; // Do not show success modal on failure
     }
-    setShowModal(true);
   };
 
   // Expose show success modal to subcomponents
@@ -523,13 +582,23 @@ const Storefront = ({ setCompletion }) => {
   }, [videoDrafts]);
 
   const buildAttributes = () => {
+    const vendorName =
+      formData.attributes?.businessName ||
+      formData.attributes?.name ||
+      formData.attributes?.Name ||
+      "";
+
+    const injectBrandName = (masterObj, fieldName) => {
+      if (!masterObj) return undefined;
+      const newObj = JSON.parse(JSON.stringify(masterObj));
+      if (!newObj.identity) newObj.identity = {};
+      newObj.identity[fieldName] = vendorName;
+      return newObj;
+    };
+
     const attrs = {
       // tnc: formData.tnc,
-      name:
-        formData.attributes?.businessName ||
-        formData.attributes?.name ||
-        formData.attributes?.Name ||
-        "",
+      name: vendorName,
       slug: formData.attributes?.slug || "",
       // tags: formData.tags || [],
       deals: formData.deals || [],
@@ -620,12 +689,8 @@ const Storefront = ({ setCompletion }) => {
       //   (formData.within24HrAvailable || "No").toString().toLowerCase() ===
       //   "yes",
       // New attributes from Detailed.jsx
-      // vendor_name:
-      //   formData.attributes?.vendor_name ||
-      //   formData.attributes?.Name ||
-      //   formData.attributes?.businessName ||
-      //   "",
-      // vendor_type: formData.vendorTypeName || vendorTypeName || "",
+      vendor_name: vendorName,
+      vendor_type: formData.vendorTypeName || vendorTypeName || "",
       veg_price: formData.veg_price || "",
       non_veg_price: formData.non_veg_price || "",
       photo_package_price: formData.photo_package_price || "",
@@ -671,22 +736,86 @@ const Storefront = ({ setCompletion }) => {
       start_venue: formData.start_venue || "",
       space: formData.space || "",
       dJ_policy: formData.dJ_policy || "",
-      venue_master:
-        formData.venue_master ||
-        formData.attributes?.venue_master ||
-        undefined,
-      caterer_master:
-        formData.caterer_master ||
-        formData.attributes?.caterer_master ||
-        undefined,
+      venue_master: injectBrandName(
+        formData.venue_master || formData.attributes?.venue_master,
+        "chain_brand_name"
+      ),
+      caterer_master: injectBrandName(
+        formData.caterer_master || formData.attributes?.caterer_master,
+        "brand_name"
+      ),
       photographer_master:
         formData.photographer_master ||
         formData.attributes?.photographer_master ||
         undefined,
-      makeup_artist_master:
-        formData.makeup_artist_master ||
-        formData.attributes?.makeup_artist_master ||
-        undefined,
+      makeup_artist_master: injectBrandName(
+        formData.makeup_artist_master || formData.attributes?.makeup_artist_master,
+        "brand_artist_name"
+      ),
+      wedding_planner_master: injectBrandName(
+        formData.wedding_planner_master || formData.attributes?.wedding_planner_master,
+        "company_name"
+      ),
+      decorator_master: injectBrandName(
+        formData.decorator_master || formData.attributes?.decorator_master,
+        "brand_company_name"
+      ),
+      trousseau_master: injectBrandName(
+        formData.trousseau_master || formData.attributes?.trousseau_master,
+        "brand_name"
+      ),
+      gift_master: injectBrandName(
+        formData.gift_master || formData.attributes?.gift_master,
+        "brand_name"
+      ),
+      favor_master: injectBrandName(
+        formData.favor_master || formData.attributes?.favor_master,
+        "brand_name"
+      ),
+      invitation_master: injectBrandName(
+        formData.invitation_master || formData.attributes?.invitation_master,
+        "brand_name"
+      ),
+      wedding_suit_master: injectBrandName(
+        formData.wedding_suit_master || formData.attributes?.wedding_suit_master,
+        "brand_name"
+      ),
+      sherwani_master: injectBrandName(
+        formData.sherwani_master || formData.attributes?.sherwani_master,
+        "brand_name"
+      ),
+      mehndi_artist_master: injectBrandName(
+        formData.mehndi_artist_master || formData.attributes?.mehndi_artist_master,
+        "brand_name"
+      ),
+      florist_master: injectBrandName(
+        formData.florist_master || formData.attributes?.florist_master,
+        "brand_name"
+      ),
+      pandit_master: injectBrandName(
+        formData.pandit_master || formData.attributes?.pandit_master,
+        "brand_name"
+      ),
+      dj_master: (() => {
+        const v = formData.dj_master || formData.attributes?.dj_master;
+        return v && typeof v === "object" && Object.keys(v).length > 0 ? v : undefined;
+      })(),
+      sangeet_choreographer_master: (() => {
+        const v = formData.sangeet_choreographer_master || formData.attributes?.sangeet_choreographer_master;
+        return v && typeof v === "object" && Object.keys(v).length > 0 ? v : undefined;
+      })(),
+      wedding_entertainer_master: (() => {
+        const v = formData.wedding_entertainer_master || formData.attributes?.wedding_entertainer_master;
+        return v && typeof v === "object" && Object.keys(v).length > 0 ? v : undefined;
+      })(),
+      pre_wedding_location_master: (() => {
+        const v = formData.pre_wedding_location_master || formData.attributes?.pre_wedding_location_master;
+        return v && typeof v === "object" && Object.keys(v).length > 0 ? v : undefined;
+      })(),
+      pre_wedding_photographer_master: (() => {
+        const v = formData.pre_wedding_photographer_master || formData.attributes?.pre_wedding_photographer_master;
+        return v && typeof v === "object" && Object.keys(v).length > 0 ? v : undefined;
+      })(),
     };
 
     // Remove undefined keys
@@ -1267,6 +1396,7 @@ const Storefront = ({ setCompletion }) => {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onSaveSuccess={fetchServiceData}
             onShowSuccess={showSuccessModal}
           />
         );
