@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { FiEdit2 } from 'react-icons/fi';
 import FlightFiltersSidebar from './FlightFiltersSidebar';
 import FlightSearchForm from './components/FlightSearchForm';
 import FlightSearchHeader from './components/FlightSearchHeader';
@@ -37,8 +38,6 @@ export default function FlightSearchResults() {
   const [filteredReturn, setFilteredReturn] = useState([]);
   const [selectedOutbound, setSelectedOutbound] = useState(null);
   const [selectedReturn, setSelectedReturn] = useState(null);
-  const [selectedOutboundFareIndex, setSelectedOutboundFareIndex] = useState({});
-  const [selectedReturnFareIndex, setSelectedReturnFareIndex] = useState({});
   const [sortOutbound, setSortOutbound] = useState('price');
   const [sortReturn, setSortReturn] = useState('price');
   const [filters, setFilters] = useState({
@@ -247,58 +246,10 @@ export default function FlightSearchResults() {
 
   const selectFlight = (flight, type) => {
     if (type === 'outbound') {
-      const isSameFlight = selectedOutbound?.id === flight.id;
-      setSelectedOutbound(isSameFlight ? null : flight);
-      // Initialize with first fare if selecting new flight
-      if (!isSameFlight && !selectedOutboundFareIndex[flight.id]) {
-        setSelectedOutboundFareIndex(prev => ({ ...prev, [flight.id]: 0 }));
-      }
+      setSelectedOutbound(selectedOutbound?.id === flight.id ? null : flight);
     } else {
-      const isSameFlight = selectedReturn?.id === flight.id;
-      setSelectedReturn(isSameFlight ? null : flight);
-      // Initialize with first fare if selecting new flight
-      if (!isSameFlight && !selectedReturnFareIndex[flight.id]) {
-        setSelectedReturnFareIndex(prev => ({ ...prev, [flight.id]: 0 }));
-      }
+      setSelectedReturn(selectedReturn?.id === flight.id ? null : flight);
     }
-  };
-
-  const selectFare = (flightId, fareIndex, type, e) => {
-    e.stopPropagation();
-    if (type === 'outbound') {
-      setSelectedOutboundFareIndex(prev => ({ ...prev, [flightId]: fareIndex }));
-    } else {
-      setSelectedReturnFareIndex(prev => ({ ...prev, [flightId]: fareIndex }));
-    }
-  };
-
-  const handleBookFare = async (flight, flightId, fareIndex, type) => {
-    // First, select the flight and fare
-    if (type === 'outbound') {
-      setSelectedOutbound({ ...flight, id: flightId });
-      setSelectedOutboundFareIndex(prev => ({ ...prev, [flightId]: fareIndex }));
-    } else {
-      setSelectedReturn({ ...flight, id: flightId });
-      setSelectedReturnFareIndex(prev => ({ ...prev, [flightId]: fareIndex }));
-    }
-
-    // For one-way, proceed immediately
-    // For round-trip, wait for both flights to be selected
-    if (searchParams.tripType === 'round') {
-      if (type === 'outbound' && !selectedReturn) {
-        alert('Please select a return flight');
-        return;
-      }
-      if (type === 'return' && !selectedOutbound) {
-        alert('Please select an outbound flight');
-        return;
-      }
-    }
-
-    // Wait a bit for state to update, then call the original handleBook
-    setTimeout(() => {
-      handleBook();
-    }, 100);
   };
 
   const handleBook = async () => {
@@ -311,16 +262,14 @@ export default function FlightSearchResults() {
       return;
     }
 
-    // Get priceIds for review using selected fare indices
+    // Get priceIds for review
     const priceIds = [];
     if (selectedOutbound) {
-      const fareIndex = selectedOutboundFareIndex[selectedOutbound.id] || 0;
-      const outboundPriceId = selectedOutbound.totalPriceList[fareIndex]?.id;
+      const outboundPriceId = selectedOutbound.totalPriceList[0]?.id;
       if (outboundPriceId) priceIds.push(outboundPriceId);
     }
     if (selectedReturn) {
-      const fareIndex = selectedReturnFareIndex[selectedReturn.id] || 0;
-      const returnPriceId = selectedReturn.totalPriceList[fareIndex]?.id;
+      const returnPriceId = selectedReturn.totalPriceList[0]?.id;
       if (returnPriceId) priceIds.push(returnPriceId);
     }
 
@@ -399,11 +348,6 @@ export default function FlightSearchResults() {
     const flightId = flight.id || getFlightKey(flight);
     const expanded = expandedFares[flightId];
     const visibleFares = expanded ? flight.totalPriceList : flight.totalPriceList.slice(0, 2);
-    
-    // Get selected fare index for this flight
-    const selectedFareIndex = type === 'outbound' 
-      ? (selectedOutboundFareIndex[flightId] ?? 0)
-      : (selectedReturnFareIndex[flightId] ?? 0);
 
     // Calculate if flight arrives next day
     const depDate = new Date(first.dt);
@@ -523,7 +467,6 @@ export default function FlightSearchResults() {
         {/* Fare Options with Radio Buttons and Book/Compare Buttons */}
         <div className="tj-fare-options">
           {visibleFares.map((fare, idx) => {
-            const actualIndex = expanded ? idx : idx;
             const price = fare.fd.ADULT.fC.TF;
             const fareType = fare.fareIdentifier;
             const badgeClass = 
@@ -533,20 +476,18 @@ export default function FlightSearchResults() {
               fareType === 'PROMO' ? 'promo' :
               fareType === 'CORPORATE' ? 'corporate' :
               fareType === 'FLEXI_PLUS' ? 'flexi' : 'promo';
-            const isSelectedFare = actualIndex === selectedFareIndex;
             const isFirstFare = idx === 0;
             
             return (
               <div 
                 key={idx} 
-                className={`tj-fare-option ${isSelectedFare ? 'selected' : ''}`}
-                onClick={(e) => selectFare(flightId, actualIndex, type, e)}
+                className="tj-fare-option"
+                onClick={(e) => e.stopPropagation()}
               >
                 <input
                   type="radio"
                   name={`fare-${flightId}`}
-                  checked={isSelectedFare}
-                  onChange={() => {}}
+                  defaultChecked={isFirstFare}
                   className="tj-fare-radio"
                 />
                 <div className="tj-fare-price">
@@ -564,7 +505,8 @@ export default function FlightSearchResults() {
                       className="tj-book-fare-btn"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleBookFare(flight, flightId, actualIndex, type);
+                        selectFlight({ ...flight, id: flightId }, type);
+                        handleBook();
                       }}
                     >
                       BOOK
@@ -798,18 +740,8 @@ export default function FlightSearchResults() {
   const cheapestReturn = getCheapest(filteredReturn);
   const fastestReturn = getFastest(filteredReturn);
 
-  const totalPrice = (() => {
-    let total = 0;
-    if (selectedOutbound) {
-      const fareIndex = selectedOutboundFareIndex[selectedOutbound.id] || 0;
-      total += selectedOutbound.totalPriceList[fareIndex]?.fd?.ADULT?.fC?.TF || 0;
-    }
-    if (selectedReturn) {
-      const fareIndex = selectedReturnFareIndex[selectedReturn.id] || 0;
-      total += selectedReturn.totalPriceList[fareIndex]?.fd?.ADULT?.fC?.TF || 0;
-    }
-    return total;
-  })();
+  const totalPrice = (selectedOutbound?.totalPriceList[0]?.fd?.ADULT?.fC?.TF || 0) + 
+                     (selectedReturn?.totalPriceList[0]?.fd?.ADULT?.fC?.TF || 0);
 
   const isRoundTrip = searchParams?.tripType === 'round';
 
@@ -989,55 +921,47 @@ export default function FlightSearchResults() {
         <div className="tj-booking-bar">
           <div className="container-fluid">
             <div className="tj-booking-content">
-              {selectedOutbound && (() => {
-                const fareIndex = selectedOutboundFareIndex[selectedOutbound.id] || 0;
-                const selectedFare = selectedOutbound.totalPriceList[fareIndex];
-                return (
-                  <div className="tj-booking-flight">
-                    <img
-                      src={`https://airlines.airhex.com/airlines-logo/${selectedOutbound.sI[0].fD.aI.code.toLowerCase()}.png`}
-                      alt={selectedOutbound.sI[0].fD.aI.name}
-                      className="tj-booking-logo"
-                      onError={(e) => { e.target.style.display = 'none'; }}
-                    />
-                    <span className="tj-booking-flight-no">{selectedOutbound.sI[0].fD.fN}</span>
-                    <span className="tj-booking-route">
-                      {formatTime(selectedOutbound.sI[0].dt)} → {formatTime(selectedOutbound.sI[selectedOutbound.sI.length - 1].at)}
-                    </span>
-                    <span className="tj-booking-cities">
-                      {selectedOutbound.sI[0].da.code}→{selectedOutbound.sI[selectedOutbound.sI.length - 1].aa.code}
-                    </span>
-                    <span className="tj-booking-price">
-                      ₹{Number(selectedFare.fd.ADULT.fC.TF).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                );
-              })()}
+              {selectedOutbound && (
+                <div className="tj-booking-flight">
+                  <img
+                    src={`https://airlines.airhex.com/airlines-logo/${selectedOutbound.sI[0].fD.aI.code.toLowerCase()}.png`}
+                    alt={selectedOutbound.sI[0].fD.aI.name}
+                    className="tj-booking-logo"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                  <span className="tj-booking-flight-no">{selectedOutbound.sI[0].fD.fN}</span>
+                  <span className="tj-booking-route">
+                    {formatTime(selectedOutbound.sI[0].dt)} → {formatTime(selectedOutbound.sI[selectedOutbound.sI.length - 1].at)}
+                  </span>
+                  <span className="tj-booking-cities">
+                    {selectedOutbound.sI[0].da.code}→{selectedOutbound.sI[selectedOutbound.sI.length - 1].aa.code}
+                  </span>
+                  <span className="tj-booking-price">
+                    ₹{Number(selectedOutbound.totalPriceList[0].fd.ADULT.fC.TF).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              )}
 
-              {selectedReturn && (() => {
-                const fareIndex = selectedReturnFareIndex[selectedReturn.id] || 0;
-                const selectedFare = selectedReturn.totalPriceList[fareIndex];
-                return (
-                  <div className="tj-booking-flight">
-                    <img
-                      src={`https://airlines.airhex.com/airlines-logo/${selectedReturn.sI[0].fD.aI.code.toLowerCase()}.png`}
-                      alt={selectedReturn.sI[0].fD.aI.name}
-                      className="tj-booking-logo"
-                      onError={(e) => { e.target.style.display = 'none'; }}
-                    />
-                    <span className="tj-booking-flight-no">{selectedReturn.sI[0].fD.fN}</span>
-                    <span className="tj-booking-route">
-                      {formatTime(selectedReturn.sI[0].dt)} → {formatTime(selectedReturn.sI[selectedReturn.sI.length - 1].at)}
-                    </span>
-                    <span className="tj-booking-cities">
-                      {selectedReturn.sI[0].da.code}→{selectedReturn.sI[selectedReturn.sI.length - 1].aa.code}
-                    </span>
-                    <span className="tj-booking-price">
-                      ₹{Number(selectedFare.fd.ADULT.fC.TF).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                );
-              })()}
+              {selectedReturn && (
+                <div className="tj-booking-flight">
+                  <img
+                    src={`https://airlines.airhex.com/airlines-logo/${selectedReturn.sI[0].fD.aI.code.toLowerCase()}.png`}
+                    alt={selectedReturn.sI[0].fD.aI.name}
+                    className="tj-booking-logo"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                  <span className="tj-booking-flight-no">{selectedReturn.sI[0].fD.fN}</span>
+                  <span className="tj-booking-route">
+                    {formatTime(selectedReturn.sI[0].dt)} → {formatTime(selectedReturn.sI[selectedReturn.sI.length - 1].at)}
+                  </span>
+                  <span className="tj-booking-cities">
+                    {selectedReturn.sI[0].da.code}→{selectedReturn.sI[selectedReturn.sI.length - 1].aa.code}
+                  </span>
+                  <span className="tj-booking-price">
+                    ₹{Number(selectedReturn.totalPriceList[0].fd.ADULT.fC.TF).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              )}
 
               <div className="tj-booking-total">
                 ₹{Number(totalPrice).toLocaleString('en-IN', { minimumFractionDigits: 2 })} total

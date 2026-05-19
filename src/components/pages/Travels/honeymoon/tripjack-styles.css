@@ -1,8 +1,8 @@
 /* TripJack Flight Search UI Styles */
 
 :root {
-  --tj-orange: #e91e63;
-  --tj-orange-dark: #c2185b;
+  --tj-orange: #ed1173;
+  --tj-orange-dark: #c0006a;
   --tj-navy: #1a1f36;
   --tj-charcoal: #2d3142;
   --tj-light: #f5f6fa;
@@ -828,7 +828,6 @@
 .tj-share-icon:hover {
   transform: scale(1.2);
 }
-
 .tj-flight-card {
   background: #fff;
   border: 1px solid #e0e0e0;
@@ -1072,10 +1071,6 @@
   align-items: center;
   gap: 6px;
   min-width: 110px;
-}
-
-.tj-fare-option.selected .tj-fare-price {
-  color: #e91e63;
 }
 
 .tj-fare-badge {
@@ -1325,7 +1320,6 @@
     text-align: center;
   }
 
-  /* Flight card responsive */
   .tj-flight-route {
     grid-template-columns: 1fr;
     gap: 12px;
