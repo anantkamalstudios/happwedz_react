@@ -1,139 +1,231 @@
 /**
- * Build a proper TripJack searchQuery object from component state
- * @param {object} params - Search parameters
- * @returns {object} TripJack-shaped searchQuery
+ * Build TripJack-shaped search query from form inputs
+ * @param {object} params
+ * @param {string} params.from - Origin airport code
+ * @param {string} params.to - Destination airport code
+ * @param {string} params.departureDate - Departure date (YYYY-MM-DD)
+ * @param {string} params.returnDate - Return date (YYYY-MM-DD) for round trips
+ * @param {number} params.adults - Number of adults
+ * @param {number} params.children - Number of children
+ * @param {number} params.infants - Number of infants
+ * @param {string} params.cabinClass - Cabin class (Economy, Premium Economy, Business, First)
+ * @param {string} params.tripType - Trip type (oneway, round)
+ * @param {string} params.paxType - Passenger type (REGULAR, STUDENT, SENIOR_CITIZEN)
+ * @returns {object} TripJack search query object
  */
-export function buildTripJackSearchQuery({
+export const buildTripJackSearchQuery = ({
   from,
   to,
   departureDate,
   returnDate,
-  adults,
-  children,
-  infants,
-  cabinClass,
-  tripType,
-  paxType,
-}) {
+  adults = 1,
+  children = 0,
+  infants = 0,
+  cabinClass = 'Economy',
+  tripType = 'oneway',
+  paxType = 'REGULAR',
+}) => {
   const routeInfos = [
     {
-      fromCityOrAirport: { code: String(from).toUpperCase() },
-      toCityOrAirport: { code: String(to).toUpperCase() },
+      fromCityOrAirport: {
+        code: from,
+      },
+      toCityOrAirport: {
+        code: to,
+      },
       travelDate: departureDate,
     },
   ];
 
-  if (tripType === "round" && returnDate) {
+  if (tripType === 'round' && returnDate) {
     routeInfos.push({
-      fromCityOrAirport: { code: String(to).toUpperCase() },
-      toCityOrAirport: { code: String(from).toUpperCase() },
+      fromCityOrAirport: {
+        code: to,
+      },
+      toCityOrAirport: {
+        code: from,
+      },
       travelDate: returnDate,
     });
   }
 
+  const paxInfo = {
+    ADULT: adults.toString(),
+    CHILD: children.toString(),
+    INFANT: infants.toString(),
+  };
+
   const searchQuery = {
-    cabinClass: String(cabinClass || "ECONOMY").toUpperCase(),
-    paxInfo: {
-      ADULT: String(Math.max(1, adults || 1)),
-      CHILD: String(Math.max(0, children || 0)),
-      INFANT: String(Math.max(0, infants || 0)),
-    },
+    cabinClass: cabinClass.toUpperCase().replace(' ', '_'),
+    paxInfo,
     routeInfos,
     searchModifiers: {
-      isDirectFlight: true,
-      isConnectingFlight: true,
+      isDirectFlight: false,
+      isConnectingFlight: false,
     },
   };
 
-  // Add paxType only if not REGULAR
-  if (paxType && paxType !== "REGULAR") {
+  if (paxType !== 'REGULAR') {
     searchQuery.paxType = paxType;
   }
 
   return searchQuery;
-}
-
-/**
- * Map TripJack location response to our internal format
- * @param {object} location - TripJack location object
- * @returns {object} Mapped location
- */
-export function mapTripJackLocation(location) {
-  return {
-    id: location.airportCode || location.id,
-    iata: location.airportCode || location.code,
-    name: location.airportName || location.name,
-    city: location.cityName || location.city,
-    country: location.countryName || location.country,
-    countryCode: location.countryCode,
-  };
-}
+};
 
 /**
  * Map TripJack flight response to display format
- * @param {object} trip - TripJack trip object
- * @returns {object} Mapped flight for display
+ * @param {object} flight - TripJack flight object
+ * @returns {object} Mapped flight object for UI
  */
-export function mapTripJackFlight(trip) {
-  if (!trip || !trip.sI || trip.sI.length === 0) return null;
+export const mapTripJackFlight = (flight) => {
+  if (!flight || !flight.sI || flight.sI.length === 0) {
+    return null;
+  }
 
-  const firstSegment = trip.sI[0];
-  const lastSegment = trip.sI[trip.sI.length - 1];
-  const totalPriceList = trip.totalPriceList || [];
-  const firstPrice = totalPriceList[0] || {};
+  const firstSegment = flight.sI[0];
+  const lastSegment = flight.sI[flight.sI.length - 1];
+  const airline = firstSegment.fD.aI;
+  const stops = flight.sI.length - 1;
+  const duration = flight.sI.reduce((sum, seg) => sum + seg.duration, 0);
 
-  // Calculate total duration
-  const totalDuration = trip.sI.reduce((sum, seg) => sum + (seg.duration || 0), 0);
-  const hours = Math.floor(totalDuration / 60);
-  const minutes = totalDuration % 60;
-
-  // Get airline info
-  const airlineCode = firstSegment.fD?.aI?.code || '';
-  const airlineName = firstSegment.fD?.aI?.name || 'Unknown Airline';
-  const flightNumber = firstSegment.fD?.fN || '';
-
-  // Get fare info
-  const adultFare = firstPrice.fd?.ADULT || {};
-  const fareClass = adultFare.cc || 'ECONOMY';
-  const baggage = adultFare.bI?.iB || '15 Kg';
-  const cabinBaggage = adultFare.bI?.cB || '7 Kg';
-  const seatsAvailable = adultFare.sR || 0;
-
-  // Calculate price
-  const totalFare = adultFare.fC?.TF || 0;
+  const fares = flight.totalPriceList.map((fare) => ({
+    id: fare.id,
+    price: fare.fd.ADULT.fC.TF,
+    currency: 'INR',
+    fareType: fare.fareIdentifier,
+    cabinClass: fare.fd.ADULT.cc,
+    refundable: fare.fd.ADULT.rT === 1,
+    seatsAvailable: fare.fd.ADULT.sR || 9,
+    baggage: fare.fd.ADULT.bI,
+  }));
 
   return {
-    flight_no: `${airlineCode}${flightNumber}`,
-    airline: airlineCode,
-    airline_name: airlineName,
-    airline_logo: `https://static.tripjack.com/img/airlineLogo/v1/${airlineCode}.png`,
-    operating_airline: airlineName,
-    origin: firstSegment.da?.code || '',
-    destination: lastSegment.aa?.code || '',
-    departure: firstSegment.dt,
-    arrival: lastSegment.at,
-    departure_terminal: firstSegment.da?.terminal || '',
-    arrival_terminal: lastSegment.aa?.terminal || '',
-    duration: `${hours}h ${minutes}m`,
-    duration_minutes: totalDuration,
-    stops: trip.sI.length - 1,
-    layovers: trip.sI.slice(0, -1).map(seg => ({
-      airport: seg.aa?.code || '',
-      duration: seg.duration || 0,
+    id: flight.id || `${airline.code}${firstSegment.fD.fN}-${firstSegment.da.code}-${lastSegment.aa.code}-${firstSegment.dt}`,
+    airline: {
+      code: airline.code,
+      name: airline.name,
+      logo: `https://airlines.airhex.com/airlines-logo/${airline.code.toLowerCase()}.png`,
+    },
+    flightNumber: firstSegment.fD.fN,
+    departure: {
+      airport: firstSegment.da.code,
+      city: firstSegment.da.city,
+      terminal: firstSegment.da.terminal,
+      time: firstSegment.dt,
+    },
+    arrival: {
+      airport: lastSegment.aa.code,
+      city: lastSegment.aa.city,
+      terminal: lastSegment.aa.terminal,
+      time: lastSegment.at,
+    },
+    duration,
+    stops,
+    segments: flight.sI.map((seg) => ({
+      airline: seg.fD.aI,
+      flightNumber: seg.fD.fN,
+      departure: {
+        airport: seg.da.code,
+        city: seg.da.city,
+        terminal: seg.da.terminal,
+        time: seg.dt,
+      },
+      arrival: {
+        airport: seg.aa.code,
+        city: seg.aa.city,
+        terminal: seg.aa.terminal,
+        time: seg.at,
+      },
+      duration: seg.duration,
     })),
-    price: totalFare,
-    aircraft: firstSegment.fD?.eT || '',
-    aircraft_name: firstSegment.fD?.eT || '',
-    fares: totalPriceList.map(priceItem => ({
-      offer_id: priceItem.id,
-      provider: 'tripjack',
-      cabin_class: priceItem.fd?.ADULT?.cc || fareClass,
-      baggage: baggage,
-      cabin_baggage: cabinBaggage,
-      seats_available: priceItem.fd?.ADULT?.sR || seatsAvailable,
-      price: priceItem.fd?.ADULT?.fC?.TF || totalFare,
-      fare_identifier: priceItem.fareIdentifier || 'PUBLISHED',
-    })),
-    raw: trip,
+    fares,
+    rawData: flight,
   };
-}
+};
+
+/**
+ * Format price in Indian Rupees
+ * @param {number} price - Price value
+ * @returns {string} Formatted price string
+ */
+export const formatPrice = (price) => {
+  return `₹${Number(price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+};
+
+/**
+ * Format duration in hours and minutes
+ * @param {number} minutes - Duration in minutes
+ * @returns {string} Formatted duration string
+ */
+export const formatDuration = (minutes) => {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours}h ${mins}m`;
+};
+
+/**
+ * Format time from ISO string
+ * @param {string} dateStr - ISO date string
+ * @returns {string} Formatted time string (HH:MM)
+ */
+export const formatTime = (dateStr) => {
+  return new Date(dateStr).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+};
+
+/**
+ * Format date from ISO string
+ * @param {string} dateStr - ISO date string
+ * @returns {string} Formatted date string
+ */
+export const formatDate = (dateStr) => {
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+};
+
+/**
+ * Get stops badge text
+ * @param {number} stops - Number of stops
+ * @returns {string} Stops badge text
+ */
+export const getStopsBadgeText = (stops) => {
+  if (stops === 0) return 'Non-Stop';
+  return `${stops} Stop${stops > 1 ? 's' : ''}`;
+};
+
+/**
+ * Get fare type badge class
+ * @param {string} fareType - Fare identifier
+ * @returns {string} CSS class name
+ */
+export const getFareBadgeClass = (fareType) => {
+  const typeMap = {
+    PUBLISHED: 'published',
+    SME: 'sme',
+    SPECIAL_RETURN: 'special',
+    PROMO: 'promo',
+  };
+  return typeMap[fareType] || 'published';
+};
+
+/**
+ * Get fare type display name
+ * @param {string} fareType - Fare identifier
+ * @returns {string} Display name
+ */
+export const getFareDisplayName = (fareType) => {
+  const nameMap = {
+    PUBLISHED: 'Published',
+    SME: 'SME',
+    SPECIAL_RETURN: 'Special Return',
+    PROMO: 'Promo',
+  };
+  return nameMap[fareType] || fareType;
+};
