@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Modal, Offcanvas } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import {
   BedDouble,
@@ -22,14 +23,16 @@ import {
   X,
 } from "lucide-react";
 import {
-  bookHotel,
+  createHotelPaymentOrder,
   getHotelStaticContent,
+  getRecentHotelBookings,
   getHotelBookingDetails,
   reviewHotelBooking,
   searchHotels,
   suggestHotels,
   trackHotelAnalyticsEvent,
   trackTripjackAnalyticsEvent,
+  verifyHotelPaymentAndBook,
 } from "../../../../services/api/hotelApi";
 import TripJackBookingReview from "./TripJackBookingReview";
 import TripJackBookingStatus from "./TripJackBookingStatus";
@@ -79,6 +82,32 @@ function renderStars(count) {
   return Array.from({ length: Math.max(0, Math.min(5, Number(count) || 0)) }).map((_, index) => (
     <Star key={index} size={14} fill="currentColor" />
   ));
+}
+
+function loadRazorpayScript() {
+  if (typeof window === "undefined") {
+    return Promise.resolve(false);
+  }
+
+  if (window.Razorpay) {
+    return Promise.resolve(true);
+  }
+
+  return new Promise((resolve) => {
+    const existingScript = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+    if (existingScript) {
+      existingScript.addEventListener("load", () => resolve(true), { once: true });
+      existingScript.addEventListener("error", () => resolve(false), { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
 }
 
 function HotelDetailsSkeleton() {
@@ -998,6 +1027,7 @@ function HotelDetailsPage({
   setActiveOption,
   setRoomModalOpen,
 }) {
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   const roomSectionRef = useRef(null);
   const [selectedOptionId, setSelectedOptionId] = useState("");
   const [roomSearch, setRoomSearch] = useState("");
@@ -1025,6 +1055,8 @@ function HotelDetailsPage({
   const [showBookingFormModal, setShowBookingFormModal] = useState(false);
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
   const [showBookingStatusModal, setShowBookingStatusModal] = useState(false);
+  const [recentBookings, setRecentBookings] = useState([]);
+  const [recentBookingsLoading, setRecentBookingsLoading] = useState(false);
   const [bookingStatusState, setBookingStatusState] = useState({
     phase: "idle",
     bookingId: "",
@@ -1034,6 +1066,15 @@ function HotelDetailsPage({
     details: null,
     errorCode: "",
   });
+  const bookingPollSessionRef = useRef(0);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      bookingPollSessionRef.current += 1;
+    };
+  }, []);
 
   const detailModel = useMemo(
     () =>
@@ -1089,6 +1130,11 @@ function HotelDetailsPage({
       active = false;
     };
   }, [detailModel.id, reviewPayloadFields.searchId, reviewPayloadFields.tjHotelId]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id) return;
+    fetchRecentBookings();
+  }, [isAuthenticated, user?.id]);
 
   const selectedOption = useMemo(
     () =>
@@ -1228,8 +1274,26 @@ function HotelDetailsPage({
 
     try {
       const response = await reviewHotelBooking(payload);
+      const reviewSelectedOption = response?.selectedOption || {};
+      const effectivePanRequired = Boolean(
+        response?.bookingRequirements?.panRequired ||
+        reviewSelectedOption?.ipr ||
+        option?.panRequired ||
+        detailModel?.panRequired
+      );
+      const effectivePassportRequired = Boolean(
+        response?.bookingRequirements?.passportRequired ||
+        reviewSelectedOption?.ipm ||
+        option?.passportRequired ||
+        detailModel?.passportRequired
+      );
       const enrichedReviewResponse = {
         ...response,
+        bookingRequirements: {
+          ...(response?.bookingRequirements || {}),
+          panRequired: effectivePanRequired,
+          passportRequired: effectivePassportRequired,
+        },
         displayHotelName:
           response?.hotelSummary?.name || response?.hotelInfo?.name || detailModel.name || "Selected hotel",
         displayRoomName:
@@ -1313,18 +1377,51 @@ function HotelDetailsPage({
     setBookingForm((current) => (current ? { ...current, termsAccepted: checked } : current));
   };
 
+  const fetchRecentBookings = async () => {
+    if (!isAuthenticated || !user?.id) return;
+    setRecentBookingsLoading(true);
+    try {
+      const response = await getRecentHotelBookings({
+        limit: 10,
+      });
+      setRecentBookings(Array.isArray(response?.bookings) ? response.bookings : []);
+    } catch (error) {
+      console.error("Unable to fetch recent hotel bookings", error);
+    } finally {
+      setRecentBookingsLoading(false);
+    }
+  };
+
   const pollTripjackBookingStatus = async (bookingId) => {
-    const maxAttempts = 36;
+    const maxAttempts = 60;
+    const fastPollIntervalMs = 15000;
+    const slowPollIntervalMs = 60000;
+    const fastAttempts = 20;
+    let lastDetailsResponse = null;
+    let lastStatusMeta = null;
+    const sessionId = Date.now();
+    bookingPollSessionRef.current = sessionId;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      if (!isMountedRef.current || bookingPollSessionRef.current !== sessionId) {
+        return;
+      }
+
       if (attempt > 1) {
-        await delay(5000);
+        const pollDelayMs = attempt <= fastAttempts ? fastPollIntervalMs : slowPollIntervalMs;
+        await delay(pollDelayMs);
+      }
+
+      if (!isMountedRef.current || bookingPollSessionRef.current !== sessionId) {
+        return;
       }
 
       try {
         const detailsResponse = await getHotelBookingDetails({ bookingId });
+        lastDetailsResponse = detailsResponse;
         const orderStatus = detailsResponse?.orderStatus || detailsResponse?.bookingStatusMeta?.rawStatus || "";
         const statusMeta = detailsResponse?.bookingStatusMeta || {};
+        lastStatusMeta = statusMeta;
 
         if (statusMeta.isSuccessTerminal) {
           setBookingStatusState({
@@ -1336,6 +1433,7 @@ function HotelDetailsPage({
             details: detailsResponse,
             errorCode: "",
           });
+          fetchRecentBookings();
           return;
         }
 
@@ -1357,7 +1455,9 @@ function HotelDetailsPage({
           bookingId,
           orderStatus,
           attempts: attempt,
-          message: `Booking is still processing in TripJack. Checked ${attempt} of ${maxAttempts} times.`,
+          message: statusMeta?.rawStatus === "PAYMENT_SUCCESS"
+            ? `Your payment is successful. We are waiting for final confirmation from TripJack. Checked ${attempt} of ${maxAttempts} times.`
+            : `Booking is still processing in TripJack. Checked ${attempt} of ${maxAttempts} times.`,
           details: detailsResponse,
           errorCode: "",
         });
@@ -1385,7 +1485,7 @@ function HotelDetailsPage({
           bookingId,
           orderStatus: "",
           attempts: attempt,
-          message: "Waiting for the next booking status update from TripJack.",
+          message: "We are waiting for the next booking status update from TripJack.",
           details: null,
           errorCode: "",
         });
@@ -1396,7 +1496,11 @@ function HotelDetailsPage({
       ...current,
       phase: "timeout",
       bookingId,
-      message: "Booking is still processing, please check status later.",
+      message:
+        lastStatusMeta?.rawStatus === "PAYMENT_SUCCESS"
+          ? "Payment is successful and booking is awaiting final hotel confirmation. Please refresh status after some time."
+          : "Booking is still processing. Please refresh status after some time.",
+      details: lastDetailsResponse || current?.details || null,
       errorCode: "",
     }));
   };
@@ -1404,6 +1508,12 @@ function HotelDetailsPage({
   const handleProceedToBook = async () => {
     if (!reviewResponse?.bookingId || !bookingForm) {
       toast.error("Booking review data is missing. Please review the room again.");
+      return;
+    }
+
+    if (!isAuthenticated || !user?.id) {
+      toast.error("Please login before booking a hotel.");
+      navigate("/customer-login");
       return;
     }
 
@@ -1439,11 +1549,21 @@ function HotelDetailsPage({
       type: "HOTEL",
       ipr: Boolean(reviewResponse?.bookingRequirements?.panRequired),
       ipm: Boolean(reviewResponse?.bookingRequirements?.passportRequired),
-      expectedAmount: payableAmount || undefined,
+      expectedAmount: payableAmount,
       hotelId: String(reviewResponse?.hotelInfo?.tjid || reviewResponse?.hotelSummary?.tjid || ""),
       optionId: String(reviewResponse?.selectedOption?.id || ""),
       reviewData: reviewResponse?.raw || reviewResponse,
     };
+
+    console.log("[TripJack Booking Request]", {
+      endpoint: "hotels/create-payment-order",
+      bookingId: payload.bookingId,
+      hotelId: payload.hotelId,
+      optionId: payload.optionId,
+      paymentInfos: payload.paymentInfos,
+      roomTravellerInfo: payload.roomTravellerInfo,
+      deliveryInfo: payload.deliveryInfo,
+    });
 
     setBookingSubmitting(true);
     setShowBookingStatusModal(true);
@@ -1452,20 +1572,92 @@ function HotelDetailsPage({
       bookingId: payload.bookingId,
       orderStatus: "",
       attempts: 0,
-      message: "Submitting booking request to TripJack.",
+      message: "Creating Razorpay payment order.",
       details: null,
       errorCode: "",
     });
 
     try {
-      const bookingResponse = await bookHotel(payload);
+      const orderResponse = await createHotelPaymentOrder(payload);
+      const razorpayLoaded = await loadRazorpayScript();
+      if (!razorpayLoaded || !window.Razorpay) {
+        throw new Error("Unable to load Razorpay checkout");
+      }
 
-      const requestDenied =
+      setBookingStatusState({
+        phase: "submitting",
+        bookingId: payload.bookingId,
+        orderStatus: "",
+        attempts: 0,
+        message: "Opening Razorpay checkout.",
+        details: orderResponse,
+        errorCode: "",
+      });
+
+      const bookingResponse = await new Promise((resolve, reject) => {
+        const razorpayInstance = new window.Razorpay({
+          key: orderResponse?.keyId,
+          order_id: orderResponse?.razorpayOrderId,
+          amount: orderResponse?.amount,
+          currency: orderResponse?.currency || "INR",
+          name: "HappyWedz Hotels",
+          description: orderResponse?.hotelName || "TripJack hotel booking",
+          prefill: {
+            name: user?.name || "",
+            email: bookingForm?.deliveryInfo?.emails?.[0] || "",
+            contact: bookingForm?.deliveryInfo?.contacts?.[0] || "",
+          },
+          theme: {
+            color: "#ed1173",
+          },
+          modal: {
+            ondismiss: () => {
+              reject(new Error("Razorpay checkout closed before payment."));
+            },
+          },
+          handler: async (paymentResult) => {
+            try {
+              setBookingStatusState({
+                phase: "submitting",
+                bookingId: payload.bookingId,
+                orderStatus: "",
+                attempts: 0,
+                message: "Payment verified. Sending booking request to TripJack.",
+                details: paymentResult,
+                errorCode: "",
+              });
+
+              const verifyResponse = await verifyHotelPaymentAndBook({
+                bookingId: payload.bookingId,
+                razorpay_order_id: paymentResult?.razorpay_order_id || orderResponse?.razorpayOrderId,
+                razorpay_payment_id: paymentResult?.razorpay_payment_id,
+                razorpay_signature: paymentResult?.razorpay_signature,
+              });
+              resolve(verifyResponse);
+            } catch (verifyError) {
+              reject(verifyError);
+            }
+          },
+        });
+
+        razorpayInstance.on("payment.failed", (failure) => {
+          reject(
+            new Error(
+              failure?.error?.description ||
+              failure?.error?.reason ||
+              "Razorpay payment failed."
+            )
+          );
+        });
+
+        razorpayInstance.open();
+      });
+
+      if (
         bookingResponse?.success === false ||
         bookingResponse?.tripjackRequestAccepted === false ||
-        bookingResponse?.status?.success === false;
-
-      if (requestDenied) {
+        bookingResponse?.status?.success === false
+      ) {
         setShowBookingFormModal(false);
         setBookingStatusState({
           phase: "denied",
@@ -1483,10 +1675,13 @@ function HotelDetailsPage({
       setBookingStatusState({
         phase: "polling",
         bookingId: bookingResponse?.bookingId || payload.bookingId,
-        orderStatus: "",
+        orderStatus: bookingResponse?.bookingDetails?.orderStatus || bookingResponse?.userStatus || "",
         attempts: 0,
-        message: "Booking request accepted. Waiting for final TripJack status.",
-        details: bookingResponse,
+        message:
+          bookingResponse?.userStatus === "Payment Successful - Awaiting Hotel Confirmation"
+            ? "Your payment is successful. We are waiting for final hotel confirmation from TripJack."
+            : "Booking request accepted. Waiting for final TripJack status.",
+        details: bookingResponse?.bookingDetails || bookingResponse,
         errorCode: "",
       });
 
@@ -1497,29 +1692,40 @@ function HotelDetailsPage({
       const tripjackDenied =
         error?.response?.data?.source === "TRIPJACK" &&
         error?.response?.data?.status?.success === false;
+      const paymentFailure = error?.response?.data?.source === "PAYMENT" || /razorpay/i.test(String(error?.message || ""));
       setBookingStatusState({
         phase: validationFailure ? "validation_failed" : tripjackDenied ? "denied" : "failed",
         bookingId: payload.bookingId,
         orderStatus: "",
         attempts: 0,
         message: validationFailure
-          ? "Booking request validation failed. Please check traveller details and try again."
+          ? error?.response?.data?.error || "Booking request validation failed. Please check traveller details and try again."
           : tripjackDenied
             ? `TripJack denied the booking request: ${error?.response?.data?.error || "Access Denied"}`
-            : "Unable to submit this booking. Please review traveller details and try again.",
+            : paymentFailure
+              ? error?.response?.data?.error || error?.message || "Payment could not be completed."
+              : "Unable to submit this booking. Please review traveller details and try again.",
         details: error?.response?.data || null,
         errorCode: error?.response?.data?.errors?.[0]?.errCode || "",
       });
       toast.error(
         validationFailure
-          ? "Booking request validation failed. Please check traveller details and try again."
+          ? error?.response?.data?.error || "Booking request validation failed. Please check traveller details and try again."
           : tripjackDenied
             ? `TripJack denied the booking request: ${error?.response?.data?.error || "Access Denied"}`
-            : "Unable to submit this booking. Please review traveller details and try again.",
+            : paymentFailure
+              ? error?.response?.data?.error || error?.message || "Payment could not be completed."
+              : "Unable to submit this booking. Please review traveller details and try again.",
       );
     } finally {
       setBookingSubmitting(false);
     }
+  };
+
+  const handleRefreshBookingStatus = async () => {
+    const currentBookingId = bookingStatusState?.bookingId || reviewResponse?.bookingId;
+    if (!currentBookingId) return;
+    await pollTripjackBookingStatus(currentBookingId);
   };
 
   const handleOpenGallery = (index) => {
@@ -1707,6 +1913,50 @@ function HotelDetailsPage({
                 referrerPolicy="no-referrer-when-downgrade"
                 title="Hotel map"
               />
+            </div>
+
+            <div className="hotel-detail-card">
+              <div className="d-flex justify-content-between gap-3 align-items-center mb-3">
+                <h4 className="mb-0">Recent Bookings</h4>
+                {isAuthenticated ? (
+                  <button
+                    type="button"
+                    className="hotel-inline-link"
+                    onClick={() => fetchRecentBookings()}
+                    disabled={recentBookingsLoading}
+                  >
+                    {recentBookingsLoading ? "Refreshing..." : "Refresh"}
+                  </button>
+                ) : null}
+              </div>
+
+              {!isAuthenticated ? (
+                <div className="hotel-summary-subcopy">Login to see your recent hotel bookings.</div>
+              ) : recentBookings.length === 0 ? (
+                <div className="hotel-summary-subcopy">No recent hotel bookings found for your account.</div>
+              ) : (
+                <div className="d-grid gap-2">
+                  {recentBookings.map((booking) => (
+                    <div key={booking.bookingId} className="border rounded-3 p-3">
+                      <div className="d-flex justify-content-between gap-3 flex-wrap">
+                        <div>
+                          <div className="fw-bold">{booking.hotelName || "Booked Hotel"}</div>
+                          <div className="hotel-summary-subcopy">Booking ID: {booking.bookingId}</div>
+                          <div className="hotel-summary-subcopy">
+                            {booking.checkIn || "-"} to {booking.checkOut || "-"}
+                          </div>
+                        </div>
+                        <div className="text-end">
+                          <div className="fw-semibold">{booking.status || "PENDING"}</div>
+                          <div className="hotel-summary-subcopy">
+                            {booking.amount ? formatMoney(booking.amount, booking.currency || "INR") : "Amount unavailable"}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <RoomTypesSection
@@ -2059,6 +2309,7 @@ function HotelDetailsPage({
         statusState={bookingStatusState}
         reviewResponse={reviewResponse}
         onClose={() => setShowBookingStatusModal(false)}
+        onRefresh={handleRefreshBookingStatus}
         formatMoney={formatMoney}
       />
 

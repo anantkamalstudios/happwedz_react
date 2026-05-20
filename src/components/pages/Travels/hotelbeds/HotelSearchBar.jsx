@@ -247,12 +247,13 @@ const trackAnalyticsEvent = async (eventData) => {
 const normalizeHotelSuggestion = (suggestion) => {
   if (!suggestion) return null;
 
-  const searchType =
+  const rawSearchType =
     suggestion?.searchType ||
     suggestion?.searchRegionType ||
     suggestion?.regionType ||
     suggestion?.type ||
     "CITY";
+  const normalizedSearchType = String(rawSearchType || "CITY").toUpperCase();
 
   const city =
     suggestion?.city ||
@@ -265,7 +266,7 @@ const normalizeHotelSuggestion = (suggestion) => {
     suggestion?.raw?.cid ||
     suggestion?.regionId ||
     suggestion?.searchRegionId ||
-    suggestion?.id ||
+    (normalizedSearchType !== "HOTEL" ? suggestion?.id : "") ||
     "";
 
   const displayName =
@@ -277,24 +278,50 @@ const normalizeHotelSuggestion = (suggestion) => {
     suggestion?.keyword ||
     "";
 
-  const rawTjids = suggestion?.tjids || suggestion?.hids || suggestion?.hotelIds || [];
-  const tjids = Array.isArray(rawTjids) ? rawTjids.map((item) => String(item)).filter(Boolean) : [];
+  const rawTjids =
+    suggestion?.tjids ||
+    suggestion?.hids ||
+    suggestion?.hotelIds ||
+    suggestion?.tjid ||
+    suggestion?.tjHotelId ||
+    suggestion?.hotelCode ||
+    suggestion?.raw?.tjid ||
+    suggestion?.raw?.tjHotelId ||
+    suggestion?.raw?.hotelCode ||
+    [];
+  const tjids = Array.isArray(rawTjids)
+    ? rawTjids.map((item) => String(item || "").trim()).filter(Boolean)
+    : typeof rawTjids === "string"
+      ? rawTjids
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean)
+      : rawTjids
+        ? [String(rawTjids).trim()].filter(Boolean)
+        : [];
   const hid =
     suggestion?.hid ||
     suggestion?.hotelId ||
     suggestion?.hotelid ||
-    suggestion?.id ||
+    suggestion?.tjid ||
+    suggestion?.tjHotelId ||
+    suggestion?.hotelCode ||
+    suggestion?.raw?.tjid ||
+    suggestion?.raw?.tjHotelId ||
+    suggestion?.raw?.hotelCode ||
     "";
+  const normalizedHid = String(hid || "").trim();
+  const normalizedTjids = tjids.length ? tjids : normalizedHid ? [normalizedHid] : [];
 
   return {
     id: String(city || displayName || ""),
     city: String(city || ""),
-    searchType: String(searchType || "CITY").toUpperCase(),
-    searchRegionType: String(searchType || "CITY").toUpperCase(),
+    searchType: normalizedSearchType,
+    searchRegionType: normalizedSearchType,
     searchRegionName: String(displayName || "").trim(),
     displayName: String(displayName || "").trim(),
-    tjids,
-    hid: String(hid || ""),
+    tjids: normalizedTjids,
+    hid: normalizedHid,
     raw: suggestion,
   };
 };
@@ -464,27 +491,6 @@ function LocationAutocomplete({ value, onChange, onSelect, placeholder }) {
 
       {isOpen && (suggestions.length > 0 || loading) && (
         <div className="tripjack-autocomplete-dropdown">
-          <div className="tripjack-autocomplete-header">
-            <Search size={16} color="#999" />
-            <input
-              type="text"
-              className="tripjack-autocomplete-input"
-              value={inputValue}
-              onChange={handleInputChange}
-              placeholder="Type to search..."
-              autoFocus
-            />
-            {inputValue && (
-              <button
-                type="button"
-                className="tripjack-autocomplete-clear"
-                onClick={handleClear}
-              >
-                <X size={16} />
-              </button>
-            )}
-          </div>
-
           <div className="tripjack-autocomplete-list">
             {loading ? (
               <div className="tripjack-autocomplete-loading">Searching...</div>
@@ -961,7 +967,26 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
   };
 
   const handleSearch = async () => {
-    if (!selectedDestination?.city || !selectedDestination?.displayName) {
+    const selectedHotelIds = Array.isArray(selectedDestination?.tjids)
+      ? selectedDestination.tjids.map((item) => String(item || "").trim()).filter(Boolean)
+      : [];
+    const selectedHid = String(
+      selectedDestination?.hid ||
+        selectedDestination?.raw?.hid ||
+        selectedDestination?.raw?.tjid ||
+        selectedDestination?.raw?.tjHotelId ||
+        selectedDestination?.raw?.hotelCode ||
+        ""
+    ).trim();
+    const hasSelectedHotelIds = selectedHotelIds.length > 0 || Boolean(selectedHid);
+    const hasDestinationCity = Boolean(
+      selectedDestination?.city ||
+      selectedDestination?.raw?.city ||
+      selectedDestination?.raw?.cityId ||
+      selectedDestination?.raw?.cId
+    );
+
+    if ((!hasDestinationCity && !hasSelectedHotelIds) || !selectedDestination?.displayName) {
       toast.error("Please select a destination from the suggestions.");
       return;
     }
@@ -978,6 +1003,14 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
       selectedDestination?.raw?.cId ||
       payload?.searchQuery?.searchCriteria?.city ||
       "";
+    const normalizedTjids = selectedHotelIds;
+    const normalizedHid = selectedHid;
+    const effectiveTjids = normalizedTjids.length
+      ? normalizedTjids
+      : normalizedHid
+        ? [normalizedHid]
+        : [];
+    const effectiveCity = String(fallbackCity || "").trim();
 
     const nextPayload = {
       searchQuery: {
@@ -989,10 +1022,8 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
           children: totalChildren,
         }),
         searchCriteria: {
-          city: String(fallbackCity || ""),
-          tjids: selectedDestination.tjids,
-          hids: selectedDestination.tjids,
-          hid: selectedDestination.hid || selectedDestination.tjids?.[0] || "",
+          city: !effectiveTjids.length ? effectiveCity : "",
+          tjids: effectiveTjids,
           nationality: nationality,
           countryOfResidence: countryOfResidence,
           currency: payload?.searchQuery?.searchCriteria?.currency || "INR",
@@ -1006,10 +1037,7 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
       appliedFilters: {
         ...defaultFilters(),
         onlyFavorites: false,
-        hotelName:
-          String(selectedDestination?.searchRegionType || "").toUpperCase() === "HOTEL"
-            ? selectedDestination.displayName || ""
-            : "",
+        hotelName: "",
       },
       pagination: {
         pageSize: 15,

@@ -617,9 +617,11 @@ export default function TripJackBookingReview({
                                   disabled={bookingSubmitting}
                                 />
                               </div>
-                              {bookingRequirements?.panRequired && isAdult ? (
+                              {isAdult ? (
                                 <div className="col-md-6">
-                                  <label className="form-label fw-semibold">PAN Number</label>
+                                  <label className="form-label fw-semibold">
+                                    {bookingRequirements?.panRequired ? "PAN Number *" : "PAN Number (if available)"}
+                                  </label>
                                   <input
                                     className="form-control"
                                     placeholder="ABCDE1234F"

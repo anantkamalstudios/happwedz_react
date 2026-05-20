@@ -539,7 +539,7 @@
 }
 
 .tripjack-more-options-value {
-  color: #2563eb;
+  color: #ed1173;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
@@ -552,6 +552,11 @@
 
 .tripjack-more-options-value:hover {
   text-decoration: underline;
+}
+
+.tripjack-more-options-value:focus-visible {
+  color: #ed1173;
+  outline: none;
 }
 
 /* Country Dropdown */

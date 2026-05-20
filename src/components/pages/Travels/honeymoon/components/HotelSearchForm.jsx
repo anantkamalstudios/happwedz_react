@@ -78,19 +78,20 @@ const readSuggestionItems = (payload) => {
 const normalizeHotelSuggestion = (suggestion) => {
   if (!suggestion) return null;
 
-  const searchType =
+  const rawSearchType =
     suggestion?.searchType ||
     suggestion?.searchRegionType ||
     suggestion?.regionType ||
     suggestion?.type ||
     "CITY";
+  const normalizedSearchType = String(rawSearchType || "CITY").toUpperCase();
 
   const city =
     suggestion?.city ||
     suggestion?.cityId ||
     suggestion?.regionId ||
     suggestion?.searchRegionId ||
-    suggestion?.id ||
+    (normalizedSearchType !== "HOTEL" ? suggestion?.id : "") ||
     "";
 
   const displayName =
@@ -103,16 +104,39 @@ const normalizeHotelSuggestion = (suggestion) => {
     "";
 
   const rawTjids =
-    suggestion?.tjids || suggestion?.hids || suggestion?.hotelIds || [];
+    suggestion?.tjids ||
+    suggestion?.hids ||
+    suggestion?.hotelIds ||
+    suggestion?.tjid ||
+    suggestion?.tjHotelId ||
+    suggestion?.hotelCode ||
+    suggestion?.raw?.tjid ||
+    suggestion?.raw?.tjHotelId ||
+    suggestion?.raw?.hotelCode ||
+    [];
   const tjids = Array.isArray(rawTjids)
-    ? rawTjids.map((item) => String(item)).filter(Boolean)
-    : [];
+    ? rawTjids.map((item) => String(item || "").trim()).filter(Boolean)
+    : typeof rawTjids === "string"
+      ? rawTjids
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean)
+      : rawTjids
+        ? [String(rawTjids).trim()].filter(Boolean)
+        : [];
   const hid =
     suggestion?.hid ||
     suggestion?.hotelId ||
     suggestion?.hotelid ||
-    suggestion?.id ||
+    suggestion?.tjid ||
+    suggestion?.tjHotelId ||
+    suggestion?.hotelCode ||
+    suggestion?.raw?.tjid ||
+    suggestion?.raw?.tjHotelId ||
+    suggestion?.raw?.hotelCode ||
     "";
+  const normalizedHid = String(hid || "").trim();
+  const normalizedTjids = tjids.length ? tjids : normalizedHid ? [normalizedHid] : [];
 
   const subtitle =
     suggestion?.subtitle ||
@@ -121,8 +145,8 @@ const normalizeHotelSuggestion = (suggestion) => {
   return {
     id: String(city || displayName || ""),
     city: String(city || ""),
-    searchType: String(searchType || "CITY").toUpperCase(),
-    searchRegionType: String(searchType || "CITY").toUpperCase(),
+    searchType: normalizedSearchType,
+    searchRegionType: normalizedSearchType,
     searchRegionName: String(displayName || "").trim(),
     displayName: String(displayName || "").trim(),
     stateName: suggestion?.stateName || "",
@@ -130,8 +154,8 @@ const normalizeHotelSuggestion = (suggestion) => {
       suggestion?.countryName ||
       suggestion?.country ||
       (subtitle ? String(subtitle).split(",").slice(-1)[0]?.trim() : ""),
-    tjids,
-    hid: String(hid || ""),
+    tjids: normalizedTjids,
+    hid: normalizedHid,
     raw: suggestion,
   };
 };
@@ -515,15 +539,29 @@ export default function HotelSearchForm() {
       String(selectedHotelSuggestion?.searchRegionType || selectedHotelSuggestion?.searchType || "")
         .toUpperCase() === "HOTEL";
 
-    const fallbackCity = isHotelSearch
-      ? ""
-      : (
-          selectedHotelSuggestion?.city ||
-          selectedHotelSuggestion?.raw?.city ||
-          selectedHotelSuggestion?.raw?.cityId ||
-          selectedHotelSuggestion?.raw?.cId ||
-          ""
-        );
+    const fallbackCity =
+      selectedHotelSuggestion?.city ||
+      selectedHotelSuggestion?.raw?.city ||
+      selectedHotelSuggestion?.raw?.cityId ||
+      selectedHotelSuggestion?.raw?.cId ||
+      "";
+    const normalizedTjids = Array.isArray(selectedHotelSuggestion?.tjids)
+      ? selectedHotelSuggestion.tjids.map((item) => String(item || "").trim()).filter(Boolean)
+      : [];
+    const normalizedHid = String(
+      selectedHotelSuggestion?.hid ||
+        selectedHotelSuggestion?.raw?.hid ||
+        selectedHotelSuggestion?.raw?.tjid ||
+        selectedHotelSuggestion?.raw?.tjHotelId ||
+        selectedHotelSuggestion?.raw?.hotelCode ||
+        ""
+    ).trim();
+    const effectiveTjids = normalizedTjids.length
+      ? normalizedTjids
+      : normalizedHid
+        ? [normalizedHid]
+        : [];
+    const effectiveCity = String(fallbackCity || "").trim();
 
     const payload = {
       searchQuery: {
@@ -531,10 +569,8 @@ export default function HotelSearchForm() {
         checkoutDate: hotelCheckOut,
         roomInfo: buildRoomInfoFromRooms(hotelRooms),
         searchCriteria: {
-          city: String(fallbackCity || ""),
-          tjids: selectedHotelSuggestion.tjids,
-          hids: selectedHotelSuggestion.tjids,
-          hid: selectedHotelSuggestion.hid || selectedHotelSuggestion.tjids?.[0] || "",
+          city: !effectiveTjids.length ? effectiveCity : "",
+          tjids: effectiveTjids,
           nationality,
           countryOfResidence,
           currency: "INR",
@@ -549,7 +585,7 @@ export default function HotelSearchForm() {
         ...defaultFilters(),
         ratings: selectedRatings,
         onlyFavorites: false,
-        hotelName: isHotelSearch ? selectedHotelSuggestion.displayName || "" : "",
+        hotelName: "",
       },
       pagination: {
         pageSize: 15,
@@ -564,8 +600,8 @@ export default function HotelSearchForm() {
     console.log("[HotelSearchForm] Search payload summary", {
       destination: selectedHotelSuggestion.displayName,
       searchType: selectedHotelSuggestion.searchRegionType || selectedHotelSuggestion.searchType,
-      city: String(fallbackCity || ""),
-      tjids: selectedHotelSuggestion.tjids,
+      city: !effectiveTjids.length ? effectiveCity : "",
+      tjids: effectiveTjids,
       checkInDate: hotelCheckIn,
       checkoutDate: hotelCheckOut,
       totalNights,

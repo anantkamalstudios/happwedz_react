@@ -225,6 +225,7 @@ const Herosection = () => {
     };
   }, []);
 
+
   const handleVendorSelect = (vendor) => {
     const id = vendor?.id ?? vendor?.vendor_services_id;
     if (!id) return;

@@ -552,16 +552,21 @@ const trackSortAnalyticsEvent = async (sortOrder, searchPayload, searchResponse,
   }
 };
 
-const buildFilterPayload = (searchPayload, appliedFilters, searchResponse, sortOrder) => ({
-  ...searchPayload,
-  appliedFilters: {
-    ...(searchPayload?.appliedFilters || {}),
-    ...appliedFilters,
-  },
-  searchId: searchResponse?.searchId || searchPayload?.searchId || "",
-  correlationId: searchPayload?.correlationId || createCorrelationId(),
-  sortOrder: mapSortOrderToAPI(sortOrder),
-});
+const buildFilterPayload = (searchPayload, appliedFilters, searchResponse, sortOrder) => {
+  const { hotelName: _baseHotelName, ...baseFilters } = searchPayload?.appliedFilters || {};
+  const { hotelName: _nextHotelName, ...nextFilters } = appliedFilters || {};
+
+  return {
+    ...searchPayload,
+    appliedFilters: {
+      ...baseFilters,
+      ...nextFilters,
+    },
+    searchId: searchResponse?.searchId || searchPayload?.searchId || "",
+    correlationId: searchPayload?.correlationId || createCorrelationId(),
+    sortOrder: mapSortOrderToAPI(sortOrder),
+  };
+};
 
 const getNonTextFilters = (filters = {}) => {
   const { hotelName, ...rest } = filters || {};
