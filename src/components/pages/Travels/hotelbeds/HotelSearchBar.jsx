@@ -257,6 +257,12 @@ const normalizeHotelSuggestion = (suggestion) => {
   const city =
     suggestion?.city ||
     suggestion?.cityId ||
+    suggestion?.cId ||
+    suggestion?.cid ||
+    suggestion?.raw?.city ||
+    suggestion?.raw?.cityId ||
+    suggestion?.raw?.cId ||
+    suggestion?.raw?.cid ||
     suggestion?.regionId ||
     suggestion?.searchRegionId ||
     suggestion?.id ||
@@ -273,6 +279,12 @@ const normalizeHotelSuggestion = (suggestion) => {
 
   const rawTjids = suggestion?.tjids || suggestion?.hids || suggestion?.hotelIds || [];
   const tjids = Array.isArray(rawTjids) ? rawTjids.map((item) => String(item)).filter(Boolean) : [];
+  const hid =
+    suggestion?.hid ||
+    suggestion?.hotelId ||
+    suggestion?.hotelid ||
+    suggestion?.id ||
+    "";
 
   return {
     id: String(city || displayName || ""),
@@ -282,6 +294,7 @@ const normalizeHotelSuggestion = (suggestion) => {
     searchRegionName: String(displayName || "").trim(),
     displayName: String(displayName || "").trim(),
     tjids,
+    hid: String(hid || ""),
     raw: suggestion,
   };
 };
@@ -958,6 +971,14 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
       return;
     }
 
+    const fallbackCity =
+      selectedDestination?.city ||
+      selectedDestination?.raw?.city ||
+      selectedDestination?.raw?.cityId ||
+      selectedDestination?.raw?.cId ||
+      payload?.searchQuery?.searchCriteria?.city ||
+      "";
+
     const nextPayload = {
       searchQuery: {
         checkinDate: checkInDate,
@@ -968,8 +989,10 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
           children: totalChildren,
         }),
         searchCriteria: {
-          city: selectedDestination.city,
+          city: String(fallbackCity || ""),
           tjids: selectedDestination.tjids,
+          hids: selectedDestination.tjids,
+          hid: selectedDestination.hid || selectedDestination.tjids?.[0] || "",
           nationality: nationality,
           countryOfResidence: countryOfResidence,
           currency: payload?.searchQuery?.searchCriteria?.currency || "INR",
@@ -983,6 +1006,10 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
       appliedFilters: {
         ...defaultFilters(),
         onlyFavorites: false,
+        hotelName:
+          String(selectedDestination?.searchRegionType || "").toUpperCase() === "HOTEL"
+            ? selectedDestination.displayName || ""
+            : "",
       },
       pagination: {
         pageSize: 15,

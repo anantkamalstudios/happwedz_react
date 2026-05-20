@@ -87,6 +87,8 @@ const normalizeImageItems = (items) =>
       .map((url) => ({ url })),
   );
 
+const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 const parseJsonObjectSafely = (value) => {
   const parsed = parseJsonSafely(value);
   return parsed && typeof parsed === "object" ? parsed : {};
@@ -171,13 +173,66 @@ const getRoomImages = (roomMeta) =>
     ...(Array.isArray(roomMeta?.imgs) ? roomMeta.imgs : []),
   ]);
 
-const getRoomAmenities = (roomMeta) =>
+const ROOM_DESCRIPTION_SECTION_LABELS = [
+  "Layout",
+  "Internet",
+  "Entertainment",
+  "Food & Drink",
+  "Sleep",
+  "Bathroom",
+  "Practical",
+  "Comfort",
+  "Need to Know",
+  "Accessibility",
+];
+
+const normalizeRoomAmenityText = (value) => {
+  const text = String(value || "").replace(/\s+/g, " ").trim().replace(/[.]+$/, "");
+  if (!text) return "";
+  if (/^cable channels$/i.test(text)) return "Television";
+  if (/^climate-controlled air conditioning$/i.test(text)) {
+    return "In-room climate control (air conditioning)";
+  }
+  return text;
+};
+
+const parseRoomDescriptionAmenities = (description) => {
+  const raw = String(description || "").replace(/\s+/g, " ").trim();
+  if (!raw) return [];
+
+  let normalized = raw;
+  ROOM_DESCRIPTION_SECTION_LABELS.forEach((label) => {
+    normalized = normalized.replace(
+      new RegExp(`\\s*${escapeRegExp(label)}\\s*-\\s*`, "gi"),
+      `|||${label}:::`,
+    );
+  });
+  normalized = normalized.replace(/\s+(Non-Smoking|Smoking)\b/gi, "|||$1");
+
+  return normalized
+    .split("|||")
+    .slice(1)
+    .flatMap((section) => {
+      const [label, body = ""] = section.split(":::");
+      const normalizedLabel = normalizeRoomAmenityText(label);
+      if (!body && /^(non-smoking|smoking)$/i.test(normalizedLabel)) {
+        return [normalizedLabel];
+      }
+      return body
+        .split(/,|;|\band\b/gi)
+        .map(normalizeRoomAmenityText)
+        .filter(Boolean);
+    });
+};
+
+const getRoomAmenities = (roomMeta, roomInfo = {}) =>
   dedupeStrings([
     ...(Array.isArray(roomMeta?.fcs) ? roomMeta.fcs : []),
     ...(Array.isArray(roomMeta?.am) ? roomMeta.am.map((item) => item?.name || item) : []),
     ...(Array.isArray(roomMeta?.rexb?.BENEFIT)
       ? roomMeta.rexb.BENEFIT.flatMap((item) => item?.values || [])
       : []),
+    ...parseRoomDescriptionAmenities(roomMeta?.des || roomInfo?.des || roomMeta?.radi?.des || ""),
   ]);
 
 const getRoomMealBasis = (option, roomInfo) => option?.mb || roomInfo?.mb || "Room Only";
@@ -217,7 +272,7 @@ const normalizeRoomOption = (option, optionIndex, hotelInfo, nights) => {
   const roomInfo = option?.roomInfos?.[0] || option?.ris?.[0] || {};
   const roomMeta = getRoomMetadata(hotelInfo, roomInfo);
   const images = getRoomImages(roomMeta);
-  const amenities = getRoomAmenities(roomMeta);
+  const amenities = getRoomAmenities(roomMeta, roomInfo);
   const totalPrice = getOptionTotalPrice(option, roomInfo);
   const nightlyPrice = getOptionNightlyPrice(option, roomInfo, nights);
   const mealBasis = getRoomMealBasis(option, roomInfo);

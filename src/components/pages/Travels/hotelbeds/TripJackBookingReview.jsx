@@ -185,6 +185,12 @@ export default function TripJackBookingReview({
   return (
     <>
       <style>{`
+        .tripjack-review-shell {
+          width: min(1280px, 100%);
+          margin: 0 auto;
+          padding: 8px 24px 24px;
+          box-sizing: border-box;
+        }
         .tripjack-review-page {
           display: grid;
           gap: 22px;
@@ -417,6 +423,9 @@ export default function TripJackBookingReview({
           }
         }
         @media (max-width: 820px) {
+          .tripjack-review-shell {
+            padding: 6px 14px 20px;
+          }
           .tripjack-hotel-summary {
             grid-template-columns: 1fr;
           }
@@ -441,6 +450,9 @@ export default function TripJackBookingReview({
           }
         }
         @media (max-width: 640px) {
+          .tripjack-review-shell {
+            padding: 4px 12px 16px;
+          }
           .tripjack-stay-grid {
             grid-template-columns: 1fr;
           }
@@ -450,6 +462,7 @@ export default function TripJackBookingReview({
         }
       `}</style>
 
+      <div className="tripjack-review-shell">
       <div className="tripjack-review-page">
         <div className="tripjack-review-head">
           <div>
@@ -795,6 +808,7 @@ export default function TripJackBookingReview({
             {bookingSubmitting ? "Submitting Booking..." : "Proceed to Book"}
           </Button>
         </div>
+      </div>
       </div>
     </>
   );

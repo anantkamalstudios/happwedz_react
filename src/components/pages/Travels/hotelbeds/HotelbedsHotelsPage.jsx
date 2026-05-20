@@ -11,7 +11,6 @@ import {
   CircleHelp,
   ExternalLink,
   Filter,
-  Heart,
   Images,
   LayoutGrid,
   List,
@@ -29,6 +28,7 @@ import {
   getHotelFilters,
   suggestHotels,
   searchHotels,
+  trackHotelAnalyticsEvent,
 } from "../../../../services/api/hotelApi";
 import HotelDetailsPage, { HotelSearchBarEditable } from "./HotelbedsDetailsPage";
 import HotelSearchBar from "./HotelSearchBar";
@@ -497,6 +497,61 @@ const buildDetailPayload = (hotel, searchPayload, searchResponse) => {
   };
 };
 
+const mapSortOrderToAPI = (sortOrder) => {
+  const sortMapping = {
+    "popularity": "popularity",
+    "priceLowToHigh": "price_asc", 
+    "priceHighToLow": "price_desc",
+    "starRatingHighToLow": "rating"
+  };
+  return sortMapping[sortOrder] || "popularity";
+};
+
+const mapSortOrderToDisplayName = (sortOrder) => {
+  const displayMapping = {
+    "popularity": "Most Popular",
+    "priceLowToHigh": "Price ( Lowest first )",
+    "priceHighToLow": "Price ( Highest first )",
+    "starRatingHighToLow": "Star rating ( High to Low )"
+  };
+  return displayMapping[sortOrder] || "Most Popular";
+};
+
+const trackSortAnalyticsEvent = async (sortOrder, searchPayload, searchResponse, initialSuggestion) => {
+  try {
+    const searchId = searchResponse?.searchId || searchPayload?.searchId || "";
+    const cityName = initialSuggestion?.displayName || 
+                    searchPayload?.searchQuery?.searchCriteria?.searchRegionName || 
+                    "Unknown";
+    const cityId = searchPayload?.searchQuery?.searchCriteria?.city || 
+                   initialSuggestion?.id || "";
+    
+    const analyticsPayload = {
+      event: "Hotel_SRP_Sort_By_CTA",
+      properties: {
+        Search_Id: searchId,
+        Sort_By_Option: mapSortOrderToDisplayName(sortOrder),
+        City_Id: cityId,
+        City_Name: cityName,
+        Product: "HOTEL",
+        Search_Type: searchPayload?.searchQuery?.searchCriteria?.searchRegionType || "CITY",
+        Selected_Option_Id: cityId,
+        Selected_Option_Name: cityName,
+        TimeStamp: new Date().toISOString(),
+        Date: new Date().toLocaleDateString("en-GB"),
+        Current_Page: window.location.href,
+        Current_Path: window.location.pathname,
+        Previous_Page: document.referrer || "",
+        Previous_Path: new URL(document.referrer || window.location.href).pathname,
+      }
+    };
+
+    await trackHotelAnalyticsEvent(analyticsPayload);
+  } catch (error) {
+    console.error("Failed to track sort analytics event:", error);
+  }
+};
+
 const buildFilterPayload = (searchPayload, appliedFilters, searchResponse, sortOrder) => ({
   ...searchPayload,
   appliedFilters: {
@@ -505,8 +560,13 @@ const buildFilterPayload = (searchPayload, appliedFilters, searchResponse, sortO
   },
   searchId: searchResponse?.searchId || searchPayload?.searchId || "",
   correlationId: searchPayload?.correlationId || createCorrelationId(),
-  sortOrder,
+  sortOrder: mapSortOrderToAPI(sortOrder),
 });
+
+const getNonTextFilters = (filters = {}) => {
+  const { hotelName, ...rest } = filters || {};
+  return rest;
+};
 
 const buildSearchPayload = (
   searchPayload,
@@ -569,6 +629,8 @@ const normalizeImageItems = (items) =>
       .filter(Boolean)
       .map((url) => ({ url })),
   );
+
+const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const buildAddressParts = (address = {}) =>
   [
@@ -649,13 +711,66 @@ const getRoomImages = (roomMeta) =>
     ...(Array.isArray(roomMeta?.imgs) ? roomMeta.imgs : []),
   ]);
 
-const getRoomAmenities = (roomMeta) =>
+const ROOM_DESCRIPTION_SECTION_LABELS = [
+  "Layout",
+  "Internet",
+  "Entertainment",
+  "Food & Drink",
+  "Sleep",
+  "Bathroom",
+  "Practical",
+  "Comfort",
+  "Need to Know",
+  "Accessibility",
+];
+
+const normalizeRoomAmenityText = (value) => {
+  const text = String(value || "").replace(/\s+/g, " ").trim().replace(/[.]+$/, "");
+  if (!text) return "";
+  if (/^cable channels$/i.test(text)) return "Television";
+  if (/^climate-controlled air conditioning$/i.test(text)) {
+    return "In-room climate control (air conditioning)";
+  }
+  return text;
+};
+
+const parseRoomDescriptionAmenities = (description) => {
+  const raw = String(description || "").replace(/\s+/g, " ").trim();
+  if (!raw) return [];
+
+  let normalized = raw;
+  ROOM_DESCRIPTION_SECTION_LABELS.forEach((label) => {
+    normalized = normalized.replace(
+      new RegExp(`\\s*${escapeRegExp(label)}\\s*-\\s*`, "gi"),
+      `|||${label}:::`,
+    );
+  });
+  normalized = normalized.replace(/\s+(Non-Smoking|Smoking)\b/gi, "|||$1");
+
+  return normalized
+    .split("|||")
+    .slice(1)
+    .flatMap((section) => {
+      const [label, body = ""] = section.split(":::");
+      const normalizedLabel = normalizeRoomAmenityText(label);
+      if (!body && /^(non-smoking|smoking)$/i.test(normalizedLabel)) {
+        return [normalizedLabel];
+      }
+      return body
+        .split(/,|;|\band\b/gi)
+        .map(normalizeRoomAmenityText)
+        .filter(Boolean);
+    });
+};
+
+const getRoomAmenities = (roomMeta, roomInfo = {}) =>
   dedupeStrings([
     ...(Array.isArray(roomMeta?.fcs) ? roomMeta.fcs : []),
     ...(Array.isArray(roomMeta?.am) ? roomMeta.am.map((item) => item?.name || item) : []),
     ...(Array.isArray(roomMeta?.rexb?.BENEFIT)
       ? roomMeta.rexb.BENEFIT.flatMap((item) => item?.values || [])
       : []),
+    ...parseRoomDescriptionAmenities(roomMeta?.des || roomInfo?.des || roomMeta?.radi?.des || ""),
   ]);
 
 const getRoomMealBasis = (option, roomInfo) => option?.mb || roomInfo?.mb || "Room Only";
@@ -695,7 +810,7 @@ const normalizeRoomOption = (option, optionIndex, hotelInfo, nights) => {
   const roomInfo = option?.roomInfos?.[0] || option?.ris?.[0] || {};
   const roomMeta = getRoomMetadata(hotelInfo, roomInfo);
   const images = getRoomImages(roomMeta);
-  const amenities = getRoomAmenities(roomMeta);
+  const amenities = getRoomAmenities(roomMeta, roomInfo);
   const totalPrice = getOptionTotalPrice(option, roomInfo);
   const nightlyPrice = getOptionNightlyPrice(option, roomInfo, nights);
   const mealBasis = getRoomMealBasis(option, roomInfo);
@@ -775,61 +890,77 @@ function ResultHeader({
   favoritesOnly,
   setFavoritesOnly,
   onOpenMobileFilters,
+  onSortChange,
 }) {
-  return (
-    <div className="hotel-toolbar">
-      <div className="hotel-toolbar-left">
-        <div className="hotel-breadcrumb">{`Home Hotels > ${destination}`}</div>
-        <div className="hotel-sort-pill">
-          <SlidersHorizontal size={14} />
-          <span>Sort By:</span>
-          <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
-            <option value="popularity">Most Popular</option>
-            <option value="priceLowToHigh">Price Low to High</option>
-            <option value="priceHighToLow">Price High to Low</option>
-          </select>
-        </div>
-        <div className="hotel-results-copy">
-          {`Showing `}
-          <strong>{hotelCount}</strong>
-          {` hotels for `}
-          <strong>{destination}</strong>
-        </div>
-      </div>
+  const handleSortChange = (e) => {
+    const newSortOrder = e.target.value;
+    setSortOrder(newSortOrder);
+    if (onSortChange) {
+      onSortChange(newSortOrder);
+    }
+  };
 
-      <div className="hotel-toolbar-right">
-        <button
-          type="button"
-          className="hotel-mobile-filter-btn"
-          onClick={onOpenMobileFilters}
-        >
-          <SlidersHorizontal size={16} />
-          Filters
-        </button>
-        <button
-          type="button"
-          className={`hotel-view-pill ${viewMode === "grid" ? "active" : ""}`}
-          onClick={() => setViewMode("grid")}
-        >
-          <LayoutGrid size={15} />
-          Grid View
-        </button>
-        <button
-          type="button"
-          className={`hotel-view-pill ${viewMode === "list" ? "active" : ""}`}
-          onClick={() => setViewMode("list")}
-        >
-          <List size={15} />
-          List View
-        </button>
-        <button
-          type="button"
-          className={`hotel-fav-pill ${favoritesOnly ? "active" : ""}`}
-          onClick={() => setFavoritesOnly((prev) => !prev)}
-        >
-          <Heart size={15} fill={favoritesOnly ? "currentColor" : "none"} />
-          View Favourites
-        </button>
+  return (
+    <div className="hotel-results-header">
+      <div className="hotel-breadcrumb-row">
+        <span className="hotel-breadcrumb-text">Home Hotels  {destination}</span>
+      </div>
+      
+      <div className="hotel-controls-row">
+        <div className="hotel-controls-left">
+          <div className="hotel-sort-dropdown">
+            <span className="hotel-sort-icon">🔽</span>
+            <span className="hotel-sort-label">Sort By:</span>
+            <select 
+              className="hotel-sort-select" 
+              value={sortOrder} 
+              onChange={handleSortChange}
+            >
+              <option value="popularity">Most Popular</option>
+              <option value="priceLowToHigh">Price (Lowest first)</option>
+              <option value="priceHighToLow">Price (Highest first)</option>
+              <option value="starRatingHighToLow">Star Rating (High to Low)</option>
+            </select>
+          </div>
+          
+          <div className="hotel-results-text">
+            Showing {hotelCount} hotels for <strong>{destination}</strong>
+          </div>
+        </div>
+
+        <div className="hotel-controls-right">
+          <button
+            type="button"
+            className="hotel-mobile-filter-btn"
+            onClick={onOpenMobileFilters}
+          >
+            Filters
+          </button>
+          
+          <button
+            type="button"
+            className={`hotel-view-btn ${viewMode === "grid" ? "active" : ""}`}
+            onClick={() => setViewMode("grid")}
+          >
+            Grid View
+          </button>
+          
+          <button
+            type="button"
+            className={`hotel-view-btn ${viewMode === "list" ? "active" : ""}`}
+            onClick={() => setViewMode("list")}
+          >
+            List View
+          </button>
+          
+          <button
+            type="button"
+            className={`hotel-favorites-btn ${favoritesOnly ? "active" : ""}`}
+            onClick={() => setFavoritesOnly((prev) => !prev)}
+          >
+            ❤️ View Favourites
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -894,31 +1025,123 @@ function HotelFilterSidebar({
   setHotelNameQuery,
 }) {
   const [collapsed, setCollapsed] = useState({});
+  const [expanded, setExpanded] = useState({});
+
+  const INITIAL_ITEMS_COUNT = 5; // Show first 5 items, then "View More"
+
+  const toggleExpanded = (groupKey) => {
+    setExpanded(prev => ({ ...prev, [groupKey]: !prev[groupKey] }));
+  };
+
+  // Calculate total applied filters count
+  const getAppliedFiltersCount = () => {
+    let count = 0;
+    Object.entries(appliedFilters).forEach(([key, value]) => {
+      if (key === "hotelName" && String(value || "").trim()) {
+        count += 1;
+      } else if (Array.isArray(value)) {
+        count += value.length;
+      }
+    });
+    if (favoritesOnly) count += 1;
+    return count;
+  };
+
+  // Get applied filter chips for display
+  const getAppliedFilterChips = () => {
+    const chips = [];
+    
+    Object.entries(appliedFilters).forEach(([group, value]) => {
+      if (group === "hotelName" && String(value || "").trim()) {
+        chips.push({ 
+          group, 
+          value, 
+          label: `Hotel: ${value}`,
+          onRemove: () => setHotelNameQuery("")
+        });
+      } else if (Array.isArray(value)) {
+        value.forEach((item) => {
+          const filterGroup = filterGroups.find((fg) => fg.key === group);
+          const option = filterGroup?.options.find((opt) => opt.value === item);
+          const label = option?.label || item;
+          chips.push({ 
+            group, 
+            value: item, 
+            label,
+            onRemove: () => toggleFilter(group, item)
+          });
+        });
+      }
+    });
+
+    if (favoritesOnly) {
+      chips.push({ 
+        group: "onlyFavorites", 
+        value: "1", 
+        label: "Favourites only",
+        onRemove: () => setFavoritesOnly(false)
+      });
+    }
+
+    return chips;
+  };
+
+  const appliedFiltersCount = getAppliedFiltersCount();
+  const appliedFilterChips = getAppliedFilterChips();
 
   return (
     <div className="hotel-sidebar-card">
       <div className="hotel-sidebar-head">
-        <div className="hotel-sidebar-title">Filter by</div>
-        <button type="button" className="hotel-clear-btn" onClick={clearAllFilters}>
-          Clear all filters
-        </button>
+        <div className="hotel-sidebar-title">
+          Filter by: {appliedFiltersCount} filter{appliedFiltersCount !== 1 ? 's' : ''} selected
+        </div>
       </div>
 
       <div className="hotel-sidebar-scroll">
 
       <div className="hotel-filter-block">
-        <button type="button" className="hotel-filter-toggle">
-          <span>Search by hotel name</span>
-        </button>
-        <div className="hotel-filter-content" style={{ maxHeight: "none" }}>
+        <div className="hotel-filter-content-static">
           <input
             className="hotel-filter-search"
-            placeholder="Select by Hotel Name"
+            placeholder="🔍 Select by Hotel Name"
             value={hotelNameQuery}
             onChange={(e) => setHotelNameQuery(e.target.value)}
           />
         </div>
       </div>
+
+      {appliedFilterChips.length > 0 && (
+        <div className="hotel-filter-block">
+          <div className="hotel-applied-filters-header">
+            <span className="hotel-applied-filters-title">Applied Filters</span>
+            <button 
+              type="button" 
+              className="hotel-clear-filters-btn"
+              onClick={() => {
+                clearAllFilters();
+                setFavoritesOnly(false);
+                setHotelNameQuery("");
+              }}
+            >
+              Clear Filters
+            </button>
+          </div>
+          <div className="hotel-applied-filters-chips">
+            {appliedFilterChips.map((chip, index) => (
+              <div key={`${chip.group}-${chip.value}-${index}`} className="hotel-applied-filter-chip">
+                <span>{chip.label}</span>
+                <button 
+                  type="button" 
+                  className="hotel-applied-filter-remove"
+                  onClick={chip.onRemove}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="hotel-filter-block">
         <div className="hotel-filter-option">
@@ -933,37 +1156,53 @@ function HotelFilterSidebar({
         </div>
       </div>
 
-      {filterGroups.map((group) => (
-        <div className="hotel-filter-block" key={group.key}>
-          <button
-            type="button"
-            className="hotel-filter-toggle"
-            onClick={() =>
-              setCollapsed((prev) => ({ ...prev, [group.key]: !prev[group.key] }))
-            }
-          >
-            <span>{group.name}</span>
-            <span>{collapsed[group.key] ? "+" : "−"}</span>
-          </button>
-          {!collapsed[group.key] ? (
-            <div className="hotel-filter-content">
-              {group.options.map((option) => (
-                <div className="hotel-filter-option" key={`${group.key}-${option.value}`}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={(appliedFilters[group.key] || []).includes(option.value)}
-                      onChange={() => toggleFilter(group.key, option.value)}
-                    />
-                    <span>{option.label}</span>
-                  </label>
-                  <span className="hotel-filter-count">{option.count ? `(${option.count})` : ""}</span>
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </div>
-      ))}
+      {filterGroups.map((group) => {
+        const isExpanded = expanded[group.key];
+        const shouldShowViewMore = group.options.length > INITIAL_ITEMS_COUNT;
+        const visibleOptions = isExpanded ? group.options : group.options.slice(0, INITIAL_ITEMS_COUNT);
+        const remainingCount = group.options.length - INITIAL_ITEMS_COUNT;
+
+        return (
+          <div className="hotel-filter-block" key={group.key}>
+            <button
+              type="button"
+              className="hotel-filter-toggle"
+              onClick={() =>
+                setCollapsed((prev) => ({ ...prev, [group.key]: !prev[group.key] }))
+              }
+            >
+              <span>{group.name}</span>
+              <span>{collapsed[group.key] ? "+" : "−"}</span>
+            </button>
+            {!collapsed[group.key] ? (
+              <div className="hotel-filter-content-expandable">
+                {visibleOptions.map((option) => (
+                  <div className="hotel-filter-option" key={`${group.key}-${option.value}`}>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={(appliedFilters[group.key] || []).includes(option.value)}
+                        onChange={() => toggleFilter(group.key, option.value)}
+                      />
+                      <span>{option.label}</span>
+                    </label>
+                    <span className="hotel-filter-count">{option.count ? `(${option.count})` : ""}</span>
+                  </div>
+                ))}
+                {shouldShowViewMore && (
+                  <button
+                    type="button"
+                    className="hotel-filter-view-more"
+                    onClick={() => toggleExpanded(group.key)}
+                  >
+                    {isExpanded ? 'View Less' : `View More (${remainingCount})`}
+                  </button>
+                )}
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
       </div>
     </div>
   );
@@ -1012,84 +1251,78 @@ function HotelCard({ hotel, onClick }) {
 
   return (
     <div className="hotel-card" onClick={onClick}>
-      <div className="hotel-card-image-wrap">
-        {hotel.image ? (
-          <img className="hotel-card-image" src={hotel.image} alt={hotel.name} />
-        ) : null}
-        <span className="hotel-image-pill">{`${hotel.imageCount || 1}/${hotel.imageCount || 1}`}</span>
-        <span className={`hotel-fav-badge ${hotel.userFavourite ? "active" : ""}`}>
-          <Heart size={16} fill={hotel.userFavourite ? "currentColor" : "none"} />
-        </span>
-        <span className="hotel-arrow-badge">›</span>
+      <div className="hotel-image-container">
+        {activeImage ? (
+          <img
+            className="hotel-image"
+            src={activeImage}
+            alt={`${hotel.name} image ${activeImageIndex + 1}`}
+          />
+        ) : (
+          <div className="hotel-image-placeholder">No Image</div>
+        )}
+        
+        <div className="image-count-badge">{activeImageIndex + 1}/{images.length || 1}</div>
+        
+        {images.length > 1 && (
+          <>
+            <button
+              type="button"
+              className="image-nav-btn prev"
+              onClick={handlePrevImage}
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              className="image-nav-btn next"
+              onClick={handleNextImage}
+            >
+              ›
+            </button>
+          </>
+        )}
+        
       </div>
 
-      <div className="hotel-card-body">
-        <div className="hotel-title-row">
-          <div className="hotel-title-block">
-            <h3 className="hotel-name">{hotel.name}</h3>
-            <div className="hotel-location">
-              <MapPin size={14} />
-              <span>{hotel.location || "Location unavailable"}</span>
-            </div>
-            <div className="hotel-stars">{renderStars(hotel.starRating)}</div>
+      <div className="hotel-content">
+        <div className="hotel-header">
+          <div className="hotel-title-section">
+            <h4 className="hotel-name">{hotel.name}</h4>
+            <div className="hotel-location">{hotel.location || "Location unavailable"}</div>
           </div>
-
-          <div className="hotel-rating-box">
-            {hotel.userRating ? (
-              <>
-                <div className="hotel-rating-badge">
-                  <Star size={12} fill="currentColor" />
-                  <span>{hotel.userRating}</span>
-                </div>
-                <div className="hotel-rating-meta">
-                  <div>{hotel.userRatingLabel}</div>
-                  <div>{hotel.ratingCount ? `(${hotel.ratingCount} Ratings)` : ""}</div>
-                </div>
-              </>
-            ) : (
-              <div className="hotel-rating-meta">No rating</div>
-            )}
+          <div className="hotel-rating">
+            {renderStars(hotel.starRating)}
           </div>
         </div>
 
-        <div className="hotel-meal-line">{hotel.priceInfo.mealBasis}</div>
+        <div className="hotel-inclusion">
+          • {hotel.priceInfo.mealBasis}
+        </div>
 
-        <div className="hotel-amenities">
+        <div className="hotel-facilities">
           {hotel.amenities.length > 0
-            ? hotel.amenities.map((amenity, index) => {
+            ? hotel.amenities.slice(0, 3).map((amenity, index) => {
                 const amenityText = typeof amenity === 'object' && amenity !== null 
-                  ? (amenity.name || amenity.nm || JSON.stringify(amenity))
-                  : String(amenity || '');
-                return (
-                  <span key={`${amenityText}-${index}`} className="hotel-amenity-chip">
-                    {amenityText}
-                  </span>
-                );
-              })
-            : <span className="hotel-amenity-chip">Amenities unavailable</span>}
+                  ? (amenity.name || amenity.nm || "Amenity")
+                  : String(amenity || 'Amenity');
+                return amenityText;
+              }).join(" | ")
+            : "Standard Amenities"}
         </div>
 
-        <div className="hotel-price-row">
-          <div className="hotel-price-meta">
-            <div className="hotel-nightly">
-              {hotel.priceInfo.nightlyPrice
-                ? `${formatMoney(hotel.priceInfo.nightlyPrice, hotel.priceInfo.currency)} /night`
-                : "Nightly price unavailable"}
-            </div>
-            <div className="hotel-total-inline">
-              <div className="hotel-total-price">
-              {hotel.priceInfo.totalPrice
-                ? formatMoney(hotel.priceInfo.totalPrice, hotel.priceInfo.currency, true)
-                : "—"}
-            </div>
-              <div className="hotel-total-caption">Total</div>
-            </div>
-            <div className="hotel-tax-copy">Incl. of all taxes</div>
+        <div className="hotel-pricing">
+          <div className="price-per-night">
+            {hotel.priceInfo.nightlyPrice
+              ? `${formatMoney(hotel.priceInfo.nightlyPrice, hotel.priceInfo.currency)}/night`
+              : "Price on request"}
           </div>
-
-          <button type="button" className="hotel-card-cta">
-            Choose Room
-          </button>
+          <div className="total-price">
+            {hotel.priceInfo.totalPrice
+              ? formatMoney(hotel.priceInfo.totalPrice, hotel.priceInfo.currency)
+              : "—"} <span className="total-label">Total</span>
+          </div>
+          <div className="tax-info">(Incl. of all taxes)</div>
         </div>
       </div>
     </div>
@@ -1097,23 +1330,62 @@ function HotelCard({ hotel, onClick }) {
 }
 
 function HotelListCard({ hotel, onClick }) {
+  const images = hotel.images?.length ? hotel.images : hotel.image ? [hotel.image] : [];
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  useEffect(() => {
+    setActiveImageIndex(0);
+  }, [hotel.id]);
+
+  const activeImage = images[activeImageIndex] || "";
+
+  const handlePrevImage = (event) => {
+    event.stopPropagation();
+    setActiveImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = (event) => {
+    event.stopPropagation();
+    setActiveImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
   return (
     <div className="hotel-card" onClick={onClick}>
       <div className="hotel-list-card">
         <div className="hotel-list-image-wrap">
-          {hotel.image ? (
-            <img className="hotel-card-image" src={hotel.image} alt={hotel.name} />
+          {activeImage ? (
+            <img
+              className="hotel-card-image"
+              src={activeImage}
+              alt={`${hotel.name} image ${activeImageIndex + 1}`}
+            />
           ) : null}
-          <span className="hotel-image-pill">{`${hotel.imageCount || 1}/${hotel.imageCount || 1}`}</span>
-          <span className={`hotel-fav-badge ${hotel.userFavourite ? "active" : ""}`}>
-            <Heart size={16} fill={hotel.userFavourite ? "currentColor" : "none"} />
-          </span>
-          <span className="hotel-arrow-badge">›</span>
+          <span className="hotel-image-pill">{`${activeImageIndex + 1}/${images.length || 1}`}</span>
+          {images.length > 1 ? (
+            <>
+              <button
+                type="button"
+                className="hotel-image-nav left"
+                aria-label={`Show previous image for ${hotel.name}`}
+                onClick={handlePrevImage}
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                type="button"
+                className="hotel-image-nav right"
+                aria-label={`Show next image for ${hotel.name}`}
+                onClick={handleNextImage}
+              >
+                <ChevronRight size={18} />
+              </button>
+            </>
+          ) : null} 
         </div>
 
         <div className="hotel-list-main">
           <div className="hotel-title-block">
-            <h3 className="hotel-name">{hotel.name}</h3>
+            <h4 className="hotel-name">{hotel.name}</h4>
             <div className="hotel-location">
               <MapPin size={14} />
               <span>{hotel.location || "Location unavailable"}</span>
@@ -1152,6 +1424,10 @@ function HotelListCard({ hotel, onClick }) {
                   <div>{hotel.ratingCount ? `(${hotel.ratingCount} Ratings)` : ""}</div>
                 </div>
               </>
+            ) : hotel.starRating ? (
+              <div className="hotel-rating-meta">
+                <div>{hotel.starRating} Star Hotel</div>
+              </div>
             ) : (
               <div className="hotel-rating-meta">No rating</div>
             )}
@@ -1229,6 +1505,8 @@ export default function HotelbedsHotelsPage() {
   const initialPayload = location.state?.hotelSearchPayload || null;
   const initialResponse = location.state?.hotelSearchResponse || null;
   const initialSuggestion = location.state?.selectedHotelSuggestion || null;
+  const [searchPayload, setSearchPayload] = useState(initialPayload);
+  const [selectedSuggestion, setSelectedSuggestion] = useState(initialSuggestion);
 
   const [searchResponse, setSearchResponse] = useState(initialResponse);
   const [loadedHotels, setLoadedHotels] = useState(() =>
@@ -1245,9 +1523,17 @@ export default function HotelbedsHotelsPage() {
   const [roomModalOpen, setRoomModalOpen] = useState(false);
   const [sortOrder, setSortOrder] = useState("popularity");
   const [viewMode, setViewMode] = useState("grid");
-  const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [favoritesOnly, setFavoritesOnly] = useState(
+    Boolean(searchPayload?.appliedFilters?.onlyFavorites),
+  );
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const [appliedFilters, setAppliedFilters] = useState(defaultFilters);
+  const [appliedFilters, setAppliedFilters] = useState(() => ({
+    ...defaultFilters(),
+    ...(searchPayload?.appliedFilters || {}),
+  }));
+  const [hotelNameDraft, setHotelNameDraft] = useState(
+    () => (searchPayload?.appliedFilters?.hotelName || ""),
+  );
   const [hasMoreResults, setHasMoreResults] = useState(true);
   const [lastHotelId, setLastHotelId] = useState(() =>
     extractLastHotelId(initialResponse, extractHotels(initialResponse, initialPayload)),
@@ -1256,20 +1542,45 @@ export default function HotelbedsHotelsPage() {
   const appendRequestRef = useRef(false);
 
   const hotels = loadedHotels;
+  const activePayload = searchPayload || initialPayload;
+  const activeSuggestion = selectedSuggestion || initialSuggestion;
+  const nonTextAppliedFilters = useMemo(() => getNonTextFilters(appliedFilters), [appliedFilters]);
+  const nonTextAppliedFiltersKey = useMemo(
+    () => JSON.stringify(nonTextAppliedFilters || {}),
+    [nonTextAppliedFilters],
+  );
 
   const selectedHotel = useMemo(
     () => hotels.find((hotel) => hotel.id === hotelId) || null,
     [hotelId, hotels],
   );
 
-  const hotelNameQuery = appliedFilters.hotelName || "";
+  const hotelNameQuery = hotelNameDraft || "";
 
   useEffect(() => {
-    if (!initialPayload) return undefined;
+    setHotelNameDraft(appliedFilters.hotelName || "");
+  }, [appliedFilters.hotelName]);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setAppliedFilters((prev) => {
+        const nextHotelName = hotelNameDraft || "";
+        if ((prev.hotelName || "") === nextHotelName) return prev;
+        return { ...prev, hotelName: nextHotelName };
+      });
+    }, 250);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [hotelNameDraft]);
+
+  useEffect(() => {
+    if (!activePayload) return undefined;
 
     let active = true;
-    setFiltersLoading(true);
-    getHotelFilters(buildFilterPayload(initialPayload, appliedFilters, initialResponse, sortOrder))
+    if (filterGroups.length === 0) {
+      setFiltersLoading(true);
+    }
+    getHotelFilters(buildFilterPayload(activePayload, nonTextAppliedFilters, initialResponse, sortOrder))
       .then((response) => {
         if (!active) return;
         setFilterGroups(extractFilterGroups(response));
@@ -1285,20 +1596,20 @@ export default function HotelbedsHotelsPage() {
     return () => {
       active = false;
     };
-  }, [initialPayload, initialResponse, sortOrder]);
+  }, [activePayload, initialResponse, nonTextAppliedFiltersKey, sortOrder, filterGroups.length]);
 
   useEffect(() => {
-    if (!initialPayload || hotelId) return undefined;
+    if (!activePayload || hotelId) return undefined;
 
     let active = true;
     appendRequestRef.current = false;
     setResultsLoading(true);
     setResultsError("");
 
-    searchHotels(buildSearchPayload(initialPayload, appliedFilters, searchResponse, sortOrder, ""))
+    searchHotels(buildSearchPayload(activePayload, appliedFilters, searchResponse, sortOrder, ""))
       .then((response) => {
         if (!active) return;
-        const nextHotels = extractHotels(response, initialPayload);
+        const nextHotels = extractHotels(response, activePayload);
         const nextLastHotelId = extractLastHotelId(response, nextHotels);
         const nextHotelCount = extractHotelCount(response, nextHotels.length);
         setSearchResponse(response);
@@ -1317,10 +1628,10 @@ export default function HotelbedsHotelsPage() {
     return () => {
       active = false;
     };
-  }, [appliedFilters, hotelId, initialPayload, sortOrder]);
+  }, [activePayload, appliedFilters, hotelId, sortOrder]);
 
   useEffect(() => {
-    if (!initialPayload || hotelId || !hasMoreResults || !lastHotelId) return undefined;
+    if (!activePayload || hotelId || !hasMoreResults || !lastHotelId) return undefined;
 
     const node = loadMoreRef.current;
     if (!node) return undefined;
@@ -1336,11 +1647,11 @@ export default function HotelbedsHotelsPage() {
         setLoadingMore(true);
 
         searchHotels(
-          buildSearchPayload(initialPayload, appliedFilters, searchResponse, sortOrder, lastHotelId),
+          buildSearchPayload(activePayload, appliedFilters, searchResponse, sortOrder, lastHotelId),
         )
           .then((response) => {
             if (!active) return;
-            const incomingHotels = extractHotels(response, initialPayload);
+            const incomingHotels = extractHotels(response, activePayload);
             setSearchResponse(response);
             setLoadedHotels((prev) => {
               const mergedHotels = mergeHotels(prev, incomingHotels);
@@ -1375,7 +1686,7 @@ export default function HotelbedsHotelsPage() {
     appliedFilters,
     hasMoreResults,
     hotelId,
-    initialPayload,
+    activePayload,
     lastHotelId,
     loadingMore,
     resultsLoading,
@@ -1383,11 +1694,11 @@ export default function HotelbedsHotelsPage() {
     sortOrder,
   ]);
   useEffect(() => {
-    if (!hotelId || !selectedHotel || !initialPayload) return undefined;
+    if (!hotelId || !selectedHotel || !activePayload) return undefined;
 
     let active = true;
     setDetailLoading(true);
-    getHotelDetail(buildDetailPayload(selectedHotel, initialPayload, searchResponse))
+    getHotelDetail(buildDetailPayload(selectedHotel, activePayload, searchResponse))
       .then((response) => {
         if (!active) return;
         setDetailResponse(response);
@@ -1403,10 +1714,11 @@ export default function HotelbedsHotelsPage() {
     return () => {
       active = false;
     };
-  }, [hotelId, initialPayload, searchResponse, selectedHotel]);
+  }, [activePayload, hotelId, searchResponse, selectedHotel]);
 
   const clearAllFilters = () => {
     setAppliedFilters(defaultFilters());
+    setHotelNameDraft("");
     setFavoritesOnly(false);
   };
 
@@ -1429,6 +1741,7 @@ export default function HotelbedsHotelsPage() {
       return;
     }
     if (group === "hotelName") {
+      setHotelNameDraft("");
       setAppliedFilters((prev) => ({ ...prev, hotelName: "" }));
       return;
     }
@@ -1475,8 +1788,8 @@ export default function HotelbedsHotelsPage() {
   }, [favoritesOnly, hotelNameQuery, hotels]);
 
   const destinationName =
-    initialSuggestion?.displayName ||
-    initialPayload?.searchQuery?.searchCriteria?.searchRegionName ||
+    activeSuggestion?.displayName ||
+    activePayload?.searchQuery?.searchCriteria?.searchRegionName ||
     "Hotels";
 
   const hotelCount =
@@ -1486,14 +1799,27 @@ export default function HotelbedsHotelsPage() {
       hotels.length,
     ) || hotels.length;
 
+  const handleSortChange = (valueOrEvent) => {
+    const nextSortOrder =
+      typeof valueOrEvent === "string" ? valueOrEvent : valueOrEvent?.target?.value;
+    if (!nextSortOrder || nextSortOrder === sortOrder) return;
+
+    setSortOrder(nextSortOrder);
+    trackSortAnalyticsEvent(nextSortOrder, activePayload, searchResponse, activeSuggestion);
+  };
+
+  const setHotelNameQuery = (value) => {
+    setHotelNameDraft(value);
+  };
+
   if (selectedHotel) {
     return (
       <HotelDetailsPage
         selectedHotel={selectedHotel}
         detailResponse={detailResponse}
         detailLoading={detailLoading}
-        initialPayload={initialPayload}
-        initialSuggestion={initialSuggestion}
+        initialPayload={activePayload}
+        initialSuggestion={activeSuggestion}
         onBackToResults={() => navigate("/hotels", { state: location.state })}
         activeOption={activeOption}
         roomModalOpen={roomModalOpen}
@@ -1505,13 +1831,15 @@ export default function HotelbedsHotelsPage() {
 
   return (
     <div className="hotel-list-page">
-      <div className="hotel-shell">
+      <div className="hotel-search-bar-container">
         <HotelSearchBar
-          payload={initialPayload}
-          suggestion={initialSuggestion}
+          payload={activePayload}
+          suggestion={activeSuggestion}
           editable={true}
           onSearch={(nextPayload, response, selectedDestination) => {
             // Update the state with new search results
+            setSearchPayload(nextPayload);
+            setSelectedSuggestion(selectedDestination || null);
             setSearchResponse(response);
             const nextHotels = extractHotels(response, nextPayload);
             setLoadedHotels(nextHotels);
@@ -1521,31 +1849,71 @@ export default function HotelbedsHotelsPage() {
             setHasMoreResults(Boolean(nextLastHotelId) && nextHotels.length < nextHotelCount);
           }}
         />
+      </div>
 
-        <ResultHeader
-          destination={destinationName}
-          hotelCount={hotelCount}
-          sortOrder={sortOrder}
-          setSortOrder={setSortOrder}
-          viewMode={viewMode}
-          setViewMode={setViewMode}
-          favoritesOnly={favoritesOnly}
-          setFavoritesOnly={setFavoritesOnly}
-          onOpenMobileFilters={() => setShowMobileFilters(true)}
-        />
+      <div className="page-container">
+        <div className="breadcrumb-row">
+          <span className="breadcrumb-text">Home Hotels {destinationName}</span>
 
-        <FilterChips
-          chips={selectedFilterChips}
-          onRemove={removeFilterChip}
-          onClearAll={clearAllFilters}
-        />
+          <div className="top-controls">
+          <div className="left-controls">
+            <div className="sort-button">
+              <span className="sort-icon">🔽</span>
+              <span className="sort-label">Sort By:</span>
+              <select 
+                className="sort-select" 
+                value={sortOrder} 
+                onChange={handleSortChange}
+              >
+                <option value="popularity">Most Popular</option>
+                <option value="priceLowToHigh">Price (Lowest first)</option>
+                <option value="priceHighToLow">Price (Highest first)</option>
+                <option value="starRatingHighToLow">Star Rating (High to Low)</option>
+              </select>
+            </div>
+            
+            <div className="result-count">
+              Showing {hotelCount} hotels for <strong>{destinationName}</strong>
+            </div>
+          </div>
 
-        <div className="hotel-popular-strip">
-          <Sparkles size={16} color="#ed1173" />
-          <span>{`Popular in ${destinationName}`}</span>
+          <div className="right-controls">
+            <button
+              type="button"
+              className="mobile-filter-btn"
+              onClick={() => setShowMobileFilters(true)}
+            >
+              Filters
+            </button>
+            
+            <button
+              type="button"
+              className={`view-btn ${viewMode === "grid" ? "active" : ""}`}
+              onClick={() => setViewMode("grid")}
+            >
+              Grid View
+            </button>
+            
+            <button
+              type="button"
+              className={`view-btn ${viewMode === "list" ? "active" : ""}`}
+              onClick={() => setViewMode("list")}
+            >
+              List View
+            </button>
+            
+            <button
+              type="button"
+              className={`favorites-btn ${favoritesOnly ? "active" : ""}`}
+              onClick={() => setFavoritesOnly((prev) => !prev)}
+            >
+              ❤️ View Favourites
+            </button>
+          </div>
+          </div>
         </div>
 
-        {!initialPayload ? (
+        {!activePayload ? (
           <div className="hotel-empty">
             <div className="hotel-empty-title">No hotel search loaded</div>
             <div className="hotel-empty-copy">
@@ -1553,8 +1921,12 @@ export default function HotelbedsHotelsPage() {
             </div>
           </div>
         ) : (
-          <div className="hotel-results-layout">
-            <aside className="hotel-sidebar">
+          <div className="content-layout">
+            <aside className="filter-sidebar">
+              <button className="see-on-map-btn">
+                📍 See on Map
+              </button>
+              
               {filtersLoading ? (
                 <FilterSkeleton />
               ) : (
@@ -1566,19 +1938,19 @@ export default function HotelbedsHotelsPage() {
                   favoritesOnly={favoritesOnly}
                   setFavoritesOnly={setFavoritesOnly}
                   hotelNameQuery={hotelNameQuery}
-                  setHotelNameQuery={(value) =>
-                    setAppliedFilters((prev) => ({ ...prev, hotelName: value }))
-                  }
+                  setHotelNameQuery={setHotelNameQuery}
                 />
               )}
             </aside>
 
-            <section>
+            <main className="hotel-results">
+              <div className="section-title">Popular in {destinationName}</div>
+              
               {resultsError ? (
                 <ErrorState
                   onRetry={() =>
                     searchHotels(
-                      buildSearchPayload(initialPayload, appliedFilters, searchResponse, sortOrder, ""),
+                      buildSearchPayload(activePayload, appliedFilters, searchResponse, sortOrder, ""),
                     ).then(setSearchResponse)
                   }
                 />
@@ -1631,7 +2003,7 @@ export default function HotelbedsHotelsPage() {
                   {hasMoreResults ? <div ref={loadMoreRef} className="hotel-scroll-sentinel" /> : null}
                 </>
               ) : null}
-            </section>
+            </main>
           </div>
         )}
       </div>
@@ -1659,9 +2031,7 @@ export default function HotelbedsHotelsPage() {
                 favoritesOnly={favoritesOnly}
                 setFavoritesOnly={setFavoritesOnly}
                 hotelNameQuery={hotelNameQuery}
-                setHotelNameQuery={(value) =>
-                  setAppliedFilters((prev) => ({ ...prev, hotelName: value }))
-                }
+                setHotelNameQuery={setHotelNameQuery}
               />
             </div>
           )}

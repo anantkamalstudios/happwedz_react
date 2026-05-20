@@ -31,14 +31,14 @@ export default function FlightHero() {
       ? "Book Cheap Flight Tickets With Ease"
       : activeTab === "Insurance"
         ? "Travel Insurance For Your Trip"
-        : "Find Romantic Honeymoon Hotels";
+        : "Book your stay with India's largest network of Hotels.";
 
   const heroSubtitle =
     activeTab === "Flights"
       ? "Discover your next dream destination"
       : activeTab === "Insurance"
         ? "Compare international, student & multi-trip plans"
-        : "Search stays by city and destination";
+        : "Search city stays, romantic escapes, and premium honeymoon-friendly hotels.";
 
   return (
     <div className="flight-hero">

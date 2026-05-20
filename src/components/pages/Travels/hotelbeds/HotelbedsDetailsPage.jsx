@@ -29,6 +29,7 @@ import {
   searchHotels,
   suggestHotels,
   trackHotelAnalyticsEvent,
+  trackTripjackAnalyticsEvent,
 } from "../../../../services/api/hotelApi";
 import TripJackBookingReview from "./TripJackBookingReview";
 import TripJackBookingStatus from "./TripJackBookingStatus";
@@ -211,10 +212,6 @@ function HotelHeader({ detailModel, onShowMap, onBackToResults, onEditMarkup, ma
               </div>
             )}
           </div>
-          <button type="button" className="hotel-detail-ghost-btn">
-            <Heart size={15} />
-            Favourite
-          </button>
         </div>
       </div>
     </>
@@ -338,7 +335,7 @@ function HotelAboutSection({ aboutText, headline }) {
 
   return (
     <section className="hotel-detail-section">
-      <h2>About this property</h2>
+      <h4>About this property</h4>
       <div className="hotel-detail-copy">
         {visible}
         {shouldClamp ? (
@@ -357,7 +354,7 @@ function HotelAmenities({ amenities, onViewMore }) {
   return (
     <section className="hotel-detail-section">
       <div className="d-flex justify-content-between gap-3 align-items-center mb-3">
-        <h2 className="mb-0">Amenities</h2>
+        <h4 className="mb-0">Amenities</h4>
         {amenities.length > 6 ? (
           <button type="button" className="hotel-inline-link" onClick={onViewMore}>
             View more
@@ -372,11 +369,13 @@ function HotelAmenities({ amenities, onViewMore }) {
           if (typeof amenity === "string") {
             amenityText = amenity;
           } else if (typeof amenity === "object" && amenity !== null) {
-            amenityText = amenity.name || amenity.nm || amenity.label || "";
+            amenityText = amenity.name || amenity.nm || amenity.label || String(amenity);
+          } else {
+            amenityText = String(amenity || "");
           }
           
-          // Skip if empty
-          if (!amenityText) return null;
+          // Skip if empty or is still an object string
+          if (!amenityText || amenityText === "[object Object]") return null;
           
           return (
             <span key={`amenity-${index}-${amenityText}`} className="hotel-detail-amenity">
@@ -398,6 +397,22 @@ function RoomFilters({
   mealPlans,
   onOpenMobileFilters,
 }) {
+  const [showMealDropdown, setShowMealDropdown] = useState(false);
+  const mealDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (mealDropdownRef.current && !mealDropdownRef.current.contains(event.target)) {
+        setShowMealDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedMealPlan = mealPlans.find(plan => plan.value === filterState.mealPlan);
+
   return (
     <>
       <input
@@ -428,21 +443,45 @@ function RoomFilters({
         >
           PAN Optional
         </button>
-        <label className="hotel-room-filter-chip mb-0">
-          Meal Plans
-          <select
-            value={filterState.mealPlan}
-            onChange={(event) => setFilterState((prev) => ({ ...prev, mealPlan: event.target.value }))}
-            style={{ border: "none", background: "transparent", fontWeight: 800, color: "#273042" }}
+        <div className="hotel-meal-dropdown-wrapper" ref={mealDropdownRef}>
+          <button
+            type="button"
+            className={`hotel-room-filter-chip ${filterState.mealPlan ? "active" : ""}`}
+            onClick={() => setShowMealDropdown(!showMealDropdown)}
           >
-            <option value="">All</option>
-            {mealPlans.map((plan) => (
-              <option key={plan.value} value={plan.value}>
-                {plan.label}
-              </option>
-            ))}
-          </select>
-        </label>
+            Meal Plans: {selectedMealPlan ? selectedMealPlan.label : "All"}
+            <ChevronDown size={14} />
+          </button>
+          {showMealDropdown && (
+            <div className="hotel-meal-dropdown">
+              <button
+                type="button"
+                className={`hotel-meal-option ${!filterState.mealPlan ? "selected" : ""}`}
+                onClick={() => {
+                  setFilterState((prev) => ({ ...prev, mealPlan: "" }));
+                  setShowMealDropdown(false);
+                }}
+              >
+                <span>All</span>
+                {!filterState.mealPlan && <Check size={16} color="#ed1173" />}
+              </button>
+              {mealPlans.map((plan) => (
+                <button
+                  key={plan.value}
+                  type="button"
+                  className={`hotel-meal-option ${filterState.mealPlan === plan.value ? "selected" : ""}`}
+                  onClick={() => {
+                    setFilterState((prev) => ({ ...prev, mealPlan: plan.value }));
+                    setShowMealDropdown(false);
+                  }}
+                >
+                  <span>{plan.label}</span>
+                  {filterState.mealPlan === plan.value && <Check size={16} color="#ed1173" />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <button type="button" className="hotel-room-filter-chip hotel-mobile-filter-btn active" onClick={onOpenMobileFilters}>
           <Filter size={15} />
           Filter
@@ -601,19 +640,92 @@ function RoomPolicyModal({ show, onHide, option, hotelName, starRating, searchId
   );
 }
 
-function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onViewDetails, reviewLoadingOptionId, image, bedSummary, guestSummary, amenities, onViewPolicy }) {
+const normalizeRoomAmenityText = (amenity) => {
+  if (typeof amenity === "string") return amenity.trim();
+  if (typeof amenity === "object" && amenity !== null) {
+    const raw = amenity.name || amenity.nm || amenity.label || "";
+    return String(raw).trim();
+  }
+  return String(amenity || "").trim();
+};
+
+const mergeAmenityLists = (...amenityLists) => {
+  const seen = new Set();
+  return amenityLists
+    .flatMap((amenities) => (Array.isArray(amenities) ? amenities : []))
+    .map(normalizeRoomAmenityText)
+    .filter((text) => {
+      if (!text || text === "[object Object]") return false;
+      const key = text.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+};
+
+function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onViewDetails, reviewLoadingOptionId, image, bedSummary, guestSummary, amenities, onViewPolicy, onViewMoreAmenities }) {
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  
+  // Get all images from the first option (they should all have the same room images)
+  const images = options[0]?.images || [];
+  const activeImage = images[activeImageIndex] || image;
+  const mergedAmenities = mergeAmenityLists(amenities, ...options.map((option) => option?.amenities));
+
+  const handlePrevImage = (event) => {
+    event.stopPropagation();
+    setActiveImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = (event) => {
+    event.stopPropagation();
+    setActiveImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+  
+  const handleViewMoreAmenities = () => {
+    if (onViewMoreAmenities && selectedOptionInGroup) {
+      onViewMoreAmenities({
+        ...selectedOptionInGroup,
+        amenities: mergedAmenities,
+      });
+    }
+  };
+  
+  const selectedOptionInGroup = options.find((option) => option.id === selectedOptionId) || options[0] || null;
+
   return (
     <div className="hotel-room-type-group">
       <div className="hotel-room-type-left">
         <div className="hotel-room-thumb">
-          {image ? (
-            <img src={image} alt={roomName} />
+          {activeImage ? (
+            <img src={typeof activeImage === 'string' ? activeImage : activeImage.url} alt={roomName} />
           ) : (
             <div className="hotel-card-image hotel-card-image--empty">Image not available</div>
           )}
+          
+          {images.length > 1 && (
+            <>
+              <button
+                type="button"
+                className="hotel-room-image-nav hotel-room-image-nav-left"
+                onClick={handlePrevImage}
+                aria-label="Previous image"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                className="hotel-room-image-nav hotel-room-image-nav-right"
+                onClick={handleNextImage}
+                aria-label="Next image"
+              >
+                ›
+              </button>
+            </>
+          )}
+          
           <button type="button" className="hotel-photo-overlay">
             <Images size={14} />
-            +4 Photos
+            {images.length > 0 ? `+${images.length} Photos →` : "+4 Photos →"}
           </button>
         </div>
 
@@ -633,15 +745,18 @@ function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onVi
         </div>
 
         <div className="hotel-room-amenities-preview">
-          {amenities.slice(0, 4).map((amenity, index) => {
+          {mergedAmenities.slice(0, 4).map((amenity, index) => {
             let amenityText = "";
             if (typeof amenity === "string") {
               amenityText = amenity;
             } else if (typeof amenity === "object" && amenity !== null) {
-              amenityText = amenity.name || amenity.nm || amenity.label || "";
+              amenityText = amenity.name || amenity.nm || amenity.label || String(amenity);
+            } else {
+              amenityText = String(amenity || "");
             }
             
-            if (!amenityText) return null;
+            // Skip if empty or is still an object string
+            if (!amenityText || amenityText === "[object Object]") return null;
             
             return (
               <span key={`amenity-${index}-${amenityText}`} className="hotel-room-amenity-item hotel-room-amenity-item--green">
@@ -650,15 +765,13 @@ function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onVi
               </span>
             );
           })}
+          <button type="button" className="hotel-inline-link" onClick={handleViewMoreAmenities}>
+            View more amenities
+          </button>
         </div>
-
-        {/* <button type="button" className="hotel-inline-link hotel-room-amenities-link">
-          View more amenities
-        </button> */}
       </div>
 
       <div className="hotel-room-type-right">
-        <h3 className="hotel-room-type-heading">{roomName}</h3>
         {options.map((option) => (
           <RoomOptionCard
             key={option.id}
@@ -693,6 +806,7 @@ function RoomOptionCard({
 
   return (
     <div className="hotel-room-option-compact">
+      <div className="hotel-room-option-title">{option.roomName}</div>
       <div className="hotel-room-option-row">
         <div className="hotel-room-meal-cell">
           <strong>{option.mealBasis}</strong>
@@ -705,9 +819,7 @@ function RoomOptionCard({
           <div className="hotel-room-total-compact">
             {option.totalPrice ? formatMoney(option.totalPrice, option.currency) : "N/A"}
           </div>
-          <div className="hotel-summary-subcopy">
-            Total <CircleHelp size={12} style={{ display: 'inline', marginLeft: 4 }} />
-          </div>
+          <div className="hotel-summary-subcopy">Total <CircleHelp size={12} style={{ display: "inline", marginLeft: 4 }} /></div>
           <div className="hotel-summary-subcopy">Total Price for 1 room</div>
         </div>
         <div className="hotel-room-action-cell">
@@ -727,9 +839,9 @@ function RoomOptionCard({
           <Check size={14} color="#22a55a" />
           <span>{option.cancellationLabel}</span>
         </div>
-        {/* <button type="button" className="hotel-inline-link" onClick={handleViewMore}>
+        <button type="button" className="hotel-inline-link" onClick={handleViewMore}>
           View more
-        </button> */}
+        </button>
       </div>
     </div>
   );
@@ -747,6 +859,7 @@ function RoomTypesSection({
   onSelectRoom,
   onViewDetails,
   onViewPolicy,
+  onViewMoreAmenities,
   shareHref,
   onOpenMobileFilters,
   roomSectionRef,
@@ -764,10 +877,11 @@ function RoomTypesSection({
           image: option.image,
           bedSummary: option.bedSummary,
           guestSummary: option.guestSummary,
-          amenities: option.amenities,
+          amenities: [],
           options: [],
         };
       }
+      groups[key].amenities = mergeAmenityLists(groups[key].amenities, option.amenities);
       groups[key].options.push(option);
     });
     return Object.values(groups);
@@ -822,6 +936,7 @@ function RoomTypesSection({
             onSelectRoom={onSelectRoom}
             onViewDetails={onViewDetails}
             onViewPolicy={onViewPolicy}
+            onViewMoreAmenities={onViewMoreAmenities}
             reviewLoadingOptionId={reviewLoadingOptionId}
             image={group.image}
             bedSummary={group.bedSummary}
@@ -835,12 +950,14 @@ function RoomTypesSection({
 }
 
 function buildRoomModalOption(option) {
+  const inclusions = mergeAmenityLists(option.amenities);
+
   return {
     key: option.id,
     roomName: option.roomName,
     mealBasis: option.mealBasis,
     bookingNotes: option.view || option.supplierRoomType || "",
-    inclusions: option.amenities,
+    inclusions,
     images: option.images || [],
     image: option.image || "",
     bedSummary: option.bedSummary || "",
@@ -859,6 +976,15 @@ function buildRoomModalOption(option) {
     raw: option.raw,
   };
 }
+
+const compactProperties = (input) => {
+  const output = {};
+  Object.entries(input || {}).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") return;
+    output[key] = value;
+  });
+  return output;
+};
 
 function HotelDetailsPage({
   selectedHotel,
@@ -1433,6 +1559,81 @@ function HotelDetailsPage({
     }
   };
 
+  const handleOpenRoomAmenitiesModal = (option) => {
+    setActiveOption(buildRoomModalOption(option));
+    setRoomModalOpen(true);
+
+    const previousPage = typeof document !== "undefined" ? document.referrer || "" : "";
+    let previousPath = "";
+    if (previousPage) {
+      try {
+        previousPath = new URL(previousPage).pathname;
+      } catch {
+        previousPath = "";
+      }
+    }
+
+    const rawSearchType =
+      reviewPayloadFields.searchType ||
+      initialPayload?.searchQuery?.searchCriteria?.searchRegionType ||
+      initialPayload?.searchType ||
+      selectedHotel?.raw?.searchType ||
+      selectedHotel?.raw?.searchRegionType ||
+      "";
+
+    const searchType = String(rawSearchType || (selectedHotel?.raw?.tjid || detailModel.id ? "HOTEL" : "CITY"))
+      .trim()
+      .toUpperCase();
+
+    const hotelSearchId =
+      selectedHotel?.raw?.hid ||
+      selectedHotel?.raw?.hotelId ||
+      selectedHotel?.raw?.hotelCode ||
+      initialPayload?.searchQuery?.searchCriteria?.hotelId ||
+      initialPayload?.searchQuery?.searchCriteria?.hotelCode ||
+      initialPayload?.searchQuery?.searchCriteria?.city;
+
+    const cityName = searchType === "HOTEL"
+      ? detailModel.name
+      : String(detailModel.cityName || "").toUpperCase();
+
+    const cityId = searchType === "HOTEL"
+      ? hotelSearchId
+      : (
+          detailModel.cityId ||
+          initialPayload?.searchQuery?.searchCriteria?.city ||
+          ""
+        );
+
+    trackTripjackAnalyticsEvent({
+      event: "Hotel_PDP_RoomType_Amenities_ViewMore",
+      properties: compactProperties({
+        Product: "HOTEL",
+        Hotel_Name: detailModel.name,
+        Star_Rating: detailModel.starRating || 0,
+        Unica_Id: detailModel.id,
+        Search_Id: reviewPayloadFields.searchId || "",
+        Search_Type: searchType,
+        CityName: cityName,
+        City_Id: String(cityId || ""),
+        Room_Type: option?.roomName,
+        Current_Page: typeof window !== "undefined" ? window.location.href : "",
+        Current_Path: typeof window !== "undefined" ? window.location.pathname : "",
+        Previous_Page: previousPage,
+        Previous_Path: previousPath,
+        Date: new Date().toLocaleDateString("en-GB"),
+        TimeStamp: new Date().toISOString(),
+        Agent_Id: "313144",
+        User_Email: "nahatarishabh23@gmail.com",
+        User_Role: "AGENT",
+      }),
+    }).catch((error) => {
+      if (import.meta.env.DEV) {
+        console.error("Unable to track room amenities view more event", error);
+      }
+    });
+  };
+
   return (
     <div className="hotel-list-page">
       <div className="hotel-shell">
@@ -1491,7 +1692,7 @@ function HotelDetailsPage({
 
             <div className="hotel-detail-card" id="hotel-map">
               <div className="d-flex justify-content-between gap-3 align-items-center mb-3">
-                <h2 className="mb-0">Location</h2>
+                <h4 className="mb-0">Location</h4>
                 <a className="hotel-inline-link" href={detailModel.mapInfo.openMapsHref} target="_blank" rel="noreferrer">
                   Open in Google Maps
                 </a>
@@ -1518,8 +1719,9 @@ function HotelDetailsPage({
               mealPlans={mealPlans}
               selectedOptionId={selectedOptionId}
               onSelectRoom={(option) => handleReviewRoomOption(option)}
-              onViewDetails={(option) => handleSelectRoom(option, true)}
+              onViewDetails={handleOpenRoomAmenitiesModal}
               onViewPolicy={handleViewPolicy}
+              onViewMoreAmenities={handleOpenRoomAmenitiesModal}
               shareHref={shareHref}
               onOpenMobileFilters={() => setShowRoomFilters(true)}
               roomSectionRef={roomSectionRef}
@@ -1578,7 +1780,18 @@ function HotelDetailsPage({
             ) : (
               <div className="hotel-detail-amenities">
                 {detailModel.amenities.map((amenity, index) => {
-                  const amenityText = typeof amenity === "object" && amenity !== null ? (amenity.name || amenity.nm || JSON.stringify(amenity)) : String(amenity || "");
+                  let amenityText = "";
+                  if (typeof amenity === "string") {
+                    amenityText = amenity;
+                  } else if (typeof amenity === "object" && amenity !== null) {
+                    amenityText = amenity.name || amenity.nm || amenity.label || String(amenity);
+                  } else {
+                    amenityText = String(amenity || "");
+                  }
+                  
+                  // Skip if empty or is still an object string
+                  if (!amenityText || amenityText === "[object Object]") return null;
+                  
                   return (
                     <span key={`${amenityText}-${index}`} className="hotel-detail-amenity">
                       <Check size={14} color="#ed1173" />
@@ -1850,7 +2063,7 @@ function HotelDetailsPage({
       />
 
       {activeOption ? (
-        <Modal show={roomModalOpen} onHide={() => setRoomModalOpen(false)} centered size="lg">
+        <Modal show={roomModalOpen} onHide={() => setRoomModalOpen(false)} centered size="lg" className="hotel-room-amenities-modal">
           <div className="modal-content rounded-4 hotel-room-modal">
             <div className="modal-header border-0 pb-0 hotel-room-modal-header">
               <div>
@@ -1901,12 +2114,16 @@ function HotelDetailsPage({
               <div className="hotel-room-modal-section-title">Room Amenities</div>
               <div className="hotel-room-modal-section-subtitle">Popular with Guests</div>
               <div className="hotel-room-modal-amenities">
-                {activeOption.inclusions.map((amenity, index) => (
-                  <div key={`${amenity}-${index}`} className="hotel-room-modal-amenity">
-                    <Check size={14} color="#ed1173" />
-                    <span>{amenity}</span>
-                  </div>
-                ))}
+                {Array.isArray(activeOption.inclusions) && activeOption.inclusions.length > 0 ? (
+                  activeOption.inclusions.map((amenity, index) => (
+                    <div key={`${amenity}-${index}`} className="hotel-room-modal-amenity">
+                      <Check size={14} color="#ed1173" />
+                      <span title={amenity}>{amenity}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="fs-14 text-muted">No amenities available for this room.</div>
+                )}
               </div>
               {Array.isArray(activeOption.cancellation?.penalties) && activeOption.cancellation.penalties.length > 0 ? (
                 <div className="fs-12 text-muted">

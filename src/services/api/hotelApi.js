@@ -72,6 +72,32 @@ export const trackHotelAnalyticsEvent = async (payload) => {
   }
 };
 
+export const trackTripjackAnalyticsEvent = async (payload) => {
+  try {
+    const response = await fetch("https://apitest.tripjack.com/xms/v1/analytics/events", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`TripJack analytics request failed with status ${response.status}`);
+    }
+
+    return response;
+  } catch (error) {
+    try {
+      const response = await axiosInstance.post("hotels/analytics-event", payload);
+      return response.data;
+    } catch (proxyError) {
+      console.error(getErrorMessage(proxyError, "Error tracking TripJack analytics event"));
+      throw proxyError;
+    }
+  }
+};
+
 export const reviewHotelBooking = async (payload) => {
   try {
     const response = await axiosInstance.post("hotels/review", payload);
