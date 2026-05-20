@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FaPlane, FaUser, FaEnvelope, FaPhone } from 'react-icons/fa';
-import { bookFlight } from '../../../../../services/api/flightApi';
+import { bookFlight, createFlightPaymentOrder, verifyAndBookFlight } from '../../../../../services/api/flightApi';
 
 export default function BookingReview({ 
   trip, 
@@ -19,6 +19,20 @@ export default function BookingReview({
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
 
   const formatTime = (dateStr) => {
     return new Date(dateStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -42,34 +56,45 @@ export default function BookingReview({
     }
 
     // Try different possible paths in the review response
-    let confirmedAmount = 0;
-    
-    // Path 1: reviewData.results[0]?.fare?.fd?.ADULT?.fC?.TF
-    if (reviewData.results?.[0]?.fare?.fd?.ADULT?.fC?.TF) {
-      confirmedAmount = reviewData.results[0].fare.fd.ADULT.fC.TF;
+    let totalFlightAmount = 0;
+
+    // Path 1: reviewData.results[] shape
+    if (Array.isArray(reviewData.results) && reviewData.results.length > 0) {
+      totalFlightAmount = reviewData.results.reduce((sum, r) => {
+        const fare = r?.fare?.fd?.ADULT?.fC?.TF || r?.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF || 0;
+        return sum + Number(fare || 0);
+      }, 0);
     }
-    // Path 2: reviewData.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF
-    else if (reviewData.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF) {
-      confirmedAmount = reviewData.totalPriceList[0].fd.ADULT.fC.TF;
+    // Path 2: reviewData.totalPriceList[] shape
+    else if (Array.isArray(reviewData.totalPriceList) && reviewData.totalPriceList.length > 0) {
+      totalFlightAmount = Number(reviewData.totalPriceList[0]?.fd?.ADULT?.fC?.TF || 0);
     }
-    // Path 3: reviewData.tripInfos?.COMBO?.[0]?.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF
-    else if (reviewData.tripInfos?.COMBO?.[0]?.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF) {
-      confirmedAmount = reviewData.tripInfos.COMBO[0].totalPriceList[0].fd.ADULT.fC.TF;
+    // Path 3a: reviewData.tripInfos is ARRAY (your current response)
+    else if (Array.isArray(reviewData.tripInfos) && reviewData.tripInfos.length > 0) {
+      totalFlightAmount = reviewData.tripInfos.reduce((sum, trip) => {
+        const fare = trip?.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF || 0;
+        return sum + Number(fare || 0);
+      }, 0);
     }
-    // Path 4: Check if there's a direct totalFare field
+    // Path 3b: reviewData.tripInfos is OBJECT with numeric keys
+    else if (reviewData.tripInfos && typeof reviewData.tripInfos === 'object') {
+      const tripInfosValues = Object.values(reviewData.tripInfos);
+      totalFlightAmount = tripInfosValues.reduce((sum, routeTrips) => {
+        if (!Array.isArray(routeTrips) || routeTrips.length === 0) return sum;
+        const routeFare = routeTrips[0]?.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF || 0;
+        return sum + Number(routeFare || 0);
+      }, 0);
+    }
+    // Path 4: direct totalFare
     else if (reviewData.totalFare) {
-      confirmedAmount = reviewData.totalFare;
-    }
-    // Fallback to calculated amount
-    else {
-      console.warn('Could not find confirmed amount in reviewData, using calculated amount');
-      return calculateTotalAmount();
+      totalFlightAmount = Number(reviewData.totalFare || 0);
     }
 
-    // Multiply by number of adults if needed
-    const adults = searchParams.adults || 1;
-    const totalFlightAmount = confirmedAmount * adults;
-    
+    if (!totalFlightAmount || Number.isNaN(totalFlightAmount)) {
+      console.warn('Could not find confirmed amount in reviewData, using calculated amount');
+      totalFlightAmount = calculateTotalAmount();
+    }
+
     // Add seat charges
     const seatTotal = seatSelections?.reduce((sum, seat) => sum + (seat.amount || 0), 0) || 0;
     
@@ -159,17 +184,112 @@ export default function BookingReview({
 
       console.log('Booking payload:', payload);
 
-      const response = await bookFlight(payload);
-      
-      if (response && response.bookingId) {
-        onPaymentSuccess(response);
-      } else {
-        setError('Booking failed. Please try again.');
+      const razorpayReady = await loadRazorpayScript();
+      if (!razorpayReady) {
+        throw new Error('Razorpay SDK failed to load');
       }
+
+      // Build payment order payload (existing backend contract)
+      const paymentOrderPayload = {
+        provider: trip?.sI?.[0]?.fD?.aI?.code || 'TJ',
+        offer_id: bookingId,
+        trip_type: returnTrip ? 'round' : 'oneway',
+        from: trip?.sI?.[0]?.da?.code || '',
+        to: trip?.sI?.[trip.sI.length - 1]?.aa?.code || '',
+        departure: trip?.sI?.[0]?.dt || '',
+        arrival: trip?.sI?.[trip.sI.length - 1]?.at || '',
+        flight_no: `${trip?.sI?.[0]?.fD?.aI?.code || ''}-${trip?.sI?.[0]?.fD?.fN || ''}`,
+        airline: trip?.sI?.[0]?.fD?.aI?.name || '',
+        cabin_class: fare?.fd?.ADULT?.cc || 'ECONOMY',
+        price: confirmedAmount,
+        passengers: travellerInfo,
+        contact: {
+          email: contact.email,
+          phone: fullPhoneNumber,
+        },
+      };
+
+      let orderResponse;
+      try {
+        orderResponse = await createFlightPaymentOrder(paymentOrderPayload);
+      } catch (paymentOrderError) {
+        console.warn('Razorpay order API failed, falling back to direct booking:', paymentOrderError);
+        const directResponse = await bookFlight(payload);
+        if (directResponse && directResponse.bookingId) {
+          onPaymentSuccess(directResponse);
+          return;
+        }
+        throw paymentOrderError;
+      }
+
+      // Support backend response: { razorpay_order_id, key_id, amount, currency }
+      const orderId = orderResponse?.razorpay_order_id || orderResponse?.order_id || orderResponse?.order?.id || orderResponse?.id;
+      const razorpayKey = orderResponse?.key_id || orderResponse?.key || orderResponse?.razorpay_key || import.meta.env.VITE_RAZORPAY_KEY_ID || '';
+      const orderAmount = orderResponse?.amount || orderResponse?.order?.amount || undefined;
+      const orderCurrency = orderResponse?.currency || orderResponse?.order?.currency || 'INR';
+
+      if (!orderId || !razorpayKey) {
+        const directResponse = await bookFlight(payload);
+        if (directResponse && directResponse.bookingId) {
+          onPaymentSuccess(directResponse);
+          return;
+        }
+        throw new Error('Invalid Razorpay order response');
+      }
+
+      const options = {
+        key: razorpayKey,
+        amount: orderAmount,
+        currency: orderCurrency,
+        name: 'HappyWedz',
+        description: 'Flight Booking Payment',
+        order_id: orderId,
+        prefill: {
+          name: travellerInfo?.[0] ? `${travellerInfo[0].fN || ''} ${travellerInfo[0].lN || ''}`.trim() : '',
+          email: contact.email,
+          contact: fullPhoneNumber,
+        },
+        handler: async function (rzpResponse) {
+          try {
+            const verifyPayload = {
+              razorpay_order_id: rzpResponse.razorpay_order_id,
+              razorpay_payment_id: rzpResponse.razorpay_payment_id,
+              razorpay_signature: rzpResponse.razorpay_signature,
+              booking_payload: payload,
+            };
+            const verifyResponse = await verifyAndBookFlight(verifyPayload);
+            if (verifyResponse && (verifyResponse.bookingId || verifyResponse.status?.success)) {
+              onPaymentSuccess(verifyResponse);
+            } else {
+              const directResponse = await bookFlight(payload);
+              if (directResponse && directResponse.bookingId) onPaymentSuccess(directResponse);
+              else setError('Payment verification succeeded but booking confirmation failed.');
+            }
+          } catch (verifyErr) {
+            console.error('Payment verification error:', verifyErr);
+            setError(verifyErr.response?.data?.message || 'Payment succeeded but verification failed.');
+          } finally {
+            setLoading(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setLoading(false);
+          },
+        },
+        theme: { color: '#ed1173' },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response) {
+        setLoading(false);
+        setError(response?.error?.description || 'Payment failed. Please try again.');
+      });
+      rzp.open();
+      return;
     } catch (err) {
       console.error('Booking error:', err);
       setError(err.response?.data?.message || 'Failed to complete booking. Please try again.');
-    } finally {
       setLoading(false);
     }
   };

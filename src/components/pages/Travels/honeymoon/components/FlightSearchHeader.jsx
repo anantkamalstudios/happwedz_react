@@ -12,7 +12,46 @@ export default function FlightSearchHeader({ searchParams, onModify }) {
   const getTripTypeLabel = () => {
     if (searchParams.tripType === 'round') return 'ROUND TRIP';
     if (searchParams.tripType === 'oneway') return 'ONE WAY';
+    if (searchParams.tripType === 'multicity') return 'MULTI CITY';
     return 'MULTI CITY';
+  };
+
+  const getRouteDisplay = () => {
+    // Multi-city routes
+    if (searchParams.routes && searchParams.routes.length > 0) {
+      return searchParams.routes.map((route, idx) => (
+        <span key={idx}>
+          <span className="route-city">{route.fromCode}</span>
+          <FaPlane className="route-arrow" size={14} />
+          <span className="route-city">{route.toCode}</span>
+          {idx < searchParams.routes.length - 1 && <span className="route-separator"> → </span>}
+        </span>
+      ));
+    }
+    
+    // One-way or Round-trip
+    return (
+      <>
+        <span className="route-city">{searchParams.from}</span>
+        <FaPlane className="route-arrow" size={20} />
+        <span className="route-city">{searchParams.to}</span>
+      </>
+    );
+  };
+
+  const getDateDisplay = () => {
+    // Multi-city dates
+    if (searchParams.routes && searchParams.routes.length > 0) {
+      return searchParams.routes.map((route, idx) => (
+        <div key={idx} className="multicity-date-item">
+          <span className="route-label">{route.fromCode} → {route.toCode}:</span>
+          <span className="date-value">{formatDate(route.date)}</span>
+        </div>
+      ));
+    }
+    
+    // One-way or Round-trip
+    return null;
   };
 
   const getPassengerCount = () => {
@@ -35,45 +74,57 @@ export default function FlightSearchHeader({ searchParams, onModify }) {
         <div className="flight-search-header-content">
           {/* Route Section */}
           <div className="header-section route-section">
-            {/* <div className="section-icon">
-              <MdFlightTakeoff size={18} />
-            </div> */}
             <div className="section-content">
               <div className="section-label">{getTripTypeLabel()}</div>
               <div className="section-value">
-                <span className="route-city">{searchParams.from}</span>
-                <FaPlane className="route-arrow" size={20} />
-                <span className="route-city">{searchParams.to}</span>
+                {getRouteDisplay()}
               </div>
             </div>
           </div>
 
           <div className="header-divider"></div>
 
-          {/* Departure Date Section */}
-          <div className="header-section date-section">
-            <div className="section-icon">
-              <FaCalendarAlt size={16} />
+          {/* Date Section - Multi-city or Single */}
+          {searchParams.routes && searchParams.routes.length > 0 ? (
+            <div className="header-section date-section multicity-dates">
+              <div className="section-icon">
+                <FaCalendarAlt size={16} />
+              </div>
+              <div className="section-content">
+                <div className="section-label">Travel Dates</div>
+                <div className="section-value multicity-dates-list">
+                  {getDateDisplay()}
+                </div>
+              </div>
             </div>
-            <div className="section-content">
-              <div className="section-label">Departure Date</div>
-              <div className="section-value">{formatDate(searchParams.departureDate)}</div>
-            </div>
-          </div>
-
-          {/* Return Date Section (if round trip) */}
-          {searchParams.tripType === 'round' && searchParams.returnDate && (
+          ) : (
             <>
-              <div className="header-divider"></div>
+              {/* Departure Date Section */}
               <div className="header-section date-section">
                 <div className="section-icon">
                   <FaCalendarAlt size={16} />
                 </div>
                 <div className="section-content">
-                  <div className="section-label">Return Date</div>
-                  <div className="section-value">{formatDate(searchParams.returnDate)}</div>
+                  <div className="section-label">Departure Date</div>
+                  <div className="section-value">{formatDate(searchParams.departureDate)}</div>
                 </div>
               </div>
+
+              {/* Return Date Section (if round trip) */}
+              {searchParams.tripType === 'round' && searchParams.returnDate && (
+                <>
+                  <div className="header-divider"></div>
+                  <div className="header-section date-section">
+                    <div className="section-icon">
+                      <FaCalendarAlt size={16} />
+                    </div>
+                    <div className="section-content">
+                      <div className="section-label">Return Date</div>
+                      <div className="section-value">{formatDate(searchParams.returnDate)}</div>
+                    </div>
+                  </div>
+                </>
+              )}
             </>
           )}
 

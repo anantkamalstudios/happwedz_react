@@ -202,6 +202,9 @@ const FlightBooking = lazy(
 const FlightBookingPage = lazy(
   () => import("./components/pages/Travels/honeymoon/FlightBookingPage"),
 );
+const MultiCityResults = lazy(
+  () => import("./components/pages/Travels/honeymoon/MultiCityResults"),
+);
 
 function App() {
   const dispatch = useDispatch();
@@ -338,6 +341,10 @@ function App() {
               <Route
                 path="/honeymoon/flights"
                 element={<FlightSearchResults />}
+              />
+              <Route
+                path="/honeymoon/flights/multicity"
+                element={<MultiCityResults />}
               />
               <Route
                 path="/honeymoon/flights/booking"

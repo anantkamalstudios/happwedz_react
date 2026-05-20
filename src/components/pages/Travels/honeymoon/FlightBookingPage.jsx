@@ -11,7 +11,9 @@ export default function FlightBookingPage() {
   const location = useLocation();
   const navigate = useNavigate();
   
-  const { outbound, return: returnFlight, searchParams, reviewData, bookingId: initialBookingId } = location.state || {};
+  const { outbound, return: returnFlight, multiCity, searchParams, reviewData, bookingId: initialBookingId } = location.state || {};
+  const primaryTrip = outbound || (Array.isArray(multiCity) ? multiCity[0] : null);
+  const secondaryTrip = returnFlight || (Array.isArray(multiCity) ? multiCity[1] : null);
   
   const [step, setStep] = useState(1);
   const [bookingId, setBookingId] = useState(initialBookingId || null);
@@ -22,17 +24,17 @@ export default function FlightBookingPage() {
   const [confirmed, setConfirmed] = useState(null);
 
   useEffect(() => {
-    if (!outbound || !searchParams) {
+    if (!primaryTrip || !searchParams) {
       navigate('/honeymoon');
     }
-  }, [outbound, searchParams, navigate]);
+  }, [primaryTrip, searchParams, navigate]);
 
-  if (!outbound || !searchParams) {
+  if (!primaryTrip || !searchParams) {
     return null;
   }
 
-  const selectedFare = outbound.totalPriceList[0];
-  const returnFare = returnFlight?.totalPriceList[0];
+  const selectedFare = primaryTrip.totalPriceList[0];
+  const returnFare = secondaryTrip?.totalPriceList[0];
 
   return (
     <div className="tj-booking-page">
@@ -43,8 +45,8 @@ export default function FlightBookingPage() {
             
             {step === 1 && (
               <FlightItinerary
-                trip={outbound}
-                returnTrip={returnFlight}
+                trip={primaryTrip}
+                returnTrip={secondaryTrip}
                 fare={selectedFare}
                 returnFare={returnFare}
                 searchParams={searchParams}
@@ -80,8 +82,8 @@ export default function FlightBookingPage() {
 
             {step === 4 && (
               <BookingReview
-                trip={outbound}
-                returnTrip={returnFlight}
+                trip={primaryTrip}
+                returnTrip={secondaryTrip}
                 fare={selectedFare}
                 returnFare={returnFare}
                 searchParams={searchParams}
@@ -101,8 +103,8 @@ export default function FlightBookingPage() {
         ) : (
           <BookingConfirmation
             bookingData={confirmed}
-            trip={outbound}
-            returnTrip={returnFlight}
+            trip={primaryTrip}
+            returnTrip={secondaryTrip}
             travellerInfo={travellerInfo}
           />
         )}
