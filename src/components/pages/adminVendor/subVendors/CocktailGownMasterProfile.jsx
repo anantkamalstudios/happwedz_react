@@ -272,27 +272,6 @@ const CocktailGownMasterProfile = ({
             <MultiCheck label="Bride Type Tags" options={BRIDE_TYPE_TAGS} value={jm.ai_tags.bride_type_tags} onChange={(v) => patchJm({ ai_tags: { ...jm.ai_tags, bride_type_tags: v } })} />
           </Accordion.Body>
         </Accordion.Item>
-
-        <Accordion.Item eventKey="10">
-          <Accordion.Header>Section 11 — AI FAQ Layer</Accordion.Header>
-          <Accordion.Body>
-            <YesNoField label="Are cocktail gowns customizable?" value={jm.ai_faq.customizable} onChange={(v) => patchJm({ ai_faq: { ...jm.ai_faq, customizable: v } })} groupName="cg_f1"/>
-            <YesNoField label="Can gown be made as per body measurements?" value={jm.ai_faq.body_measurements} onChange={(v) => patchJm({ ai_faq: { ...jm.ai_faq, body_measurements: v } })} groupName="cg_f2"/>
-            <YesNoField label="Are trial fittings available?" value={jm.ai_faq.trial_fittings} onChange={(v) => patchJm({ ai_faq: { ...jm.ai_faq, trial_fittings: v } })} groupName="cg_f3"/>
-            <YesNoField label="Does vendor offer styling consultation?" value={jm.ai_faq.styling_consultation} onChange={(v) => patchJm({ ai_faq: { ...jm.ai_faq, styling_consultation: v } })} groupName="cg_f4"/>
-            <YesNoField label="Is gown suitable for plus-size clients?" value={jm.ai_faq.plus_size} onChange={(v) => patchJm({ ai_faq: { ...jm.ai_faq, plus_size: v } })} groupName="cg_f5"/>
-            <YesNoField label="Can gown be delivered outside city?" value={jm.ai_faq.delivery_outside_city} onChange={(v) => patchJm({ ai_faq: { ...jm.ai_faq, delivery_outside_city: v } })} groupName="cg_f6"/>
-            <YesNoField label="Are alterations included in price?" value={jm.ai_faq.alterations_included} onChange={(v) => patchJm({ ai_faq: { ...jm.ai_faq, alterations_included: v } })} groupName="cg_f7"/>
-            <YesNoField label="Is urgent order possible?" value={jm.ai_faq.urgent_order} onChange={(v) => patchJm({ ai_faq: { ...jm.ai_faq, urgent_order: v } })} groupName="cg_f8"/>
-            <YesNoField label="Are premium designer gowns available?" value={jm.ai_faq.premium_designer} onChange={(v) => patchJm({ ai_faq: { ...jm.ai_faq, premium_designer: v } })} groupName="cg_f9"/>
-            <YesNoField label="Can gown be customized in color and fabric?" value={jm.ai_faq.custom_color_fabric} onChange={(v) => patchJm({ ai_faq: { ...jm.ai_faq, custom_color_fabric: v } })} groupName="cg_f10"/>
-            <YesNoField label="Is gown comfortable for long events?" value={jm.ai_faq.comfortable_long_events} onChange={(v) => patchJm({ ai_faq: { ...jm.ai_faq, comfortable_long_events: v } })} groupName="cg_f11"/>
-            <YesNoField label="Are lightweight options available?" value={jm.ai_faq.lightweight_options} onChange={(v) => patchJm({ ai_faq: { ...jm.ai_faq, lightweight_options: v } })} groupName="cg_f12"/>
-            <YesNoField label="Is appointment required before visit?" value={jm.ai_faq.appointment_required} onChange={(v) => patchJm({ ai_faq: { ...jm.ai_faq, appointment_required: v } })} groupName="cg_f13"/>
-            <YesNoField label="Can gown be reused for other occasions?" value={jm.ai_faq.reusable} onChange={(v) => patchJm({ ai_faq: { ...jm.ai_faq, reusable: v } })} groupName="cg_f14"/>
-            <YesNoField label="Does vendor provide accessory styling support?" value={jm.ai_faq.accessory_styling} onChange={(v) => patchJm({ ai_faq: { ...jm.ai_faq, accessory_styling: v } })} groupName="cg_f15"/>
-          </Accordion.Body>
-        </Accordion.Item>
       </Accordion>
     </>
   );

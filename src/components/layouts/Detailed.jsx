@@ -2076,14 +2076,27 @@ const Detailed = () => {
 
   useEffect(() => {
     const fetchFaqData = async () => {
-      if (!venueData?.vendor?.id) {
+      if (
+        !venueData?.vendor?.id && 
+        !venueData?.vendor_id && 
+        !venueData?.attributes?.vendor_id &&
+        !venueData?.attributes?.user_id &&
+        !venueData?.userId &&
+        !venueData?.id
+      ) {
         return;
       }
 
-      const dynamicVendorId = venueData.vendor.id;
-      const dynamicVendorTypeId = venueData.vendor.vendorType?.id ?? null;
+      const dynamicVendorId = 
+        venueData.vendor?.id || 
+        venueData.vendor_id || 
+        venueData.attributes?.vendor_id ||
+        venueData.attributes?.user_id ||
+        venueData.userId ||
+        venueData.id;
+      const dynamicVendorTypeId = Number(venueData.vendor?.vendorType?.id || venueData.vendor?.vendor_type_id || venueData.vendor_type_id || venueData.attributes?.vendor_type_id) || null;
 
-      const subcategoryName = venueData.vendor?.vendorSubcategory?.name || venueData.attributes?.vendor_subcategory || venueData?.subcategory?.name || "";
+      const subcategoryName = venueData.vendor?.vendorSubcategory?.name || venueData.attributes?.vendor_subcategory || venueData?.subcategory?.name || venueData.attributes?.vendor_subcategory_name || venueData.attributes?.subcategory_name || "";
       const normalizedSub = String(subcategoryName).toLowerCase();
       const isLocMaster = venueData.attributes?.pre_wedding_location_master && Object.keys(venueData.attributes.pre_wedding_location_master).length > 0;
       const isPhotoMaster = venueData.attributes?.pre_wedding_photographer_master && Object.keys(venueData.attributes.pre_wedding_photographer_master).length > 0;
@@ -2102,13 +2115,25 @@ const Detailed = () => {
       }
 
       const answerMap = new Map(
-        answers.map((a) => [a.faq_question_id, a.answer]),
+        answers.map((a) => [Number(a.faq_question_id), a.answer]),
       );
 
       let vendorTypeKey = null;
 
       // Direct subcategory-based matching first
-      if (normalizedSub.includes("flower jewellery") || normalizedSub.includes("floral jewellery") || normalizedSub.includes("flower jewelry") || normalizedSub.includes("floral jewelry")) {
+      // Priority: Sherwani-on-rent (vendor_type_id 22) FIRST before generic rent patterns
+      const isSherwaniVendor = normalizedSub.includes("sherwani") || 
+        normalizedSub.includes("shervani") ||
+        normalizedSub.includes("sarvani") ||
+        (venueData.attributes?.vendor_subcategory_name || "").toLowerCase().includes("sherwani") ||
+        (venueData.vendor?.vendorSubcategory?.name || "").toLowerCase().includes("sherwani") ||
+        (venueData.attributes?.name || "").toLowerCase().includes("sherwani") ||
+        (venueData.attributes?.name || "").toLowerCase().includes("shervani") ||
+        (venueData.attributes?.name || "").toLowerCase().includes("sarvani");
+      
+      if ((dynamicVendorTypeId === 22 || dynamicVendorTypeId === 11) && isSherwaniVendor) {
+        vendorTypeKey = "groomwear";
+      } else if (normalizedSub.includes("flower jewellery") || normalizedSub.includes("floral jewellery") || normalizedSub.includes("flower jewelry") || normalizedSub.includes("floral jewelry")) {
         vendorTypeKey = "flowerjewellery";
       } else if (normalizedSub.includes("kanjeevaram") || normalizedSub.includes("silk saree")) {
         vendorTypeKey = "kanjeevaramsilksaree";
@@ -2124,23 +2149,57 @@ const Detailed = () => {
         vendorTypeKey = "jewelleryrental";
       } else if (normalizedSub.includes("cocktail gown") || normalizedSub.includes("gowns")) {
         vendorTypeKey = "cocktailgowns";
-      } else if (normalizedSub.includes("lehenga") || normalizedSub.includes("bridal outfit") || normalizedSub.includes("trousseau sarees") || normalizedSub.includes("trousseau")) {
+      } else if (normalizedSub.includes("trousseau packer") || normalizedSub.includes("trousseau pack")) {
+        vendorTypeKey = "trousseaupacker";
+      } else if (normalizedSub.includes("trousseau sarees") || normalizedSub.includes("trousseau saree")) {
+        vendorTypeKey = "trousseausarees";
+      } else if (normalizedSub.includes("lehenga") || normalizedSub.includes("bridal outfit") || normalizedSub.includes("trousseau")) {
         vendorTypeKey = "bridaloutfit";
+      } else if (
+        normalizedSub.includes("favor") || 
+        normalizedSub.includes("favour") ||
+        normalizedSub.includes("gift") ||
+        normalizedSub.includes("invitation") ||
+        (venueData.attributes?.name || "").toLowerCase().includes("favor") ||
+        (venueData.attributes?.name || "").toLowerCase().includes("gift") ||
+        (venueData.attributes?.name || "").toLowerCase().includes("invitation") ||
+        (venueData.attributes?.businessName || "").toLowerCase().includes("favor") ||
+        (venueData.vendor?.name || "").toLowerCase().includes("favor")
+      ) {
+        vendorTypeKey = "gifts";
       }
 
       // 1. Fallback to Sakshi's subcategory overrides based on attributes
       if (!vendorTypeKey) {
         const attrs = venueData.attributes || {};
-        if (attrs.jewellery_rental_master?.ai_faq || attrs.jewellery_master?.ai_faq) {
+        // Special: If Sherwani-on-rent (vendor_type_id 22), prioritize groomwear over rental_outfit_master
+        const isSherw = normalizedSub.includes("sherwani") || 
+          normalizedSub.includes("shervani") || 
+          normalizedSub.includes("sarvani") || 
+          (venueData.attributes?.vendor_subcategory_name || "").toLowerCase().includes("sherwani") ||
+          (venueData.attributes?.vendor_subcategory_name || "").toLowerCase().includes("shervani") ||
+          (venueData.attributes?.vendor_subcategory_name || "").toLowerCase().includes("sarvani") ||
+          (venueData.vendor?.vendorSubcategory?.name || "").toLowerCase().includes("sherwani");
+        
+        if (dynamicVendorTypeId === 22 && isSherw) {
+          vendorTypeKey = "groomwear";
+        } else if (attrs.jewellery_rental_master?.ai_faq || attrs.jewellery_master?.ai_faq) {
           vendorTypeKey = "jewelleryrental";
         } else if (attrs.accessories_master?.ai_faq) {
           vendorTypeKey = "accessories";
         } else if (attrs.cocktail_gown_master?.ai_faq || venueData.vendor?.vendorType?.name === "Cocktails gowns" || venueData.vendor?.vendorType?.name === "Cocktail Gowns" || venueData.vendor?.vendorType?.name === "cocktails-gowns") {
           vendorTypeKey = "cocktailgowns";
-        } else if (attrs.rental_outfit_master && Object.keys(attrs.rental_outfit_master).length > 0) {
+        } else if (attrs.rental_outfit_master && Object.keys(attrs.rental_outfit_master).length > 0 && dynamicVendorTypeId !== 22) {
           vendorTypeKey = "rentaloutfit";
+        } else if (attrs.rental_outfit_master && Object.keys(attrs.rental_outfit_master).length > 0) {
+          // If vendor_type_id is 22 but we're here, it's sherwani - use groomwear
+          vendorTypeKey = "groomwear";
         } else if (attrs.flower_jewellery_master && Object.keys(attrs.flower_jewellery_master).length > 0) {
           vendorTypeKey = "flowerjewellery";
+        } else if (attrs.trousseau_master && Object.keys(attrs.trousseau_master).length > 0) {
+          vendorTypeKey = "trousseaupacker";
+        } else if ((attrs.favor_master && Object.keys(attrs.favor_master).length > 0) || (attrs.gift_master && Object.keys(attrs.gift_master).length > 0) || (attrs.invitation_gift_master && Object.keys(attrs.invitation_gift_master).length > 0) || (attrs.invitation_master && Object.keys(attrs.invitation_master).length > 0)) {
+          vendorTypeKey = "gifts";
         } else {
           // Bridal Outfit / Kanjeevaram Silk Saree detection
           const vendorTypeName = (venueData.vendor?.vendorType?.name || "").toLowerCase();
@@ -2202,11 +2261,11 @@ const Detailed = () => {
       let mergedFaqs = [];
       if (vendorTypeKey && FaqQuestions[vendorTypeKey]) {
         const allQuestions = FaqQuestions[vendorTypeKey].questions || [];
-        const normSubcat = (venueData?.subcategory?.name || subcategoryName || "").trim().toLowerCase();
+        const normSubcat = (venueData?.subcategory?.name || subcategoryName || venueData.vendor?.vendorSubcategory?.name || "").trim().toLowerCase();
         let filteredQuestions = allQuestions;
 
-        // 3a. Groomwear (vendor_type_id: 11) filtering
-        if (dynamicVendorTypeId === 11) {
+        // 3a. Groomwear (vendor_type_id: 11 or Sherwani rental under type 22)
+        if (dynamicVendorTypeId === 11 || (dynamicVendorTypeId === 22 && vendorTypeKey === "groomwear")) {
           const isSherwani = normSubcat.includes("sherwani");
           const isWeddingSuit = normSubcat.includes("suit") || normSubcat.includes("wedding suite");
           filteredQuestions = allQuestions.filter(q => {
@@ -2228,14 +2287,14 @@ const Detailed = () => {
           });
         }
         // 3c. Invites & Gifts (vendor_type_id: 9) filtering
-        else if (dynamicVendorTypeId === 9) {
+        else if (dynamicVendorTypeId === 9 || vendorTypeKey === "gifts") {
           const isTrousseauPacker = normSubcat.includes("trousseau packer") || normSubcat.includes("trousseau pack");
           const isGift = normSubcat === "gifts" || normSubcat === "gift" || normSubcat.includes("gifting") || normSubcat === "invitation gifts";
-          const isFavor = normSubcat.includes("favor") || normSubcat.includes("favour");
+          const isFavor = normSubcat.includes("favor") || normSubcat.includes("favour") || vendorTypeKey === "gifts";
           const isInvitation = (normSubcat.includes("invitation") || normSubcat.includes("invite")) && !isGift;
           filteredQuestions = allQuestions.filter(q => {
             const qid = q.id;
-            if (qid >= 1501 && qid <= 1515) return true;
+            if (qid >= 2101 && qid <= 2115) return true;
             if (qid >= 2116 && qid <= 2129) return isTrousseauPacker;
             if (qid >= 2130 && qid <= 2144) return isGift;
             if (qid >= 2145 && qid <= 2159) return isFavor;
@@ -2406,6 +2465,117 @@ const Detailed = () => {
               case 9013: return rs.pickup_delivery_service || "";
               case 9014: return rci.lehenga_weight?.includes("Heavy") ? "Yes" : "";
               case 9015: return rw.trial_appointment_required || "";
+              default: return "";
+            }
+          } else if (vendorTypeKey === "gifts") {
+            const ai = 
+              attrs.favor_master?.ai_faq || 
+              attrs.gift_master?.ai_faq || 
+              attrs.invitation_gift_master?.ai_faq ||
+              attrs.invitation_master?.ai_faq ||
+              {};
+            switch (qId) {
+              case 2101: return ai.starting_price_edible;
+              case 2103: return ai.starting_price_non_edible;
+              case 2104: return ai.min_order_edible;
+              case 2105: return ai.min_order_non_edible;
+              case 2106: return ai.gift_types;
+              case 2107: return Array.isArray(ai.payment_modes) ? ai.payment_modes.join(", ") : ai.payment_modes;
+              case 2108: return ai.advance_booking_amount;
+              case 2109: return ai.cancellation_policy;
+              case 2110: return ai.starting_year;
+              // Gifts AI FAQ Mapping
+              case 2130: return ai.handle_bulk_orders;
+              case 2131: return ai.gifts_customizable;
+              case 2132: return ai.packaging_included;
+              case 2133: return ai.eco_friendly_gift;
+              case 2134: return ai.deliver_across_india;
+              case 2135: return ai.consumable_gifts_available;
+              case 2136: return ai.shelf_life_of_consumable;
+              case 2137: return ai.luxury_gift_options;
+              case 2138: return ai.handle_urgent_orders;
+              case 2139: return ai.gift_samples_available;
+              case 2140: return ai.branded_for_corporate;
+              case 2141: return ai.minimum_order_quantity_required;
+              case 2142: return ai.fragile_gift_safely_packed;
+              case 2143: return ai.temperature_controlled_delivery;
+              case 2144: return ai.suitable_for_all_guests;
+              // Favors AI FAQ Mapping
+              case 2145: return ai.handle_bulk_orders;
+              case 2146: return ai.favors_customizable;
+              case 2147: return ai.edible_favors_available;
+              case 2148: return ai.shelf_life_of_edible;
+              case 2149: return ai.eco_friendly_favors;
+              case 2150: return ai.personalized_with_names;
+              case 2151: return ai.provide_packaging;
+              case 2152: return ai.deliver_across_india;
+              case 2153: return ai.favors_reusable;
+              case 2154: return ai.minimum_order_quantity_required;
+              case 2155: return ai.handle_urgent_orders;
+              case 2156: return ai.fragile_items_safely_packed;
+              case 2157: return ai.match_wedding_theme;
+              case 2158: return ai.suitable_for_kids;
+              case 2159: return ai.premium_luxury_favors_available;
+              // Invitations AI FAQ Mapping
+              case 2160: return ai.create_digital_invites;
+              case 2161: return ai.print_physical_cards;
+              case 2162: return ai.invitations_customizable;
+              case 2163: return ai.match_wedding_theme;
+              case 2164: return ai.box_invitations_available;
+              case 2165: return ai.handmade_paper_used;
+              case 2166: return ai.min_order_quantity;
+              case 2167: return ai.shipping_across_world;
+              case 2168: return ai.handle_urgent_orders;
+              case 2169: return ai.calligraphy_services_available;
+              case 2170: return ai.samples_available;
+              case 2171: return ai.designer_invitations_available;
+              case 2172: return ai.qr_code_integration;
+              default: return "";
+            }
+          } else if (vendorTypeKey === "groomwear") {
+            const ai = 
+              attrs.sherwani_master?.ai_faq || 
+              attrs.wedding_suit_master?.ai_faq || 
+              attrs.groom_wear_master?.ai_faq ||
+              {};
+            switch (qId) {
+              case 401: return Array.isArray(ai.outfit_types) ? ai.outfit_types.join(", ") : ai.outfit_types;
+              case 402: return ai.customization_available;
+              case 403: return ai.collection_type;
+              case 404: return ai.price_range;
+              case 405: return ai.trial_available;
+              case 406: return ai.delivery_duration;
+              case 407: return ai.advance_required;
+              case 408: return ai.best_known_for;
+              case 409: return ai.cancellation_policy;
+              case 410: return ai.starting_year;
+              // Sherwani Specific (411-425)
+              case 411: return ai.groom_sherwanis || "Yes";
+              case 412: return ai.customization_available;
+              case 413: return ai.rental_available;
+              case 414: return ai.security_deposit;
+              case 415: return ai.rental_duration;
+              case 416: return ai.dry_cleaning_included;
+              case 417: return ai.alterations_included;
+              case 418: return ai.accessories_included;
+              case 419: return ai.fabric_variety;
+              case 420: return ai.appointment_required;
+              case 421: return ai.urgent_delivery;
+              case 422: return ai.international_shipping;
+              case 423: return ai.matching_stole_pagri;
+              case 424: return ai.luxury_premium_range;
+              case 425: return ai.return_policy;
+              // Suits & Tuxedos (426-435)
+              case 426: return ai.suits_tuxedos || "Yes";
+              case 427: return ai.custom_tailoring;
+              case 428: return ai.imported_fabrics;
+              case 429: return ai.fitting_sessions;
+              case 430: return ai.styling_assistance;
+              case 431: return ai.ready_to_wear;
+              case 432: return ai.matching_accessories;
+              case 433: return ai.maintenance_tips;
+              case 434: return ai.alteration_support;
+              case 435: return ai.order_timeline;
               default: return "";
             }
           }
@@ -2945,7 +3115,7 @@ const Detailed = () => {
                 };
 
                 // Only include FAQs with at least one non-empty answer
-                const validFaqs = (faqList || []).filter(
+                const validFaqs = (_faqList || []).filter(
                   (q) => parseAnswer(q.ans).length > 0,
                 );
 

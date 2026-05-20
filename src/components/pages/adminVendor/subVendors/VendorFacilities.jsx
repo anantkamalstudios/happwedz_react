@@ -135,6 +135,7 @@ const VendorFacilities = ({
   const isBridalOutfit =
     !isCocktailGown &&
     !isBridalOutfitRent &&
+    !isTrousseauPacker &&
     (normalizedType.includes("bridal") ||
       normalizedType.includes("outfit") ||
       normalizedType.includes("lehenga") ||
@@ -221,7 +222,7 @@ const VendorFacilities = ({
                 embedded
               />
             )}
-            {isPhotographer && (
+            {isPhotographer && !isPreWeddingPhotographer && (
               <PhotographerMasterProfile
                 formData={formData}
                 setFormData={setFormData}
