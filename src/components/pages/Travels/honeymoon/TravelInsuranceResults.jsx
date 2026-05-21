@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Shield,
   Calendar,
@@ -10,24 +10,24 @@ import {
   Plus,
   ChevronRight,
   Plane,
-} from 'lucide-react';
-import { reviewInsurancePlan } from '../../../../services/api/tripSafeApi';
-import InsuranceBenefitsModal from './InsuranceBenefitsModal';
+} from "lucide-react";
+import { reviewInsurancePlan } from "../../../../services/api/tripSafeApi";
+import InsuranceBenefitsModal from "./InsuranceBenefitsModal";
 
 const formatPrice = (value) => {
   const num = Number(value || 0);
-  if (!num) return '—';
-  return `₹${num.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+  if (!num) return "—";
+  return `₹${num.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 };
 
 const formatDate = (value) => {
-  if (!value) return '—';
+  if (!value) return "—";
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return value;
-  return d.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   });
 };
 
@@ -45,17 +45,18 @@ const TravelInsuranceResults = () => {
   const initialResults = location.state?.initialResults;
 
   const [packages] = useState(initialResults?.data || []);
-  const [benefitsModal, setBenefitsModal] = useState({ open: false, pkg: null });
+  const [benefitsModal, setBenefitsModal] = useState({
+    open: false,
+    pkg: null,
+  });
   const [selectingId, setSelectingId] = useState(null);
   const [selectError, setSelectError] = useState(null);
 
   useEffect(() => {
     if (!searchParams) {
-      navigate('/honeymoon');
+      navigate("/honeymoon");
     }
   }, [searchParams, navigate]);
-
-  const sortedPackages = [...packages].sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
 
   const handleSelectPlan = async (pkg) => {
     const key = `${pkg.plid}-${pkg.pid}`;
@@ -65,11 +66,11 @@ const TravelInsuranceResults = () => {
     try {
       const review = await reviewInsurancePlan(pkg);
       if (!review?.status || !review.bookingId) {
-        setSelectError(review?.message || 'Could not review plan. Try again.');
+        setSelectError(review?.message || "Could not review plan. Try again.");
         return;
       }
 
-      navigate('/honeymoon/insurance/book', {
+      navigate("/honeymoon/insurance/book", {
         state: {
           searchParams,
           initialResults,
@@ -82,7 +83,7 @@ const TravelInsuranceResults = () => {
       });
     } catch (err) {
       setSelectError(
-        err?.response?.data?.message || err?.message || 'Review failed'
+        err?.response?.data?.message || err?.message || "Review failed",
       );
     } finally {
       setSelectingId(null);
@@ -100,7 +101,7 @@ const TravelInsuranceResults = () => {
           <button
             type="button"
             className="btn btn-outline-secondary mb-3"
-            onClick={() => navigate('/honeymoon')}
+            onClick={() => navigate("/honeymoon")}
           >
             ← Back to Search
           </button>
@@ -111,32 +112,32 @@ const TravelInsuranceResults = () => {
               <p className="ins-results-meta">
                 <MapPin size={14} />
                 {searchParams?.destinationLabel ||
-                regions.map((r) => r.rkey).join(', ') ||
-                'Selected destination'}
+                  regions.map((r) => r.rkey).join(", ") ||
+                  "Selected destination"}
                 <span className="mx-2">·</span>
                 <Calendar size={14} />
-                {formatDate(searchParams?.isq?.sd)} – {formatDate(searchParams?.isq?.ed)}
+                {formatDate(searchParams?.isq?.sd)} –{" "}
+                {formatDate(searchParams?.isq?.ed)}
                 <span className="mx-2">·</span>
                 <Users size={14} />
                 {(searchParams?.isq?.iti || []).length} traveller
-                {(searchParams?.isq?.iti || []).length === 1 ? '' : 's'}
-                {searchParams?.planType ? ` · ${searchParams.planType}` : ''}
+                {(searchParams?.isq?.iti || []).length === 1 ? "" : "s"}
+                {searchParams?.planType ? ` · ${searchParams.planType}` : ""}
               </p>
             </div>
-
           </div>
 
           {selectError && (
             <div className="alert alert-danger py-2">{selectError}</div>
           )}
 
-          {!sortedPackages.length ? (
+          {!packages.length ? (
             <div className="alert alert-info">
               No insurance packages found. Try different dates or destination.
             </div>
           ) : (
             <div className="ts-cards-list">
-              {sortedPackages.map((pkg) => {
+              {packages.map((pkg) => {
                 const cardKey = `${pkg.plid}-${pkg.pid}`;
                 const isSelecting = selectingId === cardKey;
                 const assistanceTags = pkg.assistanceTags || [];
@@ -153,17 +154,20 @@ const TravelInsuranceResults = () => {
                               <Plane size={11} className="ts-shield-plane" />
                             </span>
                             <span className="ts-plan-name">
-                              TripSafe <strong>{pkg.planLabel?.toUpperCase()}</strong>
+                              TripSafe{" "}
+                              <strong>{pkg.planLabel?.toUpperCase()}</strong>
                             </span>
                           </div>
                           <div className="ts-plan-pricing">
                             {pkg.earnAmount > 0 && (
                               <span className="ts-earn-badge">
-                                Earn ₹{pkg.earnAmount.toLocaleString('en-IN')}*
+                                Earn ₹{pkg.earnAmount.toLocaleString("en-IN")}*
                               </span>
                             )}
                             <div className="ts-price-block">
-                              <span className="ts-price">{formatPrice(pkg.price)}</span>
+                              <span className="ts-price">
+                                {formatPrice(pkg.price)}
+                              </span>
                               <span className="ts-price-gst">Inc. GST</span>
                             </div>
                           </div>
@@ -174,7 +178,8 @@ const TravelInsuranceResults = () => {
                           <div className="ts-plan-col">
                             <h6 className="ts-col-title">24/7 Assistance</h6>
                             <p className="ts-col-sub">
-                              Assistance by {pkg.assistancePartner || 'TripSafe partners'}
+                              Assistance by{" "}
+                              {pkg.assistancePartner || "TripSafe partners"}
                             </p>
                             <div className="ts-tags-grid">
                               {assistanceTags.map((tag) => (
@@ -186,7 +191,7 @@ const TravelInsuranceResults = () => {
                           {/* Coverage column */}
                           <div className="ts-plan-col">
                             <h6 className="ts-col-title">
-                              {pkg.coverageAmount || '$50,000'} Travel Cover
+                              {pkg.coverageAmount || "$50,000"} Travel Cover
                             </h6>
                             <p className="ts-col-sub">
                               Insurance by {pkg.insurerLabel || pkg.insurer}
@@ -203,14 +208,17 @@ const TravelInsuranceResults = () => {
                           <button
                             type="button"
                             className="ts-view-benefits"
-                            onClick={() => setBenefitsModal({ open: true, pkg })}
+                            onClick={() =>
+                              setBenefitsModal({ open: true, pkg })
+                            }
                           >
                             View all {pkg.benefitsCount} benefits
                             <ChevronRight size={16} />
                           </button>
                           <p className="ts-disclaimer">
-                            *Agent earnings are on non-insurance products | Insurance is through
-                            a group master policy with {pkg.insurerLabel || 'the insurer'}.
+                            *Agent earnings are on non-insurance products |
+                            Insurance is through a group master policy with{" "}
+                            {pkg.insurerLabel || "the insurer"}.
                           </p>
                         </footer>
                       </div>
@@ -472,7 +480,7 @@ const TravelInsuranceResults = () => {
           padding: 20px 16px;
           border: none;
           border-radius: 10px;
-          background: #ff8c42;
+          background: #ed1173;
           color: #fff;
           font-size: 15px;
           font-weight: 700;
@@ -480,7 +488,7 @@ const TravelInsuranceResults = () => {
           transition: background 0.2s, transform 0.15s;
         }
         .ts-add-btn:hover:not(:disabled) {
-          background: #ff7a28;
+          background: #d10f65;
           transform: scale(1.02);
         }
         .ts-add-btn:disabled {

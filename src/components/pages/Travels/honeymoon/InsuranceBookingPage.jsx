@@ -1,41 +1,44 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Loader2, Upload, ChevronDown } from 'lucide-react';
-import { bookTripSafeInsurance } from '../../../../services/api/tripSafeApi';
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Loader2, Upload, ChevronDown } from "lucide-react";
+import { bookTripSafeInsurance } from "../../../../services/api/tripSafeApi";
 
 const NOMINEE_RELATIONS = [
-  'LEGAL HEIR',
-  'SPOUSE',
-  'FATHER',
-  'MOTHER',
-  'SON',
-  'DAUGHTER',
-  'BROTHER',
-  'SISTER',
+  "LEGAL HEIR",
+  "SPOUSE",
+  "FATHER",
+  "MOTHER",
+  "SON",
+  "DAUGHTER",
+  "BROTHER",
+  "SISTER",
 ];
 
 const formatPrice = (value) => {
   const num = Number(value || 0);
-  if (!num) return '—';
-  return `₹${num.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+  if (!num) return "—";
+  return `₹${num.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 };
 
 const formatDate = (value) => {
-  if (!value) return '—';
+  if (!value) return "—";
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return value;
-  return d.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   });
 };
 
 const splitFullName = (fullName) => {
-  const parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return { fn: '', ln: '' };
+  const parts = String(fullName || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!parts.length) return { fn: "", ln: "" };
   if (parts.length === 1) return { fn: parts[0], ln: parts[0] };
-  return { fn: parts[0], ln: parts.slice(1).join(' ') };
+  return { fn: parts[0], ln: parts.slice(1).join(" ") };
 };
 
 const buildTravellerForms = (searchParams) => {
@@ -44,15 +47,15 @@ const buildTravellerForms = (searchParams) => {
   return ages.slice(0, count).map((age, index) => ({
     id: index + 1,
     age,
-    fullName: '',
-    gender: 'M',
-    dob: '',
-    passport: '',
-    mobile: '',
-    email: '',
-    pincode: '',
-    nomineeName: 'LEGAL HEIR',
-    nomineeRelation: 'LEGAL HEIR',
+    fullName: "",
+    gender: "M",
+    dob: "",
+    passport: "",
+    mobile: "",
+    email: "",
+    pincode: "",
+    nomineeName: "LEGAL HEIR",
+    nomineeRelation: "LEGAL HEIR",
   }));
 };
 
@@ -63,19 +66,31 @@ const InsuranceBookingPage = () => {
   const selectedPlan = location.state?.selectedPlan;
   const reviewMeta = location.state?.reviewMeta;
 
-  const [travellers, setTravellers] = useState(() => buildTravellerForms(searchParams));
+  const [travellers, setTravellers] = useState(() =>
+    buildTravellerForms(searchParams),
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
 
   useEffect(() => {
     if (!searchParams || !selectedPlan || !reviewMeta?.bookingId) {
-      navigate('/honeymoon');
+      navigate("/honeymoon");
     }
   }, [searchParams, selectedPlan, reviewMeta, navigate]);
 
   const destinationLabel = useMemo(() => {
     const regions = searchParams?.isq?.isc?.iri || [];
-    return regions.map((r) => r.rkey).join(', ') || 'Selected destination';
+    return (
+      searchParams?.destinationLabel ||
+      regions
+        .map((r) => {
+          if (r.rkey === "CA") return "Canada";
+          return r.rkey;
+        })
+        .join(", ") ||
+      "Selected destination"
+    );
   }, [searchParams]);
 
   if (!searchParams || !selectedPlan || !reviewMeta?.bookingId) return null;
@@ -96,16 +111,19 @@ const InsuranceBookingPage = () => {
     for (let i = 0; i < travellers.length; i += 1) {
       const t = travellers[i];
       if (!t.fullName.trim()) return `Enter full name for traveller ${i + 1}`;
-      if (!t.passport.trim()) return `Enter passport number for traveller ${i + 1}`;
+      if (!t.passport.trim())
+        return `Enter passport number for traveller ${i + 1}`;
       if (!t.mobile.trim() || t.mobile.length < 10) {
         return `Enter valid mobile for traveller ${i + 1}`;
       }
-      if (!t.email.trim() || !t.email.includes('@')) {
+      if (!t.email.trim() || !t.email.includes("@")) {
         return `Enter valid email for traveller ${i + 1}`;
       }
       if (!t.pincode.trim()) return `Enter pincode for traveller ${i + 1}`;
-      if (!t.nomineeName.trim()) return `Enter nominee name for traveller ${i + 1}`;
+      if (!t.nomineeName.trim())
+        return `Enter nominee name for traveller ${i + 1}`;
     }
+    if (!agreeToTerms) return "Please agree to the terms and conditions";
     return null;
   };
 
@@ -146,7 +164,7 @@ const InsuranceBookingPage = () => {
       bookingId: reviewMeta.bookingId,
       paymentInfos: [
         {
-          paymentMedium: 'WALLET',
+          paymentMedium: "WALLET",
           amount: totalPrice,
         },
       ],
@@ -170,7 +188,7 @@ const InsuranceBookingPage = () => {
     try {
       const response = await bookTripSafeInsurance(payload);
       if (!response?.status) {
-        setError(response?.message || 'Booking failed');
+        setError(response?.message || "Booking failed");
         return;
       }
       const bookedId =
@@ -180,7 +198,9 @@ const InsuranceBookingPage = () => {
       navigate(`/honeymoon/insurance/booking/${bookedId}`, { replace: true });
     } catch (err) {
       setError(
-        err?.response?.data?.message || err?.message || 'Unable to complete booking'
+        err?.response?.data?.message ||
+          err?.message ||
+          "Unable to complete booking",
       );
     } finally {
       setSubmitting(false);
@@ -194,8 +214,11 @@ const InsuranceBookingPage = () => {
           type="button"
           className="btn btn-link text-decoration-none ps-0 mb-3"
           onClick={() =>
-            navigate('/honeymoon/insurance', {
-              state: { searchParams, initialResults: location.state?.initialResults },
+            navigate("/honeymoon/insurance", {
+              state: {
+                searchParams,
+                initialResults: location.state?.initialResults,
+              },
             })
           }
         >
@@ -214,8 +237,14 @@ const InsuranceBookingPage = () => {
                   <div className="ins-passport-upload">
                     <Upload size={28} className="text-muted mb-2" />
                     <div className="fw-semibold">Upload Passport</div>
-                    <small className="text-muted">PNG, JPG, PDF | Size &lt; 2MB</small>
-                    <button type="button" className="btn btn-sm ins-upload-btn mt-2" disabled>
+                    <small className="text-muted">
+                      PNG, JPG, PDF | Size &lt; 2MB
+                    </small>
+                    <button
+                      type="button"
+                      className="btn btn-sm ins-upload-btn mt-2"
+                      disabled
+                    >
                       UPLOAD
                     </button>
                   </div>
@@ -228,7 +257,9 @@ const InsuranceBookingPage = () => {
                         className="form-control"
                         placeholder="Enter Full Name"
                         value={traveller.fullName}
-                        onChange={(e) => updateTraveller(index, 'fullName', e.target.value)}
+                        onChange={(e) =>
+                          updateTraveller(index, "fullName", e.target.value)
+                        }
                         required
                       />
                     </div>
@@ -237,15 +268,17 @@ const InsuranceBookingPage = () => {
                       <label className="form-label d-block">Gender</label>
                       <div className="ins-gender-group">
                         {[
-                          ['M', 'Male'],
-                          ['F', 'Female'],
+                          ["M", "Male"],
+                          ["F", "Female"],
                         ].map(([val, label]) => (
                           <label key={val} className="ins-gender-option">
                             <input
                               type="radio"
                               name={`gender-${index}`}
                               checked={traveller.gender === val}
-                              onChange={() => updateTraveller(index, 'gender', val)}
+                              onChange={() =>
+                                updateTraveller(index, "gender", val)
+                              }
                             />
                             {label}
                           </label>
@@ -259,7 +292,9 @@ const InsuranceBookingPage = () => {
                         type="date"
                         className="form-control"
                         value={traveller.dob}
-                        onChange={(e) => updateTraveller(index, 'dob', e.target.value)}
+                        onChange={(e) =>
+                          updateTraveller(index, "dob", e.target.value)
+                        }
                       />
                     </div>
 
@@ -270,7 +305,9 @@ const InsuranceBookingPage = () => {
                         className="form-control"
                         placeholder="Enter Number"
                         value={traveller.passport}
-                        onChange={(e) => updateTraveller(index, 'passport', e.target.value)}
+                        onChange={(e) =>
+                          updateTraveller(index, "passport", e.target.value)
+                        }
                         required
                       />
                     </div>
@@ -282,7 +319,9 @@ const InsuranceBookingPage = () => {
                         className="form-control"
                         placeholder="123456"
                         value={traveller.pincode}
-                        onChange={(e) => updateTraveller(index, 'pincode', e.target.value)}
+                        onChange={(e) =>
+                          updateTraveller(index, "pincode", e.target.value)
+                        }
                         required
                       />
                     </div>
@@ -293,7 +332,9 @@ const InsuranceBookingPage = () => {
                         type="text"
                         className="form-control"
                         value={traveller.nomineeName}
-                        onChange={(e) => updateTraveller(index, 'nomineeName', e.target.value)}
+                        onChange={(e) =>
+                          updateTraveller(index, "nomineeName", e.target.value)
+                        }
                         required
                       />
                     </div>
@@ -304,7 +345,11 @@ const InsuranceBookingPage = () => {
                         className="form-select"
                         value={traveller.nomineeRelation}
                         onChange={(e) =>
-                          updateTraveller(index, 'nomineeRelation', e.target.value)
+                          updateTraveller(
+                            index,
+                            "nomineeRelation",
+                            e.target.value,
+                          )
                         }
                       >
                         {NOMINEE_RELATIONS.map((rel) => (
@@ -322,7 +367,9 @@ const InsuranceBookingPage = () => {
                         className="form-control"
                         placeholder="XXXXX XXXXX"
                         value={traveller.mobile}
-                        onChange={(e) => updateTraveller(index, 'mobile', e.target.value)}
+                        onChange={(e) =>
+                          updateTraveller(index, "mobile", e.target.value)
+                        }
                         required
                       />
                     </div>
@@ -334,7 +381,9 @@ const InsuranceBookingPage = () => {
                         className="form-control"
                         placeholder="Enter Email ID"
                         value={traveller.email}
-                        onChange={(e) => updateTraveller(index, 'email', e.target.value)}
+                        onChange={(e) =>
+                          updateTraveller(index, "email", e.target.value)
+                        }
                         required
                       />
                     </div>
@@ -344,20 +393,82 @@ const InsuranceBookingPage = () => {
 
               {error && <div className="alert alert-danger">{error}</div>}
 
-              <button
-                type="submit"
-                className="btn ins-submit-btn w-100"
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <span className="d-inline-flex align-items-center gap-2">
-                    <Loader2 size={18} className="spin" />
-                    Booking insurance...
-                  </span>
-                ) : (
-                  `Confirm & Pay ${formatPrice(totalPrice)}`
-                )}
-              </button>
+              <div className="mt-4">
+                <div className="form-check mb-4 p-3 border rounded">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="termsCheckbox"
+                    checked={agreeToTerms}
+                    onChange={(e) => setAgreeToTerms(e.target.checked)}
+                  />
+                  <label
+                    className="form-check-label ms-2"
+                    htmlFor="termsCheckbox"
+                  >
+                    I confirm that all passengers are Indian nationals between 0
+                    to 75 years of age, have authorised me to add Insurance, and
+                    agree to the{" "}
+                    <a href="#" className="text-primary">
+                      T&amp;C
+                    </a>
+                  </label>
+                </div>
+
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <button
+                    type="button"
+                    className="btn btn-lg"
+                    style={{
+                      background: "#ed1173",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                    }}
+                    onClick={() =>
+                      navigate("/honeymoon/insurance", {
+                        state: {
+                          searchParams,
+                          initialResults: location.state?.initialResults,
+                        },
+                      })
+                    }
+                  >
+                    &lt;&lt; Back
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-lg"
+                    style={{
+                      background: "#ed1173",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                    }}
+                    disabled={submitting || !agreeToTerms}
+                  >
+                    {submitting ? (
+                      <span className="d-inline-flex align-items-center gap-2">
+                        <Loader2 size={18} className="spin" />
+                        Booking insurance...
+                      </span>
+                    ) : (
+                      "Continue >>"
+                    )}
+                  </button>
+                </div>
+
+                <div className="p-3 border rounded bg-white shadow-sm">
+                  <h6 className="fw-bold mb-2">*Disclaimers</h6>
+                  <ul className="small mb-0">
+                    <li>Agent earnings are on non-insurance products.</li>
+                    <li>
+                      Insurance is through a group master policy with Aditya
+                      Birla Health Insurance.
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </form>
           </div>
 
@@ -373,11 +484,15 @@ const InsuranceBookingPage = () => {
                 </div>
                 <div>
                   <div className="ins-summary-label">Start Date</div>
-                  <div className="ins-summary-value">{formatDate(searchParams?.isq?.sd)}</div>
+                  <div className="ins-summary-value">
+                    {formatDate(searchParams?.isq?.sd)}
+                  </div>
                 </div>
                 <div>
                   <div className="ins-summary-label">End Date</div>
-                  <div className="ins-summary-value">{formatDate(searchParams?.isq?.ed)}</div>
+                  <div className="ins-summary-value">
+                    {formatDate(searchParams?.isq?.ed)}
+                  </div>
                 </div>
               </div>
 
@@ -392,16 +507,19 @@ const InsuranceBookingPage = () => {
                       TripSafe {selectedPlan.planLabel?.toUpperCase()}
                     </div>
                     <div className="ins-summary-plan-meta">
-                      24/7 Assistance | {selectedPlan.coverageAmount} Travel Cover
+                      24/7 Assistance | {selectedPlan.coverageAmount} Travel
+                      Cover
                     </div>
                   </div>
                   <div className="ins-summary-plan-price-col">
-                    <div className="ins-summary-price">{formatPrice(totalPrice)}</div>
+                    <div className="ins-summary-price">
+                      {formatPrice(totalPrice)}
+                    </div>
                     <small className="text-muted">Inc. GST</small>
                     {earnAmount > 0 && (
                       <div className="ins-earn-pill mt-1">
                         <span className="ins-earn-icon">%</span>
-                        Earn ₹{earnAmount.toLocaleString('en-IN')}*
+                        Earn ₹{earnAmount.toLocaleString("en-IN")}*
                       </div>
                     )}
                   </div>
@@ -428,27 +546,19 @@ const InsuranceBookingPage = () => {
                     <span>+ {formatPrice(bd.spGst)}</span>
                   </div>
                 )}
-                {bd.bxp > 0 && (
-                  <div className="ins-breakdown-row">
-                    <span>BOXX Premium</span>
-                    <span>+ {formatPrice(bd.bxp)}</span>
-                  </div>
-                )}
-                {bd.bxpGst > 0 && (
-                  <div className="ins-breakdown-row">
-                    <span>BOXX GST</span>
-                    <span>+ {formatPrice(bd.bxpGst)}</span>
-                  </div>
-                )}
                 {earnAmount > 0 && (
                   <div className="ins-breakdown-row ins-breakdown-earn">
                     <span>TripSafe Earnings</span>
                     <span>- {formatPrice(earnAmount)}</span>
                   </div>
                 )}
+                <div className="ins-breakdown-row">
+                  <span>TDS</span>
+                  <span>+ ₹0.00</span>
+                </div>
                 <div className="ins-breakdown-row ins-breakdown-net">
                   <span>Net Price</span>
-                  <span>{formatPrice(Math.max(0, totalPrice - earnAmount))}</span>
+                  <span>₹0.00</span>
                 </div>
               </div>
             </div>
