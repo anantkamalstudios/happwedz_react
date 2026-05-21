@@ -156,6 +156,7 @@ export default function TripJackBookingReview({
   onContactFieldChange,
   onTermsChange,
   onSubmit,
+  onHoldSubmit,
   bookingSubmitting,
   formatMoney,
 }) {
@@ -598,10 +599,10 @@ export default function TripJackBookingReview({
                                 </select>
                               </div>
                               <div className="col-md-5">
-                                <label className="form-label fw-semibold">Lead Pax First Name</label>
+                                <label className="form-label fw-semibold">First Name</label>
                                 <input
                                   className="form-control"
-                                  placeholder="Lead Pax First Name"
+                                  placeholder="First Name"
                                   value={traveller?.fN || ""}
                                   onChange={(event) => onTravellerFieldChange(roomIndex, travellerIndex, "fN", event.target.value)}
                                   disabled={bookingSubmitting}
@@ -805,6 +806,9 @@ export default function TripJackBookingReview({
         <div className="tripjack-action-bar">
           <Button variant="outline-secondary" onClick={onClose} disabled={bookingSubmitting}>
             Back to Hotel Details
+          </Button>
+          <Button variant="outline-primary" onClick={onHoldSubmit} disabled={bookingSubmitting}>
+            {bookingSubmitting ? "Submitting..." : "Hold Booking"}
           </Button>
           <Button variant="primary" onClick={onSubmit} disabled={bookingSubmitting}>
             {bookingSubmitting ? "Submitting Booking..." : "Proceed to Book"}

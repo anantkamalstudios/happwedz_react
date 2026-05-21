@@ -326,6 +326,27 @@ const normalizeHotelSuggestion = (suggestion) => {
   };
 };
 
+const extractSuggestionList = (response) => {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.suggestions)) return response.suggestions;
+  if (Array.isArray(response?.data?.suggestions)) return response.data.suggestions;
+  if (Array.isArray(response?.data)) return response.data;
+
+  const fromObject = (value) => {
+    if (!value || Array.isArray(value) || typeof value !== "object") return [];
+    return Object.values(value).filter(
+      (item) =>
+        item &&
+        typeof item === "object" &&
+        (item.displayName || item.name || item.searchRegionName),
+    );
+  };
+
+  const topLevel = fromObject(response);
+  if (topLevel.length) return topLevel;
+  return fromObject(response?.data);
+};
+
 const buildRoomInfoFromCounts = ({ rooms, adults, children }) => {
   const roomCount = Math.max(1, Number(rooms) || 1);
   let adultsRemaining = Math.max(roomCount, Number(adults) || 1);
@@ -433,12 +454,18 @@ function LocationAutocomplete({ value, onChange, onSelect, placeholder }) {
       try {
         setLoading(true);
         const response = await suggestHotels({ keyword: query });
-        const rawSuggestions = Array.isArray(response)
-          ? response
-          : response?.suggestions || response?.data?.suggestions || response?.data || [];
+        const rawSuggestions = extractSuggestionList(response);
         const normalized = rawSuggestions
           .map((item) => normalizeHotelSuggestion(item))
           .filter((item) => item?.displayName);
+        if (import.meta.env.DEV) {
+          console.log("[TripJack Suggestions UI]", {
+            query,
+            rawCount: rawSuggestions.length,
+            normalizedCount: normalized.length,
+            sample: normalized[0] || null,
+          });
+        }
         setSuggestions(normalized);
       } catch (error) {
         console.error("Unable to fetch hotel suggestions", error);

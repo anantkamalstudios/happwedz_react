@@ -40,6 +40,7 @@ export default function TripJackBookingStatus({
   const isSuccess = phase === "success";
   const isFailure = phase === "failed";
   const isValidationFailure = phase === "validation_failed";
+  const isAlreadyPaid = phase === "already_paid";
   const isDenied = phase === "denied";
   const isTimeout = phase === "timeout";
   const isProcessing = phase === "submitting" || phase === "polling";
@@ -55,6 +56,8 @@ export default function TripJackBookingStatus({
                 ? "TripJack confirmed this booking."
                 : isDenied
                   ? "TripJack denied the booking request before booking confirmation started."
+                : isAlreadyPaid
+                  ? "This booking is already paid. Fetching latest TripJack status."
                 : isValidationFailure
                   ? "Booking request validation failed before TripJack booking started."
                 : isFailure
@@ -85,7 +88,13 @@ export default function TripJackBookingStatus({
                 <div className="border rounded-4 p-3 h-100">
                   <div className="text-muted fs-12 mb-1">Current Status</div>
                   <div className="fw-bold" style={{ color: getStatusColor(currentStatus || phase) }}>
-                    {isDenied ? "Failed" : isValidationFailure ? "Validation Failed" : formatStatusLabel(currentStatus || phase)}
+                    {isDenied
+                      ? "Failed"
+                      : isAlreadyPaid
+                        ? "Already Paid - Status Sync"
+                        : isValidationFailure
+                          ? "Validation Failed"
+                          : formatStatusLabel(currentStatus || phase)}
                   </div>
                 </div>
               </div>
@@ -105,7 +114,7 @@ export default function TripJackBookingStatus({
                 <div className="border rounded-4 p-3 h-100">
                   <div className="text-muted fs-12 mb-1">Polling Attempts</div>
                   <div className="fw-bold">
-                    {isValidationFailure || isDenied ? "Not started" : statusState?.attempts || 0}
+                    {isValidationFailure || isDenied || isAlreadyPaid ? "Not started" : statusState?.attempts || 0}
                   </div>
                 </div>
               </div>

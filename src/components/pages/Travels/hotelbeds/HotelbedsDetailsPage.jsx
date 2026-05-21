@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import {
   createHotelPaymentOrder,
+  holdHotelBooking,
   getHotelStaticContent,
   getHotelBookingDetails,
   reviewHotelBooking,
@@ -1481,6 +1482,72 @@ function HotelDetailsPage({
     }));
   };
 
+  const buildBookingPayload = ({ includePayment = true }) => {
+    const payableAmount = normalizeAmount(reviewResponse?.priceSummary?.amount);
+    return {
+      bookingId: reviewResponse.bookingId,
+      roomTravellerInfo: bookingForm.roomTravellerInfo.map((room) => ({
+        travellerInfo: room.travellerInfo.map((traveller) => ({
+          ...traveller,
+          fN: String(traveller.fN || "").trim(),
+          lN: String(traveller.lN || "").trim(),
+          ...(traveller.pan ? { pan: String(traveller.pan).trim().toUpperCase() } : {}),
+          ...(traveller.pNum ? { pNum: String(traveller.pNum).trim().toUpperCase() } : {}),
+        })),
+      })),
+      deliveryInfo: {
+        emails: [String(bookingForm.deliveryInfo.emails[0] || "").trim()],
+        contacts: [String(bookingForm.deliveryInfo.contacts[0] || "").trim()],
+        code: [String(bookingForm.deliveryInfo.code[0] || "").trim()],
+      },
+      ...(includePayment ? { paymentInfos: [{ amount: payableAmount }], expectedAmount: payableAmount } : {}),
+      type: "HOTEL",
+      ipr: Boolean(reviewResponse?.bookingRequirements?.panRequired),
+      ipm: Boolean(reviewResponse?.bookingRequirements?.passportRequired),
+      hotelId: String(reviewResponse?.hotelInfo?.tjid || reviewResponse?.hotelSummary?.tjid || ""),
+      optionId: String(reviewResponse?.selectedOption?.id || ""),
+      reviewData: reviewResponse?.raw || reviewResponse,
+    };
+  };
+
+  const handleProceedToHold = async () => {
+    if (!reviewResponse?.bookingId || !bookingForm) {
+      toast.error("Booking review data is missing. Please review the room again.");
+      return;
+    }
+
+    if (!isAuthenticated || !user?.id) {
+      toast.error("Please login before booking a hotel.");
+      navigate("/customer-login");
+      return;
+    }
+
+    const validationErrors = validateBookingForm(bookingForm, reviewResponse);
+    if (validationErrors.length > 0) {
+      toast.error(validationErrors[0]);
+      return;
+    }
+
+    const payload = buildBookingPayload({ includePayment: false });
+    setBookingSubmitting(true);
+    try {
+      const response = await holdHotelBooking(payload);
+      const heldBookingId = response?.bookingId || payload.bookingId;
+      toast.success("Booking held successfully.");
+      setShowBookingFormModal(false);
+      navigate(`/hotels/booking/${heldBookingId}`);
+    } catch (error) {
+      console.error("Unable to hold TripJack booking", error);
+      toast.error(
+        error?.response?.data?.error ||
+          error?.message ||
+          "Unable to hold booking. Please try again.",
+      );
+    } finally {
+      setBookingSubmitting(false);
+    }
+  };
+
   const handleProceedToBook = async () => {
     if (!reviewResponse?.bookingId || !bookingForm) {
       toast.error("Booking review data is missing. Please review the room again.");
@@ -1505,31 +1572,7 @@ function HotelDetailsPage({
       return;
     }
 
-    const payload = {
-      bookingId: reviewResponse.bookingId,
-      roomTravellerInfo: bookingForm.roomTravellerInfo.map((room) => ({
-        travellerInfo: room.travellerInfo.map((traveller) => ({
-          ...traveller,
-          fN: String(traveller.fN || "").trim(),
-          lN: String(traveller.lN || "").trim(),
-          ...(traveller.pan ? { pan: String(traveller.pan).trim().toUpperCase() } : {}),
-          ...(traveller.pNum ? { pNum: String(traveller.pNum).trim().toUpperCase() } : {}),
-        })),
-      })),
-      deliveryInfo: {
-        emails: [String(bookingForm.deliveryInfo.emails[0] || "").trim()],
-        contacts: [String(bookingForm.deliveryInfo.contacts[0] || "").trim()],
-        code: [String(bookingForm.deliveryInfo.code[0] || "").trim()],
-      },
-      paymentInfos: [{ amount: payableAmount }],
-      type: "HOTEL",
-      ipr: Boolean(reviewResponse?.bookingRequirements?.panRequired),
-      ipm: Boolean(reviewResponse?.bookingRequirements?.passportRequired),
-      expectedAmount: payableAmount,
-      hotelId: String(reviewResponse?.hotelInfo?.tjid || reviewResponse?.hotelSummary?.tjid || ""),
-      optionId: String(reviewResponse?.selectedOption?.id || ""),
-      reviewData: reviewResponse?.raw || reviewResponse,
-    };
+    const payload = buildBookingPayload({ includePayment: true });
 
     console.log("[TripJack Booking Request]", {
       endpoint: "hotels/create-payment-order",
@@ -1664,11 +1707,51 @@ function HotelDetailsPage({
       await pollTripjackBookingStatus(bookingResponse?.bookingId || payload.bookingId);
     } catch (error) {
       console.error("Unable to create TripJack booking", error);
+      const timeoutOrCanceled =
+        error?.code === "ECONNABORTED" ||
+        error?.code === "ERR_CANCELED" ||
+        /timeout|canceled|aborted/i.test(String(error?.message || ""));
       const validationFailure = error?.response?.status === 400 || error?.response?.data?.source === "VALIDATION";
+      const duplicateBookingBlocked = Boolean(error?.response?.data?.duplicateBookingBlocked);
       const tripjackDenied =
         error?.response?.data?.source === "TRIPJACK" &&
         error?.response?.data?.status?.success === false;
       const paymentFailure = error?.response?.data?.source === "PAYMENT" || /razorpay/i.test(String(error?.message || ""));
+
+      if (timeoutOrCanceled && !tripjackDenied && !validationFailure) {
+        const bookingIdForRecovery = error?.response?.data?.bookingId || payload.bookingId;
+        setBookingStatusState({
+          phase: "polling",
+          bookingId: bookingIdForRecovery,
+          orderStatus: "PAYMENT_SUCCESS",
+          attempts: 0,
+          message: "Payment may be successful. Fetching latest TripJack booking status.",
+          details: error?.response?.data || null,
+          errorCode: "",
+        });
+        toast.info("Payment processed. Fetching latest booking status from TripJack.");
+        await pollTripjackBookingStatus(bookingIdForRecovery);
+        return;
+      }
+
+      if (duplicateBookingBlocked) {
+        const duplicateBookingId = error?.response?.data?.bookingId || payload.bookingId;
+        setBookingStatusState({
+          phase: "already_paid",
+          bookingId: duplicateBookingId,
+          orderStatus: error?.response?.data?.bookingSummary?.tripjackStatus || "",
+          attempts: 0,
+          message:
+            error?.response?.data?.error ||
+            "This booking is already paid. Fetching latest TripJack status.",
+          details: error?.response?.data?.bookingDetails || error?.response?.data || null,
+          errorCode: "",
+        });
+        toast.info("Payment already completed for this booking. Fetching latest status.");
+        await pollTripjackBookingStatus(duplicateBookingId);
+        return;
+      }
+
       setBookingStatusState({
         phase: validationFailure ? "validation_failed" : tripjackDenied ? "denied" : "failed",
         bookingId: payload.bookingId,
@@ -1835,6 +1918,7 @@ function HotelDetailsPage({
             onContactFieldChange={handleContactFieldChange}
             onTermsChange={handleTermsChange}
             onSubmit={handleProceedToBook}
+            onHoldSubmit={handleProceedToHold}
             bookingSubmitting={bookingSubmitting}
             formatMoney={formatMoney}
             formatDate={formatDate}

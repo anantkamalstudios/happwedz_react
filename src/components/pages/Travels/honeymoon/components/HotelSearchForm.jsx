@@ -71,8 +71,25 @@ const readSuggestionItems = (payload) => {
     payload?.items,
     payload?.results,
   ];
-  const match = candidates.find((value) => Array.isArray(value));
-  return Array.isArray(match) ? match : [];
+  const arrayMatch = candidates.find((value) => Array.isArray(value));
+  if (Array.isArray(arrayMatch)) return arrayMatch;
+
+  const objectToArray = (value) => {
+    if (!value || Array.isArray(value) || typeof value !== "object") return [];
+    return Object.values(value).filter(
+      (item) =>
+        item &&
+        typeof item === "object" &&
+        (item.displayName || item.name || item.searchRegionName),
+    );
+  };
+
+  for (const candidate of candidates) {
+    const extracted = objectToArray(candidate);
+    if (extracted.length) return extracted;
+  }
+
+  return [];
 };
 
 const normalizeHotelSuggestion = (suggestion) => {

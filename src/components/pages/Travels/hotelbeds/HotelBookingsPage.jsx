@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Container } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getAllHotelBookings } from "../../../../services/api/hotelApi";
 
 const STATUS_OPTIONS = [
@@ -52,6 +52,7 @@ function formatDate(value) {
 }
 
 export default function HotelBookingsPage() {
+  const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState("");
   const [loading, setLoading] = useState(false);
   const [bookings, setBookings] = useState([]);
@@ -246,6 +247,26 @@ export default function HotelBookingsPage() {
                         Refresh Status
                       </button>
                     ) : null}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        navigate(`/hotels/booking/${booking.bookingId}`, {
+                          state: { booking },
+                        })
+                      }
+                      style={{
+                        marginTop: "0.75rem",
+                        marginLeft: "0.5rem",
+                        border: "1px solid #132238",
+                        color: "#132238",
+                        background: "#fff",
+                        borderRadius: "999px",
+                        padding: "0.35rem 0.8rem",
+                        fontWeight: 600,
+                      }}
+                    >
+                      View Details
+                    </button>
                   </div>
                 </div>
               </div>

@@ -204,6 +204,9 @@ const HotelbedsHotelsPage = lazy(
 const HotelBookingsPage = lazy(
   () => import("./components/pages/Travels/hotelbeds/HotelBookingsPage"),
 );
+const HotelBookingDetailsPage = lazy(
+  () => import("./components/pages/Travels/hotelbeds/HotelBookingDetailsPage"),
+);
 const FlightSearchResults = lazy(
   () => import("./components/pages/Travels/honeymoon/FlightSearchResults"),
 );
@@ -400,6 +403,14 @@ function App() {
                 element={
                   <UserPrivateRoute>
                     <HotelBookingsPage />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/hotels/booking/:bookingId"
+                element={
+                  <UserPrivateRoute>
+                    <HotelBookingDetailsPage />
                   </UserPrivateRoute>
                 }
               />

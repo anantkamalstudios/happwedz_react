@@ -140,7 +140,9 @@ export const createHotelPaymentOrder = async (payload) => {
 
 export const verifyHotelPaymentAndBook = async (payload) => {
   try {
-    const response = await axiosInstance.post("hotels/verify-payment-and-book", payload);
+    const response = await axiosInstance.post("hotels/verify-payment-and-book", payload, {
+      timeout: 180000,
+    });
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error verifying hotel payment"));
