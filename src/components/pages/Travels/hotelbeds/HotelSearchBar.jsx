@@ -247,19 +247,26 @@ const trackAnalyticsEvent = async (eventData) => {
 const normalizeHotelSuggestion = (suggestion) => {
   if (!suggestion) return null;
 
-  const searchType =
+  const rawSearchType =
     suggestion?.searchType ||
     suggestion?.searchRegionType ||
     suggestion?.regionType ||
     suggestion?.type ||
     "CITY";
+  const normalizedSearchType = String(rawSearchType || "CITY").toUpperCase();
 
   const city =
     suggestion?.city ||
     suggestion?.cityId ||
+    suggestion?.cId ||
+    suggestion?.cid ||
+    suggestion?.raw?.city ||
+    suggestion?.raw?.cityId ||
+    suggestion?.raw?.cId ||
+    suggestion?.raw?.cid ||
     suggestion?.regionId ||
     suggestion?.searchRegionId ||
-    suggestion?.id ||
+    (normalizedSearchType !== "HOTEL" ? suggestion?.id : "") ||
     "";
 
   const displayName =
@@ -271,19 +278,73 @@ const normalizeHotelSuggestion = (suggestion) => {
     suggestion?.keyword ||
     "";
 
-  const rawTjids = suggestion?.tjids || suggestion?.hids || suggestion?.hotelIds || [];
-  const tjids = Array.isArray(rawTjids) ? rawTjids.map((item) => String(item)).filter(Boolean) : [];
+  const rawTjids =
+    suggestion?.tjids ||
+    suggestion?.hids ||
+    suggestion?.hotelIds ||
+    suggestion?.tjid ||
+    suggestion?.tjHotelId ||
+    suggestion?.hotelCode ||
+    suggestion?.raw?.tjid ||
+    suggestion?.raw?.tjHotelId ||
+    suggestion?.raw?.hotelCode ||
+    [];
+  const tjids = Array.isArray(rawTjids)
+    ? rawTjids.map((item) => String(item || "").trim()).filter(Boolean)
+    : typeof rawTjids === "string"
+      ? rawTjids
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean)
+      : rawTjids
+        ? [String(rawTjids).trim()].filter(Boolean)
+        : [];
+  const hid =
+    suggestion?.hid ||
+    suggestion?.hotelId ||
+    suggestion?.hotelid ||
+    suggestion?.tjid ||
+    suggestion?.tjHotelId ||
+    suggestion?.hotelCode ||
+    suggestion?.raw?.tjid ||
+    suggestion?.raw?.tjHotelId ||
+    suggestion?.raw?.hotelCode ||
+    "";
+  const normalizedHid = String(hid || "").trim();
+  const normalizedTjids = tjids.length ? tjids : normalizedHid ? [normalizedHid] : [];
 
   return {
     id: String(city || displayName || ""),
     city: String(city || ""),
-    searchType: String(searchType || "CITY").toUpperCase(),
-    searchRegionType: String(searchType || "CITY").toUpperCase(),
+    searchType: normalizedSearchType,
+    searchRegionType: normalizedSearchType,
     searchRegionName: String(displayName || "").trim(),
     displayName: String(displayName || "").trim(),
-    tjids,
+    tjids: normalizedTjids,
+    hid: normalizedHid,
     raw: suggestion,
   };
+};
+
+const extractSuggestionList = (response) => {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.suggestions)) return response.suggestions;
+  if (Array.isArray(response?.data?.suggestions)) return response.data.suggestions;
+  if (Array.isArray(response?.data)) return response.data;
+
+  const fromObject = (value) => {
+    if (!value || Array.isArray(value) || typeof value !== "object") return [];
+    return Object.values(value).filter(
+      (item) =>
+        item &&
+        typeof item === "object" &&
+        (item.displayName || item.name || item.searchRegionName),
+    );
+  };
+
+  const topLevel = fromObject(response);
+  if (topLevel.length) return topLevel;
+  return fromObject(response?.data);
 };
 
 const buildRoomInfoFromCounts = ({ rooms, adults, children }) => {
@@ -393,12 +454,18 @@ function LocationAutocomplete({ value, onChange, onSelect, placeholder }) {
       try {
         setLoading(true);
         const response = await suggestHotels({ keyword: query });
-        const rawSuggestions = Array.isArray(response)
-          ? response
-          : response?.suggestions || response?.data?.suggestions || response?.data || [];
+        const rawSuggestions = extractSuggestionList(response);
         const normalized = rawSuggestions
           .map((item) => normalizeHotelSuggestion(item))
           .filter((item) => item?.displayName);
+        if (import.meta.env.DEV) {
+          console.log("[TripJack Suggestions UI]", {
+            query,
+            rawCount: rawSuggestions.length,
+            normalizedCount: normalized.length,
+            sample: normalized[0] || null,
+          });
+        }
         setSuggestions(normalized);
       } catch (error) {
         console.error("Unable to fetch hotel suggestions", error);
@@ -451,27 +518,6 @@ function LocationAutocomplete({ value, onChange, onSelect, placeholder }) {
 
       {isOpen && (suggestions.length > 0 || loading) && (
         <div className="tripjack-autocomplete-dropdown">
-          <div className="tripjack-autocomplete-header">
-            <Search size={16} color="#999" />
-            <input
-              type="text"
-              className="tripjack-autocomplete-input"
-              value={inputValue}
-              onChange={handleInputChange}
-              placeholder="Type to search..."
-              autoFocus
-            />
-            {inputValue && (
-              <button
-                type="button"
-                className="tripjack-autocomplete-clear"
-                onClick={handleClear}
-              >
-                <X size={16} />
-              </button>
-            )}
-          </div>
-
           <div className="tripjack-autocomplete-list">
             {loading ? (
               <div className="tripjack-autocomplete-loading">Searching...</div>
@@ -948,7 +994,26 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
   };
 
   const handleSearch = async () => {
-    if (!selectedDestination?.city || !selectedDestination?.displayName) {
+    const selectedHotelIds = Array.isArray(selectedDestination?.tjids)
+      ? selectedDestination.tjids.map((item) => String(item || "").trim()).filter(Boolean)
+      : [];
+    const selectedHid = String(
+      selectedDestination?.hid ||
+        selectedDestination?.raw?.hid ||
+        selectedDestination?.raw?.tjid ||
+        selectedDestination?.raw?.tjHotelId ||
+        selectedDestination?.raw?.hotelCode ||
+        ""
+    ).trim();
+    const hasSelectedHotelIds = selectedHotelIds.length > 0 || Boolean(selectedHid);
+    const hasDestinationCity = Boolean(
+      selectedDestination?.city ||
+      selectedDestination?.raw?.city ||
+      selectedDestination?.raw?.cityId ||
+      selectedDestination?.raw?.cId
+    );
+
+    if ((!hasDestinationCity && !hasSelectedHotelIds) || !selectedDestination?.displayName) {
       toast.error("Please select a destination from the suggestions.");
       return;
     }
@@ -957,6 +1022,22 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
       toast.error("Please select check-in and check-out dates.");
       return;
     }
+
+    const fallbackCity =
+      selectedDestination?.city ||
+      selectedDestination?.raw?.city ||
+      selectedDestination?.raw?.cityId ||
+      selectedDestination?.raw?.cId ||
+      payload?.searchQuery?.searchCriteria?.city ||
+      "";
+    const normalizedTjids = selectedHotelIds;
+    const normalizedHid = selectedHid;
+    const effectiveTjids = normalizedTjids.length
+      ? normalizedTjids
+      : normalizedHid
+        ? [normalizedHid]
+        : [];
+    const effectiveCity = String(fallbackCity || "").trim();
 
     const nextPayload = {
       searchQuery: {
@@ -968,8 +1049,8 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
           children: totalChildren,
         }),
         searchCriteria: {
-          city: selectedDestination.city,
-          tjids: selectedDestination.tjids,
+          city: !effectiveTjids.length ? effectiveCity : "",
+          tjids: effectiveTjids,
           nationality: nationality,
           countryOfResidence: countryOfResidence,
           currency: payload?.searchQuery?.searchCriteria?.currency || "INR",
@@ -983,6 +1064,7 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
       appliedFilters: {
         ...defaultFilters(),
         onlyFavorites: false,
+        hotelName: "",
       },
       pagination: {
         pageSize: 15,

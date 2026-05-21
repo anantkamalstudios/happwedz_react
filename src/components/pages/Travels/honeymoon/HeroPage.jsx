@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { Shield } from "lucide-react";
 import FightIcon from "../../../../assets/trevel_icon/airplane.png";
 import HotelIcon from "../../../../assets/trevel_icon/hotel.png";
@@ -9,6 +10,7 @@ import CruiseIcon from "../../../../assets/trevel_icon/cruise-ship.png";
 import FlightSearchForm from "./components/FlightSearchForm";
 import HotelSearchForm from "./components/HotelSearchForm";
 import InsuranceSearchPanel from "./InsuranceSearchPanel";
+import { getRecentHotelBookings } from "../../../../services/api/hotelApi";
 import "./index.css";
 
 const formatSelectedDate = (dateValue) => {
@@ -22,23 +24,81 @@ const formatSelectedDate = (dateValue) => {
   });
 };
 
+const mapBookingStatusLabel = (status) => {
+  const normalized = String(status || "").toUpperCase();
+  if (normalized === "PAYMENT_SUCCESS") return "Awaiting Confirmation";
+  if (normalized === "SUCCESS") return "Confirmed";
+  if (normalized === "ON_HOLD") return "On Hold";
+  if (["IN_PROGRESS", "PENDING", "PAYMENT_PENDING"].includes(normalized)) return "Processing";
+  if (["FAILED", "ABORTED"].includes(normalized)) return "Failed";
+  if (normalized === "CANCELLED") return "Cancelled";
+  return normalized || "PENDING";
+};
+
+const getBookingStatusColor = (status) => {
+  const normalized = String(status || "").toUpperCase();
+  if (["SUCCESS", "ON_HOLD"].includes(normalized)) return "#22c55e";
+  if (["PAYMENT_SUCCESS", "IN_PROGRESS", "PENDING", "PAYMENT_PENDING"].includes(normalized)) return "#f59e0b";
+  if (["FAILED", "ABORTED", "CANCELLED"].includes(normalized)) return "#ef4444";
+  return "#ffffff";
+};
+
 export default function FlightHero() {
   const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.user);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const [activeTab, setActiveTab] = useState("Flights");
+  const [recentHotelBookings, setRecentHotelBookings] = useState([]);
+  const [recentHotelBookingsLoading, setRecentHotelBookingsLoading] = useState(false);
 
   const heroTitle =
     activeTab === "Flights"
       ? "Book Cheap Flight Tickets With Ease"
       : activeTab === "Insurance"
         ? "Travel Insurance For Your Trip"
-        : "Find Romantic Honeymoon Hotels";
+        : "Book your stay with India's largest network of Hotels.";
 
   const heroSubtitle =
     activeTab === "Flights"
       ? "Discover your next dream destination"
       : activeTab === "Insurance"
         ? "Compare international, student & multi-trip plans"
-        : "Search stays by city and destination";
+        : "Search city stays, romantic escapes, and premium honeymoon-friendly hotels.";
+
+  useEffect(() => {
+    let active = true;
+    if (!isAuthenticated || !user?.id) {
+      setRecentHotelBookings([]);
+      return undefined;
+    }
+
+    if (activeTab !== "Hotels") {
+      return undefined;
+    }
+
+    setRecentHotelBookingsLoading(true);
+    getRecentHotelBookings({ limit: 3 })
+      .then((response) => {
+        if (active) {
+          setRecentHotelBookings(Array.isArray(response?.bookings) ? response.bookings : []);
+        }
+      })
+      .catch((error) => {
+        console.error("Unable to load recent hotel bookings", error);
+        if (active) {
+          setRecentHotelBookings([]);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setRecentHotelBookingsLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [activeTab, isAuthenticated, user?.id]);
 
   return (
     <div className="flight-hero">
@@ -144,7 +204,76 @@ export default function FlightHero() {
             ) : activeTab === "Insurance" ? (
               <InsuranceSearchPanel formatSelectedDate={formatSelectedDate} />
             ) : (
-              <HotelSearchForm />
+              <>
+                <HotelSearchForm />
+                {isAuthenticated ? (
+                  <div
+                    className="mt-4"
+                    style={{
+                      background: "rgba(255, 255, 255, 0.16)",
+                      border: "1px solid rgba(255, 255, 255, 0.28)",
+                      borderRadius: "18px",
+                      padding: "1rem",
+                    }}
+                  >
+                    <div className="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
+                      <div>
+                        <div className="fw-bold text-white">Recent Hotel Bookings</div>
+                        <div style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.92rem" }}>
+                          Latest bookings from your account
+                        </div>
+                      </div>
+                      <Link
+                        to="/hotels/all-booking"
+                        style={{
+                          background: "#ffffff",
+                          color: "#1f2937",
+                          borderRadius: "999px",
+                          padding: "0.5rem 0.9rem",
+                          fontWeight: 700,
+                          textDecoration: "none",
+                        }}
+                      >
+                        All Bookings
+                      </Link>
+                    </div>
+
+                    {recentHotelBookingsLoading ? (
+                      <div style={{ color: "rgba(255,255,255,0.8)" }}>Loading bookings...</div>
+                    ) : recentHotelBookings.length === 0 ? (
+                      <div style={{ color: "rgba(255,255,255,0.8)" }}>No hotel bookings yet.</div>
+                    ) : (
+                      <div className="row g-3">
+                        {recentHotelBookings.map((booking) => (
+                          <div className="col-md-4" key={booking.bookingId}>
+                            <div
+                              style={{
+                                background: "rgba(14, 23, 38, 0.45)",
+                                borderRadius: "14px",
+                                padding: "0.8rem",
+                                height: "100%",
+                              }}
+                            >
+                              <div className="fw-semibold text-white">{booking.hotelName || "Booked Hotel"}</div>
+                              <div style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.88rem" }}>{booking.bookingId}</div>
+                              <div className="mt-2 d-flex justify-content-between">
+                                <span style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.86rem" }}>
+                                  {booking.checkIn || "-"} to {booking.checkOut || "-"}
+                                </span>
+                                <span className="text-white fw-semibold" style={{ fontSize: "0.86rem" }}>
+                                  <span style={{ color: getBookingStatusColor(booking.status) }}>
+                                    {mapBookingStatusLabel(booking.status)}
+                                  </span>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </>
             )}
           </div>
         </div>

@@ -72,6 +72,32 @@ export const trackHotelAnalyticsEvent = async (payload) => {
   }
 };
 
+export const trackTripjackAnalyticsEvent = async (payload) => {
+  try {
+    const response = await fetch("https://apitest.tripjack.com/xms/v1/analytics/events", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`TripJack analytics request failed with status ${response.status}`);
+    }
+
+    return response;
+  } catch (error) {
+    try {
+      const response = await axiosInstance.post("hotels/analytics-event", payload);
+      return response.data;
+    } catch (proxyError) {
+      console.error(getErrorMessage(proxyError, "Error tracking TripJack analytics event"));
+      throw proxyError;
+    }
+  }
+};
+
 export const reviewHotelBooking = async (payload) => {
   try {
     const response = await axiosInstance.post("hotels/review", payload);
@@ -98,6 +124,28 @@ export const bookHotel = async (payload) => {
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error creating hotel booking"));
+    throw error;
+  }
+};
+
+export const createHotelPaymentOrder = async (payload) => {
+  try {
+    const response = await axiosInstance.post("hotels/create-payment-order", payload);
+    return response.data;
+  } catch (error) {
+    console.error(getErrorMessage(error, "Error creating hotel payment order"));
+    throw error;
+  }
+};
+
+export const verifyHotelPaymentAndBook = async (payload) => {
+  try {
+    const response = await axiosInstance.post("hotels/verify-payment-and-book", payload, {
+      timeout: 180000,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(getErrorMessage(error, "Error verifying hotel payment"));
     throw error;
   }
 };
@@ -138,6 +186,26 @@ export const cancelHotelBooking = async (bookingId) => {
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error cancelling hotel booking"));
+    throw error;
+  }
+};
+
+export const getRecentHotelBookings = async (payload) => {
+  try {
+    const response = await axiosInstance.post("hotels/recent-bookings", payload);
+    return response.data;
+  } catch (error) {
+    console.error(getErrorMessage(error, "Error fetching recent hotel bookings"));
+    throw error;
+  }
+};
+
+export const getAllHotelBookings = async (params = {}) => {
+  try {
+    const response = await axiosInstance.get("hotels/all-bookings", { params });
+    return response.data;
+  } catch (error) {
+    console.error(getErrorMessage(error, "Error fetching hotel bookings"));
     throw error;
   }
 };

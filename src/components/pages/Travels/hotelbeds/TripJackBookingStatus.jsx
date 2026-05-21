@@ -1,7 +1,17 @@
 import { Button, Modal } from "react-bootstrap";
 
 const formatStatusLabel = (status) => {
-  if (!status) return "Processing";
+  const normalized = String(status || "").toUpperCase();
+  if (!normalized) return "Booking Processing";
+  if (normalized === "PAYMENT_SUCCESS") return "Payment Successful - Awaiting Hotel Confirmation";
+  if (normalized === "SUCCESS") return "Booking Confirmed";
+  if (normalized === "ON_HOLD") return "Booking On Hold";
+  if (normalized === "IN_PROGRESS" || normalized === "PENDING" || normalized === "PAYMENT_PENDING") {
+    return "Booking Processing";
+  }
+  if (normalized === "FAILED" || normalized === "ABORTED" || normalized === "CANCELLED") {
+    return "Booking Failed";
+  }
   return String(status)
     .toLowerCase()
     .split("_")
@@ -9,11 +19,20 @@ const formatStatusLabel = (status) => {
     .join(" ");
 };
 
+const getStatusColor = (status) => {
+  const normalized = String(status || "").toUpperCase();
+  if (normalized === "SUCCESS" || normalized === "ON_HOLD") return "#198754";
+  if (["PAYMENT_SUCCESS", "IN_PROGRESS", "PENDING", "PAYMENT_PENDING"].includes(normalized)) return "#b26a00";
+  if (["FAILED", "ABORTED", "CANCELLED"].includes(normalized)) return "#dc3545";
+  return "#212529";
+};
+
 export default function TripJackBookingStatus({
   show,
   statusState,
   reviewResponse,
   onClose,
+  onRefresh,
   formatMoney,
 }) {
   const currentStatus = statusState?.orderStatus || statusState?.details?.orderStatus || "";
@@ -21,6 +40,7 @@ export default function TripJackBookingStatus({
   const isSuccess = phase === "success";
   const isFailure = phase === "failed";
   const isValidationFailure = phase === "validation_failed";
+  const isAlreadyPaid = phase === "already_paid";
   const isDenied = phase === "denied";
   const isTimeout = phase === "timeout";
   const isProcessing = phase === "submitting" || phase === "polling";
@@ -36,13 +56,15 @@ export default function TripJackBookingStatus({
                 ? "TripJack confirmed this booking."
                 : isDenied
                   ? "TripJack denied the booking request before booking confirmation started."
+                : isAlreadyPaid
+                  ? "This booking is already paid. Fetching latest TripJack status."
                 : isValidationFailure
                   ? "Booking request validation failed before TripJack booking started."
                 : isFailure
                   ? "TripJack returned a terminal failure state."
-                  : isTimeout
-                    ? "TripJack is still processing this booking."
-                    : "Waiting for TripJack booking confirmation."}
+                : isTimeout
+                    ? "Payment is complete and TripJack is still confirming the hotel."
+                    : "Payment is complete and TripJack confirmation is in progress."}
             </div>
           </div>
           {!isProcessing ? <button type="button" className="btn-close" onClick={onClose} /> : null}
@@ -65,8 +87,14 @@ export default function TripJackBookingStatus({
               <div className="col-md-6">
                 <div className="border rounded-4 p-3 h-100">
                   <div className="text-muted fs-12 mb-1">Current Status</div>
-                  <div className="fw-bold">
-                    {isDenied ? "Failed" : isValidationFailure ? "Validation Failed" : formatStatusLabel(currentStatus || phase)}
+                  <div className="fw-bold" style={{ color: getStatusColor(currentStatus || phase) }}>
+                    {isDenied
+                      ? "Failed"
+                      : isAlreadyPaid
+                        ? "Already Paid - Status Sync"
+                        : isValidationFailure
+                          ? "Validation Failed"
+                          : formatStatusLabel(currentStatus || phase)}
                   </div>
                 </div>
               </div>
@@ -86,7 +114,15 @@ export default function TripJackBookingStatus({
                 <div className="border rounded-4 p-3 h-100">
                   <div className="text-muted fs-12 mb-1">Polling Attempts</div>
                   <div className="fw-bold">
-                    {isValidationFailure || isDenied ? "Not started" : statusState?.attempts || 0}
+                    {isValidationFailure || isDenied || isAlreadyPaid ? "Not started" : statusState?.attempts || 0}
+                  </div>
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="border rounded-4 p-3 h-100">
+                  <div className="text-muted fs-12 mb-1">Check-in / Check-out</div>
+                  <div className="fw-bold">
+                    {reviewResponse?.searchQuery?.checkInDate || "-"} / {reviewResponse?.searchQuery?.checkoutDate || "-"}
                   </div>
                 </div>
               </div>
@@ -136,6 +172,11 @@ export default function TripJackBookingStatus({
         </div>
 
         <div className="modal-footer border-0">
+          {typeof onRefresh === "function" ? (
+            <Button variant="outline-primary" onClick={onRefresh} disabled={!statusState?.bookingId}>
+              Refresh Status
+            </Button>
+          ) : null}
           <Button variant="outline-secondary" onClick={onClose} disabled={isProcessing}>
             Close
           </Button>

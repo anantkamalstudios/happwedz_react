@@ -1,0 +1,519 @@
+import { useEffect, useMemo, useState } from "react";
+import { Container } from "react-bootstrap";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { cancelHotelBooking, confirmHotelBooking, getHotelBookingDetails } from "../../../../services/api/hotelApi";
+
+function formatAmount(amount, currency = "INR") {
+  const value = Number(amount || 0);
+  if (!Number.isFinite(value) || value <= 0) return "-";
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function formatDate(value) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+function formatDateTime(value) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function getStatusTone(orderStatus) {
+  const normalized = String(orderStatus || "").toUpperCase();
+  if (["CANCELLATION_REQUESTED", "CANCELLATION_PENDING"].includes(normalized)) {
+    return {
+      title: "Cancellation Requested",
+      subtitle: "Your cancellation request is submitted. Please refresh for final cancellation status.",
+      color: "#92400e",
+      bg: "#fff7ed",
+      border: "#fed7aa",
+    };
+  }
+  if (normalized === "CANCELLED") {
+    return {
+      title: "Booking Cancelled",
+      subtitle: "This booking has been cancelled.",
+      color: "#7f1d1d",
+      bg: "#fef2f2",
+      border: "#fecaca",
+    };
+  }
+  if (["SUCCESS", "CONFIRMED", "VOUCHERED"].includes(normalized)) {
+    return {
+      title: "Booking Payment Success",
+      subtitle: "Your booking is confirmed and payment is captured.",
+      color: "#2f8a1f",
+      bg: "#edf8ea",
+      border: "#cbeac4",
+    };
+  }
+  if (normalized === "PAYMENT_SUCCESS") {
+    return {
+      title: "Payment Success - Pending Voucher",
+      subtitle: "Payment is successful. Hotel confirmation is still in progress.",
+      color: "#b26a00",
+      bg: "#fff7e6",
+      border: "#f7deb0",
+    };
+  }
+  return {
+    title: "Booking Status Update",
+    subtitle: "Booking status is being processed. Please refresh after some time.",
+    color: "#475569",
+    bg: "#f8fafc",
+    border: "#e2e8f0",
+  };
+}
+
+export default function HotelBookingDetailsPage() {
+  const { bookingId } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const fallbackBooking = location.state?.booking || null;
+  const [loading, setLoading] = useState(true);
+  const [details, setDetails] = useState(null);
+  const [error, setError] = useState("");
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [cancelMessage, setCancelMessage] = useState("");
+  const [cancellationRequested, setCancellationRequested] = useState(false);
+  const [confirmHoldLoading, setConfirmHoldLoading] = useState(false);
+
+  const loadDetails = async () => {
+    if (!bookingId) {
+      setError("Booking ID is missing.");
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const response = await getHotelBookingDetails({ bookingId });
+      setDetails(response || null);
+    } catch (err) {
+      setDetails(null);
+      setError(
+        err?.response?.data?.error ||
+          err?.message ||
+          "Unable to fetch booking details right now.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      if (!active) return;
+      await loadDetails();
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [bookingId]);
+
+  const ui = useMemo(() => {
+    const order = details?.raw?.order || {};
+    const hotelInfo = details?.raw?.itemInfos?.HOTEL?.hInfo || {};
+    const option = Array.isArray(hotelInfo?.ops) && hotelInfo.ops.length ? hotelInfo.ops[0] : {};
+    const room = Array.isArray(option?.ris) && option.ris.length ? option.ris[0] : {};
+    const traveller = Array.isArray(room?.ti) && room.ti.length ? room.ti[0] : {};
+    const fare = room?.tfcs || option?.tfcs || {};
+
+    const hotelName = hotelInfo?.name || fallbackBooking?.hotelName || "Booked Hotel";
+    const address =
+      hotelInfo?.ad?.adr ||
+      hotelInfo?.ad?.line1 ||
+      hotelInfo?.ad?.city?.name ||
+      hotelInfo?.ad?.name ||
+      "-";
+
+    const normalizedStatus = String(
+      details?.bookingStatusMeta?.normalizedStatus ||
+        details?.orderStatus ||
+        order?.status ||
+        fallbackBooking?.status ||
+        "",
+    ).toUpperCase();
+    const tone = getStatusTone(normalizedStatus);
+    const humanStatusText = String(details?.userStatus || "").toUpperCase();
+    const isCancellationFlow = [
+      "CANCELLATION_REQUESTED",
+      "CANCELLATION_PENDING",
+      "CANCELLED",
+    ].includes(normalizedStatus);
+    const isCancellationText =
+      humanStatusText.includes("CANCEL") ||
+      humanStatusText.includes("CANCELLATION");
+    const canCancel =
+      !isCancellationFlow &&
+      !isCancellationText &&
+      !cancellationRequested &&
+      ["SUCCESS", "CONFIRMED", "VOUCHERED", "ON_HOLD", "PAYMENT_SUCCESS"].includes(normalizedStatus);
+    const statusLabel = isCancellationFlow
+      ? normalizedStatus === "CANCELLED"
+        ? "Booking Cancelled"
+        : "Cancellation Requested"
+      : details?.userStatus || normalizedStatus || "-";
+
+    return {
+      tone,
+      hotelName,
+      address,
+      bookingId: details?.bookingId || bookingId,
+      checkIn: room?.checkInDate || details?.raw?.itemInfos?.HOTEL?.query?.checkinDate || fallbackBooking?.checkIn,
+      checkOut: room?.checkOutDate || details?.raw?.itemInfos?.HOTEL?.query?.checkoutDate || fallbackBooking?.checkOut,
+      roomName: room?.rc || room?.rt || "-",
+      totalRooms: Array.isArray(option?.ris) ? option.ris.length : 1,
+      adults: room?.adt ?? 1,
+      children: room?.chd ?? 0,
+      totalStay: room?.numNights ? `${room.numNights} Night(s)` : "-",
+      guestName: [traveller?.fN, traveller?.lN].filter(Boolean).join(" ") || "-",
+      email: details?.deliveryInfo?.emails?.[0] || order?.deliveryInfo?.emails?.[0] || "-",
+      phone: details?.deliveryInfo?.contacts?.[0] || order?.deliveryInfo?.contacts?.[0] || "-",
+      createdOn: details?.createdOn || order?.createdOn || fallbackBooking?.createdAt,
+      baseFare: fare?.BF,
+      taxesAndFees: fare?.TAF,
+      totalAmount: details?.amount || order?.amount || option?.tp || fallbackBooking?.amount || 0,
+      currency: fallbackBooking?.currency || option?.sc || "INR",
+      cancellationPolicies: Array.isArray(option?.cnp?.pd) ? option.cnp.pd : [],
+      statusLabel,
+      canCancel,
+      normalizedStatus,
+      isCancellationFlow,
+      isOnHold: normalizedStatus === "ON_HOLD",
+    };
+  }, [details, bookingId, fallbackBooking, cancellationRequested]);
+
+  const handleConfirmHoldBooking = async () => {
+    if (!bookingId || confirmHoldLoading) return;
+    const ok = window.confirm("Confirm this hold booking now?");
+    if (!ok) return;
+
+    setConfirmHoldLoading(true);
+    setCancelMessage("");
+    try {
+      const amount = Number(ui.totalAmount || 0);
+      const payload = {
+        bookingId,
+        paymentInfos: amount > 0 ? [{ amount }] : [],
+      };
+      const response = await confirmHotelBooking(payload);
+      setCancelMessage(response?.message || "Hold booking confirmed. Awaiting final status.");
+      await loadDetails();
+    } catch (err) {
+      setCancelMessage(
+        err?.response?.data?.error ||
+          err?.message ||
+          "Unable to confirm hold booking right now.",
+      );
+    } finally {
+      setConfirmHoldLoading(false);
+    }
+  };
+
+  const handleCancelBooking = async () => {
+    if (!bookingId || cancelLoading) return;
+    const ok = window.confirm(
+      "Are you sure you want to cancel this booking? Cancellation charges may apply.",
+    );
+    if (!ok) return;
+
+    setCancelLoading(true);
+    setCancelMessage("");
+    try {
+      const response = await cancelHotelBooking(bookingId);
+      setCancelMessage(response?.message || "Cancellation request submitted.");
+      setCancellationRequested(true);
+      await loadDetails();
+    } catch (err) {
+      setCancelMessage(
+        err?.response?.data?.error ||
+          err?.message ||
+          "Unable to submit cancellation request right now.",
+      );
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
+  return (
+    <section
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(180deg, #f6ebe1 0%, #fbf7f2 35%, #ffffff 100%)",
+        padding: "110px 0 64px",
+      }}
+    >
+      <Container>
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            style={{
+              border: "1px solid #cbd5e1",
+              background: "#fff",
+              color: "#132238",
+              borderRadius: "999px",
+              padding: "0.5rem 1rem",
+              fontWeight: 600,
+            }}
+          >
+            Back
+          </button>
+          <Link
+            to="/hotels/all-booking"
+            style={{
+              border: "1px solid #132238",
+              background: "#132238",
+              color: "#fff",
+              borderRadius: "999px",
+              padding: "0.5rem 1rem",
+              textDecoration: "none",
+              fontWeight: 600,
+            }}
+          >
+            All Bookings
+          </Link>
+        </div>
+        {cancelMessage ? (
+          <div
+            style={{
+              border: "1px solid #cbd5e1",
+              background: "#fff",
+              color: "#334155",
+              borderRadius: "12px",
+              padding: "0.65rem 0.85rem",
+              marginBottom: "0.75rem",
+            }}
+          >
+            {cancelMessage}
+          </div>
+        ) : null}
+
+        {loading ? (
+          <div style={{ color: "#334155", fontWeight: 600 }}>Loading booking details...</div>
+        ) : (
+          <div className="row g-3">
+            <div className="col-12 col-lg-8">
+              <div
+                style={{
+                  background: "#fff",
+                  borderRadius: "18px",
+                  border: `1px solid ${ui.tone.border}`,
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    background: ui.tone.bg,
+                    borderBottom: `1px solid ${ui.tone.border}`,
+                    padding: "1rem 1.25rem",
+                  }}
+                >
+                  <div style={{ color: ui.tone.color, fontSize: "1.6rem", fontWeight: 800 }}>
+                    {ui.tone.title}
+                  </div>
+                  <div style={{ marginTop: "0.2rem", color: "#475569", fontWeight: 600 }}>
+                    Booking ID: {ui.bookingId}
+                  </div>
+                  <div style={{ marginTop: "0.2rem", color: "#64748b" }}>{ui.tone.subtitle}</div>
+                </div>
+
+                <div style={{ padding: "1.1rem 1.25rem" }}>
+                  {error ? (
+                    <div
+                      style={{
+                        borderRadius: "12px",
+                        border: "1px solid #fecaca",
+                        background: "#fef2f2",
+                        color: "#b91c1c",
+                        padding: "0.75rem 0.9rem",
+                      }}
+                    >
+                      {error}
+                    </div>
+                  ) : null}
+
+                  <div style={{ marginTop: error ? "1rem" : 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: "1.2rem", color: "#132238" }}>{ui.hotelName}</div>
+                    <div style={{ color: "#64748b", marginTop: "0.25rem" }}>{ui.address}</div>
+                  </div>
+
+                  <div className="row g-2 mt-2">
+                    <div className="col-6 col-md-3">
+                      <div style={{ background: "#eff6ff", borderRadius: "10px", padding: "0.7rem" }}>
+                        <div style={{ color: "#64748b", fontSize: "0.82rem" }}>Check in</div>
+                        <div style={{ fontWeight: 700 }}>{formatDate(ui.checkIn)}</div>
+                      </div>
+                    </div>
+                    <div className="col-6 col-md-3">
+                      <div style={{ background: "#eff6ff", borderRadius: "10px", padding: "0.7rem" }}>
+                        <div style={{ color: "#64748b", fontSize: "0.82rem" }}>Check out</div>
+                        <div style={{ fontWeight: 700 }}>{formatDate(ui.checkOut)}</div>
+                      </div>
+                    </div>
+                    <div className="col-6 col-md-3">
+                      <div style={{ background: "#eff6ff", borderRadius: "10px", padding: "0.7rem" }}>
+                        <div style={{ color: "#64748b", fontSize: "0.82rem" }}>Total Rooms</div>
+                        <div style={{ fontWeight: 700 }}>{ui.totalRooms}</div>
+                      </div>
+                    </div>
+                    <div className="col-6 col-md-3">
+                      <div style={{ background: "#eff6ff", borderRadius: "10px", padding: "0.7rem" }}>
+                        <div style={{ color: "#64748b", fontSize: "0.82rem" }}>Guests</div>
+                        <div style={{ fontWeight: 700 }}>
+                          {ui.adults} Adult{ui.adults > 1 ? "s" : ""}{ui.children ? `, ${ui.children} Child` : ""}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: "1rem", borderTop: "1px solid #e2e8f0", paddingTop: "1rem" }}>
+                    <div style={{ fontWeight: 700, color: "#132238", marginBottom: "0.35rem" }}>Room Details</div>
+                    <div style={{ color: "#334155" }}>{ui.roomName}</div>
+                    <div style={{ color: "#64748b" }}>Guest: {ui.guestName}</div>
+                    <div style={{ color: "#64748b" }}>Total Stay: {ui.totalStay}</div>
+                    <div style={{ color: "#64748b", marginTop: "0.35rem" }}>Status: {ui.statusLabel}</div>
+                  </div>
+
+                  <div style={{ marginTop: "1rem", borderTop: "1px solid #e2e8f0", paddingTop: "1rem" }}>
+                    <div style={{ fontWeight: 700, color: "#132238", marginBottom: "0.35rem" }}>Contact Details</div>
+                    <div style={{ color: "#334155" }}>Email: {ui.email}</div>
+                    <div style={{ color: "#334155" }}>Phone: {ui.phone}</div>
+                    <div style={{ color: "#64748b", marginTop: "0.35rem" }}>Created On: {formatDateTime(ui.createdOn)}</div>
+                    {ui.isOnHold ? (
+                      <div className="mt-3">
+                        <button
+                          type="button"
+                          onClick={handleConfirmHoldBooking}
+                          disabled={confirmHoldLoading}
+                          style={{
+                            border: "1px solid #0f766e",
+                            background: "#fff",
+                            color: "#0f766e",
+                            borderRadius: "999px",
+                            padding: "0.45rem 0.95rem",
+                            fontWeight: 700,
+                            cursor: confirmHoldLoading ? "not-allowed" : "pointer",
+                            marginRight: "0.5rem",
+                          }}
+                          title="Confirm held booking"
+                        >
+                          {confirmHoldLoading ? "Confirming..." : "Confirm Booking"}
+                        </button>
+                      </div>
+                    ) : null}
+                    {ui.canCancel ? (
+                      <div className="mt-3">
+                        <button
+                          type="button"
+                          onClick={handleCancelBooking}
+                          disabled={cancelLoading}
+                          style={{
+                            border: "1px solid #dc2626",
+                            background: "#fff",
+                            color: "#b91c1c",
+                            borderRadius: "999px",
+                            padding: "0.45rem 0.95rem",
+                            fontWeight: 700,
+                            cursor: cancelLoading ? "not-allowed" : "pointer",
+                          }}
+                          title="Submit cancellation request"
+                        >
+                          {cancelLoading ? "Cancelling..." : "Cancel Booking"}
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div style={{ marginTop: "1rem", borderTop: "1px solid #e2e8f0", paddingTop: "1rem" }}>
+                    <div style={{ fontWeight: 700, color: "#132238", marginBottom: "0.5rem" }}>Cancellation Policy</div>
+                    {ui.cancellationPolicies.length === 0 ? (
+                      <div style={{ color: "#64748b" }}>Policy details are not available for this booking.</div>
+                    ) : (
+                      <div style={{ overflowX: "auto" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.92rem" }}>
+                          <thead>
+                            <tr style={{ background: "#f8fafc" }}>
+                              <th style={{ border: "1px solid #e2e8f0", padding: "0.5rem", textAlign: "left" }}>From</th>
+                              <th style={{ border: "1px solid #e2e8f0", padding: "0.5rem", textAlign: "left" }}>To</th>
+                              <th style={{ border: "1px solid #e2e8f0", padding: "0.5rem", textAlign: "left" }}>Charge</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {ui.cancellationPolicies.map((policy, index) => (
+                              <tr key={`${policy?.am || "am"}-${index}`}>
+                                <td style={{ border: "1px solid #e2e8f0", padding: "0.5rem" }}>
+                                  {formatDate(policy?.from || policy?.fdt)}
+                                </td>
+                                <td style={{ border: "1px solid #e2e8f0", padding: "0.5rem" }}>
+                                  {formatDate(policy?.to || policy?.tdt)}
+                                </td>
+                                <td style={{ border: "1px solid #e2e8f0", padding: "0.5rem" }}>
+                                  {formatAmount(policy?.am, ui.currency)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-12 col-lg-4">
+              <div
+                style={{
+                  background: "#fff",
+                  borderRadius: "18px",
+                  border: "1px solid #e2e8f0",
+                  padding: "1rem 1.1rem",
+                  position: "sticky",
+                  top: "100px",
+                }}
+              >
+                <div style={{ fontWeight: 800, color: "#132238", marginBottom: "0.75rem" }}>Fare Summary</div>
+                <div className="d-flex justify-content-between" style={{ color: "#475569", marginBottom: "0.45rem" }}>
+                  <span>Base Fare</span>
+                  <span>{formatAmount(ui.baseFare, ui.currency)}</span>
+                </div>
+                <div className="d-flex justify-content-between" style={{ color: "#475569", marginBottom: "0.45rem" }}>
+                  <span>Taxes & Fees</span>
+                  <span>{formatAmount(ui.taxesAndFees, ui.currency)}</span>
+                </div>
+                <div style={{ borderTop: "1px solid #e2e8f0", margin: "0.5rem 0" }} />
+                <div className="d-flex justify-content-between" style={{ fontWeight: 800, color: "#132238" }}>
+                  <span>Total Amount</span>
+                  <span>{formatAmount(ui.totalAmount, ui.currency)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </Container>
+    </section>
+  );
+}
