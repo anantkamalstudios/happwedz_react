@@ -25,7 +25,6 @@ import {
 import {
   createHotelPaymentOrder,
   getHotelStaticContent,
-  getRecentHotelBookings,
   getHotelBookingDetails,
   reviewHotelBooking,
   searchHotels,
@@ -1055,8 +1054,6 @@ function HotelDetailsPage({
   const [showBookingFormModal, setShowBookingFormModal] = useState(false);
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
   const [showBookingStatusModal, setShowBookingStatusModal] = useState(false);
-  const [recentBookings, setRecentBookings] = useState([]);
-  const [recentBookingsLoading, setRecentBookingsLoading] = useState(false);
   const [bookingStatusState, setBookingStatusState] = useState({
     phase: "idle",
     bookingId: "",
@@ -1130,11 +1127,6 @@ function HotelDetailsPage({
       active = false;
     };
   }, [detailModel.id, reviewPayloadFields.searchId, reviewPayloadFields.tjHotelId]);
-
-  useEffect(() => {
-    if (!isAuthenticated || !user?.id) return;
-    fetchRecentBookings();
-  }, [isAuthenticated, user?.id]);
 
   const selectedOption = useMemo(
     () =>
@@ -1377,21 +1369,6 @@ function HotelDetailsPage({
     setBookingForm((current) => (current ? { ...current, termsAccepted: checked } : current));
   };
 
-  const fetchRecentBookings = async () => {
-    if (!isAuthenticated || !user?.id) return;
-    setRecentBookingsLoading(true);
-    try {
-      const response = await getRecentHotelBookings({
-        limit: 10,
-      });
-      setRecentBookings(Array.isArray(response?.bookings) ? response.bookings : []);
-    } catch (error) {
-      console.error("Unable to fetch recent hotel bookings", error);
-    } finally {
-      setRecentBookingsLoading(false);
-    }
-  };
-
   const pollTripjackBookingStatus = async (bookingId) => {
     const maxAttempts = 60;
     const fastPollIntervalMs = 15000;
@@ -1433,7 +1410,6 @@ function HotelDetailsPage({
             details: detailsResponse,
             errorCode: "",
           });
-          fetchRecentBookings();
           return;
         }
 
@@ -1913,50 +1889,6 @@ function HotelDetailsPage({
                 referrerPolicy="no-referrer-when-downgrade"
                 title="Hotel map"
               />
-            </div>
-
-            <div className="hotel-detail-card">
-              <div className="d-flex justify-content-between gap-3 align-items-center mb-3">
-                <h4 className="mb-0">Recent Bookings</h4>
-                {isAuthenticated ? (
-                  <button
-                    type="button"
-                    className="hotel-inline-link"
-                    onClick={() => fetchRecentBookings()}
-                    disabled={recentBookingsLoading}
-                  >
-                    {recentBookingsLoading ? "Refreshing..." : "Refresh"}
-                  </button>
-                ) : null}
-              </div>
-
-              {!isAuthenticated ? (
-                <div className="hotel-summary-subcopy">Login to see your recent hotel bookings.</div>
-              ) : recentBookings.length === 0 ? (
-                <div className="hotel-summary-subcopy">No recent hotel bookings found for your account.</div>
-              ) : (
-                <div className="d-grid gap-2">
-                  {recentBookings.map((booking) => (
-                    <div key={booking.bookingId} className="border rounded-3 p-3">
-                      <div className="d-flex justify-content-between gap-3 flex-wrap">
-                        <div>
-                          <div className="fw-bold">{booking.hotelName || "Booked Hotel"}</div>
-                          <div className="hotel-summary-subcopy">Booking ID: {booking.bookingId}</div>
-                          <div className="hotel-summary-subcopy">
-                            {booking.checkIn || "-"} to {booking.checkOut || "-"}
-                          </div>
-                        </div>
-                        <div className="text-end">
-                          <div className="fw-semibold">{booking.status || "PENDING"}</div>
-                          <div className="hotel-summary-subcopy">
-                            {booking.amount ? formatMoney(booking.amount, booking.currency || "INR") : "Amount unavailable"}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
             <RoomTypesSection
