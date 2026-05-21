@@ -18,14 +18,16 @@ const getProductPpdfInfo = (product, travellerCount = 1) => {
   const ppdf = product?.pfd?.ppd?.ppdf || {};
   const key = String(travellerCount);
   const allKeys = Object.keys(ppdf).sort((a, b) => Number(a) - Number(b));
-  
+
   if (allKeys.length > 0) {
     const firstTf = Number(ppdf[allKeys[0]]?.[0]?.ifc?.TF || 0);
-    const allSame = allKeys.every(k => Number(ppdf[k]?.[0]?.ifc?.TF || 0) === firstTf);
-    
+    const allSame = allKeys.every(
+      (k) => Number(ppdf[k]?.[0]?.ifc?.TF || 0) === firstTf,
+    );
+
     if (allSame) {
       return {
-        ifc: (ppdf[key]?.[0] || ppdf['1']?.[0])?.ifc || {},
+        ifc: (ppdf[key]?.[0] || ppdf["1"]?.[0])?.ifc || {},
         useHighestKey: false,
       };
     } else {
@@ -36,9 +38,9 @@ const getProductPpdfInfo = (product, travellerCount = 1) => {
       };
     }
   }
-  
+
   return {
-    ifc: (ppdf[key]?.[0] || ppdf['1']?.[0])?.ifc || {},
+    ifc: (ppdf[key]?.[0] || ppdf["1"]?.[0])?.ifc || {},
     useHighestKey: false,
   };
 };
@@ -62,7 +64,7 @@ const getPriceBreakdown = (product, travellerCount = 1) => {
   const perBXP = Number(ifc.BXP || 0);
   const perBXPGST = Number(ifc.BXPGST || 0);
   const count = useHighestKey ? 1 : travellerCount;
-  
+
   return {
     sp: Number(ifc.SP || 0) * count,
     spGst: Number(ifc.SPGST || 0) * count,
