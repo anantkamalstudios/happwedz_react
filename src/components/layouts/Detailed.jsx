@@ -2135,11 +2135,23 @@ const Detailed = () => {
       const isSherwaniVendor = normalizedSub.includes("sherwani") ||
         normalizedSub.includes("shervani") ||
         normalizedSub.includes("sarvani") ||
+        normalizedSub.includes("suit") ||
+        normalizedSub.includes("suite") ||
+        normalizedSub.includes("weding") ||
         (venueData.attributes?.vendor_subcategory_name || "").toLowerCase().includes("sherwani") ||
+        (venueData.attributes?.vendor_subcategory_name || "").toLowerCase().includes("suit") ||
+        (venueData.attributes?.vendor_subcategory_name || "").toLowerCase().includes("suite") ||
+        (venueData.attributes?.vendor_subcategory_name || "").toLowerCase().includes("weding") ||
         (venueData.vendor?.vendorSubcategory?.name || "").toLowerCase().includes("sherwani") ||
+        (venueData.vendor?.vendorSubcategory?.name || "").toLowerCase().includes("suit") ||
+        (venueData.vendor?.vendorSubcategory?.name || "").toLowerCase().includes("suite") ||
+        (venueData.vendor?.vendorSubcategory?.name || "").toLowerCase().includes("weding") ||
         (venueData.attributes?.name || "").toLowerCase().includes("sherwani") ||
         (venueData.attributes?.name || "").toLowerCase().includes("shervani") ||
-        (venueData.attributes?.name || "").toLowerCase().includes("sarvani");
+        (venueData.attributes?.name || "").toLowerCase().includes("sarvani") ||
+        (venueData.attributes?.name || "").toLowerCase().includes("suit") ||
+        (venueData.attributes?.name || "").toLowerCase().includes("suite") ||
+        (venueData.attributes?.name || "").toLowerCase().includes("weding");
 
       if ((dynamicVendorTypeId === 22 || dynamicVendorTypeId === 11) && isSherwaniVendor) {
         vendorTypeKey = "groomwear";
@@ -2192,6 +2204,10 @@ const Detailed = () => {
           (venueData.vendor?.vendorSubcategory?.name || "").toLowerCase().includes("sherwani");
 
         if (dynamicVendorTypeId === 22 && isSherw) {
+          vendorTypeKey = "groomwear";
+        } else if (attrs.wedding_suit_master && Object.keys(attrs.wedding_suit_master).length > 0) {
+          vendorTypeKey = "groomwear";
+        } else if (attrs.sherwani_master && Object.keys(attrs.sherwani_master).length > 0) {
           vendorTypeKey = "groomwear";
         } else if (attrs.jewellery_rental_master?.ai_faq || attrs.jewellery_master?.ai_faq) {
           vendorTypeKey = "jewelleryrental";
@@ -2276,14 +2292,13 @@ const Detailed = () => {
 
         // 3a. Groomwear (vendor_type_id: 11 or Sherwani rental under type 22)
         if (dynamicVendorTypeId === 11 || (dynamicVendorTypeId === 22 && vendorTypeKey === "groomwear")) {
-          const isSherwani = normSubcat.includes("sherwani");
-          const isWeddingSuit = normSubcat.includes("suit") || normSubcat.includes("wedding suite");
+          const isSherwani = normSubcat.includes("sherwani") || (venueData.attributes?.vendor_subcategory_name || "").toLowerCase().includes("sherwani") || (venueData.attributes?.name || "").toLowerCase().includes("sherwani") || (venueData.attributes?.sherwani_master && Object.keys(venueData.attributes.sherwani_master).length > 0);
+          const isWeddingSuit = normSubcat.includes("suit") || normSubcat.includes("suite") || (venueData.attributes?.vendor_subcategory_name || "").toLowerCase().includes("suit") || (venueData.attributes?.vendor_subcategory_name || "").toLowerCase().includes("suite") || (venueData.attributes?.name || "").toLowerCase().includes("suit") || (venueData.attributes?.name || "").toLowerCase().includes("suite") || (venueData.attributes?.wedding_suit_master && Object.keys(venueData.attributes.wedding_suit_master).length > 0);
           filteredQuestions = allQuestions.filter(q => {
             const qid = q.id;
-            if (qid >= 401 && qid <= 410) return true;
-            if (qid >= 411 && qid <= 425) return isSherwani;
-            if (qid >= 426 && qid <= 435) return isWeddingSuit;
-            return true;
+            if (isWeddingSuit) return qid >= 426 && qid <= 440;
+            if (isSherwani) return (qid >= 401 && qid <= 410) || (qid >= 411 && qid <= 425);
+            return qid >= 401 && qid <= 410;
           });
         }
         // 3b. Decorators / Planning (vendor_type_id: 4) filtering
@@ -2568,14 +2583,17 @@ const Detailed = () => {
               attrs.groom_wear_master?.ai_faq ||
               {};
             switch (qId) {
-              case 401: return Array.isArray(ai.outfit_types) ? ai.outfit_types.join(", ") : ai.outfit_types;
-              case 402: return ai.customization_available;
-              case 403: return ai.collection_type;
-              case 404: return ai.price_range;
-              case 405: return ai.trial_available;
-              case 406: return ai.delivery_duration;
-              case 407: return ai.advance_required;
-              case 408: return ai.best_known_for;
+              case 401: 
+                if (ai.outfit_types) return Array.isArray(ai.outfit_types) ? ai.outfit_types.join(", ") : ai.outfit_types;
+                if (attrs.wedding_suit_master) return "Wedding Suits, Tuxedos, Three-Piece Suits";
+                return "Sherwanis, Indo-westerns";
+              case 402: return ai.customization_available || ai.custom_tailored_suits || "Yes";
+              case 403: return ai.collection_type || "Groom Wear";
+              case 404: return ai.price_range || (attrs.wedding_suit_master?.pricing?.price_range) || "Mid-range";
+              case 405: return ai.trial_available || ai.trial_available_before_purchase || "Yes";
+              case 406: return ai.delivery_duration || ai.lead_time || "15-30 days";
+              case 407: return ai.advance_required || "50%";
+              case 408: return ai.best_known_for || "Quality & Fit";
               case 409: return ai.cancellation_policy;
               case 410: return ai.starting_year;
               // Sherwani Specific (411-425)
@@ -2595,16 +2613,22 @@ const Detailed = () => {
               case 424: return ai.luxury_premium_range;
               case 425: return ai.return_policy;
               // Suits & Tuxedos (426-435)
-              case 426: return ai.suits_tuxedos || "Yes";
-              case 427: return ai.custom_tailoring;
-              case 428: return ai.imported_fabrics;
-              case 429: return ai.fitting_sessions;
-              case 430: return ai.styling_assistance;
-              case 431: return ai.ready_to_wear;
-              case 432: return ai.matching_accessories;
-              case 433: return ai.maintenance_tips;
-              case 434: return ai.alteration_support;
-              case 435: return ai.order_timeline;
+              case 426: return ai.custom_tailored_suits || ai.custom_tailoring;
+              case 427: return ai.tuxedos_available || ai.suits_tuxedos;
+              case 428: return ai.three_piece_suits || ai.three_piece;
+              case 429: return ai.fabric_included_pricing || ai.fitting_sessions;
+              case 430: return ai.accessories_with_suits || ai.matching_accessories;
+              case 431: return ai.slim_fit_suits || ai.ready_to_wear;
+              case 432: return ai.indo_western_suits || ai.indo_western;
+              case 433: return ai.premium_hand_stitched || ai.maintenance_tips;
+              case 434: return ai.group_bulk_suits || ai.alteration_support;
+              case 435: return ai.winter_specific_suits || ai.order_timeline;
+              
+              case 436: return ai.home_measurement_services;
+              case 437: return ai.trial_available;
+              case 438: return ai.suit_within_7_days;
+              case 439: return ai.alteration_included;
+              case 440: return ai.express_delivery;
               default: return "";
             }
           }

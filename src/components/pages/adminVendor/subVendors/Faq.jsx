@@ -104,9 +104,21 @@ function Faq({ formData, setFormData, onSave }) {
     // Direct subcategory-based matching first
     // Priority: Sherwani-on-rent (vendor_type_id 22) FIRST before generic rent patterns
     const isSherwaniVendor = normalizedSub.includes("sherwani") || 
+      normalizedSub.includes("suit") ||
+      normalizedSub.includes("suite") ||
+      normalizedSub.includes("weding") ||
       (formData?.vendor_subcategory_name || "").toLowerCase().includes("sherwani") ||
+      (formData?.vendor_subcategory_name || "").toLowerCase().includes("suit") ||
+      (formData?.vendor_subcategory_name || "").toLowerCase().includes("suite") ||
+      (formData?.vendor_subcategory_name || "").toLowerCase().includes("weding") ||
       (formData?.attributes?.vendor_subcategory_name || "").toLowerCase().includes("sherwani") ||
-      (formData?.name || "").toLowerCase().includes("sherwani");
+      (formData?.attributes?.vendor_subcategory_name || "").toLowerCase().includes("suit") ||
+      (formData?.attributes?.vendor_subcategory_name || "").toLowerCase().includes("suite") ||
+      (formData?.attributes?.vendor_subcategory_name || "").toLowerCase().includes("weding") ||
+      (formData?.name || "").toLowerCase().includes("sherwani") ||
+      (formData?.name || "").toLowerCase().includes("suit") ||
+      (formData?.name || "").toLowerCase().includes("suite") ||
+      (formData?.name || "").toLowerCase().includes("weding");
     
     if (vendorTypeId === 22 && isSherwaniVendor) {
       vendorTypeKey = "groomwear";
@@ -140,6 +152,10 @@ function Faq({ formData, setFormData, onSave }) {
     if (!vendorTypeKey) {
       // Special: If Sherwani-on-rent (vendor_type_id 22), prioritize groomwear over rental_outfit_master
       if (vendorTypeId === 22 && (normalizedSub.includes("sherwani") || formData?.vendor_subcategory_name?.toLowerCase().includes("sherwani") || formData?.attributes?.vendor_subcategory_name?.toLowerCase().includes("sherwani"))) {
+        vendorTypeKey = "groomwear";
+      } else if (formData?.wedding_suit_master && Object.keys(formData.wedding_suit_master).length > 0) {
+        vendorTypeKey = "groomwear";
+      } else if (formData?.sherwani_master && Object.keys(formData.sherwani_master).length > 0) {
         vendorTypeKey = "groomwear";
       } else if (formData?.accessories_master && Object.keys(formData.accessories_master).length > 0) {
         vendorTypeKey = "accessories";
@@ -225,15 +241,14 @@ function Faq({ formData, setFormData, onSave }) {
 
         // 3a. Groomwear (vendor_type_id: 11 or Sherwani rental under type 22)
         if (vendorTypeId === 11 || (vendorTypeId === 22 && vendorTypeKey === "groomwear")) {
-          const isSherwani = normSubcat.includes("sherwani");
-          const isWeddingSuit = normSubcat.includes("suit") || normSubcat.includes("wedding suite");
+          const isSherwani = normSubcat.includes("sherwani") || (formData?.vendor_subcategory_name || "").toLowerCase().includes("sherwani") || (formData?.name || "").toLowerCase().includes("sherwani") || (formData?.sherwani_master && Object.keys(formData.sherwani_master).length > 0);
+          const isWeddingSuit = normSubcat.includes("suit") || normSubcat.includes("suite") || normSubcat.includes("weding") || (formData?.vendor_subcategory_name || "").toLowerCase().includes("suit") || (formData?.vendor_subcategory_name || "").toLowerCase().includes("suite") || (formData?.vendor_subcategory_name || "").toLowerCase().includes("weding") || (formData?.name || "").toLowerCase().includes("suit") || (formData?.name || "").toLowerCase().includes("suite") || (formData?.name || "").toLowerCase().includes("weding") || (formData?.wedding_suit_master && Object.keys(formData.wedding_suit_master).length > 0);
 
           const filtered = allQuestions.filter(q => {
             const qid = q.id;
-            if (qid >= 401 && qid <= 410) return true;
-            if (qid >= 411 && qid <= 425) return isSherwani;
-            if (qid >= 426 && qid <= 435) return isWeddingSuit;
-            return true;
+            if (isWeddingSuit) return qid >= 426 && qid <= 440;
+            if (isSherwani) return (qid >= 401 && qid <= 410) || (qid >= 411 && qid <= 425);
+            return qid >= 401 && qid <= 410;
           });
           setQuestions(filtered);
         }
