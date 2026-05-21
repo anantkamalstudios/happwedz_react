@@ -2288,18 +2288,31 @@ const Detailed = () => {
         }
         // 3c. Invites & Gifts (vendor_type_id: 9) filtering
         else if (dynamicVendorTypeId === 9 || vendorTypeKey === "gifts") {
-          const isTrousseauPacker = normSubcat.includes("trousseau packer") || normSubcat.includes("trousseau pack");
-          const isGift = normSubcat === "gifts" || normSubcat === "gift" || normSubcat.includes("gifting") || normSubcat === "invitation gifts";
-          const isFavor = normSubcat.includes("favor") || normSubcat.includes("favour") || vendorTypeKey === "gifts";
-          const isInvitation = (normSubcat.includes("invitation") || normSubcat.includes("invite")) && !isGift;
+          const attrs = venueData.attributes || {};
+          
+          // Check master profiles first (priority)
+          const hasTrousseauMaster = attrs.trousseau_master && Object.keys(attrs.trousseau_master).length > 0;
+          const hasGiftMaster = attrs.gift_master && Object.keys(attrs.gift_master).length > 0;
+          const hasFavorMaster = attrs.favor_master && Object.keys(attrs.favor_master).length > 0;
+          const hasInvitationMaster = attrs.invitation_master && Object.keys(attrs.invitation_master).length > 0;
+
+          // Determine vendor type with priority: master profile > subcategory name
+          const isTrousseauPacker = hasTrousseauMaster || (!hasGiftMaster && !hasFavorMaster && !hasInvitationMaster && (normSubcat.includes("trousseau packer") || normSubcat.includes("trousseau pack")));
+          const isGift = hasGiftMaster || (!hasFavorMaster && !hasInvitationMaster && !hasTrousseauMaster && (normSubcat === "gifts" || normSubcat === "gift" || normSubcat.includes("gifting") || (normSubcat.includes("invitation") && normSubcat.includes("gift"))));
+          const isFavor = hasFavorMaster || (!hasGiftMaster && !hasInvitationMaster && !hasTrousseauMaster && (normSubcat.includes("favor") || normSubcat.includes("favour")));
+          const isInvitation = hasInvitationMaster || (!hasGiftMaster && !hasFavorMaster && !hasTrousseauMaster && ((normSubcat.includes("invitation") || normSubcat.includes("invite")) && !normSubcat.includes("gift")));
+
           filteredQuestions = allQuestions.filter(q => {
             const qid = q.id;
-            if (qid >= 2101 && qid <= 2115) return true;
+            // Show general questions (2101-2115) ONLY if no specific master profile exists
+            if (qid >= 2101 && qid <= 2115) {
+              return !hasTrousseauMaster && !hasGiftMaster && !hasFavorMaster && !hasInvitationMaster;
+            }
             if (qid >= 2116 && qid <= 2129) return isTrousseauPacker;
             if (qid >= 2130 && qid <= 2144) return isGift;
             if (qid >= 2145 && qid <= 2159) return isFavor;
             if (qid >= 2160 && qid <= 2172) return isInvitation;
-            return true;
+            return false;
           });
         }
 

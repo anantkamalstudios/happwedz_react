@@ -101,7 +101,7 @@ const VendorFacilities = ({
     normalizedType.includes("event styling");
 
   const isTrousseauPacker = normalizedType.includes("trousseau packer") || normalizedType.includes("trousseau pack");
-  const isGift = normalizedType === "gifts" || normalizedType === "gift" || normalizedType.includes("gifting") || normalizedType === "invitation gifts";
+  const isGift = normalizedType === "gifts" || normalizedType === "gift" || normalizedType.includes("gifting") || (normalizedType.includes("invitation") && normalizedType.includes("gift"));
   const isFavor = normalizedType.includes("favor") || normalizedType.includes("favour");
   const isInvitation = (normalizedType.includes("invitation") || normalizedType.includes("invite")) && !isGift;
   

@@ -154,6 +154,12 @@ function Faq({ formData, setFormData, onSave }) {
         vendorTypeKey = "groomwear";
       } else if (formData?.trousseau_master && Object.keys(formData.trousseau_master).length > 0) {
         vendorTypeKey = "trousseaupacker";
+      } else if (formData?.gift_master && Object.keys(formData.gift_master).length > 0) {
+        vendorTypeKey = "gifts";
+      } else if (formData?.favor_master && Object.keys(formData.favor_master).length > 0) {
+        vendorTypeKey = "gifts";
+      } else if (formData?.invitation_master && Object.keys(formData.invitation_master).length > 0) {
+        vendorTypeKey = "gifts";
       } else if (formData?.bridal_outfit_master && Object.keys(formData.bridal_outfit_master).length > 0) {
         // Detect Kanjeevaram Silk Saree vs generic Bridal Outfit
         const subcatNameVal = (
@@ -244,19 +250,29 @@ function Faq({ formData, setFormData, onSave }) {
         }
         // 3c. Invites & Gifts (vendor_type_id: 9) filter questions
         else if (vendorTypeId === 9) {
-          const isTrousseauPacker = normSubcat.includes("trousseau packer") || normSubcat.includes("trousseau pack");
-          const isGift = normSubcat === "gifts" || normSubcat === "gift" || normSubcat.includes("gifting") || normSubcat === "invitation gifts";
-          const isFavor = normSubcat.includes("favor") || normSubcat.includes("favour");
-          const isInvitation = (normSubcat.includes("invitation") || normSubcat.includes("invite")) && !isGift;
+          // Check master profiles first (priority)
+          const hasTrousseauMaster = formData?.trousseau_master && Object.keys(formData.trousseau_master).length > 0;
+          const hasGiftMaster = formData?.gift_master && Object.keys(formData.gift_master).length > 0;
+          const hasFavorMaster = formData?.favor_master && Object.keys(formData.favor_master).length > 0;
+          const hasInvitationMaster = formData?.invitation_master && Object.keys(formData.invitation_master).length > 0;
+
+          // Determine vendor type with priority: master profile > subcategory name
+          const isTrousseauPacker = hasTrousseauMaster || (!hasGiftMaster && !hasFavorMaster && !hasInvitationMaster && (normSubcat.includes("trousseau packer") || normSubcat.includes("trousseau pack")));
+          const isGift = hasGiftMaster || (!hasFavorMaster && !hasInvitationMaster && !hasTrousseauMaster && (normSubcat === "gifts" || normSubcat === "gift" || normSubcat.includes("gifting") || (normSubcat.includes("invitation") && normSubcat.includes("gift"))));
+          const isFavor = hasFavorMaster || (!hasGiftMaster && !hasInvitationMaster && !hasTrousseauMaster && (normSubcat.includes("favor") || normSubcat.includes("favour")));
+          const isInvitation = hasInvitationMaster || (!hasGiftMaster && !hasFavorMaster && !hasTrousseauMaster && ((normSubcat.includes("invitation") || normSubcat.includes("invite")) && !normSubcat.includes("gift")));
 
           const filtered = allQuestions.filter(q => {
             const qid = q.id;
-            if (qid >= 2101 && qid <= 2115) return true;
+            // Show general questions (2101-2115) ONLY if no specific master profile exists
+            if (qid >= 2101 && qid <= 2115) {
+              return !hasTrousseauMaster && !hasGiftMaster && !hasFavorMaster && !hasInvitationMaster;
+            }
             if (qid >= 2116 && qid <= 2129) return isTrousseauPacker;
             if (qid >= 2130 && qid <= 2144) return isGift;
             if (qid >= 2145 && qid <= 2159) return isFavor;
             if (qid >= 2160 && qid <= 2172) return isInvitation;
-            return true;
+            return false;
           });
           setQuestions(filtered);
         }
