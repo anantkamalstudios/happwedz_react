@@ -168,19 +168,13 @@ const PreWeddingPhotographerMasterProfile = ({
     if (onShowSuccess) onShowSuccess();
   };
 
+  
+
   const inner = (
     <>
       <h4 className="mb-2 fw-bold">Pre-wedding photographer master profile</h4>
       <p className="text-muted fs-14 mb-4">
-        Structured photographer attributes for storefront and AI FAQ matching.{" "}
-        <a
-          href="/register-as-wedding-photographer"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-primary"
-        >
-          Register as a Wedding Photographer
-        </a>
+        Structured photographer attributes for storefront and AI FAQ matching.
       </p>
 
       <Accordion alwaysOpen flush defaultActiveKey={["0", "1"]}>
@@ -765,9 +759,44 @@ const PreWeddingPhotographerMasterProfile = ({
   if (embedded) {
     return <div className="pt-4 mt-3 border-top">{inner}</div>;
   }
+
   return (
     <div className="my-5">
-      <div className="p-3 border rounded bg-white">{inner}</div>
+      <div className="p-3 border rounded bg-white">
+        {Array.from({ length: copies }).map((_, i) => (
+          <div key={i} className="mb-4 position-relative">
+            <div className="position-absolute" style={{ right: 12, top: -8 }}>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleDelete(i);
+                }}
+                className="text-danger me-2"
+              >
+                Delete
+              </a>
+              <a
+                href="/register-as-wedding-photographer"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary me-2"
+              >
+                Register
+              </a>
+              <a
+                href={`mailto:?subject=Register%20as%20Wedding%20Photographer&body=Register%20here:%20${encodeURI(
+                  "/register-as-wedding-photographer"
+                )}`}
+                className="text-secondary"
+              >
+                Send
+              </a>
+            </div>
+            {inner}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

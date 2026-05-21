@@ -7,6 +7,7 @@ function Faq({ formData, setFormData, onSave }) {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState(formData.faqs || {});
   const [subcategories, setSubcategories] = useState([]);
+  const vendorTypeId = Number(vendor?.vendor_type_id || vendor?.vendorType?.id) || null;
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState(null);
@@ -92,22 +93,106 @@ function Faq({ formData, setFormData, onSave }) {
   }, [vendor?.vendor_type_id]);
 
   useEffect(() => {
-    if (vendor?.vendor_type_id) {
-      const activeSubcategoryId = formData?.vendor_subcategory_id || vendor?.vendor_subcategory_id;
-      const resolvedSubcategoryName = subcategories.find(
-        (s) => String(s.id) === String(activeSubcategoryId)
-      )?.name || "";
-      const normalizedSub = resolvedSubcategoryName.toLowerCase();
+    let vendorTypeKey = null;
 
+    const activeSubcategoryId = formData?.vendor_subcategory_id || vendor?.vendor_subcategory_id;
+    const resolvedSubcategoryName = subcategories.find(
+      (s) => String(s.id) === String(activeSubcategoryId)
+    )?.name || subcatName || formData?.vendor_subcategory_name || formData?.attributes?.vendor_subcategory_name || "";
+    const normalizedSub = resolvedSubcategoryName.toLowerCase();
+
+    // Direct subcategory-based matching first
+    // Priority: Sherwani-on-rent (vendor_type_id 22) FIRST before generic rent patterns
+    const isSherwaniVendor = normalizedSub.includes("sherwani") || 
+      (formData?.vendor_subcategory_name || "").toLowerCase().includes("sherwani") ||
+      (formData?.attributes?.vendor_subcategory_name || "").toLowerCase().includes("sherwani") ||
+      (formData?.name || "").toLowerCase().includes("sherwani");
+    
+    if (vendorTypeId === 22 && isSherwaniVendor) {
+      vendorTypeKey = "groomwear";
+    } else if (normalizedSub.includes("flower jewellery") || normalizedSub.includes("floral jewellery") || normalizedSub.includes("flower jewelry") || normalizedSub.includes("floral jewelry")) {
+      vendorTypeKey = "flowerjewellery";
+    } else if (normalizedSub.includes("kanjeevaram") || normalizedSub.includes("silk saree")) {
+      vendorTypeKey = "kanjeevaramsilksaree";
+    } else if (normalizedSub.includes("rental outfit") || normalizedSub.includes("lehenga on rent") || normalizedSub.includes("on rent") || normalizedSub.includes("rent")) {
+      if (normalizedSub.includes("jewel")) {
+        vendorTypeKey = "jewelleryrental";
+      } else {
+        vendorTypeKey = "rentaloutfit";
+      }
+    } else if (normalizedSub.includes("accessories")) {
+      vendorTypeKey = "accessories";
+    } else if (normalizedSub.includes("jewellery rental") || normalizedSub.includes("jewel rental") || (normalizedSub.includes("jewell") && normalizedSub.includes("rent"))) {
+      vendorTypeKey = "jewelleryrental";
+    } else if (normalizedSub.includes("cocktail gown") || normalizedSub.includes("gowns")) {
+      vendorTypeKey = "cocktailgowns";
+    } else if (normalizedSub.includes("trousseau packer") || normalizedSub.includes("trousseau pack")) {
+      vendorTypeKey = "trousseaupacker";
+    } else if (normalizedSub.includes("trousseau sarees") || normalizedSub.includes("trousseau saree")) {
+      vendorTypeKey = "trousseausarees";
+    } else if (normalizedSub.includes("lehenga") || normalizedSub.includes("bridal outfit") || normalizedSub.includes("trousseau")) {
+      vendorTypeKey = "bridaloutfit";
+    } else if (normalizedSub.includes("favor") || normalizedSub.includes("favour")) {
+      vendorTypeKey = "gifts";
+    }
+
+    // 1. Fallback to Sakshi's subcategory overrides based on active master profiles
+    if (!vendorTypeKey) {
+      // Special: If Sherwani-on-rent (vendor_type_id 22), prioritize groomwear over rental_outfit_master
+      if (vendorTypeId === 22 && (normalizedSub.includes("sherwani") || formData?.vendor_subcategory_name?.toLowerCase().includes("sherwani") || formData?.attributes?.vendor_subcategory_name?.toLowerCase().includes("sherwani"))) {
+        vendorTypeKey = "groomwear";
+      } else if (formData?.accessories_master && Object.keys(formData.accessories_master).length > 0) {
+        vendorTypeKey = "accessories";
+      } else if (formData?.jewellery_rental_master && Object.keys(formData.jewellery_rental_master).length > 0) {
+        vendorTypeKey = "jewelleryrental";
+      } else if (formData?.flower_jewellery_master && Object.keys(formData.flower_jewellery_master).length > 0) {
+        vendorTypeKey = "flowerjewellery";
+      } else if (formData?.rental_outfit_master && Object.keys(formData.rental_outfit_master).length > 0 && vendorTypeId !== 22) {
+        vendorTypeKey = "rentaloutfit";
+      } else if (formData?.rental_outfit_master && Object.keys(formData.rental_outfit_master).length > 0) {
+        // If vendor_type_id is 22 but we're here, it's sherwani - use groomwear
+        vendorTypeKey = "groomwear";
+      } else if (formData?.trousseau_master && Object.keys(formData.trousseau_master).length > 0) {
+        vendorTypeKey = "trousseaupacker";
+      } else if (formData?.gift_master && Object.keys(formData.gift_master).length > 0) {
+        vendorTypeKey = "gifts";
+      } else if (formData?.favor_master && Object.keys(formData.favor_master).length > 0) {
+        vendorTypeKey = "gifts";
+      } else if (formData?.invitation_master && Object.keys(formData.invitation_master).length > 0) {
+        vendorTypeKey = "gifts";
+      } else if (formData?.bridal_outfit_master && Object.keys(formData.bridal_outfit_master).length > 0) {
+        // Detect Kanjeevaram Silk Saree vs generic Bridal Outfit
+        const subcatNameVal = (
+          formData?.vendor_subcategory_name ||
+          formData?.attributes?.vendor_subcategory_name ||
+          ""
+        ).toLowerCase();
+        const vendorNameVal = (
+          formData?.name ||
+          formData?.attributes?.name ||
+          ""
+        ).toLowerCase();
+        const isKanjeevaram =
+          subcatNameVal.includes("kanjeevaram") ||
+          subcatNameVal.includes("silk saree") ||
+          subcatNameVal.includes("silk") ||
+          vendorNameVal.includes("kanjeevaram") ||
+          vendorNameVal.includes("silk saree");
+        vendorTypeKey = isKanjeevaram ? "kanjeevaramsilksaree" : "bridaloutfit";
+      }
+    }
+
+    // 2. If still not matched, use HEAD's subcategory detection logic
+    if (!vendorTypeKey) {
       const isLocMaster = formData?.pre_wedding_location_master && Object.keys(formData.pre_wedding_location_master).length > 0;
       const isPhotoMaster = formData?.pre_wedding_photographer_master && Object.keys(formData.pre_wedding_photographer_master).length > 0;
       const isDjMaster = formData?.dj_master && Object.keys(formData.dj_master).length > 0;
       const isChoreoMaster = formData?.sangeet_choreographer_master && Object.keys(formData.sangeet_choreographer_master).length > 0;
       const isEntMaster = formData?.wedding_entertainer_master && Object.keys(formData.wedding_entertainer_master).length > 0;
 
-      const vendorTypeKey = Object.keys(FaqQuestions).find((key) => {
+      vendorTypeKey = Object.keys(FaqQuestions).find((key) => {
         const entry = FaqQuestions[key];
-        if (entry.vendor_type_id !== vendor.vendor_type_id) return false;
+        if (entry.vendor_type_id !== vendorTypeId) return false;
         if (entry.subcategory_keyword === "location") {
           return normalizedSub.includes("location") || isLocMaster;
         }
@@ -125,62 +210,69 @@ function Faq({ formData, setFormData, onSave }) {
         }
         return true;
       });
+    }
 
-      if (vendorTypeKey) {
+    // 3. Fallback: if still no vendorTypeKey but we have a matching vendor_type_id
+    if (!vendorTypeKey) {
+      vendorTypeKey = Object.keys(FaqQuestions).find(
+        (key) => FaqQuestions[key].vendor_type_id === vendorTypeId
+      );
+    }
+
+      if (vendorTypeKey && FaqQuestions[vendorTypeKey]) {
         const allQuestions = FaqQuestions[vendorTypeKey].questions || [];
         const normSubcat = (subcatName || "").trim().toLowerCase();
 
-        // 1. Groomwear (vendor_type_id: 11)
-        if (vendor.vendor_type_id === 11) {
+        // 3a. Groomwear (vendor_type_id: 11 or Sherwani rental under type 22)
+        if (vendorTypeId === 11 || (vendorTypeId === 22 && vendorTypeKey === "groomwear")) {
           const isSherwani = normSubcat.includes("sherwani");
           const isWeddingSuit = normSubcat.includes("suit") || normSubcat.includes("wedding suite");
 
           const filtered = allQuestions.filter(q => {
             const qid = q.id;
-            // Standard questions (401 - 410) are always shown
             if (qid >= 401 && qid <= 410) return true;
-            // Sherwani questions (411 - 425)
             if (qid >= 411 && qid <= 425) return isSherwani;
-            // Wedding suit questions (426 - 435)
             if (qid >= 426 && qid <= 435) return isWeddingSuit;
             return true;
           });
           setQuestions(filtered);
         }
-        // 2. Decorators (vendor_type_id: 4)
-        else if (vendor.vendor_type_id === 4) {
+        // 3b. Decorators (vendor_type_id: 4) filter questions
+        else if (vendorTypeId === 4) {
           const isDecorator = normSubcat.includes("decorator") || normSubcat.includes("decor") || normSubcat.includes("event styling");
-          // Wedding Planners (normSubcat includes "planner" or "planning") has no AI FAQs
           const filtered = allQuestions.filter(q => {
             const qid = q.id;
-            // Standard questions (1201 - 1212) are always shown
             if (qid >= 1201 && qid <= 1212) return true;
-            // Decorator questions (1213 - 1225)
             if (qid >= 1213 && qid <= 1225) return isDecorator;
             return true;
           });
           setQuestions(filtered);
         }
-        // 3. Invites & Gifts (vendor_type_id: 9)
-        else if (vendor.vendor_type_id === 9) {
-          const isTrousseauPacker = normSubcat.includes("trousseau packer") || normSubcat.includes("trousseau pack");
-          const isGift = normSubcat === "gifts" || normSubcat === "gift" || normSubcat.includes("gifting") || normSubcat === "invitation gifts";
-          const isFavor = normSubcat.includes("favor") || normSubcat.includes("favour");
-          const isInvitation = (normSubcat.includes("invitation") || normSubcat.includes("invite")) && !isGift;
+        // 3c. Invites & Gifts (vendor_type_id: 9) filter questions
+        else if (vendorTypeId === 9) {
+          // Check master profiles first (priority)
+          const hasTrousseauMaster = formData?.trousseau_master && Object.keys(formData.trousseau_master).length > 0;
+          const hasGiftMaster = formData?.gift_master && Object.keys(formData.gift_master).length > 0;
+          const hasFavorMaster = formData?.favor_master && Object.keys(formData.favor_master).length > 0;
+          const hasInvitationMaster = formData?.invitation_master && Object.keys(formData.invitation_master).length > 0;
+
+          // Determine vendor type with priority: master profile > subcategory name
+          const isTrousseauPacker = hasTrousseauMaster || (!hasGiftMaster && !hasFavorMaster && !hasInvitationMaster && (normSubcat.includes("trousseau packer") || normSubcat.includes("trousseau pack")));
+          const isGift = hasGiftMaster || (!hasFavorMaster && !hasInvitationMaster && !hasTrousseauMaster && (normSubcat === "gifts" || normSubcat === "gift" || normSubcat.includes("gifting") || (normSubcat.includes("invitation") && normSubcat.includes("gift"))));
+          const isFavor = hasFavorMaster || (!hasGiftMaster && !hasInvitationMaster && !hasTrousseauMaster && (normSubcat.includes("favor") || normSubcat.includes("favour")));
+          const isInvitation = hasInvitationMaster || (!hasGiftMaster && !hasFavorMaster && !hasTrousseauMaster && ((normSubcat.includes("invitation") || normSubcat.includes("invite")) && !normSubcat.includes("gift")));
 
           const filtered = allQuestions.filter(q => {
             const qid = q.id;
-            // Standard questions (1501 - 1515) are always shown
-            if (qid >= 1501 && qid <= 1515) return true;
-            // Trousseau Packer questions (2116 - 2129)
+            // Show general questions (2101-2115) ONLY if no specific master profile exists
+            if (qid >= 2101 && qid <= 2115) {
+              return !hasTrousseauMaster && !hasGiftMaster && !hasFavorMaster && !hasInvitationMaster;
+            }
             if (qid >= 2116 && qid <= 2129) return isTrousseauPacker;
-            // Gifts questions (2130 - 2144)
             if (qid >= 2130 && qid <= 2144) return isGift;
-            // Favors questions (2145 - 2159)
             if (qid >= 2145 && qid <= 2159) return isFavor;
-            // Invitations questions (2160 - 2172)
             if (qid >= 2160 && qid <= 2172) return isInvitation;
-            return true;
+            return false;
           });
           setQuestions(filtered);
         }
@@ -190,8 +282,21 @@ function Faq({ formData, setFormData, onSave }) {
       } else {
         setQuestions([]);
       }
-    }
-  }, [vendor?.vendor_type_id, subcatName, formData?.vendor_subcategory_id, vendor?.vendor_subcategory_id, subcategories]);
+  }, [
+    vendor?.vendor_type_id,
+    subcatName,
+    formData?.vendor_subcategory_id,
+    vendor?.vendor_subcategory_id,
+    subcategories,
+    formData?.accessories_master,
+    formData?.jewellery_rental_master,
+    formData?.flower_jewellery_master,
+    formData?.rental_outfit_master,
+    formData?.bridal_outfit_master,
+    formData?.vendor_subcategory_name,
+    formData?.attributes?.vendor_subcategory_name,
+    formData?.name,
+  ]);
 
   useEffect(() => {
     setFormData((prev) => ({ ...prev, faqs: answers }));
