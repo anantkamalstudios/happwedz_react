@@ -16,6 +16,8 @@ export default function PromoForm({ formData, setFormData, onSave }) {
     description: "",
     termsAccepted: false,
     active: true,
+    imageName: "",
+    imagePreviewUrl: "",
   });
 
   const [imagePreview, setImagePreview] = useState(null);
@@ -28,6 +30,8 @@ export default function PromoForm({ formData, setFormData, onSave }) {
 
   // If parent passed existing deals, prefill the form with the first deal
   useEffect(() => {
+    console.log("PromoForm - formData.deals:", formData?.deals);
+    
     if (Array.isArray(formData?.deals) && formData.deals.length > 0) {
       const d = formData.deals[0];
       setForm((s) => ({
@@ -40,13 +44,21 @@ export default function PromoForm({ formData, setFormData, onSave }) {
         endDate: d.endDate || "",
         description: d.description || "",
         active: typeof d.active === "boolean" ? d.active : true,
+        imageName: d.imageName || "",
+        imagePreviewUrl: d.imagePreviewUrl || "",
       }));
       // hydrate image preview if available
-      if (d.imageName) {
+      if (d.imagePreviewUrl) {
+        setImagePreview(d.imagePreviewUrl);
+      } else if (d.imageName) {
         let preview = d.imageName;
         if (preview.startsWith("/uploads/")) preview = IMAGE_BASE_URL + preview;
-        setImagePreview(preview);
+        if (preview.startsWith("http") || preview.startsWith("data:")) {
+          setImagePreview(preview);
+        }
       }
+    } else {
+      console.log("PromoForm - No deals found in formData");
     }
   }, [formData?.deals]);
 
@@ -60,10 +72,14 @@ export default function PromoForm({ formData, setFormData, onSave }) {
     setImageFile(file || null);
     if (!file) {
       setImagePreview(null);
+      setForm((s) => ({ ...s, imagePreviewUrl: "" }));
       return;
     }
     const reader = new FileReader();
-    reader.onload = (ev) => setImagePreview(ev.target.result);
+    reader.onload = (ev) => {
+      setImagePreview(ev.target.result);
+      setForm((s) => ({ ...s, imagePreviewUrl: ev.target.result, imageName: file.name }));
+    };
     reader.readAsDataURL(file);
   };
 
@@ -99,21 +115,52 @@ export default function PromoForm({ formData, setFormData, onSave }) {
         endDate: form.endDate,
         description: form.description,
         active: !!form.active,
-        imageName: imageFile?.name || null,
+        imageName: imageFile?.name || form.imageName || null,
+        imagePreviewUrl: imagePreview || form.imagePreviewUrl || null,
       };
-      setFormData((prev) => {
-        const existing = Array.isArray(prev.deals) ? [...prev.deals] : [];
+      
+      // Update formData with new deal
+      const updatedDeals = (() => {
+        const existing = Array.isArray(formData?.deals) ? [...formData.deals] : [];
         if (editingIndex !== null && existing[editingIndex]) {
           existing[editingIndex] = newDeal;
         } else {
           existing.push(newDeal);
         }
-        return { ...prev, deals: existing };
-      });
-      // Let parent handle actual API via onSave (vendorServicesApi)
-      await onSave?.();
+        return existing;
+      })();
+
+      setFormData((prev) => ({ ...prev, deals: updatedDeals }));
+      
+      // Save the complete deals array to localStorage immediately (before API call)
+      // This ensures promotions persist even if page is refreshed during save
+      try {
+        const existingFormData = JSON.parse(localStorage.getItem("vendorFormData") || "{}");
+        const updatedFormData = { ...existingFormData, deals: updatedDeals };
+        localStorage.setItem("vendorFormData", JSON.stringify(updatedFormData));
+        console.log("PromoForm - Saved deals to localStorage:", updatedDeals);
+      } catch (e) {
+        console.error("Error saving deals to localStorage:", e);
+      }
+      
+      // Let parent handle actual API via onSave with the explicit updated deals payload
+      await onSave?.({ deals: updatedDeals });
+      
+      // Reset editing index after successful save
+      setEditingIndex(null);
+      
+      // DON'T reset the form - keep it populated so user can see what was saved
+      // Instead, just clear the termsAccepted checkbox
+      setForm(prev => ({ ...prev, termsAccepted: false }));
+      
       setServerSuccess("Promotion added to your service and saved.");
-      const payload = { ...form, imageName: imageFile?.name || null };
+      
+      // Save image preview metadata to localStorage as backup
+      const payload = {
+        ...form,
+        imageName: imageFile?.name || form.imageName || null,
+        imagePreviewUrl: imagePreview || form.imagePreviewUrl || null,
+      };
       localStorage.setItem("promoDraft", JSON.stringify(payload));
     } catch (err) {
       setServerError(
@@ -135,6 +182,8 @@ export default function PromoForm({ formData, setFormData, onSave }) {
       description: "",
       termsAccepted: false,
       active: true,
+      imageName: "",
+      imagePreviewUrl: "",
     });
     setImageFile(null);
     setImagePreview(null);
@@ -144,6 +193,8 @@ export default function PromoForm({ formData, setFormData, onSave }) {
   const handleEditDeal = (index) => {
     const deal = formData?.deals?.[index];
     if (!deal) return;
+    
+    // Populate form with deal data
     setForm({
       title: deal.title || "",
       promoCode: deal.code || deal.promoCode || "",
@@ -154,13 +205,35 @@ export default function PromoForm({ formData, setFormData, onSave }) {
       description: deal.description || "",
       termsAccepted: true,
       active: typeof deal.active === "boolean" ? deal.active : true,
+      imageName: deal.imageName || "",
+      imagePreviewUrl: deal.imagePreviewUrl || "",
     });
-    if (deal.imageName) {
+    
+    // Set image preview if available
+    if (deal.imagePreviewUrl) {
+      setImagePreview(deal.imagePreviewUrl);
+    } else if (deal.imageName) {
       let preview = deal.imageName;
       if (preview.startsWith("/uploads/")) preview = IMAGE_BASE_URL + preview;
-      setImagePreview(preview);
-    } else setImagePreview(null);
+      if (preview.startsWith("http") || preview.startsWith("data:")) {
+        setImagePreview(preview);
+      } else {
+        setImagePreview(null);
+      }
+    } else {
+      setImagePreview(null);
+    }
+    
+    // Set editing index
     setEditingIndex(index);
+    
+    // Clear any previous errors
+    setErrors({});
+    
+    // Scroll to top of form so user can see the populated fields
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    console.log("Editing deal at index:", index, deal);
   };
 
   const handleDeleteDeal = async (index) => {
@@ -175,10 +248,17 @@ export default function PromoForm({ formData, setFormData, onSave }) {
       confirmButtonText: "Yes, delete it",
     });
     if (!confirmed.isConfirmed) return;
+    
+    // Remove the deal from the array
     const updated = formData.deals.filter((_, i) => i !== index);
+    
+    // Update formData immediately
     setFormData((prev) => ({ ...prev, deals: updated }));
+    
     try {
-      await onSave?.();
+        // Save to API using explicit updated deals payload
+        await onSave?.({ deals: updated });
+      
       Swal.fire({
         icon: "success",
         title: "Deleted",
@@ -186,6 +266,8 @@ export default function PromoForm({ formData, setFormData, onSave }) {
         showConfirmButton: false,
       });
     } catch (err) {
+      // If save failed, revert the deletion
+      setFormData((prev) => ({ ...prev, deals: formData.deals }));
       Swal.fire({
         icon: "error",
         title: "Delete failed",
@@ -202,6 +284,18 @@ export default function PromoForm({ formData, setFormData, onSave }) {
       <div className="promo-form-wrapper">
         <div className="form-section">
           <div className="form-card">
+            {editingIndex !== null && (
+              <div className="alert alert-info mb-3" style={{ 
+                background: "linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)",
+                border: "1px solid #2196f3",
+                borderRadius: "8px",
+                padding: "12px",
+                fontSize: "14px",
+                color: "#0d47a1"
+              }}>
+                <strong>✏️ Editing Mode:</strong> You are currently editing an existing promotion. Click "Update Promotion" to save changes or "Cancel Edit" to discard.
+              </div>
+            )}
             <h4 className="fw-bold">Promotion Details</h4>
             <p className="form-description fs-14">
               Fill in the details of your special offer for couples
@@ -359,7 +453,7 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                 />
               </div>
 
-              {/* <div className="form-group">
+              <div className="form-group">
                 <label className="fs-16">Promotion Image</label>
                 <div className="file-upload">
                   <label className="file-upload-label">
@@ -371,14 +465,23 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                     />
                     <span className="file-upload-button">Choose File</span>
                     <span className="file-name">
-                      {imageFile ? imageFile.name : "No file chosen"}
+                      {imageFile ? imageFile.name : form.imageName || "No file chosen"}
                     </span>
                   </label>
                   <small className="file-hint">
                     Recommended size: 800x400px (JPG, PNG)
                   </small>
                 </div>
-              </div> */}
+                {imagePreview && (
+                  <div className="mt-3" style={{ maxWidth: 320 }}>
+                    <img
+                      src={imagePreview}
+                      alt="Promotion preview"
+                      style={{ width: "100%", borderRadius: 12, objectFit: "cover" }}
+                    />
+                  </div>
+                )}
+              </div>
 
               <div className="form-group terms-group" style={{ marginTop: 25 }}>
                 <div
@@ -443,8 +546,31 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                   }}
                   disabled={submitting}
                 >
-                  {submitting ? "Saving..." : "Save Promotion"}
+                  {submitting 
+                    ? (editingIndex !== null ? "Updating..." : "Saving...") 
+                    : (editingIndex !== null ? "Update Promotion" : "Save Promotion")
+                  }
                 </button>
+
+                {editingIndex !== null && (
+                  <button
+                    type="button"
+                    className="btn-secondary folder-item fs-14"
+                    onClick={() => {
+                      resetForm();
+                      setEditingIndex(null);
+                    }}
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      textAlign: "center",
+                      background: "#6c757d",
+                      color: "#fff",
+                    }}
+                  >
+                    Cancel Edit
+                  </button>
+                )}
 
                 <button
                   type="button"
@@ -621,7 +747,8 @@ export default function PromoForm({ formData, setFormData, onSave }) {
                   </button>
                 </div>
               </div>
-            </div> */}
+            </div>
+            */}
           </div>
         </div>
       </div>

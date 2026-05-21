@@ -31,6 +31,7 @@ import { GrFormNextLink } from "react-icons/gr";
 import ReviewSection from "../pages/ReviewSection";
 import { FaqQuestions } from "../pages/adminVendor/subVendors/FaqData";
 import axios from "axios";
+import { getImageUrl } from "../../utils/imageUtils";
 const API_BASE_URL = "https://happywedz.com";
 import Swal from "sweetalert2";
 import SectionTabs from "./SectionTabs";
@@ -58,6 +59,14 @@ const formatKeyValuePairs = (obj, limit = 4) => {
     .slice(0, limit)
     .map(([key, value]) => `${key}: ${value}`)
     .join(", ");
+};
+
+const resolvePromotionImage = (image) => {
+  if (!image || typeof image !== "string") return null;
+  const trimmed = image.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("http") || trimmed.startsWith("data:")) return trimmed;
+  return getImageUrl(trimmed);
 };
 
 const pushFeature = (arr, icon, label, value) => {
@@ -2073,6 +2082,7 @@ const Detailed = () => {
   }, [id]);
 
   const [_faqList, _setFaqList] = useState([]);
+  const [_promotionsList, _setPromotionsList] = useState([]);
 
   useEffect(() => {
     const fetchFaqData = async () => {
@@ -2296,17 +2306,23 @@ const Detailed = () => {
           const hasFavorMaster = attrs.favor_master && Object.keys(attrs.favor_master).length > 0;
           const hasInvitationMaster = attrs.invitation_master && Object.keys(attrs.invitation_master).length > 0;
 
-          // Determine vendor type with priority: master profile > subcategory name
-          const isTrousseauPacker = hasTrousseauMaster || (!hasGiftMaster && !hasFavorMaster && !hasInvitationMaster && (normSubcat.includes("trousseau packer") || normSubcat.includes("trousseau pack")));
-          const isGift = hasGiftMaster || (!hasFavorMaster && !hasInvitationMaster && !hasTrousseauMaster && (normSubcat === "gifts" || normSubcat === "gift" || normSubcat.includes("gifting") || (normSubcat.includes("invitation") && normSubcat.includes("gift"))));
-          const isFavor = hasFavorMaster || (!hasGiftMaster && !hasInvitationMaster && !hasTrousseauMaster && (normSubcat.includes("favor") || normSubcat.includes("favour")));
-          const isInvitation = hasInvitationMaster || (!hasGiftMaster && !hasFavorMaster && !hasTrousseauMaster && ((normSubcat.includes("invitation") || normSubcat.includes("invite")) && !normSubcat.includes("gift")));
+          // Check if vendor has answered specific question ranges (fallback detection)
+          const hasTrousseauAnswers = answers.some(a => Number(a.faq_question_id) >= 2116 && Number(a.faq_question_id) <= 2129);
+          const hasGiftAnswers = answers.some(a => Number(a.faq_question_id) >= 2130 && Number(a.faq_question_id) <= 2144);
+          const hasFavorAnswers = answers.some(a => Number(a.faq_question_id) >= 2145 && Number(a.faq_question_id) <= 2159);
+          const hasInvitationAnswers = answers.some(a => Number(a.faq_question_id) >= 2160 && Number(a.faq_question_id) <= 2172);
+
+          // Determine vendor type with priority: master profile > answered questions > subcategory name
+          const isTrousseauPacker = hasTrousseauMaster || hasTrousseauAnswers || (!hasGiftMaster && !hasFavorMaster && !hasInvitationMaster && !hasGiftAnswers && !hasFavorAnswers && !hasInvitationAnswers && (normSubcat.includes("trousseau packer") || normSubcat.includes("trousseau pack")));
+          const isGift = hasGiftMaster || hasGiftAnswers || (!hasFavorMaster && !hasInvitationMaster && !hasTrousseauMaster && !hasFavorAnswers && !hasInvitationAnswers && !hasTrousseauAnswers && (normSubcat === "gifts" || normSubcat === "gift" || normSubcat.includes("gifting") || (normSubcat.includes("invitation") && normSubcat.includes("gift"))));
+          const isFavor = hasFavorMaster || hasFavorAnswers || (!hasGiftMaster && !hasInvitationMaster && !hasTrousseauMaster && !hasGiftAnswers && !hasInvitationAnswers && !hasTrousseauAnswers && (normSubcat.includes("favor") || normSubcat.includes("favour")));
+          const isInvitation = hasInvitationMaster || hasInvitationAnswers || (!hasGiftMaster && !hasFavorMaster && !hasTrousseauMaster && !hasGiftAnswers && !hasFavorAnswers && !hasTrousseauAnswers && ((normSubcat.includes("invitation") || normSubcat.includes("invite")) && !normSubcat.includes("gift")));
 
           filteredQuestions = allQuestions.filter(q => {
             const qid = q.id;
-            // Show general questions (2101-2115) ONLY if no specific master profile exists
+            // Show general questions (2101-2115) ONLY if no specific master profile or answers exist
             if (qid >= 2101 && qid <= 2115) {
-              return !hasTrousseauMaster && !hasGiftMaster && !hasFavorMaster && !hasInvitationMaster;
+              return !hasTrousseauMaster && !hasGiftMaster && !hasFavorMaster && !hasInvitationMaster && !hasTrousseauAnswers && !hasGiftAnswers && !hasFavorAnswers && !hasInvitationAnswers;
             }
             if (qid >= 2116 && qid <= 2129) return isTrousseauPacker;
             if (qid >= 2130 && qid <= 2144) return isGift;
@@ -2500,19 +2516,19 @@ const Detailed = () => {
               // Gifts AI FAQ Mapping
               case 2130: return ai.handle_bulk_orders;
               case 2131: return ai.gifts_customizable;
-              case 2132: return ai.packaging_included;
-              case 2133: return ai.eco_friendly_gift;
+              case 2132: return ai.packaging_included || ai.packaging_included_in_pricing;
+              case 2133: return ai.eco_friendly_gift || ai.eco_friendly_gift_options;
               case 2134: return ai.deliver_across_india;
               case 2135: return ai.consumable_gifts_available;
-              case 2136: return ai.shelf_life_of_consumable;
+              case 2136: return ai.shelf_life_of_consumable || ai.shelf_life_of_consumables;
               case 2137: return ai.luxury_gift_options;
               case 2138: return ai.handle_urgent_orders;
-              case 2139: return ai.gift_samples_available;
-              case 2140: return ai.branded_for_corporate;
+              case 2139: return ai.gift_samples_available || ai.samples_available_before_order;
+              case 2140: return ai.branded_for_corporate || ai.gifts_branded_corporate;
               case 2141: return ai.minimum_order_quantity_required;
-              case 2142: return ai.fragile_gift_safely_packed;
+              case 2142: return ai.fragile_gift_safely_packed || ai.fragile_items_safely_handled;
               case 2143: return ai.temperature_controlled_delivery;
-              case 2144: return ai.suitable_for_all_guests;
+              case 2144: return ai.suitable_for_all_guests || ai.suitable_for_all_guest_categories;
               // Favors AI FAQ Mapping
               case 2145: return ai.handle_bulk_orders;
               case 2146: return ai.favors_customizable;
@@ -2619,6 +2635,125 @@ const Detailed = () => {
     };
 
     fetchFaqData();
+  }, [venueData]);
+
+  // Fetch and process promotions data
+  useEffect(() => {
+    const fetchPromotionsData = async () => {
+      if (!venueData) {
+        _setPromotionsList([]);
+        return;
+      }
+
+      try {
+        // Try to get deals from multiple possible locations
+        let deals = venueData?.deals || venueData?.attributes?.deals || [];
+        
+        // If deals is a string (JSON), parse it
+        if (typeof deals === 'string' && deals.trim()) {
+          try {
+            deals = JSON.parse(deals);
+          } catch (e) {
+            console.error("Error parsing deals JSON:", e);
+            deals = [];
+          }
+        }
+        
+        // If deals is an object but not an array, try to convert it
+        if (deals && typeof deals === 'object' && !Array.isArray(deals)) {
+          // Check if it's an empty object
+          if (Object.keys(deals).length === 0) {
+            deals = [];
+          } else {
+            // Try to convert object to array
+            deals = Object.values(deals).filter(item => item && typeof item === 'object');
+          }
+        }
+        
+        // Ensure deals is an array
+        if (!Array.isArray(deals)) {
+          deals = [];
+        }
+        
+        // FALLBACK: If no deals from API, try localStorage (temporary workaround)
+        // This ensures that changes made in vendor dashboard are reflected here
+        if (deals.length === 0) {
+          try {
+            const vendorFormData = localStorage.getItem('vendorFormData');
+            if (vendorFormData) {
+              const parsedData = JSON.parse(vendorFormData);
+              if (parsedData?.deals && Array.isArray(parsedData.deals)) {
+                // Only use localStorage deals if they match this vendor
+                const vendorIdMatch = 
+                  parsedData.id === venueData?.id ||
+                  parsedData.vendor_id === venueData?.vendor_id ||
+                  parsedData.id === venueData?.vendor?.id;
+                
+                if (vendorIdMatch) {
+                  deals = parsedData.deals;
+                  console.log("Promotions (Details Page): Using deals from localStorage (backend not returning them):", deals);
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Error reading deals from localStorage:", e);
+          }
+        }
+        
+        console.log("Promotions Debug (Details Page) - Full venueData:", venueData);
+        console.log("Promotions Debug (Details Page) - deals after processing:", deals);
+        
+        // Filter active deals and check if they're still valid
+        const now = new Date();
+        const activeDeals = deals.filter((deal) => {
+          // Skip if not a valid deal object
+          if (!deal || typeof deal !== 'object') return false;
+          
+          // Check if deal is active
+          if (deal.active === false) return false;
+          
+          // Check if deal has expired
+          if (deal.endDate) {
+            try {
+              const endDate = new Date(deal.endDate);
+              if (endDate < now) return false;
+            } catch (e) {
+              console.error("Error parsing endDate:", e);
+            }
+          }
+          return true;
+        });
+
+        console.log("Promotions Debug (Details Page) - activeDeals:", activeDeals);
+        _setPromotionsList(activeDeals);
+        
+      } catch (error) {
+        console.error("Error fetching promotions data:", error);
+        _setPromotionsList([]);
+      }
+    };
+
+    fetchPromotionsData();
+    
+    // Also listen for localStorage changes (when vendor updates promotions in dashboard)
+    const handleStorageChange = (e) => {
+      if (e.key === 'vendorFormData') {
+        console.log("Promotions: localStorage changed, refetching...");
+        fetchPromotionsData();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also check localStorage periodically (every 2 seconds) for same-tab updates
+    const intervalId = setInterval(() => {
+      fetchPromotionsData();
+    }, 2000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(intervalId);
+    };
   }, [venueData]);
 
   useEffect(() => {
@@ -3195,6 +3330,114 @@ const Detailed = () => {
                   </>
                 );
               })()}
+            </div>
+
+            {/* Promotions Section */}
+            <div id="promotions" className="my-4 border p-3 rounded">
+              <h5 className="my-4 fs-16">Special Offers & Promotions</h5>
+
+              {_promotionsList.length === 0 ? (
+                <div>
+                  <p className="text-muted fs-14">
+                    No special offers available at this time.
+                  </p>
+                </div>
+              ) : (
+                <div className="promotions-list">
+                  {_promotionsList.map((deal, index) => {
+                    const discountText = deal.type === "percentage" 
+                      ? `${deal.value}% OFF` 
+                      : `₹${deal.value} OFF`;
+                    const promoImageUrl = resolvePromotionImage(deal.imagePreviewUrl || deal.imageUrl || deal.imageName);
+                    
+                    return (
+                      <div
+                        key={index}
+                        className="promotion-card mb-3 p-3 border rounded"
+                        style={{
+                          background: "linear-gradient(135deg, #fff5f8 0%, #ffe8f0 100%)",
+                          borderColor: "#ff6b9d",
+                        }}
+                      >
+                        {promoImageUrl && (
+                          <div 
+                            className="mb-3" 
+                            style={{ 
+                              overflow: "hidden", 
+                              borderRadius: 12,
+                              maxWidth: "100%",
+                              backgroundColor: "#f5f5f5"
+                            }}
+                          >
+                            <img
+                              src={promoImageUrl}
+                              alt={deal.title || "Promotion image"}
+                              style={{ 
+                                width: "100%", 
+                                height: "auto",
+                                minHeight: "160px",
+                                maxHeight: "240px",
+                                objectFit: "cover",
+                                display: "block"
+                              }}
+                              loading="lazy"
+                              onError={(e) => {
+                                if (!e.target.dataset.fallback) {
+                                  e.target.dataset.fallback = "true";
+                                  e.target.src = "/images/imageNotFound.jpg";
+                                }
+                              }}
+                            />
+                          </div>
+                        )}
+                        <div className="d-flex justify-content-between align-items-start mb-2">
+                          <div className="flex-grow-1">
+                            <h6 className="fw-bold mb-1 fs-16 text-dark">
+                              {deal.title || "Special Offer"}
+                            </h6>
+                            {deal.code && (
+                              <div className="d-flex align-items-center gap-2 mb-2">
+                                <span className="badge bg-dark fs-12 px-2 py-1">
+                                  CODE: {deal.code}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <div
+                            className="discount-badge px-3 py-2 rounded fw-bold"
+                            style={{
+                              background: "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)",
+                              color: "#fff",
+                              fontSize: "14px",
+                              minWidth: "80px",
+                              textAlign: "center",
+                            }}
+                          >
+                            {discountText}
+                          </div>
+                        </div>
+
+                        {deal.description && (
+                          <p className="text-muted mb-2 fs-14">
+                            {deal.description}
+                          </p>
+                        )}
+
+                        {(deal.startDate || deal.endDate) && (
+                          <div className="d-flex align-items-center gap-2 text-muted fs-13">
+                            <i className="fa-regular fa-calendar"></i>
+                            <span>
+                              Valid: {deal.startDate ? new Date(deal.startDate).toLocaleDateString() : "Now"} 
+                              {" - "}
+                              {deal.endDate ? new Date(deal.endDate).toLocaleDateString() : "Ongoing"}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div id="reviews" className="py-2">

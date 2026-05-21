@@ -91,6 +91,15 @@ const YesNoField = ({ label, value, onChange, groupName }) => (
   </div>
 );
 
+const getAiFaqValue = (aiFaq, field, fallbackKeys = []) => {
+  if (!aiFaq) return "";
+  if (aiFaq[field] !== undefined && aiFaq[field] !== "") return aiFaq[field];
+  for (const fallback of fallbackKeys) {
+    if (aiFaq[fallback] !== undefined && aiFaq[fallback] !== "") return aiFaq[fallback];
+  }
+  return "";
+};
+
 const GiftMasterProfile = ({
   formData,
   setFormData,
@@ -240,6 +249,102 @@ const GiftMasterProfile = ({
               <label className="form-label fw-semibold">Style Tags</label>
               <Form.Control className="fs-14" value={dm.portfolio.style_tags} onChange={(e) => patchDm({ portfolio: { ...dm.portfolio, style_tags: e.target.value } })} />
             </div>
+          </Accordion.Body>
+        </Accordion.Item>
+
+        <Accordion.Item eventKey="9">
+          <Accordion.Header>Section 10 — AI FAQ</Accordion.Header>
+          <Accordion.Body>
+            <YesNoField
+              groupName="giftBulk"
+              label="Can vendor handle bulk orders (300+)?"
+              value={getAiFaqValue(dm.ai_faq, "handle_bulk_orders")}
+              onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, handle_bulk_orders: v } })}
+            />
+            <YesNoField
+              groupName="giftCustomizable"
+              label="Are gifts customizable?"
+              value={getAiFaqValue(dm.ai_faq, "gifts_customizable")}
+              onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, gifts_customizable: v } })}
+            />
+            <YesNoField
+              groupName="giftPackaging"
+              label="Is packaging included in pricing?"
+              value={getAiFaqValue(dm.ai_faq, "packaging_included", ["packaging_included_in_pricing"]) }
+              onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, packaging_included: v } })}
+            />
+            <YesNoField
+              groupName="giftEco"
+              label="Are eco-friendly gift options available?"
+              value={getAiFaqValue(dm.ai_faq, "eco_friendly_gift", ["eco_friendly_gift_options"]) }
+              onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, eco_friendly_gift: v } })}
+            />
+            <YesNoField
+              groupName="giftDeliverIndia"
+              label="Can vendor deliver across India?"
+              value={getAiFaqValue(dm.ai_faq, "deliver_across_india")}
+              onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, deliver_across_india: v } })}
+            />
+            <YesNoField
+              groupName="giftConsumable"
+              label="Are consumable gifts available?"
+              value={getAiFaqValue(dm.ai_faq, "consumable_gifts_available")}
+              onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, consumable_gifts_available: v } })}
+            />
+            <SelectField
+              label="What is the shelf life of consumables?"
+              options={SHELF_LIFE}
+              value={getAiFaqValue(dm.ai_faq, "shelf_life_of_consumable", ["shelf_life_of_consumables"]) }
+              onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, shelf_life_of_consumable: v } })}
+            />
+            <YesNoField
+              groupName="giftLuxury"
+              label="Are luxury gift options available?"
+              value={getAiFaqValue(dm.ai_faq, "luxury_gift_options")}
+              onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, luxury_gift_options: v } })}
+            />
+            <YesNoField
+              groupName="giftUrgent"
+              label="Can vendor handle urgent orders?"
+              value={getAiFaqValue(dm.ai_faq, "handle_urgent_orders")}
+              onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, handle_urgent_orders: v } })}
+            />
+            <YesNoField
+              groupName="giftSamples"
+              label="Are samples available before order?"
+              value={getAiFaqValue(dm.ai_faq, "gift_samples_available", ["samples_available_before_order"]) }
+              onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, gift_samples_available: v } })}
+            />
+            <YesNoField
+              groupName="giftCorporate"
+              label="Can gifts be branded for corporate use?"
+              value={getAiFaqValue(dm.ai_faq, "branded_for_corporate", ["gifts_branded_corporate"]) }
+              onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, branded_for_corporate: v } })}
+            />
+            <YesNoField
+              groupName="giftMOQ"
+              label="Is minimum order quantity required?"
+              value={getAiFaqValue(dm.ai_faq, "minimum_order_quantity_required")}
+              onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, minimum_order_quantity_required: v } })}
+            />
+            <YesNoField
+              groupName="giftFragile"
+              label="Are fragile items safely handled?"
+              value={getAiFaqValue(dm.ai_faq, "fragile_gift_safely_packed", ["fragile_items_safely_handled"]) }
+              onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, fragile_gift_safely_packed: v } })}
+            />
+            <YesNoField
+              groupName="giftTempControl"
+              label="Can vendor provide temperature-controlled delivery?"
+              value={getAiFaqValue(dm.ai_faq, "temperature_controlled_delivery")}
+              onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, temperature_controlled_delivery: v } })}
+            />
+            <YesNoField
+              groupName="giftGuestCategories"
+              label="Are gifts suitable for all guest categories?"
+              value={getAiFaqValue(dm.ai_faq, "suitable_for_all_guests", ["suitable_for_all_guest_categories"]) }
+              onChange={(v) => patchDm({ ai_faq: { ...dm.ai_faq, suitable_for_all_guests: v } })}
+            />
           </Accordion.Body>
         </Accordion.Item>
       </Accordion>

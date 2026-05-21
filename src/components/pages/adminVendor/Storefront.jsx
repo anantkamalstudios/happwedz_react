@@ -133,6 +133,21 @@ const Storefront = ({ setCompletion }) => {
           setVideoDrafts([]);
         }
         localStorage.setItem("lastVendorId", vendor.id.toString());
+        
+        // Load cached deals from localStorage first (to persist during page load)
+        let cachedDeals = [];
+        try {
+          const savedFormData = localStorage.getItem("vendorFormData");
+          if (savedFormData) {
+            const parsed = JSON.parse(savedFormData);
+            cachedDeals = Array.isArray(parsed?.deals) ? parsed.deals : [];
+            if (cachedDeals.length > 0) {
+              console.log("Storefront - Loaded cached deals from localStorage on mount:", cachedDeals);
+            }
+          }
+        } catch (e) {
+          console.error("Error loading cached deals:", e);
+        }
 
         const serviceData = await vendorServicesApi.getVendorServiceByVendorId(
           vendor.id,
@@ -339,6 +354,65 @@ const Storefront = ({ setCompletion }) => {
 
             if (actualData) {
               const attrs = actualData.attributes || {};
+              
+              // Parse deals from multiple possible locations in API response
+              let dealsFromAPI = attrs.deals || actualData.deals || [];
+              if (typeof dealsFromAPI === 'string') {
+                try {
+                  dealsFromAPI = JSON.parse(dealsFromAPI);
+                } catch (e) {
+                  console.error("Error parsing deals from API:", e);
+                  dealsFromAPI = [];
+                }
+              }
+              if (!Array.isArray(dealsFromAPI)) {
+                // If it's an object (like {}), convert to array or use empty array
+                dealsFromAPI = Object.keys(dealsFromAPI).length > 0 
+                  ? Object.values(dealsFromAPI) 
+                  : [];
+              }
+              
+              // IMPORTANT: Only preserve existing deals if:
+              // 1. API returns empty deals AND
+              // 2. We have deals in current state AND
+              // 3. This is NOT after a delete operation (check if prev.deals length is different)
+              // If user just deleted a deal, prev.deals will be shorter, so we should use that
+              // Use cached deals (from localStorage) as highest priority
+              // They represent the most recent user edits
+              let finalDeals = cachedDeals.length > 0 
+                ? cachedDeals 
+                : (dealsFromAPI.length > 0 
+                  ? dealsFromAPI 
+                  : (Array.isArray(prev.deals) && prev.deals.length > 0 
+                      ? prev.deals 
+                      : []));
+
+              if (finalDeals.length === 0) {
+                try {
+                  const savedData = localStorage.getItem("vendorFormData");
+                  if (savedData) {
+                    const parsed = JSON.parse(savedData);
+                    const savedDeals = Array.isArray(parsed?.deals)
+                      ? parsed.deals
+                      : [];
+                    const sameVendor =
+                      parsed?.id === actualData?.id ||
+                      parsed?.vendor_id === vendor?.id ||
+                      parsed?.vendor_id === vendor?.vendor_id;
+                    if (sameVendor && savedDeals.length > 0) {
+                      finalDeals = savedDeals;
+                      console.log("Storefront - Restored deals from localStorage fallback:", savedDeals);
+                    }
+                  }
+                } catch (e) {
+                  console.error("Error reading fallback deals from localStorage:", e);
+                }
+              }
+              
+              console.log("Storefront - Cached deals from localStorage:", cachedDeals);
+              console.log("Storefront - Loading deals from API:", dealsFromAPI);
+              console.log("Storefront - Final deals to use:", finalDeals);
+              
               setFormData((prev) => ({
                 ...prev,
                 ...actualData,
@@ -346,7 +420,7 @@ const Storefront = ({ setCompletion }) => {
                 vendor_subcategory_id: actualData.vendor_subcategory_id || prev.vendor_subcategory_id || vendor.vendor_subcategory_id,
                 id: actualData.id ?? prev.id,
                 status: normalizeServiceStatus(actualData.status),
-                deals: attrs.deals || [],
+                deals: finalDeals,
                 contact: attrs.contact
                   ? {
                     contactName: attrs.contact.name || "",
@@ -790,7 +864,21 @@ const Storefront = ({ setCompletion }) => {
         setFormData((prev) => ({ ...prev, id: serviceId }));
       }
 
+      // Store current deals before fetching, so we can preserve them if API returns empty
+      const currentDeals = data.deals || [];
+      
       await fetchServiceData();
+      
+      // After fetch, if deals are empty but we had deals before, restore them
+      // This handles the case where backend doesn't return deals properly
+      setFormData((prev) => {
+        if ((!prev.deals || prev.deals.length === 0) && currentDeals.length > 0) {
+          console.log("Restoring deals after fetch:", currentDeals);
+          return { ...prev, deals: currentDeals };
+        }
+        return prev;
+      });
+      
       setShowModal(true);
     } catch (e) {
       const status = e?.status;
@@ -888,7 +976,7 @@ const Storefront = ({ setCompletion }) => {
         "",
       slug: data.attributes?.slug || "",
       // tags: data.tags || [],
-      deals: data.deals || [],
+      deals: data.deals || data.attributes?.deals || [],
       email: data.contact?.email || "",
       rooms: data.rooms ? Number(data.rooms) : undefined,
       // badges: data.badges || {},

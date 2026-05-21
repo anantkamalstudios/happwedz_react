@@ -3,7 +3,7 @@ import "./SectionTabs.css";
 
 const SectionTabs = ({ scrollToSection }) => {
   const [active, setActive] = useState("");
-  const sectionIds = ["about", "FAQ", "reviews", "map"];
+  const sectionIds = ["about", "FAQ", "promotions", "reviews", "map"];
   const isProgrammaticScroll = useRef(false);
   const scrollTimer = useRef(null);
   const [stuck, setStuck] = useState(false);
@@ -103,14 +103,14 @@ const SectionTabs = ({ scrollToSection }) => {
         style={isMobile ? { zIndex: stuck ? 1020 : "auto" } : undefined}
       >
         <div className="d-flex flex-wrap gap-2 mb-0">
-          {["about", "FAQ", "reviews", "map"].map((item) => (
+          {["about", "FAQ", "promotions", "reviews", "map"].map((item) => (
             <button
               key={item}
               type="button"
               className={`section-tab btn btn-sm ${active === item ? "active" : ""}`}
               onClick={() => handleClick(item)}
             >
-              {item.charAt(0).toUpperCase() + item.slice(1)}
+              {item === "FAQ" ? "FAQ" : item.charAt(0).toUpperCase() + item.slice(1)}
             </button>
           ))}
         </div>
