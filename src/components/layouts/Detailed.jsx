@@ -2329,9 +2329,9 @@ const Detailed = () => {
 
           // Determine vendor type with priority: master profile > answered questions > subcategory name
           const isTrousseauPacker = hasTrousseauMaster || hasTrousseauAnswers || (!hasGiftMaster && !hasFavorMaster && !hasInvitationMaster && !hasGiftAnswers && !hasFavorAnswers && !hasInvitationAnswers && (normSubcat.includes("trousseau packer") || normSubcat.includes("trousseau pack")));
-          const isGift = hasGiftMaster || hasGiftAnswers || (!hasFavorMaster && !hasInvitationMaster && !hasTrousseauMaster && !hasFavorAnswers && !hasInvitationAnswers && !hasTrousseauAnswers && (normSubcat === "gifts" || normSubcat === "gift" || normSubcat.includes("gifting") || (normSubcat.includes("invitation") && normSubcat.includes("gift"))));
-          const isFavor = hasFavorMaster || hasFavorAnswers || (!hasGiftMaster && !hasInvitationMaster && !hasTrousseauMaster && !hasGiftAnswers && !hasInvitationAnswers && !hasTrousseauAnswers && (normSubcat.includes("favor") || normSubcat.includes("favour")));
-          const isInvitation = hasInvitationMaster || hasInvitationAnswers || (!hasGiftMaster && !hasFavorMaster && !hasTrousseauMaster && !hasGiftAnswers && !hasFavorAnswers && !hasTrousseauAnswers && ((normSubcat.includes("invitation") || normSubcat.includes("invite")) && !normSubcat.includes("gift")));
+          const isGift = hasGiftMaster || hasGiftAnswers || (!hasFavorMaster && !hasInvitationMaster && !hasTrousseauMaster && !hasFavorAnswers && !hasInvitationAnswers && !hasTrousseauAnswers && (normSubcat === "gifts" || normSubcat === "gift" || normSubcat.includes("gifting") || (venueData.attributes?.name || "").toLowerCase().includes("gift") || (venueData.vendor?.name || "").toLowerCase().includes("gift")));
+          const isFavor = hasFavorMaster || hasFavorAnswers || (!hasGiftMaster && !hasInvitationMaster && !hasTrousseauMaster && !hasGiftAnswers && !hasInvitationAnswers && !hasTrousseauAnswers && (normSubcat.includes("favor") || normSubcat.includes("favour") || (venueData.attributes?.name || "").toLowerCase().includes("favor") || (venueData.vendor?.name || "").toLowerCase().includes("favor")));
+          const isInvitation = hasInvitationMaster || hasInvitationAnswers || (!hasGiftMaster && !hasFavorMaster && !hasTrousseauMaster && !hasGiftAnswers && !hasFavorAnswers && !hasTrousseauAnswers && ((normSubcat.includes("invitation") || normSubcat.includes("invite") || (venueData.attributes?.name || "").toLowerCase().includes("invitation") || (venueData.vendor?.name || "").toLowerCase().includes("invitation")) && !normSubcat.includes("gift")));
 
           filteredQuestions = allQuestions.filter(q => {
             const qid = q.id;
@@ -2851,9 +2851,13 @@ const Detailed = () => {
 
   const isVenue = !!(
     venueData.attributes?.veg_price ||
+    venueData.attributes?.non_veg_price ||
     venueData.attributes?.catering_policy ||
     venueData.attributes?.rooms ||
-    venueData.attributes?.vendor_type?.toLowerCase().includes("venue")
+    venueData.attributes?.vendor_type?.toLowerCase().includes("venue") ||
+    venueData.attributes?.vendor_type?.toLowerCase().includes("hall") ||
+    venueData.attributes?.vendor_type?.toLowerCase().includes("caterer") ||
+    venueData.attributes?.vendor_type?.toLowerCase().includes("catering")
   );
 
   const displayLocation = isVenue
@@ -3590,27 +3594,41 @@ const Detailed = () => {
                         Veg Starting Price
                       </h4>
                       <div className="fw-bold fs-16 mt-1 primary-text">
-                        {venueData.attributes?.veg_price
-                          ? `₹ ${parseInt(
+                        {venueData.attributes?.veg_price ? (
+                          `₹ ${parseInt(
                             venueData.attributes.veg_price.replace(/,/g, ""),
                             10,
                           ).toLocaleString()}`
-                          : "Contact for pricing"}
+                        ) : venueData.attributes?.venue_master?.food?.per_plate_cost_range ? (
+                          venueData.attributes.venue_master.food.per_plate_cost_range
+                        ) : venueData.attributes?.caterer_master?.pricing_structure?.per_plate_starting_price ? (
+                          `₹ ${venueData.attributes.caterer_master.pricing_structure.per_plate_starting_price}`
+                        ) : venueData.attributes?.caterer_master?.pricing_structure?.price_range ? (
+                          venueData.attributes.caterer_master.pricing_structure.price_range
+                        ) : (
+                          "Contact for pricing"
+                        )}
                       </div>
 
                       <h4 className="fw-semibold fs-16 mt-3 m-0 ">
                         Non-Veg Starting Price
                       </h4>
                       <div className="fw-bold fs-16 mt-1 primary-text">
-                        {venueData.attributes?.non_veg_price
-                          ? `₹ ${parseInt(
+                        {venueData.attributes?.non_veg_price ? (
+                          `₹ ${parseInt(
                             venueData.attributes.non_veg_price.replace(
                               /,/g,
                               "",
                             ),
                             10,
                           ).toLocaleString()} onwards`
-                          : "Contact for pricing"}
+                        ) : venueData.attributes?.venue_master?.food?.per_plate_cost_range_other ? (
+                          venueData.attributes.venue_master.food.per_plate_cost_range_other
+                        ) : venueData.attributes?.caterer_master?.pricing_structure?.extra_charges?.includes("Non-Veg Premium") ? (
+                          "Premium Applicable"
+                        ) : (
+                          "Contact for pricing"
+                        )}
                       </div>
 
                       {venueData.attributes?.starting_price && (

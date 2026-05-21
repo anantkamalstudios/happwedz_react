@@ -284,18 +284,7 @@ export default function PromoForm({ formData, setFormData, onSave }) {
       <div className="promo-form-wrapper">
         <div className="form-section">
           <div className="form-card">
-            {editingIndex !== null && (
-              <div className="alert alert-info mb-3" style={{ 
-                background: "linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)",
-                border: "1px solid #2196f3",
-                borderRadius: "8px",
-                padding: "12px",
-                fontSize: "14px",
-                color: "#0d47a1"
-              }}>
-                <strong>✏️ Editing Mode:</strong> You are currently editing an existing promotion. Click "Update Promotion" to save changes or "Cancel Edit" to discard.
-              </div>
-            )}
+
             <h4 className="fw-bold">Promotion Details</h4>
             <p className="form-description fs-14">
               Fill in the details of your special offer for couples

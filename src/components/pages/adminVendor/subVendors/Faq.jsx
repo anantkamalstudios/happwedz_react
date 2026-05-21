@@ -273,9 +273,9 @@ function Faq({ formData, setFormData, onSave }) {
 
           // Determine vendor type with priority: master profile > subcategory name
           const isTrousseauPacker = hasTrousseauMaster || (!hasGiftMaster && !hasFavorMaster && !hasInvitationMaster && (normSubcat.includes("trousseau packer") || normSubcat.includes("trousseau pack")));
-          const isGift = hasGiftMaster || (!hasFavorMaster && !hasInvitationMaster && !hasTrousseauMaster && (normSubcat === "gifts" || normSubcat === "gift" || normSubcat.includes("gifting") || (normSubcat.includes("invitation") && normSubcat.includes("gift"))));
-          const isFavor = hasFavorMaster || (!hasGiftMaster && !hasInvitationMaster && !hasTrousseauMaster && (normSubcat.includes("favor") || normSubcat.includes("favour")));
-          const isInvitation = hasInvitationMaster || (!hasGiftMaster && !hasFavorMaster && !hasTrousseauMaster && ((normSubcat.includes("invitation") || normSubcat.includes("invite")) && !normSubcat.includes("gift")));
+          const isGift = hasGiftMaster || (!hasFavorMaster && !hasInvitationMaster && !hasTrousseauMaster && (normSubcat === "gifts" || normSubcat === "gift" || normSubcat.includes("gifting") || (formData?.name || "").toLowerCase().includes("gift")));
+          const isFavor = hasFavorMaster || (!hasGiftMaster && !hasInvitationMaster && !hasTrousseauMaster && (normSubcat.includes("favor") || normSubcat.includes("favour") || (formData?.name || "").toLowerCase().includes("favor")));
+          const isInvitation = hasInvitationMaster || (!hasGiftMaster && !hasFavorMaster && !hasTrousseauMaster && ((normSubcat.includes("invitation") || normSubcat.includes("invite") || (formData?.name || "").toLowerCase().includes("invitation")) && !normSubcat.includes("gift")));
 
           const filtered = allQuestions.filter(q => {
             const qid = q.id;

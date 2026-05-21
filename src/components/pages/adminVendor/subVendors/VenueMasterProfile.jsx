@@ -904,9 +904,39 @@ const VenueMasterProfile = ({
                     label="Per plate cost range"
                     options={PER_PLATE_COST_RANGE}
                     value={vm.food.per_plate_cost_range}
-                    onChange={(v) =>
-                      patchVm({ food: { ...vm.food, per_plate_cost_range: v } })
-                    }
+                    onChange={(v) => {
+                      patchVm({ food: { ...vm.food, per_plate_cost_range: v } });
+                      // Sync with main pricing range
+                      if (v && v !== "Other") {
+                        let min = "";
+                        let max = "";
+                        if (v === "Below Rs.500") {
+                          min = "0";
+                          max = "500";
+                        } else if (v === "Rs.4000+") {
+                          min = "4000";
+                          max = "10000";
+                        } else {
+                          const matches = v.match(/\d+/g);
+                          if (matches && matches.length >= 2) {
+                            min = matches[0];
+                            max = matches[1];
+                          }
+                        }
+                        if (min || max) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            priceRange: {
+                              ...prev.priceRange,
+                              min: min || prev.priceRange?.min || "",
+                              max: max || prev.priceRange?.max || "",
+                            },
+                            // Also update display PriceRange
+                            PriceRange: `${min} - ${max}`,
+                          }));
+                        }
+                      }
+                    }}
                     otherValue={vm.food.per_plate_cost_range_other}
                     onOtherChange={(v) =>
                       patchVm({ food: { ...vm.food, per_plate_cost_range_other: v } })

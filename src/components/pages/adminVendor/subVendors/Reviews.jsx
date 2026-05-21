@@ -32,7 +32,6 @@ const Reviews = ({
   onReplySubmit,
   averageRating,
   totalReviews,
-  onDelete,
 }) => {
   const [replyingTo, setReplyingTo] = useState(null);
 
@@ -100,12 +99,6 @@ const Reviews = ({
                     onClick={() => setReplyingTo(review.id)}
                   >
                     Reply
-                  </button>
-                  <button
-                    className="btn btn-sm btn-outline-danger mt-2 ms-2"
-                    onClick={() => onDelete(review.id)}
-                  >
-                    Delete
                   </button>
                 </>
               )}

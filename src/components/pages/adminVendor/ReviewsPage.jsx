@@ -109,23 +109,7 @@ const ReviewsPage = () => {
     }
   };
 
-  const handleDelete = async (reviewId) => {
-    if (!window.confirm("Are you sure you want to delete this review?")) {
-      return;
-    }
 
-    try {
-      await axiosInstance.delete(`/reviews/${reviewId}`, {
-        headers: {
-          Authorization: `Bearer ${vendorToken}`,
-        },
-      });
-
-      setReviews((prev) => prev.filter((rev) => rev.id !== reviewId));
-    } catch (err) {
-      setError(err.message);
-    }
-  };
 
   const totalReviews = stats.reviewCount;
   const averageRating = stats.averageRating;
@@ -172,7 +156,6 @@ const ReviewsPage = () => {
               averageRating={averageRating}
               totalReviews={totalReviews}
               onReplySubmit={handleReplySubmit}
-              onDelete={handleDelete}
               renderStars={renderStars}
             />
           )}
@@ -264,7 +247,6 @@ const ReviewsCardGrid = ({
   averageRating,
   totalReviews,
   onReplySubmit,
-  onDelete,
   renderStars,
 }) => {
   const [replyingTo, setReplyingTo] = useState(null);
@@ -439,12 +421,6 @@ const ReviewsCardGrid = ({
                           {review.reply ? "Edit Reply" : "Reply"}
                         </button>
                       )}
-                      <button
-                        className="btn btn-outline-danger btn-sm rounded-3 col-3 w-md-auto"
-                        onClick={() => onDelete(review.id)}
-                      >
-                        Delete
-                      </button>
                     </div>
                   </div>
                 </div>

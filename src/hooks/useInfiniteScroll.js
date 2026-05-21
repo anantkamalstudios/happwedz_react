@@ -78,7 +78,11 @@ const useInfiniteScroll = (
         vendor?.vendorType?.name ||
         subcategory?.vendorType?.name ||
         "";
-      const isVenue = vendorTypeName.toLowerCase().includes("venue");
+      const isVenue =
+        vendorTypeName.toLowerCase().includes("venue") ||
+        vendorTypeName.toLowerCase().includes("hall") ||
+        vendorTypeName.toLowerCase().includes("caterer") ||
+        vendorTypeName.toLowerCase().includes("catering");
 
       const photoPackage =
         attributes.photo_package_price ||
@@ -143,10 +147,18 @@ const useInfiniteScroll = (
         videos: [],
 
         vegPrice: isVenue
-          ? attributes.veg_price || attributes.VegPrice || null
+          ? attributes.veg_price ||
+            attributes.VegPrice ||
+            attributes.venue_master?.food?.per_plate_cost_range ||
+            attributes.caterer_master?.pricing_structure?.per_plate_starting_price ||
+            attributes.caterer_master?.pricing_structure?.price_range ||
+            null
           : null,
         nonVegPrice: isVenue
-          ? attributes.non_veg_price || attributes.NonVegPrice || null
+          ? attributes.non_veg_price ||
+            attributes.NonVegPrice ||
+            attributes.venue_master?.food?.per_plate_cost_range_other ||
+            null
           : null,
         starting_price: !isVenue
           ? photoPackage ||

@@ -115,6 +115,49 @@ const VendorPricing = ({
               </div>
             </>
           )}
+
+          {/* Veg / Non-Veg Plate Prices for Venues and Caterers */}
+          {((vendorTypeName || "").toLowerCase().includes("venue") ||
+            (vendorTypeName || "").toLowerCase().includes("hall") ||
+            (vendorTypeName || "").toLowerCase().includes("caterer") ||
+            (vendorTypeName || "").toLowerCase().includes("catering")) && (
+            <>
+              <div className="col-md-4 mb-3">
+                <label className="form-label fs-16 fw-semibold">
+                  Veg Plate Price
+                </label>
+                <input
+                  type="number"
+                  className="form-control fs-14"
+                  value={formData.veg_price || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      veg_price: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter Veg price"
+                />
+              </div>
+              <div className="col-md-4 mb-3">
+                <label className="form-label fs-16 fw-semibold">
+                  Non-Veg Plate Price
+                </label>
+                <input
+                  type="number"
+                  className="form-control fs-14"
+                  value={formData.non_veg_price || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      non_veg_price: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter Non-Veg price"
+                />
+              </div>
+            </>
+          )}
         </div>
 
         {/* <div className="row g-2 mt-2">

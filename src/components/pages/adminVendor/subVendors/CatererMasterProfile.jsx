@@ -183,7 +183,43 @@ const CatererMasterProfile = ({
               <YesNoField groupName="multiEvent" label="Multiple event handling" value={cm.scale_execution.multiple_event_handling} onChange={(v) => patchCm({ scale_execution: { ...cm.scale_execution, multiple_event_handling: v } })} />
 
               <div className="mb-3"><label className="form-label fw-semibold">Per plate starting price</label><Form.Control type="number" value={cm.pricing_structure.per_plate_starting_price} onChange={(e) => patchCm({ pricing_structure: { ...cm.pricing_structure, per_plate_starting_price: e.target.value } })} /></div>
-              <SelectField label="Price range" options={PRICE_RANGE} value={cm.pricing_structure.price_range} onChange={(v) => patchCm({ pricing_structure: { ...cm.pricing_structure, price_range: v } })} />
+              <SelectField
+                label="Price range"
+                options={PRICE_RANGE}
+                value={cm.pricing_structure.price_range}
+                onChange={(v) => {
+                  patchCm({ pricing_structure: { ...cm.pricing_structure, price_range: v } });
+                  // Sync with main pricing range
+                  if (v) {
+                    let min = "";
+                    let max = "";
+                    if (v === "Below ₹500") {
+                      min = "0";
+                      max = "500";
+                    } else if (v === "₹2500+") {
+                      min = "2500";
+                      max = "10000";
+                    } else {
+                      const matches = v.match(/\d+/g);
+                      if (matches && matches.length >= 2) {
+                        min = matches[0];
+                        max = matches[1];
+                      }
+                    }
+                    if (min || max) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        priceRange: {
+                          ...prev.priceRange,
+                          min: min || prev.priceRange?.min || "",
+                          max: max || prev.priceRange?.max || "",
+                        },
+                        PriceRange: `${min} - ${max}`,
+                      }));
+                    }
+                  }
+                }}
+              />
               <SelectField label="Pricing type" options={PRICING_TYPE} value={cm.pricing_structure.pricing_type} onChange={(v) => patchCm({ pricing_structure: { ...cm.pricing_structure, pricing_type: v } })} />
               <MultiCheck label="Extra charges" options={EXTRA_CHARGES} value={cm.pricing_structure.extra_charges} onChange={(v) => patchCm({ pricing_structure: { ...cm.pricing_structure, extra_charges: v } })} />
 
