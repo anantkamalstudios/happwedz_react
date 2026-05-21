@@ -1504,7 +1504,7 @@ const Detailed = () => {
       pushFeature(amenities, <FaMapMarkerAlt />, "City", ai.city);
       pushFeature(amenities, <FaStar />, "Service Mode", ai.service_mode);
       pushFeature(amenities, <FaStar />, "Delivery Coverage", ai.delivery_coverage);
-      
+
       pushFeature(amenities, <FaStar />, "Accessories Types", formatList(apc.accessories_types, 6));
       pushFeature(amenities, <FaStar />, "Gender Focus", apc.gender_focus);
       pushFeature(amenities, <FaStar />, "Bridal Accessories", apc.bridal_accessories);
@@ -1530,7 +1530,7 @@ const Detailed = () => {
       pushFeature(amenities, <FaStar />, "Inventory Size", aiv.inventory_size);
       pushFeature(amenities, <FaStar />, "Multiple Pieces Available", aiv.multiple_pieces);
       pushFeature(amenities, <FaStar />, "Real-Time Tracking", aiv.real_time_tracking);
-      
+
       pushFeature(amenities, <FaStar />, "Home Delivery", al.home_delivery);
       pushFeature(amenities, <FaStar />, "Store Pickup", al.store_pickup);
       pushFeature(amenities, <FaStar />, "Shipping Charges", al.shipping_charges);
@@ -1781,7 +1781,7 @@ const Detailed = () => {
       pushFeature(amenities, <FaStar />, "Storage Facilities", ff.storage_facilities);
       pushFeature(amenities, <FaStar />, "Customization Capabilities", formatList(ff.customization_capabilities, 4));
       pushFeature(amenities, <FaStar />, "Delivery Features", formatList(ff.delivery_features, 4));
-      
+
       pushFeature(amenities, <FaStar />, "Starting Price", fpl.starting_price);
       pushFeature(amenities, <FaStar />, "Pricing Type", fpl.pricing_type);
       pushFeature(amenities, <FaStar />, "Bridal Set Price Range", fpl.bridal_set_price_range);
@@ -1792,7 +1792,7 @@ const Detailed = () => {
       pushFeature(amenities, <FaStar />, "Delivery Timing", fdt.delivery_timing);
       pushFeature(amenities, <FaStar />, "Time Slot Delivery", fdt.time_slot_delivery);
       pushFeature(amenities, <FaStar />, "Early Morning Delivery", fdt.early_morning_delivery);
-      
+
       pushFeature(amenities, <FaStar />, "Storage Instructions", fsh.storage_instructions);
       pushFeature(amenities, <FaStar />, "Replacement Policy", fsh.replacement_policy);
       pushFeature(amenities, <FaStar />, "Damage Handling", fsh.damage_handling);
@@ -2077,8 +2077,8 @@ const Detailed = () => {
   useEffect(() => {
     const fetchFaqData = async () => {
       if (
-        !venueData?.vendor?.id && 
-        !venueData?.vendor_id && 
+        !venueData?.vendor?.id &&
+        !venueData?.vendor_id &&
         !venueData?.attributes?.vendor_id &&
         !venueData?.attributes?.user_id &&
         !venueData?.userId &&
@@ -2087,9 +2087,9 @@ const Detailed = () => {
         return;
       }
 
-      const dynamicVendorId = 
-        venueData.vendor?.id || 
-        venueData.vendor_id || 
+      const dynamicVendorId =
+        venueData.vendor?.id ||
+        venueData.vendor_id ||
         venueData.attributes?.vendor_id ||
         venueData.attributes?.user_id ||
         venueData.userId ||
@@ -2122,7 +2122,7 @@ const Detailed = () => {
 
       // Direct subcategory-based matching first
       // Priority: Sherwani-on-rent (vendor_type_id 22) FIRST before generic rent patterns
-      const isSherwaniVendor = normalizedSub.includes("sherwani") || 
+      const isSherwaniVendor = normalizedSub.includes("sherwani") ||
         normalizedSub.includes("shervani") ||
         normalizedSub.includes("sarvani") ||
         (venueData.attributes?.vendor_subcategory_name || "").toLowerCase().includes("sherwani") ||
@@ -2130,7 +2130,7 @@ const Detailed = () => {
         (venueData.attributes?.name || "").toLowerCase().includes("sherwani") ||
         (venueData.attributes?.name || "").toLowerCase().includes("shervani") ||
         (venueData.attributes?.name || "").toLowerCase().includes("sarvani");
-      
+
       if ((dynamicVendorTypeId === 22 || dynamicVendorTypeId === 11) && isSherwaniVendor) {
         vendorTypeKey = "groomwear";
       } else if (normalizedSub.includes("flower jewellery") || normalizedSub.includes("floral jewellery") || normalizedSub.includes("flower jewelry") || normalizedSub.includes("floral jewelry")) {
@@ -2156,7 +2156,7 @@ const Detailed = () => {
       } else if (normalizedSub.includes("lehenga") || normalizedSub.includes("bridal outfit") || normalizedSub.includes("trousseau")) {
         vendorTypeKey = "bridaloutfit";
       } else if (
-        normalizedSub.includes("favor") || 
+        normalizedSub.includes("favor") ||
         normalizedSub.includes("favour") ||
         normalizedSub.includes("gift") ||
         normalizedSub.includes("invitation") ||
@@ -2173,14 +2173,14 @@ const Detailed = () => {
       if (!vendorTypeKey) {
         const attrs = venueData.attributes || {};
         // Special: If Sherwani-on-rent (vendor_type_id 22), prioritize groomwear over rental_outfit_master
-        const isSherw = normalizedSub.includes("sherwani") || 
-          normalizedSub.includes("shervani") || 
-          normalizedSub.includes("sarvani") || 
+        const isSherw = normalizedSub.includes("sherwani") ||
+          normalizedSub.includes("shervani") ||
+          normalizedSub.includes("sarvani") ||
           (venueData.attributes?.vendor_subcategory_name || "").toLowerCase().includes("sherwani") ||
           (venueData.attributes?.vendor_subcategory_name || "").toLowerCase().includes("shervani") ||
           (venueData.attributes?.vendor_subcategory_name || "").toLowerCase().includes("sarvani") ||
           (venueData.vendor?.vendorSubcategory?.name || "").toLowerCase().includes("sherwani");
-        
+
         if (dynamicVendorTypeId === 22 && isSherw) {
           vendorTypeKey = "groomwear";
         } else if (attrs.jewellery_rental_master?.ai_faq || attrs.jewellery_master?.ai_faq) {
@@ -2215,7 +2215,7 @@ const Detailed = () => {
           const isBridalOutfitVendor =
             attrs.bridal_outfit_master && Object.keys(attrs.bridal_outfit_master).length > 0 &&
             !attrs.cocktail_gown_master?.ai_faq;
-          
+
           if (isKanjeevaramVendor || (isBridalOutfitVendor && isKanjeevaramVendor)) {
             vendorTypeKey = "kanjeevaramsilksaree";
           } else if (isBridalOutfitVendor) {
@@ -2254,8 +2254,8 @@ const Detailed = () => {
           (key) => FaqQuestions[key].vendor_type_id === dynamicVendorTypeId
         ) || (venueData.vendor?.vendorType?.name?.toLowerCase().includes("rent") &&
           venueData.vendor?.vendorType?.name?.toLowerCase().includes("jewel")
-            ? "jewelleryrental"
-            : null);
+          ? "jewelleryrental"
+          : null);
       }
 
       let mergedFaqs = [];
@@ -2468,9 +2468,9 @@ const Detailed = () => {
               default: return "";
             }
           } else if (vendorTypeKey === "gifts") {
-            const ai = 
-              attrs.favor_master?.ai_faq || 
-              attrs.gift_master?.ai_faq || 
+            const ai =
+              attrs.favor_master?.ai_faq ||
+              attrs.gift_master?.ai_faq ||
               attrs.invitation_gift_master?.ai_faq ||
               attrs.invitation_master?.ai_faq ||
               {};
@@ -2533,9 +2533,9 @@ const Detailed = () => {
               default: return "";
             }
           } else if (vendorTypeKey === "groomwear") {
-            const ai = 
-              attrs.sherwani_master?.ai_faq || 
-              attrs.wedding_suit_master?.ai_faq || 
+            const ai =
+              attrs.sherwani_master?.ai_faq ||
+              attrs.wedding_suit_master?.ai_faq ||
               attrs.groom_wear_master?.ai_faq ||
               {};
             switch (qId) {
