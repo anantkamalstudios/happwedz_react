@@ -38,7 +38,7 @@ export default function FlightHero() {
       ? "Discover your next dream destination"
       : activeTab === "Insurance"
         ? "Compare international, student & multi-trip plans"
-        : "Search stays by country and destination";
+        : "Search stays by city and destination";
 
   return (
     <div className="flight-hero">
@@ -100,7 +100,9 @@ export default function FlightHero() {
                 onClick={() => navigate("/honeymoon/hotels")}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && navigate("/honeymoon/hotels")}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && navigate("/honeymoon/hotels")
+                }
               >
                 <span>🏨</span>
                 <span>Recommended hotel</span>

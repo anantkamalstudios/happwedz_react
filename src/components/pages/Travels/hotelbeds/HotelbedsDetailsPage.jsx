@@ -1,0 +1,1929 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Button, Modal, Offcanvas } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import {
+  BedDouble,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  CircleHelp,
+  ExternalLink,
+  Filter,
+  Heart,
+  Images,
+  MapPin,
+  MessageCircleMore,
+  Search,
+  SlidersHorizontal,
+  Sparkles,
+  Star,
+  UserRound,
+  X,
+} from "lucide-react";
+import {
+  bookHotel,
+  getHotelStaticContent,
+  getHotelBookingDetails,
+  reviewHotelBooking,
+  searchHotels,
+  suggestHotels,
+  trackHotelAnalyticsEvent,
+} from "../../../../services/api/hotelApi";
+import TripJackBookingReview from "./TripJackBookingReview";
+import TripJackBookingStatus from "./TripJackBookingStatus";
+import HotelSearchBar from "./HotelSearchBar";
+import "./hotelbedsStyles.css";
+import {
+  buildAddressLabel,
+  createCorrelationId,
+  createInitialBookingForm,
+  defaultFilters,
+  delay,
+  formatDate,
+  formatMoney,
+  getMealPlanOptions,
+  getReviewPayloadFields,
+  normalizeHotelDetails,
+  normalizeImageItems,
+  normalizeRoomOption,
+  parseJsonSafely,
+  validateBookingForm,
+  normalizeAmount,
+} from "./hotelbedsDetailHelpers";
+
+// Wrapper for backward compatibility
+function HotelSearchBarEditable({ payload, suggestion, onBackToSearch }) {
+  const navigate = useNavigate();
+  
+  return (
+    <HotelSearchBar
+      payload={payload}
+      suggestion={suggestion}
+      editable={true}
+      onSearch={(nextPayload, response, selectedDestination) => {
+        navigate("/hotels", {
+          state: {
+            hotelSearchPayload: nextPayload,
+            hotelSearchResponse: response,
+            selectedHotelSuggestion: selectedDestination,
+          },
+        });
+      }}
+    />
+  );
+}
+
+function renderStars(count) {
+  return Array.from({ length: Math.max(0, Math.min(5, Number(count) || 0)) }).map((_, index) => (
+    <Star key={index} size={14} fill="currentColor" />
+  ));
+}
+
+function HotelDetailsSkeleton() {
+  return (
+    <div className="hotel-detail-shell">
+      <div className="hotel-detail-card">
+        <div className="hotel-skeleton-card" style={{ width: "28%", height: 16, marginBottom: 16 }} />
+        <div className="hotel-skeleton-card" style={{ width: "44%", height: 34, marginBottom: 12 }} />
+        <div className="hotel-skeleton-card" style={{ width: "76%", height: 16, marginBottom: 20 }} />
+        <div className="hotel-detail-gallery">
+          <div className="hotel-skeleton-card" style={{ minHeight: 320 }} />
+          <div className="hotel-detail-side-stack">
+            <div className="hotel-skeleton-card" style={{ minHeight: 152 }} />
+            <div className="hotel-skeleton-card" style={{ minHeight: 152 }} />
+          </div>
+        </div>
+      </div>
+      <div className="hotel-room-section-card">
+        <div className="hotel-room-section-head">
+          <div className="hotel-skeleton-card" style={{ width: 240, height: 26 }} />
+          <div className="hotel-skeleton-card" style={{ width: 320, height: 42 }} />
+        </div>
+        <div style={{ padding: 22 }}>
+          {Array.from({ length: 2 }).map((_, index) => (
+            <div key={index} className="hotel-room-option">
+              <div className="hotel-skeleton-card" style={{ minHeight: 220 }} />
+              <div className="hotel-skeleton-card" style={{ minHeight: 220 }} />
+              <div className="hotel-skeleton-card" style={{ minHeight: 220 }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RoomOptionSkeleton() {
+  return (
+    <div className="hotel-room-option">
+      <div className="hotel-skeleton-card" style={{ minHeight: 220 }} />
+      <div className="hotel-skeleton-card" style={{ minHeight: 220 }} />
+      <div className="hotel-skeleton-card" style={{ minHeight: 220 }} />
+    </div>
+  );
+}
+
+function HotelHeader({ detailModel, onShowMap, onBackToResults, onEditMarkup, markupEnabled }) {
+  const [showViewDropdown, setShowViewDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowViewDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <>
+      <div className="hotel-detail-breadcrumb">
+        {`Home > ${detailModel.cityName || "Hotels"} > ${detailModel.name}`}
+      </div>
+
+      <div className="hotel-detail-header-row mt-3">
+        <div>
+          <button type="button" className="hotel-inline-link mb-2" onClick={onBackToResults}>
+            {"< Back to results"}
+          </button>
+          <h1 className="hotel-detail-title">{detailModel.name}</h1>
+          {detailModel.starRating ? (
+            <div className="hotel-stars mt-2">{renderStars(detailModel.starRating)}</div>
+          ) : null}
+          <div className="hotel-detail-address">
+            <MapPin size={14} />
+            <span>{detailModel.fullAddress || "Address unavailable"}</span>
+            <button type="button" className="hotel-map-link" onClick={onShowMap}>
+              Show on map
+            </button>
+          </div>
+        </div>
+
+        <div className="hotel-detail-actions">
+          <div style={{ position: "relative" }} ref={dropdownRef}>
+            {/* <button
+              type="button"
+              className="hotel-detail-view-btn"
+              onClick={() => setShowViewDropdown(!showViewDropdown)}
+            >
+              <Images size={15} />
+              View
+              <ChevronDown size={15} />
+            </button> */}
+            {showViewDropdown && (
+              <div className="hotel-view-dropdown">
+                <button
+                  type="button"
+                  className="hotel-view-dropdown-item"
+                  onClick={() => {
+                    setShowViewDropdown(false);
+                  }}
+                >
+                  <Check size={14} color={markupEnabled ? "#22a55a" : "transparent"} />
+                  <span>With Markup</span>
+                  <button
+                    type="button"
+                    className="hotel-inline-link"
+                    style={{ marginLeft: "auto" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditMarkup();
+                      setShowViewDropdown(false);
+                    }}
+                  >
+                    Edit Markup
+                  </button>
+                </button>
+                <button
+                  type="button"
+                  className="hotel-view-dropdown-item"
+                  onClick={() => {
+                    setShowViewDropdown(false);
+                  }}
+                >
+                  <Check size={14} color={!markupEnabled ? "#22a55a" : "transparent"} />
+                  <span>Without Markup</span>
+                </button>
+              </div>
+            )}
+          </div>
+          <button type="button" className="hotel-detail-ghost-btn">
+            <Heart size={15} />
+            Favourite
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function HotelGallery({ images, hotelName, onOpenGallery }) {
+  const primary = images[0]?.url || "";
+  const sideOne = images[1]?.url || primary;
+  const sideTwo = images[2]?.url || images[1]?.url || primary;
+  const remaining = Math.max(0, images.length - 3);
+
+  const renderImage = (url, alt, className, index) => (
+    <button type="button" className={className} onClick={() => onOpenGallery(index)}>
+      {url ? <img src={url} alt={alt} /> : <div className="hotel-card-image hotel-card-image--empty">Image not available</div>}
+    </button>
+  );
+
+  return (
+    <div className="hotel-detail-gallery">
+      {renderImage(primary, hotelName, "hotel-detail-main-image", 0)}
+      <div className="hotel-detail-side-stack">
+        {renderImage(sideOne, hotelName, "hotel-detail-side-image", 1)}
+        <div style={{ position: "relative" }}>
+          {renderImage(sideTwo, hotelName, "hotel-detail-side-image", 2)}
+          <button type="button" className="hotel-photo-overlay" onClick={() => onOpenGallery(0)}>
+            <Images size={14} />
+            {remaining > 0 ? `+${remaining} photos` : `${images.length || 0} photos`}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HotelBookingSummaryCard({
+  option,
+  roomSummary,
+  onViewDetails,
+  onBookNow,
+  onViewAllRooms,
+  hotelPanRequired,
+  hotelPassportRequired,
+  reviewLoadingOptionId,
+}) {
+  if (!option) return null;
+
+  const isReviewing = reviewLoadingOptionId === option.id;
+
+  return (
+    <div className="hotel-detail-side">
+      <div className="hotel-summary-card">
+        <div className="d-flex justify-content-between gap-3 align-items-start">
+          <div>
+            <div className="hotel-summary-room">{option.roomName}</div>
+            <div className="hotel-summary-subcopy">{roomSummary}</div>
+          </div>
+          {/* <button type="button" className="hotel-inline-link" onClick={() => onViewDetails(option)}>
+            View details
+          </button> */}
+        </div>
+
+        <ul className="hotel-summary-points">
+          <li>{option.mealBasis}</li>
+          <li>{option.panRequired || hotelPanRequired ? "PAN Required" : "PAN not Required"}</li>
+          {option.passportRequired || hotelPassportRequired ? <li>Passport Required</li> : null}
+        </ul>
+
+        <div className="hotel-summary-price-row">
+          <div>
+            <div className="hotel-nightly mb-1">
+              {option.nightlyPrice ? `${formatMoney(option.nightlyPrice, option.currency)} /night` : "Nightly price unavailable"}
+            </div>
+            <div className="hotel-summary-price">
+              {option.totalPrice ? formatMoney(option.totalPrice, option.currency) : "Price unavailable"}
+            </div>
+            <div className="hotel-summary-subcopy mt-1">Total Price for 1 room</div>
+          </div>
+          <CircleHelp size={15} color="#6d7483" />
+        </div>
+
+        <button
+          type="button"
+          className="hotel-card-cta w-100 mt-3"
+          onClick={() => onBookNow(option)}
+          disabled={Boolean(reviewLoadingOptionId)}
+        >
+          {isReviewing ? "Reviewing..." : "Book Now"}
+        </button>
+      </div>
+
+      <div className="hotel-summary-card">
+        <div className="d-flex justify-content-between gap-3 align-items-center">
+          <div>
+            <div className="fw-bold fs-14">More options available</div>
+            <div className="hotel-summary-subcopy mt-1">Compare all room types and inclusions</div>
+          </div>
+          <button type="button" className="hotel-detail-ghost-btn" onClick={onViewAllRooms}>
+            View all rooms
+          </button>
+        </div>
+      </div>
+
+      <div className="hotel-mini-info-card">
+        <div className="d-flex justify-content-between gap-3 flex-wrap">
+          <div className="hotel-summary-subcopy">Check-in policy available in room details</div>
+          <div className="hotel-summary-subcopy">Cancellation policy shown per room</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HotelAboutSection({ aboutText, headline }) {
+  const [expanded, setExpanded] = useState(false);
+  if (!aboutText && !headline) return null;
+
+  const copy = aboutText || headline;
+  const shouldClamp = copy.length > 240;
+  const visible = shouldClamp && !expanded ? `${copy.slice(0, 240).trim()}...` : copy;
+
+  return (
+    <section className="hotel-detail-section">
+      <h2>About this property</h2>
+      <div className="hotel-detail-copy">
+        {visible}
+        {shouldClamp ? (
+          <button type="button" className="hotel-inline-link ms-1" onClick={() => setExpanded((prev) => !prev)}>
+            {expanded ? "Read less" : "Read more"}
+          </button>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function HotelAmenities({ amenities, onViewMore }) {
+  if (!amenities.length) return null;
+
+  return (
+    <section className="hotel-detail-section">
+      <div className="d-flex justify-content-between gap-3 align-items-center mb-3">
+        <h2 className="mb-0">Amenities</h2>
+        {amenities.length > 6 ? (
+          <button type="button" className="hotel-inline-link" onClick={onViewMore}>
+            View more
+          </button>
+        ) : null}
+      </div>
+
+      <div className="hotel-detail-amenities">
+        {amenities.slice(0, 6).map((amenity, index) => {
+          // Convert amenity to string safely
+          let amenityText = "";
+          if (typeof amenity === "string") {
+            amenityText = amenity;
+          } else if (typeof amenity === "object" && amenity !== null) {
+            amenityText = amenity.name || amenity.nm || amenity.label || "";
+          }
+          
+          // Skip if empty
+          if (!amenityText) return null;
+          
+          return (
+            <span key={`amenity-${index}-${amenityText}`} className="hotel-detail-amenity">
+              <Check size={14} color="#ed1173" />
+              {amenityText}
+            </span>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function RoomFilters({
+  roomSearch,
+  setRoomSearch,
+  filterState,
+  setFilterState,
+  mealPlans,
+  onOpenMobileFilters,
+}) {
+  return (
+    <>
+      <input
+        className="hotel-room-search"
+        placeholder="Search by Room Type/Room Category"
+        value={roomSearch}
+        onChange={(event) => setRoomSearch(event.target.value)}
+      />
+      <div className="hotel-room-filter-row">
+        <button
+          type="button"
+          className={`hotel-room-filter-chip ${filterState.refundable ? "active" : ""}`}
+          onClick={() => setFilterState((prev) => ({ ...prev, refundable: !prev.refundable }))}
+        >
+          Refundable
+        </button>
+        <button
+          type="button"
+          className={`hotel-room-filter-chip ${filterState.breakfastIncluded ? "active" : ""}`}
+          onClick={() => setFilterState((prev) => ({ ...prev, breakfastIncluded: !prev.breakfastIncluded }))}
+        >
+          Breakfast Included
+        </button>
+        <button
+          type="button"
+          className={`hotel-room-filter-chip ${filterState.panOptional ? "active" : ""}`}
+          onClick={() => setFilterState((prev) => ({ ...prev, panOptional: !prev.panOptional }))}
+        >
+          PAN Optional
+        </button>
+        <label className="hotel-room-filter-chip mb-0">
+          Meal Plans
+          <select
+            value={filterState.mealPlan}
+            onChange={(event) => setFilterState((prev) => ({ ...prev, mealPlan: event.target.value }))}
+            style={{ border: "none", background: "transparent", fontWeight: 800, color: "#273042" }}
+          >
+            <option value="">All</option>
+            {mealPlans.map((plan) => (
+              <option key={plan.value} value={plan.value}>
+                {plan.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="button" className="hotel-room-filter-chip hotel-mobile-filter-btn active" onClick={onOpenMobileFilters}>
+          <Filter size={15} />
+          Filter
+        </button>
+      </div>
+    </>
+  );
+}
+
+function MarkupModal({ show, onHide, onUpdate }) {
+  const [markupType, setMarkupType] = useState("percentage");
+  const [markupValue, setMarkupValue] = useState("");
+
+  const handleUpdate = () => {
+    if (markupValue && !isNaN(markupValue)) {
+      onUpdate(markupType, parseFloat(markupValue));
+      onHide();
+    }
+  };
+
+  return (
+    <Modal show={show} onHide={onHide} centered size="sm">
+      <Modal.Header closeButton>
+        <Modal.Title>Edit Markup</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p className="text-muted mb-3">Enter the markup details.</p>
+        
+        <div className="mb-3">
+          <label className="form-label">As Percentage %</label>
+          <div className="input-group">
+            <input
+              type="number"
+              className="form-control"
+              placeholder="0"
+              value={markupType === "percentage" ? markupValue : ""}
+              onChange={(e) => {
+                setMarkupType("percentage");
+                setMarkupValue(e.target.value);
+              }}
+            />
+            <span className="input-group-text">%</span>
+          </div>
+        </div>
+
+        <div className="text-center text-muted mb-3">OR</div>
+
+        <div className="mb-3">
+          <label className="form-label">As Value</label>
+          <div className="input-group">
+            <span className="input-group-text">₹</span>
+            <input
+              type="number"
+              className="form-control"
+              placeholder="0"
+              value={markupType === "value" ? markupValue : ""}
+              onChange={(e) => {
+                setMarkupType("value");
+                setMarkupValue(e.target.value);
+              }}
+            />
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="btn w-100"
+          style={{
+            background: "#ed1173",
+            color: "#fff",
+            fontWeight: 700,
+            padding: "12px",
+            borderRadius: "8px",
+          }}
+          onClick={handleUpdate}
+        >
+          Update All
+        </button>
+      </Modal.Body>
+    </Modal>
+  );
+}
+
+function RoomPolicyModal({ show, onHide, option, hotelName, starRating, searchId }) {
+  if (!option) return null;
+
+  const cancellationPenalties = option.cancellationPenalties || [];
+  const isRefundable = option.refundable;
+
+  return (
+    <Modal show={show} onHide={onHide} size="lg" centered>
+      <Modal.Header closeButton>
+        <Modal.Title>Room with Cancellation Policy</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <div className="mb-3">
+          <strong>Cancellation Policy:</strong>
+          <div className="mt-2">
+            <Check size={14} color="#22a55a" style={{ marginRight: 8 }} />
+            {isRefundable ? "Refundable" : "Non Refundable"}
+          </div>
+        </div>
+
+        {!isRefundable ? (
+          <div className="alert alert-danger" style={{ borderRadius: 12 }}>
+            <strong>Non-Refundable</strong>
+          </div>
+        ) : null}
+
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <div><strong>Now</strong></div>
+          <div className="text-end">
+            <div>{new Date(option.raw?.checkInDate || Date.now()).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true })}</div>
+            <div className="text-muted" style={{ fontSize: 13 }}>Check-In</div>
+          </div>
+        </div>
+
+        {cancellationPenalties.length > 0 ? (
+          <>
+            <div className="mb-3">
+              <strong>Cancellation post that will be subject to a fees as follows</strong>
+            </div>
+
+            <table className="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Cancellation On or After</th>
+                  <th>Cancellation On or Before</th>
+                  <th>Cancellation Charges/Comments</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cancellationPenalties.map((penalty, index) => (
+                  <tr key={index}>
+                    <td>{penalty.from ? new Date(penalty.from).toLocaleDateString('en-GB') : '-'}</td>
+                    <td>{penalty.to ? new Date(penalty.to).toLocaleDateString('en-GB') : '-'}</td>
+                    <td>{penalty.amount ? formatMoney(penalty.amount, option.currency) : '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="text-center text-muted mt-3" style={{ fontSize: 13 }}>
+              <div>No Show will attract full cancellation charge unless otherwise specified.</div>
+              <div className="mt-2">Early check out will attract full cancellation charge unless otherwise specified.</div>
+            </div>
+          </>
+        ) : (
+          <div className="text-center text-muted mt-3" style={{ fontSize: 14 }}>
+            <div>No Show will attract full cancellation charge unless otherwise specified.</div>
+            <div className="mt-2">Early check out will attract full cancellation charge unless otherwise specified.</div>
+          </div>
+        )}
+      </Modal.Body>
+    </Modal>
+  );
+}
+
+function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onViewDetails, reviewLoadingOptionId, image, bedSummary, guestSummary, amenities, onViewPolicy }) {
+  return (
+    <div className="hotel-room-type-group">
+      <div className="hotel-room-type-left">
+        <div className="hotel-room-thumb">
+          {image ? (
+            <img src={image} alt={roomName} />
+          ) : (
+            <div className="hotel-card-image hotel-card-image--empty">Image not available</div>
+          )}
+          <button type="button" className="hotel-photo-overlay">
+            <Images size={14} />
+            +4 Photos
+          </button>
+        </div>
+
+        <div className="hotel-room-feature-pills">
+          {bedSummary ? (
+            <span className="hotel-room-feature-pill">
+              <BedDouble size={13} />
+              {bedSummary}
+            </span>
+          ) : null}
+          {guestSummary ? (
+            <span className="hotel-room-feature-pill">
+              <UserRound size={13} />
+              {guestSummary}
+            </span>
+          ) : null}
+        </div>
+
+        <div className="hotel-room-amenities-preview">
+          {amenities.slice(0, 4).map((amenity, index) => {
+            let amenityText = "";
+            if (typeof amenity === "string") {
+              amenityText = amenity;
+            } else if (typeof amenity === "object" && amenity !== null) {
+              amenityText = amenity.name || amenity.nm || amenity.label || "";
+            }
+            
+            if (!amenityText) return null;
+            
+            return (
+              <span key={`amenity-${index}-${amenityText}`} className="hotel-room-amenity-item hotel-room-amenity-item--green">
+                <Check size={14} color="#22a55a" />
+                {amenityText}
+              </span>
+            );
+          })}
+        </div>
+
+        {/* <button type="button" className="hotel-inline-link hotel-room-amenities-link">
+          View more amenities
+        </button> */}
+      </div>
+
+      <div className="hotel-room-type-right">
+        <h3 className="hotel-room-type-heading">{roomName}</h3>
+        {options.map((option) => (
+          <RoomOptionCard
+            key={option.id}
+            option={option}
+            isSelected={selectedOptionId === option.id}
+            onSelectRoom={onSelectRoom}
+            onViewDetails={onViewDetails}
+            reviewLoadingOptionId={reviewLoadingOptionId}
+            onViewPolicy={onViewPolicy}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RoomOptionCard({
+  option,
+  isSelected,
+  onSelectRoom,
+  onViewDetails,
+  reviewLoadingOptionId,
+  onViewPolicy,
+}) {
+  const isReviewing = reviewLoadingOptionId === option.id;
+
+  const handleViewMore = () => {
+    if (onViewPolicy) {
+      onViewPolicy(option);
+    }
+  };
+
+  return (
+    <div className="hotel-room-option-compact">
+      <div className="hotel-room-option-row">
+        <div className="hotel-room-meal-cell">
+          <strong>{option.mealBasis}</strong>
+          <span className="hotel-room-divider">|</span>
+          <span>{option.refundable ? "Refundable" : "Non-refundable"}</span>
+          <span className="hotel-room-divider">|</span>
+          <span>{option.panRequired ? "PAN Required" : "PAN not Required"}</span>
+        </div>
+        <div className="hotel-room-price-cell">
+          <div className="hotel-room-total-compact">
+            {option.totalPrice ? formatMoney(option.totalPrice, option.currency) : "N/A"}
+          </div>
+          <div className="hotel-summary-subcopy">
+            Total <CircleHelp size={12} style={{ display: 'inline', marginLeft: 4 }} />
+          </div>
+          <div className="hotel-summary-subcopy">Total Price for 1 room</div>
+        </div>
+        <div className="hotel-room-action-cell">
+          <button
+            type="button"
+            className="hotel-card-cta"
+            style={isSelected ? { boxShadow: "0 0 0 3px rgba(237, 17, 115, 0.18)" } : undefined}
+            onClick={() => onSelectRoom(option)}
+            disabled={Boolean(reviewLoadingOptionId)}
+          >
+            {isReviewing ? "Reviewing..." : isSelected ? "Selected" : "Select Room"}
+          </button>
+        </div>
+      </div>
+      <div className="hotel-room-option-footer">
+        <div className="hotel-room-policy-badge">
+          <Check size={14} color="#22a55a" />
+          <span>{option.cancellationLabel}</span>
+        </div>
+        {/* <button type="button" className="hotel-inline-link" onClick={handleViewMore}>
+          View more
+        </button> */}
+      </div>
+    </div>
+  );
+}
+
+function RoomTypesSection({
+  options,
+  filteredOptions,
+  roomSearch,
+  setRoomSearch,
+  filterState,
+  setFilterState,
+  mealPlans,
+  selectedOptionId,
+  onSelectRoom,
+  onViewDetails,
+  onViewPolicy,
+  shareHref,
+  onOpenMobileFilters,
+  roomSectionRef,
+  detailLoading,
+  reviewLoadingOptionId,
+}) {
+  // Group options by room name
+  const groupedRooms = useMemo(() => {
+    const groups = {};
+    filteredOptions.forEach((option) => {
+      const key = option.roomName;
+      if (!groups[key]) {
+        groups[key] = {
+          roomName: key,
+          image: option.image,
+          bedSummary: option.bedSummary,
+          guestSummary: option.guestSummary,
+          amenities: option.amenities,
+          options: [],
+        };
+      }
+      groups[key].options.push(option);
+    });
+    return Object.values(groups);
+  }, [filteredOptions]);
+
+  return (
+    <div className="hotel-room-section-card" ref={roomSectionRef}>
+      <div className="hotel-room-section-head">
+        <div>
+          <div className="hotel-room-section-title">Room types</div>
+          <div className="hotel-summary-subcopy">
+            {`Showing results ${filteredOptions.length} of ${options.length} room options`}
+          </div>
+        </div>
+
+        <div className="hotel-room-toolbar">
+          <div className="hotel-share-group">
+            <span>Share by:</span>
+            <a className="hotel-whatsapp-btn" href={shareHref} target="_blank" rel="noreferrer">
+              <MessageCircleMore size={15} />
+              WhatsApp
+            </a>
+          </div>
+          <RoomFilters
+            roomSearch={roomSearch}
+            setRoomSearch={setRoomSearch}
+            filterState={filterState}
+            setFilterState={setFilterState}
+            mealPlans={mealPlans}
+            onOpenMobileFilters={onOpenMobileFilters}
+          />
+        </div>
+      </div>
+
+      {detailLoading && options.length === 0 ? (
+        <div style={{ padding: 22 }}>
+          <RoomOptionSkeleton />
+          <RoomOptionSkeleton />
+        </div>
+      ) : filteredOptions.length === 0 ? (
+        <div className="hotel-empty m-4">
+          <div className="hotel-empty-title">No room options match these filters</div>
+          <div className="hotel-empty-copy">Try a different meal plan or clear the room search.</div>
+        </div>
+      ) : (
+        groupedRooms.map((group) => (
+          <RoomTypeGroup
+            key={group.roomName}
+            roomName={group.roomName}
+            options={group.options}
+            selectedOptionId={selectedOptionId}
+            onSelectRoom={onSelectRoom}
+            onViewDetails={onViewDetails}
+            onViewPolicy={onViewPolicy}
+            reviewLoadingOptionId={reviewLoadingOptionId}
+            image={group.image}
+            bedSummary={group.bedSummary}
+            guestSummary={group.guestSummary}
+            amenities={group.amenities}
+          />
+        ))
+      )}
+    </div>
+  );
+}
+
+function buildRoomModalOption(option) {
+  return {
+    key: option.id,
+    roomName: option.roomName,
+    mealBasis: option.mealBasis,
+    bookingNotes: option.view || option.supplierRoomType || "",
+    inclusions: option.amenities,
+    images: option.images || [],
+    image: option.image || "",
+    bedSummary: option.bedSummary || "",
+    guestSummary: option.guestSummary || "",
+    cancellationLabel: option.cancellationLabel || "",
+    panRequired: option.panRequired,
+    passportRequired: option.passportRequired,
+    pricing: {
+      totalPrice: option.totalPrice,
+      nightlyPrice: option.nightlyPrice,
+      currency: option.currency,
+    },
+    cancellation: {
+      penalties: option.cancellationPenalties,
+    },
+    raw: option.raw,
+  };
+}
+
+function HotelDetailsPage({
+  selectedHotel,
+  detailResponse,
+  detailLoading,
+  initialPayload,
+  initialSuggestion,
+  onBackToResults,
+  activeOption,
+  roomModalOpen,
+  setActiveOption,
+  setRoomModalOpen,
+}) {
+  const roomSectionRef = useRef(null);
+  const [selectedOptionId, setSelectedOptionId] = useState("");
+  const [roomSearch, setRoomSearch] = useState("");
+  const [filterState, setFilterState] = useState({
+    refundable: false,
+    breakfastIncluded: false,
+    panOptional: false,
+    mealPlan: "",
+  });
+  const [showAmenitiesModal, setShowAmenitiesModal] = useState(false);
+  const [showPolicyModal, setShowPolicyModal] = useState(false);
+  const [selectedPolicyOption, setSelectedPolicyOption] = useState(null);
+  const [showMarkupModal, setShowMarkupModal] = useState(false);
+  const [markupEnabled, setMarkupEnabled] = useState(true);
+  const [markupType, setMarkupType] = useState("percentage");
+  const [markupValue, setMarkupValue] = useState(0);
+  const [staticContentResponse, setStaticContentResponse] = useState(null);
+  const [showGalleryModal, setShowGalleryModal] = useState(false);
+  const [galleryIndex, setGalleryIndex] = useState(0);
+  const [showRoomFilters, setShowRoomFilters] = useState(false);
+  const [reviewLoadingOptionId, setReviewLoadingOptionId] = useState("");
+  const [reviewResponse, setReviewResponse] = useState(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [bookingForm, setBookingForm] = useState(null);
+  const [showBookingFormModal, setShowBookingFormModal] = useState(false);
+  const [bookingSubmitting, setBookingSubmitting] = useState(false);
+  const [showBookingStatusModal, setShowBookingStatusModal] = useState(false);
+  const [bookingStatusState, setBookingStatusState] = useState({
+    phase: "idle",
+    bookingId: "",
+    orderStatus: "",
+    attempts: 0,
+    message: "",
+    details: null,
+    errorCode: "",
+  });
+
+  const detailModel = useMemo(
+    () =>
+      normalizeHotelDetails({
+        detailResponse,
+        selectedHotel,
+        searchPayload: initialPayload,
+        selectedSuggestion: initialSuggestion,
+        staticContentResponse,
+      }),
+    [detailResponse, initialPayload, initialSuggestion, selectedHotel, staticContentResponse],
+  );
+
+  const reviewPayloadFields = useMemo(
+    () =>
+      getReviewPayloadFields(
+        detailModel.hotelInfo,
+        selectedHotel,
+        detailModel.meta,
+        initialPayload,
+        detailResponse || null,
+      ),
+    [detailModel.hotelInfo, detailModel.meta, selectedHotel, initialPayload, detailResponse],
+  );
+
+  useEffect(() => {
+    if (detailModel.cheapestOption) {
+      setSelectedOptionId((prev) => prev || detailModel.cheapestOption.id);
+    }
+  }, [detailModel.cheapestOption]);
+
+  useEffect(() => {
+    const searchId = reviewPayloadFields.searchId;
+    const tjHotelId = reviewPayloadFields.tjHotelId || detailModel.id;
+    if (!searchId || !tjHotelId) return undefined;
+
+    let active = true;
+    getHotelStaticContent({
+      tjHotelIds: [String(tjHotelId)],
+      searchId: String(searchId),
+    })
+      .then((response) => {
+        if (active) {
+          setStaticContentResponse(Array.isArray(response) ? response : []);
+        }
+      })
+      .catch((error) => {
+        console.error("Unable to load TripJack static hotel content", error);
+        if (active) setStaticContentResponse(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [detailModel.id, reviewPayloadFields.searchId, reviewPayloadFields.tjHotelId]);
+
+  const selectedOption = useMemo(
+    () =>
+      detailModel.options.find((option) => option.id === selectedOptionId) ||
+      detailModel.cheapestOption ||
+      null,
+    [detailModel.cheapestOption, detailModel.options, selectedOptionId],
+  );
+
+  const roomSummary = useMemo(() => {
+    const roomInfo = initialPayload?.searchQuery?.roomInfo || [];
+    const totalRooms = roomInfo.length || 1;
+    const adults = roomInfo.reduce((sum, room) => sum + Number(room?.numberOfAdults || 0), 0);
+    return `${totalRooms} Room${totalRooms > 1 ? "s" : ""} for ${adults || 1} Adult${adults === 1 ? "" : "s"}`;
+  }, [initialPayload]);
+
+  const mealPlans = useMemo(() => getMealPlanOptions(detailModel.options), [detailModel.options]);
+
+  const filteredOptions = useMemo(() => {
+    const query = roomSearch.trim().toLowerCase();
+    return detailModel.options.filter((option) => {
+      if (query) {
+        const haystack = [option.roomName, option.supplierRoomType, option.view]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        if (!haystack.includes(query)) return false;
+      }
+
+      if (filterState.refundable && !option.refundable) return false;
+      if (filterState.breakfastIncluded && !option.mealBasis.toLowerCase().includes("breakfast")) return false;
+      if (filterState.panOptional && option.panRequired) return false;
+      if (filterState.mealPlan && option.mealBasis !== filterState.mealPlan) return false;
+
+      return true;
+    });
+  }, [detailModel.options, filterState, roomSearch]);
+
+  const shareHref = useMemo(() => {
+    const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+    return `https://wa.me/?text=${encodeURIComponent(`Check out ${detailModel.name} on HappyWedz ${currentUrl}`)}`;
+  }, [detailModel.name]);
+
+  const handleShowMap = () => {
+    const section = document.getElementById("hotel-map");
+    if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const handleViewPolicy = async (option) => {
+    setSelectedPolicyOption(option);
+    setShowPolicyModal(true);
+
+    // Send analytics event
+    try {
+      await trackHotelAnalyticsEvent({
+        event: "Hotel_PDP_RoomDetailView",
+        properties: {
+          Hotel_Name: detailModel.name,
+          Cancellation_Check: option.refundable ? "FREE CANCELLATION" : "NO FREE CANCELLATION",
+          Star_Rating: detailModel.starRating,
+          Agent_Id: "313144",
+          Current_Page: window.location.href,
+          Current_Path: window.location.pathname,
+          Date: new Date().toLocaleDateString('en-GB'),
+          Previous_Page: document.referrer,
+          Previous_Path: new URL(document.referrer || window.location.href).pathname,
+          Product: "HOTEL",
+          Search_Id: detailModel.meta.searchId,
+          Unica_Id: detailModel.id,
+          User_Email: "user@example.com",
+          User_Role: "AGENT",
+          View_More_Selected: "cancellation_policy",
+          optionId: option.id,
+          TimeStamp: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      console.error("Failed to track analytics event:", error);
+    }
+  };
+
+  const handleUpdateMarkup = async (type, value) => {
+    setMarkupType(type);
+    setMarkupValue(value);
+    setMarkupEnabled(true);
+
+    // Send analytics event
+    try {
+      await trackHotelAnalyticsEvent({
+        event: "Hotel_Markup_Update",
+        properties: {
+          Markup_Type: type,
+          Markup_Value: value,
+          Agent_Id: "313144",
+          User_Role: "AGENT",
+          Current_Page: window.location.href,
+          Current_Path: window.location.pathname,
+          Date: new Date().toLocaleDateString('en-GB'),
+          Previous_Page: document.referrer,
+          Previous_Path: new URL(document.referrer || window.location.href).pathname,
+          Product: "HOTEL",
+          TimeStamp: new Date().toISOString(),
+          User_Email: "user@example.com",
+        },
+      });
+      toast.success(`Markup updated: ${value}${type === "percentage" ? "%" : " INR"}`);
+    } catch (error) {
+      console.error("Failed to track markup analytics:", error);
+    }
+  };
+
+  const handleSelectRoom = (option, openModal = false) => {
+    setSelectedOptionId(option.id);
+    if (openModal) {
+      setActiveOption(buildRoomModalOption(option));
+      setRoomModalOpen(true);
+    }
+  };
+
+  const handleReviewRoomOption = async (option, { openRoomModal = false } = {}) => {
+    handleSelectRoom(option, openRoomModal);
+
+    const payload = {
+      searchId: reviewPayloadFields.searchId,
+      detailRequestId: reviewPayloadFields.detailRequestId,
+      optionId: option?.id || "",
+      tjHotelId: reviewPayloadFields.tjHotelId,
+    };
+
+    if (!payload.searchId || !payload.detailRequestId || !payload.optionId || !payload.tjHotelId) {
+      console.warn("TripJack HMS review payload missing", { payload, candidates: reviewPayloadFields.candidates });
+      toast.error("Missing review payload data. Please refresh hotel details and try again.");
+      return;
+    }
+
+    setReviewLoadingOptionId(option.id);
+
+    try {
+      const response = await reviewHotelBooking(payload);
+      const enrichedReviewResponse = {
+        ...response,
+        displayHotelName:
+          response?.hotelSummary?.name || response?.hotelInfo?.name || detailModel.name || "Selected hotel",
+        displayRoomName:
+          response?.roomSummary?.roomName ||
+          response?.selectedOption?.roomInfos?.[0]?.rt ||
+          response?.selectedOption?.roomInfos?.[0]?.srn ||
+          response?.selectedOption?.ris?.[0]?.srn ||
+          response?.selectedOption?.ris?.[0]?.rt ||
+          option.roomName,
+      };
+
+      setBookingStatusState({
+        phase: "idle",
+        bookingId: "",
+        orderStatus: "",
+        attempts: 0,
+        message: "",
+        details: null,
+        errorCode: "",
+      });
+      setReviewResponse(enrichedReviewResponse);
+      setBookingForm(createInitialBookingForm(enrichedReviewResponse));
+      setShowReviewModal(false);
+      setShowBookingFormModal(true);
+      setRoomModalOpen(false);
+    } catch (error) {
+      console.error("Unable to review hotel room option", error);
+      toast.error("Unable to review this room option. Please try another room or search again.");
+    } finally {
+      setReviewLoadingOptionId("");
+    }
+  };
+
+  const handleOpenBookingForm = () => {
+    if (!reviewResponse?.bookingId) {
+      toast.error("Review data is missing. Please review the room again.");
+      return;
+    }
+
+    setBookingForm((current) => current || createInitialBookingForm(reviewResponse));
+    setShowReviewModal(false);
+    setShowBookingFormModal(true);
+  };
+
+  const handleTravellerFieldChange = (roomIndex, travellerIndex, field, value) => {
+    setBookingForm((current) => {
+      if (!current) return current;
+      const roomTravellerInfo = current.roomTravellerInfo.map((room, currentRoomIndex) => {
+        if (currentRoomIndex !== roomIndex) return room;
+        return {
+          ...room,
+          travellerInfo: room.travellerInfo.map((traveller, currentTravellerIndex) =>
+            currentTravellerIndex === travellerIndex
+              ? { ...traveller, [field]: value }
+              : traveller,
+          ),
+        };
+      });
+
+      return {
+        ...current,
+        roomTravellerInfo,
+      };
+    });
+  };
+
+  const handleContactFieldChange = (field, value) => {
+    setBookingForm((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        deliveryInfo: {
+          ...current.deliveryInfo,
+          [field]: [value],
+        },
+      };
+    });
+  };
+
+  const handleTermsChange = (checked) => {
+    setBookingForm((current) => (current ? { ...current, termsAccepted: checked } : current));
+  };
+
+  const pollTripjackBookingStatus = async (bookingId) => {
+    const maxAttempts = 36;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      if (attempt > 1) {
+        await delay(5000);
+      }
+
+      try {
+        const detailsResponse = await getHotelBookingDetails({ bookingId });
+        const orderStatus = detailsResponse?.orderStatus || detailsResponse?.bookingStatusMeta?.rawStatus || "";
+        const statusMeta = detailsResponse?.bookingStatusMeta || {};
+
+        if (statusMeta.isSuccessTerminal) {
+          setBookingStatusState({
+            phase: "success",
+            bookingId,
+            orderStatus,
+            attempts: attempt,
+            message: "Booking confirmed successfully.",
+            details: detailsResponse,
+            errorCode: "",
+          });
+          return;
+        }
+
+        if (statusMeta.isFailureTerminal) {
+          setBookingStatusState({
+            phase: "failed",
+            bookingId,
+            orderStatus,
+            attempts: attempt,
+            message: "Booking failed in TripJack. Please review the details and try again.",
+            details: detailsResponse,
+            errorCode: "",
+          });
+          return;
+        }
+
+        setBookingStatusState({
+          phase: "polling",
+          bookingId,
+          orderStatus,
+          attempts: attempt,
+          message: `Booking is still processing in TripJack. Checked ${attempt} of ${maxAttempts} times.`,
+          details: detailsResponse,
+          errorCode: "",
+        });
+      } catch (error) {
+        console.error("Unable to fetch TripJack booking status", error);
+        const tripjackDenied =
+          error?.response?.data?.source === "TRIPJACK" &&
+          error?.response?.data?.status?.success === false;
+
+        if (tripjackDenied) {
+          setBookingStatusState({
+            phase: "denied",
+            bookingId,
+            orderStatus: "",
+            attempts: 0,
+            message: `TripJack denied the booking request: ${error?.response?.data?.error || "Access Denied"}`,
+            details: error?.response?.data || null,
+            errorCode: error?.response?.data?.errors?.[0]?.errCode || "",
+          });
+          return;
+        }
+
+        setBookingStatusState({
+          phase: "polling",
+          bookingId,
+          orderStatus: "",
+          attempts: attempt,
+          message: "Waiting for the next booking status update from TripJack.",
+          details: null,
+          errorCode: "",
+        });
+      }
+    }
+
+    setBookingStatusState((current) => ({
+      ...current,
+      phase: "timeout",
+      bookingId,
+      message: "Booking is still processing, please check status later.",
+      errorCode: "",
+    }));
+  };
+
+  const handleProceedToBook = async () => {
+    if (!reviewResponse?.bookingId || !bookingForm) {
+      toast.error("Booking review data is missing. Please review the room again.");
+      return;
+    }
+
+    const validationErrors = validateBookingForm(bookingForm, reviewResponse);
+    if (validationErrors.length > 0) {
+      toast.error(validationErrors[0]);
+      return;
+    }
+
+    const payableAmount = normalizeAmount(reviewResponse?.priceSummary?.amount);
+    if (!Number.isFinite(payableAmount) || payableAmount <= 0) {
+      toast.error("Booking amount is unavailable. Please review the room again.");
+      return;
+    }
+
+    const payload = {
+      bookingId: reviewResponse.bookingId,
+      roomTravellerInfo: bookingForm.roomTravellerInfo.map((room) => ({
+        travellerInfo: room.travellerInfo.map((traveller) => ({
+          ...traveller,
+          fN: String(traveller.fN || "").trim(),
+          lN: String(traveller.lN || "").trim(),
+          ...(traveller.pan ? { pan: String(traveller.pan).trim().toUpperCase() } : {}),
+          ...(traveller.pNum ? { pNum: String(traveller.pNum).trim().toUpperCase() } : {}),
+        })),
+      })),
+      deliveryInfo: {
+        emails: [String(bookingForm.deliveryInfo.emails[0] || "").trim()],
+        contacts: [String(bookingForm.deliveryInfo.contacts[0] || "").trim()],
+        code: [String(bookingForm.deliveryInfo.code[0] || "").trim()],
+      },
+      paymentInfos: [{ amount: payableAmount }],
+      type: "HOTEL",
+      ipr: Boolean(reviewResponse?.bookingRequirements?.panRequired),
+      ipm: Boolean(reviewResponse?.bookingRequirements?.passportRequired),
+      expectedAmount: payableAmount || undefined,
+      hotelId: String(reviewResponse?.hotelInfo?.tjid || reviewResponse?.hotelSummary?.tjid || ""),
+      optionId: String(reviewResponse?.selectedOption?.id || ""),
+      reviewData: reviewResponse?.raw || reviewResponse,
+    };
+
+    setBookingSubmitting(true);
+    setShowBookingStatusModal(true);
+    setBookingStatusState({
+      phase: "submitting",
+      bookingId: payload.bookingId,
+      orderStatus: "",
+      attempts: 0,
+      message: "Submitting booking request to TripJack.",
+      details: null,
+      errorCode: "",
+    });
+
+    try {
+      const bookingResponse = await bookHotel(payload);
+
+      const requestDenied =
+        bookingResponse?.success === false ||
+        bookingResponse?.tripjackRequestAccepted === false ||
+        bookingResponse?.status?.success === false;
+
+      if (requestDenied) {
+        setShowBookingFormModal(false);
+        setBookingStatusState({
+          phase: "denied",
+          bookingId: bookingResponse?.bookingId || payload.bookingId,
+          orderStatus: "",
+          attempts: 0,
+          message: `TripJack denied the booking request: ${bookingResponse?.error || bookingResponse?.errors?.[0]?.message || "Access Denied"}`,
+          details: bookingResponse,
+          errorCode: bookingResponse?.errors?.[0]?.errCode || "",
+        });
+        return;
+      }
+
+      setShowBookingFormModal(false);
+      setBookingStatusState({
+        phase: "polling",
+        bookingId: bookingResponse?.bookingId || payload.bookingId,
+        orderStatus: "",
+        attempts: 0,
+        message: "Booking request accepted. Waiting for final TripJack status.",
+        details: bookingResponse,
+        errorCode: "",
+      });
+
+      await pollTripjackBookingStatus(bookingResponse?.bookingId || payload.bookingId);
+    } catch (error) {
+      console.error("Unable to create TripJack booking", error);
+      const validationFailure = error?.response?.status === 400 || error?.response?.data?.source === "VALIDATION";
+      const tripjackDenied =
+        error?.response?.data?.source === "TRIPJACK" &&
+        error?.response?.data?.status?.success === false;
+      setBookingStatusState({
+        phase: validationFailure ? "validation_failed" : tripjackDenied ? "denied" : "failed",
+        bookingId: payload.bookingId,
+        orderStatus: "",
+        attempts: 0,
+        message: validationFailure
+          ? "Booking request validation failed. Please check traveller details and try again."
+          : tripjackDenied
+            ? `TripJack denied the booking request: ${error?.response?.data?.error || "Access Denied"}`
+            : "Unable to submit this booking. Please review traveller details and try again.",
+        details: error?.response?.data || null,
+        errorCode: error?.response?.data?.errors?.[0]?.errCode || "",
+      });
+      toast.error(
+        validationFailure
+          ? "Booking request validation failed. Please check traveller details and try again."
+          : tripjackDenied
+            ? `TripJack denied the booking request: ${error?.response?.data?.error || "Access Denied"}`
+            : "Unable to submit this booking. Please review traveller details and try again.",
+      );
+    } finally {
+      setBookingSubmitting(false);
+    }
+  };
+
+  const handleOpenGallery = (index) => {
+    setGalleryIndex(index);
+    setShowGalleryModal(true);
+  };
+
+  const handleOpenAmenitiesModal = async () => {
+    setShowAmenitiesModal(true);
+    try {
+      await trackHotelAnalyticsEvent({
+        event: "Hotel_PDP_Amenities_ViewMore",
+        properties: {
+          Hotel_Name: detailModel.name,
+          Star_Rating: detailModel.starRating || 0,
+          Unica_Id: detailModel.id,
+          Search_Id: reviewPayloadFields.searchId || "",
+          CityName: String(detailModel.cityName || "").toUpperCase(),
+          City_Id: "",
+          Agent_Id: "313144",
+          User_Role: "AGENT",
+          User_Email: "nahatarishabh23@gmail.com",
+          Current_Page: typeof window !== "undefined" ? window.location.href : "",
+          Current_Path: typeof window !== "undefined" ? window.location.pathname : "",
+          Previous_Page: typeof document !== "undefined" ? document.referrer || "" : "",
+          Previous_Path:
+            typeof document !== "undefined" && document.referrer
+              ? new URL(document.referrer).pathname
+              : "",
+          Product: "HOTEL",
+          Date: new Date().toLocaleDateString("en-GB"),
+          TimeStamp: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      console.error("Unable to track amenities view more event", error);
+    }
+  };
+
+  return (
+    <div className="hotel-list-page">
+      <div className="hotel-shell">
+        <HotelSearchBarEditable
+          payload={initialPayload}
+          suggestion={initialSuggestion}
+          onBackToSearch={onBackToResults}
+        />
+
+        {showBookingFormModal && reviewResponse && bookingForm ? (
+          <TripJackBookingReview
+            show={showBookingFormModal}
+            onClose={() => setShowBookingFormModal(false)}
+            reviewResponse={reviewResponse}
+            bookingForm={bookingForm}
+            onTravellerFieldChange={handleTravellerFieldChange}
+            onContactFieldChange={handleContactFieldChange}
+            onTermsChange={handleTermsChange}
+            onSubmit={handleProceedToBook}
+            bookingSubmitting={bookingSubmitting}
+            formatMoney={formatMoney}
+            formatDate={formatDate}
+          />
+        ) : detailLoading && !detailModel.name ? (
+          <HotelDetailsSkeleton />
+        ) : (
+          <div className="hotel-detail-shell">
+            <div className="hotel-detail-card hotel-detail-hero-card">
+              <HotelHeader
+                detailModel={detailModel}
+                onShowMap={handleShowMap}
+                onBackToResults={onBackToResults}
+                onEditMarkup={() => setShowMarkupModal(true)}
+                markupEnabled={markupEnabled}
+              />
+              
+              <div className="hotel-detail-overview">
+                <div>
+                  <HotelGallery images={detailModel.images} hotelName={detailModel.name} onOpenGallery={handleOpenGallery} />
+                  <HotelAboutSection aboutText={detailModel.aboutText} headline={detailModel.headline} />
+                  <HotelAmenities amenities={detailModel.amenities} onViewMore={handleOpenAmenitiesModal} />
+                </div>
+
+                <HotelBookingSummaryCard
+                  option={selectedOption}
+                  roomSummary={roomSummary}
+                  onViewDetails={(option) => handleSelectRoom(option, true)}
+                  onBookNow={(option) => handleReviewRoomOption(option)}
+                  onViewAllRooms={() => roomSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                  hotelPanRequired={detailModel.panRequired}
+                  hotelPassportRequired={detailModel.passportRequired}
+                  reviewLoadingOptionId={reviewLoadingOptionId}
+                />
+              </div>
+            </div>
+
+            <div className="hotel-detail-card" id="hotel-map">
+              <div className="d-flex justify-content-between gap-3 align-items-center mb-3">
+                <h2 className="mb-0">Location</h2>
+                <a className="hotel-inline-link" href={detailModel.mapInfo.openMapsHref} target="_blank" rel="noreferrer">
+                  Open in Google Maps
+                </a>
+              </div>
+              <iframe
+                src={detailModel.mapInfo.mapSrc}
+                width="100%"
+                height={360}
+                style={{ border: 0, borderRadius: 16 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Hotel map"
+              />
+            </div>
+
+            <RoomTypesSection
+              options={detailModel.options}
+              filteredOptions={filteredOptions}
+              roomSearch={roomSearch}
+              setRoomSearch={setRoomSearch}
+              filterState={filterState}
+              setFilterState={setFilterState}
+              mealPlans={mealPlans}
+              selectedOptionId={selectedOptionId}
+              onSelectRoom={(option) => handleReviewRoomOption(option)}
+              onViewDetails={(option) => handleSelectRoom(option, true)}
+              onViewPolicy={handleViewPolicy}
+              shareHref={shareHref}
+              onOpenMobileFilters={() => setShowRoomFilters(true)}
+              roomSectionRef={roomSectionRef}
+              detailLoading={detailLoading}
+              reviewLoadingOptionId={reviewLoadingOptionId}
+            />
+
+            {selectedOption ? (
+              <div className="hotel-detail-mobile-cta">
+                <div>
+                  <div className="fw-bold">{selectedOption.roomName}</div>
+                  <div className="hotel-summary-subcopy text-white-50">
+                    {selectedOption.totalPrice ? formatMoney(selectedOption.totalPrice, selectedOption.currency) : "Price unavailable"}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="hotel-card-cta"
+                  onClick={() => handleReviewRoomOption(selectedOption)}
+                  disabled={Boolean(reviewLoadingOptionId)}
+                >
+                  {reviewLoadingOptionId === selectedOption.id ? "Reviewing..." : "Book Now"}
+                </button>
+              </div>
+            ) : null}
+          </div>
+        )}
+      </div>
+
+      <Modal show={showAmenitiesModal} onHide={() => setShowAmenitiesModal(false)} centered size="lg">
+        <div className="modal-content rounded-4">
+          <div className="modal-header border-0">
+            <div>
+              <h5 className="modal-title">{detailModel.name}</h5>
+              <div className="fs-16 mt-2">Hotel Amenities</div>
+            </div>
+            <button type="button" className="btn-close" onClick={() => setShowAmenitiesModal(false)} />
+          </div>
+          <div className="modal-body">
+            {detailModel.amenityGroups?.length ? (
+              <div className="hotel-amenities-modal-groups">
+                {detailModel.amenityGroups.map((group) => (
+                  <div key={group.title} className="hotel-amenities-modal-group">
+                    <div className="hotel-amenities-modal-title">{group.title}</div>
+                    <div className="hotel-amenities-modal-grid">
+                      {group.items.map((item) => (
+                        <div key={`${group.title}-${item.id}-${item.name}`} className="hotel-amenities-modal-item">
+                          <Check size={14} color="#6d7483" />
+                          <span>{item.subtext ? `${item.name} (${item.subtext})` : item.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="hotel-detail-amenities">
+                {detailModel.amenities.map((amenity, index) => {
+                  const amenityText = typeof amenity === "object" && amenity !== null ? (amenity.name || amenity.nm || JSON.stringify(amenity)) : String(amenity || "");
+                  return (
+                    <span key={`${amenityText}-${index}`} className="hotel-detail-amenity">
+                      <Check size={14} color="#ed1173" />
+                      {amenityText}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal>
+
+      <RoomPolicyModal
+        show={showPolicyModal}
+        onHide={() => setShowPolicyModal(false)}
+        option={selectedPolicyOption}
+        hotelName={detailModel.name}
+        starRating={detailModel.starRating}
+        searchId={detailModel.meta.searchId}
+      />
+
+      <MarkupModal
+        show={showMarkupModal}
+        onHide={() => setShowMarkupModal(false)}
+        onUpdate={handleUpdateMarkup}
+      />
+
+      <Modal show={showGalleryModal} onHide={() => setShowGalleryModal(false)} centered size="xl">
+        <div className="modal-content rounded-4">
+          <div className="modal-header border-0">
+            <h5 className="modal-title">{detailModel.name} photos</h5>
+            <button type="button" className="btn-close" onClick={() => setShowGalleryModal(false)} />
+          </div>
+          <div className="modal-body">
+            {detailModel.images[galleryIndex]?.url ? (
+              <img
+                src={detailModel.images[galleryIndex].url}
+                alt={detailModel.name}
+                style={{ width: "100%", maxHeight: 420, objectFit: "cover", borderRadius: 18 }}
+              />
+            ) : null}
+            <div className="hotel-gallery-modal-grid mt-3">
+              {detailModel.images.map((image, index) => (
+                <button
+                  key={`${image.url}-${index}`} type="button"
+                  style={{ border: "none", background: "transparent", padding: 0 }}
+                  onClick={() => setGalleryIndex(index)}
+                >
+                  <img src={image.url} alt={`${detailModel.name} ${index + 1}`} />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      <Offcanvas show={showRoomFilters} onHide={() => setShowRoomFilters(false)} placement="bottom">
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title>Room filters</Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body>
+          <div className="d-grid gap-3">
+            <input
+              className="hotel-room-search"
+              placeholder="Search by Room Type/Room Category"
+              value={roomSearch}
+              onChange={(event) => setRoomSearch(event.target.value)}
+            />
+            <button
+              type="button"
+              className={`hotel-room-filter-chip ${filterState.refundable ? "active" : ""}`}
+              onClick={() => setFilterState((prev) => ({ ...prev, refundable: !prev.refundable }))}
+            >
+              Refundable
+            </button>
+            <button
+              type="button"
+              className={`hotel-room-filter-chip ${filterState.breakfastIncluded ? "active" : ""}`}
+              onClick={() => setFilterState((prev) => ({ ...prev, breakfastIncluded: !prev.breakfastIncluded }))}
+            >
+              Breakfast Included
+            </button>
+            <button
+              type="button"
+              className={`hotel-room-filter-chip ${filterState.panOptional ? "active" : ""}`}
+              onClick={() => setFilterState((prev) => ({ ...prev, panOptional: !prev.panOptional }))}
+            >
+              PAN Optional
+            </button>
+            <label className="hotel-room-filter-chip">
+              Meal Plan
+              <select
+                value={filterState.mealPlan}
+                onChange={(event) => setFilterState((prev) => ({ ...prev, mealPlan: event.target.value }))}
+                style={{ border: "none", background: "transparent", fontWeight: 800 }}
+              >
+                <option value="">All</option>
+                {mealPlans.map((plan) => (
+                  <option key={plan.value} value={plan.value}>
+                    {plan.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </Offcanvas.Body>
+      </Offcanvas>
+
+      <Modal show={showReviewModal} onHide={() => setShowReviewModal(false)} centered size="lg">
+        <div className="modal-content rounded-4">
+          <div className="modal-header border-0">
+            <div>
+              <h5 className="modal-title">Booking Review</h5>
+              <div className="fs-12 text-muted">TripJack review response received</div>
+            </div>
+            <button type="button" className="btn-close" onClick={() => setShowReviewModal(false)} />
+          </div>
+          <div className="modal-body">
+            {reviewResponse ? (
+              <div className="d-grid gap-3">
+                <div className="border rounded-4 p-3 bg-light-subtle">
+                  <div className="fw-bold mb-1">{reviewResponse.displayRoomName || "Selected room"}</div>
+                  <div className="fs-14 text-muted">{reviewResponse.displayHotelName || detailModel.name}</div>
+                </div>
+
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <div className="border rounded-4 p-3 h-100">
+                      <div className="text-muted fs-12 mb-1">Booking ID</div>
+                      <div className="fw-bold">{reviewResponse.bookingId || "Unavailable"}</div>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="border rounded-4 p-3 h-100">
+                      <div className="text-muted fs-12 mb-1">Total Amount</div>
+                      <div className="fw-bold">
+                        {reviewResponse?.priceSummary?.amount
+                          ? formatMoney(reviewResponse.priceSummary.amount, reviewResponse.priceSummary.currency || "INR")
+                          : "Price unavailable"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="border rounded-4 p-3 h-100">
+                      <div className="text-muted fs-12 mb-1">Base Fare</div>
+                      <div className="fw-bold">
+                        {reviewResponse?.priceSummary?.baseFare
+                          ? formatMoney(reviewResponse.priceSummary.baseFare, reviewResponse.priceSummary.currency || "INR")
+                          : "Not provided"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="border rounded-4 p-3 h-100">
+                      <div className="text-muted fs-12 mb-1">Taxes & Fees</div>
+                      <div className="fw-bold">
+                        {reviewResponse?.priceSummary?.taxesAndFees
+                          ? formatMoney(reviewResponse.priceSummary.taxesAndFees, reviewResponse.priceSummary.currency || "INR")
+                          : "Not provided"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="border rounded-4 p-3 h-100">
+                      <div className="text-muted fs-12 mb-1">Meal Basis</div>
+                      <div className="fw-bold">{reviewResponse?.roomSummary?.mealBasis || "Not provided"}</div>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="border rounded-4 p-3 h-100">
+                      <div className="text-muted fs-12 mb-1">PAN Requirement</div>
+                      <div className="fw-bold">
+                        {reviewResponse?.bookingRequirements?.panRequired ? "Required" : "Not required"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="border rounded-4 p-3 h-100">
+                      <div className="text-muted fs-12 mb-1">Passport Requirement</div>
+                      <div className="fw-bold">
+                        {reviewResponse?.bookingRequirements?.passportRequired ? "Required" : "Not required"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="border rounded-4 p-3 h-100">
+                      <div className="text-muted fs-12 mb-1">Refundability</div>
+                      <div className="fw-bold">
+                        {reviewResponse?.bookingRequirements?.isRefundable
+                          ? "Refundable"
+                          : reviewResponse?.bookingRequirements?.isNonRefundable
+                            ? "Non-refundable"
+                            : "Policy available"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="border rounded-4 p-3 h-100">
+                      <div className="text-muted fs-12 mb-1">Check-in Time</div>
+                      <div className="fw-bold">
+                        {reviewResponse?.hotelSummary?.checkInTime?.time ||
+                          reviewResponse?.hotelSummary?.checkInTime?.from ||
+                          reviewResponse?.hotelSummary?.checkInTime?.value ||
+                          "Not provided"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="border rounded-4 p-3 h-100">
+                      <div className="text-muted fs-12 mb-1">Check-out Time</div>
+                      <div className="fw-bold">
+                        {reviewResponse?.hotelSummary?.checkOutTime?.time ||
+                          reviewResponse?.hotelSummary?.checkOutTime?.to ||
+                          reviewResponse?.hotelSummary?.checkOutTime?.value ||
+                          "Not provided"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="border rounded-4 p-3 h-100">
+                      <div className="text-muted fs-12 mb-1">Hold Deadline</div>
+                      <div className="fw-bold">
+                        {reviewResponse?.bookingRequirements?.deadlineDatetime
+                          ? formatDate(reviewResponse.bookingRequirements.deadlineDatetime)
+                          : "Not provided"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border rounded-4 p-3">
+                  <div className="fw-semibold mb-2">Cancellation Policy</div>
+                  <div className="fs-14 text-muted">
+                    {reviewResponse?.bookingRequirements?.isNonRefundable
+                      ? "This room is non-refundable. Any cancellation may incur the full booking amount."
+                      : reviewResponse?.bookingRequirements?.isRefundable
+                        ? "Cancellation charges apply according to the hotel policy shown on the next step."
+                        : "Hotel cancellation policy will be shown in the traveller details step."}
+                  </div>
+                </div>
+
+                <div className="border rounded-4 p-3">
+                  <div className="fw-semibold mb-2">Current Status</div>
+                  <div className="fs-14 text-muted">
+                    Review succeeded. Traveller details and final booking actions will be added in the next phase.
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+          <div className="modal-footer border-0">
+            <Button variant="outline-secondary" onClick={() => setShowReviewModal(false)}>
+              Close
+            </Button>
+            <Button variant="primary" onClick={handleOpenBookingForm} disabled={!reviewResponse?.bookingId}>
+              Continue to Traveller Details
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <TripJackBookingStatus
+        show={showBookingStatusModal}
+        statusState={bookingStatusState}
+        reviewResponse={reviewResponse}
+        onClose={() => setShowBookingStatusModal(false)}
+        formatMoney={formatMoney}
+      />
+
+      {activeOption ? (
+        <Modal show={roomModalOpen} onHide={() => setRoomModalOpen(false)} centered size="lg">
+          <div className="modal-content rounded-4 hotel-room-modal">
+            <div className="modal-header border-0 pb-0 hotel-room-modal-header">
+              <div>
+                <h5 className="modal-title hotel-room-modal-title">{activeOption.roomName}</h5>
+              </div>
+              <button type="button" className="btn-close" onClick={() => setRoomModalOpen(false)} />
+            </div>
+
+            <div className="modal-body pt-2 hotel-room-modal-body">
+              <div className="hotel-room-modal-gallery">
+                {activeOption.image ? (
+                  <img src={activeOption.image} alt={activeOption.roomName} />
+                ) : (
+                  <div className="hotel-card-image hotel-card-image--empty">Image not available</div>
+                )}
+                {activeOption.images?.length > 1 ? (
+                  <button
+                    type="button"
+                    className="hotel-room-modal-gallery-next"
+                    onClick={() => {
+                      setActiveOption((current) => {
+                        if (!current?.images?.length) return current;
+                        const rotatedImages = [...current.images.slice(1), current.images[0]];
+                        return {
+                          ...current,
+                          images: rotatedImages,
+                          image: rotatedImages[0]?.url || current.image,
+                        };
+                      });
+                    }}
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                ) : null}
+              </div>
+              <div className="hotel-room-modal-meta">
+                {activeOption.guestSummary ? (
+                  <div className="hotel-room-modal-copy">{activeOption.guestSummary}</div>
+                ) : null}
+                {activeOption.bedSummary ? (
+                  <div className="hotel-room-modal-copy">
+                    <BedDouble size={14} />
+                    {activeOption.bedSummary}
+                  </div>
+                ) : null}
+              </div>
+              <div className="hotel-room-modal-divider" />
+              <div className="hotel-room-modal-section-title">Room Amenities</div>
+              <div className="hotel-room-modal-section-subtitle">Popular with Guests</div>
+              <div className="hotel-room-modal-amenities">
+                {activeOption.inclusions.map((amenity, index) => (
+                  <div key={`${amenity}-${index}`} className="hotel-room-modal-amenity">
+                    <Check size={14} color="#ed1173" />
+                    <span>{amenity}</span>
+                  </div>
+                ))}
+              </div>
+              {Array.isArray(activeOption.cancellation?.penalties) && activeOption.cancellation.penalties.length > 0 ? (
+                <div className="fs-12 text-muted">
+                  {activeOption.cancellation.penalties
+                    .map((penalty) => `${penalty.from || "—"} to ${penalty.to || "—"} (${penalty.amount ?? "—"})`)
+                    .join(" • ")}
+                </div>
+              ) : (
+                <div className="fs-12 text-muted">Cancellation policy not available.</div>
+              )}
+            </div>
+          </div>
+        </Modal>
+      ) : null}
+    </div>
+  );
+}
+
+export { HotelSearchBarEditable };
+export default HotelDetailsPage;
