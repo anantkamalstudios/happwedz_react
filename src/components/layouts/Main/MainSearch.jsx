@@ -298,8 +298,30 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
       }
       const response = await axios.get(apiUrl);
       const results = response.data?.data || [];
-      setSearchResults(results);
-      setShowResults(results.length > 0);
+      
+      // Deduplicate results to avoid duplicate vendor items caused by sub-vendor master profiles joins
+      const uniqueResults = [];
+      const seenIds = new Set();
+      const seenNames = new Set();
+
+      results.forEach((item) => {
+        if (!item) return;
+        const id = item.id;
+        const name = (item.attributes?.name || item.vendor?.businessName || "").trim().toLowerCase();
+        const city = (item.attributes?.city || item.vendor?.city || "").trim().toLowerCase();
+        const nameKey = `${name}|${city}`;
+
+        if (id && !seenIds.has(id)) {
+          if (!name || !seenNames.has(nameKey)) {
+            seenIds.add(id);
+            if (name) seenNames.add(nameKey);
+            uniqueResults.push(item);
+          }
+        }
+      });
+
+      setSearchResults(uniqueResults);
+      setShowResults(uniqueResults.length > 0);
     } catch {
       setSearchResults([]);
       setShowResults(false);

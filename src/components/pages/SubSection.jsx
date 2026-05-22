@@ -82,6 +82,14 @@ const SubSection = () => {
     cityFromQuery || reduxLocation
   );
 
+  const mergedFilters = useMemo(() => {
+    const merged = { ...activeFilters };
+    if (searchQuery) {
+      merged.search = searchQuery;
+    }
+    return merged;
+  }, [activeFilters, searchQuery]);
+
   const {
     data: apiData,
     loading,
@@ -94,7 +102,7 @@ const SubSection = () => {
     selectedCity,
     vendorType,
     9,
-    activeFilters
+    mergedFilters
   );
 
   const handleClose = () => {
@@ -108,7 +116,8 @@ const SubSection = () => {
   };
 
   const handleSearch = (query) => {
-    setSearchQuery(query);
+    const searchVal = typeof query === "object" ? query?.keyword : query;
+    setSearchQuery(searchVal || "");
   };
 
   const handleCategoryChange = (categoryId) => {

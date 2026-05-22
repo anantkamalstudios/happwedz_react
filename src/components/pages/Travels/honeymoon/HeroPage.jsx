@@ -122,7 +122,7 @@ export default function FlightHero() {
                   label: "Insurance",
                   onClick: () => setActiveTab("Insurance"),
                 },
-                { icon: { src: CruiseIcon, alt: "cruise" }, label: "cruise" },
+
                 {
                   icon: { src: CarIcon, alt: "Car rental" },
                   label: "Car rental",

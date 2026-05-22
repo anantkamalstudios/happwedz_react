@@ -73,7 +73,31 @@ export const transformVendorData = (apiVendor) => {
 
 export const transformVendorsData = (apiVendors) => {
   if (!Array.isArray(apiVendors)) return [];
-  return apiVendors.map(transformVendorData).filter(Boolean);
+  
+  const transformed = apiVendors.map(transformVendorData).filter(Boolean);
+  
+  // Deduplicate by ID and Name + Location to prevent duplicate vendor cards in UI lists
+  const uniqueTransformed = [];
+  const seenIds = new Set();
+  const seenNames = new Set();
+
+  transformed.forEach((vendor) => {
+    if (!vendor) return;
+    const id = vendor.id;
+    const name = (vendor.name || "").trim().toLowerCase();
+    const location = (vendor.location || "").trim().toLowerCase();
+    const key = `${name}|${location}`;
+
+    if (id && !seenIds.has(id)) {
+      if (!name || !seenNames.has(key)) {
+        seenIds.add(id);
+        if (name) seenNames.add(key);
+        uniqueTransformed.push(vendor);
+      }
+    }
+  });
+
+  return uniqueTransformed;
 };
 
 // Helper functions
