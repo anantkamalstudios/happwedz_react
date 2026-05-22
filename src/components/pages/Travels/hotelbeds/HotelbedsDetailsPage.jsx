@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import {
   createHotelPaymentOrder,
-  holdHotelBooking,
   getHotelStaticContent,
   getHotelBookingDetails,
   reviewHotelBooking,
@@ -1510,44 +1509,6 @@ function HotelDetailsPage({
     };
   };
 
-  const handleProceedToHold = async () => {
-    if (!reviewResponse?.bookingId || !bookingForm) {
-      toast.error("Booking review data is missing. Please review the room again.");
-      return;
-    }
-
-    if (!isAuthenticated || !user?.id) {
-      toast.error("Please login before booking a hotel.");
-      navigate("/customer-login");
-      return;
-    }
-
-    const validationErrors = validateBookingForm(bookingForm, reviewResponse);
-    if (validationErrors.length > 0) {
-      toast.error(validationErrors[0]);
-      return;
-    }
-
-    const payload = buildBookingPayload({ includePayment: false });
-    setBookingSubmitting(true);
-    try {
-      const response = await holdHotelBooking(payload);
-      const heldBookingId = response?.bookingId || payload.bookingId;
-      toast.success("Booking held successfully.");
-      setShowBookingFormModal(false);
-      navigate(`/hotels/booking/${heldBookingId}`);
-    } catch (error) {
-      console.error("Unable to hold TripJack booking", error);
-      toast.error(
-        error?.response?.data?.error ||
-          error?.message ||
-          "Unable to hold booking. Please try again.",
-      );
-    } finally {
-      setBookingSubmitting(false);
-    }
-  };
-
   const handleProceedToBook = async () => {
     if (!reviewResponse?.bookingId || !bookingForm) {
       toast.error("Booking review data is missing. Please review the room again.");
@@ -1706,7 +1667,6 @@ function HotelDetailsPage({
 
       await pollTripjackBookingStatus(bookingResponse?.bookingId || payload.bookingId);
     } catch (error) {
-      console.error("Unable to create TripJack booking", error);
       const timeoutOrCanceled =
         error?.code === "ECONNABORTED" ||
         error?.code === "ERR_CANCELED" ||
@@ -1718,19 +1678,24 @@ function HotelDetailsPage({
         error?.response?.data?.status?.success === false;
       const paymentFailure = error?.response?.data?.source === "PAYMENT" || /razorpay/i.test(String(error?.message || ""));
 
+      if (!duplicateBookingBlocked || (!timeoutOrCanceled && !tripjackDenied && !validationFailure)) {
+        console.error("Unable to create TripJack booking", error);
+      }
+
       if (timeoutOrCanceled && !tripjackDenied && !validationFailure) {
         const bookingIdForRecovery = error?.response?.data?.bookingId || payload.bookingId;
         setBookingStatusState({
-          phase: "polling",
+          phase: "timeout",
           bookingId: bookingIdForRecovery,
           orderStatus: "PAYMENT_SUCCESS",
           attempts: 0,
-          message: "Payment may be successful. Fetching latest TripJack booking status.",
+          message:
+            "Payment appears to be successful. TripJack is still confirming the booking. Please refresh status after a short while.",
           details: error?.response?.data || null,
           errorCode: "",
+          allowClose: true,
         });
-        toast.info("Payment processed. Fetching latest booking status from TripJack.");
-        await pollTripjackBookingStatus(bookingIdForRecovery);
+        toast.info("Payment appears successful. Refresh TripJack booking status after a short while.");
         return;
       }
 
@@ -1746,6 +1711,7 @@ function HotelDetailsPage({
             "This booking is already paid. Fetching latest TripJack status.",
           details: error?.response?.data?.bookingDetails || error?.response?.data || null,
           errorCode: "",
+          allowClose: true,
         });
         toast.info("Payment already completed for this booking. Fetching latest status.");
         await pollTripjackBookingStatus(duplicateBookingId);
@@ -1918,7 +1884,6 @@ function HotelDetailsPage({
             onContactFieldChange={handleContactFieldChange}
             onTermsChange={handleTermsChange}
             onSubmit={handleProceedToBook}
-            onHoldSubmit={handleProceedToHold}
             bookingSubmitting={bookingSubmitting}
             formatMoney={formatMoney}
             formatDate={formatDate}

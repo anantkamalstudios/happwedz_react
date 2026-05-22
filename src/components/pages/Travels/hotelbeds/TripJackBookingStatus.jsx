@@ -43,10 +43,12 @@ export default function TripJackBookingStatus({
   const isAlreadyPaid = phase === "already_paid";
   const isDenied = phase === "denied";
   const isTimeout = phase === "timeout";
-  const isProcessing = phase === "submitting" || phase === "polling";
+  const isSubmitting = phase === "submitting";
+  const isProcessing = isSubmitting;
+  const allowClose = !isSubmitting || statusState?.allowClose;
 
   return (
-    <Modal show={show} onHide={isProcessing ? undefined : onClose} centered size="lg" backdrop={isProcessing ? "static" : true}>
+    <Modal show={show} onHide={allowClose ? onClose : undefined} centered size="lg" backdrop={allowClose ? true : "static"}>
       <div className="modal-content rounded-4">
         <div className="modal-header border-0">
           <div>
@@ -67,7 +69,7 @@ export default function TripJackBookingStatus({
                     : "Payment is complete and TripJack confirmation is in progress."}
             </div>
           </div>
-          {!isProcessing ? <button type="button" className="btn-close" onClick={onClose} /> : null}
+          {allowClose ? <button type="button" className="btn-close" onClick={onClose} /> : null}
         </div>
 
         <div className="modal-body">
@@ -107,14 +109,6 @@ export default function TripJackBookingStatus({
                       : reviewResponse?.priceSummary?.amount
                         ? formatMoney(reviewResponse.priceSummary.amount, reviewResponse.priceSummary.currency || "INR")
                         : "Not available"}
-                  </div>
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="border rounded-4 p-3 h-100">
-                  <div className="text-muted fs-12 mb-1">Polling Attempts</div>
-                  <div className="fw-bold">
-                    {isValidationFailure || isDenied || isAlreadyPaid ? "Not started" : statusState?.attempts || 0}
                   </div>
                 </div>
               </div>
@@ -177,7 +171,7 @@ export default function TripJackBookingStatus({
               Refresh Status
             </Button>
           ) : null}
-          <Button variant="outline-secondary" onClick={onClose} disabled={isProcessing}>
+          <Button variant="outline-secondary" onClick={onClose} disabled={!allowClose}>
             Close
           </Button>
         </div>

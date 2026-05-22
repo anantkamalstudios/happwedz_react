@@ -37,6 +37,34 @@ function formatDateTime(value) {
   });
 }
 
+function getNumNights(checkIn, checkOut) {
+  if (!checkIn || !checkOut) return null;
+  const start = new Date(checkIn);
+  const end = new Date(checkOut);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
+  const diff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+  return diff > 0 ? diff : null;
+}
+
+function isPaymentPendingBooking(status) {
+  const normalized = String(status || "").toUpperCase();
+  return ["PAYMENT_PENDING", "PENDING", "IN_PROGRESS"].includes(normalized);
+}
+
+function getBookingStatusLabel(status, userStatus) {
+  const normalizedStatus = String(userStatus || status || "").trim();
+  if (typeof userStatus === "string" && userStatus.trim().length > 0) {
+    return userStatus;
+  }
+  const normalized = String(status || "").toUpperCase();
+  if (normalized === "PAYMENT_PENDING") return "Payment Pending";
+  if (normalized === "PAYMENT_SUCCESS") return "Payment Success - Pending Voucher";
+  if (normalized === "ON_HOLD") return "On Hold";
+  if (["IN_PROGRESS", "PENDING"].includes(normalized)) return "Booking Processing";
+  if (normalized === "CANCELLED") return "Cancelled";
+  return normalizedStatus || normalized || "-";
+}
+
 function getStatusTone(orderStatus) {
   const normalized = String(orderStatus || "").toUpperCase();
   if (["CANCELLATION_REQUESTED", "CANCELLATION_PENDING"].includes(normalized)) {
@@ -103,6 +131,14 @@ export default function HotelBookingDetailsPage() {
       setLoading(false);
       return;
     }
+
+    if (fallbackBooking && isPaymentPendingBooking(fallbackBooking.status)) {
+      setDetails(null);
+      setError("");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError("");
     try {
@@ -110,11 +146,20 @@ export default function HotelBookingDetailsPage() {
       setDetails(response || null);
     } catch (err) {
       setDetails(null);
-      setError(
-        err?.response?.data?.error ||
-          err?.message ||
-          "Unable to fetch booking details right now.",
-      );
+      const backendMessage = err?.response?.data?.error;
+      if (
+        fallbackBooking &&
+        isPaymentPendingBooking(fallbackBooking.status) &&
+        err?.response?.status === 400 &&
+        typeof backendMessage === "string" &&
+        backendMessage.toLowerCase().includes("no order found")
+      ) {
+        setError("Payment is pending. Booking details will be available after payment completion.");
+      } else {
+        setError(
+          backendMessage || err?.message || "Unable to fetch booking details right now.",
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -131,6 +176,9 @@ export default function HotelBookingDetailsPage() {
       active = false;
     };
   }, [bookingId]);
+
+  const showPendingStatusNotice = !loading && !error && fallbackBooking && isPaymentPendingBooking(fallbackBooking.status) && !details;
+  const showPendingBookingSummary = showPendingStatusNotice;
 
   const ui = useMemo(() => {
     const order = details?.raw?.order || {};
@@ -174,7 +222,7 @@ export default function HotelBookingDetailsPage() {
       ? normalizedStatus === "CANCELLED"
         ? "Booking Cancelled"
         : "Cancellation Requested"
-      : details?.userStatus || normalizedStatus || "-";
+      : getBookingStatusLabel(normalizedStatus, details?.userStatus);
 
     return {
       tone,
@@ -187,7 +235,17 @@ export default function HotelBookingDetailsPage() {
       totalRooms: Array.isArray(option?.ris) ? option.ris.length : 1,
       adults: room?.adt ?? 1,
       children: room?.chd ?? 0,
-      totalStay: room?.numNights ? `${room.numNights} Night(s)` : "-",
+      totalStay: room?.numNights
+        ? `${room.numNights} Night(s)`
+        : getNumNights(
+            room?.checkInDate || details?.raw?.itemInfos?.HOTEL?.query?.checkinDate || fallbackBooking?.checkIn,
+            room?.checkOutDate || details?.raw?.itemInfos?.HOTEL?.query?.checkoutDate || fallbackBooking?.checkOut,
+          )
+        ? `${getNumNights(
+            room?.checkInDate || details?.raw?.itemInfos?.HOTEL?.query?.checkinDate || fallbackBooking?.checkIn,
+            room?.checkOutDate || details?.raw?.itemInfos?.HOTEL?.query?.checkoutDate || fallbackBooking?.checkOut,
+          )} Night(s)`
+        : "-",
       guestName: [traveller?.fN, traveller?.lN].filter(Boolean).join(" ") || "-",
       email: details?.deliveryInfo?.emails?.[0] || order?.deliveryInfo?.emails?.[0] || "-",
       phone: details?.deliveryInfo?.contacts?.[0] || order?.deliveryInfo?.contacts?.[0] || "-",
@@ -355,131 +413,192 @@ export default function HotelBookingDetailsPage() {
                     </div>
                   ) : null}
 
-                  <div style={{ marginTop: error ? "1rem" : 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: "1.2rem", color: "#132238" }}>{ui.hotelName}</div>
-                    <div style={{ color: "#64748b", marginTop: "0.25rem" }}>{ui.address}</div>
-                  </div>
+                  {showPendingStatusNotice ? (
+                    <div
+                      style={{
+                        borderRadius: "12px",
+                        border: "1px solid #c7d2fe",
+                        background: "#eef2ff",
+                        color: "#1e3a8a",
+                        padding: "0.75rem 0.9rem",
+                        marginTop: error ? "1rem" : 0,
+                      }}
+                    >
+                      Payment is pending for this booking. Full TripJack booking details will be visible after payment completion.
+                    </div>
+                  ) : null}
 
-                  <div className="row g-2 mt-2">
-                    <div className="col-6 col-md-3">
-                      <div style={{ background: "#eff6ff", borderRadius: "10px", padding: "0.7rem" }}>
-                        <div style={{ color: "#64748b", fontSize: "0.82rem" }}>Check in</div>
-                        <div style={{ fontWeight: 700 }}>{formatDate(ui.checkIn)}</div>
+                  {showPendingBookingSummary ? (
+                    <div style={{ marginTop: error || showPendingStatusNotice ? "1rem" : 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: "1.2rem", color: "#132238" }}>{ui.hotelName}</div>
+                      <div style={{ color: "#64748b", marginTop: "0.25rem" }}>{ui.address}</div>
+
+                      <div className="row g-2 mt-2">
+                        <div className="col-6 col-md-3">
+                          <div style={{ background: "#eff6ff", borderRadius: "10px", padding: "0.7rem" }}>
+                            <div style={{ color: "#64748b", fontSize: "0.82rem" }}>Check in</div>
+                            <div style={{ fontWeight: 700 }}>{formatDate(ui.checkIn)}</div>
+                          </div>
+                        </div>
+                        <div className="col-6 col-md-3">
+                          <div style={{ background: "#eff6ff", borderRadius: "10px", padding: "0.7rem" }}>
+                            <div style={{ color: "#64748b", fontSize: "0.82rem" }}>Check out</div>
+                            <div style={{ fontWeight: 700 }}>{formatDate(ui.checkOut)}</div>
+                          </div>
+                        </div>
+                        <div className="col-6 col-md-3">
+                          <div style={{ background: "#eff6ff", borderRadius: "10px", padding: "0.7rem" }}>
+                            <div style={{ color: "#64748b", fontSize: "0.82rem" }}>Total Rooms</div>
+                            <div style={{ fontWeight: 700 }}>{ui.totalRooms}</div>
+                          </div>
+                        </div>
+                        <div className="col-6 col-md-3">
+                          <div style={{ background: "#eff6ff", borderRadius: "10px", padding: "0.7rem" }}>
+                            <div style={{ color: "#64748b", fontSize: "0.82rem" }}>Guests</div>
+                            <div style={{ fontWeight: 700 }}>
+                              {ui.adults} Adult{ui.adults > 1 ? "s" : ""}{ui.children ? `, ${ui.children} Child` : ""}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="col-6 col-md-3">
-                      <div style={{ background: "#eff6ff", borderRadius: "10px", padding: "0.7rem" }}>
-                        <div style={{ color: "#64748b", fontSize: "0.82rem" }}>Check out</div>
-                        <div style={{ fontWeight: 700 }}>{formatDate(ui.checkOut)}</div>
-                      </div>
-                    </div>
-                    <div className="col-6 col-md-3">
-                      <div style={{ background: "#eff6ff", borderRadius: "10px", padding: "0.7rem" }}>
-                        <div style={{ color: "#64748b", fontSize: "0.82rem" }}>Total Rooms</div>
-                        <div style={{ fontWeight: 700 }}>{ui.totalRooms}</div>
-                      </div>
-                    </div>
-                    <div className="col-6 col-md-3">
-                      <div style={{ background: "#eff6ff", borderRadius: "10px", padding: "0.7rem" }}>
-                        <div style={{ color: "#64748b", fontSize: "0.82rem" }}>Guests</div>
-                        <div style={{ fontWeight: 700 }}>
-                          {ui.adults} Adult{ui.adults > 1 ? "s" : ""}{ui.children ? `, ${ui.children} Child` : ""}
+
+                      <div style={{ marginTop: "1rem", borderTop: "1px solid #e2e8f0", paddingTop: "1rem" }}>
+                        <div style={{ fontWeight: 700, color: "#132238", marginBottom: "0.35rem" }}>Status</div>
+                        <div style={{ color: "#334155", fontWeight: 700 }}>{ui.statusLabel}</div>
+                        <div style={{ color: "#64748b", marginTop: "0.35rem" }}>
+                          Created On: {formatDateTime(ui.createdOn)}
                         </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div style={{ marginTop: "1rem", borderTop: "1px solid #e2e8f0", paddingTop: "1rem" }}>
-                    <div style={{ fontWeight: 700, color: "#132238", marginBottom: "0.35rem" }}>Room Details</div>
-                    <div style={{ color: "#334155" }}>{ui.roomName}</div>
-                    <div style={{ color: "#64748b" }}>Guest: {ui.guestName}</div>
-                    <div style={{ color: "#64748b" }}>Total Stay: {ui.totalStay}</div>
-                    <div style={{ color: "#64748b", marginTop: "0.35rem" }}>Status: {ui.statusLabel}</div>
-                  </div>
-
-                  <div style={{ marginTop: "1rem", borderTop: "1px solid #e2e8f0", paddingTop: "1rem" }}>
-                    <div style={{ fontWeight: 700, color: "#132238", marginBottom: "0.35rem" }}>Contact Details</div>
-                    <div style={{ color: "#334155" }}>Email: {ui.email}</div>
-                    <div style={{ color: "#334155" }}>Phone: {ui.phone}</div>
-                    <div style={{ color: "#64748b", marginTop: "0.35rem" }}>Created On: {formatDateTime(ui.createdOn)}</div>
-                    {ui.isOnHold ? (
-                      <div className="mt-3">
-                        <button
-                          type="button"
-                          onClick={handleConfirmHoldBooking}
-                          disabled={confirmHoldLoading}
-                          style={{
-                            border: "1px solid #0f766e",
-                            background: "#fff",
-                            color: "#0f766e",
-                            borderRadius: "999px",
-                            padding: "0.45rem 0.95rem",
-                            fontWeight: 700,
-                            cursor: confirmHoldLoading ? "not-allowed" : "pointer",
-                            marginRight: "0.5rem",
-                          }}
-                          title="Confirm held booking"
-                        >
-                          {confirmHoldLoading ? "Confirming..." : "Confirm Booking"}
-                        </button>
+                  ) : (
+                    <>
+                      <div style={{ marginTop: error || showPendingStatusNotice ? "1rem" : 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: "1.2rem", color: "#132238" }}>{ui.hotelName}</div>
+                        <div style={{ color: "#64748b", marginTop: "0.25rem" }}>{ui.address}</div>
                       </div>
-                    ) : null}
-                    {ui.canCancel ? (
-                      <div className="mt-3">
-                        <button
-                          type="button"
-                          onClick={handleCancelBooking}
-                          disabled={cancelLoading}
-                          style={{
-                            border: "1px solid #dc2626",
-                            background: "#fff",
-                            color: "#b91c1c",
-                            borderRadius: "999px",
-                            padding: "0.45rem 0.95rem",
-                            fontWeight: 700,
-                            cursor: cancelLoading ? "not-allowed" : "pointer",
-                          }}
-                          title="Submit cancellation request"
-                        >
-                          {cancelLoading ? "Cancelling..." : "Cancel Booking"}
-                        </button>
-                      </div>
-                    ) : null}
-                  </div>
 
-                  <div style={{ marginTop: "1rem", borderTop: "1px solid #e2e8f0", paddingTop: "1rem" }}>
-                    <div style={{ fontWeight: 700, color: "#132238", marginBottom: "0.5rem" }}>Cancellation Policy</div>
-                    {ui.cancellationPolicies.length === 0 ? (
-                      <div style={{ color: "#64748b" }}>Policy details are not available for this booking.</div>
-                    ) : (
-                      <div style={{ overflowX: "auto" }}>
-                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.92rem" }}>
-                          <thead>
-                            <tr style={{ background: "#f8fafc" }}>
-                              <th style={{ border: "1px solid #e2e8f0", padding: "0.5rem", textAlign: "left" }}>From</th>
-                              <th style={{ border: "1px solid #e2e8f0", padding: "0.5rem", textAlign: "left" }}>To</th>
-                              <th style={{ border: "1px solid #e2e8f0", padding: "0.5rem", textAlign: "left" }}>Charge</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {ui.cancellationPolicies.map((policy, index) => (
-                              <tr key={`${policy?.am || "am"}-${index}`}>
-                                <td style={{ border: "1px solid #e2e8f0", padding: "0.5rem" }}>
-                                  {formatDate(policy?.from || policy?.fdt)}
-                                </td>
-                                <td style={{ border: "1px solid #e2e8f0", padding: "0.5rem" }}>
-                                  {formatDate(policy?.to || policy?.tdt)}
-                                </td>
-                                <td style={{ border: "1px solid #e2e8f0", padding: "0.5rem" }}>
-                                  {formatAmount(policy?.am, ui.currency)}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                      <div className="row g-2 mt-2">
+                        <div className="col-6 col-md-3">
+                          <div style={{ background: "#eff6ff", borderRadius: "10px", padding: "0.7rem" }}>
+                            <div style={{ color: "#64748b", fontSize: "0.82rem" }}>Check in</div>
+                            <div style={{ fontWeight: 700 }}>{formatDate(ui.checkIn)}</div>
+                          </div>
+                        </div>
+                        <div className="col-6 col-md-3">
+                          <div style={{ background: "#eff6ff", borderRadius: "10px", padding: "0.7rem" }}>
+                            <div style={{ color: "#64748b", fontSize: "0.82rem" }}>Check out</div>
+                            <div style={{ fontWeight: 700 }}>{formatDate(ui.checkOut)}</div>
+                          </div>
+                        </div>
+                        <div className="col-6 col-md-3">
+                          <div style={{ background: "#eff6ff", borderRadius: "10px", padding: "0.7rem" }}>
+                            <div style={{ color: "#64748b", fontSize: "0.82rem" }}>Total Rooms</div>
+                            <div style={{ fontWeight: 700 }}>{ui.totalRooms}</div>
+                          </div>
+                        </div>
+                        <div className="col-6 col-md-3">
+                          <div style={{ background: "#eff6ff", borderRadius: "10px", padding: "0.7rem" }}>
+                            <div style={{ color: "#64748b", fontSize: "0.82rem" }}>Guests</div>
+                            <div style={{ fontWeight: 700 }}>
+                              {ui.adults} Adult{ui.adults > 1 ? "s" : ""}{ui.children ? `, ${ui.children} Child` : ""}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    )}
-                  </div>
+
+                      <div style={{ marginTop: "1rem", borderTop: "1px solid #e2e8f0", paddingTop: "1rem" }}>
+                        <div style={{ fontWeight: 700, color: "#132238", marginBottom: "0.35rem" }}>Room Details</div>
+                        <div style={{ color: "#334155" }}>{ui.roomName}</div>
+                        <div style={{ color: "#64748b" }}>Guest: {ui.guestName}</div>
+                        <div style={{ color: "#64748b" }}>Total Stay: {ui.totalStay}</div>
+                        <div style={{ color: "#64748b", marginTop: "0.35rem" }}>Status: {ui.statusLabel}</div>
+                      </div>
+
+                      <div style={{ marginTop: "1rem", borderTop: "1px solid #e2e8f0", paddingTop: "1rem" }}>
+                        <div style={{ fontWeight: 700, color: "#132238", marginBottom: "0.35rem" }}>Contact Details</div>
+                        <div style={{ color: "#334155" }}>Email: {ui.email}</div>
+                        <div style={{ color: "#334155" }}>Phone: {ui.phone}</div>
+                        <div style={{ color: "#64748b", marginTop: "0.35rem" }}>Created On: {formatDateTime(ui.createdOn)}</div>
+                        {ui.isOnHold ? (
+                          <div className="mt-3">
+                            <button
+                              type="button"
+                              onClick={handleConfirmHoldBooking}
+                              disabled={confirmHoldLoading}
+                              style={{
+                                border: "1px solid #0f766e",
+                                background: "#fff",
+                                color: "#0f766e",
+                                borderRadius: "999px",
+                                padding: "0.45rem 0.95rem",
+                                fontWeight: 700,
+                                cursor: confirmHoldLoading ? "not-allowed" : "pointer",
+                                marginRight: "0.5rem",
+                              }}
+                              title="Confirm held booking"
+                            >
+                              {confirmHoldLoading ? "Confirming..." : "Confirm Booking"}
+                            </button>
+                          </div>
+                        ) : null}
+                        {ui.canCancel ? (
+                          <div className="mt-3">
+                            <button
+                              type="button"
+                              onClick={handleCancelBooking}
+                              disabled={cancelLoading}
+                              style={{
+                                border: "1px solid #dc2626",
+                                background: "#fff",
+                                color: "#b91c1c",
+                                borderRadius: "999px",
+                                padding: "0.45rem 0.95rem",
+                                fontWeight: 700,
+                                cursor: cancelLoading ? "not-allowed" : "pointer",
+                              }}
+                              title="Submit cancellation request"
+                            >
+                              {cancelLoading ? "Cancelling..." : "Cancel Booking"}
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+
+                      <div style={{ marginTop: "1rem", borderTop: "1px solid #e2e8f0", paddingTop: "1rem" }}>
+                        <div style={{ fontWeight: 700, color: "#132238", marginBottom: "0.5rem" }}>Cancellation Policy</div>
+                        {ui.cancellationPolicies.length === 0 ? (
+                          <div style={{ color: "#64748b" }}>Policy details are not available for this booking.</div>
+                        ) : (
+                          <div style={{ overflowX: "auto" }}>
+                            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.92rem" }}>
+                              <thead>
+                                <tr style={{ background: "#f8fafc" }}>
+                                  <th style={{ border: "1px solid #e2e8f0", padding: "0.5rem", textAlign: "left" }}>From</th>
+                                  <th style={{ border: "1px solid #e2e8f0", padding: "0.5rem", textAlign: "left" }}>To</th>
+                                  <th style={{ border: "1px solid #e2e8f0", padding: "0.5rem", textAlign: "left" }}>Charge</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {ui.cancellationPolicies.map((policy, index) => (
+                                  <tr key={`${policy?.am || "am"}-${index}`}>
+                                    <td style={{ border: "1px solid #e2e8f0", padding: "0.5rem" }}>
+                                      {formatDate(policy?.from || policy?.fdt)}
+                                    </td>
+                                    <td style={{ border: "1px solid #e2e8f0", padding: "0.5rem" }}>
+                                      {formatDate(policy?.to || policy?.tdt)}
+                                    </td>
+                                    <td style={{ border: "1px solid #e2e8f0", padding: "0.5rem" }}>
+                                      {formatAmount(policy?.am, ui.currency)}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -496,19 +615,33 @@ export default function HotelBookingDetailsPage() {
                 }}
               >
                 <div style={{ fontWeight: 800, color: "#132238", marginBottom: "0.75rem" }}>Fare Summary</div>
-                <div className="d-flex justify-content-between" style={{ color: "#475569", marginBottom: "0.45rem" }}>
-                  <span>Base Fare</span>
-                  <span>{formatAmount(ui.baseFare, ui.currency)}</span>
-                </div>
-                <div className="d-flex justify-content-between" style={{ color: "#475569", marginBottom: "0.45rem" }}>
-                  <span>Taxes & Fees</span>
-                  <span>{formatAmount(ui.taxesAndFees, ui.currency)}</span>
-                </div>
-                <div style={{ borderTop: "1px solid #e2e8f0", margin: "0.5rem 0" }} />
-                <div className="d-flex justify-content-between" style={{ fontWeight: 800, color: "#132238" }}>
-                  <span>Total Amount</span>
-                  <span>{formatAmount(ui.totalAmount, ui.currency)}</span>
-                </div>
+                {showPendingBookingSummary ? (
+                  <>
+                    <div className="d-flex justify-content-between" style={{ color: "#475569", marginBottom: "0.45rem" }}>
+                      <span>Estimated Total</span>
+                      <span>{formatAmount(ui.totalAmount, ui.currency)}</span>
+                    </div>
+                    <div style={{ color: "#475569", fontSize: "0.9rem" }}>
+                      Complete fare breakdown will appear after payment completion.
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="d-flex justify-content-between" style={{ color: "#475569", marginBottom: "0.45rem" }}>
+                      <span>Base Fare</span>
+                      <span>{formatAmount(ui.baseFare, ui.currency)}</span>
+                    </div>
+                    <div className="d-flex justify-content-between" style={{ color: "#475569", marginBottom: "0.45rem" }}>
+                      <span>Taxes & Fees</span>
+                      <span>{formatAmount(ui.taxesAndFees, ui.currency)}</span>
+                    </div>
+                    <div style={{ borderTop: "1px solid #e2e8f0", margin: "0.5rem 0" }} />
+                    <div className="d-flex justify-content-between" style={{ fontWeight: 800, color: "#132238" }}>
+                      <span>Total Amount</span>
+                      <span>{formatAmount(ui.totalAmount, ui.currency)}</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

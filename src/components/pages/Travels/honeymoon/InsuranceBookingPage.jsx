@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Loader2, Upload, ChevronDown } from "lucide-react";
 import { bookTripSafeInsurance } from "../../../../services/api/tripSafeApi";
@@ -72,6 +72,7 @@ const InsuranceBookingPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const passportFileInputRefs = useRef({});
 
   useEffect(() => {
     if (!searchParams || !selectedPlan || !reviewMeta?.bookingId) {
@@ -103,6 +104,45 @@ const InsuranceBookingPage = () => {
     setTravellers((prev) => {
       const next = [...prev];
       next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  const handlePassportUploadClick = (index) => {
+    const input = passportFileInputRefs.current[index];
+    if (input) {
+      input.click();
+    }
+  };
+
+  const handlePassportFileChange = (index, file) => {
+    if (!file) return;
+
+    const allowedTypes = [
+      "image/png",
+      "image/jpeg",
+      "application/pdf",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      setError("Only PNG, JPG, or PDF files are allowed.");
+      return;
+    }
+
+    const maxSizeBytes = 2 * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      setError("Passport file must be less than 2MB.");
+      return;
+    }
+
+    setError(null);
+    setTravellers((prev) => {
+      const next = [...prev];
+      next[index] = {
+        ...next[index],
+        passportFile: file,
+        passportFileName: file.name,
+      };
       return next;
     });
   };
@@ -243,10 +283,26 @@ const InsuranceBookingPage = () => {
                     <button
                       type="button"
                       className="btn btn-sm ins-upload-btn mt-2"
-                      disabled
+                      onClick={() => handlePassportUploadClick(index)}
                     >
                       UPLOAD
                     </button>
+                    <input
+                      ref={(el) => {
+                        passportFileInputRefs.current[index] = el;
+                      }}
+                      type="file"
+                      accept=".png,.jpg,.jpeg,.pdf"
+                      style={{ display: "none" }}
+                      onChange={(e) =>
+                        handlePassportFileChange(index, e.target.files?.[0])
+                      }
+                    />
+                    {traveller.passportFileName ? (
+                      <div className="mt-2 small text-success fw-semibold">
+                        Uploaded: {traveller.passportFileName}
+                      </div>
+                    ) : null}
                   </div>
 
                   <div className="row g-3 p-3 pt-0">

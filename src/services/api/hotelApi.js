@@ -133,7 +133,9 @@ export const createHotelPaymentOrder = async (payload) => {
     const response = await axiosInstance.post("hotels/create-payment-order", payload);
     return response.data;
   } catch (error) {
-    console.error(getErrorMessage(error, "Error creating hotel payment order"));
+    if (!error?.response?.data?.duplicateBookingBlocked) {
+      console.error(getErrorMessage(error, "Error creating hotel payment order"));
+    }
     throw error;
   }
 };
@@ -141,7 +143,7 @@ export const createHotelPaymentOrder = async (payload) => {
 export const verifyHotelPaymentAndBook = async (payload) => {
   try {
     const response = await axiosInstance.post("hotels/verify-payment-and-book", payload, {
-      timeout: 180000,
+      timeout: 30000,
     });
     return response.data;
   } catch (error) {

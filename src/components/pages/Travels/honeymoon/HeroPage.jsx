@@ -29,7 +29,8 @@ const mapBookingStatusLabel = (status) => {
   if (normalized === "PAYMENT_SUCCESS") return "Awaiting Confirmation";
   if (normalized === "SUCCESS") return "Confirmed";
   if (normalized === "ON_HOLD") return "On Hold";
-  if (["IN_PROGRESS", "PENDING", "PAYMENT_PENDING"].includes(normalized)) return "Processing";
+  if (normalized === "PAYMENT_PENDING") return "Payment Pending";
+  if (["IN_PROGRESS", "PENDING"].includes(normalized)) return "Processing";
   if (["FAILED", "ABORTED"].includes(normalized)) return "Failed";
   if (normalized === "CANCELLED") return "Cancelled";
   return normalized || "PENDING";

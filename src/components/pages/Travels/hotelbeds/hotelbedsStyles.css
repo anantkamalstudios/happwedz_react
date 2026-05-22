@@ -1220,6 +1220,11 @@
     position: relative;
     overflow: hidden;
     border-radius: 18px;
+    border: none;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0;
     background: linear-gradient(135deg, #f3f4f6, #e8ebf2);
     cursor: pointer;
   }
@@ -1681,6 +1686,8 @@
     font-size: 13px;
     font-weight: 700;
     border-radius: 8px;
+    border: none !important;
+    outline: none;
   }
 
   .hotel-room-option-footer {

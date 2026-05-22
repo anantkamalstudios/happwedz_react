@@ -573,6 +573,53 @@ const getNonTextFilters = (filters = {}) => {
   return rest;
 };
 
+const sanitizeArrayFilterValues = (values = []) => {
+  if (!Array.isArray(values)) return [];
+  return values
+    .map((value) => (typeof value === "string" ? value.trim() : value))
+    .filter((value) => value !== undefined && value !== null && String(value).trim() !== "")
+    .filter((value) => {
+      const text = String(value).trim();
+      // Drop stale currency chips like "$2500.0" restored from previous UI state.
+      if (/^[\$€£]\s*\d/.test(text)) return false;
+      return true;
+    });
+};
+
+const sanitizeAppliedFilters = (filters = {}, filterGroups = []) => {
+  const base = { ...defaultFilters(), ...(filters || {}) };
+
+  const sanitized = { ...defaultFilters() };
+  Object.keys(sanitized).forEach((key) => {
+    const value = base[key];
+    if (Array.isArray(sanitized[key])) {
+      sanitized[key] = sanitizeArrayFilterValues(Array.isArray(value) ? value : []);
+    } else if (typeof sanitized[key] === "boolean") {
+      sanitized[key] = Boolean(value);
+    } else {
+      sanitized[key] = typeof value === "string" ? value : "";
+    }
+  });
+
+  if (Array.isArray(filterGroups) && filterGroups.length > 0) {
+    const optionsByKey = new Map(
+      filterGroups.map((group) => [
+        group.key,
+        new Set((group.options || []).map((option) => String(option.value))),
+      ]),
+    );
+
+    Object.keys(sanitized).forEach((key) => {
+      if (!Array.isArray(sanitized[key])) return;
+      const allowed = optionsByKey.get(key);
+      if (!allowed || allowed.size === 0) return;
+      sanitized[key] = sanitized[key].filter((item) => allowed.has(String(item)));
+    });
+  }
+
+  return sanitized;
+};
+
 const buildSearchPayload = (
   searchPayload,
   appliedFilters,
@@ -1532,10 +1579,9 @@ export default function HotelbedsHotelsPage() {
     Boolean(searchPayload?.appliedFilters?.onlyFavorites),
   );
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const [appliedFilters, setAppliedFilters] = useState(() => ({
-    ...defaultFilters(),
-    ...(searchPayload?.appliedFilters || {}),
-  }));
+  const [appliedFilters, setAppliedFilters] = useState(() =>
+    sanitizeAppliedFilters(searchPayload?.appliedFilters || {}),
+  );
   const [hotelNameDraft, setHotelNameDraft] = useState(
     () => (searchPayload?.appliedFilters?.hotelName || ""),
   );
@@ -1588,7 +1634,9 @@ export default function HotelbedsHotelsPage() {
     getHotelFilters(buildFilterPayload(activePayload, nonTextAppliedFilters, initialResponse, sortOrder))
       .then((response) => {
         if (!active) return;
-        setFilterGroups(extractFilterGroups(response));
+        const groups = extractFilterGroups(response);
+        setFilterGroups(groups);
+        setAppliedFilters((prev) => sanitizeAppliedFilters(prev, groups));
       })
       .catch((error) => {
         console.error(getErrorMessage(error, "Unable to load hotel filters"));
@@ -1722,7 +1770,7 @@ export default function HotelbedsHotelsPage() {
   }, [activePayload, hotelId, searchResponse, selectedHotel]);
 
   const clearAllFilters = () => {
-    setAppliedFilters(defaultFilters());
+    setAppliedFilters(sanitizeAppliedFilters(defaultFilters(), filterGroups));
     setHotelNameDraft("");
     setFavoritesOnly(false);
   };
