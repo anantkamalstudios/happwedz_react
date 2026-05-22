@@ -94,6 +94,14 @@ const parseJsonObjectSafely = (value) => {
   return parsed && typeof parsed === "object" ? parsed : {};
 };
 
+const toDisplayText = (value) => {
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "object" && value !== null) {
+    return String(value?.name || value?.label || value?.nm || value?.value || "").trim();
+  }
+  return String(value || "").trim();
+};
+
 const buildAddressParts = (address = {}) =>
   [
     address?.adr,
@@ -105,6 +113,12 @@ const buildAddressParts = (address = {}) =>
   ].filter(Boolean);
 
 const buildAddressLabel = (address = {}) => buildAddressParts(address).join(", ");
+
+const normalizeTextKey = (value) =>
+  String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 
 const getRoomMetadata = (hotelInfo, roomInfo) => {
   const roomId = String(roomInfo?.id || roomInfo?.rid || roomInfo?.roomId || "");
@@ -122,7 +136,12 @@ const getRoomBedSummary = (roomMeta) => {
   if (beds.length === 0) return "";
 
   return beds
-    .map((bed) => `${bed?.bc || 1} ${bed?.bt || "Bed"}`.trim())
+    .map((bed) => {
+      if (bed?.description) return String(bed.description).trim();
+      const count = bed?.bc || bed?.count || 1;
+      const type = bed?.bt || bed?.type || bed?.size || "Bed";
+      return `${count} ${type}`.trim();
+    })
     .filter(Boolean)
     .join(", ");
 };
@@ -227,8 +246,16 @@ const parseRoomDescriptionAmenities = (description) => {
 
 const getRoomAmenities = (roomMeta, roomInfo = {}) =>
   dedupeStrings([
-    ...(Array.isArray(roomMeta?.fcs) ? roomMeta.fcs : []),
-    ...(Array.isArray(roomMeta?.am) ? roomMeta.am.map((item) => item?.name || item) : []),
+    ...(Array.isArray(roomMeta?.fcs) ? roomMeta.fcs.map((item) => toDisplayText(item)) : []),
+    ...(Array.isArray(roomMeta?.am) ? roomMeta.am.map((item) => toDisplayText(item)) : []),
+    ...(Array.isArray(roomMeta?.rma)
+      ? roomMeta.rma.map((item) => {
+          if (!item) return "";
+          if (typeof item === "string") return item;
+          if (item?.key && item?.value) return `${item.key}: ${item.value}`;
+          return item?.name || item?.label || item?.value || "";
+        })
+      : []),
     ...(Array.isArray(roomMeta?.rexb?.BENEFIT)
       ? roomMeta.rexb.BENEFIT.flatMap((item) => item?.values || [])
       : []),
@@ -268,6 +295,9 @@ const getOptionNightlyPrice = (option, roomInfo, nights) => {
   return total > 0 ? total / Math.max(1, nights) : 0;
 };
 
+const getOptionRoomNameKey = (option) =>
+  normalizeTextKey(option?.roomName || option?.supplierRoomType || "");
+
 const normalizeRoomOption = (option, optionIndex, hotelInfo, nights) => {
   const roomInfo = option?.roomInfos?.[0] || option?.ris?.[0] || {};
   const roomMeta = getRoomMetadata(hotelInfo, roomInfo);
@@ -304,6 +334,10 @@ const normalizeRoomOption = (option, optionIndex, hotelInfo, nights) => {
     guestSummary: getRoomGuestSummary(roomMeta, roomInfo),
     images,
     image: images[0]?.url || "",
+    roomNameKey: getOptionRoomNameKey({
+      roomName,
+      supplierRoomType,
+    }),
     amenities,
     view: Array.isArray(roomMeta?.vw)
       ? roomMeta.vw.join(", ")
@@ -325,19 +359,52 @@ const extractDetailHotelRoot = (payload) =>
   payload?.hotelInfos?.[0] ||
   null;
 
+const extractStaticHotelRoot = (payload) => {
+  if (Array.isArray(payload)) return payload[0] || {};
+  if (!payload || typeof payload !== "object") return {};
+
+  if (Array.isArray(payload?.data)) return payload.data[0] || {};
+  if (Array.isArray(payload?.result)) return payload.result[0] || {};
+  if (Array.isArray(payload?.payload)) return payload.payload[0] || {};
+  if (Array.isArray(payload?.data?.result)) return payload.data.result[0] || {};
+
+  const numericKeys = Object.keys(payload).filter((key) => /^\d+$/.test(key));
+  if (numericKeys.length > 0) {
+    const firstNumeric = numericKeys.sort((a, b) => Number(a) - Number(b))[0];
+    return payload[firstNumeric] || {};
+  }
+
+  return payload;
+};
+
+const extractSearchIdCandidate = (payload) =>
+  payload?.searchId ||
+  payload?.metaData?.searchId ||
+  payload?.data?.searchId ||
+  payload?.data?.metaData?.searchId ||
+  payload?.searchQuery?.searchId ||
+  payload?.searchResult?.searchId ||
+  payload?.data?.searchResult?.searchId ||
+  payload?.hotelSearchResult?.searchId ||
+  payload?.data?.hotelSearchResult?.searchId ||
+  payload?.hotelSearchResponse?.searchId ||
+  payload?.data?.hotelSearchResponse?.searchId ||
+  "";
+
+const extractRequestIdCandidate = (payload) =>
+  payload?.requestId ||
+  payload?.metaData?.requestId ||
+  payload?.data?.requestId ||
+  payload?.data?.metaData?.requestId ||
+  payload?.searchResult?.requestId ||
+  payload?.data?.searchResult?.requestId ||
+  payload?.hotelSearchResult?.requestId ||
+  payload?.data?.hotelSearchResult?.requestId ||
+  "";
+
 const extractDetailMeta = (payload) => ({
-  searchId:
-    payload?.metaData?.searchId ||
-    payload?.data?.metaData?.searchId ||
-    payload?.searchQuery?.searchId ||
-    payload?.id ||
-    "",
-  requestId:
-    payload?.metaData?.requestId ||
-    payload?.data?.metaData?.requestId ||
-    payload?.requestId ||
-    payload?.id ||
-    "",
+  searchId: extractSearchIdCandidate(payload) || payload?.id || "",
+  requestId: extractRequestIdCandidate(payload) || payload?.id || "",
 });
 
 const normalizeHotelDetails = ({
@@ -348,9 +415,15 @@ const normalizeHotelDetails = ({
   staticContentResponse,
 }) => {
   const hotelInfo = extractDetailHotelRoot(detailResponse) || {};
-  const staticHotel = Array.isArray(staticContentResponse)
-    ? staticContentResponse[0] || {}
-    : staticContentResponse || {};
+  const staticHotel = extractStaticHotelRoot(staticContentResponse);
+  const mergedRoomMeta = {
+    ...(hotelInfo?.oprmd || {}),
+    ...(staticHotel?.oprmd || {}),
+  };
+  const hotelInfoWithContent = {
+    ...hotelInfo,
+    oprmd: mergedRoomMeta,
+  };
   const description =
     parseJsonSafely(staticHotel?.description || hotelInfo?.des || hotelInfo?.description || "") || {};
   const nights = getNightCount(searchPayload);
@@ -358,24 +431,11 @@ const normalizeHotelDetails = ({
   const hotelImages = normalizeImageItems(hotelInfo?.img || hotelInfo?.images || []);
   const staticImages = normalizeImageItems(staticHotel?.images || []);
   const options = (Array.isArray(hotelInfo?.ops) ? hotelInfo.ops : [])
-    .map((option, index) => normalizeRoomOption(option, index, hotelInfo, nights))
+    .map((option, index) => normalizeRoomOption(option, index, hotelInfoWithContent, nights))
     .filter((option) => option.id);
   const sortedOptions = [...options].sort((a, b) => (a.totalPrice || Infinity) - (b.totalPrice || Infinity));
   const cheapestOption = sortedOptions[0] || null;
   
-  // Extract amenities from hotel facilities (fl field)
-  const hotelFacilities = Array.isArray(hotelInfo?.fl) 
-    ? hotelInfo.fl.map((item) => {
-        if (typeof item === 'string') {
-          return item;
-        }
-        if (typeof item === 'object' && item !== null) {
-          return item.name || item.nm || item.label || '';
-        }
-        return String(item || '');
-      }).filter(Boolean)
-    : [];
-
   const amenityGroups = Array.isArray(staticHotel?.tja)
     ? staticHotel.tja
         .map((group) => ({
@@ -393,15 +453,16 @@ const normalizeHotelDetails = ({
         }))
         .filter((group) => group.title && group.items.length > 0)
     : [];
-  
-  const amenitySet = dedupeStrings([
-    ...amenityGroups.flatMap((group) =>
+
+  const amenitySetFromTja = dedupeStrings(
+    amenityGroups.flatMap((group) =>
       group.items.map((item) => (item.subtext ? `${item.name} (${item.subtext})` : item.name)),
     ),
-    ...(Array.isArray(staticHotel?.facilities) ? staticHotel.facilities : []),
-    ...hotelFacilities,
-    ...options.flatMap((option) => option.amenities),
-  ]);
+  );
+  const amenitySetFallback = dedupeStrings(
+    Array.isArray(staticHotel?.facilities) ? staticHotel.facilities.map((item) => toDisplayText(item)) : [],
+  );
+  const amenitySet = amenitySetFromTja.length > 0 ? amenitySetFromTja : amenitySetFallback;
   
   const images = staticImages.length > 0
     ? dedupeImages([...staticImages, ...listImages, ...hotelImages, ...options.flatMap((option) => option.images)])
@@ -418,26 +479,30 @@ const normalizeHotelDetails = ({
     selectedHotel?.location ||
     "";
   const fullAddress = buildAddressLabel(address);
-  const mapSource = hotelInfo?.gl?.lt && hotelInfo?.gl?.ln
-    ? `${hotelInfo.gl.lt},${hotelInfo.gl.ln}`
+  const locationInfo = staticHotel?.gl || hotelInfo?.gl || {};
+  const mapSource = locationInfo?.lt && locationInfo?.ln
+    ? `${locationInfo.lt},${locationInfo.ln}`
     : fullAddress || cityName || hotelInfo?.name || selectedHotel?.name || "Hotel";
   const filterData = hotelInfo?.filters || {};
+  const roomMetaEntries = Object.values(mergedRoomMeta || {}).filter((item) => item && typeof item === "object");
 
   const roomTypeSummary = dedupeStrings(
     options.map((option) => option.roomName || option.supplierRoomType).filter(Boolean),
   );
   const mealPlanSummary = dedupeStrings(options.map((option) => option.mealBasis).filter(Boolean));
 
-  // Extract about text from inst (instructions) field or description
+  // Extract about text primarily from content API description fields
   const instructionsArray = Array.isArray(hotelInfo?.inst) ? hotelInfo.inst : [];
   const aboutTextFromInst = instructionsArray.join(" ").trim();
-  const aboutTextFromDesc =
-    staticHotel?.displayDescription ||
-    description?.location ||
-    description?.amenities ||
-    description?.rooms ||
-    description?.headline ||
-    "";
+  const aboutTextSections = [
+    description?.location,
+    description?.dining,
+    description?.amenities,
+    description?.rooms,
+  ]
+    .map((item) => String(item || "").trim())
+    .filter(Boolean);
+  const aboutTextFromDesc = aboutTextSections.join("\n\n");
   const aboutTextFromApi =
     typeof staticHotel?.displayDescription === "string"
       ? staticHotel.displayDescription.trim()
@@ -463,17 +528,128 @@ const normalizeHotelDetails = ({
     .filter(Boolean)
     .join(" ");
   const finalAboutText =
-    aboutTextFromInst ||
-    aboutTextFromDesc ||
     aboutTextFromApi ||
+    aboutTextFromDesc ||
+    aboutTextFromInst ||
     fallbackSegments ||
     `With a stay at ${hotelInfo?.name || "this hotel"} in ${cityName}, you'll be within easy reach of local attractions and amenities.`;
 
+  const roomTypeGroupsMap = new Map();
+  roomMetaEntries.forEach((roomMeta) => {
+    const roomId = String(roomMeta?.roomId || "");
+    const roomName = roomMeta?.srn || roomMeta?.rc || roomMeta?.rt || "Room";
+    const key = roomId || normalizeTextKey(roomName);
+    if (!key) return;
+
+    const groupImages = getRoomImages(roomMeta);
+    roomTypeGroupsMap.set(key, {
+      groupKey: key,
+      roomId,
+      roomName,
+      roomNameKey: normalizeTextKey(roomName),
+      supplierRoomType: roomMeta?.rc || roomMeta?.rt || roomName,
+      bedSummary: getRoomBedSummary(roomMeta),
+      guestSummary: getRoomGuestSummary(roomMeta, roomMeta),
+      amenities: getRoomAmenities(roomMeta, roomMeta),
+      images: groupImages,
+      image: groupImages[0]?.url || images[0]?.url || "",
+      roomMeta,
+      options: [],
+    });
+  });
+
+  const matchedOptionIds = new Set();
+  options.forEach((option) => {
+    const roomIdKey = String(option?.roomId || "");
+    const nameKey = option.roomNameKey || normalizeTextKey(option?.roomName || option?.supplierRoomType);
+    const directGroup = roomIdKey && roomTypeGroupsMap.has(roomIdKey)
+      ? roomTypeGroupsMap.get(roomIdKey)
+      : Array.from(roomTypeGroupsMap.values()).find(
+          (group) =>
+            group.roomNameKey === nameKey ||
+            normalizeTextKey(group.supplierRoomType) === nameKey,
+        );
+
+    if (directGroup) {
+      directGroup.options.push(option);
+      if (!directGroup.image && option.image) {
+        directGroup.image = option.image;
+      }
+      if (!directGroup.images.length && option.images?.length) {
+        directGroup.images = option.images;
+      }
+      matchedOptionIds.add(option.id);
+      return;
+    }
+
+    const syntheticKey = roomIdKey || `${nameKey}-${option.id}`;
+    roomTypeGroupsMap.set(syntheticKey, {
+      groupKey: syntheticKey,
+      roomId: roomIdKey,
+      roomName: option.roomName,
+      roomNameKey: nameKey,
+      supplierRoomType: option.supplierRoomType || option.roomName,
+      bedSummary: option.bedSummary,
+      guestSummary: option.guestSummary,
+      amenities: option.amenities || [],
+      images: option.images || [],
+      image: option.image || images[0]?.url || "",
+      roomMeta: option.roomMeta || {},
+      options: [option],
+    });
+    matchedOptionIds.add(option.id);
+  });
+
+  const roomTypeGroups = Array.from(roomTypeGroupsMap.values())
+    .map((group) => {
+      const groupedOptions = [...group.options].sort((a, b) => (a.totalPrice || Infinity) - (b.totalPrice || Infinity));
+      const primaryOption = groupedOptions[0] || null;
+      const groupImages = group.images?.length
+        ? group.images
+        : primaryOption?.images?.length
+          ? primaryOption.images
+          : images.slice(0, 3);
+
+      return {
+        ...group,
+        images: groupImages,
+        image: group.image || groupImages[0]?.url || "",
+        options: groupedOptions,
+        primaryOption,
+        isBookable: groupedOptions.length > 0,
+      };
+    })
+    .filter((group) => group.isBookable || group.roomId !== "0")
+    .sort((a, b) => {
+      const aPrice = a.primaryOption?.totalPrice || Infinity;
+      const bPrice = b.primaryOption?.totalPrice || Infinity;
+      if (aPrice !== bPrice) return aPrice - bPrice;
+      return a.roomName.localeCompare(b.roomName);
+    });
+
+  const contentHotel = {
+    id: String(staticHotel?.tjid || hotelInfo?.tjid || hotelInfo?.id || selectedHotel?.id || ""),
+    name: staticHotel?.hotelFullName || staticHotel?.name || hotelInfo?.name || selectedHotel?.name || "Hotel",
+    starRating: Number(staticHotel?.rating ?? hotelInfo?.rt ?? selectedHotel?.starRating ?? 0),
+    address,
+    cityName,
+    fullAddress,
+    images,
+    amenities: amenitySet,
+    amenityGroups,
+    aboutText: finalAboutText,
+    headline: staticHotel?.headline || description?.headline || hotelInfo?.name || "",
+    propertyType: staticHotel?.pt || hotelInfo?.pt || "",
+    regionName: staticHotel?.regionName || cityName || "",
+    checkIn: staticHotel?.checkInTime || hotelInfo?.checkInTime || {},
+    checkOut: staticHotel?.checkOutTime || hotelInfo?.checkOutTime || {},
+  };
+
   return {
     meta: extractDetailMeta(detailResponse),
-    id: String(hotelInfo?.tjid || hotelInfo?.id || selectedHotel?.id || ""),
-    name: hotelInfo?.name || selectedHotel?.name || "Hotel",
-    starRating: Number(hotelInfo?.rt || selectedHotel?.starRating || 0),
+    id: contentHotel.id,
+    name: contentHotel.name,
+    starRating: contentHotel.starRating,
     address,
     cityName,
     fullAddress,
@@ -483,15 +659,25 @@ const normalizeHotelDetails = ({
       openMapsHref: `https://www.google.com/maps?q=${encodeURIComponent(mapSource)}`,
     },
     description,
-    headline: staticHotel?.headline || description?.headline || hotelInfo?.name || "",
-    aboutText: finalAboutText,
-    amenities: amenitySet,
-    amenityGroups,
-    images,
-    hotelInfo,
+    headline: contentHotel.headline,
+    aboutText: contentHotel.aboutText,
+    amenities: contentHotel.amenities,
+    amenityGroups: contentHotel.amenityGroups,
+    images: contentHotel.images,
+    contentHotel,
+    contentImages: contentHotel.images,
+    contentAmenities: contentHotel.amenities,
+    contentAmenityGroups: contentHotel.amenityGroups,
+    contentCheckIn: contentHotel.checkIn,
+    contentCheckOut: contentHotel.checkOut,
+    contentAddress: contentHotel.address,
+    hotelInfo: hotelInfoWithContent,
     staticHotel,
     options,
+    pricedOptions: options,
     cheapestOption,
+    defaultBookableOption: cheapestOption,
+    roomTypeGroups,
     filters: filterData,
     passportRequired: Boolean(hotelInfo?.passportRequired),
     panRequired: Boolean(hotelInfo?.panRequired),
@@ -514,6 +700,9 @@ const getMealPlanOptions = (roomOptions) =>
 const getReviewPayloadFields = (hotelInfo, selectedHotel, detailMeta, searchPayload, searchResponse) => {
   const searchIdCandidates = [
     detailMeta?.searchId,
+    extractSearchIdCandidate(searchResponse),
+    extractSearchIdCandidate(searchPayload),
+    extractSearchIdCandidate(selectedHotel?.raw),
     searchResponse?.metaData?.searchId,
     searchResponse?.searchId,
     searchPayload?.searchId,
@@ -524,6 +713,9 @@ const getReviewPayloadFields = (hotelInfo, selectedHotel, detailMeta, searchPayl
 
   const detailRequestIdCandidates = [
     detailMeta?.requestId,
+    extractRequestIdCandidate(searchResponse),
+    extractRequestIdCandidate(searchPayload),
+    extractRequestIdCandidate(selectedHotel?.raw),
     searchResponse?.metaData?.requestId,
     searchResponse?.requestId,
     hotelInfo?.requestId,
@@ -613,6 +805,13 @@ const createInitialBookingForm = (reviewResponse) => {
 const validateBookingForm = (bookingForm, reviewResponse) => {
   const errors = [];
   const bookingRequirements = reviewResponse?.bookingRequirements || {};
+  const selectedOption = reviewResponse?.selectedOption || {};
+  const effectivePanRequired = Boolean(
+    bookingRequirements?.panRequired ||
+    selectedOption?.ipr ||
+    reviewResponse?.hotelInfo?.panRequired ||
+    reviewResponse?.hotelSummary?.panRequired
+  );
   const roomTravellerInfo = Array.isArray(bookingForm?.roomTravellerInfo) ? bookingForm.roomTravellerInfo : [];
 
   if (roomTravellerInfo.length === 0) {
@@ -633,8 +832,11 @@ const validateBookingForm = (bookingForm, reviewResponse) => {
       if (!traveller?.lN?.trim()) {
         errors.push(`Enter last name for room ${roomIndex + 1}, traveller ${travellerIndex + 1}.`);
       }
-      if (traveller?.pt === "ADULT" && bookingRequirements?.panRequired) {
-        if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(String(traveller?.pan || "").trim().toUpperCase())) {
+      const travellerHasPanField = Object.prototype.hasOwnProperty.call(traveller || {}, "pan");
+      const mustValidatePan = traveller?.pt === "ADULT" && (effectivePanRequired || travellerHasPanField);
+      if (mustValidatePan) {
+        const normalizedPan = String(traveller?.pan || "").trim().toUpperCase();
+        if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(normalizedPan)) {
           errors.push(`Enter a valid PAN for room ${roomIndex + 1}, traveller ${travellerIndex + 1}.`);
         }
       }

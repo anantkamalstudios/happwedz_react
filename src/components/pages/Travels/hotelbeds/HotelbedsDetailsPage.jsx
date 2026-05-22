@@ -6,12 +6,12 @@ import { toast } from "react-toastify";
 import {
   BedDouble,
   Check,
+  ChevronLeft,
   ChevronDown,
   ChevronRight,
   CircleHelp,
   ExternalLink,
   Filter,
-  Heart,
   Images,
   MapPin,
   MessageCircleMore,
@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import {
   createHotelPaymentOrder,
-  holdHotelBooking,
   getHotelStaticContent,
   getHotelBookingDetails,
   reviewHotelBooking,
@@ -176,14 +175,13 @@ function HotelHeader({ detailModel, onShowMap, onBackToResults, onEditMarkup, ma
       </div>
 
       <div className="hotel-detail-header-row mt-3">
-        <div>
-          <button type="button" className="hotel-inline-link mb-2" onClick={onBackToResults}>
-            {"< Back to results"}
-          </button>
-          <h1 className="hotel-detail-title">{detailModel.name}</h1>
-          {detailModel.starRating ? (
-            <div className="hotel-stars mt-2">{renderStars(detailModel.starRating)}</div>
-          ) : null}
+        <div className="hotel-detail-header-main">
+          <div className="hotel-detail-title-row">
+            <h1 className="hotel-detail-title">{detailModel.name}</h1>
+            {detailModel.starRating ? (
+              <div className="hotel-stars">{renderStars(detailModel.starRating)}</div>
+            ) : null}
+          </div>
           <div className="hotel-detail-address">
             <MapPin size={14} />
             <span>{detailModel.fullAddress || "Address unavailable"}</span>
@@ -193,55 +191,6 @@ function HotelHeader({ detailModel, onShowMap, onBackToResults, onEditMarkup, ma
           </div>
         </div>
 
-        <div className="hotel-detail-actions">
-          <div style={{ position: "relative" }} ref={dropdownRef}>
-            {/* <button
-              type="button"
-              className="hotel-detail-view-btn"
-              onClick={() => setShowViewDropdown(!showViewDropdown)}
-            >
-              <Images size={15} />
-              View
-              <ChevronDown size={15} />
-            </button> */}
-            {showViewDropdown && (
-              <div className="hotel-view-dropdown">
-                <button
-                  type="button"
-                  className="hotel-view-dropdown-item"
-                  onClick={() => {
-                    setShowViewDropdown(false);
-                  }}
-                >
-                  <Check size={14} color={markupEnabled ? "#22a55a" : "transparent"} />
-                  <span>With Markup</span>
-                  <button
-                    type="button"
-                    className="hotel-inline-link"
-                    style={{ marginLeft: "auto" }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEditMarkup();
-                      setShowViewDropdown(false);
-                    }}
-                  >
-                    Edit Markup
-                  </button>
-                </button>
-                <button
-                  type="button"
-                  className="hotel-view-dropdown-item"
-                  onClick={() => {
-                    setShowViewDropdown(false);
-                  }}
-                >
-                  <Check size={14} color={!markupEnabled ? "#22a55a" : "transparent"} />
-                  <span>Without Markup</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
       </div>
     </>
   );
@@ -280,8 +229,11 @@ function HotelBookingSummaryCard({
   option,
   roomSummary,
   onViewDetails,
+  onEditMarkup,
   onBookNow,
   onViewAllRooms,
+  checkIn,
+  checkOut,
   hotelPanRequired,
   hotelPassportRequired,
   reviewLoadingOptionId,
@@ -298,9 +250,9 @@ function HotelBookingSummaryCard({
             <div className="hotel-summary-room">{option.roomName}</div>
             <div className="hotel-summary-subcopy">{roomSummary}</div>
           </div>
-          {/* <button type="button" className="hotel-inline-link" onClick={() => onViewDetails(option)}>
+          <button type="button" className="hotel-inline-link" onClick={() => onViewDetails(option)}>
             View details
-          </button> */}
+          </button>
         </div>
 
         <ul className="hotel-summary-points">
@@ -311,11 +263,19 @@ function HotelBookingSummaryCard({
 
         <div className="hotel-summary-price-row">
           <div>
-            <div className="hotel-nightly mb-1">
-              {option.nightlyPrice ? `${formatMoney(option.nightlyPrice, option.currency)} /night` : "Nightly price unavailable"}
-            </div>
-            <div className="hotel-summary-price">
-              {option.totalPrice ? formatMoney(option.totalPrice, option.currency) : "Price unavailable"}
+            <div className="hotel-summary-price-wrap">
+              <div className="hotel-summary-price">
+                {option.totalPrice ? formatMoney(option.totalPrice, option.currency) : "Price unavailable"}
+              </div>
+              <button
+                type="button"
+                className="hotel-price-edit-btn"
+                onClick={onEditMarkup}
+                aria-label="Edit markup"
+                title="Edit markup"
+              >
+                ✎
+              </button>
             </div>
             <div className="hotel-summary-subcopy mt-1">Total Price for 1 room</div>
           </div>
@@ -345,9 +305,16 @@ function HotelBookingSummaryCard({
       </div>
 
       <div className="hotel-mini-info-card">
-        <div className="d-flex justify-content-between gap-3 flex-wrap">
-          <div className="hotel-summary-subcopy">Check-in policy available in room details</div>
-          <div className="hotel-summary-subcopy">Cancellation policy shown per room</div>
+        <div className="hotel-check-time-row">
+          <div>
+            <span className="hotel-summary-subcopy">Check-in from:</span>{" "}
+            <strong>{checkIn?.beginTime || "Not provided"}</strong>
+            {checkIn?.endTime ? ` - ${checkIn.endTime}` : ""}
+          </div>
+          <div>
+            <span className="hotel-summary-subcopy">Check-out until:</span>{" "}
+            <strong>{checkOut?.beginTime || checkOut?.time || "Not provided"}</strong>
+          </div>
         </div>
       </div>
     </div>
@@ -377,14 +344,79 @@ function HotelAboutSection({ aboutText, headline }) {
   );
 }
 
-function HotelAmenities({ amenities, onViewMore }) {
-  if (!amenities.length) return null;
+function buildHotelAmenityGroups(rawTja = [], normalizedGroups = []) {
+  if (Array.isArray(rawTja) && rawTja.length > 0) {
+    return rawTja
+      .map((group) => ({
+        title: String(group?.catg || "").trim(),
+        items: Array.isArray(group?.am)
+          ? group.am
+              .map((item) => ({
+                id: item?.id || "",
+                name: String(item?.name || "").trim(),
+                subtext: String(item?.subA || "").trim(),
+                icon: item?.icn || "",
+              }))
+              .filter((item) => item.name)
+          : [],
+      }))
+      .filter((group) => group.title && group.items.length > 0);
+  }
+
+  return Array.isArray(normalizedGroups) ? normalizedGroups : [];
+}
+
+function HotelAmenities({ amenityGroups, amenities, rawTja, onViewMore }) {
+  const toAmenityLabel = (value) => {
+    if (typeof value === "string") return value.trim();
+    if (typeof value === "object" && value !== null) {
+      const name = value?.name || value?.label || value?.nm || value?.value || "";
+      const subtext = value?.subtext || value?.subA || "";
+      const text = [name, subtext ? `(${subtext})` : ""].filter(Boolean).join(" ").trim();
+      return text && text !== "[object Object]" ? text : "";
+    }
+    const fallback = String(value || "").trim();
+    return fallback && fallback !== "[object Object]" ? fallback : "";
+  };
+
+  const normalizedGroups = buildHotelAmenityGroups(rawTja, amenityGroups);
+
+  const groupedItems = Array.isArray(normalizedGroups)
+    ? normalizedGroups.flatMap((group) =>
+        (Array.isArray(group?.items) ? group.items : [])
+          .map((item) => ({
+            label: toAmenityLabel(item),
+            icon: item?.icon || "",
+            id: item?.id || "",
+          }))
+          .filter((item) => item.label),
+      )
+    : [];
+
+  const uniquePreviewItems = [];
+  const previewSeen = new Set();
+
+  groupedItems.forEach((item) => {
+    const key = item.label.toLowerCase();
+    if (previewSeen.has(key)) return;
+    previewSeen.add(key);
+    uniquePreviewItems.push(item);
+  });
+
+  const previewItems = uniquePreviewItems.length > 0
+    ? uniquePreviewItems.slice(0, 5)
+    : (Array.isArray(amenities) ? amenities : [])
+        .map((amenity) => ({ label: toAmenityLabel(amenity), icon: "", id: "" }))
+        .filter((item) => item.label)
+        .slice(0, 5);
+
+  if (!previewItems.length) return null;
 
   return (
     <section className="hotel-detail-section">
       <div className="d-flex justify-content-between gap-3 align-items-center mb-3">
         <h4 className="mb-0">Amenities</h4>
-        {amenities.length > 6 ? (
+        {(amenities.length > 5 || normalizedGroups?.length > 0) ? (
           <button type="button" className="hotel-inline-link" onClick={onViewMore}>
             View more
           </button>
@@ -392,24 +424,12 @@ function HotelAmenities({ amenities, onViewMore }) {
       </div>
 
       <div className="hotel-detail-amenities">
-        {amenities.slice(0, 6).map((amenity, index) => {
-          // Convert amenity to string safely
-          let amenityText = "";
-          if (typeof amenity === "string") {
-            amenityText = amenity;
-          } else if (typeof amenity === "object" && amenity !== null) {
-            amenityText = amenity.name || amenity.nm || amenity.label || String(amenity);
-          } else {
-            amenityText = String(amenity || "");
-          }
-          
-          // Skip if empty or is still an object string
-          if (!amenityText || amenityText === "[object Object]") return null;
-          
+        {previewItems.map((item, index) => {
+          if (!item?.label) return null;
           return (
-            <span key={`amenity-${index}-${amenityText}`} className="hotel-detail-amenity">
-              <Check size={14} color="#ed1173" />
-              {amenityText}
+            <span key={`amenity-${index}-${item.label}`} className="hotel-detail-amenity">
+              {item.icon ? <img src={item.icon} alt="" className="hotel-detail-amenity-icon" /> : <Check size={14} color="#ed1173" />}
+              {item.label}
             </span>
           );
         })}
@@ -525,10 +545,9 @@ function MarkupModal({ show, onHide, onUpdate }) {
   const [markupValue, setMarkupValue] = useState("");
 
   const handleUpdate = () => {
-    if (markupValue && !isNaN(markupValue)) {
-      onUpdate(markupType, parseFloat(markupValue));
-      onHide();
-    }
+    if (markupValue === "" || isNaN(markupValue)) return;
+    onUpdate(markupType, parseFloat(markupValue));
+    onHide();
   };
 
   return (
@@ -692,13 +711,12 @@ const mergeAmenityLists = (...amenityLists) => {
     });
 };
 
-function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onViewDetails, reviewLoadingOptionId, image, bedSummary, guestSummary, amenities, onViewPolicy, onViewMoreAmenities }) {
+function RoomTypeGroup({ group, selectedOptionId, onSelectRoom, onViewDetails, reviewLoadingOptionId, onViewPolicy, onViewMoreAmenities }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  
-  // Get all images from the first option (they should all have the same room images)
-  const images = options[0]?.images || [];
-  const activeImage = images[activeImageIndex] || image;
-  const mergedAmenities = mergeAmenityLists(amenities, ...options.map((option) => option?.amenities));
+
+  const images = group.images || [];
+  const activeImage = images[activeImageIndex] || group.image;
+  const mergedAmenities = mergeAmenityLists(group.amenities, ...group.options.map((option) => option?.amenities));
 
   const handlePrevImage = (event) => {
     event.stopPropagation();
@@ -711,22 +729,23 @@ function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onVi
   };
   
   const handleViewMoreAmenities = () => {
-    if (onViewMoreAmenities && selectedOptionInGroup) {
+    if (onViewMoreAmenities) {
       onViewMoreAmenities({
-        ...selectedOptionInGroup,
+        ...(selectedOptionInGroup || {}),
+        roomName: group.roomName,
         amenities: mergedAmenities,
       });
     }
   };
-  
-  const selectedOptionInGroup = options.find((option) => option.id === selectedOptionId) || options[0] || null;
+
+  const selectedOptionInGroup = group.options.find((option) => option.id === selectedOptionId) || group.primaryOption || null;
 
   return (
     <div className="hotel-room-type-group">
       <div className="hotel-room-type-left">
         <div className="hotel-room-thumb">
           {activeImage ? (
-            <img src={typeof activeImage === 'string' ? activeImage : activeImage.url} alt={roomName} />
+            <img src={typeof activeImage === 'string' ? activeImage : activeImage.url} alt={group.roomName} />
           ) : (
             <div className="hotel-card-image hotel-card-image--empty">Image not available</div>
           )}
@@ -759,16 +778,16 @@ function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onVi
         </div>
 
         <div className="hotel-room-feature-pills">
-          {bedSummary ? (
+          {group.bedSummary ? (
             <span className="hotel-room-feature-pill">
               <BedDouble size={13} />
-              {bedSummary}
+              {group.bedSummary}
             </span>
           ) : null}
-          {guestSummary ? (
+          {group.guestSummary ? (
             <span className="hotel-room-feature-pill">
               <UserRound size={13} />
-              {guestSummary}
+              {group.guestSummary}
             </span>
           ) : null}
         </div>
@@ -801,17 +820,24 @@ function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onVi
       </div>
 
       <div className="hotel-room-type-right">
-        {options.map((option) => (
-          <RoomOptionCard
-            key={option.id}
-            option={option}
-            isSelected={selectedOptionId === option.id}
-            onSelectRoom={onSelectRoom}
-            onViewDetails={onViewDetails}
-            reviewLoadingOptionId={reviewLoadingOptionId}
-            onViewPolicy={onViewPolicy}
-          />
-        ))}
+        {group.options.length > 0 ? (
+          group.options.map((option) => (
+            <RoomOptionCard
+              key={option.id}
+              option={option}
+              isSelected={selectedOptionId === option.id}
+              onSelectRoom={onSelectRoom}
+              onViewDetails={onViewDetails}
+              reviewLoadingOptionId={reviewLoadingOptionId}
+              onViewPolicy={onViewPolicy}
+            />
+          ))
+        ) : (
+          <div className="hotel-room-option-compact hotel-room-option-unavailable">
+            <div className="hotel-room-option-title">{group.roomName}</div>
+            <div className="hotel-summary-subcopy">This room metadata is available, but no sellable option is currently returned for your dates.</div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -857,7 +883,7 @@ function RoomOptionCard({
             className="hotel-card-cta"
             style={isSelected ? { boxShadow: "0 0 0 3px rgba(237, 17, 115, 0.18)" } : undefined}
             onClick={() => onSelectRoom(option)}
-            disabled={Boolean(reviewLoadingOptionId)}
+            disabled={Boolean(reviewLoadingOptionId) && !isSelected}
           >
             {isReviewing ? "Reviewing..." : isSelected ? "Selected" : "Select Room"}
           </button>
@@ -877,8 +903,8 @@ function RoomOptionCard({
 }
 
 function RoomTypesSection({
-  options,
-  filteredOptions,
+  roomTypeGroups,
+  filteredGroups,
   roomSearch,
   setRoomSearch,
   filterState,
@@ -895,34 +921,13 @@ function RoomTypesSection({
   detailLoading,
   reviewLoadingOptionId,
 }) {
-  // Group options by room name
-  const groupedRooms = useMemo(() => {
-    const groups = {};
-    filteredOptions.forEach((option) => {
-      const key = option.roomName;
-      if (!groups[key]) {
-        groups[key] = {
-          roomName: key,
-          image: option.image,
-          bedSummary: option.bedSummary,
-          guestSummary: option.guestSummary,
-          amenities: [],
-          options: [],
-        };
-      }
-      groups[key].amenities = mergeAmenityLists(groups[key].amenities, option.amenities);
-      groups[key].options.push(option);
-    });
-    return Object.values(groups);
-  }, [filteredOptions]);
-
   return (
     <div className="hotel-room-section-card" ref={roomSectionRef}>
       <div className="hotel-room-section-head">
         <div>
           <div className="hotel-room-section-title">Room types</div>
           <div className="hotel-summary-subcopy">
-            {`Showing results ${filteredOptions.length} of ${options.length} room options`}
+            {`Showing results ${filteredGroups.length} of ${roomTypeGroups.length} room options`}
           </div>
         </div>
 
@@ -945,32 +950,27 @@ function RoomTypesSection({
         </div>
       </div>
 
-      {detailLoading && options.length === 0 ? (
+      {detailLoading && roomTypeGroups.length === 0 ? (
         <div style={{ padding: 22 }}>
           <RoomOptionSkeleton />
           <RoomOptionSkeleton />
         </div>
-      ) : filteredOptions.length === 0 ? (
+      ) : filteredGroups.length === 0 ? (
         <div className="hotel-empty m-4">
           <div className="hotel-empty-title">No room options match these filters</div>
           <div className="hotel-empty-copy">Try a different meal plan or clear the room search.</div>
         </div>
       ) : (
-        groupedRooms.map((group) => (
+        filteredGroups.map((group) => (
           <RoomTypeGroup
-            key={group.roomName}
-            roomName={group.roomName}
-            options={group.options}
+            key={group.groupKey}
+            group={group}
             selectedOptionId={selectedOptionId}
             onSelectRoom={onSelectRoom}
             onViewDetails={onViewDetails}
             onViewPolicy={onViewPolicy}
             onViewMoreAmenities={onViewMoreAmenities}
             reviewLoadingOptionId={reviewLoadingOptionId}
-            image={group.image}
-            bedSummary={group.bedSummary}
-            guestSummary={group.guestSummary}
-            amenities={group.amenities}
           />
         ))
       )}
@@ -1020,6 +1020,7 @@ function HotelDetailsPage({
   detailResponse,
   detailLoading,
   initialPayload,
+  searchResponse,
   initialSuggestion,
   onBackToResults,
   activeOption,
@@ -1038,6 +1039,7 @@ function HotelDetailsPage({
     mealPlan: "",
   });
   const [showAmenitiesModal, setShowAmenitiesModal] = useState(false);
+  const [showMapUnavailableModal, setShowMapUnavailableModal] = useState(false);
   const [showPolicyModal, setShowPolicyModal] = useState(false);
   const [selectedPolicyOption, setSelectedPolicyOption] = useState(null);
   const [showMarkupModal, setShowMarkupModal] = useState(false);
@@ -1086,6 +1088,69 @@ function HotelDetailsPage({
     [detailResponse, initialPayload, initialSuggestion, selectedHotel, staticContentResponse],
   );
 
+  const markedDetailModel = useMemo(() => {
+    const applyMarkup = (amount) => {
+      const base = Number(amount);
+      if (!Number.isFinite(base) || base <= 0 || !markupEnabled) return amount;
+      const markup = Number(markupValue);
+      if (!Number.isFinite(markup) || markup < 0) return amount;
+
+      if (markupType === "percentage") {
+        return base * (1 + markup / 100);
+      }
+      return base + markup;
+    };
+
+    const nextPricedOptions = (detailModel.pricedOptions || []).map((option) => ({
+      ...option,
+      totalPrice: applyMarkup(option.totalPrice),
+      nightlyPrice: applyMarkup(option.nightlyPrice),
+    }));
+
+    const pricedById = new Map(nextPricedOptions.map((option) => [option.id, option]));
+
+    const nextRoomTypeGroups = (detailModel.roomTypeGroups || []).map((group) => {
+      const nextOptions = (group.options || []).map((option) => {
+        const mapped = pricedById.get(option.id);
+        return mapped
+          ? { ...option, totalPrice: mapped.totalPrice, nightlyPrice: mapped.nightlyPrice }
+          : {
+              ...option,
+              totalPrice: applyMarkup(option.totalPrice),
+              nightlyPrice: applyMarkup(option.nightlyPrice),
+            };
+      });
+
+      const nextPrimary =
+        nextOptions.find((option) => option.id === group.primaryOption?.id) ||
+        nextOptions[0] ||
+        null;
+
+      return {
+        ...group,
+        options: nextOptions,
+        primaryOption: nextPrimary,
+      };
+    });
+
+    const nextDefaultBookable =
+      nextPricedOptions.find((option) => option.id === detailModel.defaultBookableOption?.id) ||
+      (detailModel.defaultBookableOption
+        ? {
+            ...detailModel.defaultBookableOption,
+            totalPrice: applyMarkup(detailModel.defaultBookableOption.totalPrice),
+            nightlyPrice: applyMarkup(detailModel.defaultBookableOption.nightlyPrice),
+          }
+        : null);
+
+    return {
+      ...detailModel,
+      pricedOptions: nextPricedOptions,
+      roomTypeGroups: nextRoomTypeGroups,
+      defaultBookableOption: nextDefaultBookable,
+    };
+  }, [detailModel, markupEnabled, markupType, markupValue]);
+
   const reviewPayloadFields = useMemo(
     () =>
       getReviewPayloadFields(
@@ -1093,19 +1158,36 @@ function HotelDetailsPage({
         selectedHotel,
         detailModel.meta,
         initialPayload,
-        detailResponse || null,
+        searchResponse || detailResponse || null,
       ),
-    [detailModel.hotelInfo, detailModel.meta, selectedHotel, initialPayload, detailResponse],
+    [detailModel.hotelInfo, detailModel.meta, selectedHotel, initialPayload, searchResponse, detailResponse],
   );
 
   useEffect(() => {
-    if (detailModel.cheapestOption) {
-      setSelectedOptionId((prev) => prev || detailModel.cheapestOption.id);
+    if (detailModel.defaultBookableOption) {
+      setSelectedOptionId((prev) => prev || detailModel.defaultBookableOption.id);
     }
-  }, [detailModel.cheapestOption]);
+  }, [detailModel.defaultBookableOption]);
 
   useEffect(() => {
-    const searchId = reviewPayloadFields.searchId;
+    const searchIdCandidates = [
+      reviewPayloadFields.searchId,
+      searchResponse?.searchId,
+      searchResponse?.data?.searchId,
+      searchResponse?.metaData?.searchId,
+      searchResponse?.data?.metaData?.searchId,
+      searchResponse?.searchResult?.searchId,
+      searchResponse?.data?.searchResult?.searchId,
+      detailResponse?.searchId,
+      detailResponse?.metaData?.searchId,
+      detailResponse?.data?.metaData?.searchId,
+      initialPayload?.searchId,
+      initialPayload?.searchQuery?.searchId,
+      selectedHotel?.raw?.searchId,
+    ]
+      .filter(Boolean)
+      .map((value) => String(value));
+    const searchId = searchIdCandidates[0] || "";
     const tjHotelId = reviewPayloadFields.tjHotelId || detailModel.id;
     if (!searchId || !tjHotelId) return undefined;
 
@@ -1116,7 +1198,25 @@ function HotelDetailsPage({
     })
       .then((response) => {
         if (active) {
-          setStaticContentResponse(Array.isArray(response) ? response : []);
+          const objectEntries = response && typeof response === "object"
+            ? Object.keys(response)
+                .filter((key) => /^\d+$/.test(key))
+                .sort((a, b) => Number(a) - Number(b))
+                .map((key) => response[key])
+                .filter(Boolean)
+            : [];
+          const resolvedResponse = Array.isArray(response)
+            ? response
+            : Array.isArray(response?.data)
+              ? response.data
+              : Array.isArray(response?.result)
+                ? response.result
+                : Array.isArray(response?.payload)
+                  ? response.payload
+                  : Array.isArray(response?.data?.result)
+                    ? response.data.result
+                    : objectEntries;
+          setStaticContentResponse(resolvedResponse);
         }
       })
       .catch((error) => {
@@ -1131,10 +1231,10 @@ function HotelDetailsPage({
 
   const selectedOption = useMemo(
     () =>
-      detailModel.options.find((option) => option.id === selectedOptionId) ||
-      detailModel.cheapestOption ||
+      markedDetailModel.pricedOptions.find((option) => option.id === selectedOptionId) ||
+      markedDetailModel.defaultBookableOption ||
       null,
-    [detailModel.cheapestOption, detailModel.options, selectedOptionId],
+    [markedDetailModel.defaultBookableOption, markedDetailModel.pricedOptions, selectedOptionId],
   );
 
   const roomSummary = useMemo(() => {
@@ -1144,27 +1244,54 @@ function HotelDetailsPage({
     return `${totalRooms} Room${totalRooms > 1 ? "s" : ""} for ${adults || 1} Adult${adults === 1 ? "" : "s"}`;
   }, [initialPayload]);
 
-  const mealPlans = useMemo(() => getMealPlanOptions(detailModel.options), [detailModel.options]);
+  const mealPlans = useMemo(() => getMealPlanOptions(markedDetailModel.pricedOptions), [markedDetailModel.pricedOptions]);
 
-  const filteredOptions = useMemo(() => {
+  const filteredGroups = useMemo(() => {
     const query = roomSearch.trim().toLowerCase();
-    return detailModel.options.filter((option) => {
-      if (query) {
-        const haystack = [option.roomName, option.supplierRoomType, option.view]
+    const hasOptionOnlyFilters = filterState.refundable || filterState.breakfastIncluded || filterState.panOptional || filterState.mealPlan;
+
+    return markedDetailModel.roomTypeGroups
+      .map((group) => {
+        const optionMatches = group.options.filter((option) => {
+          if (filterState.refundable && !option.refundable) return false;
+          if (filterState.breakfastIncluded && !option.mealBasis.toLowerCase().includes("breakfast")) return false;
+          if (filterState.panOptional && option.panRequired) return false;
+          if (filterState.mealPlan && option.mealBasis !== filterState.mealPlan) return false;
+          return true;
+        });
+
+        const haystack = [
+          group.roomName,
+          group.supplierRoomType,
+          group.bedSummary,
+          group.guestSummary,
+          ...(group.amenities || []),
+        ]
           .filter(Boolean)
           .join(" ")
           .toLowerCase();
-        if (!haystack.includes(query)) return false;
-      }
 
-      if (filterState.refundable && !option.refundable) return false;
-      if (filterState.breakfastIncluded && !option.mealBasis.toLowerCase().includes("breakfast")) return false;
-      if (filterState.panOptional && option.panRequired) return false;
-      if (filterState.mealPlan && option.mealBasis !== filterState.mealPlan) return false;
+        if (query && !haystack.includes(query)) {
+          return null;
+        }
 
-      return true;
-    });
-  }, [detailModel.options, filterState, roomSearch]);
+        if (optionMatches.length > 0) {
+          return {
+            ...group,
+            options: optionMatches,
+            primaryOption: optionMatches[0] || null,
+            isBookable: true,
+          };
+        }
+
+        if (!group.options.length && !hasOptionOnlyFilters) {
+          return group;
+        }
+
+        return null;
+      })
+      .filter(Boolean);
+  }, [markedDetailModel.roomTypeGroups, filterState, roomSearch]);
 
   const shareHref = useMemo(() => {
     const currentUrl = typeof window !== "undefined" ? window.location.href : "";
@@ -1172,8 +1299,7 @@ function HotelDetailsPage({
   }, [detailModel.name]);
 
   const handleShowMap = () => {
-    const section = document.getElementById("hotel-map");
-    if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+    setShowMapUnavailableModal(true);
   };
 
   const handleViewPolicy = async (option) => {
@@ -1332,6 +1458,7 @@ function HotelDetailsPage({
   };
 
   const handleTravellerFieldChange = (roomIndex, travellerIndex, field, value) => {
+    const normalizedValue = field === "pan" ? String(value || "").toUpperCase() : value;
     setBookingForm((current) => {
       if (!current) return current;
       const roomTravellerInfo = current.roomTravellerInfo.map((room, currentRoomIndex) => {
@@ -1340,7 +1467,7 @@ function HotelDetailsPage({
           ...room,
           travellerInfo: room.travellerInfo.map((traveller, currentTravellerIndex) =>
             currentTravellerIndex === travellerIndex
-              ? { ...traveller, [field]: value }
+              ? { ...traveller, [field]: normalizedValue }
               : traveller,
           ),
         };
@@ -1368,6 +1495,50 @@ function HotelDetailsPage({
 
   const handleTermsChange = (checked) => {
     setBookingForm((current) => (current ? { ...current, termsAccepted: checked } : current));
+  };
+
+  const handleOpenMarkupModal = async () => {
+    const previousPage = typeof document !== "undefined" ? document.referrer || "" : "";
+    let previousPath = "";
+    if (previousPage) {
+      try {
+        previousPath = new URL(previousPage).pathname;
+      } catch {
+        previousPath = "";
+      }
+    }
+
+    const currentPage = typeof window !== "undefined" ? window.location.href : "";
+    const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+
+    try {
+      await trackTripjackAnalyticsEvent({
+        event: "Hotel_Markup_CTA",
+        properties: {
+          User_Role: "AGENT",
+          Product: "HOTEL",
+          Hotel_Name: detailModel?.name || "N/A",
+          City_Name: String(detailModel?.cityName || "").toUpperCase(),
+          City_Id: String(detailModel?.cityId || ""),
+          Unica_Id: String(detailModel?.id || ""),
+          Search_Id: reviewPayloadFields?.searchId || "",
+          Current_Page: currentPage,
+          Current_Path: currentPath,
+          Previous_Page: previousPage,
+          Previous_Path: previousPath,
+          Date: new Date().toLocaleDateString("en-GB"),
+          TimeStamp: new Date().toISOString(),
+          Agent_Id: "313144",
+          User_Email: "nahatarishabh23@gmail.com",
+        },
+      });
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error("Failed to track Hotel_Markup_CTA event:", error);
+      }
+    }
+
+    setShowMarkupModal(true);
   };
 
   const pollTripjackBookingStatus = async (bookingId) => {
@@ -1510,44 +1681,6 @@ function HotelDetailsPage({
     };
   };
 
-  const handleProceedToHold = async () => {
-    if (!reviewResponse?.bookingId || !bookingForm) {
-      toast.error("Booking review data is missing. Please review the room again.");
-      return;
-    }
-
-    if (!isAuthenticated || !user?.id) {
-      toast.error("Please login before booking a hotel.");
-      navigate("/customer-login");
-      return;
-    }
-
-    const validationErrors = validateBookingForm(bookingForm, reviewResponse);
-    if (validationErrors.length > 0) {
-      toast.error(validationErrors[0]);
-      return;
-    }
-
-    const payload = buildBookingPayload({ includePayment: false });
-    setBookingSubmitting(true);
-    try {
-      const response = await holdHotelBooking(payload);
-      const heldBookingId = response?.bookingId || payload.bookingId;
-      toast.success("Booking held successfully.");
-      setShowBookingFormModal(false);
-      navigate(`/hotels/booking/${heldBookingId}`);
-    } catch (error) {
-      console.error("Unable to hold TripJack booking", error);
-      toast.error(
-        error?.response?.data?.error ||
-          error?.message ||
-          "Unable to hold booking. Please try again.",
-      );
-    } finally {
-      setBookingSubmitting(false);
-    }
-  };
-
   const handleProceedToBook = async () => {
     if (!reviewResponse?.bookingId || !bookingForm) {
       toast.error("Booking review data is missing. Please review the room again.");
@@ -1563,6 +1696,18 @@ function HotelDetailsPage({
     const validationErrors = validateBookingForm(bookingForm, reviewResponse);
     if (validationErrors.length > 0) {
       toast.error(validationErrors[0]);
+      return;
+    }
+
+    // Hard-stop: PAN must be provided for all adult travellers before opening Razorpay.
+    const adultTravellers = (Array.isArray(bookingForm?.roomTravellerInfo) ? bookingForm.roomTravellerInfo : [])
+      .flatMap((room) => (Array.isArray(room?.travellerInfo) ? room.travellerInfo : []))
+      .filter((traveller) => traveller?.pt === "ADULT");
+    const invalidPanIndex = adultTravellers.findIndex(
+      (traveller) => !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(String(traveller?.pan || "").trim().toUpperCase()),
+    );
+    if (invalidPanIndex !== -1) {
+      toast.error("Enter a valid PAN for all adult travellers before proceeding.");
       return;
     }
 
@@ -1900,7 +2045,7 @@ function HotelDetailsPage({
   };
 
   return (
-    <div className="hotel-list-page">
+    <div className="hotel-list-page hotel-detail-page">
       <div className="hotel-shell">
         <HotelSearchBarEditable
           payload={initialPayload}
@@ -1918,7 +2063,6 @@ function HotelDetailsPage({
             onContactFieldChange={handleContactFieldChange}
             onTermsChange={handleTermsChange}
             onSubmit={handleProceedToBook}
-            onHoldSubmit={handleProceedToHold}
             bookingSubmitting={bookingSubmitting}
             formatMoney={formatMoney}
             formatDate={formatDate}
@@ -1932,23 +2076,31 @@ function HotelDetailsPage({
                 detailModel={detailModel}
                 onShowMap={handleShowMap}
                 onBackToResults={onBackToResults}
-                onEditMarkup={() => setShowMarkupModal(true)}
+                onEditMarkup={handleOpenMarkupModal}
                 markupEnabled={markupEnabled}
               />
               
               <div className="hotel-detail-overview">
                 <div>
-                  <HotelGallery images={detailModel.images} hotelName={detailModel.name} onOpenGallery={handleOpenGallery} />
+                  <HotelGallery images={detailModel.contentImages} hotelName={detailModel.name} onOpenGallery={handleOpenGallery} />
                   <HotelAboutSection aboutText={detailModel.aboutText} headline={detailModel.headline} />
-                  <HotelAmenities amenities={detailModel.amenities} onViewMore={handleOpenAmenitiesModal} />
+                  <HotelAmenities
+                    amenityGroups={detailModel.contentAmenityGroups}
+                    amenities={detailModel.contentAmenities}
+                    rawTja={detailModel.staticHotel?.tja}
+                    onViewMore={handleOpenAmenitiesModal}
+                  />
                 </div>
 
                 <HotelBookingSummaryCard
                   option={selectedOption}
                   roomSummary={roomSummary}
-                  onViewDetails={(option) => handleSelectRoom(option, true)}
+                  onViewDetails={() => roomSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                  onEditMarkup={handleOpenMarkupModal}
                   onBookNow={(option) => handleReviewRoomOption(option)}
                   onViewAllRooms={() => roomSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                  checkIn={detailModel.contentCheckIn}
+                  checkOut={detailModel.contentCheckOut}
                   hotelPanRequired={detailModel.panRequired}
                   hotelPassportRequired={detailModel.passportRequired}
                   reviewLoadingOptionId={reviewLoadingOptionId}
@@ -1956,35 +2108,16 @@ function HotelDetailsPage({
               </div>
             </div>
 
-            <div className="hotel-detail-card" id="hotel-map">
-              <div className="d-flex justify-content-between gap-3 align-items-center mb-3">
-                <h4 className="mb-0">Location</h4>
-                <a className="hotel-inline-link" href={detailModel.mapInfo.openMapsHref} target="_blank" rel="noreferrer">
-                  Open in Google Maps
-                </a>
-              </div>
-              <iframe
-                src={detailModel.mapInfo.mapSrc}
-                width="100%"
-                height={360}
-                style={{ border: 0, borderRadius: 16 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Hotel map"
-              />
-            </div>
-
             <RoomTypesSection
-              options={detailModel.options}
-              filteredOptions={filteredOptions}
+              roomTypeGroups={markedDetailModel.roomTypeGroups}
+              filteredGroups={filteredGroups}
               roomSearch={roomSearch}
               setRoomSearch={setRoomSearch}
               filterState={filterState}
               setFilterState={setFilterState}
               mealPlans={mealPlans}
               selectedOptionId={selectedOptionId}
-              onSelectRoom={(option) => handleReviewRoomOption(option)}
+              onSelectRoom={handleSelectRoom}
               onViewDetails={handleOpenRoomAmenitiesModal}
               onViewPolicy={handleViewPolicy}
               onViewMoreAmenities={handleOpenRoomAmenitiesModal}
@@ -2017,6 +2150,13 @@ function HotelDetailsPage({
         )}
       </div>
 
+      <Modal show={showMapUnavailableModal} onHide={() => setShowMapUnavailableModal(false)} centered size="sm">
+        <Modal.Header closeButton>
+          <Modal.Title>Map</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Currently location is not available.</Modal.Body>
+      </Modal>
+
       <Modal show={showAmenitiesModal} onHide={() => setShowAmenitiesModal(false)} centered size="lg">
         <div className="modal-content rounded-4">
           <div className="modal-header border-0">
@@ -2027,16 +2167,19 @@ function HotelDetailsPage({
             <button type="button" className="btn-close" onClick={() => setShowAmenitiesModal(false)} />
           </div>
           <div className="modal-body">
-            {detailModel.amenityGroups?.length ? (
+            {buildHotelAmenityGroups(detailModel.staticHotel?.tja, detailModel.contentAmenityGroups)?.length ? (
               <div className="hotel-amenities-modal-groups">
-                {detailModel.amenityGroups.map((group) => (
+                {buildHotelAmenityGroups(detailModel.staticHotel?.tja, detailModel.contentAmenityGroups).map((group) => (
                   <div key={group.title} className="hotel-amenities-modal-group">
                     <div className="hotel-amenities-modal-title">{group.title}</div>
                     <div className="hotel-amenities-modal-grid">
                       {group.items.map((item) => (
                         <div key={`${group.title}-${item.id}-${item.name}`} className="hotel-amenities-modal-item">
-                          <Check size={14} color="#6d7483" />
-                          <span>{item.subtext ? `${item.name} (${item.subtext})` : item.name}</span>
+                          {item.icon ? <img src={item.icon} alt="" className="hotel-detail-amenity-icon" /> : <Check size={14} color="#6d7483" />}
+                          <span>{[
+                            typeof item?.name === "string" ? item.name.trim() : String(item?.name || "").trim(),
+                            item?.subtext ? `(${String(item.subtext).trim()})` : "",
+                          ].filter(Boolean).join(" ")}</span>
                         </div>
                       ))}
                     </div>
@@ -2045,7 +2188,7 @@ function HotelDetailsPage({
               </div>
             ) : (
               <div className="hotel-detail-amenities">
-                {detailModel.amenities.map((amenity, index) => {
+                {detailModel.contentAmenities.map((amenity, index) => {
                   let amenityText = "";
                   if (typeof amenity === "string") {
                     amenityText = amenity;
@@ -2347,23 +2490,45 @@ function HotelDetailsPage({
                   <div className="hotel-card-image hotel-card-image--empty">Image not available</div>
                 )}
                 {activeOption.images?.length > 1 ? (
-                  <button
-                    type="button"
-                    className="hotel-room-modal-gallery-next"
-                    onClick={() => {
-                      setActiveOption((current) => {
-                        if (!current?.images?.length) return current;
-                        const rotatedImages = [...current.images.slice(1), current.images[0]];
-                        return {
-                          ...current,
-                          images: rotatedImages,
-                          image: rotatedImages[0]?.url || current.image,
-                        };
-                      });
-                    }}
-                  >
-                    <ChevronRight size={18} />
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      className="hotel-room-modal-gallery-prev"
+                      onClick={() => {
+                        setActiveOption((current) => {
+                          if (!current?.images?.length) return current;
+                          const rotatedImages = [
+                            current.images[current.images.length - 1],
+                            ...current.images.slice(0, -1),
+                          ];
+                          return {
+                            ...current,
+                            images: rotatedImages,
+                            image: rotatedImages[0]?.url || current.image,
+                          };
+                        });
+                      }}
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    <button
+                      type="button"
+                      className="hotel-room-modal-gallery-next"
+                      onClick={() => {
+                        setActiveOption((current) => {
+                          if (!current?.images?.length) return current;
+                          const rotatedImages = [...current.images.slice(1), current.images[0]];
+                          return {
+                            ...current,
+                            images: rotatedImages,
+                            image: rotatedImages[0]?.url || current.image,
+                          };
+                        });
+                      }}
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </>
                 ) : null}
               </div>
               <div className="hotel-room-modal-meta">

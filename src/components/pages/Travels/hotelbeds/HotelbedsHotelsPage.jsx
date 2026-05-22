@@ -555,6 +555,7 @@ const trackSortAnalyticsEvent = async (sortOrder, searchPayload, searchResponse,
 const buildFilterPayload = (searchPayload, appliedFilters, searchResponse, sortOrder) => {
   const { hotelName: _baseHotelName, ...baseFilters } = searchPayload?.appliedFilters || {};
   const { hotelName: _nextHotelName, ...nextFilters } = appliedFilters || {};
+  const resolvedSearchId = extractSearchId(searchResponse) || searchPayload?.searchId || "";
 
   return {
     ...searchPayload,
@@ -562,7 +563,7 @@ const buildFilterPayload = (searchPayload, appliedFilters, searchResponse, sortO
       ...baseFilters,
       ...nextFilters,
     },
-    searchId: searchResponse?.searchId || searchPayload?.searchId || "",
+    searchId: resolvedSearchId,
     correlationId: searchPayload?.correlationId || createCorrelationId(),
     sortOrder: mapSortOrderToAPI(sortOrder),
   };
@@ -963,7 +964,7 @@ function ResultHeader({
             className={`hotel-favorites-btn ${favoritesOnly ? "active" : ""}`}
             onClick={() => setFavoritesOnly((prev) => !prev)}
           >
-            ❤️ View Favourites
+            View Favourites
           </button>
         </div>
       </div>
@@ -1579,7 +1580,7 @@ export default function HotelbedsHotelsPage() {
   }, [hotelNameDraft]);
 
   useEffect(() => {
-    if (!activePayload) return undefined;
+    if (!activePayload || hotelId) return undefined;
 
     let active = true;
     if (filterGroups.length === 0) {
@@ -1601,7 +1602,7 @@ export default function HotelbedsHotelsPage() {
     return () => {
       active = false;
     };
-  }, [activePayload, initialResponse, nonTextAppliedFiltersKey, sortOrder, filterGroups.length]);
+  }, [activePayload, hotelId, initialResponse, nonTextAppliedFiltersKey, sortOrder, filterGroups.length]);
 
   useEffect(() => {
     if (!activePayload || hotelId) return undefined;
@@ -1824,6 +1825,7 @@ export default function HotelbedsHotelsPage() {
         detailResponse={detailResponse}
         detailLoading={detailLoading}
         initialPayload={activePayload}
+        searchResponse={searchResponse || initialResponse}
         initialSuggestion={activeSuggestion}
         onBackToResults={() => navigate("/hotels", { state: location.state })}
         activeOption={activeOption}
@@ -1835,7 +1837,7 @@ export default function HotelbedsHotelsPage() {
   }
 
   return (
-    <div className="hotel-list-page">
+    <div className="hotel-list-page hotel-results-compact">
       <div className="hotel-search-bar-container">
         <HotelSearchBar
           payload={activePayload}
@@ -1912,7 +1914,7 @@ export default function HotelbedsHotelsPage() {
               className={`favorites-btn ${favoritesOnly ? "active" : ""}`}
               onClick={() => setFavoritesOnly((prev) => !prev)}
             >
-              ❤️ View Favourites
+              View Favourites
             </button>
           </div>
           </div>
@@ -1949,7 +1951,7 @@ export default function HotelbedsHotelsPage() {
             </aside>
 
             <main className="hotel-results">
-              <div className="section-title">Popular in {destinationName}</div>
+              <div className="section-title">Property Searched</div>
               
               {resultsError ? (
                 <ErrorState
