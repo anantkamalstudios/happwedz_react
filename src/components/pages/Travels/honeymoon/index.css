@@ -1004,7 +1004,7 @@
 }
 .flight-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
 .flight-card-selected { border-left-color: #ed1173; box-shadow: 0 2px 12px rgba(237,17,115,0.07); }
-.flight-card-main { display: flex; align-items: center; gap: 12px; }
+.flight-card-main { display: flex; align-items: flex-start; gap: 12px; overflow: hidden; }
 .fc-airline { width: 160px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; }
 .fc-airline-logo { width: 28px; height: 28px; object-fit: contain; border-radius: 4px; }
 .fc-airline-initials { width: 28px; height: 28px; border-radius: 4px; background: #ed1173; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -1021,11 +1021,11 @@
 .fc-line::after { content: '▶'; position: absolute; right: -6px; top: -7px; font-size: 10px; color: #aaa; }
 .fc-stops-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; background: #e6f4ea; color: #137333; font-weight: 600; }
 .fc-stops-badge.has-stops { background: #fff3e0; color: #e65100; }
-.fc-fares { width: 300px; flex-shrink: 0; }
-.fc-fares .fare-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 12px; justify-content: flex-start; }
+.fc-fares { width: 360px; max-width: 360px; min-width: 300px; flex-shrink: 0; overflow: hidden; }
+.fc-fares .fare-row { display: flex; align-items: center; gap: 6px; padding: 3px 6px; font-size: 12px; justify-content: flex-start; border-radius: 4px; }
 .fc-fares .fare-row-selected { background: #fff4fa; border-radius: 4px; }
 .fc-fares .fare-bullet { color: #ed1173; font-size: 10px; flex-shrink: 0; }
-.fc-fares .fare-price { font-size: 13px; font-weight: 700; color: #ed1173; min-width: 80px; }
+.fc-fares .fare-price { font-size: 13px; font-weight: 700; color: #ed1173; min-width: 86px; }
 .fc-fares .fare-edit-icon { color: #bbb; cursor: pointer; flex-shrink: 0; }
 .fc-fares .fare-edit-icon:hover { color: #ed1173; }
 .fc-fares .fare-badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
@@ -1035,7 +1035,7 @@
 .badge-promo { background: #fce8e6; color: #c5221f; }
 .badge-corporate { background: #e0f2fe; color: #0277bd; }
 .badge-flexi { background: #fff8e1; color: #f57f17; }
-.fc-fares .fare-cabin-text { font-size: 11px; color: #8b8fa8; white-space: nowrap; }
+.fc-fares .fare-cabin-text { font-size: 11px; color: #8b8fa8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1; }
 .fc-fares .more-fares-btn { background: none; border: none; color: #ed1173; font-size: 11px; font-weight: 600; cursor: pointer; padding: 4px 0; display: block; margin-left: auto; }
 .fc-fares .more-fares-btn:hover { text-decoration: underline; }
 .flight-card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #f5f5f5; }
@@ -1055,7 +1055,7 @@
 
 @media (max-width: 767px) {
   .flight-card-main { flex-wrap: wrap; }
-  .fc-fares { width: 100%; }
+  .fc-fares { width: 100%; max-width: 100%; min-width: 0; }
   .fc-airline { width: 100%; }
   .fc-route { width: 100%; }
 }

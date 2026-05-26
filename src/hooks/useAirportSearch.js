@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { searchLocations } from '../services/api/flightApi';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { searchLocations } from "../services/api/flightApi";
 
 /**
  * Debounced location (airport/city) typeahead hook for TripJack.
@@ -10,7 +10,7 @@ import { searchLocations } from '../services/api/flightApi';
  * @param {number} delay  Debounce delay in ms (default 350)
  */
 const useAirportSearch = (delay = 350) => {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -42,16 +42,21 @@ const useAirportSearch = (delay = 350) => {
 
         // TripJack /tj/meta/locations response shape:
         // { payload: { suggestions: [{ id, code, name, city, country, countryCode, cityCode }] } }
-        const raw = data?.payload?.suggestions || data?.data?.suggestions || data?.suggestions || data?.data || [];
-        
+        const raw =
+          data?.payload?.suggestions ||
+          data?.data?.suggestions ||
+          data?.suggestions ||
+          data?.data ||
+          [];
+
         const normalised = Array.isArray(raw)
           ? raw.map((loc) => ({
-              iata: loc.code || loc.iata || '',
-              name: loc.name || '',
-              city: loc.city || loc.cityName || '',
-              country: loc.country || loc.countryName || '',
-              countryCode: loc.countryCode || '',
-              cityCode: loc.cityCode || '',
+              iata: loc.code || loc.iata || "",
+              name: loc.name || "",
+              city: loc.city || loc.cityName || "",
+              country: loc.country || loc.countryName || "",
+              countryCode: loc.countryCode || "",
+              cityCode: loc.cityCode || "",
               id: loc.id || loc.code,
               priority: loc.priority || 0,
             }))
@@ -60,8 +65,8 @@ const useAirportSearch = (delay = 350) => {
         setSuggestions(normalised);
       } catch (err) {
         // Ignore abort errors — they're intentional
-        if (err?.name !== 'AbortError' && err?.code !== 'ERR_CANCELED') {
-          console.error('Location search error:', err);
+        if (err?.name !== "AbortError" && err?.code !== "ERR_CANCELED") {
+          console.error("Location search error:", err);
           setSuggestions([]);
         }
       } finally {
@@ -75,7 +80,7 @@ const useAirportSearch = (delay = 350) => {
   }, [query, delay]);
 
   const clearSuggestions = useCallback(() => {
-    setQuery('');
+    setQuery("");
     setSuggestions([]);
     if (abortRef.current) abortRef.current.abort();
   }, []);
@@ -84,7 +89,15 @@ const useAirportSearch = (delay = 350) => {
     setSuggestions([]);
   }, []);
 
-  return { query, setQuery, suggestions, loading, clearSuggestions, hideSuggestions, setSuggestions };
+  return {
+    query,
+    setQuery,
+    suggestions,
+    loading,
+    clearSuggestions,
+    hideSuggestions,
+    setSuggestions,
+  };
 };
 
 export default useAirportSearch;

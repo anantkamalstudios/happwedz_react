@@ -75,6 +75,15 @@ export default function FlightSearchForm() {
       alert("Please fill at least 2 legs with origin, destination and date");
       return;
     }
+
+    const isAscending = validLegs.every((leg, idx) => {
+      if (idx === 0) return true;
+      return new Date(leg.date).getTime() >= new Date(validLegs[idx - 1].date).getTime();
+    });
+    if (!isAscending) {
+      alert("Travel dates must be in ascending order. Next date cannot be earlier than previous leg.");
+      return;
+    }
     const searchQuery = {
       searchQuery: {
         cabinClass: cabinClass.toUpperCase(),
@@ -182,7 +191,18 @@ export default function FlightSearchForm() {
                     <Calendar className="tj-field-icon" size={18} />
                     <div className="tj-field-content">
                       <div className="tj-field-label">Depart</div>
-                      <DatePicker selected={parseDateValue(leg.date)} onChange={(date) => updateMultiCityLeg(index, "date", formatDateValue(date))} className="tj-field-input tj-date-picker" dateFormat="dd-MM-yyyy" minDate={new Date()} placeholderText="dd-mm-yyyy" />
+                      <DatePicker
+                        selected={parseDateValue(leg.date)}
+                        onChange={(date) => updateMultiCityLeg(index, "date", formatDateValue(date))}
+                        className="tj-field-input tj-date-picker"
+                        dateFormat="dd-MM-yyyy"
+                        minDate={
+                          index > 0 && multiCityLegs[index - 1]?.date
+                            ? parseDateValue(multiCityLegs[index - 1].date)
+                            : new Date()
+                        }
+                        placeholderText="dd-mm-yyyy"
+                      />
                       <div className="tj-field-sublabel">Travel Date</div>
                     </div>
                   </div>

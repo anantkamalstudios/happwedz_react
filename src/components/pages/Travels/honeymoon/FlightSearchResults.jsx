@@ -93,7 +93,8 @@ export default function FlightSearchResults() {
 
   const getFlightKey = (flight) => {
     const first = flight.sI[0]; const last = flight.sI[flight.sI.length - 1];
-    return `${first.fD.aI.code}${first.fD.fN}-${first.da.code}-${last.aa.code}-${first.dt}`;
+    const fareId = flight?.totalPriceList?.[0]?.id || 'fare0';
+    return `${first.fD.aI.code}${first.fD.fN}-${first.da.code}-${last.aa.code}-${first.dt}-${fareId}`;
   };
   const getSelectedFareIndex = (flightId) => selectedFareByFlight[flightId] ?? 0;
   const getSelectedFareOption = (flight) => {
@@ -138,9 +139,9 @@ export default function FlightSearchResults() {
     } finally { setLoading(false); }
   };
 
-  const renderFlight = (flight, type) => {
+  const renderFlight = (flight, type, listIndex = 0) => {
     const first = flight.sI[0]; const last = flight.sI[flight.sI.length - 1]; const airline = first.fD.aI;
-    const flightId = flight.id || getFlightKey(flight);
+    const flightId = `${type}-${listIndex}-${flight.id || getFlightKey(flight)}`;
     const fares = flight.totalPriceList || [];
     const expanded = expandedFares[flightId];
     const visibleFares = expanded ? fares : fares.slice(0, 2);
@@ -202,10 +203,10 @@ export default function FlightSearchResults() {
         <div className="col-lg-9"><div className="row">
           <div className={isRoundTrip ? 'col-lg-6' : 'col-12'}>
             <div className="tj-flights-column"><div className="tj-sort-tabs">{['duration', 'departure', 'arrival', 'price'].map((sort) => <div key={sort} className={`tj-sort-tab ${sortOutbound === sort ? 'active' : ''}`} onClick={() => setSortOutbound(sort)}>{sort}</div>)}</div>
-              <div className="flight-list">{loading ? [1, 2, 3, 4].map((i) => <ShimmerCard key={i} />) : visibleOut.length === 0 ? <div className="no-results">No flights found</div> : <>{visibleOut.map((trip) => renderFlight(trip, 'outbound'))}{hasMoreOut && <div ref={loaderOutRef} className="load-more-trigger"><ShimmerCard /></div>}</>}</div>
+              <div className="flight-list">{loading ? [1, 2, 3, 4].map((i) => <ShimmerCard key={i} />) : visibleOut.length === 0 ? <div className="no-results">No flights found</div> : <>{visibleOut.map((trip, idx) => renderFlight(trip, 'outbound', idx))}{hasMoreOut && <div ref={loaderOutRef} className="load-more-trigger"><ShimmerCard /></div>}</>}</div>
             </div>
           </div>
-          {isRoundTrip && <div className="col-lg-6"><div className="tj-flights-column"><div className="tj-sort-tabs">{['duration', 'departure', 'arrival', 'price'].map((sort) => <div key={sort} className={`tj-sort-tab ${sortReturn === sort ? 'active' : ''}`} onClick={() => setSortReturn(sort)}>{sort}</div>)}</div><div className="flight-list">{loading ? [1, 2, 3, 4].map((i) => <ShimmerCard key={i} />) : visibleRet.length === 0 ? <div className="no-results">No flights found</div> : <>{visibleRet.map((trip) => renderFlight(trip, 'return'))}{hasMoreRet && <div ref={loaderRetRef} className="load-more-trigger"><ShimmerCard /></div>}</>}</div></div></div>}
+          {isRoundTrip && <div className="col-lg-6"><div className="tj-flights-column"><div className="tj-sort-tabs">{['duration', 'departure', 'arrival', 'price'].map((sort) => <div key={sort} className={`tj-sort-tab ${sortReturn === sort ? 'active' : ''}`} onClick={() => setSortReturn(sort)}>{sort}</div>)}</div><div className="flight-list">{loading ? [1, 2, 3, 4].map((i) => <ShimmerCard key={i} />) : visibleRet.length === 0 ? <div className="no-results">No flights found</div> : <>{visibleRet.map((trip, idx) => renderFlight(trip, 'return', idx))}{hasMoreRet && <div ref={loaderRetRef} className="load-more-trigger"><ShimmerCard /></div>}</>}</div></div></div>}
         </div></div>
       </div></div>
       {(selectedOutbound || selectedReturn) && <div className="tj-booking-bar"><div className="container-fluid"><div className="tj-booking-content"><div className="tj-booking-total">{formatPrice(totalPrice)} total</div><button className="tj-book-btn" onClick={handleBook} disabled={loading}>{loading ? 'Processing...' : 'BOOK'}</button></div></div></div>}

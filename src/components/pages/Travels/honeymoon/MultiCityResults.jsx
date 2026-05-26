@@ -14,6 +14,7 @@ export default function MultiCityResults() {
   const [filteredRouteFlights, setFilteredRouteFlights] = useState({});
   const [activeTab, setActiveTab] = useState(0);
   const [selectedFlightsPerRoute, setSelectedFlightsPerRoute] = useState({});
+  const [showDetails, setShowDetails] = useState({});
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     stops: [],
@@ -81,12 +82,54 @@ export default function MultiCityResults() {
       : (results?.connecting?.searchResult ? results.connecting : null);
     const tripInfos = normalizedResults?.searchResult?.tripInfos || {};
     
-    // Organize flights by route index
-    const flightsByRoute = {};
+    // For multi-city, the API returns different itinerary combinations in keys "0", "1", etc.
+    // Each itinerary contains segments for multiple routes marked with sN (segment number)
+    // We need to collect ALL itineraries and organize them by the routes they serve
+    
+    const allItineraries = [];
+    
+    // Collect all itineraries from all keys
     Object.keys(tripInfos).forEach(key => {
       if (Array.isArray(tripInfos[key])) {
-        flightsByRoute[key] = tripInfos[key];
+        allItineraries.push(...tripInfos[key]);
       }
+    });
+    
+    // Now organize by route index (sN value)
+    const flightsByRoute = {};
+    
+    allItineraries.forEach((itinerary) => {
+      // Find which routes this itinerary covers
+      const routesInItinerary = new Set();
+      itinerary.sI.forEach(segment => {
+        const routeIdx = segment.sN !== undefined ? segment.sN : 0;
+        routesInItinerary.add(routeIdx);
+      });
+      
+      // Group segments by their route index
+      const segmentsByRoute = {};
+      itinerary.sI.forEach((segment) => {
+        const routeIdx = segment.sN !== undefined ? segment.sN : 0;
+        if (!segmentsByRoute[routeIdx]) {
+          segmentsByRoute[routeIdx] = [];
+        }
+        segmentsByRoute[routeIdx].push(segment);
+      });
+      
+      // Add this itinerary to each route it covers
+      routesInItinerary.forEach((routeIdx) => {
+        if (!flightsByRoute[routeIdx]) {
+          flightsByRoute[routeIdx] = [];
+        }
+        
+        flightsByRoute[routeIdx].push({
+          ...itinerary,
+          sI: segmentsByRoute[routeIdx], // Only segments for this route in display
+          _fullItinerary: itinerary, // Keep reference to complete itinerary
+          _routesInItinerary: Array.from(routesInItinerary), // Track which routes are in this itinerary
+          id: itinerary.totalPriceList?.[0]?.id || `${itinerary.sI[0].id}-${routeIdx}`
+        });
+      });
     });
     
     setRouteFlights(flightsByRoute);
@@ -241,17 +284,71 @@ export default function MultiCityResults() {
   };
 
   const handleSelectFlight = (routeIndex, flight) => {
-    setSelectedFlightsPerRoute(prev => ({
-      ...prev,
-      [routeIndex]: flight
-    }));
+    // Check if this flight is already selected
+    const selectedPriceId = selectedFlightsPerRoute[routeIndex]?.totalPriceList?.[0]?.id;
+    const thisPriceId = flight.totalPriceList?.[0]?.id;
+    
+    // If clicking the same flight, deselect it
+    if (selectedPriceId === thisPriceId) {
+      // Only deselect routes that were part of this itinerary
+      const routesToDeselect = flight._routesInItinerary || [routeIndex];
+      const newSelections = { ...selectedFlightsPerRoute };
+      routesToDeselect.forEach(rIdx => {
+        delete newSelections[rIdx];
+      });
+      setSelectedFlightsPerRoute(newSelections);
+      return;
+    }
+    
+    // Get the full itinerary
+    const fullItinerary = flight._fullItinerary || flight;
+    const routesInItinerary = flight._routesInItinerary || [routeIndex];
+    
+    // Group all segments by route
+    const segmentsByRoute = {};
+    fullItinerary.sI.forEach((segment) => {
+      const routeIdx = segment.sN !== undefined ? segment.sN : routeIndex;
+      if (!segmentsByRoute[routeIdx]) {
+        segmentsByRoute[routeIdx] = [];
+      }
+      segmentsByRoute[routeIdx].push(segment);
+    });
+    
+    // Only select routes that are actually present in this itinerary
+    const newSelections = { ...selectedFlightsPerRoute };
+    routesInItinerary.forEach((routeIdx) => {
+      if (segmentsByRoute[routeIdx]) {
+        newSelections[routeIdx] = {
+          ...fullItinerary,
+          sI: segmentsByRoute[routeIdx],
+          _fullItinerary: fullItinerary,
+          _routesInItinerary: routesInItinerary,
+          id: fullItinerary.totalPriceList?.[0]?.id || fullItinerary.id
+        };
+      }
+    });
+    
+    setSelectedFlightsPerRoute(newSelections);
   };
 
   const getTotalPrice = () => {
-    let total = 0;
+    // Calculate total from unique priceIds to avoid double counting
+    const pricesByPriceId = new Map();
+    
     Object.values(selectedFlightsPerRoute).forEach(flight => {
-      total += flight.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF || 0;
+      const priceId = flight.totalPriceList?.[0]?.id;
+      const price = flight.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF || 0;
+      
+      if (priceId && !pricesByPriceId.has(priceId)) {
+        pricesByPriceId.set(priceId, price);
+      }
     });
+    
+    let total = 0;
+    pricesByPriceId.forEach(price => {
+      total += price;
+    });
+    
     return total;
   };
 
@@ -266,27 +363,48 @@ export default function MultiCityResults() {
       return;
     }
 
-    // Review API expects one selected priceId per requested non-empty route/trip
-    const allPriceIds = [];
-    Object.values(selectedFlightsPerRoute).forEach(flight => {
-      const selectedPriceId = flight?.totalPriceList?.[0]?.id;
-      if (selectedPriceId) allPriceIds.push(selectedPriceId);
-    });
+    // For multi-city, the API expects one priceId per route in the search
+    // If routes share the same itinerary, send the same priceId multiple times
+    const totalRoutes = getRouteList().length;
+    const priceIds = [];
+    
+    // Build priceIds array in route order
+    for (let i = 0; i < totalRoutes; i++) {
+      const flight = selectedFlightsPerRoute[i];
+      if (flight) {
+        const priceId = flight.totalPriceList?.[0]?.id;
+        if (priceId) {
+          priceIds.push(priceId);
+        }
+      }
+    }
+
+    if (priceIds.length !== totalRoutes) {
+      alert('Please select flights for all routes before booking.');
+      return;
+    }
 
     setLoading(true);
     try {
       const { reviewFlight } = await import('../../../../services/api/flightApi');
-      const reviewResponse = await reviewFlight(allPriceIds);
+      // Send priceIds array matching the number of routes
+      const reviewResponse = await reviewFlight(priceIds);
       
       if (!reviewResponse?.status?.success) {
-        alert(reviewResponse?.status?.message || 'Failed to validate flight prices');
+        const errorMsg = reviewResponse?.errors?.[0]?.message || 
+                        reviewResponse?.status?.message || 
+                        'Failed to validate flight prices';
+        alert(errorMsg);
         return;
       }
 
+      // Get the full itinerary for navigation
+      const firstSelectedFlight = Object.values(selectedFlightsPerRoute)[0];
+      const fullItinerary = firstSelectedFlight?._fullItinerary || firstSelectedFlight;
+
       navigate('/honeymoon/flights/book', {
         state: {
-          outbound: Object.values(selectedFlightsPerRoute)?.[0] || null,
-          return: Object.values(selectedFlightsPerRoute)?.[1] || null,
+          outbound: fullItinerary,
           multiCity: Object.values(selectedFlightsPerRoute),
           searchParams,
           reviewData: reviewResponse,
@@ -295,7 +413,10 @@ export default function MultiCityResults() {
       });
     } catch (error) {
       console.error('Error reviewing flight:', error);
-      alert(error.response?.data?.message || 'Failed to proceed with booking. Please try again.');
+      const errorMessage = error.response?.data?.errors?.[0]?.message || 
+                          error.response?.data?.message || 
+                          'Failed to proceed with booking. Please try again.';
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -310,9 +431,15 @@ export default function MultiCityResults() {
     const price = flight.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF || 0;
     const fareType = flight.totalPriceList?.[0]?.fareIdentifier || 'PUBLISHED';
     const cabinClass = flight.totalPriceList?.[0]?.fd?.ADULT?.cc || 'ECONOMY';
-    const isSelected = selectedFlightsPerRoute[routeIndex]?.id === flight.id;
+    
+    // Check if this itinerary is selected (compare by priceId)
+    const selectedPriceId = selectedFlightsPerRoute[routeIndex]?.totalPriceList?.[0]?.id;
+    const thisPriceId = flight.totalPriceList?.[0]?.id;
+    const isSelected = selectedPriceId === thisPriceId;
+    
     const stops = segment.stops || 0;
 
+    const detailKey = `${routeIndex}-${flight.id || segment.id}`;
     return (
       <div
         key={flight.id || Math.random()}
@@ -402,10 +529,49 @@ export default function MultiCityResults() {
                 handleSelectFlight(routeIndex, flight);
               }}
             >
-              {isSelected ? 'SELECTED' : 'SELECT'}
+              {isSelected ? 'DESELECT' : 'SELECT'}
             </button>
           </div>
         </div>
+        {isSelected && (
+          <div style={{
+            background: '#e8f5e9',
+            padding: '8px 15px',
+            marginTop: '10px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            color: '#2e7d32',
+            fontWeight: '500'
+          }}>
+            ✓ {flight._routesInItinerary?.length > 1 
+              ? `This itinerary is selected for ${flight._routesInItinerary.length} routes` 
+              : 'This flight is selected'}
+          </div>
+        )}
+        <div className="d-flex justify-content-between align-items-center mt-2">
+          <button
+            className="view-details-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowDetails((prev) => ({ ...prev, [detailKey]: !prev[detailKey] }));
+            }}
+          >
+            {showDetails[detailKey] ? 'Hide Details -' : 'View Details +'}
+          </button>
+          <div className="seats-left">Seats left: {flight.totalPriceList?.[0]?.fd?.ADULT?.sR || 0}</div>
+        </div>
+        {showDetails[detailKey] && (
+          <div className="tj-flight-details-panel mt-2">
+            {flight.sI?.map((seg, idx) => (
+              <div key={`${detailKey}-${idx}`} className="tj-segment-detail">
+                <div><strong>Flight:</strong> {seg.fD?.aI?.name} {seg.fD?.fN}</div>
+                <div><strong>From:</strong> {seg.da?.city} ({seg.da?.code}) - {formatTime(seg.dt)}</div>
+                <div><strong>To:</strong> {seg.aa?.city} ({seg.aa?.code}) - {formatTime(seg.at)}</div>
+                <div><strong>Duration:</strong> {formatDuration(seg.duration)}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   };
