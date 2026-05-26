@@ -259,7 +259,7 @@ export default function FlightHero() {
                               <div style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.88rem" }}>{booking.bookingId}</div>
                               <div className="mt-2 d-flex justify-content-between">
                                 <span style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.86rem" }}>
-                                  {booking.checkIn || "-"} to {booking.checkOut || "-"}
+                                  {booking.checkIn || "Not available"} to {booking.checkOut || "Not available"}
                                 </span>
                                 <span className="text-white fw-semibold" style={{ fontSize: "0.86rem" }}>
                                   <span style={{ color: getBookingStatusColor(booking.status) }}>

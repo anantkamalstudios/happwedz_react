@@ -25,8 +25,6 @@ import {
 } from "lucide-react";
 import {
   getHotelDetail,
-  getHotelFilters,
-  suggestHotels,
   searchHotels,
   trackHotelAnalyticsEvent,
 } from "../../../../services/api/hotelApi";
@@ -95,6 +93,8 @@ const getHotelId = (hotel) =>
     hotel?.tjid ||
       hotel?.tjHotelId ||
       hotel?.hotelId ||
+      hotel?.raw?.tjHotelId ||
+      hotel?.raw?.hotelId ||
       hotel?.hid ||
       hotel?.id ||
       hotel?.hotelCode ||
@@ -267,9 +267,14 @@ const normalizeAmount = (value) => {
 };
 
 const getHotelImages = (hotel) => {
-  const images = Array.isArray(hotel?.images) ? hotel.images : [];
+  const images = [
+    ...(Array.isArray(hotel?.images) ? hotel.images : []),
+    ...(Array.isArray(hotel?.img) ? hotel.img : []),
+    ...(hotel?.heroImage ? [hotel.heroImage] : []),
+    ...(hotel?.image ? [hotel.image] : []),
+  ];
   return images
-    .map((image) => image?.url || image?.imageUrl || image?.path || image)
+    .map((image) => image?.url || image?.imageUrl || image?.path || image?.links?.Standard?.href || image)
     .filter(Boolean);
 };
 
@@ -296,21 +301,28 @@ const getRatingLabel = (hotel) => hotel?.userRating?.label || "No rating";
 
 const getPriceInfo = (hotel) => {
   const rate = Array.isArray(hotel?.rate) ? hotel.rate[0] : hotel?.rate?.[0];
+  const rawOption = Array.isArray(hotel?.options) ? hotel.options[0] : null;
+  const rawPricing = rawOption?.pricing || null;
   const nightlyPrice = Number(rate?.nightlyPrice ?? rate?.pricePerNight ?? hotel?.nightlyPrice);
   const totalPrice = Number(
-    hotel?.minPrice ?? rate?.totalPrice ?? rate?.price?.totalPrice ?? hotel?.price,
+    hotel?.minPrice ??
+      rate?.totalPrice ??
+      rate?.price?.totalPrice ??
+      rawPricing?.totalPrice ??
+      hotel?.price,
   );
 
   return {
     nightlyPrice: Number.isFinite(nightlyPrice) ? nightlyPrice : null,
     totalPrice: Number.isFinite(totalPrice) ? totalPrice : null,
-    currency: rate?.currency || hotel?.currency || "INR",
-    mealBasis: rate?.mealbasis || rate?.mealBasis || hotel?.mealBasis || "Room Only",
-    optionId: rate?.optionId || hotel?.optionId || "",
+    currency: rate?.currency || rawPricing?.currency || hotel?.currency || "INR",
+    mealBasis: rate?.mealbasis || rate?.mealBasis || rawOption?.mealBasis || hotel?.mealBasis || "Room Only",
+    optionId: rate?.optionId || rawOption?.optionId || hotel?.optionId || "",
     supplierName: rate?.supplierName || hotel?.supplierName || "",
-    cancellation: rate?.cancellation || hotel?.cancellation || null,
+    cancellation: rate?.cancellation || rawOption?.cancellation || hotel?.cancellation || null,
     isRefundable:
       rate?.cancellation?.isRefundable ??
+      rawOption?.cancellation?.isRefundable ??
       hotel?.cancellation?.isRefundable ??
       false,
   };
@@ -362,7 +374,8 @@ const normalizeHotel = (hotel, searchPayload) => {
     userRatingLabel: getRatingLabel(hotel),
     ratingCount: Number(hotel?.userRating?.rc || 0),
     userFavourite: Boolean(hotel?.userFavourite),
-    propertyType: hotel?.propertyType || "",
+    propertyType: hotel?.propertyType || hotel?.categoryName || "",
+    brand: hotel?.brand || hotel?.chain || "",
     amenities: getAmenities(hotel),
     priceInfo,
     raw: hotel,
@@ -468,6 +481,10 @@ const buildDetailPayload = (hotel, searchPayload, searchResponse) => {
   const searchQuery = searchPayload?.searchQuery || {};
   const criteria = searchQuery.searchCriteria || {};
   return {
+    correlationId:
+      searchResponse?.correlationId ||
+      searchPayload?.correlationId ||
+      createCorrelationId(),
     searchQuery: {
       checkInDate: searchQuery.checkinDate,
       checkoutDate: searchQuery.checkoutDate,
@@ -552,15 +569,11 @@ const trackSortAnalyticsEvent = async (sortOrder, searchPayload, searchResponse,
   }
 };
 
-const buildFilterPayload = (searchPayload, appliedFilters, searchResponse, sortOrder) => {
-  const { hotelName: _baseHotelName, ...baseFilters } = searchPayload?.appliedFilters || {};
-  const { hotelName: _nextHotelName, ...nextFilters } = appliedFilters || {};
-
+const buildFilterPayload = (searchPayload, searchResponse, sortOrder) => {
   return {
     ...searchPayload,
     appliedFilters: {
-      ...baseFilters,
-      ...nextFilters,
+      ...(searchPayload?.appliedFilters || {}),
     },
     searchId: searchResponse?.searchId || searchPayload?.searchId || "",
     correlationId: searchPayload?.correlationId || createCorrelationId(),
@@ -568,9 +581,76 @@ const buildFilterPayload = (searchPayload, appliedFilters, searchResponse, sortO
   };
 };
 
-const getNonTextFilters = (filters = {}) => {
-  const { hotelName, ...rest } = filters || {};
-  return rest;
+const getPriceRangeBucket = (amount) => {
+  const value = Number(amount || 0);
+  if (!Number.isFinite(value) || value <= 0) return null;
+  if (value < 3000) return "UNDER_3000";
+  if (value < 6000) return "3000_6000";
+  if (value < 10000) return "6000_10000";
+  return "ABOVE_10000";
+};
+
+const PRICE_RANGE_LABELS = {
+  UNDER_3000: "Under ₹3,000",
+  "3000_6000": "₹3,000 - ₹6,000",
+  "6000_10000": "₹6,000 - ₹10,000",
+  ABOVE_10000: "Above ₹10,000",
+};
+
+const buildLocalFilterGroups = (hotels = []) => {
+  const source = Array.isArray(hotels) ? hotels : [];
+  const aggregate = (key, values) => {
+    const countMap = new Map();
+    values.forEach((value) => {
+      const v = String(value || "").trim();
+      if (!v) return;
+      countMap.set(v, (countMap.get(v) || 0) + 1);
+    });
+    return {
+      key,
+      name:
+        key === "ratings"
+          ? "Rating"
+          : key === "propertyType"
+            ? "Property Type"
+            : key === "mealType"
+              ? "Meal Type"
+              : key === "cancellationPolicy"
+                ? "Free Cancellation"
+                : key === "amenities"
+                  ? "Amenities"
+                  : key === "priceRange"
+                    ? "Price Range"
+                    : key,
+      filterType: "STATIC",
+      options: [...countMap.entries()]
+        .map(([value, count]) => ({
+          value,
+          label: key === "priceRange" ? PRICE_RANGE_LABELS[value] || value : value,
+          count,
+          state: "ENABLED",
+        }))
+        .sort((a, b) => b.count - a.count || String(a.label).localeCompare(String(b.label))),
+    };
+  };
+
+  const ratings = source.map((hotel) => (hotel.starRating > 0 ? String(Math.round(hotel.starRating)) : ""));
+  const propertyTypes = source.map((hotel) => hotel.propertyType || "");
+  const mealTypes = source.map((hotel) => hotel.priceInfo?.mealBasis || "");
+  const cancellation = source.map((hotel) =>
+    hotel.priceInfo?.isRefundable ? "REFUNDABLE" : "NON_REFUNDABLE",
+  );
+  const amenities = source.flatMap((hotel) => (Array.isArray(hotel.amenities) ? hotel.amenities : []).slice(0, 8));
+  const priceRanges = source.map((hotel) => getPriceRangeBucket(hotel.priceInfo?.totalPrice || 0));
+
+  return [
+    aggregate("ratings", ratings),
+    aggregate("propertyType", propertyTypes),
+    aggregate("mealType", mealTypes),
+    aggregate("cancellationPolicy", cancellation),
+    aggregate("amenities", amenities),
+    aggregate("priceRange", priceRanges),
+  ].filter((group) => group.options.length > 0);
 };
 
 const sanitizeArrayFilterValues = (values = []) => {
@@ -620,14 +700,40 @@ const sanitizeAppliedFilters = (filters = {}, filterGroups = []) => {
   return sanitized;
 };
 
+const areArrayFiltersEqual = (a = [], b = []) => {
+  if (a === b) return true;
+  if (!Array.isArray(a) || !Array.isArray(b)) return false;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) {
+    if (String(a[i]) !== String(b[i])) return false;
+  }
+  return true;
+};
+
+const areAppliedFiltersEqual = (left = {}, right = {}) => {
+  const base = defaultFilters();
+  const keys = Object.keys(base);
+  for (const key of keys) {
+    const leftValue = left?.[key];
+    const rightValue = right?.[key];
+    if (Array.isArray(base[key])) {
+      if (!areArrayFiltersEqual(leftValue, rightValue)) return false;
+    } else if (typeof base[key] === "boolean") {
+      if (Boolean(leftValue) !== Boolean(rightValue)) return false;
+    } else if (String(leftValue || "") !== String(rightValue || "")) {
+      return false;
+    }
+  }
+  return true;
+};
+
 const buildSearchPayload = (
   searchPayload,
-  appliedFilters,
   searchResponse,
   sortOrder,
   lastHotelId = "",
 ) => ({
-  ...buildFilterPayload(searchPayload, appliedFilters, searchResponse, sortOrder),
+  ...buildFilterPayload(searchPayload, searchResponse, sortOrder),
   pagination: {
     ...(searchPayload?.pagination || {}),
     pageSize:
@@ -1595,12 +1701,6 @@ export default function HotelbedsHotelsPage() {
   const hotels = loadedHotels;
   const activePayload = searchPayload || initialPayload;
   const activeSuggestion = selectedSuggestion || initialSuggestion;
-  const nonTextAppliedFilters = useMemo(() => getNonTextFilters(appliedFilters), [appliedFilters]);
-  const nonTextAppliedFiltersKey = useMemo(
-    () => JSON.stringify(nonTextAppliedFilters || {}),
-    [nonTextAppliedFilters],
-  );
-
   const selectedHotel = useMemo(
     () => hotels.find((hotel) => hotel.id === hotelId) || null,
     [hotelId, hotels],
@@ -1625,31 +1725,16 @@ export default function HotelbedsHotelsPage() {
   }, [hotelNameDraft]);
 
   useEffect(() => {
-    if (!activePayload) return undefined;
-
-    let active = true;
-    if (filterGroups.length === 0) {
-      setFiltersLoading(true);
-    }
-    getHotelFilters(buildFilterPayload(activePayload, nonTextAppliedFilters, initialResponse, sortOrder))
-      .then((response) => {
-        if (!active) return;
-        const groups = extractFilterGroups(response);
-        setFilterGroups(groups);
-        setAppliedFilters((prev) => sanitizeAppliedFilters(prev, groups));
-      })
-      .catch((error) => {
-        console.error(getErrorMessage(error, "Unable to load hotel filters"));
-        if (active) setFilterGroups([]);
-      })
-      .finally(() => {
-        if (active) setFiltersLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [activePayload, initialResponse, nonTextAppliedFiltersKey, sortOrder, filterGroups.length]);
+    if (!activePayload) return;
+    setFiltersLoading(true);
+    const groups = buildLocalFilterGroups(loadedHotels);
+    setFilterGroups(groups);
+    setAppliedFilters((prev) => {
+      const next = sanitizeAppliedFilters(prev, groups);
+      return areAppliedFiltersEqual(prev, next) ? prev : next;
+    });
+    setFiltersLoading(false);
+  }, [activePayload, searchResponse, loadedHotels]);
 
   useEffect(() => {
     if (!activePayload || hotelId) return undefined;
@@ -1659,7 +1744,7 @@ export default function HotelbedsHotelsPage() {
     setResultsLoading(true);
     setResultsError("");
 
-    searchHotels(buildSearchPayload(activePayload, appliedFilters, searchResponse, sortOrder, ""))
+    searchHotels(buildSearchPayload(activePayload, searchResponse, sortOrder, ""))
       .then((response) => {
         if (!active) return;
         const nextHotels = extractHotels(response, activePayload);
@@ -1681,7 +1766,7 @@ export default function HotelbedsHotelsPage() {
     return () => {
       active = false;
     };
-  }, [activePayload, appliedFilters, hotelId, sortOrder]);
+  }, [activePayload, hotelId, sortOrder]);
 
   useEffect(() => {
     if (!activePayload || hotelId || !hasMoreResults || !lastHotelId) return undefined;
@@ -1700,7 +1785,7 @@ export default function HotelbedsHotelsPage() {
         setLoadingMore(true);
 
         searchHotels(
-          buildSearchPayload(activePayload, appliedFilters, searchResponse, sortOrder, lastHotelId),
+          buildSearchPayload(activePayload, searchResponse, sortOrder, lastHotelId),
         )
           .then((response) => {
             if (!active) return;
@@ -1736,7 +1821,6 @@ export default function HotelbedsHotelsPage() {
       observer.disconnect();
     };
   }, [
-    appliedFilters,
     hasMoreResults,
     hotelId,
     activePayload,
@@ -1837,8 +1921,57 @@ export default function HotelbedsHotelsPage() {
       nextHotels = nextHotels.filter((hotel) => hotel.userFavourite);
     }
 
+    const selectedRatings = Array.isArray(appliedFilters?.ratings) ? appliedFilters.ratings : [];
+    if (selectedRatings.length > 0) {
+      nextHotels = nextHotels.filter((hotel) =>
+        selectedRatings.includes(String(Math.round(Number(hotel.starRating || 0)))),
+      );
+    }
+
+    const selectedPropertyTypes = Array.isArray(appliedFilters?.propertyType)
+      ? appliedFilters.propertyType
+      : [];
+    if (selectedPropertyTypes.length > 0) {
+      nextHotels = nextHotels.filter((hotel) =>
+        selectedPropertyTypes.includes(String(hotel.propertyType || "")),
+      );
+    }
+
+    const selectedMealTypes = Array.isArray(appliedFilters?.mealType) ? appliedFilters.mealType : [];
+    if (selectedMealTypes.length > 0) {
+      nextHotels = nextHotels.filter((hotel) =>
+        selectedMealTypes.includes(String(hotel.priceInfo?.mealBasis || "")),
+      );
+    }
+
+    const selectedCancellation = Array.isArray(appliedFilters?.cancellationPolicy)
+      ? appliedFilters.cancellationPolicy
+      : [];
+    if (selectedCancellation.length > 0) {
+      nextHotels = nextHotels.filter((hotel) => {
+        const code = hotel.priceInfo?.isRefundable ? "REFUNDABLE" : "NON_REFUNDABLE";
+        return selectedCancellation.includes(code);
+      });
+    }
+
+    const selectedAmenities = Array.isArray(appliedFilters?.amenities) ? appliedFilters.amenities : [];
+    if (selectedAmenities.length > 0) {
+      nextHotels = nextHotels.filter((hotel) => {
+        const amenitySet = new Set((hotel.amenities || []).map((item) => String(item || "").toLowerCase()));
+        return selectedAmenities.some((item) => amenitySet.has(String(item || "").toLowerCase()));
+      });
+    }
+
+    const selectedPriceRanges = Array.isArray(appliedFilters?.priceRange) ? appliedFilters.priceRange : [];
+    if (selectedPriceRanges.length > 0) {
+      nextHotels = nextHotels.filter((hotel) => {
+        const bucket = getPriceRangeBucket(hotel.priceInfo?.totalPrice || 0);
+        return bucket && selectedPriceRanges.includes(bucket);
+      });
+    }
+
     return nextHotels;
-  }, [favoritesOnly, hotelNameQuery, hotels]);
+  }, [favoritesOnly, hotelNameQuery, hotels, appliedFilters]);
 
   const destinationName =
     activeSuggestion?.displayName ||
@@ -2003,7 +2136,7 @@ export default function HotelbedsHotelsPage() {
                 <ErrorState
                   onRetry={() =>
                     searchHotels(
-                      buildSearchPayload(activePayload, appliedFilters, searchResponse, sortOrder, ""),
+                      buildSearchPayload(activePayload, searchResponse, sortOrder, ""),
                     ).then(setSearchResponse)
                   }
                 />

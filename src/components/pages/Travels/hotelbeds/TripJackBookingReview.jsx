@@ -1,6 +1,7 @@
 import { Button } from "react-bootstrap";
 
-const titleOptions = ["Mr", "Mrs", "Ms", "Miss", "Master"];
+const adultTitleOptions = ["Mr", "Mrs", "Ms", "Miss"];
+const childTitleOptions = ["Master", "Miss"];
 const travellerTypeLabels = {
   ADULT: "Adult",
   CHILD: "Child",
@@ -156,8 +157,10 @@ export default function TripJackBookingReview({
   onContactFieldChange,
   onTermsChange,
   onSubmit,
+  onHoldSubmit,
   bookingSubmitting,
   formatMoney,
+  holdBookingUatEnabled = false,
 }) {
   if (!show || !reviewResponse || !bookingForm) return null;
 
@@ -526,16 +529,6 @@ export default function TripJackBookingReview({
               </div>
             </section>
 
-            <section className="tripjack-time-grid">
-              <div className="tripjack-time-card">
-                <div className="tripjack-label">Check In</div>
-                <div className="tripjack-value">{checkInTime || "Available at property desk"}</div>
-              </div>
-              <div className="tripjack-time-card">
-                <div className="tripjack-label">Check Out</div>
-                <div className="tripjack-value">{checkOutTime || "Available at property desk"}</div>
-              </div>
-            </section>
 
             <section className="tripjack-review-panel">
               {roomBreakdown.map((room, index) => (
@@ -578,6 +571,7 @@ export default function TripJackBookingReview({
 
                       {(Array.isArray(room?.travellerInfo) ? room.travellerInfo : []).map((traveller, travellerIndex) => {
                         const isAdult = traveller?.pt === "ADULT";
+                        const allowedTitleOptions = isAdult ? adultTitleOptions : childTitleOptions;
                         return (
                           <div key={`traveller-${roomIndex}-${travellerIndex}`} className={travellerIndex > 0 ? "mt-4" : ""}>
                             <div className="tripjack-room-copy fw-semibold mb-2">
@@ -592,7 +586,7 @@ export default function TripJackBookingReview({
                                   onChange={(event) => onTravellerFieldChange(roomIndex, travellerIndex, "ti", event.target.value)}
                                   disabled={bookingSubmitting}
                                 >
-                                  {titleOptions.map((option) => (
+                                  {allowedTitleOptions.map((option) => (
                                     <option key={option} value={option}>{option}</option>
                                   ))}
                                 </select>
@@ -806,8 +800,17 @@ export default function TripJackBookingReview({
           <Button variant="outline-secondary" onClick={onClose} disabled={bookingSubmitting}>
             Back to Hotel Details
           </Button>
+          {holdBookingUatEnabled && reviewResponse?.onholdAllowed ? (
+            <Button
+              variant="outline-primary"
+              onClick={onHoldSubmit}
+              disabled={bookingSubmitting}
+            >
+              {bookingSubmitting ? "Submitting Booking..." : "Hold & Confirm"}
+            </Button>
+          ) : null}
           <Button variant="primary" onClick={onSubmit} disabled={bookingSubmitting}>
-            {bookingSubmitting ? "Submitting Booking..." : "Proceed to Book"}
+            {bookingSubmitting ? "Submitting Booking..." : "Pay & Book / Instant Booking"}
           </Button>
         </div>
       </div>

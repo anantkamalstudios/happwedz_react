@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import {
   createHotelPaymentOrder,
+  downloadHotelReceipt,
   getHotelStaticContent,
   getHotelBookingDetails,
   reviewHotelBooking,
@@ -48,6 +49,7 @@ import {
   getMealPlanOptions,
   getReviewPayloadFields,
   normalizeHotelDetails,
+  normalizeReviewResponseForUi,
   normalizeImageItems,
   normalizeRoomOption,
   parseJsonSafely,
@@ -153,7 +155,7 @@ function RoomOptionSkeleton() {
   );
 }
 
-function HotelHeader({ detailModel, onShowMap, onBackToResults, onEditMarkup, markupEnabled }) {
+function HotelHeader({ detailModel, onBackToResults, onEditMarkup, markupEnabled }) {
   const [showViewDropdown, setShowViewDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -186,9 +188,6 @@ function HotelHeader({ detailModel, onShowMap, onBackToResults, onEditMarkup, ma
           <div className="hotel-detail-address">
             <MapPin size={14} />
             <span>{detailModel.fullAddress || "Address unavailable"}</span>
-            <button type="button" className="hotel-map-link" onClick={onShowMap}>
-              Show on map
-            </button>
           </div>
         </div>
 
@@ -290,7 +289,7 @@ function HotelBookingSummaryCard({
   const isReviewing = reviewLoadingOptionId === option.id;
 
   return (
-    <div className="hotel-detail-side">
+    <div className="hotel-detail-side hoteldetails__rightboxs">
       <div className="hotel-summary-card">
         <div className="d-flex justify-content-between gap-3 align-items-start">
           <div>
@@ -343,23 +342,16 @@ function HotelBookingSummaryCard({
         </div>
       </div>
 
-      <div className="hotel-mini-info-card">
-        <div className="d-flex justify-content-between gap-3 flex-wrap">
-          <div className="hotel-summary-subcopy">Check-in policy available in room details</div>
-          <div className="hotel-summary-subcopy">Cancellation policy shown per room</div>
-        </div>
-      </div>
     </div>
   );
 }
 
-function HotelAboutSection({ aboutText, headline }) {
-  const [expanded, setExpanded] = useState(false);
+function HotelAboutSection({ aboutText, headline, onOpenModal }) {
   if (!aboutText && !headline) return null;
 
   const copy = aboutText || headline;
   const shouldClamp = copy.length > 240;
-  const visible = shouldClamp && !expanded ? `${copy.slice(0, 240).trim()}...` : copy;
+  const visible = shouldClamp ? `${copy.slice(0, 240).trim()}...` : copy;
 
   return (
     <section className="hotel-detail-section">
@@ -367,12 +359,48 @@ function HotelAboutSection({ aboutText, headline }) {
       <div className="hotel-detail-copy">
         {visible}
         {shouldClamp ? (
-          <button type="button" className="hotel-inline-link ms-1" onClick={() => setExpanded((prev) => !prev)}>
-            {expanded ? "Read less" : "Read more"}
+          <button type="button" className="hotel-inline-link ms-1" onClick={onOpenModal}>
+            Read more
           </button>
         ) : null}
       </div>
     </section>
+  );
+}
+
+function HotelAboutModal({ show, onHide, sections = {} }) {
+  const renderSection = (title, content) =>
+    content ? (
+      <div className="hotel-about-modal-section" key={title}>
+        <div className="hotel-about-modal-title">{title}</div>
+        <div className="hotel-about-modal-copy">{content}</div>
+      </div>
+    ) : null;
+
+  const sectionItems = [
+    ["Location", sections.location],
+    ["Amenities", sections.amenities],
+    ["Rooms", sections.rooms],
+    ["Dining", sections.dining],
+    ["Business amenities", sections.businessAmenities],
+    ["Attractions", sections.attractions],
+    ["Onsite payments", sections.onsitePayments],
+    ["Spoken languages", sections.spokenLanguages],
+  ];
+
+  return (
+    <Modal show={show} onHide={onHide} centered size="lg">
+      <div className="modal-content rounded-4">
+        <div className="modal-header border-0">
+          <h5 className="modal-title">About this property</h5>
+          <button type="button" className="btn-close" onClick={onHide} aria-label="Close" />
+        </div>
+        <div className="modal-body">
+          {renderSection("Overview", sections.headline || "")}
+          {sectionItems.map(([title, content]) => renderSection(title, content))}
+        </div>
+      </div>
+    </Modal>
   );
 }
 
@@ -383,7 +411,7 @@ function HotelAmenities({ amenities, onViewMore }) {
     <section className="hotel-detail-section">
       <div className="d-flex justify-content-between gap-3 align-items-center mb-3">
         <h4 className="mb-0">Amenities</h4>
-        {amenities.length > 6 ? (
+        {amenities.length > 0 ? (
           <button type="button" className="hotel-inline-link" onClick={onViewMore}>
             View more
           </button>
@@ -916,19 +944,20 @@ function RoomTypesSection({
   }, [filteredOptions]);
 
   return (
-    <div className="hotel-room-section-card" ref={roomSectionRef}>
-      <div className="hotel-room-section-head">
+    <div className="hotel-room-section-card hoteldetails__bottombox" ref={roomSectionRef}>
+      <div className="about-container">
+      <div className="hotel-room-section-head header_wrapper">
         <div>
-          <div className="hotel-room-section-title">Room types</div>
+          <div className="hotel-room-section-title about-room-types-header__title">Room types</div>
           <div className="hotel-summary-subcopy">
             {`Showing results ${filteredOptions.length} of ${options.length} room options`}
           </div>
         </div>
 
-        <div className="hotel-room-toolbar">
+        <div className="hotel-room-toolbar about-room-types-header__share">
           <div className="hotel-share-group">
             <span>Share by:</span>
-            <a className="hotel-whatsapp-btn" href={shareHref} target="_blank" rel="noreferrer">
+            <a className="hotel-whatsapp-btn about-room-types-header__whatsapp" href={shareHref} target="_blank" rel="noreferrer">
               <MessageCircleMore size={15} />
               WhatsApp
             </a>
@@ -942,6 +971,7 @@ function RoomTypesSection({
             onOpenMobileFilters={onOpenMobileFilters}
           />
         </div>
+      </div>
       </div>
 
       {detailLoading && options.length === 0 ? (
@@ -1037,6 +1067,7 @@ function HotelDetailsPage({
     mealPlan: "",
   });
   const [showAmenitiesModal, setShowAmenitiesModal] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
   const [showPolicyModal, setShowPolicyModal] = useState(false);
   const [selectedPolicyOption, setSelectedPolicyOption] = useState(null);
   const [showMarkupModal, setShowMarkupModal] = useState(false);
@@ -1063,6 +1094,7 @@ function HotelDetailsPage({
     details: null,
     errorCode: "",
   });
+  const [documentLoading, setDocumentLoading] = useState("");
   const bookingPollSessionRef = useRef(0);
   const isMountedRef = useRef(true);
 
@@ -1104,9 +1136,29 @@ function HotelDetailsPage({
   }, [detailModel.cheapestOption]);
 
   useEffect(() => {
-    const searchId = reviewPayloadFields.searchId;
-    const tjHotelId = reviewPayloadFields.tjHotelId || detailModel.id;
-    if (!searchId || !tjHotelId) return undefined;
+    const searchId =
+      reviewPayloadFields.searchId ||
+      detailModel?.meta?.searchId ||
+      initialPayload?.searchId ||
+      initialPayload?.searchQuery?.searchId ||
+      "";
+    const tjHotelId =
+      reviewPayloadFields.tjHotelId ||
+      detailModel.id ||
+      selectedHotel?.raw?.tjid ||
+      selectedHotel?.raw?.hid ||
+      "";
+    if (!searchId || !tjHotelId) {
+      if (import.meta.env.DEV) {
+        console.warn("Skipping TripJack static content fetch due to missing identifiers", {
+          searchId,
+          tjHotelId,
+          reviewPayloadFields,
+          detailMeta: detailModel?.meta,
+        });
+      }
+      return undefined;
+    }
 
     let active = true;
     getHotelStaticContent({
@@ -1126,7 +1178,16 @@ function HotelDetailsPage({
     return () => {
       active = false;
     };
-  }, [detailModel.id, reviewPayloadFields.searchId, reviewPayloadFields.tjHotelId]);
+  }, [
+    detailModel.id,
+    detailModel?.meta?.searchId,
+    initialPayload?.searchId,
+    initialPayload?.searchQuery?.searchId,
+    reviewPayloadFields.searchId,
+    reviewPayloadFields.tjHotelId,
+    selectedHotel?.raw?.tjid,
+    selectedHotel?.raw?.hid,
+  ]);
 
   const selectedOption = useMemo(
     () =>
@@ -1169,11 +1230,6 @@ function HotelDetailsPage({
     const currentUrl = typeof window !== "undefined" ? window.location.href : "";
     return `https://wa.me/?text=${encodeURIComponent(`Check out ${detailModel.name} on HappyWedz ${currentUrl}`)}`;
   }, [detailModel.name]);
-
-  const handleShowMap = () => {
-    const section = document.getElementById("hotel-map");
-    if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
 
   const handleViewPolicy = async (option) => {
     setSelectedPolicyOption(option);
@@ -1249,14 +1305,64 @@ function HotelDetailsPage({
   const handleReviewRoomOption = async (option, { openRoomModal = false } = {}) => {
     handleSelectRoom(option, openRoomModal);
 
+    const resolvedCorrelationId =
+      reviewPayloadFields.correlationId ||
+      detailModel?.meta?.correlationId ||
+      detailResponse?.correlationId ||
+      initialPayload?.correlationId ||
+      reviewPayloadFields.searchId ||
+      "";
+    const resolvedOptionId =
+      option?.raw?.optionId ||
+      option?.raw?.id ||
+      option?.optionId ||
+      option?.id ||
+      "";
+    const resolvedSearchId =
+      reviewPayloadFields.searchId ||
+      detailModel?.meta?.searchId ||
+      initialPayload?.searchId ||
+      initialPayload?.searchQuery?.searchId ||
+      "";
+    const resolvedDetailRequestId =
+      reviewPayloadFields.detailRequestId ||
+      reviewPayloadFields.reviewHash ||
+      detailModel?.meta?.requestId ||
+      detailModel?.meta?.reviewHash ||
+      detailResponse?.reviewHash ||
+      detailResponse?.requestId ||
+      option?.raw?.reviewHash ||
+      option?.raw?.requestId ||
+      "";
+    const resolvedTjHotelId =
+      reviewPayloadFields.tjHotelId ||
+      detailModel?.id ||
+      selectedHotel?.raw?.tjid ||
+      selectedHotel?.raw?.hid ||
+      "";
+
     const payload = {
-      searchId: reviewPayloadFields.searchId,
-      detailRequestId: reviewPayloadFields.detailRequestId,
-      optionId: option?.id || "",
-      tjHotelId: reviewPayloadFields.tjHotelId,
+      correlationId: String(resolvedCorrelationId || ""),
+      reviewHash: String(resolvedDetailRequestId || ""),
+      hid: String(resolvedTjHotelId || ""),
+      searchId: resolvedSearchId,
+      detailRequestId: resolvedDetailRequestId,
+      optionId: String(resolvedOptionId || ""),
+      tjHotelId: String(resolvedTjHotelId || ""),
     };
 
-    if (!payload.searchId || !payload.detailRequestId || !payload.optionId || !payload.tjHotelId) {
+    const hasOfficialPayload =
+      Boolean(payload.correlationId) &&
+      Boolean(payload.reviewHash) &&
+      Boolean(payload.optionId) &&
+      Boolean(payload.hid);
+    const hasLegacyPayload =
+      Boolean(payload.searchId) &&
+      Boolean(payload.detailRequestId) &&
+      Boolean(payload.optionId) &&
+      Boolean(payload.tjHotelId);
+
+    if (!hasOfficialPayload && !hasLegacyPayload) {
       console.warn("TripJack HMS review payload missing", { payload, candidates: reviewPayloadFields.candidates });
       toast.error("Missing review payload data. Please refresh hotel details and try again.");
       return;
@@ -1266,34 +1372,43 @@ function HotelDetailsPage({
 
     try {
       const response = await reviewHotelBooking(payload);
-      const reviewSelectedOption = response?.selectedOption || {};
+      const normalizedReviewResponse = normalizeReviewResponseForUi(
+        response,
+        option,
+        detailModel,
+        initialPayload
+      );
+      const reviewSelectedOption = normalizedReviewResponse?.selectedOption || {};
       const effectivePanRequired = Boolean(
-        response?.bookingRequirements?.panRequired ||
+        normalizedReviewResponse?.bookingRequirements?.panRequired ||
         reviewSelectedOption?.ipr ||
         option?.panRequired ||
         detailModel?.panRequired
       );
       const effectivePassportRequired = Boolean(
-        response?.bookingRequirements?.passportRequired ||
+        normalizedReviewResponse?.bookingRequirements?.passportRequired ||
         reviewSelectedOption?.ipm ||
         option?.passportRequired ||
         detailModel?.passportRequired
       );
       const enrichedReviewResponse = {
-        ...response,
+        ...normalizedReviewResponse,
         bookingRequirements: {
-          ...(response?.bookingRequirements || {}),
+          ...(normalizedReviewResponse?.bookingRequirements || {}),
           panRequired: effectivePanRequired,
           passportRequired: effectivePassportRequired,
         },
         displayHotelName:
-          response?.hotelSummary?.name || response?.hotelInfo?.name || detailModel.name || "Selected hotel",
+          normalizedReviewResponse?.hotelSummary?.name ||
+          normalizedReviewResponse?.hotelInfo?.name ||
+          detailModel.name ||
+          "Selected hotel",
         displayRoomName:
-          response?.roomSummary?.roomName ||
-          response?.selectedOption?.roomInfos?.[0]?.rt ||
-          response?.selectedOption?.roomInfos?.[0]?.srn ||
-          response?.selectedOption?.ris?.[0]?.srn ||
-          response?.selectedOption?.ris?.[0]?.rt ||
+          normalizedReviewResponse?.roomSummary?.roomName ||
+          normalizedReviewResponse?.selectedOption?.roomInfos?.[0]?.rt ||
+          normalizedReviewResponse?.selectedOption?.roomInfos?.[0]?.srn ||
+          normalizedReviewResponse?.selectedOption?.ris?.[0]?.srn ||
+          normalizedReviewResponse?.selectedOption?.ris?.[0]?.rt ||
           option.roomName,
       };
 
@@ -1482,7 +1597,11 @@ function HotelDetailsPage({
   };
 
   const buildBookingPayload = ({ includePayment = true }) => {
-    const payableAmount = normalizeAmount(reviewResponse?.priceSummary?.amount);
+    const payableAmount =
+      normalizeAmount(reviewResponse?.priceSummary?.amount) ||
+      normalizeAmount(reviewResponse?.selectedOption?.pricing?.totalPrice) ||
+      normalizeAmount(reviewResponse?.selectedOption?.totalPrice) ||
+      normalizeAmount(reviewResponse?.selectedOption?.tp);
     return {
       bookingId: reviewResponse.bookingId,
       roomTravellerInfo: bookingForm.roomTravellerInfo.map((room) => ({
@@ -1504,8 +1623,8 @@ function HotelDetailsPage({
       ipr: Boolean(reviewResponse?.bookingRequirements?.panRequired),
       ipm: Boolean(reviewResponse?.bookingRequirements?.passportRequired),
       hotelId: String(reviewResponse?.hotelInfo?.tjid || reviewResponse?.hotelSummary?.tjid || ""),
-      optionId: String(reviewResponse?.selectedOption?.id || ""),
-      reviewData: reviewResponse?.raw || reviewResponse,
+      optionId: String(reviewResponse?.selectedOption?.optionId || reviewResponse?.selectedOption?.id || ""),
+      reviewData: reviewResponse,
     };
   };
 
@@ -1527,22 +1646,40 @@ function HotelDetailsPage({
       return;
     }
 
-    const payableAmount = normalizeAmount(reviewResponse?.priceSummary?.amount);
+    const payableAmount =
+      normalizeAmount(reviewResponse?.priceSummary?.amount) ||
+      normalizeAmount(reviewResponse?.selectedOption?.pricing?.totalPrice) ||
+      normalizeAmount(reviewResponse?.selectedOption?.totalPrice) ||
+      normalizeAmount(reviewResponse?.selectedOption?.tp);
     if (!Number.isFinite(payableAmount) || payableAmount <= 0) {
       toast.error("Booking amount is unavailable. Please review the room again.");
       return;
     }
 
     const payload = buildBookingPayload({ includePayment: true });
+// If payment is already captured (or TripJack says payment success), we should retry booking
+// without forcing payment again.
+const retryWithoutRepayment =
+      ["validation_failed", "denied", "failed", "already_paid"].includes(
+        String(bookingStatusState?.phase || "").toLowerCase()
+      ) &&
+      Boolean(
+        bookingStatusState?.details?.paymentCaptured ||
+        bookingStatusState?.details?.payment_status === "PAID" ||
+        bookingStatusState?.paymentCaptured ||
+        String(bookingStatusState?.orderStatus || "").toUpperCase() === "PAYMENT_SUCCESS"
+      );
+
 
     console.log("[TripJack Booking Request]", {
-      endpoint: "hotels/create-payment-order",
+      endpoint: retryWithoutRepayment ? "hotels/verify-payment-and-book" : "hotels/create-payment-order",
       bookingId: payload.bookingId,
       hotelId: payload.hotelId,
       optionId: payload.optionId,
       paymentInfos: payload.paymentInfos,
       roomTravellerInfo: payload.roomTravellerInfo,
       deliveryInfo: payload.deliveryInfo,
+      retryWithoutRepayment,
     });
 
     setBookingSubmitting(true);
@@ -1558,6 +1695,64 @@ function HotelDetailsPage({
     });
 
     try {
+      if (retryWithoutRepayment) {
+        setBookingStatusState({
+          phase: "submitting",
+          bookingId: payload.bookingId,
+          orderStatus: "PAYMENT_SUCCESS",
+          attempts: 0,
+          message: "Payment already captured. Retrying booking with updated traveller details.",
+          details: bookingStatusState?.details || null,
+          errorCode: "",
+          paymentCaptured: true,
+        });
+        const verifyResponse = await verifyHotelPaymentAndBook({
+          bookingId: payload.bookingId,
+          roomTravellerInfo: payload.roomTravellerInfo,
+          deliveryInfo: payload.deliveryInfo,
+          ipr: payload.ipr,
+          ipm: payload.ipm,
+          type: payload.type,
+        });
+
+        if (
+          verifyResponse?.success === false ||
+          verifyResponse?.tripjackRequestAccepted === false ||
+          verifyResponse?.status?.success === false
+        ) {
+          setShowBookingFormModal(false);
+          setBookingStatusState({
+            phase: "denied",
+            bookingId: verifyResponse?.bookingId || payload.bookingId,
+            orderStatus: "",
+            attempts: 0,
+            message: `TripJack denied the booking request: ${verifyResponse?.error || verifyResponse?.errors?.[0]?.message || "Access Denied"}`,
+            details: verifyResponse,
+            errorCode: verifyResponse?.errors?.[0]?.errCode || "",
+            paymentCaptured: true,
+          });
+          return;
+        }
+
+        setShowBookingFormModal(false);
+        setBookingStatusState({
+          phase: "polling",
+          bookingId: verifyResponse?.bookingId || payload.bookingId,
+          orderStatus: verifyResponse?.bookingDetails?.orderStatus || verifyResponse?.userStatus || "PAYMENT_SUCCESS",
+          attempts: 0,
+          message:
+            verifyResponse?.userStatus === "Payment Successful - Awaiting Hotel Confirmation"
+              ? "Your payment is successful. We are waiting for final hotel confirmation from TripJack."
+              : "Booking request accepted. Waiting for final TripJack status.",
+          details: verifyResponse?.bookingDetails || verifyResponse,
+          errorCode: "",
+          paymentCaptured: true,
+        });
+
+        await pollTripjackBookingStatus(verifyResponse?.bookingId || payload.bookingId);
+        return;
+      }
+
       const orderResponse = await createHotelPaymentOrder(payload);
       const razorpayLoaded = await loadRazorpayScript();
       if (!razorpayLoaded || !window.Razorpay) {
@@ -1671,12 +1866,33 @@ function HotelDetailsPage({
         error?.code === "ECONNABORTED" ||
         error?.code === "ERR_CANCELED" ||
         /timeout|canceled|aborted/i.test(String(error?.message || ""));
-      const validationFailure = error?.response?.status === 400 || error?.response?.data?.source === "VALIDATION";
+      const validationFailure = error?.response?.data?.source === "VALIDATION";
       const duplicateBookingBlocked = Boolean(error?.response?.data?.duplicateBookingBlocked);
       const tripjackDenied =
         error?.response?.data?.source === "TRIPJACK" &&
-        error?.response?.data?.status?.success === false;
+        (
+          error?.response?.data?.status?.success === false ||
+          Number(error?.response?.data?.status_code || error?.response?.status || 0) === 400
+        );
+      const tripjackServerFailure =
+        error?.response?.data?.source === "TRIPJACK" &&
+        Number(error?.response?.data?.status_code || error?.response?.status || 0) >= 500;
       const paymentFailure = error?.response?.data?.source === "PAYMENT" || /razorpay/i.test(String(error?.message || ""));
+      const requiresManualAction = Boolean(error?.response?.data?.requiresManualAction);
+      const paymentCaptured = Boolean(error?.response?.data?.paymentCaptured);
+      const supplierFailureMessage =
+        requiresManualAction || paymentCaptured
+          ? "TripJack is temporarily unavailable after payment verification. Do not retry payment. Please check booking status after a short while or contact support with the booking ID."
+          : error?.response?.data?.error || "TripJack is temporarily unavailable. Please try again shortly.";
+      const resolvedFailureMessage = validationFailure
+        ? error?.response?.data?.error || "Booking request validation failed. Please check traveller details and try again."
+        : tripjackDenied
+          ? `TripJack rejected the booking request: ${error?.response?.data?.error || "Invalid traveller details or supplier validation failed."}`
+          : tripjackServerFailure
+            ? supplierFailureMessage
+            : paymentFailure
+              ? error?.response?.data?.error || error?.message || "Payment could not be completed."
+              : "Unable to submit this booking. Please review traveller details and try again.";
 
       if (!duplicateBookingBlocked || (!timeoutOrCanceled && !tripjackDenied && !validationFailure)) {
         console.error("Unable to create TripJack booking", error);
@@ -1701,19 +1917,20 @@ function HotelDetailsPage({
 
       if (duplicateBookingBlocked) {
         const duplicateBookingId = error?.response?.data?.bookingId || payload.bookingId;
+        const duplicateMessage =
+          "Previous payment was already captured for this booking. Do not pay again. We are fetching the latest TripJack status.";
         setBookingStatusState({
           phase: "already_paid",
           bookingId: duplicateBookingId,
           orderStatus: error?.response?.data?.bookingSummary?.tripjackStatus || "",
           attempts: 0,
-          message:
-            error?.response?.data?.error ||
-            "This booking is already paid. Fetching latest TripJack status.",
+          message: duplicateMessage,
           details: error?.response?.data?.bookingDetails || error?.response?.data || null,
           errorCode: "",
+          paymentCaptured: true,
           allowClose: true,
         });
-        toast.info("Payment already completed for this booking. Fetching latest status.");
+        toast.info(duplicateMessage);
         await pollTripjackBookingStatus(duplicateBookingId);
         return;
       }
@@ -1723,25 +1940,13 @@ function HotelDetailsPage({
         bookingId: payload.bookingId,
         orderStatus: "",
         attempts: 0,
-        message: validationFailure
-          ? error?.response?.data?.error || "Booking request validation failed. Please check traveller details and try again."
-          : tripjackDenied
-            ? `TripJack denied the booking request: ${error?.response?.data?.error || "Access Denied"}`
-            : paymentFailure
-              ? error?.response?.data?.error || error?.message || "Payment could not be completed."
-              : "Unable to submit this booking. Please review traveller details and try again.",
+        message: resolvedFailureMessage,
         details: error?.response?.data || null,
         errorCode: error?.response?.data?.errors?.[0]?.errCode || "",
+        paymentCaptured,
+        allowClose: tripjackServerFailure || requiresManualAction || paymentCaptured,
       });
-      toast.error(
-        validationFailure
-          ? error?.response?.data?.error || "Booking request validation failed. Please check traveller details and try again."
-          : tripjackDenied
-            ? `TripJack denied the booking request: ${error?.response?.data?.error || "Access Denied"}`
-            : paymentFailure
-              ? error?.response?.data?.error || error?.message || "Payment could not be completed."
-              : "Unable to submit this booking. Please review traveller details and try again.",
-      );
+      toast.error(resolvedFailureMessage);
     } finally {
       setBookingSubmitting(false);
     }
@@ -1751,6 +1956,42 @@ function HotelDetailsPage({
     const currentBookingId = bookingStatusState?.bookingId || reviewResponse?.bookingId;
     if (!currentBookingId) return;
     await pollTripjackBookingStatus(currentBookingId);
+  };
+
+  const currentStatusBookingId = bookingStatusState?.bookingId || reviewResponse?.bookingId || "";
+  const currentStatusCode = String(
+    bookingStatusState?.details?.order?.status ||
+      bookingStatusState?.details?.orderStatus ||
+      bookingStatusState?.orderStatus ||
+      "",
+  ).toUpperCase();
+  const canDownloadReceipt =
+    Boolean(currentStatusBookingId) &&
+    (
+      ["success"].includes(String(bookingStatusState?.phase || "").toLowerCase()) ||
+      ["SUCCESS", "CONFIRMED", "VOUCHERED", "ON_HOLD"].includes(currentStatusCode)
+    );
+
+  const handleEditDetailsAndRetry = () => {
+    setShowBookingStatusModal(false);
+    setShowBookingFormModal(true);
+  };
+
+  const handleDownloadReceipt = async () => {
+    if (!currentStatusBookingId || documentLoading) return;
+    setDocumentLoading("receipt");
+    try {
+      await downloadHotelReceipt(currentStatusBookingId);
+    } catch (error) {
+      const message =
+        error?.response?.data?.error ||
+        error?.message ||
+        "Unable to download booking receipt right now.";
+      console.error("Unable to download TripJack receipt", error);
+      toast.error(message);
+    } finally {
+      setDocumentLoading("");
+    }
   };
 
   const handleOpenGallery = (index) => {
@@ -1891,20 +2132,28 @@ function HotelDetailsPage({
         ) : detailLoading && !detailModel.name ? (
           <HotelDetailsSkeleton />
         ) : (
-          <div className="hotel-detail-shell">
-            <div className="hotel-detail-card hotel-detail-hero-card">
+          <div className="hotel-detail-shell hoteldetails hotel__container">
+            <div className="hotel-detail-card hotel-detail-hero-card hotel-details-container">
               <HotelHeader
                 detailModel={detailModel}
-                onShowMap={handleShowMap}
                 onBackToResults={onBackToResults}
                 onEditMarkup={() => setShowMarkupModal(true)}
                 markupEnabled={markupEnabled}
               />
               
-              <div className="hotel-detail-overview">
-                <div>
+              <div className="hotel-detail-overview hotel-basic-info">
+                <div className="hoteldetails__leftboxes">
                   <HotelGallery images={detailModel.images} hotelName={detailModel.name} onOpenGallery={handleOpenGallery} />
-                  <HotelAboutSection aboutText={detailModel.aboutText} headline={detailModel.headline} />
+                  <HotelAboutSection
+                    aboutText={detailModel.aboutText}
+                    headline={detailModel.headline}
+                    onOpenModal={() => setShowAboutModal(true)}
+                  />
+                  <HotelAboutModal
+                    show={showAboutModal}
+                    onHide={() => setShowAboutModal(false)}
+                    sections={detailModel.aboutSections || {}}
+                  />
                   <HotelAmenities amenities={detailModel.amenities} onViewMore={handleOpenAmenitiesModal} />
                 </div>
 
@@ -1919,25 +2168,6 @@ function HotelDetailsPage({
                   reviewLoadingOptionId={reviewLoadingOptionId}
                 />
               </div>
-            </div>
-
-            <div className="hotel-detail-card" id="hotel-map">
-              <div className="d-flex justify-content-between gap-3 align-items-center mb-3">
-                <h4 className="mb-0">Location</h4>
-                <a className="hotel-inline-link" href={detailModel.mapInfo.openMapsHref} target="_blank" rel="noreferrer">
-                  Open in Google Maps
-                </a>
-              </div>
-              <iframe
-                src={detailModel.mapInfo.mapSrc}
-                width="100%"
-                height={360}
-                style={{ border: 0, borderRadius: 16 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Hotel map"
-              />
             </div>
 
             <RoomTypesSection
@@ -2291,6 +2521,10 @@ function HotelDetailsPage({
         reviewResponse={reviewResponse}
         onClose={() => setShowBookingStatusModal(false)}
         onRefresh={handleRefreshBookingStatus}
+        onEditDetails={handleEditDetailsAndRetry}
+        onDownloadReceipt={handleDownloadReceipt}
+        canDownloadReceipt={canDownloadReceipt}
+        documentLoading={documentLoading}
         formatMoney={formatMoney}
       />
 

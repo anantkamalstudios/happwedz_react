@@ -1,11 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { Container } from "react-bootstrap";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { cancelHotelBooking, confirmHotelBooking, getHotelBookingDetails } from "../../../../services/api/hotelApi";
+import {
+  cancelHotelBooking,
+  confirmHotelBooking,
+  downloadHotelReceipt,
+  getHotelBookingDetails,
+} from "../../../../services/api/hotelApi";
 
 function formatAmount(amount, currency = "INR") {
   const value = Number(amount || 0);
-  if (!Number.isFinite(value) || value <= 0) return "-";
+  if (!Number.isFinite(value) || value <= 0) return "Not available";
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency,
@@ -14,7 +19,7 @@ function formatAmount(amount, currency = "INR") {
 }
 
 function formatDate(value) {
-  if (!value) return "-";
+  if (!value) return "Not available";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
   return date.toLocaleDateString("en-IN", {
@@ -25,7 +30,7 @@ function formatDate(value) {
 }
 
 function formatDateTime(value) {
-  if (!value) return "-";
+  if (!value) return "Not available";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
   return date.toLocaleString("en-IN", {
@@ -103,6 +108,15 @@ function getStatusTone(orderStatus) {
       border: "#f7deb0",
     };
   }
+  if (normalized === "ON_HOLD") {
+    return {
+      title: "Booking On Hold",
+      subtitle: "This room is held in TripJack and must be confirmed before the deadline.",
+      color: "#1d4ed8",
+      bg: "#eff6ff",
+      border: "#bfdbfe",
+    };
+  }
   return {
     title: "Booking Status Update",
     subtitle: "Booking status is being processed. Please refresh after some time.",
@@ -124,17 +138,11 @@ export default function HotelBookingDetailsPage() {
   const [cancelMessage, setCancelMessage] = useState("");
   const [cancellationRequested, setCancellationRequested] = useState(false);
   const [confirmHoldLoading, setConfirmHoldLoading] = useState(false);
+  const [documentLoading, setDocumentLoading] = useState("");
 
   const loadDetails = async () => {
     if (!bookingId) {
       setError("Booking ID is missing.");
-      setLoading(false);
-      return;
-    }
-
-    if (fallbackBooking && isPaymentPendingBooking(fallbackBooking.status)) {
-      setDetails(null);
-      setError("");
       setLoading(false);
       return;
     }
@@ -181,6 +189,7 @@ export default function HotelBookingDetailsPage() {
   const showPendingBookingSummary = showPendingStatusNotice;
 
   const ui = useMemo(() => {
+    const display = details?.bookingDisplay || {};
     const order = details?.raw?.order || {};
     const hotelInfo = details?.raw?.itemInfos?.HOTEL?.hInfo || {};
     const option = Array.isArray(hotelInfo?.ops) && hotelInfo.ops.length ? hotelInfo.ops[0] : {};
@@ -188,13 +197,14 @@ export default function HotelBookingDetailsPage() {
     const traveller = Array.isArray(room?.ti) && room.ti.length ? room.ti[0] : {};
     const fare = room?.tfcs || option?.tfcs || {};
 
-    const hotelName = hotelInfo?.name || fallbackBooking?.hotelName || "Booked Hotel";
+    const hotelName = display.hotelName || hotelInfo?.name || fallbackBooking?.hotelName || "Booked Hotel";
     const address =
+      display.hotelAddress ||
       hotelInfo?.ad?.adr ||
       hotelInfo?.ad?.line1 ||
       hotelInfo?.ad?.city?.name ||
       hotelInfo?.ad?.name ||
-      "-";
+      "Not available";
 
     const normalizedStatus = String(
       details?.bookingStatusMeta?.normalizedStatus ||
@@ -218,6 +228,15 @@ export default function HotelBookingDetailsPage() {
       !isCancellationText &&
       !cancellationRequested &&
       ["SUCCESS", "CONFIRMED", "VOUCHERED", "ON_HOLD", "PAYMENT_SUCCESS"].includes(normalizedStatus);
+    const bookingType = String(details?.bookingType || fallbackBooking?.bookingType || "").toUpperCase();
+    const paymentStatus = String(details?.paymentStatus || fallbackBooking?.paymentStatus || "").toUpperCase();
+    const canConfirmHold =
+      bookingType === "HOLD" &&
+      paymentStatus !== "PAID" &&
+      ["ON_HOLD", "IN_PROGRESS", "PENDING", "PAYMENT_PENDING"].includes(normalizedStatus);
+    const canDownloadReceipt =
+      paymentStatus === "PAID" &&
+      ["SUCCESS", "CONFIRMED", "VOUCHERED", "ON_HOLD"].includes(normalizedStatus);
     const statusLabel = isCancellationFlow
       ? normalizedStatus === "CANCELLED"
         ? "Booking Cancelled"
@@ -229,9 +248,9 @@ export default function HotelBookingDetailsPage() {
       hotelName,
       address,
       bookingId: details?.bookingId || bookingId,
-      checkIn: room?.checkInDate || details?.raw?.itemInfos?.HOTEL?.query?.checkinDate || fallbackBooking?.checkIn,
-      checkOut: room?.checkOutDate || details?.raw?.itemInfos?.HOTEL?.query?.checkoutDate || fallbackBooking?.checkOut,
-      roomName: room?.rc || room?.rt || "-",
+      checkIn: display.checkIn || room?.checkInDate || details?.raw?.itemInfos?.HOTEL?.query?.checkinDate || fallbackBooking?.checkIn,
+      checkOut: display.checkOut || room?.checkOutDate || details?.raw?.itemInfos?.HOTEL?.query?.checkoutDate || fallbackBooking?.checkOut,
+      roomName: display.roomName || room?.rc || room?.rt || "Not available",
       totalRooms: Array.isArray(option?.ris) ? option.ris.length : 1,
       adults: room?.adt ?? 1,
       children: room?.chd ?? 0,
@@ -245,23 +264,50 @@ export default function HotelBookingDetailsPage() {
             room?.checkInDate || details?.raw?.itemInfos?.HOTEL?.query?.checkinDate || fallbackBooking?.checkIn,
             room?.checkOutDate || details?.raw?.itemInfos?.HOTEL?.query?.checkoutDate || fallbackBooking?.checkOut,
           )} Night(s)`
-        : "-",
-      guestName: [traveller?.fN, traveller?.lN].filter(Boolean).join(" ") || "-",
-      email: details?.deliveryInfo?.emails?.[0] || order?.deliveryInfo?.emails?.[0] || "-",
-      phone: details?.deliveryInfo?.contacts?.[0] || order?.deliveryInfo?.contacts?.[0] || "-",
-      createdOn: details?.createdOn || order?.createdOn || fallbackBooking?.createdAt,
-      baseFare: fare?.BF,
-      taxesAndFees: fare?.TAF,
-      totalAmount: details?.amount || order?.amount || option?.tp || fallbackBooking?.amount || 0,
-      currency: fallbackBooking?.currency || option?.sc || "INR",
-      cancellationPolicies: Array.isArray(option?.cnp?.pd) ? option.cnp.pd : [],
+        : "Not available",
+      guestName: display.guestName || [traveller?.fN, traveller?.lN].filter(Boolean).join(" ") || "Not available",
+      email: display.email || details?.deliveryInfo?.emails?.[0] || order?.deliveryInfo?.emails?.[0] || "Not available",
+      phone: display.phone || details?.deliveryInfo?.contacts?.[0] || order?.deliveryInfo?.contacts?.[0] || "Not available",
+      createdOn: display.createdOn || details?.createdOn || order?.createdOn || fallbackBooking?.createdAt,
+      deadlineDatetime:
+        display.deadlineDatetime ||
+        details?.deadlineDatetime ||
+        fallbackBooking?.deadlineDatetime ||
+        details?.raw?.itemInfos?.HOTEL?.hInfo?.ops?.[0]?.ddt ||
+        null,
+      baseFare: display.baseFare ?? fare?.BF,
+      taxesAndFees: display.taxes ?? fare?.TAF,
+      mf: display.mf,
+      mft: display.mft,
+      totalAmount: display.totalAmount ?? details?.amount ?? order?.amount ?? option?.tp ?? fallbackBooking?.amount ?? 0,
+      currency: display.currency || fallbackBooking?.currency || option?.sc || "INR",
+      cancellationPolicies: Array.isArray(display.cancellationPolicies) && display.cancellationPolicies.length > 0 ? display.cancellationPolicies : Array.isArray(option?.cnp?.pd) ? option.cnp.pd : [],
       statusLabel,
       canCancel,
+      canConfirmHold,
+      canDownloadReceipt,
       normalizedStatus,
       isCancellationFlow,
-      isOnHold: normalizedStatus === "ON_HOLD",
+      isOnHold: ["ON_HOLD", "IN_PROGRESS"].includes(normalizedStatus),
     };
   }, [details, bookingId, fallbackBooking, cancellationRequested]);
+
+  const handleDownloadReceipt = async () => {
+    if (!bookingId || documentLoading) return;
+    setDocumentLoading("receipt");
+    setCancelMessage("");
+    try {
+      await downloadHotelReceipt(bookingId);
+    } catch (err) {
+      setCancelMessage(
+        err?.response?.data?.error ||
+          err?.message ||
+          "Unable to download booking receipt right now.",
+      );
+    } finally {
+      setDocumentLoading("");
+    }
+  };
 
   const handleConfirmHoldBooking = async () => {
     if (!bookingId || confirmHoldLoading) return;
@@ -325,20 +371,39 @@ export default function HotelBookingDetailsPage() {
     >
       <Container>
         <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            style={{
-              border: "1px solid #cbd5e1",
-              background: "#fff",
-              color: "#132238",
-              borderRadius: "999px",
-              padding: "0.5rem 1rem",
-              fontWeight: 600,
-            }}
-          >
-            Back
-          </button>
+          <div className="d-flex align-items-center flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              style={{
+                border: "1px solid #cbd5e1",
+                background: "#fff",
+                color: "#132238",
+                borderRadius: "999px",
+                padding: "0.5rem 1rem",
+                fontWeight: 600,
+              }}
+            >
+              Back
+            </button>
+            {ui?.canDownloadReceipt ? (
+              <button
+                type="button"
+                onClick={handleDownloadReceipt}
+                disabled={Boolean(documentLoading)}
+                style={{
+                  border: "1px solid #132238",
+                  background: "#fff",
+                  color: "#132238",
+                  borderRadius: "999px",
+                  padding: "0.5rem 1rem",
+                  fontWeight: 600,
+                }}
+              >
+                {documentLoading === "receipt" ? "Preparing Receipt..." : "Download Receipt"}
+              </button>
+            ) : null}
+          </div>
           <Link
             to="/hotels/all-booking"
             style={{
@@ -519,7 +584,12 @@ export default function HotelBookingDetailsPage() {
                         <div style={{ color: "#334155" }}>Email: {ui.email}</div>
                         <div style={{ color: "#334155" }}>Phone: {ui.phone}</div>
                         <div style={{ color: "#64748b", marginTop: "0.35rem" }}>Created On: {formatDateTime(ui.createdOn)}</div>
-                        {ui.isOnHold ? (
+                        {ui.isOnHold && ui.deadlineDatetime ? (
+                          <div style={{ color: "#1d4ed8", marginTop: "0.35rem", fontWeight: 700 }}>
+                            Hold Deadline: {formatDateTime(ui.deadlineDatetime)}
+                          </div>
+                        ) : null}
+                        {ui.canConfirmHold ? (
                           <div className="mt-3">
                             <button
                               type="button"
@@ -535,9 +605,9 @@ export default function HotelBookingDetailsPage() {
                                 cursor: confirmHoldLoading ? "not-allowed" : "pointer",
                                 marginRight: "0.5rem",
                               }}
-                              title="Confirm held booking"
+                              title="Pay and confirm held booking"
                             >
-                              {confirmHoldLoading ? "Confirming..." : "Confirm Booking"}
+                              {confirmHoldLoading ? "Processing..." : "Pay & Confirm Hold"}
                             </button>
                           </div>
                         ) : null}
@@ -634,6 +704,14 @@ export default function HotelBookingDetailsPage() {
                     <div className="d-flex justify-content-between" style={{ color: "#475569", marginBottom: "0.45rem" }}>
                       <span>Taxes & Fees</span>
                       <span>{formatAmount(ui.taxesAndFees, ui.currency)}</span>
+                    </div>
+                    <div className="d-flex justify-content-between" style={{ color: "#475569", marginBottom: "0.45rem" }}>
+                      <span>MF</span>
+                      <span>{formatAmount(ui.mf, ui.currency)}</span>
+                    </div>
+                    <div className="d-flex justify-content-between" style={{ color: "#475569", marginBottom: "0.45rem" }}>
+                      <span>MFT</span>
+                      <span>{formatAmount(ui.mft, ui.currency)}</span>
                     </div>
                     <div style={{ borderTop: "1px solid #e2e8f0", margin: "0.5rem 0" }} />
                     <div className="d-flex justify-content-between" style={{ fontWeight: 800, color: "#132238" }}>

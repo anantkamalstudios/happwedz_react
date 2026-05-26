@@ -7,7 +7,12 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { suggestHotels, searchHotels } from "../../../../../services/api/hotelApi";
+import {
+  fetchHotelCityRegions,
+  fetchHotelCountries,
+  fetchStaticHotelsSuggestions,
+  searchHotels,
+} from "../../../../../services/api/hotelApi";
 import {
   createCorrelationId,
   defaultFilters,
@@ -249,7 +254,7 @@ function RatingDropdown({ selectedRatings, onToggle, onClose }) {
   );
 }
 
-function CountryDropdown({ value, label, onChange, onClose }) {
+function CountryDropdown({ value, label, onChange, onClose, options = HOTEL_COUNTRIES }) {
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef(null);
 
@@ -264,8 +269,10 @@ function CountryDropdown({ value, label, onChange, onClose }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
-  const filteredCountries = HOTEL_COUNTRIES.filter((country) =>
-    country.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredCountries = options.filter((country) =>
+    String(country.name || country.label || "")
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -289,16 +296,16 @@ function CountryDropdown({ value, label, onChange, onClose }) {
       <div className="hotel-country-list">
         {filteredCountries.map((country) => (
           <button
-            key={country.code}
+            key={country.code || country.countryName}
             type="button"
-            className={`hotel-country-item ${country.code === value ? "selected" : ""}`}
+            className={`hotel-country-item ${(country.code || country.countryName) === value ? "selected" : ""}`}
             onClick={() => {
-              onChange(country.code);
+              onChange(country.code || country.countryName);
               onClose?.();
             }}
           >
-            <span>{country.name}</span>
-            {country.code === value ? <span className="hotel-country-check">✓</span> : null}
+            <span>{country.name || country.label}</span>
+            {(country.code || country.countryName) === value ? <span className="hotel-country-check">✓</span> : null}
           </button>
         ))}
       </div>
@@ -446,11 +453,15 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
 export default function HotelSearchForm() {
   const navigate = useNavigate();
   const destinationRef = useRef(null);
+  const suppressNextSuggestionFetchRef = useRef(false);
   const [hotelLocation, setHotelLocation] = useState("");
   const [hotelSuggestions, setHotelSuggestions] = useState([]);
   const [hotelSuggestLoading, setHotelSuggestLoading] = useState(false);
   const [showHotelSuggestions, setShowHotelSuggestions] = useState(false);
-  const [selectedHotelSuggestion, setSelectedHotelSuggestion] = useState(null);
+  const [selectedDestination, setSelectedDestination] = useState(null);
+  const [selectedHotel, setSelectedHotel] = useState(null);
+  const [countryOptions, setCountryOptions] = useState([{ code: "INDIA", name: "India" }]);
+  const [selectedCountry, setSelectedCountry] = useState("INDIA");
   const [hotelCheckIn, setHotelCheckIn] = useState("");
   const [hotelCheckOut, setHotelCheckOut] = useState("");
   const [hotelRooms, setHotelRooms] = useState([{ adults: 2, children: 0 }]);
@@ -461,6 +472,7 @@ export default function HotelSearchForm() {
   const [showRatingsDropdown, setShowRatingsDropdown] = useState(false);
   const [showNationalityDropdown, setShowNationalityDropdown] = useState(false);
   const [showResidenceDropdown, setShowResidenceDropdown] = useState(false);
+  const [showSearchCountryDropdown, setShowSearchCountryDropdown] = useState(false);
   const [showGuestsDropdown, setShowGuestsDropdown] = useState(false);
   const [hotelSearchLoading, setHotelSearchLoading] = useState(false);
 
@@ -476,7 +488,37 @@ export default function HotelSearchForm() {
   }, []);
 
   useEffect(() => {
+    let active = true;
+    const loadCountries = async () => {
+      try {
+        const response = await fetchHotelCountries();
+        if (!active) return;
+        const countries = Array.isArray(response?.countries) ? response.countries : [];
+        if (!countries.length) return;
+        const mapped = countries.map((item) => ({
+          code: item?.countryName || item?.id,
+          name: item?.label || item?.countryName || item?.id,
+        }));
+        setCountryOptions(mapped);
+        setSelectedCountry("INDIA");
+      } catch (error) {
+        console.error("Unable to load TripJack country list", error);
+      }
+    };
+    loadCountries();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
     const keyword = hotelLocation.trim();
+    if (suppressNextSuggestionFetchRef.current) {
+      suppressNextSuggestionFetchRef.current = false;
+      setShowHotelSuggestions(false);
+      setHotelSuggestLoading(false);
+      return undefined;
+    }
     if (keyword.length < 2) {
       setHotelSuggestions([]);
       setShowHotelSuggestions(false);
@@ -485,20 +527,57 @@ export default function HotelSearchForm() {
     }
 
     let active = true;
+    const abortController = new AbortController();
     const timer = window.setTimeout(async () => {
       setHotelSuggestLoading(true);
       try {
-        const response = await suggestHotels({ keyword });
+        const [destResponse, hotelResponse] = await Promise.all([
+          fetchHotelCityRegions({ keyword, selectedCountry, limit: 80 }, { signal: abortController.signal }),
+          fetchStaticHotelsSuggestions(
+            { keyword, selectedCountry, limit: 30 },
+            { signal: abortController.signal },
+          ),
+        ]);
         if (!active) return;
 
-        const suggestions = readSuggestionItems(response)
+        const destinationSuggestions = readSuggestionItems(destResponse)
           .map(normalizeHotelSuggestion)
+          .map((item) => ({ ...item, suggestionType: "destination" }))
+          .filter((item) => item?.id && item?.displayName);
+        const hotelSuggestionsRaw = readSuggestionItems(hotelResponse)
+          .map(normalizeHotelSuggestion)
+          .map((item) => ({
+            ...item,
+            id: String(item?.hid || item?.id || ""),
+            hid: String(item?.hid || item?.id || ""),
+            suggestionType: "hotel",
+            searchType: "HOTEL",
+            searchRegionType: "HOTEL",
+          }))
           .filter((item) => item?.id && item?.displayName);
 
-        setHotelSuggestions(suggestions);
+        const seenDest = new Set();
+        const dedupDestinations = destinationSuggestions.filter((item) => {
+          const key = `${item.id}|${item.searchRegionType}|${item.countryName}`;
+          if (seenDest.has(key)) return false;
+          seenDest.add(key);
+          return true;
+        });
+        const seenHotels = new Set();
+        const dedupHotels = hotelSuggestionsRaw.filter((item) => {
+          const key = String(item?.hid || item?.id || "");
+          if (!key || seenHotels.has(key)) return false;
+          seenHotels.add(key);
+          return true;
+        });
+
+        setHotelSuggestions([...dedupDestinations, ...dedupHotels]);
         setShowHotelSuggestions(true);
       } catch (error) {
         if (!active) return;
+        if (error?.name === "CanceledError" || error?.name === "AbortError" || error?.code === "ERR_CANCELED") {
+          return;
+        }
         setHotelSuggestions([]);
         setShowHotelSuggestions(false);
         console.error("Unable to load hotel suggestions", error);
@@ -511,9 +590,10 @@ export default function HotelSearchForm() {
 
     return () => {
       active = false;
+      abortController.abort();
       window.clearTimeout(timer);
     };
-  }, [hotelLocation]);
+  }, [hotelLocation, selectedCountry]);
 
   const totalNights = useMemo(
     () => calculateNights(hotelCheckIn, hotelCheckOut),
@@ -531,14 +611,20 @@ export default function HotelSearchForm() {
     HOTEL_COUNTRIES.find((country) => country.code === countryOfResidence)?.name || "India";
 
   const selectedRatingsLabel = selectedRatings.length
-    ? HOTEL_RATING_OPTIONS.filter((option) => selectedRatings.includes(option.value))
-        .map((option) => option.label)
-        .join(", ")
+    ? selectedRatings.length === 1
+      ? HOTEL_RATING_OPTIONS.find((option) => selectedRatings.includes(option.value))?.label || "1 selected"
+      : `${selectedRatings.length} selected`
     : "Select";
+  const selectedSuggestion = selectedHotel || selectedDestination;
+  const selectedCountryLabel =
+    countryOptions.find((country) => String(country.code || "").toUpperCase() === selectedCountry)?.name ||
+    "India";
+  const destinationSuggestions = hotelSuggestions.filter((item) => item?.suggestionType !== "hotel");
+  const hotelOnlySuggestions = hotelSuggestions.filter((item) => item?.suggestionType === "hotel");
 
   const handleSearchHotels = async () => {
-    if (!selectedHotelSuggestion?.displayName) {
-      alert("Please select a destination from the suggestions.");
+    if (!selectedSuggestion?.displayName) {
+      alert("Please select a destination or hotel from suggestions.");
       return;
     }
 
@@ -553,24 +639,24 @@ export default function HotelSearchForm() {
     }
 
     const isHotelSearch =
-      String(selectedHotelSuggestion?.searchRegionType || selectedHotelSuggestion?.searchType || "")
-        .toUpperCase() === "HOTEL";
+      String(selectedSuggestion?.searchRegionType || selectedSuggestion?.searchType || "").toUpperCase() ===
+      "HOTEL";
 
     const fallbackCity =
-      selectedHotelSuggestion?.city ||
-      selectedHotelSuggestion?.raw?.city ||
-      selectedHotelSuggestion?.raw?.cityId ||
-      selectedHotelSuggestion?.raw?.cId ||
+      selectedSuggestion?.city ||
+      selectedSuggestion?.raw?.city ||
+      selectedSuggestion?.raw?.cityId ||
+      selectedSuggestion?.raw?.cId ||
       "";
-    const normalizedTjids = Array.isArray(selectedHotelSuggestion?.tjids)
-      ? selectedHotelSuggestion.tjids.map((item) => String(item || "").trim()).filter(Boolean)
+    const normalizedTjids = Array.isArray(selectedSuggestion?.tjids)
+      ? selectedSuggestion.tjids.map((item) => String(item || "").trim()).filter(Boolean)
       : [];
     const normalizedHid = String(
-      selectedHotelSuggestion?.hid ||
-        selectedHotelSuggestion?.raw?.hid ||
-        selectedHotelSuggestion?.raw?.tjid ||
-        selectedHotelSuggestion?.raw?.tjHotelId ||
-        selectedHotelSuggestion?.raw?.hotelCode ||
+      selectedSuggestion?.hid ||
+        selectedSuggestion?.raw?.hid ||
+        selectedSuggestion?.raw?.tjid ||
+        selectedSuggestion?.raw?.tjHotelId ||
+        selectedSuggestion?.raw?.hotelCode ||
         ""
     ).trim();
     const effectiveTjids = normalizedTjids.length
@@ -587,14 +673,17 @@ export default function HotelSearchForm() {
         roomInfo: buildRoomInfoFromRooms(hotelRooms),
         searchCriteria: {
           city: !effectiveTjids.length ? effectiveCity : "",
+          cityRegionIds:
+            !isHotelSearch && selectedDestination?.id ? [String(selectedDestination.id)] : [],
+          countryName: selectedCountry,
           tjids: effectiveTjids,
           nationality,
           countryOfResidence,
           currency: "INR",
-          searchRegionName: selectedHotelSuggestion.searchRegionName,
-          searchRegionType: selectedHotelSuggestion.searchRegionType,
+          searchRegionName: selectedSuggestion.searchRegionName,
+          searchRegionType: selectedSuggestion.searchRegionType,
         },
-        searchType: selectedHotelSuggestion.searchType || "CITY",
+        searchType: selectedSuggestion.searchType || "CITY",
         gstApplied: gstClaimEligible,
       },
       allOptions: true,
@@ -615,8 +704,8 @@ export default function HotelSearchForm() {
     };
 
     console.log("[HotelSearchForm] Search payload summary", {
-      destination: selectedHotelSuggestion.displayName,
-      searchType: selectedHotelSuggestion.searchRegionType || selectedHotelSuggestion.searchType,
+      destination: selectedSuggestion.displayName,
+      searchType: selectedSuggestion.searchRegionType || selectedSuggestion.searchType,
       city: !effectiveTjids.length ? effectiveCity : "",
       tjids: effectiveTjids,
       checkInDate: hotelCheckIn,
@@ -640,7 +729,7 @@ export default function HotelSearchForm() {
         state: {
           hotelSearchPayload: payload,
           hotelSearchResponse: response,
-          selectedHotelSuggestion,
+          selectedHotelSuggestion: selectedSuggestion,
         },
       });
     } catch (error) {
@@ -667,7 +756,8 @@ export default function HotelSearchForm() {
                 onChange={(event) => {
                   const value = event.target.value;
                   setHotelLocation(value);
-                  setSelectedHotelSuggestion(null);
+                  setSelectedDestination(null);
+                  setSelectedHotel(null);
                   setShowHotelSuggestions(value.trim().length >= 2);
                 }}
                 onFocus={() => {
@@ -677,10 +767,10 @@ export default function HotelSearchForm() {
                 }}
               />
               <div className="hotel-main-sub">
-                {selectedHotelSuggestion
-                  ? `${selectedHotelSuggestion.searchRegionType} · ${[
-                      selectedHotelSuggestion.stateName,
-                      selectedHotelSuggestion.countryName,
+                {selectedSuggestion
+                  ? `${selectedSuggestion.searchRegionType} · ${[
+                      selectedSuggestion.stateName,
+                      selectedSuggestion.countryName,
                     ]
                       .filter(Boolean)
                       .join(", ")}`
@@ -695,35 +785,61 @@ export default function HotelSearchForm() {
                       Searching destinations...
                     </div>
                   ) : hotelSuggestions.length > 0 ? (
-                    hotelSuggestions.map((suggestion, index) => (
-                      <div
-                        key={`${suggestion.id}-${index}`}
-                        className="suggestion-item"
-                        onClick={() => {
-                          setSelectedHotelSuggestion(suggestion);
-                          setHotelLocation(suggestion.displayName);
-                          setShowHotelSuggestions(false);
-                        }}
-                      >
-                        <div className="suggestion-main">
-                          <span className="suggestion-iata">
-                            {getSuggestionBadge(suggestion.searchRegionType)}
-                          </span>
-                          <span className="suggestion-name">{suggestion.displayName}</span>
+                    <>
+                      {destinationSuggestions.length > 0 ? (
+                        <div className="suggestion-item suggestion-empty">Destinations</div>
+                      ) : null}
+                      {destinationSuggestions.map((suggestion, index) => (
+                        <div
+                          key={`destination-${suggestion.id}-${index}`}
+                          className="suggestion-item"
+                          onClick={() => {
+                            suppressNextSuggestionFetchRef.current = true;
+                            setSelectedDestination(suggestion);
+                            setSelectedHotel(null);
+                            setHotelLocation(suggestion.displayName);
+                            setShowHotelSuggestions(false);
+                          }}
+                        >
+                          <div className="suggestion-main">
+                            <span className="suggestion-iata">{getSuggestionBadge(suggestion.searchRegionType)}</span>
+                            <span className="suggestion-name">{suggestion.displayName}</span>
+                          </div>
+                          <div className="suggestion-city">
+                            {[suggestion.stateName, suggestion.countryName, suggestion.city]
+                              .filter(Boolean)
+                              .join(", ")}
+                          </div>
                         </div>
-                        <div className="suggestion-city">
-                          {[
-                            suggestion.stateName,
-                            suggestion.countryName,
-                            suggestion.city && suggestion.city !== suggestion.displayName
-                              ? suggestion.city
-                              : "",
-                          ]
-                            .filter(Boolean)
-                            .join(", ")}
+                      ))}
+
+                      {hotelOnlySuggestions.length > 0 ? (
+                        <div className="suggestion-item suggestion-empty">Hotels</div>
+                      ) : null}
+                      {hotelOnlySuggestions.map((suggestion, index) => (
+                        <div
+                          key={`hotel-${suggestion.id}-${index}`}
+                          className="suggestion-item"
+                          onClick={() => {
+                            suppressNextSuggestionFetchRef.current = true;
+                            setSelectedHotel(suggestion);
+                            setSelectedDestination(null);
+                            setHotelLocation(suggestion.displayName);
+                            setShowHotelSuggestions(false);
+                          }}
+                        >
+                          <div className="suggestion-main">
+                            <span className="suggestion-iata">HOTL</span>
+                            <span className="suggestion-name">{suggestion.displayName}</span>
+                          </div>
+                          <div className="suggestion-city">
+                            {[suggestion.cityName || suggestion.city, suggestion.countryName]
+                              .filter(Boolean)
+                              .join(", ")}
+                          </div>
                         </div>
-                      </div>
-                    ))
+                      ))}
+                    </>
                   ) : (
                     <div className="suggestion-item suggestion-empty">No destinations found</div>
                   )}
@@ -819,6 +935,44 @@ export default function HotelSearchForm() {
 
         <div className="hotel-more-options-row">
           <div className="hotel-more-options-title">More Options:</div>
+
+          <div className="hotel-more-option-item">
+            <button
+              type="button"
+              className="hotel-more-option-button"
+              onClick={() => {
+                setShowSearchCountryDropdown((prev) => !prev);
+                setShowGuestsDropdown(false);
+                setShowRatingsDropdown(false);
+                setShowNationalityDropdown(false);
+                setShowResidenceDropdown(false);
+              }}
+            >
+              <span className="hotel-more-option-label">Search Country:</span>
+              <span className="hotel-more-option-value">
+                {selectedCountryLabel}
+                <ChevronDown size={12} />
+              </span>
+            </button>
+
+            {showSearchCountryDropdown ? (
+              <CountryDropdown
+                value={selectedCountry}
+                label="Select search country"
+                options={countryOptions}
+                onChange={(countryCode) => {
+                  const next = String(countryCode || "").toUpperCase();
+                  setSelectedCountry(next);
+                  setSelectedDestination(null);
+                  setSelectedHotel(null);
+                  setHotelLocation("");
+                  setHotelSuggestions([]);
+                  setShowHotelSuggestions(false);
+                }}
+                onClose={() => setShowSearchCountryDropdown(false)}
+              />
+            ) : null}
+          </div>
 
           <div className="hotel-more-option-item">
             <button

@@ -33,9 +33,33 @@ export default function TripJackBookingStatus({
   reviewResponse,
   onClose,
   onRefresh,
+  onDownloadReceipt,
+  onEditDetails,
+  canDownloadReceipt,
+  documentLoading,
   formatMoney,
 }) {
-  const currentStatus = statusState?.orderStatus || statusState?.details?.orderStatus || "";
+  const detailsOrderStatus = statusState?.details?.order?.status || statusState?.details?.orderStatus || "";
+  const currentStatus = statusState?.orderStatus || detailsOrderStatus || "";
+  const detailsCheckIn =
+    statusState?.details?.itemInfos?.HOTEL?.query?.checkinDate ||
+    statusState?.details?.itemInfos?.HOTEL?.hInfo?.ops?.[0]?.ris?.[0]?.checkInDate ||
+    reviewResponse?.searchQuery?.checkInDate ||
+    "-";
+  const detailsCheckOut =
+    statusState?.details?.itemInfos?.HOTEL?.query?.checkoutDate ||
+    statusState?.details?.itemInfos?.HOTEL?.hInfo?.ops?.[0]?.ris?.[0]?.checkOutDate ||
+    reviewResponse?.searchQuery?.checkoutDate ||
+    "-";
+  const detailsAmount =
+    statusState?.details?.order?.amount ??
+    statusState?.details?.amount ??
+    reviewResponse?.priceSummary?.amount ??
+    null;
+  const detailsCurrency =
+    statusState?.details?.itemInfos?.HOTEL?.hInfo?.ops?.[0]?.sc ||
+    reviewResponse?.priceSummary?.currency ||
+    "INR";
   const phase = statusState?.phase || "idle";
   const isSuccess = phase === "success";
   const isFailure = phase === "failed";
@@ -44,6 +68,7 @@ export default function TripJackBookingStatus({
   const isDenied = phase === "denied";
   const isTimeout = phase === "timeout";
   const isSubmitting = phase === "submitting";
+  const canEditAndRetry = ["validation_failed", "denied", "failed", "already_paid"].includes(phase);
   const isProcessing = isSubmitting;
   const allowClose = !isSubmitting || statusState?.allowClose;
 
@@ -104,8 +129,8 @@ export default function TripJackBookingStatus({
                 <div className="border rounded-4 p-3 h-100">
                   <div className="text-muted fs-12 mb-1">Amount</div>
                   <div className="fw-bold">
-                    {statusState?.details?.amount
-                      ? formatMoney(statusState.details.amount, reviewResponse?.priceSummary?.currency || "INR")
+                    {detailsAmount
+                      ? formatMoney(detailsAmount, detailsCurrency)
                       : reviewResponse?.priceSummary?.amount
                         ? formatMoney(reviewResponse.priceSummary.amount, reviewResponse.priceSummary.currency || "INR")
                         : "Not available"}
@@ -116,7 +141,7 @@ export default function TripJackBookingStatus({
                 <div className="border rounded-4 p-3 h-100">
                   <div className="text-muted fs-12 mb-1">Check-in / Check-out</div>
                   <div className="fw-bold">
-                    {reviewResponse?.searchQuery?.checkInDate || "-"} / {reviewResponse?.searchQuery?.checkoutDate || "-"}
+                    {detailsCheckIn} / {detailsCheckOut}
                   </div>
                 </div>
               </div>
@@ -166,6 +191,16 @@ export default function TripJackBookingStatus({
         </div>
 
         <div className="modal-footer border-0">
+          {typeof onEditDetails === "function" && canEditAndRetry ? (
+            <Button variant="outline-primary" onClick={onEditDetails}>
+              Fix Details & Retry
+            </Button>
+          ) : null}
+          {typeof onDownloadReceipt === "function" && canDownloadReceipt ? (
+            <Button variant="outline-dark" onClick={onDownloadReceipt} disabled={!statusState?.bookingId || Boolean(documentLoading)}>
+              {documentLoading === "receipt" ? "Preparing Receipt..." : "Download Receipt"}
+            </Button>
+          ) : null}
           {typeof onRefresh === "function" ? (
             <Button variant="outline-primary" onClick={onRefresh} disabled={!statusState?.bookingId}>
               Refresh Status

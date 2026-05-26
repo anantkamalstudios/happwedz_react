@@ -11,7 +11,7 @@ import {
   Search,
   Users,
 } from "lucide-react";
-import { suggestHotels, searchHotels } from "../../../../services/api/hotelApi";
+import { fetchHotelCityRegions, searchHotels } from "../../../../services/api/hotelApi";
 import {
   createCorrelationId,
   defaultFilters,
@@ -312,6 +312,19 @@ const normalizeHotelSuggestion = (suggestion) => {
     "";
   const normalizedHid = String(hid || "").trim();
   const normalizedTjids = tjids.length ? tjids : normalizedHid ? [normalizedHid] : [];
+  const rawRegionIds = [
+    suggestion?.cityRegionId,
+    suggestion?.searchRegionId,
+    suggestion?.regionId,
+    suggestion?.raw?.cityRegionId,
+    suggestion?.raw?.searchRegionId,
+    suggestion?.raw?.regionId,
+  ]
+    .flat()
+    .filter(Boolean)
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
+  const normalizedRegionIds = Array.from(new Set(rawRegionIds));
 
   return {
     id: String(city || displayName || ""),
@@ -321,6 +334,8 @@ const normalizeHotelSuggestion = (suggestion) => {
     searchRegionName: String(displayName || "").trim(),
     displayName: String(displayName || "").trim(),
     tjids: normalizedTjids,
+    cityRegionIds: normalizedRegionIds,
+    regionIds: normalizedRegionIds,
     hid: normalizedHid,
     raw: suggestion,
   };
@@ -453,7 +468,7 @@ function LocationAutocomplete({ value, onChange, onSelect, placeholder }) {
     const timeoutId = setTimeout(async () => {
       try {
         setLoading(true);
-        const response = await suggestHotels({ keyword: query });
+        const response = await fetchHotelCityRegions({ keyword: query, limit: 500, countryName: "INDIA" });
         const rawSuggestions = extractSuggestionList(response);
         const normalized = rawSuggestions
           .map((item) => normalizeHotelSuggestion(item))
@@ -783,6 +798,10 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
+    setLocalRooms(rooms || [{ adults: 1, children: 0 }]);
+  }, [rooms]);
+
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         onClose?.();
@@ -805,6 +824,10 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
     }
   };
 
+  const removeRoom = (roomIndex) => {
+    setLocalRooms((prev) => (prev.length === 1 ? prev : prev.filter((_, index) => index !== roomIndex)));
+  };
+
   const handleApply = () => {
     onApply(localRooms);
     onClose?.();
@@ -819,7 +842,18 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
 
       {localRooms.map((room, roomIndex) => (
         <div key={roomIndex} className="tripjack-guests-room">
-          <div className="tripjack-guests-room-title">Room {roomIndex + 1}</div>
+          <div className="tripjack-guests-room-header">
+            <div className="tripjack-guests-room-title">Room {roomIndex + 1}</div>
+            {localRooms.length > 1 && (
+              <button
+                type="button"
+                className="tripjack-guests-remove-room"
+                onClick={() => removeRoom(roomIndex)}
+              >
+                Remove
+              </button>
+            )}
+          </div>
 
           <div className="tripjack-guests-row">
             <div className="tripjack-guests-label">
@@ -909,8 +943,16 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
   const currentSuggestion = normalizeHotelSuggestion(suggestion) || normalizeHotelSuggestion({
     city: payload?.searchQuery?.searchCriteria?.city,
     tjids: payload?.searchQuery?.searchCriteria?.tjids,
-    searchRegionName: payload?.searchQuery?.searchCriteria?.searchRegionName,
-    searchRegionType: payload?.searchQuery?.searchCriteria?.searchRegionType,
+    cityRegionIds: payload?.searchQuery?.searchCriteria?.cityRegionIds,
+    regionIds: payload?.searchQuery?.searchCriteria?.regionIds,
+    searchRegionName:
+      payload?.searchQuery?.searchCriteria?.searchRegionName ||
+      payload?.searchQuery?.searchCriteria?.city ||
+      payload?.searchQuery?.searchCriteria?.regionIds?.[0] ||
+      "",
+    searchRegionType:
+      payload?.searchQuery?.searchCriteria?.searchRegionType ||
+      "CITY",
   });
 
   const [destinationQuery, setDestinationQuery] = useState(currentSuggestion?.displayName || "");
@@ -1028,6 +1070,7 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
       selectedDestination?.raw?.city ||
       selectedDestination?.raw?.cityId ||
       selectedDestination?.raw?.cId ||
+      selectedDestination?.displayName ||
       payload?.searchQuery?.searchCriteria?.city ||
       "";
     const normalizedTjids = selectedHotelIds;
@@ -1037,7 +1080,25 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
       : normalizedHid
         ? [normalizedHid]
         : [];
+    const fallbackRegionIds = [
+      ...(Array.isArray(selectedDestination?.cityRegionIds) ? selectedDestination.cityRegionIds : []),
+      ...(Array.isArray(selectedDestination?.regionIds) ? selectedDestination.regionIds : []),
+      ...(Array.isArray(payload?.searchQuery?.searchCriteria?.cityRegionIds) ? payload.searchQuery.searchCriteria.cityRegionIds : []),
+      ...(Array.isArray(payload?.searchQuery?.searchCriteria?.regionIds) ? payload.searchQuery.searchCriteria.regionIds : []),
+      selectedDestination?.raw?.cityRegionId,
+      selectedDestination?.raw?.searchRegionId,
+      selectedDestination?.raw?.regionId,
+    ];
+    const effectiveRegionIds = Array.from(
+      new Set(
+        fallbackRegionIds
+          .flat()
+          .map((item) => String(item || "").trim())
+          .filter((value) => /^[0-9]+$/.test(value)),
+      ),
+    );
     const effectiveCity = String(fallbackCity || "").trim();
+    const effectiveResolverRegionIds = effectiveRegionIds.length > 0 ? effectiveRegionIds : [];
 
     const nextPayload = {
       searchQuery: {
@@ -1049,13 +1110,32 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
           children: totalChildren,
         }),
         searchCriteria: {
-          city: !effectiveTjids.length ? effectiveCity : "",
+          city: String(
+            effectiveCity ||
+              selectedDestination?.city ||
+              selectedDestination?.raw?.city ||
+              selectedDestination?.displayName ||
+              selectedDestination?.id ||
+              "",
+          ).trim(),
           tjids: effectiveTjids,
+          cityRegionIds: effectiveResolverRegionIds,
+          regionIds: effectiveResolverRegionIds,
           nationality: nationality,
           countryOfResidence: countryOfResidence,
+          // Backend expects `countryName` as a string (ex: "INDIA")
+          countryName:
+            (COUNTRIES.find((c) => c.code === countryOfResidence)?.name || "India").toUpperCase(),
           currency: payload?.searchQuery?.searchCriteria?.currency || "INR",
-          searchRegionName: selectedDestination.searchRegionName,
-          searchRegionType: selectedDestination.searchRegionType,
+          searchRegionName:
+            selectedDestination?.searchRegionName ||
+            selectedDestination?.displayName ||
+            selectedDestination?.id ||
+            "",
+          searchRegionType:
+            selectedDestination?.searchRegionType ||
+            selectedDestination?.searchType ||
+            "CITY",
         },
         searchType: selectedDestination.searchType || "CITY",
         gstApplied: Boolean(payload?.searchQuery?.gstApplied),
@@ -1093,7 +1173,12 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
       }
     } catch (error) {
       console.error("Unable to refresh hotel search", error);
-      toast.error("Unable to refresh hotels right now. Please try again.");
+      const backendError =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Unable to refresh hotels right now. Please try again.";
+      toast.error(backendError);
     } finally {
       setSearching(false);
     }
