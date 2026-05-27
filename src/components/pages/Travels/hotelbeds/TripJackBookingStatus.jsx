@@ -21,7 +21,7 @@ const formatStatusLabel = (status) => {
 
 const getStatusColor = (status) => {
   const normalized = String(status || "").toUpperCase();
-  if (normalized === "SUCCESS" || normalized === "ON_HOLD") return "#198754";
+  if (["SUCCESS", "CONFIRMED", "VOUCHERED", "ON_HOLD"].includes(normalized)) return "#198754";
   if (["PAYMENT_SUCCESS", "IN_PROGRESS", "PENDING", "PAYMENT_PENDING"].includes(normalized)) return "#b26a00";
   if (["FAILED", "ABORTED", "CANCELLED"].includes(normalized)) return "#dc3545";
   return "#212529";
@@ -34,13 +34,17 @@ export default function TripJackBookingStatus({
   onClose,
   onRefresh,
   onDownloadReceipt,
+  onDownloadVoucher,
+  onPayHold,
   onEditDetails,
   canDownloadReceipt,
+  canDownloadVoucher,
+  canPayHold,
   documentLoading,
   formatMoney,
 }) {
   const detailsOrderStatus = statusState?.details?.order?.status || statusState?.details?.orderStatus || "";
-  const currentStatus = statusState?.orderStatus || detailsOrderStatus || "";
+  const currentStatus = detailsOrderStatus || statusState?.orderStatus || "";
   const detailsCheckIn =
     statusState?.details?.itemInfos?.HOTEL?.query?.checkinDate ||
     statusState?.details?.itemInfos?.HOTEL?.hInfo?.ops?.[0]?.ris?.[0]?.checkInDate ||
@@ -199,6 +203,16 @@ export default function TripJackBookingStatus({
           {typeof onDownloadReceipt === "function" && canDownloadReceipt ? (
             <Button variant="outline-dark" onClick={onDownloadReceipt} disabled={!statusState?.bookingId || Boolean(documentLoading)}>
               {documentLoading === "receipt" ? "Preparing Receipt..." : "Download Receipt"}
+            </Button>
+          ) : null}
+          {typeof onDownloadVoucher === "function" && canDownloadVoucher ? (
+            <Button variant="outline-dark" onClick={onDownloadVoucher} disabled={!statusState?.bookingId || Boolean(documentLoading)}>
+              {documentLoading === "voucher" ? "Preparing Voucher..." : "Download Voucher"}
+            </Button>
+          ) : null}
+          {typeof onPayHold === "function" && canPayHold ? (
+            <Button variant="outline-primary" onClick={onPayHold} disabled={!statusState?.bookingId || Boolean(documentLoading)}>
+              Pay & Confirm Booking
             </Button>
           ) : null}
           {typeof onRefresh === "function" ? (

@@ -305,3 +305,17 @@ export const downloadHotelReceipt = async (bookingId) => {
     throw error;
   }
 };
+
+export const downloadHotelVoucher = async (bookingId) => {
+  try {
+    const response = await axiosInstance.get(`hotels/${bookingId}/voucher`, {
+      responseType: "blob",
+    });
+    triggerBrowserDownload(response.data, `tripjack-voucher-${bookingId}.pdf`);
+    return true;
+  } catch (error) {
+    await enrichBlobError(error);
+    console.error(getErrorMessage(error, "Error downloading hotel voucher"));
+    throw error;
+  }
+};

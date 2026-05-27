@@ -191,11 +191,29 @@ const getSuggestionBadge = (searchRegionType) => {
 };
 
 const buildRoomInfoFromRooms = (rooms) =>
-  rooms.map((room) => ({
-    numberOfAdults: Math.max(1, Number(room?.adults) || 1),
-    numberOfChild: Math.max(0, Number(room?.children) || 0),
-    childAge: Array.from({ length: Math.max(0, Number(room?.children) || 0) }, () => 6),
-  }));
+  rooms.map((room) => {
+    const normalized = normalizeRoomWithChildAges(room);
+    return {
+      numberOfAdults: normalized.adults,
+      numberOfChild: normalized.children,
+      childAge: normalized.childAge,
+    };
+  });
+
+const normalizeRoomWithChildAges = (room = {}) => {
+  const adults = Math.max(1, Number(room?.adults || 1));
+  const children = Math.max(0, Number(room?.children || 0));
+  const incomingAges = Array.isArray(room?.childAge)
+    ? room.childAge
+        .map((age) => Number(age))
+        .filter((age) => Number.isFinite(age))
+        .map((age) => Math.max(0, Math.min(9, age)))
+    : [];
+  const childAge = Array.from({ length: children }, (_, index) =>
+    Number.isFinite(incomingAges[index]) ? Math.max(1, incomingAges[index]) : 1
+  );
+  return { adults, children, childAge };
+};
 
 const parseDateInput = (value) => {
   if (!value) return null;
@@ -314,11 +332,19 @@ function CountryDropdown({ value, label, onChange, onClose, options = HOTEL_COUN
 }
 
 function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
-  const [localRooms, setLocalRooms] = useState(rooms);
+  const [localRooms, setLocalRooms] = useState(
+    Array.isArray(rooms) && rooms.length > 0
+      ? rooms.map((room) => normalizeRoomWithChildAges(room))
+      : [normalizeRoomWithChildAges({ adults: 1, children: 0, childAge: [] })]
+  );
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-    setLocalRooms(rooms);
+    setLocalRooms(
+      Array.isArray(rooms) && rooms.length > 0
+        ? rooms.map((room) => normalizeRoomWithChildAges(room))
+        : [normalizeRoomWithChildAges({ adults: 1, children: 0, childAge: [] })]
+    );
   }, [rooms]);
 
   useEffect(() => {
@@ -334,15 +360,31 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
 
   const updateRoom = (roomIndex, field, nextValue) => {
     setLocalRooms((prev) =>
-      prev.map((room, index) =>
-        index === roomIndex ? { ...room, [field]: nextValue } : room,
-      ),
+      prev.map((room, index) => {
+        if (index !== roomIndex) return room;
+        const current = normalizeRoomWithChildAges(room);
+        if (field === "children") {
+          const nextChildren = Math.max(0, Math.min(4, Number(nextValue) || 0));
+          const nextChildAge = Array.from({ length: nextChildren }, (_, childIndex) =>
+            Number.isFinite(current.childAge[childIndex]) ? Math.max(1, current.childAge[childIndex]) : 1
+          );
+          return { ...current, children: nextChildren, childAge: nextChildAge };
+        }
+        if (field === "childAge") {
+          const childIndex = Number(nextValue?.childIndex || 0);
+          const age = Math.max(1, Math.min(9, Number(nextValue?.age) || 1));
+          const nextChildAge = [...current.childAge];
+          nextChildAge[childIndex] = age;
+          return { ...current, childAge: nextChildAge };
+        }
+        return { ...current, [field]: nextValue };
+      }),
     );
   };
 
   const addRoom = () => {
     setLocalRooms((prev) =>
-      prev.length >= 4 ? prev : [...prev, { adults: 1, children: 0 }],
+      prev.length >= 4 ? prev : [...prev, normalizeRoomWithChildAges({ adults: 1, children: 0, childAge: [] })],
     );
   };
 
@@ -402,7 +444,7 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
             <div className="hotel-stepper-row">
               <div>
                 <div className="hotel-stepper-title">Children</div>
-                <div className="hotel-stepper-copy">Ages 0-17</div>
+                <div className="hotel-stepper-copy">Ages 0-9</div>
               </div>
               <div className="hotel-stepper-controls">
                 <button
@@ -422,6 +464,43 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
                 </button>
               </div>
             </div>
+
+            {room.children > 0 ? (
+              <div className="hotel-stepper-row" style={{ alignItems: "flex-start" }}>
+                <div>
+                  <div className="hotel-stepper-title">Age of Child</div>
+                  <div className="hotel-stepper-copy">0-9 years old</div>
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                  {Array.from({ length: room.children }, (_, childIndex) => (
+                    <select
+                      key={`room-${roomIndex}-child-age-${childIndex}`}
+                      value={Number.isFinite(room.childAge?.[childIndex]) ? Math.max(1, room.childAge[childIndex]) : 1}
+                      onChange={(event) =>
+                        updateRoom(roomIndex, "childAge", {
+                          childIndex,
+                          age: Number(event.target.value),
+                        })
+                      }
+                      style={{
+                        minWidth: 56,
+                        height: 32,
+                        border: "1px solid #d1d5db",
+                        borderRadius: 6,
+                        padding: "0 6px",
+                        background: "#fff",
+                      }}
+                    >
+                      {Array.from({ length: 9 }, (_, index) => index + 1).map((age) => (
+                        <option key={`age-${age}`} value={age}>
+                          {age}
+                        </option>
+                      ))}
+                    </select>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
         ))}
       </div>
@@ -464,7 +543,7 @@ export default function HotelSearchForm() {
   const [selectedCountry, setSelectedCountry] = useState("INDIA");
   const [hotelCheckIn, setHotelCheckIn] = useState("");
   const [hotelCheckOut, setHotelCheckOut] = useState("");
-  const [hotelRooms, setHotelRooms] = useState([{ adults: 2, children: 0 }]);
+  const [hotelRooms, setHotelRooms] = useState([normalizeRoomWithChildAges({ adults: 2, children: 0, childAge: [] })]);
   const [selectedRatings, setSelectedRatings] = useState([]);
   const [nationality, setNationality] = useState("106");
   const [countryOfResidence, setCountryOfResidence] = useState("106");

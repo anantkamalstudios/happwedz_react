@@ -25,8 +25,10 @@ import {
 import {
   createHotelPaymentOrder,
   downloadHotelReceipt,
+  downloadHotelVoucher,
   getHotelStaticContent,
   getHotelBookingDetails,
+  holdHotelBooking,
   reviewHotelBooking,
   searchHotels,
   suggestHotels,
@@ -109,6 +111,16 @@ function loadRazorpayScript() {
     script.onerror = () => resolve(false);
     document.body.appendChild(script);
   });
+}
+
+function extractOrderStatusFromBookingDetails(payload) {
+  const value =
+    payload?.bookingDetails?.order?.status ||
+    payload?.bookingDetails?.orderStatus ||
+    payload?.order?.status ||
+    payload?.orderStatus ||
+    "";
+  return String(value || "").toUpperCase();
 }
 
 function HotelDetailsSkeleton() {
@@ -1734,14 +1746,17 @@ const retryWithoutRepayment =
           return;
         }
 
+        const verifyOrderStatus = extractOrderStatusFromBookingDetails(verifyResponse);
         setShowBookingFormModal(false);
         setBookingStatusState({
           phase: "polling",
           bookingId: verifyResponse?.bookingId || payload.bookingId,
-          orderStatus: verifyResponse?.bookingDetails?.orderStatus || verifyResponse?.userStatus || "PAYMENT_SUCCESS",
+          orderStatus: verifyOrderStatus || "PAYMENT_SUCCESS",
           attempts: 0,
           message:
-            verifyResponse?.userStatus === "Payment Successful - Awaiting Hotel Confirmation"
+            ["SUCCESS", "CONFIRMED", "VOUCHERED"].includes(verifyOrderStatus || "")
+              ? "TripJack confirmed this booking."
+              : (verifyOrderStatus || "PAYMENT_SUCCESS") === "PAYMENT_SUCCESS"
               ? "Your payment is successful. We are waiting for final hotel confirmation from TripJack."
               : "Booking request accepted. Waiting for final TripJack status.",
           details: verifyResponse?.bookingDetails || verifyResponse,
@@ -1769,6 +1784,8 @@ const retryWithoutRepayment =
         errorCode: "",
       });
 
+      const isRazorpayTestMode = String(orderResponse?.keyId || "").startsWith("rzp_test_");
+
       const bookingResponse = await new Promise((resolve, reject) => {
         const razorpayInstance = new window.Razorpay({
           key: orderResponse?.keyId,
@@ -1785,6 +1802,13 @@ const retryWithoutRepayment =
           theme: {
             color: "#ed1173",
           },
+          method: isRazorpayTestMode
+            ? {
+                upi: false,
+                wallet: false,
+                paylater: false,
+              }
+            : undefined,
           modal: {
             ondismiss: () => {
               reject(new Error("Razorpay checkout closed before payment."));
@@ -1816,11 +1840,20 @@ const retryWithoutRepayment =
         });
 
         razorpayInstance.on("payment.failed", (failure) => {
+          const failureDescription =
+            failure?.error?.description ||
+            failure?.error?.reason ||
+            failure?.error?.metadata?.message ||
+            "";
+          const providerSideConfigError =
+            /org_id provided does not exist/i.test(failureDescription) ||
+            /org_id/i.test(String(failure?.error?.step || ""));
+
           reject(
             new Error(
-              failure?.error?.description ||
-              failure?.error?.reason ||
-              "Razorpay payment failed."
+              providerSideConfigError
+                ? "Razorpay test-mode wallet or UPI is not configured for this account. Please use card or netbanking."
+                : failureDescription || "Razorpay payment failed."
             )
           );
         });
@@ -1846,14 +1879,17 @@ const retryWithoutRepayment =
         return;
       }
 
+      const bookingOrderStatus = extractOrderStatusFromBookingDetails(bookingResponse);
       setShowBookingFormModal(false);
       setBookingStatusState({
         phase: "polling",
         bookingId: bookingResponse?.bookingId || payload.bookingId,
-        orderStatus: bookingResponse?.bookingDetails?.orderStatus || bookingResponse?.userStatus || "",
+        orderStatus: bookingOrderStatus || "PAYMENT_SUCCESS",
         attempts: 0,
         message:
-          bookingResponse?.userStatus === "Payment Successful - Awaiting Hotel Confirmation"
+          ["SUCCESS", "CONFIRMED", "VOUCHERED"].includes(bookingOrderStatus || "")
+            ? "TripJack confirmed this booking."
+            : (bookingOrderStatus || "PAYMENT_SUCCESS") === "PAYMENT_SUCCESS"
             ? "Your payment is successful. We are waiting for final hotel confirmation from TripJack."
             : "Booking request accepted. Waiting for final TripJack status.",
         details: bookingResponse?.bookingDetails || bookingResponse,
@@ -1877,7 +1913,18 @@ const retryWithoutRepayment =
       const tripjackServerFailure =
         error?.response?.data?.source === "TRIPJACK" &&
         Number(error?.response?.data?.status_code || error?.response?.status || 0) >= 500;
-      const paymentFailure = error?.response?.data?.source === "PAYMENT" || /razorpay/i.test(String(error?.message || ""));
+      const paymentErrorText = String(
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        error?.message ||
+        ""
+      );
+      const paymentFailure =
+        error?.response?.data?.source === "PAYMENT" ||
+        /razorpay/i.test(paymentErrorText) ||
+        /international cards are not supported/i.test(paymentErrorText) ||
+        /international_transaction_not_allowed/i.test(paymentErrorText) ||
+        /payment could not be completed/i.test(paymentErrorText);
       const requiresManualAction = Boolean(error?.response?.data?.requiresManualAction);
       const paymentCaptured = Boolean(error?.response?.data?.paymentCaptured);
       const supplierFailureMessage =
@@ -1965,12 +2012,31 @@ const retryWithoutRepayment =
       bookingStatusState?.orderStatus ||
       "",
   ).toUpperCase();
+  const holdBookingType = String(
+    bookingStatusState?.details?.bookingType ||
+      bookingStatusState?.details?.booking_type ||
+      ""
+  ).toUpperCase();
+  const holdPaymentStatus = String(
+    bookingStatusState?.details?.paymentStatus ||
+      bookingStatusState?.details?.payment_status ||
+      ""
+  ).toUpperCase();
+  const isHoldPendingPayment =
+    ["ON_HOLD", "IN_PROGRESS", "PENDING", "PAYMENT_PENDING"].includes(currentStatusCode) &&
+    (holdBookingType === "HOLD" || currentStatusCode === "ON_HOLD") &&
+    holdPaymentStatus !== "PAID";
+
+  const isTerminalSuccessStatus = ["SUCCESS", "CONFIRMED", "VOUCHERED"].includes(currentStatusCode);
   const canDownloadReceipt =
     Boolean(currentStatusBookingId) &&
-    (
-      ["success"].includes(String(bookingStatusState?.phase || "").toLowerCase()) ||
-      ["SUCCESS", "CONFIRMED", "VOUCHERED", "ON_HOLD"].includes(currentStatusCode)
-    );
+    isTerminalSuccessStatus &&
+    !isHoldPendingPayment;
+  const canDownloadVoucher =
+    Boolean(currentStatusBookingId) &&
+    isTerminalSuccessStatus &&
+    !isHoldPendingPayment;
+  const canPayHold = Boolean(currentStatusBookingId) && isHoldPendingPayment;
 
   const handleEditDetailsAndRetry = () => {
     setShowBookingStatusModal(false);
@@ -1989,6 +2055,221 @@ const retryWithoutRepayment =
         "Unable to download booking receipt right now.";
       console.error("Unable to download TripJack receipt", error);
       toast.error(message);
+    } finally {
+      setDocumentLoading("");
+    }
+  };
+
+  const handleCreateHoldBooking = async () => {
+    if (!reviewResponse?.bookingId || !bookingForm) {
+      toast.error("Booking review data is missing. Please review the room again.");
+      return;
+    }
+
+    if (!isAuthenticated || !user?.id) {
+      toast.error("Please login before creating hold booking.");
+      navigate("/customer-login");
+      return;
+    }
+
+    const validationErrors = validateBookingForm(bookingForm, reviewResponse);
+    if (validationErrors.length > 0) {
+      toast.error(validationErrors[0]);
+      return;
+    }
+
+    const payload = buildBookingPayload({ includePayment: false });
+    setBookingSubmitting(true);
+    setShowBookingStatusModal(true);
+    setBookingStatusState({
+      phase: "submitting",
+      bookingId: payload.bookingId,
+      orderStatus: "",
+      attempts: 0,
+      message: "Creating hold booking with TripJack.",
+      details: null,
+      errorCode: "",
+    });
+
+    try {
+      const holdResponse = await holdHotelBooking(payload);
+
+      if (
+        holdResponse?.success === false ||
+        holdResponse?.tripjackRequestAccepted === false ||
+        holdResponse?.status?.success === false
+      ) {
+        setShowBookingFormModal(false);
+        setBookingStatusState({
+          phase: "failed",
+          bookingId: holdResponse?.bookingId || payload.bookingId,
+          orderStatus: "",
+          attempts: 0,
+          message: holdResponse?.error || holdResponse?.errors?.[0]?.message || "TripJack hold booking request failed.",
+          details: holdResponse,
+          errorCode: holdResponse?.errors?.[0]?.errCode || "",
+        });
+        return;
+      }
+
+      setShowBookingFormModal(false);
+      setBookingStatusState({
+        phase: "success",
+        bookingId: holdResponse?.bookingId || payload.bookingId,
+        orderStatus: String(holdResponse?.orderStatus || "ON_HOLD").toUpperCase(),
+        attempts: 1,
+        message: holdResponse?.message || "Hold booking created successfully.",
+        details: holdResponse,
+        errorCode: "",
+      });
+      toast.success("Hold booking created successfully.");
+    } catch (error) {
+      const message =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Unable to create hold booking right now.";
+      setBookingStatusState({
+        phase: "failed",
+        bookingId: payload.bookingId,
+        orderStatus: "",
+        attempts: 0,
+        message,
+        details: error?.response?.data || null,
+        errorCode: error?.response?.data?.errors?.[0]?.errCode || "",
+      });
+      toast.error(message);
+    } finally {
+      setBookingSubmitting(false);
+    }
+  };
+
+  const handleDownloadVoucher = async () => {
+    if (!currentStatusBookingId || documentLoading) return;
+    setDocumentLoading("voucher");
+    try {
+      await downloadHotelVoucher(currentStatusBookingId);
+    } catch (error) {
+      const message =
+        error?.response?.data?.error ||
+        error?.message ||
+        "Unable to download booking voucher right now.";
+      console.error("Unable to download TripJack voucher", error);
+      toast.error(message);
+    } finally {
+      setDocumentLoading("");
+    }
+  };
+
+  const handlePayHoldBooking = async () => {
+    if (!currentStatusBookingId || documentLoading) return;
+    if (!bookingForm || !reviewResponse) {
+      toast.error("Booking form details are missing. Please review room details again.");
+      return;
+    }
+
+    const payload = buildBookingPayload({ includePayment: true });
+    setDocumentLoading("hold_payment");
+    try {
+      const orderResponse = await createHotelPaymentOrder(payload);
+      const razorpayLoaded = await loadRazorpayScript();
+      if (!razorpayLoaded || !window.Razorpay) {
+        throw new Error("Unable to load Razorpay checkout");
+      }
+
+      setBookingStatusState((current) => ({
+        ...current,
+        phase: "submitting",
+        message: "Opening Razorpay checkout for hold confirmation.",
+      }));
+
+      const verifyResponse = await new Promise((resolve, reject) => {
+        const razorpayInstance = new window.Razorpay({
+          key: orderResponse?.keyId,
+          order_id: orderResponse?.razorpayOrderId,
+          amount: orderResponse?.amount,
+          currency: orderResponse?.currency || "INR",
+          name: "HappyWedz Hotels",
+          description: orderResponse?.hotelName || "TripJack hold booking confirmation",
+          prefill: {
+            name: user?.name || "",
+            email: bookingForm?.deliveryInfo?.emails?.[0] || "",
+            contact: bookingForm?.deliveryInfo?.contacts?.[0] || "",
+          },
+          theme: {
+            color: "#ed1173",
+          },
+          modal: {
+            ondismiss: () => reject(new Error("Razorpay checkout closed before payment.")),
+          },
+          handler: async (paymentResult) => {
+            try {
+              const response = await confirmHotelBooking({
+                bookingId: currentStatusBookingId,
+                paymentInfos:
+                  Number(orderResponse?.displayAmount || orderResponse?.amountDisplay || payload?.paymentInfos?.[0]?.amount || 0) > 0
+                    ? [
+                        {
+                          amount: Number(
+                            orderResponse?.displayAmount ||
+                              orderResponse?.amountDisplay ||
+                              payload?.paymentInfos?.[0]?.amount ||
+                              0
+                          ),
+                        },
+                      ]
+                    : payload?.paymentInfos || [],
+                razorpay_order_id: paymentResult?.razorpay_order_id || orderResponse?.razorpayOrderId,
+                razorpay_payment_id: paymentResult?.razorpay_payment_id,
+                razorpay_signature: paymentResult?.razorpay_signature,
+              });
+              resolve(response);
+            } catch (error) {
+              reject(error);
+            }
+          },
+        });
+
+        razorpayInstance.on("payment.failed", (failure) => {
+          reject(
+            new Error(
+              failure?.error?.description ||
+                failure?.error?.reason ||
+                "Razorpay payment failed."
+            )
+          );
+        });
+
+        razorpayInstance.open();
+      });
+
+      const holdOrderStatus = extractOrderStatusFromBookingDetails(verifyResponse);
+      setBookingStatusState({
+        phase: "polling",
+        bookingId: verifyResponse?.bookingId || currentStatusBookingId,
+        orderStatus: holdOrderStatus || "PAYMENT_SUCCESS",
+        attempts: 0,
+        message:
+          ["SUCCESS", "CONFIRMED", "VOUCHERED"].includes(holdOrderStatus || "")
+            ? "TripJack confirmed this booking."
+            : "Payment completed. Waiting for final TripJack booking confirmation.",
+        details: verifyResponse?.bookingDetails || verifyResponse,
+        errorCode: "",
+        paymentCaptured: true,
+      });
+      await pollTripjackBookingStatus(verifyResponse?.bookingId || currentStatusBookingId);
+    } catch (error) {
+      const message =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Unable to process hold booking payment right now.";
+      toast.error(message);
+      setBookingStatusState((current) => ({
+        ...current,
+        phase: "failed",
+        message,
+      }));
     } finally {
       setDocumentLoading("");
     }
@@ -2125,9 +2406,11 @@ const retryWithoutRepayment =
             onContactFieldChange={handleContactFieldChange}
             onTermsChange={handleTermsChange}
             onSubmit={handleProceedToBook}
+            onHoldSubmit={handleCreateHoldBooking}
             bookingSubmitting={bookingSubmitting}
             formatMoney={formatMoney}
             formatDate={formatDate}
+            holdBookingUatEnabled={true}
           />
         ) : detailLoading && !detailModel.name ? (
           <HotelDetailsSkeleton />
@@ -2523,7 +2806,11 @@ const retryWithoutRepayment =
         onRefresh={handleRefreshBookingStatus}
         onEditDetails={handleEditDetailsAndRetry}
         onDownloadReceipt={handleDownloadReceipt}
+        onDownloadVoucher={handleDownloadVoucher}
+        onPayHold={handlePayHoldBooking}
         canDownloadReceipt={canDownloadReceipt}
+        canDownloadVoucher={canDownloadVoucher}
+        canPayHold={canPayHold}
         documentLoading={documentLoading}
         formatMoney={formatMoney}
       />

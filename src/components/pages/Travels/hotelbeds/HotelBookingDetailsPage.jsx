@@ -3,8 +3,10 @@ import { Container } from "react-bootstrap";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   cancelHotelBooking,
+  createHotelPaymentOrder,
   confirmHotelBooking,
   downloadHotelReceipt,
+  downloadHotelVoucher,
   getHotelBookingDetails,
 } from "../../../../services/api/hotelApi";
 
@@ -39,6 +41,32 @@ function formatDateTime(value) {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+  });
+}
+
+function loadRazorpayScript() {
+  if (typeof window === "undefined") {
+    return Promise.resolve(false);
+  }
+
+  if (window.Razorpay) {
+    return Promise.resolve(true);
+  }
+
+  return new Promise((resolve) => {
+    const existingScript = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+    if (existingScript) {
+      existingScript.addEventListener("load", () => resolve(true), { once: true });
+      existingScript.addEventListener("error", () => resolve(false), { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
   });
 }
 
@@ -236,7 +264,9 @@ export default function HotelBookingDetailsPage() {
       ["ON_HOLD", "IN_PROGRESS", "PENDING", "PAYMENT_PENDING"].includes(normalizedStatus);
     const canDownloadReceipt =
       paymentStatus === "PAID" &&
-      ["SUCCESS", "CONFIRMED", "VOUCHERED", "ON_HOLD"].includes(normalizedStatus);
+      ["SUCCESS", "CONFIRMED", "VOUCHERED"].includes(normalizedStatus);
+    const canDownloadVoucher =
+      ["SUCCESS", "CONFIRMED", "VOUCHERED"].includes(normalizedStatus);
     const statusLabel = isCancellationFlow
       ? normalizedStatus === "CANCELLED"
         ? "Booking Cancelled"
@@ -286,6 +316,7 @@ export default function HotelBookingDetailsPage() {
       canCancel,
       canConfirmHold,
       canDownloadReceipt,
+      canDownloadVoucher,
       normalizedStatus,
       isCancellationFlow,
       isOnHold: ["ON_HOLD", "IN_PROGRESS"].includes(normalizedStatus),
@@ -309,6 +340,23 @@ export default function HotelBookingDetailsPage() {
     }
   };
 
+  const handleDownloadVoucher = async () => {
+    if (!bookingId || documentLoading) return;
+    setDocumentLoading("voucher");
+    setCancelMessage("");
+    try {
+      await downloadHotelVoucher(bookingId);
+    } catch (err) {
+      setCancelMessage(
+        err?.response?.data?.error ||
+          err?.message ||
+          "Unable to download booking voucher right now.",
+      );
+    } finally {
+      setDocumentLoading("");
+    }
+  };
+
   const handleConfirmHoldBooking = async () => {
     if (!bookingId || confirmHoldLoading) return;
     const ok = window.confirm("Confirm this hold booking now?");
@@ -318,11 +366,69 @@ export default function HotelBookingDetailsPage() {
     setCancelMessage("");
     try {
       const amount = Number(ui.totalAmount || 0);
+      const paymentInfos = amount > 0 ? [{ amount }] : [];
+// NOTE: backend requires roomTravellerInfo + deliveryInfo for payment order creation.
+      // For the Hold->Pay flow, we can send whatever UI-derived values exist.
+      // If TripJack returns these fields missing, backend will fall back to saved booking values.
       const payload = {
         bookingId,
-        paymentInfos: amount > 0 ? [{ amount }] : [],
+        paymentInfos,
+        roomTravellerInfo: details?.travellerInfo || details?.roomTravellerInfo || [],
+        deliveryInfo: details?.deliveryInfo || {},
       };
-      const response = await confirmHotelBooking(payload);
+      const orderResponse = await createHotelPaymentOrder(payload);
+      const razorpayLoaded = await loadRazorpayScript();
+      if (!razorpayLoaded || !window.Razorpay) {
+        throw new Error("Unable to load Razorpay checkout");
+      }
+
+      const response = await new Promise((resolve, reject) => {
+        const razorpayInstance = new window.Razorpay({
+          key: orderResponse?.keyId,
+          order_id: orderResponse?.razorpayOrderId,
+          amount: orderResponse?.amount,
+          currency: orderResponse?.currency || "INR",
+          name: "HappyWedz Hotels",
+          description: orderResponse?.hotelName || "TripJack hold booking confirmation",
+          prefill: {
+            email: ui.email !== "Not available" ? ui.email : "",
+            contact: ui.phone !== "Not available" ? ui.phone : "",
+          },
+          theme: {
+            color: "#ed1173",
+          },
+          modal: {
+            ondismiss: () => reject(new Error("Razorpay checkout closed before payment.")),
+          },
+          handler: async (paymentResult) => {
+            try {
+              const confirmResponse = await confirmHotelBooking({
+                bookingId,
+                paymentInfos,
+                razorpay_order_id: paymentResult?.razorpay_order_id || orderResponse?.razorpayOrderId,
+                razorpay_payment_id: paymentResult?.razorpay_payment_id,
+                razorpay_signature: paymentResult?.razorpay_signature,
+              });
+              resolve(confirmResponse);
+            } catch (error) {
+              reject(error);
+            }
+          },
+        });
+
+        razorpayInstance.on("payment.failed", (failure) => {
+          reject(
+            new Error(
+              failure?.error?.description ||
+                failure?.error?.reason ||
+                "Razorpay payment failed."
+            )
+          );
+        });
+
+        razorpayInstance.open();
+      });
+
       setCancelMessage(response?.message || "Hold booking confirmed. Awaiting final status.");
       await loadDetails();
     } catch (err) {
@@ -401,6 +507,23 @@ export default function HotelBookingDetailsPage() {
                 }}
               >
                 {documentLoading === "receipt" ? "Preparing Receipt..." : "Download Receipt"}
+              </button>
+            ) : null}
+            {ui?.canDownloadVoucher ? (
+              <button
+                type="button"
+                onClick={handleDownloadVoucher}
+                disabled={Boolean(documentLoading)}
+                style={{
+                  border: "1px solid #132238",
+                  background: "#fff",
+                  color: "#132238",
+                  borderRadius: "999px",
+                  padding: "0.5rem 1rem",
+                  fontWeight: 600,
+                }}
+              >
+                {documentLoading === "voucher" ? "Preparing Voucher..." : "Download Voucher"}
               </button>
             ) : null}
           </div>

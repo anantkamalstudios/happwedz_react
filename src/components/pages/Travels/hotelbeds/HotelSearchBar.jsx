@@ -383,6 +383,31 @@ const buildRoomInfoFromCounts = ({ rooms, adults, children }) => {
   });
 };
 
+const normalizeRoomWithChildAges = (room = {}) => {
+  const adults = Math.max(1, Number(room?.adults || room?.numberOfAdults || 1));
+  const children = Math.max(0, Number(room?.children || room?.numberOfChild || 0));
+  const incomingAges = Array.isArray(room?.childAge)
+    ? room.childAge
+        .map((age) => Number(age))
+        .filter((age) => Number.isFinite(age))
+        .map((age) => Math.max(0, Math.min(9, age)))
+    : [];
+  const childAge = Array.from({ length: children }, (_, index) =>
+    Number.isFinite(incomingAges[index]) ? Math.max(1, incomingAges[index]) : 1
+  );
+  return { adults, children, childAge };
+};
+
+const buildRoomInfoFromRooms = (rooms = []) =>
+  rooms.map((room) => {
+    const normalized = normalizeRoomWithChildAges(room);
+    return {
+      numberOfAdults: normalized.adults,
+      numberOfChild: normalized.children,
+      childAge: normalized.childAge,
+    };
+  });
+
 const parseDateInput = (value) => {
   if (!value) return null;
   if (value instanceof Date) {
@@ -794,11 +819,19 @@ function CountryDropdown({ value, onChange, label, onClose }) {
 
 // Rooms & Guests Dropdown Component
 function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
-  const [localRooms, setLocalRooms] = useState(rooms || [{ adults: 1, children: 0 }]);
+  const [localRooms, setLocalRooms] = useState(
+    Array.isArray(rooms) && rooms.length > 0
+      ? rooms.map((room) => normalizeRoomWithChildAges(room))
+      : [normalizeRoomWithChildAges({ adults: 1, children: 0, childAge: [] })]
+  );
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-    setLocalRooms(rooms || [{ adults: 1, children: 0 }]);
+    setLocalRooms(
+      Array.isArray(rooms) && rooms.length > 0
+        ? rooms.map((room) => normalizeRoomWithChildAges(room))
+        : [normalizeRoomWithChildAges({ adults: 1, children: 0, childAge: [] })]
+    );
   }, [rooms]);
 
   useEffect(() => {
@@ -814,13 +847,32 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
 
   const updateRoom = (roomIndex, field, value) => {
     const newRooms = [...localRooms];
-    newRooms[roomIndex] = { ...newRooms[roomIndex], [field]: value };
+    const current = normalizeRoomWithChildAges(newRooms[roomIndex] || {});
+    if (field === "children") {
+      const nextChildren = Math.max(0, Math.min(4, Number(value) || 0));
+      const nextChildAge = Array.from({ length: nextChildren }, (_, index) =>
+        Number.isFinite(current.childAge[index]) ? Math.max(1, current.childAge[index]) : 1
+      );
+      newRooms[roomIndex] = { ...current, children: nextChildren, childAge: nextChildAge };
+      setLocalRooms(newRooms);
+      return;
+    }
+    if (field === "childAge") {
+      const childIndex = Number(value?.childIndex || 0);
+      const age = Math.max(1, Math.min(9, Number(value?.age) || 1));
+      const nextChildAge = [...current.childAge];
+      nextChildAge[childIndex] = age;
+      newRooms[roomIndex] = { ...current, childAge: nextChildAge };
+      setLocalRooms(newRooms);
+      return;
+    }
+    newRooms[roomIndex] = { ...current, [field]: value };
     setLocalRooms(newRooms);
   };
 
   const addRoom = () => {
     if (localRooms.length < 4) {
-      setLocalRooms([...localRooms, { adults: 1, children: 0 }]);
+      setLocalRooms([...localRooms, normalizeRoomWithChildAges({ adults: 1, children: 0, childAge: [] })]);
     }
   };
 
@@ -883,7 +935,7 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
           <div className="tripjack-guests-row">
             <div className="tripjack-guests-label">
               <div className="tripjack-guests-label-main">Children</div>
-              <div className="tripjack-guests-label-sub">0-17 years old</div>
+              <div className="tripjack-guests-label-sub">0-9 years old</div>
             </div>
             <div className="tripjack-guests-counter">
               <button
@@ -905,6 +957,43 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
               </button>
             </div>
           </div>
+
+          {room.children > 0 ? (
+            <div className="tripjack-guests-row" style={{ alignItems: "flex-start" }}>
+              <div className="tripjack-guests-label">
+                <div className="tripjack-guests-label-main">Age of Child</div>
+                <div className="tripjack-guests-label-sub">0-9 years old</div>
+              </div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                {Array.from({ length: room.children }, (_, childIndex) => (
+                  <select
+                    key={`room-${roomIndex}-child-age-${childIndex}`}
+                    value={Number.isFinite(room.childAge?.[childIndex]) ? Math.max(1, room.childAge[childIndex]) : 1}
+                    onChange={(event) =>
+                      updateRoom(roomIndex, "childAge", {
+                        childIndex,
+                        age: Number(event.target.value),
+                      })
+                    }
+                    style={{
+                      minWidth: 56,
+                      height: 32,
+                      border: "1px solid #d1d5db",
+                      borderRadius: 6,
+                      padding: "0 6px",
+                      background: "#fff",
+                    }}
+                  >
+                    {Array.from({ length: 9 }, (_, index) => index + 1).map((age) => (
+                      <option key={`age-${age}`} value={age}>
+                        {age}
+                      </option>
+                    ))}
+                  </select>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
       ))}
 
@@ -938,6 +1027,7 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
   const initialRooms = roomInfo.map(room => ({
     adults: room.numberOfAdults || 1,
     children: room.numberOfChild || 0,
+    childAge: Array.isArray(room.childAge) ? room.childAge : [],
   }));
 
   const currentSuggestion = normalizeHotelSuggestion(suggestion) || normalizeHotelSuggestion({
@@ -959,7 +1049,11 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
   const [selectedDestination, setSelectedDestination] = useState(currentSuggestion);
   const [checkInDate, setCheckInDate] = useState(payload?.searchQuery?.checkinDate || "");
   const [checkOutDate, setCheckOutDate] = useState(payload?.searchQuery?.checkoutDate || "");
-  const [rooms, setRooms] = useState(initialRooms.length > 0 ? initialRooms : [{ adults: 1, children: 0 }]);
+  const [rooms, setRooms] = useState(
+    initialRooms.length > 0
+      ? initialRooms.map((room) => normalizeRoomWithChildAges(room))
+      : [normalizeRoomWithChildAges({ adults: 1, children: 0, childAge: [] })]
+  );
   const [nationality, setNationality] = useState(payload?.searchQuery?.searchCriteria?.nationality || "106");
   const [countryOfResidence, setCountryOfResidence] = useState(payload?.searchQuery?.searchCriteria?.countryOfResidence || "106");
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -978,7 +1072,10 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
   const nights = calculateNights(checkInDate, checkOutDate);
   const totalRooms = rooms.length;
   const totalAdults = rooms.reduce((sum, room) => sum + room.adults, 0);
-  const totalChildren = rooms.reduce((sum, room) => sum + room.children, 0);
+  const totalChildren = rooms.reduce(
+    (sum, room) => sum + Math.max(Number(room.children || room.childAge?.length || 0), 0),
+    0
+  );
 
   const nationalityName = COUNTRIES.find(c => c.code === nationality)?.name || "India";
   const residenceName = COUNTRIES.find(c => c.code === countryOfResidence)?.name || "India";
@@ -1104,11 +1201,7 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
       searchQuery: {
         checkinDate: checkInDate,
         checkoutDate: checkOutDate,
-        roomInfo: buildRoomInfoFromCounts({
-          rooms: totalRooms,
-          adults: totalAdults,
-          children: totalChildren,
-        }),
+        roomInfo: buildRoomInfoFromRooms(rooms),
         searchCriteria: {
           city: String(
             effectiveCity ||
