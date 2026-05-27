@@ -21,7 +21,7 @@ const formatStatusLabel = (status) => {
 
 const getStatusColor = (status) => {
   const normalized = String(status || "").toUpperCase();
-  if (normalized === "SUCCESS" || normalized === "ON_HOLD") return "#198754";
+  if (["SUCCESS", "CONFIRMED", "VOUCHERED", "ON_HOLD"].includes(normalized)) return "#198754";
   if (["PAYMENT_SUCCESS", "IN_PROGRESS", "PENDING", "PAYMENT_PENDING"].includes(normalized)) return "#b26a00";
   if (["FAILED", "ABORTED", "CANCELLED"].includes(normalized)) return "#dc3545";
   return "#212529";
@@ -33,9 +33,37 @@ export default function TripJackBookingStatus({
   reviewResponse,
   onClose,
   onRefresh,
+  onDownloadReceipt,
+  onDownloadVoucher,
+  onPayHold,
+  onEditDetails,
+  canDownloadReceipt,
+  canDownloadVoucher,
+  canPayHold,
+  documentLoading,
   formatMoney,
 }) {
-  const currentStatus = statusState?.orderStatus || statusState?.details?.orderStatus || "";
+  const detailsOrderStatus = statusState?.details?.order?.status || statusState?.details?.orderStatus || "";
+  const currentStatus = detailsOrderStatus || statusState?.orderStatus || "";
+  const detailsCheckIn =
+    statusState?.details?.itemInfos?.HOTEL?.query?.checkinDate ||
+    statusState?.details?.itemInfos?.HOTEL?.hInfo?.ops?.[0]?.ris?.[0]?.checkInDate ||
+    reviewResponse?.searchQuery?.checkInDate ||
+    "-";
+  const detailsCheckOut =
+    statusState?.details?.itemInfos?.HOTEL?.query?.checkoutDate ||
+    statusState?.details?.itemInfos?.HOTEL?.hInfo?.ops?.[0]?.ris?.[0]?.checkOutDate ||
+    reviewResponse?.searchQuery?.checkoutDate ||
+    "-";
+  const detailsAmount =
+    statusState?.details?.order?.amount ??
+    statusState?.details?.amount ??
+    reviewResponse?.priceSummary?.amount ??
+    null;
+  const detailsCurrency =
+    statusState?.details?.itemInfos?.HOTEL?.hInfo?.ops?.[0]?.sc ||
+    reviewResponse?.priceSummary?.currency ||
+    "INR";
   const phase = statusState?.phase || "idle";
   const isSuccess = phase === "success";
   const isFailure = phase === "failed";
@@ -43,10 +71,13 @@ export default function TripJackBookingStatus({
   const isAlreadyPaid = phase === "already_paid";
   const isDenied = phase === "denied";
   const isTimeout = phase === "timeout";
-  const isProcessing = phase === "submitting" || phase === "polling";
+  const isSubmitting = phase === "submitting";
+  const canEditAndRetry = ["validation_failed", "denied", "failed", "already_paid"].includes(phase);
+  const isProcessing = isSubmitting;
+  const allowClose = !isSubmitting || statusState?.allowClose;
 
   return (
-    <Modal show={show} onHide={isProcessing ? undefined : onClose} centered size="lg" backdrop={isProcessing ? "static" : true}>
+    <Modal show={show} onHide={allowClose ? onClose : undefined} centered size="lg" backdrop={allowClose ? true : "static"}>
       <div className="modal-content rounded-4">
         <div className="modal-header border-0">
           <div>
@@ -67,7 +98,7 @@ export default function TripJackBookingStatus({
                     : "Payment is complete and TripJack confirmation is in progress."}
             </div>
           </div>
-          {!isProcessing ? <button type="button" className="btn-close" onClick={onClose} /> : null}
+          {allowClose ? <button type="button" className="btn-close" onClick={onClose} /> : null}
         </div>
 
         <div className="modal-body">
@@ -102,8 +133,8 @@ export default function TripJackBookingStatus({
                 <div className="border rounded-4 p-3 h-100">
                   <div className="text-muted fs-12 mb-1">Amount</div>
                   <div className="fw-bold">
-                    {statusState?.details?.amount
-                      ? formatMoney(statusState.details.amount, reviewResponse?.priceSummary?.currency || "INR")
+                    {detailsAmount
+                      ? formatMoney(detailsAmount, detailsCurrency)
                       : reviewResponse?.priceSummary?.amount
                         ? formatMoney(reviewResponse.priceSummary.amount, reviewResponse.priceSummary.currency || "INR")
                         : "Not available"}
@@ -112,17 +143,9 @@ export default function TripJackBookingStatus({
               </div>
               <div className="col-md-6">
                 <div className="border rounded-4 p-3 h-100">
-                  <div className="text-muted fs-12 mb-1">Polling Attempts</div>
-                  <div className="fw-bold">
-                    {isValidationFailure || isDenied || isAlreadyPaid ? "Not started" : statusState?.attempts || 0}
-                  </div>
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="border rounded-4 p-3 h-100">
                   <div className="text-muted fs-12 mb-1">Check-in / Check-out</div>
                   <div className="fw-bold">
-                    {reviewResponse?.searchQuery?.checkInDate || "-"} / {reviewResponse?.searchQuery?.checkoutDate || "-"}
+                    {detailsCheckIn} / {detailsCheckOut}
                   </div>
                 </div>
               </div>
@@ -172,12 +195,32 @@ export default function TripJackBookingStatus({
         </div>
 
         <div className="modal-footer border-0">
+          {typeof onEditDetails === "function" && canEditAndRetry ? (
+            <Button variant="outline-primary" onClick={onEditDetails}>
+              Fix Details & Retry
+            </Button>
+          ) : null}
+          {typeof onDownloadReceipt === "function" && canDownloadReceipt ? (
+            <Button variant="outline-dark" onClick={onDownloadReceipt} disabled={!statusState?.bookingId || Boolean(documentLoading)}>
+              {documentLoading === "receipt" ? "Preparing Receipt..." : "Download Receipt"}
+            </Button>
+          ) : null}
+          {typeof onDownloadVoucher === "function" && canDownloadVoucher ? (
+            <Button variant="outline-dark" onClick={onDownloadVoucher} disabled={!statusState?.bookingId || Boolean(documentLoading)}>
+              {documentLoading === "voucher" ? "Preparing Voucher..." : "Download Voucher"}
+            </Button>
+          ) : null}
+          {typeof onPayHold === "function" && canPayHold ? (
+            <Button variant="outline-primary" onClick={onPayHold} disabled={!statusState?.bookingId || Boolean(documentLoading)}>
+              Pay & Confirm Booking
+            </Button>
+          ) : null}
           {typeof onRefresh === "function" ? (
             <Button variant="outline-primary" onClick={onRefresh} disabled={!statusState?.bookingId}>
               Refresh Status
             </Button>
           ) : null}
-          <Button variant="outline-secondary" onClick={onClose} disabled={isProcessing}>
+          <Button variant="outline-secondary" onClick={onClose} disabled={!allowClose}>
             Close
           </Button>
         </div>

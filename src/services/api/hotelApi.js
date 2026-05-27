@@ -1,5 +1,32 @@
 import axiosInstance from "./axiosInstance";
 
+const triggerBrowserDownload = (blob, filename) => {
+  if (typeof window === "undefined") return;
+  const objectUrl = window.URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = objectUrl;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  window.URL.revokeObjectURL(objectUrl);
+};
+
+const enrichBlobError = async (error) => {
+  const blob = error?.response?.data;
+  if (!(blob instanceof Blob)) return error;
+  try {
+    const text = await blob.text();
+    const parsed = JSON.parse(text);
+    if (parsed?.error || parsed?.message) {
+      error.response.data = parsed;
+    }
+  } catch (_) {
+    // Ignore blob parsing failures and keep original error.
+  }
+  return error;
+};
+
 const getErrorMessage = (error, fallback) => {
   if (typeof error === "string" && error.trim()) return error;
   if (typeof error?.message === "string" && error.message.trim()) return error.message;
@@ -22,9 +49,57 @@ export const suggestHotels = async (payload) => {
   }
 };
 
+export const fetchHotelCityRegions = async (params = {}, options = {}) => {
+  try {
+    const response = await axiosInstance.get("hotels/city-regions", {
+      params,
+      signal: options?.signal,
+    });
+    return response.data;
+  } catch (error) {
+    if (error?.response?.status === 404) {
+      try {
+        const fallback = await axiosInstance.post("hotels/city-regions", params, {
+          signal: options?.signal,
+        });
+        return fallback.data;
+      } catch (fallbackError) {
+        console.error(getErrorMessage(fallbackError, "Error fetching hotel city regions"));
+        throw fallbackError;
+      }
+    }
+    console.error(getErrorMessage(error, "Error fetching hotel city regions"));
+    throw error;
+  }
+};
+
+export const fetchHotelCountries = async () => {
+  try {
+    const response = await axiosInstance.get("hotels/countries");
+    return response.data;
+  } catch (error) {
+    console.error(getErrorMessage(error, "Error fetching hotel countries"));
+    throw error;
+  }
+};
+
+export const fetchStaticHotelsSuggestions = async (params = {}, options = {}) => {
+  try {
+    const response = await axiosInstance.get("hotels/static-hotels/search", {
+      params,
+      signal: options?.signal,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(getErrorMessage(error, "Error fetching static hotel suggestions"));
+    throw error;
+  }
+};
+
 export const searchHotels = async (payload) => {
   try {
     const response = await axiosInstance.post("hotels/search", payload);
+    console.log("[TripJack Listing Raw /hotels/search response]", response.data);
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error searching hotels"));
@@ -45,6 +120,10 @@ export const getHotelFilters = async (payload) => {
 export const getHotelDetail = async (payload) => {
   try {
     const response = await axiosInstance.post("hotels/detail", payload);
+    console.log(
+      "[TripJack Pricing Raw /hotels/detail response]",
+      response?.data?.raw || response?.data,
+    );
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error fetching hotel detail"));
@@ -101,6 +180,7 @@ export const trackTripjackAnalyticsEvent = async (payload) => {
 export const reviewHotelBooking = async (payload) => {
   try {
     const response = await axiosInstance.post("hotels/review", payload);
+    console.log("[TripJack Review Raw /hotels/review response]", response?.data);
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error reviewing hotel booking"));
@@ -133,7 +213,9 @@ export const createHotelPaymentOrder = async (payload) => {
     const response = await axiosInstance.post("hotels/create-payment-order", payload);
     return response.data;
   } catch (error) {
-    console.error(getErrorMessage(error, "Error creating hotel payment order"));
+    if (!error?.response?.data?.duplicateBookingBlocked) {
+      console.error(getErrorMessage(error, "Error creating hotel payment order"));
+    }
     throw error;
   }
 };
@@ -141,7 +223,7 @@ export const createHotelPaymentOrder = async (payload) => {
 export const verifyHotelPaymentAndBook = async (payload) => {
   try {
     const response = await axiosInstance.post("hotels/verify-payment-and-book", payload, {
-      timeout: 180000,
+      timeout: 30000,
     });
     return response.data;
   } catch (error) {
@@ -206,6 +288,34 @@ export const getAllHotelBookings = async (params = {}) => {
     return response.data;
   } catch (error) {
     console.error(getErrorMessage(error, "Error fetching hotel bookings"));
+    throw error;
+  }
+};
+
+export const downloadHotelReceipt = async (bookingId) => {
+  try {
+    const response = await axiosInstance.get(`hotels/${bookingId}/receipt`, {
+      responseType: "blob",
+    });
+    triggerBrowserDownload(response.data, `tripjack-receipt-${bookingId}.pdf`);
+    return true;
+  } catch (error) {
+    await enrichBlobError(error);
+    console.error(getErrorMessage(error, "Error downloading hotel receipt"));
+    throw error;
+  }
+};
+
+export const downloadHotelVoucher = async (bookingId) => {
+  try {
+    const response = await axiosInstance.get(`hotels/${bookingId}/voucher`, {
+      responseType: "blob",
+    });
+    triggerBrowserDownload(response.data, `tripjack-voucher-${bookingId}.pdf`);
+    return true;
+  } catch (error) {
+    await enrichBlobError(error);
+    console.error(getErrorMessage(error, "Error downloading hotel voucher"));
     throw error;
   }
 };

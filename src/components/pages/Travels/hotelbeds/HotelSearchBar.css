@@ -391,6 +391,29 @@
   margin-bottom: 16px;
 }
 
+.tripjack-guests-room-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.tripjack-guests-remove-room {
+  background: none;
+  border: none;
+  color: #ed1173;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 10px;
+}
+
+.tripjack-guests-remove-room:hover {
+  background: rgba(237, 17, 115, 0.08);
+}
+
 .tripjack-guests-row {
   display: flex;
   align-items: center;

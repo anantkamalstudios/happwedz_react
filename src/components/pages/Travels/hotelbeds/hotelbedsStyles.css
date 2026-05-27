@@ -11,6 +11,39 @@
     box-sizing: border-box;
   }
 
+  /* TripJack detail-page class compatibility */
+  .hoteldetails.hotel__container {
+    width: 100%;
+  }
+
+  .hotel-details-container {
+    width: 100%;
+  }
+
+  .hotel-basic-info {
+    align-items: flex-start;
+  }
+
+  .hoteldetails__leftboxes {
+    min-width: 0;
+  }
+
+  .hoteldetails__rightboxs {
+    min-width: 320px;
+  }
+
+  .hoteldetails__bottombox .about-container {
+    width: 100%;
+  }
+
+  .hoteldetails__bottombox .header_wrapper {
+    width: 100%;
+  }
+
+  .about-room-types-header__title {
+    margin: 0;
+  }
+
   /* Search bar container */
   .hotel-search-bar-container {
     background: #f5f5f5;
@@ -1220,6 +1253,11 @@
     position: relative;
     overflow: hidden;
     border-radius: 18px;
+    border: none;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0;
     background: linear-gradient(135deg, #f3f4f6, #e8ebf2);
     cursor: pointer;
   }
@@ -1681,6 +1719,8 @@
     font-size: 13px;
     font-weight: 700;
     border-radius: 8px;
+    border: none !important;
+    outline: none;
   }
 
   .hotel-room-option-footer {

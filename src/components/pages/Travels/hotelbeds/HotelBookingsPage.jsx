@@ -41,7 +41,7 @@ function formatAmount(amount, currency = "INR") {
 }
 
 function formatDate(value) {
-  if (!value) return "-";
+  if (!value) return "Not available";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
   return date.toLocaleDateString("en-IN", {
@@ -49,6 +49,10 @@ function formatDate(value) {
     month: "short",
     year: "numeric",
   });
+}
+
+function isOnHoldStatus(status) {
+  return String(status || "").toUpperCase() === "ON_HOLD";
 }
 
 export default function HotelBookingsPage() {
@@ -257,15 +261,15 @@ export default function HotelBookingsPage() {
                       style={{
                         marginTop: "0.75rem",
                         marginLeft: "0.5rem",
-                        border: "1px solid #132238",
-                        color: "#132238",
+                        border: isOnHoldStatus(booking.status) ? "1px solid #1d4ed8" : "1px solid #132238",
+                        color: isOnHoldStatus(booking.status) ? "#1d4ed8" : "#132238",
                         background: "#fff",
                         borderRadius: "999px",
                         padding: "0.35rem 0.8rem",
                         fontWeight: 600,
                       }}
                     >
-                      View Details
+                      {isOnHoldStatus(booking.status) ? "Proceed To Confirm & Payment" : "View Details"}
                     </button>
                   </div>
                 </div>

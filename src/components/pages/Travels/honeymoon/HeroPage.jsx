@@ -30,7 +30,8 @@ const mapBookingStatusLabel = (status) => {
   if (normalized === "PAYMENT_SUCCESS") return "Awaiting Confirmation";
   if (normalized === "SUCCESS") return "Confirmed";
   if (normalized === "ON_HOLD") return "On Hold";
-  if (["IN_PROGRESS", "PENDING", "PAYMENT_PENDING"].includes(normalized)) return "Processing";
+  if (normalized === "PAYMENT_PENDING") return "Payment Pending";
+  if (["IN_PROGRESS", "PENDING"].includes(normalized)) return "Processing";
   if (["FAILED", "ABORTED"].includes(normalized)) return "Failed";
   if (normalized === "CANCELLED") return "Cancelled";
   return normalized || "PENDING";
@@ -412,7 +413,7 @@ export default function FlightHero() {
                               <div style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.88rem" }}>{booking.bookingId}</div>
                               <div className="mt-2 d-flex justify-content-between">
                                 <span style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.86rem" }}>
-                                  {booking.checkIn || "-"} to {booking.checkOut || "-"}
+                                  {booking.checkIn || "Not available"} to {booking.checkOut || "Not available"}
                                 </span>
                                 <span className="text-white fw-semibold" style={{ fontSize: "0.86rem" }}>
                                   <span style={{ color: getBookingStatusColor(booking.status) }}>
