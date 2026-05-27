@@ -1,7 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { Loader2, Upload, ChevronDown } from "lucide-react";
-import { bookTripSafeInsurance } from "../../../../services/api/tripSafeApi";
+import {
+  createInsurancePaymentOrder,
+  verifyInsurancePaymentAndBook,
+  loadRazorpayScript,
+} from "../../../../services/api/insurancePaymentApi";
 
 const NOMINEE_RELATIONS = [
   "LEGAL HEIR",
@@ -62,6 +67,7 @@ const buildTravellerForms = (searchParams) => {
 const InsuranceBookingPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   const searchParams = location.state?.searchParams;
   const selectedPlan = location.state?.selectedPlan;
   const reviewMeta = location.state?.reviewMeta;
@@ -70,6 +76,7 @@ const InsuranceBookingPage = () => {
     buildTravellerForms(searchParams),
   );
   const [submitting, setSubmitting] = useState(false);
+  const [submitStage, setSubmitStage] = useState("");
   const [error, setError] = useState(null);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
@@ -135,6 +142,11 @@ const InsuranceBookingPage = () => {
       return;
     }
 
+    if (!isAuthenticated) {
+      setError("Please login to complete your insurance booking.");
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
 
@@ -160,7 +172,7 @@ const InsuranceBookingPage = () => {
       };
     });
 
-    const payload = {
+    const bookPayload = {
       bookingId: reviewMeta.bookingId,
       paymentInfos: [
         {
@@ -186,15 +198,108 @@ const InsuranceBookingPage = () => {
     };
 
     try {
-      const response = await bookTripSafeInsurance(payload);
-      if (!response?.status) {
-        setError(response?.message || "Booking failed");
+      setSubmitStage("Creating secure payment order...");
+      const orderResponse = await createInsurancePaymentOrder({
+        bookingId: reviewMeta.bookingId,
+        amount: Number(totalPrice),
+        bookPayload,
+        planSummary: {
+          plid: selectedPlan.plid,
+          pid: selectedPlan.pid,
+          planLabel: selectedPlan.planLabel,
+          coverageAmount: selectedPlan.coverageAmount,
+          regionName: selectedPlan.regionName,
+          insurer: selectedPlan.insurer,
+          startDate: searchParams?.isq?.sd,
+          endDate: searchParams?.isq?.ed,
+          travellerCount: travellers.length,
+        },
+      });
+
+      if (!orderResponse?.status || !orderResponse?.razorpayOrderId) {
+        setError(orderResponse?.message || "Could not create payment order");
+        setSubmitting(false);
+        setSubmitStage("");
         return;
       }
-      const bookedId =
-        response?.data?.bookingId ||
-        response?.data?.order?.bookingId ||
-        reviewMeta.bookingId;
+
+      setSubmitStage("Opening Razorpay checkout...");
+      const ready = await loadRazorpayScript();
+      if (!ready || !window.Razorpay) {
+        setError("Unable to load Razorpay checkout. Please try again.");
+        setSubmitting(false);
+        setSubmitStage("");
+        return;
+      }
+
+      const bookedId = await new Promise((resolve, reject) => {
+        const rzp = new window.Razorpay({
+          key: orderResponse.keyId,
+          order_id: orderResponse.razorpayOrderId,
+          amount: orderResponse.amount,
+          currency: orderResponse.currency || "INR",
+          name: "HappyWedz Travel Insurance",
+          description: `${selectedPlan.planLabel || "Insurance"} · ${
+            selectedPlan.coverageAmount || ""
+          }`.trim(),
+          prefill: {
+            name:
+              primary.fullName ||
+              user?.name ||
+              user?.fullName ||
+              "",
+            email: primary.email || user?.email || "",
+            contact: primary.mobile || user?.phone || "",
+          },
+          notes: {
+            tripjackBookingId: reviewMeta.bookingId,
+          },
+          theme: { color: "#ed1173" },
+          modal: {
+            ondismiss: () =>
+              reject(new Error("Payment cancelled before completion.")),
+          },
+          handler: async (paymentResult) => {
+            try {
+              setSubmitStage(
+                "Payment verified. Confirming insurance with TripJack...",
+              );
+              const verifyResponse = await verifyInsurancePaymentAndBook({
+                razorpay_order_id:
+                  paymentResult?.razorpay_order_id ||
+                  orderResponse.razorpayOrderId,
+                razorpay_payment_id: paymentResult?.razorpay_payment_id,
+                razorpay_signature: paymentResult?.razorpay_signature,
+              });
+              if (!verifyResponse?.status) {
+                reject(
+                  new Error(
+                    verifyResponse?.message ||
+                      "Insurance booking failed after payment.",
+                  ),
+                );
+                return;
+              }
+              resolve(verifyResponse.bookingId || reviewMeta.bookingId);
+            } catch (verifyErr) {
+              reject(verifyErr);
+            }
+          },
+        });
+
+        rzp.on("payment.failed", (failure) => {
+          reject(
+            new Error(
+              failure?.error?.description ||
+                failure?.error?.reason ||
+                "Razorpay payment failed.",
+            ),
+          );
+        });
+
+        rzp.open();
+      });
+
       navigate(`/honeymoon/insurance/booking/${bookedId}`, { replace: true });
     } catch (err) {
       setError(
@@ -204,6 +309,7 @@ const InsuranceBookingPage = () => {
       );
     } finally {
       setSubmitting(false);
+      setSubmitStage("");
     }
   };
 
@@ -450,10 +556,10 @@ const InsuranceBookingPage = () => {
                     {submitting ? (
                       <span className="d-inline-flex align-items-center gap-2">
                         <Loader2 size={18} className="spin" />
-                        Booking insurance...
+                        {submitStage || "Processing payment..."}
                       </span>
                     ) : (
-                      "Continue >>"
+                      `Pay ${formatPrice(totalPrice)} & Book`
                     )}
                   </button>
                 </div>

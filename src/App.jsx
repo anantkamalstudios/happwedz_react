@@ -219,6 +219,9 @@ const InsuranceBookingPage = lazy(
 const InsuranceBookingDetailsPage = lazy(
   () => import("./components/pages/Travels/honeymoon/InsuranceBookingDetailsPage"),
 );
+const InsuranceBookingsPage = lazy(
+  () => import("./components/pages/Travels/honeymoon/InsuranceBookingsPage"),
+);
 
 function App() {
   const dispatch = useDispatch();
@@ -368,11 +371,27 @@ function App() {
               />
               <Route
                 path="/honeymoon/insurance/book"
-                element={<InsuranceBookingPage />}
+                element={
+                  <UserPrivateRoute>
+                    <InsuranceBookingPage />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/honeymoon/insurance/bookings"
+                element={
+                  <UserPrivateRoute>
+                    <InsuranceBookingsPage />
+                  </UserPrivateRoute>
+                }
               />
               <Route
                 path="/honeymoon/insurance/booking/:bookingId"
-                element={<InsuranceBookingDetailsPage />}
+                element={
+                  <UserPrivateRoute>
+                    <InsuranceBookingDetailsPage />
+                  </UserPrivateRoute>
+                }
               />
               <Route
                 path="/honeymoon/hotels"

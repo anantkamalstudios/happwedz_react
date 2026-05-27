@@ -10,8 +10,11 @@ import {
   FileText,
   CheckCircle2,
   Loader2,
+  Download,
 } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { getTripSafeBookingDetails } from '../../../../services/api/tripSafeApi';
+import { getInsurancePolicyPdf } from '../../../../services/api/insurancePaymentApi';
 import InsuranceBenefitsModal from './InsuranceBenefitsModal';
 import InsuranceCancellationModal from './InsuranceCancellationModal';
 
@@ -53,6 +56,30 @@ const InsuranceBookingDetailsPage = () => {
   const [details, setDetails] = useState(null);
   const [benefitsOpen, setBenefitsOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    if (!routeBookingId) return;
+    try {
+      setDownloadingPdf(true);
+      const blob = await getInsurancePolicyPdf(routeBookingId);
+      const url = window.URL.createObjectURL(
+        new Blob([blob], { type: 'application/pdf' }),
+      );
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `insurance-policy-${routeBookingId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Policy PDF download failed', err);
+      toast.error('Could not download policy PDF. Please try again.');
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
 
   const reloadDetails = () => {
     if (!routeBookingId) return;
@@ -289,9 +316,36 @@ const InsuranceBookingDetailsPage = () => {
                     <small>{details.deliveryInfo.contacts[0]}</small>
                   </div>
                 )}
+                {isSuccess && (
+                  <button
+                    type="button"
+                    className="btn ins-select-btn w-100 mt-3"
+                    onClick={handleDownloadPdf}
+                    disabled={downloadingPdf}
+                  >
+                    {downloadingPdf ? (
+                      <span className="d-inline-flex align-items-center gap-2">
+                        <Loader2 size={16} className="spin" />
+                        Generating PDF...
+                      </span>
+                    ) : (
+                      <span className="d-inline-flex align-items-center gap-2">
+                        <Download size={16} />
+                        Download Policy PDF
+                      </span>
+                    )}
+                  </button>
+                )}
                 <button
                   type="button"
-                  className="btn ins-select-btn w-100 mt-3"
+                  className="btn btn-outline-secondary w-100 mt-2"
+                  onClick={() => navigate('/honeymoon/insurance/bookings')}
+                >
+                  View all my insurance bookings
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-primary w-100 mt-2"
                   onClick={() => navigate('/honeymoon')}
                 >
                   Book another plan

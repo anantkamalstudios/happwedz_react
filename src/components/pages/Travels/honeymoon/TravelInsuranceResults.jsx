@@ -98,13 +98,28 @@ const TravelInsuranceResults = () => {
     <>
       <div className="ins-results-page">
         <div className="container py-4">
-          <button
-            type="button"
-            className="btn btn-outline-secondary mb-3"
-            onClick={() => navigate("/honeymoon")}
-          >
-            ← Back to Search
-          </button>
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              onClick={() => navigate("/honeymoon")}
+            >
+              ← Back to Search
+            </button>
+            <button
+              type="button"
+              className="btn"
+              style={{
+                background: "#ed1173",
+                color: "#fff",
+                borderRadius: "999px",
+                fontWeight: 600,
+              }}
+              onClick={() => navigate("/honeymoon/insurance/bookings")}
+            >
+              My Insurance Bookings
+            </button>
+          </div>
 
           <div className="ins-results-header">
             <div>

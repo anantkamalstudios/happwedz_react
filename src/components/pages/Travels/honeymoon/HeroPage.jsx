@@ -11,6 +11,7 @@ import FlightSearchForm from "./components/FlightSearchForm";
 import HotelSearchForm from "./components/HotelSearchForm";
 import InsuranceSearchPanel from "./InsuranceSearchPanel";
 import { getRecentHotelBookings } from "../../../../services/api/hotelApi";
+import { getUserInsuranceBookings } from "../../../../services/api/insurancePaymentApi";
 import "./index.css";
 
 const formatSelectedDate = (dateValue) => {
@@ -50,6 +51,9 @@ export default function FlightHero() {
   const [activeTab, setActiveTab] = useState("Flights");
   const [recentHotelBookings, setRecentHotelBookings] = useState([]);
   const [recentHotelBookingsLoading, setRecentHotelBookingsLoading] = useState(false);
+  const [recentInsuranceBookings, setRecentInsuranceBookings] = useState([]);
+  const [recentInsuranceBookingsLoading, setRecentInsuranceBookingsLoading] =
+    useState(false);
 
   const heroTitle =
     activeTab === "Flights"
@@ -93,6 +97,37 @@ export default function FlightHero() {
         if (active) {
           setRecentHotelBookingsLoading(false);
         }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [activeTab, isAuthenticated, user?.id]);
+
+  useEffect(() => {
+    let active = true;
+    if (!isAuthenticated || !user?.id) {
+      setRecentInsuranceBookings([]);
+      return undefined;
+    }
+
+    if (activeTab !== "Insurance") {
+      return undefined;
+    }
+
+    setRecentInsuranceBookingsLoading(true);
+    getUserInsuranceBookings()
+      .then((response) => {
+        if (!active) return;
+        const list = Array.isArray(response?.bookings) ? response.bookings : [];
+        setRecentInsuranceBookings(list.slice(0, 3));
+      })
+      .catch((error) => {
+        console.error("Unable to load recent insurance bookings", error);
+        if (active) setRecentInsuranceBookings([]);
+      })
+      .finally(() => {
+        if (active) setRecentInsuranceBookingsLoading(false);
       });
 
     return () => {
@@ -202,7 +237,126 @@ export default function FlightHero() {
             {activeTab === "Flights" ? (
               <FlightSearchForm />
             ) : activeTab === "Insurance" ? (
-              <InsuranceSearchPanel formatSelectedDate={formatSelectedDate} />
+              <>
+                <InsuranceSearchPanel formatSelectedDate={formatSelectedDate} />
+                {isAuthenticated ? (
+                  <div
+                    className="mt-4"
+                    style={{
+                      background: "rgba(255, 255, 255, 0.16)",
+                      border: "1px solid rgba(255, 255, 255, 0.28)",
+                      borderRadius: "18px",
+                      padding: "1rem",
+                    }}
+                  >
+                    <div className="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
+                      <div>
+                        <div className="fw-bold text-white">
+                          My Travel Insurance
+                        </div>
+                        <div
+                          style={{
+                            color: "rgba(255,255,255,0.8)",
+                            fontSize: "0.92rem",
+                          }}
+                        >
+                          Policies you have already booked
+                        </div>
+                      </div>
+                      <Link
+                        to="/honeymoon/insurance/bookings"
+                        style={{
+                          background: "#ffffff",
+                          color: "#1f2937",
+                          borderRadius: "999px",
+                          padding: "0.5rem 0.9rem",
+                          fontWeight: 700,
+                          textDecoration: "none",
+                        }}
+                      >
+                        View All
+                      </Link>
+                    </div>
+
+                    {recentInsuranceBookingsLoading ? (
+                      <div style={{ color: "rgba(255,255,255,0.8)" }}>
+                        Loading your insurance bookings...
+                      </div>
+                    ) : recentInsuranceBookings.length === 0 ? (
+                      <div style={{ color: "rgba(255,255,255,0.8)" }}>
+                        You haven't booked any travel insurance yet.
+                      </div>
+                    ) : (
+                      <div className="row g-3">
+                        {recentInsuranceBookings.map((booking) => (
+                          <div className="col-md-4" key={booking.id}>
+                            <Link
+                              to={`/honeymoon/insurance/booking/${booking.tripjack_booking_id}`}
+                              style={{
+                                display: "block",
+                                background: "rgba(14, 23, 38, 0.45)",
+                                borderRadius: "14px",
+                                padding: "0.8rem",
+                                height: "100%",
+                                textDecoration: "none",
+                                color: "inherit",
+                              }}
+                            >
+                              <div className="fw-semibold text-white d-flex align-items-center gap-2">
+                                <Shield size={14} />
+                                {booking.plan_label || "Insurance Plan"}
+                              </div>
+                              <div
+                                style={{
+                                  color: "rgba(255,255,255,0.75)",
+                                  fontSize: "0.84rem",
+                                }}
+                              >
+                                {booking.tripjack_booking_id}
+                              </div>
+                              <div
+                                style={{
+                                  color: "rgba(255,255,255,0.75)",
+                                  fontSize: "0.84rem",
+                                  marginTop: 4,
+                                }}
+                              >
+                                {booking.region_name || "—"} ·{" "}
+                                {booking.traveller_count || 1} traveller
+                                {(booking.traveller_count || 1) > 1 ? "s" : ""}
+                              </div>
+                              <div className="mt-2 d-flex justify-content-between">
+                                <span
+                                  style={{
+                                    color: "rgba(255,255,255,0.8)",
+                                    fontSize: "0.84rem",
+                                  }}
+                                >
+                                  {formatSelectedDate(booking.start_date)} →{" "}
+                                  {formatSelectedDate(booking.end_date)}
+                                </span>
+                                <span
+                                  className="text-white fw-semibold"
+                                  style={{
+                                    fontSize: "0.84rem",
+                                    color: getBookingStatusColor(
+                                      booking.booking_status,
+                                    ),
+                                  }}
+                                >
+                                  {mapBookingStatusLabel(
+                                    booking.booking_status,
+                                  )}
+                                </span>
+                              </div>
+                            </Link>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </>
             ) : (
               <>
                 <HotelSearchForm />
