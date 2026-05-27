@@ -172,7 +172,7 @@ const BridalOutfitMasterProfile = ({
               value={jm.identity.vendor_type}
               onChange={(v) => patchJm({ identity: { ...jm.identity, vendor_type: v } })}
             />
-            <div className="mb-3">
+            {/* <div className="mb-3">
               <label className="form-label fw-semibold">Brand Name</label>
               <Form.Control
                 className="fs-14"
@@ -183,7 +183,7 @@ const BridalOutfitMasterProfile = ({
                   })
                 }
               />
-            </div>
+            </div> */}
             <SelectField
               label="Years of Experience"
               options={YEARS_OF_EXPERIENCE}

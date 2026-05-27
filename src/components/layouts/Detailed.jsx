@@ -150,251 +150,171 @@ const Detailed = () => {
       });
     }
 
-    // --- VENUE-SPECIFIC FEATURES ---
-    if (
-      vendorType === "Venues" ||
-      attributes.catering_policy ||
-      attributes.rooms
-    ) {
-      // --- Catering Policy ---
-      if (attributes.catering_policy) {
-        amenities.push({
-          icon: <FaUtensils />,
-          name: `Catering: ${capitalizeWords(attributes.catering_policy)}`,
-        });
-      }
+    // --- VENUE-SPECIFIC FEATURES (Combined Attributes + Master) ---
+    if (vendorType === "Venues" || attributes.catering_policy || attributes.rooms || Object.keys(venueMaster).length > 0) {
+      // Section 1: Identity & Categories
+      const vIdentity = venueMaster.identity || {};
+      const vc = venueMaster.categories || {};
+      pushFeature(amenities, <FaStar />, "Premium & Experience", formatList(vc.premium));
+      pushFeature(amenities, <FaStar />, "Location Based", formatList(vc.locationBased));
+      pushFeature(amenities, <FaStar />, "Capacity Based", formatList(vc.capacityBased));
+      pushFeature(amenities, <FaStar />, "Budget Based", formatList(vc.budgetBased));
+      pushFeature(amenities, <FaStar />, "Function Specific", formatList(vc.functionSpecific));
+      pushFeature(amenities, <FaStar />, "Facility Based", formatList(vc.facilityBased));
+      pushFeature(amenities, <FaStar />, "Booking & Usage", formatList(vc.bookingFlex));
+      pushFeature(amenities, <FaStar />, "Trend & Modern", formatList(vc.trendModern));
 
-      // --- Decor Policy ---
-      if (attributes.decor_policy) {
-        amenities.push({
-          icon: <FaStar />,
-          name: `Decor: ${capitalizeWords(attributes.decor_policy)}`,
-        });
-      }
-      if (attributes.dJ_policy) {
-        amenities.push({
-          icon: <FaStar />,
-          name: `DJ: ${capitalizeWords(attributes.dJ_policy)}`,
-        });
-      }
-      if (attributes.space) {
-        amenities.push({
-          icon: <FaStar />,
-          name: `Space: ${capitalizeWords(attributes.space)}`,
-        });
-      }
-      if (attributes.start_venue) {
-        amenities.push({
-          icon: <FaStar />,
-          name: `Start Venue: ${capitalizeWords(attributes.start_venue)}`,
-        });
-      }
+      pushFeature(amenities, <FaMapMarkerAlt />, "Property Ownership", vIdentity.property_ownership === "Other" ? vIdentity.property_ownership_other : vIdentity.property_ownership);
+      pushFeature(amenities, <FaStar />, "Years of Operation", vIdentity.years_of_operation);
+      pushFeature(amenities, <FaMapMarkerAlt />, "Location Type", vIdentity.location_type === "Other" ? vIdentity.location_type_other : vIdentity.location_type);
+      pushFeature(amenities, <FaStar />, "Chain Property", vIdentity.chain_property);
+      pushFeature(amenities, <FaStar />, "Brand Name", vIdentity.chain_brand_name);
+      pushFeature(amenities, <FaStar />, "Brand Category", vIdentity.chain_brand_category === "Other" ? vIdentity.chain_brand_category_other : vIdentity.chain_brand_category);
 
-      if (attributes.outside_alcohol) {
-        amenities.push({
-          icon: <FaStar />,
-          name: `Outside Alcohol: ${capitalizeWords(
-            attributes.outside_alcohol,
-          )}`,
-        });
-      }
-
-      // --- Alcohol Policy ---
-      let alcoholStatus = attributes.alcohol_policy
-        ? capitalizeWords(attributes.alcohol_policy)
-        : "";
-      if (
-        attributes.about_us &&
-        attributes.about_us.includes(
-          "In house alcohol available, outside alcohol not permitted",
-        )
-      ) {
-        alcoholStatus = "In-house Only (Outside Not Permitted)";
-      }
-      if (alcoholStatus) {
-        amenities.push({
-          icon: <FaGlassCheers />,
-          name: `Alcohol: ${alcoholStatus}`,
-        });
-      }
-
-      if (attributes.parking) {
-        amenities.push({
-          icon: <FaParking />,
-          name: `Parking: ${attributes.parking}`,
-        });
-      }
-
-      // --- Number of Rooms (Accommodation) ---
-      if (attributes.rooms) {
-        amenities.push({
-          icon: <FaBed />,
-          name: `Total Rooms:${attributes.rooms}`,
-        });
-      }
-
-      // --- Venue Area/Capacity Breakdown (from 'area' attribute) ---
-      if (attributes.area) {
-        const areas = attributes.area.split(",").map((s) => s.trim());
-        areas.forEach((area) => {
-          const match = area.match(
-            /(\w+)\s*(\d+)\s*Seating\s*\|\s*(\d+)\s*Floating\s*(.*)/i,
-          );
-          if (match) {
-            const [, , seating, floating, locationPart] = match;
-            let venueName =
-              locationPart.replace(/^(,)\s*/, "").trim() || area.split(" ")[0];
-            venueName = capitalizeWords(
-              venueName
-                .replace("Banquetpoolside", "Banquet Poolside")
-                .replace("Poolsideoutdoor", "Poolside/Outdoor")
-                .replace("Lawnoutdoor", "Lawn/Outdoor"),
-            );
-
-            amenities.push({
-              icon: <FaUsers />,
-              name: `${venueName}: ${seating} Seating | ${floating} Floating`,
-            });
-          } else {
-            amenities.push({
-              icon: <FaUsers />,
-              name: capitalizeWords(area),
-            });
+      // Section 2: Space & Capacity
+      const vSpace = venueMaster.space_capacity || {};
+      pushFeature(amenities, <FaStar />, "Space Types", formatList(vSpace.space_types));
+      if (vSpace.space_types_other) pushFeature(amenities, <FaStar />, "Other Space Types", vSpace.space_types_other);
+      pushFeature(amenities, <FaStar />, "Total Event Spaces", vSpace.num_event_spaces);
+      pushFeature(amenities, <FaStar />, "Indoor Spaces", vSpace.indoor_spaces_count);
+      pushFeature(amenities, <FaStar />, "Outdoor Spaces", vSpace.outdoor_spaces_count);
+      pushFeature(amenities, <FaUsers />, "Indoor Seating", vSpace.indoor_seating);
+      pushFeature(amenities, <FaUsers />, "Indoor Floating", vSpace.indoor_floating);
+      pushFeature(amenities, <FaUsers />, "Outdoor Seating", vSpace.outdoor_seating);
+      pushFeature(amenities, <FaUsers />, "Outdoor Floating", vSpace.outdoor_floating);
+      pushFeature(amenities, <FaUsers />, "Min Guests", vSpace.min_guests);
+      pushFeature(amenities, <FaUsers />, "Max Guests", vSpace.max_guests);
+      pushFeature(amenities, <FaStar />, "Separate Function Areas", vSpace.separate_function_areas);
+      pushFeature(amenities, <FaStar />, "Simultaneous Events", vSpace.multiple_events_simultaneous);
+      pushFeature(amenities, <FaStar />, "Exclusive Booking", vSpace.exclusive_booking);
+      
+      if (vSpace.spaces && Array.isArray(vSpace.spaces)) {
+        vSpace.spaces.forEach((s, idx) => {
+          if (s.space_name) {
+            let details = `${s.seating || 0} Seating | ${s.floating || 0} Floating`;
+            if (s.space_type) details += ` (${s.space_type})`;
+            if (s.indoor_outdoor) details += ` | ${s.indoor_outdoor}`;
+            if (s.ac === "Yes") details += ` | AC`;
+            if (s.dedicated_kitchen === "Yes") details += ` | Kitchen`;
+            if (s.attached_rooms === "Yes") details += ` | Rooms`;
+            if (s.notes) details += ` | Notes: ${s.notes}`;
+            pushFeature(amenities, <FaUsers />, `Space: ${s.space_name}`, details);
           }
         });
       }
-    }
 
-    // --- VENUE MASTER ATTRIBUTES ---
-    if (venueMaster && Object.keys(venueMaster).length > 0) {
-      const vc = venueMaster.categories || {};
-      pushFeature(
-        amenities,
-        <FaStar />,
-        "Venue Categories",
-        formatList(
-          Object.values(vc)
-            .filter(Array.isArray)
-            .flat(),
-          12,
-        ),
-      );
+      if (attributes.area) {
+        const areas = attributes.area.split(",").map((s) => s.trim());
+        areas.forEach((area) => {
+          const match = area.match(/(\w+)\s*(\d+)\s*Seating\s*\|\s*(\d+)\s*Floating\s*(.*)/i);
+          if (match) {
+            const [, , seating, floating, locationPart] = match;
+            let venueName = locationPart.replace(/^(,)\s*/, "").trim() || area.split(" ")[0];
+            venueName = capitalizeWords(venueName.replace("Banquetpoolside", "Banquet Poolside").replace("Poolsideoutdoor", "Poolside/Outdoor").replace("Lawnoutdoor", "Lawn/Outdoor"));
+            amenities.push({ icon: <FaUsers />, name: `${venueName}: ${seating} Seating | ${floating} Floating` });
+          } else {
+            amenities.push({ icon: <FaUsers />, name: capitalizeWords(area) });
+          }
+        });
+      }
 
-      const vSpace = venueMaster.space_capacity || {};
-      pushFeature(amenities, <FaUsers />, "Guest Capacity", vSpace.max_guests);
-      pushFeature(
-        amenities,
-        <FaStar />,
-        "Space Types",
-        formatList(vSpace.space_types),
-      );
-
-      const vFood = venueMaster.food || {};
-      pushFeature(
-        amenities,
-        <FaUtensils />,
-        "Cuisine",
-        formatList(vFood.cuisines, 4),
-      );
-      pushFeature(
-        amenities,
-        <FaUtensils />,
-        "Veg/Non-Veg",
-        vFood.veg_non_veg,
-      );
-
-      pushFeature(amenities, <FaUtensils />, "Catering Policy", vFood.catering_policy);
-      pushFeature(amenities, <FaUtensils />, "Per Plate Cost", vFood.per_plate_cost_range);
-      pushFeature(
-        amenities,
-        <FaUtensils />,
-        "Outside Catering Charges",
-        vFood.outside_catering_charges,
-      );
-      pushFeature(amenities, <FaUtensils />, "Jain Food", vFood.jain_food);
-
-      const vDecor = venueMaster.decor || {};
-      pushFeature(amenities, <FaStar />, "Decor Policy", vDecor.policy);
-      pushFeature(
-        amenities,
-        <FaStar />,
-        "Decor Capabilities",
-        formatList(vDecor.capabilities, 4),
-      );
-      pushFeature(amenities, <FaStar />, "Decor Lighting", formatList(vDecor.lighting, 3));
-      pushFeature(amenities, <FaStar />, "Decor Sound", formatList(vDecor.sound, 3));
-
+      // Section 3: Rooms & Accommodation
       const vRooms = venueMaster.rooms || {};
-      pushFeature(amenities, <FaBed />, "Number of Rooms", vRooms.num_rooms);
-      pushFeature(amenities, <FaBed />, "Room Types", formatList(vRooms.room_types, 4));
-      pushFeature(amenities, <FaBed />, "Room Price Range", vRooms.room_price_range);
+      pushFeature(amenities, <FaBed />, "Number of Rooms", vRooms.num_rooms || attributes.rooms);
+      pushFeature(amenities, <FaBed />, "Max Occupancy Per Room", vRooms.max_occupancy_per_room);
+      pushFeature(amenities, <FaBed />, "Extra Bed Available", vRooms.extra_bed);
+      pushFeature(amenities, <FaBed />, "Room Price Range", vRooms.room_price_range === "Other" ? vRooms.room_price_range_other : vRooms.room_price_range);
       pushFeature(amenities, <FaBed />, "Complimentary Rooms", vRooms.complimentary_rooms);
-      pushFeature(
-        amenities,
-        <FaBed />,
-        "Room Type Counts",
-        formatKeyValuePairs(vRooms.room_type_counts, 3),
-      );
+      pushFeature(amenities, <FaBed />, "Total Stay Capacity", vRooms.total_stay_capacity);
+      pushFeature(amenities, <FaBed />, "Room Types", formatList(vRooms.room_types));
+      if (vRooms.room_types_other) pushFeature(amenities, <FaBed />, "Other Room Types", vRooms.room_types_other);
+      if (vRooms.room_type_counts && typeof vRooms.room_type_counts === "object") {
+        Object.entries(vRooms.room_type_counts).forEach(([type, count]) => {
+          if (count) pushFeature(amenities, <FaBed />, `${type} Rooms`, count);
+        });
+      }
 
+      // Section 4: Food & Catering
+      const vFood = venueMaster.food || {};
+      pushFeature(amenities, <FaUtensils />, "Catering Policy", vFood.catering_policy === "Other" ? vFood.catering_policy_other : (vFood.catering_policy || attributes.catering_policy));
+      pushFeature(amenities, <FaUtensils />, "Veg/Non-Veg", vFood.veg_non_veg === "Other" ? vFood.veg_non_veg_other : vFood.veg_non_veg);
+      pushFeature(amenities, <FaUtensils />, "Cuisine", formatList(vFood.cuisines, 15));
+      if (vFood.cuisines_other) pushFeature(amenities, <FaUtensils />, "Other Cuisines", vFood.cuisines_other);
+      pushFeature(amenities, <FaUtensils />, "Jain Food", vFood.jain_food);
+      pushFeature(amenities, <FaUtensils />, "Per Plate Cost", vFood.per_plate_cost_range === "Other" ? vFood.per_plate_cost_range_other : vFood.per_plate_cost_range);
+      pushFeature(amenities, <FaUtensils />, "Outside Catering Charges", vFood.outside_catering_charges === "Other" ? vFood.outside_catering_charges_other : vFood.outside_catering_charges);
+      pushFeature(amenities, <FaUtensils />, "Kitchen for External Caterer", vFood.kitchen_for_external);
+
+      // Section 5: Alcohol
       const vAlcohol = venueMaster.alcohol || {};
-      pushFeature(amenities, <FaGlassCheers />, "Alcohol Policy", vAlcohol.policy);
-      pushFeature(amenities, <FaGlassCheers />, "Corkage", vAlcohol.corkage);
-      pushFeature(amenities, <FaGlassCheers />, "Bar Setup", formatList(vAlcohol.bar_setup, 3));
+      pushFeature(amenities, <FaGlassCheers />, "Alcohol Policy", vAlcohol.policy === "Other" ? vAlcohol.policy_other : (vAlcohol.policy || attributes.alcohol_policy));
+      pushFeature(amenities, <FaGlassCheers />, "Corkage Charges", vAlcohol.corkage === "Other" ? vAlcohol.corkage_other : vAlcohol.corkage);
+      pushFeature(amenities, <FaGlassCheers />, "Bar Setup", formatList(vAlcohol.bar_setup));
+      if (vAlcohol.bar_setup_other) pushFeature(amenities, <FaGlassCheers />, "Other Bar Setup", vAlcohol.bar_setup_other);
+      pushFeature(amenities, <FaGlassCheers />, "Outside Alcohol", attributes.outside_alcohol);
 
-      const vFacilities = venueMaster.facilities || {};
-      pushFeature(amenities, <FaParking />, "Parking Capacity", vFacilities.parking_capacity);
-      pushFeature(amenities, <FaParking />, "Valet", vFacilities.valet);
-      pushFeature(amenities, <FaStar />, "Power Backup", formatList(vFacilities.power_backup, 3));
-      pushFeature(amenities, <FaStar />, "Air Conditioning", vFacilities.ac);
-      pushFeature(amenities, <FaStar />, "Washroom Quality", vFacilities.washroom);
-      pushFeature(
-        amenities,
-        <FaStar />,
-        "Additional Facilities",
-        formatList(vFacilities.additional, 4),
-      );
+      // Section 6: Decor & Production
+      const vDecor = venueMaster.decor || {};
+      pushFeature(amenities, <FaStar />, "Decor Policy", vDecor.policy === "Other" ? vDecor.policy_other : (vDecor.policy || attributes.decor_policy));
+      pushFeature(amenities, <FaStar />, "Decor Capabilities", formatList(vDecor.capabilities, 10));
+      if (vDecor.capabilities_other) pushFeature(amenities, <FaStar />, "Other Capabilities", vDecor.capabilities_other);
+      pushFeature(amenities, <FaStar />, "Stage Decor", formatList(vDecor.stage));
+      if (vDecor.stage_other) pushFeature(amenities, <FaStar />, "Other Stage Decor", vDecor.stage_other);
+      pushFeature(amenities, <FaStar />, "Mandap Decor", formatList(vDecor.mandap));
+      if (vDecor.mandap_other) pushFeature(amenities, <FaStar />, "Other Mandap Decor", vDecor.mandap_other);
+      pushFeature(amenities, <FaStar />, "Lighting Setup", formatList(vDecor.lighting));
+      if (vDecor.lighting_other) pushFeature(amenities, <FaStar />, "Other Lighting", vDecor.lighting_other);
+      pushFeature(amenities, <FaStar />, "Sound System", formatList(vDecor.sound));
+      if (vDecor.sound_other) pushFeature(amenities, <FaStar />, "Other Sound", vDecor.sound_other);
+      pushFeature(amenities, <FaStar />, "Outside Decor Charges", vDecor.outside_charges === "Other" ? vDecor.outside_charges_other : vDecor.outside_charges);
 
+      // Section 7: Entertainment & DJ
       const vEntertainment = venueMaster.entertainment || {};
-      pushFeature(amenities, <FaCalendarAlt />, "DJ Policy", vEntertainment.dj_policy);
-      pushFeature(
-        amenities,
-        <FaCalendarAlt />,
-        "Entertainment Supported",
-        formatList(vEntertainment.supported, 4),
-      );
-      pushFeature(amenities, <FaCalendarAlt />, "Noise Restriction", vEntertainment.noise);
+      pushFeature(amenities, <FaCalendarAlt />, "DJ Policy", vEntertainment.dj_policy === "Other" ? vEntertainment.dj_policy_other : (vEntertainment.dj_policy || attributes.dJ_policy));
+      pushFeature(amenities, <FaCalendarAlt />, "Noise Restriction", vEntertainment.noise === "Other" ? vEntertainment.noise_other : vEntertainment.noise);
+      pushFeature(amenities, <FaCalendarAlt />, "Live Band Available", vEntertainment.live_band);
+      pushFeature(amenities, <FaCalendarAlt />, "Fireworks Allowed", vEntertainment.fireworks === "Other" ? vEntertainment.fireworks_other : vEntertainment.fireworks);
+      pushFeature(amenities, <FaCalendarAlt />, "Entertainment Supported", formatList(vEntertainment.supported, 10));
+      if (vEntertainment.supported_other) pushFeature(amenities, <FaCalendarAlt />, "Other Entertainment", vEntertainment.supported_other);
 
-      const vSuitability = venueMaster.suitability || {};
-      pushFeature(
-        amenities,
-        <FaUsers />,
-        "Suitable For",
-        formatList(vSuitability.suitable_for, 4),
-      );
-      pushFeature(amenities, <FaUsers />, "Best For", formatList(vSuitability.best_for, 4));
-      pushFeature(
-        amenities,
-        <FaUsers />,
-        "Ideal Guest Range",
-        formatList(vSuitability.ideal_guest_range, 3),
-      );
+      // Section 8: Facilities
+      const vFacilities = venueMaster.facilities || {};
+      pushFeature(amenities, <FaParking />, "Parking Available", vFacilities.parking || attributes.parking);
+      pushFeature(amenities, <FaParking />, "Parking Capacity", vFacilities.parking_capacity);
+      pushFeature(amenities, <FaParking />, "Valet Parking", vFacilities.valet);
+      pushFeature(amenities, <FaStar />, "Power Backup", formatList(vFacilities.power_backup));
+      if (vFacilities.power_backup_other) pushFeature(amenities, <FaStar />, "Other Power Backup", vFacilities.power_backup_other);
+      pushFeature(amenities, <FaStar />, "Air Conditioning", vFacilities.ac === "Other" ? vFacilities.ac_other : vFacilities.ac);
+      pushFeature(amenities, <FaStar />, "Bridal Room", vFacilities.bridal_room);
+      pushFeature(amenities, <FaStar />, "Groom Room", vFacilities.groom_room);
+      pushFeature(amenities, <FaStar />, "Wheelchair Accessible", vFacilities.wheelchair);
+      pushFeature(amenities, <FaStar />, "Washroom Quality", vFacilities.washroom === "Other" ? vFacilities.washroom_other : vFacilities.washroom);
+      pushFeature(amenities, <FaStar />, "Lift/Elevator", vFacilities.lift);
+      pushFeature(amenities, <FaStar />, "Security Services", vFacilities.security === "Other" ? vFacilities.security_other : vFacilities.security);
+      pushFeature(amenities, <FaStar />, "Additional Facilities", formatList(vFacilities.additional, 10));
+      if (vFacilities.additional_other) pushFeature(amenities, <FaStar />, "Other Facilities", vFacilities.additional_other);
 
-      const vIdentity = venueMaster.identity || {};
-      pushFeature(amenities, <FaMapMarkerAlt />, "Location Type", vIdentity.location_type);
-      pushFeature(amenities, <FaMapMarkerAlt />, "Ownership", vIdentity.property_ownership);
-      pushFeature(amenities, <FaStar />, "Years of Operation", vIdentity.years_of_operation);
-
+      // Section 9: Pricing & Booking
       const vPricing = venueMaster.pricing_booking || {};
-      pushFeature(amenities, <FaStar />, "Pricing Model", formatList(vPricing.pricing_model, 3));
-      pushFeature(
-        amenities,
-        <FaStar />,
-        "Starting Venue Price",
-        vPricing.starting_venue_price,
-      );
-      pushFeature(amenities, <FaStar />, "Advance Payment", vPricing.advance_payment_range);
-      pushFeature(amenities, <FaStar />, "Cancellation", vPricing.cancellation);
-      pushFeature(amenities, <FaStar />, "Refund Timeline", vPricing.refund_timeline);
+      pushFeature(amenities, <FaStar />, "Pricing Model", formatList(vPricing.pricing_model));
+      if (vPricing.pricing_model_other) pushFeature(amenities, <FaStar />, "Other Pricing Model", vPricing.pricing_model_other);
+      pushFeature(amenities, <FaStar />, "Starting Venue Price", vPricing.starting_venue_price);
+      pushFeature(amenities, <FaStar />, "Peak Season Pricing", vPricing.peak_season_pricing);
+      pushFeature(amenities, <FaStar />, "Advance Booking Required", vPricing.advance_booking_required);
+      pushFeature(amenities, <FaStar />, "Advance Payment Range", vPricing.advance_payment_range === "Other" ? vPricing.advance_payment_range_other : vPricing.advance_payment_range);
+      pushFeature(amenities, <FaStar />, "Min Booking Duration", formatList(vPricing.min_booking_duration));
+      if (vPricing.min_booking_duration_other) pushFeature(amenities, <FaStar />, "Other Min Duration", vPricing.min_booking_duration_other);
+      pushFeature(amenities, <FaStar />, "Cancellation Policy", vPricing.cancellation === "Other" ? vPricing.cancellation_other : (vPricing.cancellation || attributes.cancellation_policy));
+      pushFeature(amenities, <FaStar />, "Refund Timeline", vPricing.refund_timeline === "Other" ? vPricing.refund_timeline_other : vPricing.refund_timeline);
+
+      // Section 10: Event Suitability
+      const vSuitability = venueMaster.suitability || {};
+      pushFeature(amenities, <FaUsers />, "Suitable For", formatList(vSuitability.suitable_for, 20));
+      if (vSuitability.suitable_for_other) pushFeature(amenities, <FaUsers />, "Other Suitable For", vSuitability.suitable_for_other);
+      pushFeature(amenities, <FaUsers />, "Best For", formatList(vSuitability.best_for, 10));
+      if (vSuitability.best_for_other) pushFeature(amenities, <FaUsers />, "Other Best For", vSuitability.best_for_other);
+      pushFeature(amenities, <FaUsers />, "Ideal Guest Range", formatList(vSuitability.ideal_guest_range));
+      if (vSuitability.ideal_guest_range_other) pushFeature(amenities, <FaUsers />, "Other Guest Range", vSuitability.ideal_guest_range_other);
     }
 
     // --- CATERER MASTER ATTRIBUTES ---
@@ -402,65 +322,81 @@ const Detailed = () => {
       const ci = catererMaster.identity || {};
       const cs = catererMaster.service_type || {};
       const cc = catererMaster.cuisine_intelligence || {};
+      const cm = catererMaster.menu_customization || {};
+      const cx = catererMaster.scale_execution || {};
       const cp = catererMaster.pricing_structure || {};
+      const cie = catererMaster.infrastructure_equipment || {};
+      const chq = catererMaster.hygiene_quality || {};
       const cl = catererMaster.venue_logistics || {};
+      const ces = catererMaster.event_suitability || {};
+      const cwb = catererMaster.workflow_booking || {};
 
-      pushFeature(
-        amenities,
-        <FaMapMarkerAlt />,
-        "Coverage",
-        ci.service_coverage,
-      );
-      pushFeature(
-        amenities,
-        <FaUtensils />,
-        "Catering Style",
-        formatList(cs.catering_style, 4),
-      );
-      pushFeature(
-        amenities,
-        <FaUtensils />,
-        "Cuisine Types",
-        formatList(cc.cuisine_types, 5),
-      );
-      pushFeature(
-        amenities,
-        <FaStar />,
-        "Best Known For",
-        formatList(cc.best_known_for, 4),
-      );
-      pushFeature(
-        amenities,
-        <FaUsers />,
-        "Max Guests",
-        catererMaster.scale_execution?.maximum_pax,
-      );
+      // Section 1: Basic Identity
+      pushFeature(amenities, <FaStar />, "Caterer Type", ci.caterer_type);
+      pushFeature(amenities, <FaStar />, "Years of Experience", ci.years_experience);
+      pushFeature(amenities, <FaMapMarkerAlt />, "Service Coverage", ci.service_coverage);
+      pushFeature(amenities, <FaUsers />, "Team Size", ci.team_size);
+      pushFeature(amenities, <FaMapMarkerAlt />, "Service Locations", formatList(ci.service_locations));
+
+      // Section 2: Service Type
+      pushFeature(amenities, <FaUtensils />, "Catering Style", formatList(cs.catering_style));
+      pushFeature(amenities, <FaCalendarAlt />, "Event Types Covered", formatList(cs.event_types_covered));
+      pushFeature(amenities, <FaUtensils />, "Veg / Non-Veg", cs.veg_non_veg);
+      pushFeature(amenities, <FaUtensils />, "Jain Food", cs.jain_food);
+      pushFeature(amenities, <FaUtensils />, "Special Dietary Options", formatList(cs.special_dietary_options));
+
+      // Section 3: Cuisine Intelligence
+      pushFeature(amenities, <FaUtensils />, "Cuisine Types", formatList(cc.cuisine_types, 15));
+      pushFeature(amenities, <FaUtensils />, "Signature Dishes", cc.signature_dishes);
+      pushFeature(amenities, <FaStar />, "Best Known For", formatList(cc.best_known_for));
+
+      // Section 4: Menu & Customization
+      pushFeature(amenities, <FaUtensils />, "Custom Menu Available", cm.custom_menu_available);
+      pushFeature(amenities, <FaUtensils />, "Menu Tasting Available", cm.menu_tasting_available);
+      pushFeature(amenities, <FaStar />, "Tasting Charges", cm.tasting_charges);
+      pushFeature(amenities, <FaUtensils />, "Menu Items Offered", cm.menu_items_offered);
+      pushFeature(amenities, <FaUtensils />, "Live Counters Available", cm.live_counters_available);
+      pushFeature(amenities, <FaUtensils />, "Popular Live Counters", formatList(cm.popular_live_counters));
+
+      // Section 5: Scale & Execution
+      pushFeature(amenities, <FaUsers />, "Minimum Pax", cx.minimum_pax);
+      pushFeature(amenities, <FaUsers />, "Maximum Pax", cx.maximum_pax);
+      pushFeature(amenities, <FaUsers />, "Events Handled Per Day", cx.events_per_day);
+      pushFeature(amenities, <FaUsers />, "Multiple Event Handling", cx.multiple_event_handling);
+
+      // Section 6: Pricing Structure
+      pushFeature(amenities, <FaStar />, "Per Plate Starting Price", cp.per_plate_starting_price);
       pushFeature(amenities, <FaStar />, "Price Range", cp.price_range);
       pushFeature(amenities, <FaStar />, "Pricing Type", cp.pricing_type);
-      pushFeature(
-        amenities,
-        <FaUtensils />,
-        "Dietary Options",
-        formatList(cs.special_dietary_options, 4),
-      );
-      pushFeature(
-        amenities,
-        <FaUtensils />,
-        "Live Counters",
-        formatList(catererMaster.menu_customization?.popular_live_counters, 4),
-      );
-      pushFeature(
-        amenities,
-        <FaMapMarkerAlt />,
-        "Outdoor Catering",
-        cl.outdoor_catering_supported,
-      );
-      pushFeature(
-        amenities,
-        <FaCalendarAlt />,
-        "Functions Covered",
-        formatList(catererMaster.event_suitability?.functions_suitable_for, 6),
-      );
+      pushFeature(amenities, <FaStar />, "Extra Charges", formatList(cp.extra_charges));
+
+      // Section 7: Infrastructure & Equipment
+      pushFeature(amenities, <FaUtensils />, "Kitchen Setup", cie.kitchen_setup);
+      pushFeature(amenities, <FaUsers />, "Serving Staff Included", cie.serving_staff_included);
+      pushFeature(amenities, <FaUtensils />, "Serving Style", cie.serving_style);
+      pushFeature(amenities, <FaUtensils />, "Utensils & Crockery", cie.utensils_crockery);
+      pushFeature(amenities, <FaUtensils />, "Eco-Friendly Options", cie.eco_friendly_options);
+
+      // Section 8: Hygiene & Quality
+      pushFeature(amenities, <FaStar />, "Hygiene Standards", formatList(chq.hygiene_standards));
+      pushFeature(amenities, <FaStar />, "Food Quality Assurance", chq.food_quality_assurance);
+
+      // Section 9: Venue & Logistics
+      pushFeature(amenities, <FaMapMarkerAlt />, "Outdoor Catering Supported", cl.outdoor_catering_supported);
+      pushFeature(amenities, <FaMapMarkerAlt />, "Destination Weddings Supported", cl.destination_weddings_supported);
+      pushFeature(amenities, <FaMapMarkerAlt />, "Travel Charges", cl.travel_charges);
+      pushFeature(amenities, <FaBed />, "Stay Requirement", cl.stay_requirement);
+
+      // Section 10: Event Suitability
+      pushFeature(amenities, <FaUsers />, "Functions Suitable For", formatList(ces.functions_suitable_for, 15));
+      pushFeature(amenities, <FaStar />, "Best For", formatList(ces.best_for));
+
+      // Section 11: Workflow & Booking
+      pushFeature(amenities, <FaStar />, "Advance Required", cwb.advance_required);
+      pushFeature(amenities, <FaStar />, "Advance Percentage", cwb.advance_percentage);
+      pushFeature(amenities, <FaCalendarAlt />, "Booking Timeline", cwb.booking_timeline);
+      pushFeature(amenities, <FaStar />, "Cancellation Policy", cwb.cancellation_policy);
+      pushFeature(amenities, <FaCalendarAlt />, "Refund Timeline", cwb.refund_timeline);
     }
 
     // --- PHOTOGRAPHER MASTER ATTRIBUTES ---
@@ -1556,6 +1492,7 @@ const Detailed = () => {
       const pd = cocktailGownMaster.production_delivery || {};
       const so = cocktailGownMaster.scale_operations || {};
       const wb = cocktailGownMaster.workflow_booking || {};
+      const ptag = cocktailGownMaster.ai_tags || {};
 
       pushFeature(amenities, <FaStar />, "Experience", ci.years_of_experience ? `${ci.years_of_experience} years` : "");
       pushFeature(amenities, <FaMapMarkerAlt />, "Primary City", ci.primary_city);
@@ -1607,6 +1544,10 @@ const Detailed = () => {
       pushFeature(amenities, <FaCalendarAlt />, "Booking Advance", wb.booking_advance_percent);
       pushFeature(amenities, <FaCalendarAlt />, "Cancellation Policy", wb.cancellation_policy);
       pushFeature(amenities, <FaStar />, "Client Coordination", formatList(wb.client_coordination, 4));
+
+      pushFeature(amenities, <FaStar />, "Gown Tags", formatList(ptag.gown_tags, 5));
+      pushFeature(amenities, <FaStar />, "Style Tags", formatList(ptag.style_tags, 5));
+      pushFeature(amenities, <FaUsers />, "Bride Type Tags", formatList(ptag.bride_type_tags, 5));
     }
 
     // --- BRIDAL OUTFIT MASTER ATTRIBUTES (Trousseau Saree / Kanjeevaram Silk Saree / Lehenga) ---
@@ -1620,6 +1561,7 @@ const Detailed = () => {
       const bpd = bridalOutfitMaster.production_delivery || {};
       const bso = bridalOutfitMaster.scale_operations || {};
       const bwb = bridalOutfitMaster.workflow_booking || {};
+      const ptag = bridalOutfitMaster.ai_tags || {};
 
       pushFeature(amenities, <FaStar />, "Experience", bi.years_of_experience ? `${bi.years_of_experience} years` : "");
       pushFeature(amenities, <FaMapMarkerAlt />, "Primary City", bi.primary_city);
@@ -1669,6 +1611,10 @@ const Detailed = () => {
       pushFeature(amenities, <FaCalendarAlt />, "Booking Advance %", bwb.booking_advance_percent);
       pushFeature(amenities, <FaCalendarAlt />, "Cancellation Policy", bwb.cancellation_policy);
       pushFeature(amenities, <FaStar />, "Client Coordination", formatList(bwb.client_coordination, 4));
+
+      pushFeature(amenities, <FaStar />, "Outfit Tags", formatList(ptag.lehenga_tags, 5));
+      pushFeature(amenities, <FaStar />, "Style Tags", formatList(ptag.style_tags, 5));
+      pushFeature(amenities, <FaUsers />, "Bride Type Tags", formatList(ptag.bride_type_tags, 5));
     }
 
     // --- RENTAL OUTFIT MASTER ATTRIBUTES (Bridal Lehenga on Rent) ---
@@ -2738,10 +2684,16 @@ const Detailed = () => {
   const faqList = _faqList || [];
   const parseDbValue = _parseDbValue;
   const vendorFeatures = getVendorFeatures(venueData);
-  const hasManyFeatures = vendorFeatures.length > 9;
+  
+  // For venues, we show all sections by default if they are filled. 
+  // For other vendors, we keep the slice limit.
+  const isVenueType = String(venueData.attributes?.vendor_type || "").toLowerCase().includes("venue");
+  const displayLimit = isVenueType ? 1000 : 9; 
+  
+  const hasManyFeatures = vendorFeatures.length > displayLimit;
   const featuresToRender = showAllFeatures
     ? vendorFeatures
-    : vendorFeatures.slice(0, 9);
+    : vendorFeatures.slice(0, displayLimit);
 
   // Smooth scroll to section by id
   const scrollToSection = (sectionId) => {
