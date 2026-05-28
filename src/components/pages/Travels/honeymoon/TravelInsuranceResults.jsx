@@ -10,6 +10,8 @@ import {
   Plus,
   ChevronRight,
   Plane,
+  ArrowLeft,
+  FileText,
 } from "lucide-react";
 import { reviewInsurancePlan } from "../../../../services/api/tripSafeApi";
 import InsuranceBenefitsModal from "./InsuranceBenefitsModal";
@@ -98,28 +100,66 @@ const TravelInsuranceResults = () => {
     <>
       <div className="ins-results-page">
         <div className="container py-4">
-          <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <div className="ins-action-row">
             <button
               type="button"
-              className="btn btn-outline-secondary"
+              className="ins-pill ins-pill-ghost"
               onClick={() => navigate("/honeymoon")}
             >
-              ← Back to Search
+              <ArrowLeft size={14} />
+              <span>Back</span>
             </button>
             <button
               type="button"
-              className="btn"
-              style={{
-                background: "#ed1173",
-                color: "#fff",
-                borderRadius: "999px",
-                fontWeight: 600,
-              }}
+              className="ins-pill ins-pill-primary"
               onClick={() => navigate("/honeymoon/insurance/bookings")}
             >
-              My Insurance Bookings
+              <FileText size={14} />
+              <span>My Bookings</span>
             </button>
           </div>
+          <style>{`
+            .ins-action-row {
+              display: inline-flex;
+              align-items: center;
+              gap: 0.5rem;
+              margin-bottom: 1rem;
+            }
+            .ins-pill {
+              display: inline-flex;
+              align-items: center;
+              gap: 6px;
+              padding: 6px 14px;
+              border-radius: 999px;
+              font-size: 0.82rem;
+              font-weight: 600;
+              line-height: 1;
+              border: 1px solid transparent;
+              cursor: pointer;
+              transition: transform 0.15s ease, box-shadow 0.15s ease,
+                background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+            }
+            .ins-pill:active { transform: translateY(1px); }
+            .ins-pill-ghost {
+              background: #fff;
+              color: #475569;
+              border-color: #e2e8f0;
+              box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+            }
+            .ins-pill-ghost:hover {
+              color: #ed1173;
+              border-color: #ed1173;
+            }
+            .ins-pill-primary {
+              background: linear-gradient(135deg, #ed1173, #ff6b9d);
+              color: #fff;
+              box-shadow: 0 6px 14px rgba(237, 17, 115, 0.25);
+            }
+            .ins-pill-primary:hover {
+              box-shadow: 0 10px 22px rgba(237, 17, 115, 0.35);
+              transform: translateY(-1px);
+            }
+          `}</style>
 
           <div className="ins-results-header">
             <div>

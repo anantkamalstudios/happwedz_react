@@ -12,6 +12,8 @@ import {
   Info,
   ScanLine,
 } from 'lucide-react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { searchTripSafeInsurance } from '../../../../services/api/tripSafeApi';
 import {
   INSURANCE_POPULAR_REGIONS,
@@ -19,6 +21,20 @@ import {
   regionToDestination,
 } from '../../../../config/insuranceCountries';
 import InsuranceCountrySelect from './InsuranceCountrySelect';
+
+/* ─── date helpers ───────────────────────────────────────────────────────── */
+const toISO = (date) => {
+  if (!date) return '';
+  const d = date instanceof Date ? date : new Date(date);
+  if (Number.isNaN(d.getTime())) return '';
+  const tz = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - tz).toISOString().slice(0, 10);
+};
+const fromISO = (str) => {
+  if (!str) return null;
+  const d = new Date(str);
+  return Number.isNaN(d.getTime()) ? null : d;
+};
 
 /* ─── constants ─────────────────────────────────────────────────────────── */
 
@@ -153,17 +169,39 @@ function InternationalForm({ formatSelectedDate, onSearch, loading }) {
       <div className="search-fields insurance-search-fields">
         <div className="field-box">
           <div className="field-label"><span className="field-label-content"><CalendarSearch size={14} /> Start date</span></div>
-          <div className="date-input-wrap">
-            <input className="field-input" type="date" value={startDate} onChange={(e) => { setStartDate(e.target.value); if (endDate && e.target.value > endDate) setEndDate(defaultEndDate(e.target.value)); }} />
-            <span className="selected-date-pill">{formatSelectedDate ? formatSelectedDate(startDate) : startDate}</span>
+          <div className="date-input-wrap ins-dp-wrap">
+            <DatePicker
+              className="field-input ins-dp-input"
+              selected={fromISO(startDate)}
+              onChange={(date) => {
+                const iso = toISO(date);
+                setStartDate(iso);
+                if (endDate && iso > endDate) setEndDate(defaultEndDate(iso));
+              }}
+              minDate={new Date()}
+              dateFormat="dd MMM yyyy"
+              popperPlacement="bottom-start"
+              popperProps={{ strategy: 'fixed' }}
+              portalId="ins-datepicker-portal"
+              placeholderText="Pick a date"
+            />
           </div>
         </div>
 
         <div className="field-box">
           <div className="field-label"><span className="field-label-content"><CalendarSearch size={14} /> End date</span></div>
-          <div className="date-input-wrap">
-            <input className="field-input" type="date" min={startDate} value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-            <span className="selected-date-pill">{formatSelectedDate ? formatSelectedDate(endDate) : endDate}</span>
+          <div className="date-input-wrap ins-dp-wrap">
+            <DatePicker
+              className="field-input ins-dp-input"
+              selected={fromISO(endDate)}
+              onChange={(date) => setEndDate(toISO(date))}
+              minDate={fromISO(startDate) || new Date()}
+              dateFormat="dd MMM yyyy"
+              popperPlacement="bottom-start"
+              popperProps={{ strategy: 'fixed' }}
+              portalId="ins-datepicker-portal"
+              placeholderText="Pick a date"
+            />
           </div>
         </div>
 
@@ -327,15 +365,17 @@ function StudentForm({ formatSelectedDate, onSearch, loading }) {
       {/* Start Date + Coverage Duration + End Date — all linked */}
       <div className="ins-student-date-row ins-student-date-row-3">
         {/* Start Date */}
-        <div className="ins-student-date-box">
+        <div className="ins-student-date-box ins-dp-wrap">
           <span className="ins-student-date-icon"><CalendarSearch size={16} /></span>
-          <input
-            className="ins-student-date-input"
-            type="date"
-            value={startDate}
-            onChange={(e) => handleStartDateChange(e.target.value)}
+          <DatePicker
+            className="ins-student-date-input ins-dp-input"
+            selected={fromISO(startDate)}
+            onChange={(date) => handleStartDateChange(toISO(date))}
+            minDate={new Date()}
+            dateFormat="dd MMM yyyy"
+            popperPlacement="bottom-start"
+            placeholderText="Pick a date"
           />
-          <span className="ins-student-date-pill">{formatSelectedDate ? formatSelectedDate(startDate) : startDate}</span>
         </div>
 
         {/* Coverage Duration */}
@@ -353,16 +393,17 @@ function StudentForm({ formatSelectedDate, onSearch, loading }) {
         </div>
 
         {/* End Date */}
-        <div className="ins-student-date-box">
+        <div className="ins-student-date-box ins-dp-wrap">
           <span className="ins-student-date-icon"><CalendarSearch size={16} /></span>
-          <input
-            className="ins-student-date-input"
-            type="date"
-            min={startDate}
-            value={endDate}
-            onChange={(e) => handleEndDateChange(e.target.value)}
+          <DatePicker
+            className="ins-student-date-input ins-dp-input"
+            selected={fromISO(endDate)}
+            onChange={(date) => handleEndDateChange(toISO(date))}
+            minDate={fromISO(startDate) || new Date()}
+            dateFormat="dd MMM yyyy"
+            popperPlacement="bottom-start"
+            placeholderText="Pick a date"
           />
-          <span className="ins-student-date-pill">{formatSelectedDate ? formatSelectedDate(endDate) : endDate}</span>
         </div>
       </div>
 
@@ -510,37 +551,44 @@ function AnnualMultiTripForm({ formatSelectedDate, onSearch, loading }) {
 
       {/* Start + End Date */}
       <div className="ins-student-date-row">
-        <div className="ins-student-date-box">
+        <div className="ins-student-date-box ins-dp-wrap">
           <span className="ins-student-date-icon"><CalendarSearch size={16} /></span>
-          <input
-            className="ins-student-date-input"
-            type="date"
-            value={startDate}
-            onChange={(e) => {
-              setStartDate(e.target.value);
-              // Cap end date at 180 days from new start
-              const d = new Date(e.target.value);
+          <DatePicker
+            className="ins-student-date-input ins-dp-input"
+            selected={fromISO(startDate)}
+            onChange={(date) => {
+              const iso = toISO(date);
+              setStartDate(iso);
+              const d = new Date(iso);
               d.setDate(d.getDate() + 180);
-              const maxEnd = d.toISOString().slice(0, 10);
-              if (!endDate || endDate > maxEnd || e.target.value > endDate) {
+              const maxEnd = toISO(d);
+              if (!endDate || endDate > maxEnd || iso > endDate) {
                 setEndDate(maxEnd);
               }
             }}
+            minDate={new Date()}
+            dateFormat="dd MMM yyyy"
+            popperPlacement="bottom-start"
+            placeholderText="Pick a date"
           />
-          <span className="ins-student-date-pill">{formatSelectedDate ? formatSelectedDate(startDate) : startDate}</span>
         </div>
 
-        <div className="ins-student-date-box">
+        <div className="ins-student-date-box ins-dp-wrap">
           <span className="ins-student-date-icon"><CalendarSearch size={16} /></span>
-          <input
-            className="ins-student-date-input"
-            type="date"
-            min={startDate}
-            max={(() => { const d = new Date(startDate); d.setDate(d.getDate() + 180); return d.toISOString().slice(0, 10); })()}
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
+          <DatePicker
+            className="ins-student-date-input ins-dp-input"
+            selected={fromISO(endDate)}
+            onChange={(date) => setEndDate(toISO(date))}
+            minDate={fromISO(startDate) || new Date()}
+            maxDate={(() => {
+              const d = new Date(startDate);
+              d.setDate(d.getDate() + 180);
+              return d;
+            })()}
+            dateFormat="dd MMM yyyy"
+            popperPlacement="bottom-start"
+            placeholderText="Pick a date"
           />
-          <span className="ins-student-date-pill">{formatSelectedDate ? formatSelectedDate(endDate) : endDate}</span>
         </div>
       </div>
 
@@ -745,6 +793,109 @@ const InsuranceSearchPanel = ({ formatSelectedDate }) => {
       {planTypeId === 'amt' && (
         <AnnualMultiTripForm formatSelectedDate={formatSelectedDate} onSearch={handleSearch} loading={loading} />
       )}
+
+      <style>{`
+        .ins-dp-wrap { position: relative; }
+        .ins-dp-wrap .react-datepicker-wrapper,
+        .ins-dp-wrap .react-datepicker__input-container { width: 100%; display: block; }
+        .ins-dp-input {
+          width: 100%;
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          padding: 10px 14px;
+          font-size: 0.92rem;
+          color: #111827;
+          background: #fff;
+          outline: none;
+          transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .ins-dp-input:focus,
+        .ins-dp-input:hover {
+          border-color: #ed1173;
+          box-shadow: 0 0 0 3px rgba(237, 17, 115, 0.12);
+        }
+
+        /* Popper / calendar container — escape parent overflow */
+        #ins-datepicker-portal,
+        #ins-datepicker-portal .react-datepicker-popper {
+          position: relative;
+          z-index: 99999;
+        }
+        .react-datepicker-popper {
+          z-index: 99999 !important;
+        }
+        .react-datepicker__portal {
+          z-index: 99999;
+        }
+        .react-datepicker {
+          font-family: 'Poppins', 'Inter', sans-serif;
+          border: none;
+          border-radius: 16px;
+          box-shadow: 0 18px 50px rgba(15, 23, 42, 0.18);
+          overflow: hidden;
+        }
+        .react-datepicker__triangle { display: none !important; }
+
+        /* Header */
+        .react-datepicker__header {
+          background: linear-gradient(135deg, #ed1173, #ff6b9d);
+          border-bottom: none;
+          padding: 14px 12px 10px;
+        }
+        .react-datepicker__current-month,
+        .react-datepicker-time__header,
+        .react-datepicker-year-header {
+          color: #fff;
+          font-weight: 700;
+          font-size: 0.95rem;
+        }
+        .react-datepicker__day-name {
+          color: rgba(255, 255, 255, 0.85);
+          font-weight: 600;
+          width: 2.1rem;
+          margin: 0.18rem;
+        }
+        .react-datepicker__navigation { top: 16px; }
+        .react-datepicker__navigation-icon::before {
+          border-color: #fff;
+          border-width: 2px 2px 0 0;
+          height: 8px;
+          width: 8px;
+        }
+
+        /* Days */
+        .react-datepicker__month { margin: 0.5rem 0.4rem; }
+        .react-datepicker__day {
+          width: 2.1rem;
+          height: 2.1rem;
+          line-height: 2.1rem;
+          margin: 0.18rem;
+          border-radius: 50%;
+          color: #1f2937;
+          font-weight: 500;
+          transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+        }
+        .react-datepicker__day:hover {
+          background: rgba(237, 17, 115, 0.12);
+          color: #c0006a;
+        }
+        .react-datepicker__day--selected,
+        .react-datepicker__day--keyboard-selected {
+          background: linear-gradient(135deg, #ed1173, #ff6b9d) !important;
+          color: #fff !important;
+          box-shadow: 0 6px 14px rgba(237, 17, 115, 0.35);
+        }
+        .react-datepicker__day--today {
+          font-weight: 700;
+          color: #ed1173;
+          background: rgba(237, 17, 115, 0.08);
+        }
+        .react-datepicker__day--outside-month { color: #cbd5e1; }
+        .react-datepicker__day--disabled {
+          color: #e2e8f0 !important;
+          cursor: not-allowed;
+        }
+      `}</style>
     </div>
   );
 };

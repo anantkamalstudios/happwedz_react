@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Shield } from "lucide-react";
 import FightIcon from "../../../../assets/trevel_icon/airplane.png";
@@ -45,11 +45,39 @@ const getBookingStatusColor = (status) => {
   return "#ffffff";
 };
 
+const TAB_SLUG_TO_LABEL = {
+  hotels: "Hotels",
+  flights: "Flights",
+  insurance: "Insurance",
+  cars: "Car rental",
+  "car-rental": "Car rental",
+  activities: "Activities",
+};
+
+const TAB_LABEL_TO_SLUG = {
+  Hotels: "hotels",
+  Flights: "flights",
+  Insurance: "insurance",
+  "Car rental": "cars",
+  Activities: "activities",
+};
+
 export default function FlightHero() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabSlug = searchParams.get("tab");
   const user = useSelector((state) => state.auth.user);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const [activeTab, setActiveTab] = useState("Flights");
+  const activeTab =
+    TAB_SLUG_TO_LABEL[(tabSlug || "").toLowerCase()] || "Flights";
+
+  const goToTab = (label) => {
+    if (label === activeTab) return;
+    const slug = TAB_LABEL_TO_SLUG[label];
+    if (slug) {
+      setSearchParams({ tab: slug }, { replace: true });
+    }
+  };
   const [recentHotelBookings, setRecentHotelBookings] = useState([]);
   const [recentHotelBookingsLoading, setRecentHotelBookingsLoading] = useState(false);
   const [recentInsuranceBookings, setRecentInsuranceBookings] = useState([]);
@@ -146,22 +174,23 @@ export default function FlightHero() {
                 {
                   icon: { src: HotelIcon, alt: "Hotels" },
                   label: "Hotels",
-                  onClick: () => setActiveTab("Hotels"),
+                  onClick: () => goToTab("Hotels"),
                 },
                 {
                   icon: { src: FightIcon, alt: "Flights" },
                   label: "Flights",
-                  onClick: () => setActiveTab("Flights"),
+                  onClick: () => goToTab("Flights"),
                 },
                 {
                   lucide: Shield,
                   label: "Insurance",
-                  onClick: () => setActiveTab("Insurance"),
+                  onClick: () => goToTab("Insurance"),
                 },
 
                 {
                   icon: { src: CarIcon, alt: "Car rental" },
                   label: "Car rental",
+                  onClick: () => goToTab("Car rental"),
                 },
                 {
                   icon: { src: ActivityIcon, alt: "Activities" },
