@@ -8,7 +8,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { toggleWishlist } from "../../redux/authSlice";
 import "swiper/css";
 import "swiper/css/autoplay";
-import vendorServicesApi from "../../services/api/vendorServicesApi";
 import PricingModal from "./PricingModal";
 import BusinessClaimForm from "../pages/BusinessClaimForm";
 import DOMPurify from "dompurify";
@@ -51,10 +50,11 @@ const getYouTubeVideoId = (url) => {
 };
 
 const Detailed = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const dispatch = useDispatch();
   const { token } = useSelector((state) => state.auth);
   const [venueData, setVenueData] = useState(null);
+  const id = venueData?.id;
   const [profileViews, setProfileViews] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -384,11 +384,14 @@ const Detailed = () => {
 
   useEffect(() => {
     const fetchVenueData = async () => {
-      if (!id) return;
+      if (!slug) return;
 
       try {
         setLoading(true);
-        const data = await vendorServicesApi.getVendorServiceById(id);
+        const response = await axios.get(
+          `${API_BASE_URL}/api/vendor-services/slug/${slug}`,
+        );
+        const data = response.data;
         setVenueData(data);
 
         (async () => {
@@ -466,7 +469,7 @@ const Detailed = () => {
     };
 
     fetchVenueData();
-  }, [id]);
+  }, [slug]);
 
   const [_faqList, _setFaqList] = useState([]);
 

@@ -155,7 +155,7 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
                 <Col xs={12} key={venue.id}>
                   <Card
                     className="p-3 mb-4 border-0 shadow-lg rounded-5 overflow-hidden"
-                    onClick={() => navigate(`/details/info/${venue.id}`)}
+                    onClick={() => navigate(`/details/info/${venue.slug}`)}
                     style={{ cursor: "pointer" }}
                   >
                     <Row className="g-0">

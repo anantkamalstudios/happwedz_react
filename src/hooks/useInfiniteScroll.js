@@ -122,7 +122,7 @@ const useInfiniteScroll = (
           attributes.Aboutus ||
           attributes.description ||
           "",
-        slug: attributes.slug || "",
+        slug: item.slug || attributes.slug || "",
 
         image: firstImage,
         gallery,

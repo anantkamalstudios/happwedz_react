@@ -294,7 +294,7 @@ function App() {
               />
               <Route path="/:section" element={<MainSection />} />
               <Route path="/:section/:slug" element={<SubSection />} />
-              <Route path="/details/:section/:id" element={<Detailed />} />
+              <Route path="/details/:section/:slug" element={<Detailed />} />
               <Route path="/vendor-360/:id" element={<Vendor360View />} />
               <Route
                 path="/ai-recommandation"
