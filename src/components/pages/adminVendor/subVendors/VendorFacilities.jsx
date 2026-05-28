@@ -136,8 +136,13 @@ const VendorFacilities = ({
     !isCocktailGown &&
     !isBridalOutfitRent &&
     !isTrousseauPacker &&
-    (normalizedType.includes("bridal") ||
-      normalizedType.includes("outfit") ||
+    !isMakeupArtist &&
+    !isPhotographer &&
+    !isMehndi &&
+    !isDecorator &&
+    !isWeddingPlanner &&
+    !isPandit &&
+    (normalizedType.includes("outfit") ||
       normalizedType.includes("lehenga") ||
       normalizedType.includes("clothing") ||
       normalizedType.includes("apparel") ||
@@ -148,7 +153,13 @@ const VendorFacilities = ({
       normalizedType.includes("trousseau") ||
       normalizedType.includes("kanjeevaram") ||
       normalizedType.includes("saree") ||
-      normalizedType.includes("silk"));
+      normalizedType.includes("silk") ||
+      (normalizedType.includes("bridal") &&
+        !normalizedType.includes("makeup") &&
+        !normalizedType.includes("artist") &&
+        !normalizedType.includes("photograph") &&
+        !normalizedType.includes("mehndi") &&
+        !normalizedType.includes("mehendi")));
 
   const isAnyBridalOutfit = isBridalOutfit || isBridalOutfitRent || isCocktailGown;
 
