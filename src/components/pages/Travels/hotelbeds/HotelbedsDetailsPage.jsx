@@ -23,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 import {
+  confirmHotelBooking,
   createHotelPaymentOrder,
   downloadHotelReceipt,
   downloadHotelVoucher,

@@ -78,8 +78,19 @@ export const fetchHotelCountries = async () => {
     const response = await axiosInstance.get("hotels/countries");
     return response.data;
   } catch (error) {
+    // Hero / search UI should not break if TripJack catalog is temporarily failing.
     console.error(getErrorMessage(error, "Error fetching hotel countries"));
-    throw error;
+
+    // Safe fallback: minimal countries structure expected by UI.
+    // TripJack/legacy UIs typically default nationality/countryOfResidence to "106" (India).
+    return {
+      success: false,
+      countries: [
+        { id: "106", code: "IN", name: "India" },
+        { id: "0", code: "NA", name: "Other" },
+      ],
+      fallback: true,
+    };
   }
 };
 
