@@ -196,6 +196,15 @@ const HotelbedsHotelsPage = lazy(
 const FlightSearchResults = lazy(
   () => import("./components/pages/Travels/honeymoon/FlightSearchResults"),
 );
+const FlightBooking = lazy(
+  () => import("./components/pages/Travels/honeymoon/FlightBooking"),
+);
+const FlightBookingPage = lazy(
+  () => import("./components/pages/Travels/honeymoon/FlightBookingPage"),
+);
+const MultiCityResults = lazy(
+  () => import("./components/pages/Travels/honeymoon/MultiCityResults"),
+);
 
 function App() {
   const dispatch = useDispatch();
@@ -285,7 +294,7 @@ function App() {
               />
               <Route path="/:section" element={<MainSection />} />
               <Route path="/:section/:slug" element={<SubSection />} />
-              <Route path="/details/:section/:id" element={<Detailed />} />
+              <Route path="/details/:section/:slug" element={<Detailed />} />
               <Route path="/vendor-360/:id" element={<Vendor360View />} />
               <Route
                 path="/ai-recommandation"
@@ -332,6 +341,34 @@ function App() {
               <Route
                 path="/honeymoon/flights"
                 element={<FlightSearchResults />}
+              />
+              <Route
+                path="/honeymoon/flights/multicity"
+                element={<MultiCityResults />}
+              />
+              <Route
+                path="/honeymoon/flights/booking"
+                element={
+                  <UserPrivateRoute>
+                    <FlightBooking />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/honeymoon/flights/book"
+                element={
+                  <UserPrivateRoute>
+                    <FlightBookingPage />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/honeymoon/flights/confirmation"
+                element={
+                  <UserPrivateRoute>
+                    <FlightBookingPage />
+                  </UserPrivateRoute>
+                }
               />
               <Route
                 path="/honeymoon/hotels"

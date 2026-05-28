@@ -1,33 +1,3 @@
-// import axios from "axios";
-
-// const API_BASE_URL = "https://happywedz.com/api";
-
-// const vendorServicesApi = {
-//   createOrUpdateService: async (serviceData, token) => {
-//     try {
-//       const response = await axios.post(
-//         `${API_BASE_URL}/vendor-services`,
-//         serviceData,
-//         {
-//           headers: {
-//             "Content-Type": "multipart/form-data", // Use multipart for file uploads
-//             Authorization: `Bearer ${token}`,
-//           },
-//         }
-//       );
-//       return response.data;
-//     } catch (error) {
-//       console.error(
-//         "Error creating/updating vendor service:",
-//         error.response?.data || error.message
-//       );
-//       throw error.response?.data || new Error("API request failed");
-//     }
-//   },
-// };
-
-// export default vendorServicesApi;
-
 import axios from "axios";
 
 const API_BASE_URL = "https://happywedz.com/api";
@@ -42,7 +12,7 @@ const vendorServicesApi = {
     } catch (error) {
       console.error(
         "Error fetching vendor service:",
-        error.response?.data || error.message
+        error.response?.data || error.message,
       );
       throw error.response?.data || new Error("API request failed");
     }
@@ -51,7 +21,7 @@ const vendorServicesApi = {
     try {
       const response = await axios.get(
         `${API_BASE_URL}/vendor-services/vendor/${vendorId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       return response.data;
     } catch (error) {
@@ -67,7 +37,7 @@ const vendorServicesApi = {
     try {
       const response = await axios.get(
         `${API_BASE_URL}/vendor-services/vendor/${vendorId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       // Extract just the ID from the response
       if (response.data && Array.isArray(response.data)) {
@@ -106,7 +76,7 @@ const vendorServicesApi = {
     } catch (error) {
       console.error(
         "Error creating/updating vendor service:",
-        error.response?.data || error.message
+        error.response?.data || error.message,
       );
       throw error.response?.data || new Error("API request failed");
     }
