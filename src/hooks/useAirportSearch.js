@@ -38,10 +38,15 @@ const useAirportSearch = (delay = 350) => {
       abortRef.current = new AbortController();
 
       try {
-        const data = await searchLocations(query, abortRef.current.signal);
+        const currentQuery = query;
+        const data = await searchLocations(currentQuery, abortRef.current.signal);
 
         // TripJack /tj/meta/locations response shape:
         // { payload: { suggestions: [{ id, code, name, city, country, countryCode, cityCode }] } }
+        // Guard against out-of-order responses (click races, debounce, etc.)
+        // so we only apply results for the latest query.
+        if (currentQuery !== query) return;
+
         const raw =
           data?.payload?.suggestions ||
           data?.data?.suggestions ||
@@ -64,6 +69,7 @@ const useAirportSearch = (delay = 350) => {
 
         setSuggestions(normalised);
       } catch (err) {
+
         // Ignore abort errors — they're intentional
         if (err?.name !== "AbortError" && err?.code !== "ERR_CANCELED") {
           console.error("Location search error:", err);

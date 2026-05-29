@@ -158,10 +158,10 @@ export default function FlightSearchForm() {
                     <MdFlightTakeoff className="tj-field-icon" size={18} />
                     <div className="tj-field-content">
                       <div className="tj-field-label">From</div>
-                      <input className="tj-field-input" placeholder="Where from?" value={legFromSearches[index].query} onChange={(e) => { legFromSearches[index].setQuery(e.target.value); updateMultiCityLeg(index, "fromCode", ""); updateMultiCityLeg(index, "from", e.target.value); }} onBlur={() => setTimeout(() => legFromSearches[index].setSuggestions([]), 200)} />
+                      <input className="tj-field-input" placeholder="Where from?" value={legFromSearches[index].query} onChange={(e) => { legFromSearches[index].setQuery(e.target.value); updateMultiCityLeg(index, "fromCode", ""); updateMultiCityLeg(index, "from", e.target.value); }} onBlur={() => setTimeout(() => legFromSearches[index].setSuggestions([]), 300)} />
                       <div className="tj-field-sublabel">{leg.fromCode || "City / Airport"}</div>
                     </div>
-                    {legFromSearches[index].suggestions.length > 0 && <div className="tj-suggestions-dropdown">{legFromSearches[index].suggestions.map((loc, idx) => <div key={idx} className="tj-suggestion-item" onClick={() => selectMultiCityAirport(index, "from", loc)}><div className="tj-suggestion-main"><span className="tj-suggestion-iata">{loc.iata}</span><span className="tj-suggestion-name">{loc.name}</span></div><div className="tj-suggestion-city">{loc.city}, {loc.country}</div></div>)}</div>}
+                    {legFromSearches[index].suggestions.length > 0 && <div className="tj-suggestions-dropdown">{legFromSearches[index].suggestions.map((loc, idx) => <div key={idx} className="tj-suggestion-item" onMouseDown={(e) => e.preventDefault()} onClick={() => selectMultiCityAirport(index, "from", loc)}><div className="tj-suggestion-main"><span className="tj-suggestion-iata">{loc.iata}</span><span className="tj-suggestion-name">{loc.name}</span></div><div className="tj-suggestion-city">{loc.city}, {loc.country}</div></div>)}</div>}
                   </div>
 
                   <div className="tj-swap-btn me-2" onClick={() => {
@@ -181,10 +181,10 @@ export default function FlightSearchForm() {
                     <MdFlightLand className="tj-field-icon" size={18} />
                     <div className="tj-field-content">
                       <div className="tj-field-label">To</div>
-                      <input className="tj-field-input" placeholder="Where to?" value={legToSearches[index].query} onChange={(e) => { legToSearches[index].setQuery(e.target.value); updateMultiCityLeg(index, "toCode", ""); updateMultiCityLeg(index, "to", e.target.value); }} onBlur={() => setTimeout(() => legToSearches[index].setSuggestions([]), 200)} />
+                      <input className="tj-field-input" placeholder="Where to?" value={legToSearches[index].query} onChange={(e) => { legToSearches[index].setQuery(e.target.value); updateMultiCityLeg(index, "toCode", ""); updateMultiCityLeg(index, "to", e.target.value); }} onBlur={() => setTimeout(() => legToSearches[index].setSuggestions([]), 300)} />
                       <div className="tj-field-sublabel">{leg.toCode || "City / Airport"}</div>
                     </div>
-                    {legToSearches[index].suggestions.length > 0 && <div className="tj-suggestions-dropdown">{legToSearches[index].suggestions.map((loc, idx) => <div key={idx} className="tj-suggestion-item" onClick={() => selectMultiCityAirport(index, "to", loc)}><div className="tj-suggestion-main"><span className="tj-suggestion-iata">{loc.iata}</span><span className="tj-suggestion-name">{loc.name}</span></div><div className="tj-suggestion-city">{loc.city}, {loc.country}</div></div>)}</div>}
+                    {legToSearches[index].suggestions.length > 0 && <div className="tj-suggestions-dropdown">{legToSearches[index].suggestions.map((loc, idx) => <div key={idx} className="tj-suggestion-item" onMouseDown={(e) => e.preventDefault()} onClick={() => selectMultiCityAirport(index, "to", loc)}><div className="tj-suggestion-main"><span className="tj-suggestion-iata">{loc.iata}</span><span className="tj-suggestion-name">{loc.name}</span></div><div className="tj-suggestion-city">{loc.city}, {loc.country}</div></div>)}</div>}
                   </div>
 
                   <div className="tj-field-group tj-date-field">
@@ -266,10 +266,10 @@ export default function FlightSearchForm() {
               <MdFlightTakeoff className="tj-field-icon" size={18} />
               <div className="tj-field-content">
                 <div className="tj-field-label">From</div>
-                <input className="tj-field-input" placeholder="Where from?" value={fromSearch.query} onChange={(e) => { fromSearch.setQuery(e.target.value); setFromCode(""); }} onBlur={() => setTimeout(() => fromSearch.setSuggestions([]), 200)} />
+                <input className="tj-field-input" placeholder="Where from?" value={fromSearch.query} onChange={(e) => { fromSearch.setQuery(e.target.value); setFromCode(""); }} onBlur={() => setTimeout(() => fromSearch.setSuggestions([]), 300)} />
                 <div className="tj-field-sublabel">{fromCode || "City / Airport"}</div>
               </div>
-              {fromSearch.suggestions.length > 0 && <div className="tj-suggestions-dropdown">{fromSearch.suggestions.map((loc, idx) => <div key={idx} className="tj-suggestion-item" onClick={() => { setFromCode(loc.iata); fromSearch.setQuery(`${loc.city} (${loc.iata})`); fromSearch.setSuggestions([]); }}><div className="tj-suggestion-main"><span className="tj-suggestion-iata">{loc.iata}</span><span className="tj-suggestion-name">{loc.name}</span></div><div className="tj-suggestion-city">{loc.city}, {loc.country}</div></div>)}</div>}
+              {fromSearch.suggestions.length > 0 && <div className="tj-suggestions-dropdown">{fromSearch.suggestions.map((loc, idx) => <div key={idx} className="tj-suggestion-item" onMouseDown={(e) => e.preventDefault()} onClick={() => { setFromCode(loc.iata); fromSearch.setQuery(`${loc.city} (${loc.iata})`); fromSearch.setSuggestions([]); }}><div className="tj-suggestion-main"><span className="tj-suggestion-iata">{loc.iata}</span><span className="tj-suggestion-name">{loc.name}</span></div><div className="tj-suggestion-city">{loc.city}, {loc.country}</div></div>)}</div>}
             </div>
 
             <div className="tj-swap-btn me-2" onClick={() => { const a = fromCode; const b = toCode; const qa = fromSearch.query; const qb = toSearch.query; setFromCode(b); setToCode(a); fromSearch.setQuery(qb); toSearch.setQuery(qa); }}><IoIosSwap /></div> 
@@ -277,10 +277,10 @@ export default function FlightSearchForm() {
               <MdFlightLand className="tj-field-icon" size={18} />
               <div className="tj-field-content">
                 <div className="tj-field-label">To</div>
-                <input className="tj-field-input" placeholder="Where to?" value={toSearch.query} onChange={(e) => { toSearch.setQuery(e.target.value); setToCode(""); }} onBlur={() => setTimeout(() => toSearch.setSuggestions([]), 200)} />
+                <input className="tj-field-input" placeholder="Where to?" value={toSearch.query} onChange={(e) => { toSearch.setQuery(e.target.value); setToCode(""); }} onBlur={() => setTimeout(() => toSearch.setSuggestions([]), 300)} />
                 <div className="tj-field-sublabel">{toCode || "City / Airport"}</div>
               </div>
-              {toSearch.suggestions.length > 0 && <div className="tj-suggestions-dropdown">{toSearch.suggestions.map((loc, idx) => <div key={idx} className="tj-suggestion-item" onClick={() => { setToCode(loc.iata); toSearch.setQuery(`${loc.city} (${loc.iata})`); toSearch.setSuggestions([]); }}><div className="tj-suggestion-main"><span className="tj-suggestion-iata">{loc.iata}</span><span className="tj-suggestion-name">{loc.name}</span></div><div className="tj-suggestion-city">{loc.city}, {loc.country}</div></div>)}</div>}
+              {toSearch.suggestions.length > 0 && <div className="tj-suggestions-dropdown">{toSearch.suggestions.map((loc, idx) => <div key={idx} className="tj-suggestion-item" onMouseDown={(e) => e.preventDefault()} onClick={() => { setToCode(loc.iata); toSearch.setQuery(`${loc.city} (${loc.iata})`); toSearch.setSuggestions([]); }}><div className="tj-suggestion-main"><span className="tj-suggestion-iata">{loc.iata}</span><span className="tj-suggestion-name">{loc.name}</span></div><div className="tj-suggestion-city">{loc.city}, {loc.country}</div></div>)}</div>}
             </div>
 
             <div className="tj-field-group tj-date-field">
