@@ -871,7 +871,7 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
   };
 
   const addRoom = () => {
-    if (localRooms.length < 4) {
+    if (localRooms.length < 9) {
       setLocalRooms([...localRooms, normalizeRoomWithChildAges({ adults: 1, children: 0, childAge: [] })]);
     }
   };
@@ -1002,7 +1002,7 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
           type="button"
           className="tripjack-guests-add-room"
           onClick={addRoom}
-          disabled={localRooms.length >= 4}
+          disabled={localRooms.length >= 9}
         >
           + Add Room
         </button>

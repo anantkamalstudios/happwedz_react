@@ -384,7 +384,7 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
 
   const addRoom = () => {
     setLocalRooms((prev) =>
-      prev.length >= 4 ? prev : [...prev, normalizeRoomWithChildAges({ adults: 1, children: 0, childAge: [] })],
+      prev.length >= 9 ? prev : [...prev, normalizeRoomWithChildAges({ adults: 1, children: 0, childAge: [] })],
     );
   };
 
@@ -510,7 +510,7 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
           type="button"
           className="hotel-guests-secondary-btn"
           onClick={addRoom}
-          disabled={localRooms.length >= 4}
+          disabled={localRooms.length >= 9}
         >
           + Add room
         </button>
