@@ -994,6 +994,10 @@ const normalizeReviewResponseForUi = (
     return reviewResponse;
   }
 
+  // Preserve existing priceSummary from backend if it has a valid amount
+  const existingPriceSummary = reviewResponse?.priceSummary;
+  const hasValidExistingAmount = existingPriceSummary && normalizeAmount(existingPriceSummary.amount) > 0;
+
   const option = reviewResponse?.option || fallbackOption || {};
   const optionId = String(option?.optionId || option?.id || "");
   const roomInfo = Array.isArray(option?.roomInfo) ? option.roomInfo : [];
@@ -1111,14 +1115,16 @@ const normalizeReviewResponseForUi = (
       gstType: compliance?.gstType || "NA",
       onholdAllowed: Boolean(reviewResponse?.onholdAllowed),
     },
-    priceSummary: {
-      amount: normalizeAmount(pricing?.totalPrice),
-      baseFare: normalizeAmount(pricing?.basePrice),
-      taxesAndFees: normalizeAmount(pricing?.taxes),
-      currency: pricing?.currency || "INR",
-      managementFee: normalizeAmount(pricing?.mf),
-      managementFeeTax: normalizeAmount(pricing?.mft),
-    },
+    priceSummary: hasValidExistingAmount
+      ? existingPriceSummary
+      : {
+          amount: normalizeAmount(pricing?.totalPrice),
+          baseFare: normalizeAmount(pricing?.basePrice),
+          taxesAndFees: normalizeAmount(pricing?.taxes),
+          currency: pricing?.currency || "INR",
+          managementFee: normalizeAmount(pricing?.mf),
+          managementFeeTax: normalizeAmount(pricing?.mft),
+        },
     roomSummary: {
       roomName: firstRoom?.name || fallbackOption?.roomName || null,
       mealBasis: option?.mealBasis || fallbackOption?.mealBasis || null,

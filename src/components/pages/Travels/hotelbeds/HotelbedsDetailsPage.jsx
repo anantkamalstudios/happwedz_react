@@ -1385,12 +1385,23 @@ function HotelDetailsPage({
 
     try {
       const response = await reviewHotelBooking(payload);
+      console.log("[TripJack Review] Raw response from backend:", {
+        hasPriceSummary: Boolean(response?.priceSummary),
+        priceSummaryAmount: response?.priceSummary?.amount,
+        hasOption: Boolean(response?.option),
+        optionPricing: response?.option?.pricing,
+      });
       const normalizedReviewResponse = normalizeReviewResponseForUi(
         response,
         option,
         detailModel,
         initialPayload
       );
+      console.log("[TripJack Review] Normalized response:", {
+        hasPriceSummary: Boolean(normalizedReviewResponse?.priceSummary),
+        priceSummaryAmount: normalizedReviewResponse?.priceSummary?.amount,
+        hasSelectedOption: Boolean(normalizedReviewResponse?.selectedOption),
+      });
       const reviewSelectedOption = normalizedReviewResponse?.selectedOption || {};
       const effectivePanRequired = Boolean(
         normalizedReviewResponse?.bookingRequirements?.panRequired ||
@@ -1664,7 +1675,24 @@ function HotelDetailsPage({
       normalizeAmount(reviewResponse?.selectedOption?.pricing?.totalPrice) ||
       normalizeAmount(reviewResponse?.selectedOption?.totalPrice) ||
       normalizeAmount(reviewResponse?.selectedOption?.tp);
+    
+    console.log("[TripJack Payment] Resolving payable amount:", {
+      fromPriceSummary: reviewResponse?.priceSummary?.amount,
+      fromSelectedOptionPricing: reviewResponse?.selectedOption?.pricing?.totalPrice,
+      fromSelectedOptionTotalPrice: reviewResponse?.selectedOption?.totalPrice,
+      fromSelectedOptionTp: reviewResponse?.selectedOption?.tp,
+      finalAmount: payableAmount,
+    });
+    
     if (!Number.isFinite(payableAmount) || payableAmount <= 0) {
+      console.error("[TripJack Payment] Booking amount unavailable", {
+        reviewResponse: {
+          hasPriceSummary: Boolean(reviewResponse?.priceSummary),
+          priceSummaryAmount: reviewResponse?.priceSummary?.amount,
+          hasSelectedOption: Boolean(reviewResponse?.selectedOption),
+          selectedOptionKeys: reviewResponse?.selectedOption ? Object.keys(reviewResponse.selectedOption) : [],
+        },
+      });
       toast.error("Booking amount is unavailable. Please review the room again.");
       return;
     }

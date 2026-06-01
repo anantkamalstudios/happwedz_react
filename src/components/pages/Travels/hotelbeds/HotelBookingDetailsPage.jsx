@@ -102,8 +102,8 @@ function getStatusTone(orderStatus) {
   const normalized = String(orderStatus || "").toUpperCase();
   if (["CANCELLATION_REQUESTED", "CANCELLATION_PENDING"].includes(normalized)) {
     return {
-      title: "Cancellation Requested",
-      subtitle: "Your cancellation request is submitted. Please refresh for final cancellation status.",
+      title: "Cancellation Pending",
+      subtitle: "Your cancellation request is being processed by TripJack. Please check back for the final cancellation status.",
       color: "#92400e",
       bg: "#fff7ed",
       border: "#fed7aa",
@@ -270,7 +270,7 @@ export default function HotelBookingDetailsPage() {
     const statusLabel = isCancellationFlow
       ? normalizedStatus === "CANCELLED"
         ? "Booking Cancelled"
-        : "Cancellation Requested"
+        : "Cancellation Pending"
       : getBookingStatusLabel(normalizedStatus, details?.userStatus);
 
     return {

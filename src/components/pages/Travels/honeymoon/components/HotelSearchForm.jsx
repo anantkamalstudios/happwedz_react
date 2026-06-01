@@ -113,6 +113,7 @@ const normalizeHotelSuggestion = (suggestion) => {
     suggestion?.cityId ||
     suggestion?.regionId ||
     suggestion?.searchRegionId ||
+    suggestion?.cityRegionId ||
     (normalizedSearchType !== "HOTEL" ? suggestion?.id : "") ||
     "";
 
