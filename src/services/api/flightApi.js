@@ -145,6 +145,7 @@ export const createFlightPaymentOrder = async (bookingData) => {
     cabin_class: bookingData.cabin_class,
     passengers: bookingData.passengers,
     contact: bookingData.contact,
+    booking_payload: bookingData.booking_payload,
   };
   const response = await axiosInstance.post('/flight_payment/create_order', paymentPayload);
   return response.data;

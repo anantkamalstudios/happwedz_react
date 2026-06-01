@@ -162,10 +162,20 @@ export default function BookingReview({
       // Strip + prefix from country code for phone number
       const cleanCountryCode = contact.countryCode.replace(/^\+/, '');
       const fullPhoneNumber = `${cleanCountryCode}${contact.mobile}`;
-      
+
+      // TripJack's OMS book API validates paymentInfos.amount against the amount
+      // in the booking session created at review time. The review response stores
+      // TripJack's raw fare in totalPriceInfo (no platform markup). The marked-up
+      // amount shown to the user lives in tripInfos[].totalPriceList[].fd.ADULT.fC.TF.
+      // Sending the marked-up price causes "Total amount doesn't match" from TripJack.
+      const tripjackFare =
+        Number(reviewData?.totalPriceInfo?.totalFareDetail?.fC?.NF) ||
+        Number(reviewData?.totalPriceInfo?.totalFareDetail?.fC?.TF) ||
+        confirmedAmount;
+
       const payload = {
         bookingId: bookingId,
-        paymentInfos: [{ amount: confirmedAmount }],
+        paymentInfos: [{ amount: tripjackFare }],
         travellerInfo: travellerInfo,
         deliveryInfo: {
           emails: [contact.email],
@@ -191,7 +201,7 @@ export default function BookingReview({
 
       // Build payment order payload (existing backend contract)
       const paymentOrderPayload = {
-        provider: trip?.sI?.[0]?.fD?.aI?.code || 'TJ',
+        provider: 'tripjack',
         offer_id: bookingId,
         trip_type: returnTrip ? 'round' : 'oneway',
         from: trip?.sI?.[0]?.da?.code || '',
@@ -207,19 +217,16 @@ export default function BookingReview({
           email: contact.email,
           phone: fullPhoneNumber,
         },
+        booking_payload: payload,
       };
 
       let orderResponse;
       try {
         orderResponse = await createFlightPaymentOrder(paymentOrderPayload);
       } catch (paymentOrderError) {
-        console.warn('Razorpay order API failed, falling back to direct booking:', paymentOrderError);
-        const directResponse = await bookFlight(payload);
-        if (directResponse && directResponse.bookingId) {
-          onPaymentSuccess(directResponse);
-          return;
-        }
-        throw paymentOrderError;
+        const errMsg = paymentOrderError.response?.data?.message || paymentOrderError.message || 'Failed to create payment order';
+        console.error('create_order failed:', paymentOrderError.response?.data || paymentOrderError.message);
+        throw new Error(errMsg);
       }
 
       // Support backend response: { razorpay_order_id, key_id, amount, currency }
@@ -229,12 +236,7 @@ export default function BookingReview({
       const orderCurrency = orderResponse?.currency || orderResponse?.order?.currency || 'INR';
 
       if (!orderId || !razorpayKey) {
-        const directResponse = await bookFlight(payload);
-        if (directResponse && directResponse.bookingId) {
-          onPaymentSuccess(directResponse);
-          return;
-        }
-        throw new Error('Invalid Razorpay order response');
+        throw new Error('Payment order created but Razorpay credentials missing. Please contact support.');
       }
 
       const options = {
@@ -258,12 +260,10 @@ export default function BookingReview({
               booking_payload: payload,
             };
             const verifyResponse = await verifyAndBookFlight(verifyPayload);
-            if (verifyResponse && (verifyResponse.bookingId || verifyResponse.status?.success)) {
+            if (verifyResponse && (verifyResponse.status === true || verifyResponse.booking_id || verifyResponse.order_id || verifyResponse.bookingId)) {
               onPaymentSuccess(verifyResponse);
             } else {
-              const directResponse = await bookFlight(payload);
-              if (directResponse && directResponse.bookingId) onPaymentSuccess(directResponse);
-              else setError('Payment verification succeeded but booking confirmation failed.');
+              setError('Payment was received but booking confirmation failed. Please contact support with payment ID: ' + rzpResponse.razorpay_payment_id);
             }
           } catch (verifyErr) {
             console.error('Payment verification error:', verifyErr);

@@ -12,7 +12,8 @@ export default function BookingConfirmation({ bookingData, trip, returnTrip, tra
     return new Date(dateStr).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  const totalAmount = bookingData.paymentInfos?.[0]?.amount || 0;
+  const totalAmount = bookingData.amount_paid || bookingData.paymentInfos?.[0]?.amount || 0;
+  const bookingRef = bookingData.pnr || bookingData.order_id || bookingData.booking_id || bookingData.bookingId || '—';
 
   return (
     <div className="booking-confirmation-container">
@@ -28,7 +29,7 @@ export default function BookingConfirmation({ bookingData, trip, returnTrip, tra
             
             <div className="booking-id-section my-4">
               <div className="booking-id-label">Booking ID</div>
-              <div className="booking-id-value">{bookingData.bookingId}</div>
+              <div className="booking-id-value">{bookingRef}</div>
             </div>
             
             <div className="confirmation-details-grid mt-4">
