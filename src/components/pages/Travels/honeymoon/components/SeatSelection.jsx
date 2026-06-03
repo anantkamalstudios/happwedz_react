@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { FaPlane } from 'react-icons/fa';
 import { getSeatMap } from '../../../../../services/api/flightApi';
 
-export default function SeatSelection({ bookingId, passengers, onBack, onContinue }) {
+export default function SeatSelection({ bookingId, passengers, onBack, onContinue, onRefreshBookingId }) {
   const [seatMapData, setSeatMapData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,6 +11,7 @@ export default function SeatSelection({ bookingId, passengers, onBack, onContinu
 
   useEffect(() => {
     fetchSeatMap();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingId]);
 
   const fetchSeatMap = async () => {
@@ -21,32 +22,50 @@ export default function SeatSelection({ bookingId, passengers, onBack, onContinu
       if (response?.status?.success) {
         setSeatMapData(response.tripSeatMap);
       } else {
-        // Seat selection not available - skip this step
-        if (response?.errors?.[0]?.errCode === '1056') {
-          console.log('Seat selection not available for this flight');
-          // Show message briefly then auto-skip
+        const errCode = response?.errors?.[0]?.errCode;
+        if (errCode === '1056') {
+          // Seat map not available for this flight — auto-skip
           setError('Seat selection is not available for this flight. Proceeding to review...');
-          setTimeout(() => {
-            onContinue([]); // Skip seat selection
-          }, 1500);
+          setTimeout(() => onContinue([]), 1500);
+        } else if (errCode === '2503') {
+          // Review session expired — silently refresh and retry; if refresh fails, skip seat
+          await handleSessionExpired();
         } else {
           setError(response?.errors?.[0]?.message || 'Failed to load seat map');
         }
       }
     } catch (err) {
-      console.error('Error fetching seat map:', err);
-      // If seat selection is not applicable, skip this step
-      if (err.response?.data?.errors?.[0]?.errCode === '1056') {
-        console.log('Seat selection not applicable, skipping...');
+      const errCode = err.response?.data?.errors?.[0]?.errCode;
+      if (errCode === '1056') {
         setError('Seat selection is not available for this flight. Proceeding to review...');
-        setTimeout(() => {
-          onContinue([]); // Skip seat selection
-        }, 1500);
+        setTimeout(() => onContinue([]), 1500);
+      } else if (errCode === '2503') {
+        await handleSessionExpired();
       } else {
         setError(err.response?.data?.errors?.[0]?.message || 'Failed to load seat map. Please try again.');
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  // When the review session expires (2503), re-do the review to get a fresh bookingId.
+  // FlightBookingPage updates the bookingId prop → useEffect re-fires → fetchSeatMap retries.
+  // If refresh fails or isn't possible, skip seat selection gracefully.
+  const handleSessionExpired = async () => {
+    if (typeof onRefreshBookingId === 'function') {
+      setLoading(true);
+      const refreshed = await onRefreshBookingId();
+      if (!refreshed) {
+        // Refresh failed — skip seat selection so booking can still proceed
+        setLoading(false);
+        setError('Could not refresh session. Skipping seat selection...');
+        setTimeout(() => onContinue([]), 1500);
+      }
+      // If refreshed=true, bookingId prop changes → useEffect triggers → fetchSeatMap re-runs automatically
+    } else {
+      setError('Session expired. Skipping seat selection...');
+      setTimeout(() => onContinue([]), 1500);
     }
   };
 

@@ -1,6 +1,52 @@
 import { useState } from 'react';
-import { FaPlane, FaUser, FaEnvelope, FaPhone } from 'react-icons/fa';
-import { bookFlight, createFlightPaymentOrder, verifyAndBookFlight } from '../../../../../services/api/flightApi';
+import { FaPlane, FaUser, FaEnvelope, FaPhone, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { createFlightPaymentOrder, verifyAndBookFlight, getFareRule } from '../../../../../services/api/flightApi';
+
+const policyLabel = (type) => ({ CANCELLATION: 'Cancellation', DATECHANGE: 'Date Change', NO_SHOW: 'No Show', SEAT_CHARGEABLE: 'Seat' }[type] || type);
+const timeLabel = (p) => {
+  if (p.pp) return p.pp.replace(/_/g, ' ');
+  if (p.et != null && p.st != null) return `${p.st}h – ${p.et}h before departure`;
+  return 'As per policy';
+};
+function FareRuleDisplay({ data }) {
+  const rule = data?.farerule || {};
+  const routes = Object.keys(rule);
+  if (!routes.length) return <p className="text-muted small mb-0">No fare rules available.</p>;
+  return (
+    <div>
+      {routes.map((route) => {
+        const { tfr, miscInfo } = rule[route];
+        return (
+          <div key={route} className="mb-3">
+            <div className="fw-semibold fs-14 mb-2">{route.replace('-', ' → ')}</div>
+            {miscInfo?.length ? (
+              <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', maxHeight: 200, overflowY: 'auto' }}>{miscInfo.join('\n')}</pre>
+            ) : tfr ? (
+              Object.keys(tfr).map((type) => {
+                const policies = Array.isArray(tfr[type]) ? tfr[type] : [tfr[type]];
+                return (
+                  <div key={type} className="mb-2">
+                    <div className="fw-medium fs-13 text-secondary mb-1">{policyLabel(type)}</div>
+                    {policies.map((p, i) => (
+                      <div key={i} className="d-flex flex-wrap gap-3 fs-13 py-1 border-bottom">
+                        <span className="text-muted">{timeLabel(p)}</span>
+                        <span>Airline fee: <strong>₹{Number(p.amount || 0).toLocaleString('en-IN')}</strong></span>
+                        {p.additionalFee ? <span>Platform fee: <strong>₹{Number(p.additionalFee).toLocaleString('en-IN')}</strong></span> : null}
+                        {p.policyInfo ? <span className="text-muted fst-italic">{p.policyInfo}</span> : null}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-muted small mb-0">Contact support for fare rules.</p>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function BookingReview({ 
   trip, 
@@ -19,6 +65,24 @@ export default function BookingReview({
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fareRuleOpen, setFareRuleOpen] = useState(false);
+  const [fareRuleData, setFareRuleData] = useState(null);
+  const [fareRuleLoading, setFareRuleLoading] = useState(false);
+
+  const handleToggleFareRule = async () => {
+    setFareRuleOpen((prev) => !prev);
+    if (!fareRuleOpen && !fareRuleData && bookingId) {
+      setFareRuleLoading(true);
+      try {
+        const data = await getFareRule(bookingId, 'REVIEW');
+        setFareRuleData(data);
+      } catch {
+        setFareRuleData({ error: true });
+      } finally {
+        setFareRuleLoading(false);
+      }
+    }
+  };
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -315,6 +379,34 @@ export default function BookingReview({
             {returnTrip && renderFlightSummary(returnTrip, returnFare, 'Return Journey')}
           </div>
           
+          {/* Fare Rules — fetched with REVIEW flowType so rules reflect the confirmed booking session */}
+          <div className="review-section mt-3">
+            <button
+              type="button"
+              className="btn btn-link p-0 fs-14 text-decoration-none d-flex align-items-center gap-2"
+              onClick={handleToggleFareRule}
+            >
+              {fareRuleOpen ? <FaChevronUp /> : <FaChevronDown />}
+              View Fare Rules (Cancellation &amp; Date Change policy)
+            </button>
+            {fareRuleOpen && (
+              <div className="mt-2 p-3 rounded" style={{ background: '#f8f9fa' }}>
+                {fareRuleLoading && (
+                  <div className="text-center py-2">
+                    <span className="spinner-border spinner-border-sm me-2" />
+                    Loading fare rules…
+                  </div>
+                )}
+                {!fareRuleLoading && fareRuleData?.error && (
+                  <p className="text-muted small mb-0">Fare rules unavailable. Please contact support.</p>
+                )}
+                {!fareRuleLoading && !fareRuleData?.error && (
+                  <FareRuleDisplay data={fareRuleData} />
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="review-section mt-4">
             <h5 className="review-section-title">
               <FaUser className="me-2" />

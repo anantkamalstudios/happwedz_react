@@ -6,6 +6,57 @@ import FlightSearchForm from "./components/FlightSearchForm";
 import FlightSearchHeader from "./components/FlightSearchHeader";
 import { reviewFlight, getFareRule } from "../../../../services/api/flightApi";
 
+// ─── Fare Rule display ───────────────────────────────────────────────────────
+const policyLabel = (type) => ({ CANCELLATION: "Cancellation", DATECHANGE: "Date Change", NO_SHOW: "No Show", SEAT_CHARGEABLE: "Seat" }[type] || type);
+const timeLabel = (policy) => {
+  if (policy.pp) return policy.pp.replace(/_/g, " ");
+  if (policy.et != null && policy.st != null) return `${policy.st}h – ${policy.et}h before departure`;
+  return "As per policy";
+};
+function FareRuleDisplay({ data }) {
+  if (!data) return null;
+  const rule = data.farerule || {};
+  const routes = Object.keys(rule);
+  if (!routes.length) return <p className="text-muted small">No fare rules available.</p>;
+  return (
+    <div className="fare-rule-content">
+      {routes.map((route) => {
+        const routeRule = rule[route];
+        const { tfr, miscInfo } = routeRule;
+        return (
+          <div key={route} className="mb-3">
+            <div className="fw-semibold fs-13 mb-2">{route.replace("-", " → ")}</div>
+            {miscInfo?.length ? (
+              <pre className="fare-rule-plain">{miscInfo.join("\n")}</pre>
+            ) : tfr ? (
+              Object.keys(tfr).map((type) => {
+                const policies = Array.isArray(tfr[type]) ? tfr[type] : [tfr[type]];
+                return (
+                  <div key={type} className="fare-rule-section mb-2">
+                    <div className="fare-rule-type-label">{policyLabel(type)}</div>
+                    {policies.map((p, i) => (
+                      <div key={i} className="fare-rule-row">
+                        <span className="fare-rule-time">{timeLabel(p)}</span>
+                        <span className="fare-rule-fee">
+                          Airline: ₹{Number(p.amount || 0).toLocaleString("en-IN")}
+                          {p.additionalFee ? ` + ₹${Number(p.additionalFee).toLocaleString("en-IN")} platform fee` : ""}
+                        </span>
+                        {p.policyInfo && <span className="fare-rule-info">{p.policyInfo}</span>}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-muted small">Contact support for fare rules.</p>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 const useVirtualList = (items, pageSize = 15) => {
   const [visibleCount, setVisibleCount] = useState(pageSize);
   const loaderRef = useRef(null);
@@ -361,10 +412,46 @@ export default function FlightSearchResults() {
             <div className="tj-details-tabs">
               <div
                 className={`tj-details-tab ${currentTab === "flight" ? "active" : ""}`}
+                onClick={() => setActiveTab((p) => ({ ...p, [flightId]: "flight" }))}
               >
                 Flight Details
               </div>
+              <div
+                className={`tj-details-tab ${currentTab === "farerule" ? "active" : ""}`}
+                onClick={async () => {
+                  setActiveTab((p) => ({ ...p, [flightId]: "farerule" }));
+                  if (!fareRuleData[flightId]) {
+                    const fareId = fares[selectedFareIndex]?.id || fares[0]?.id;
+                    if (!fareId) return;
+                    setFareRuleLoading((p) => ({ ...p, [flightId]: true }));
+                    try {
+                      const data = await getFareRule(fareId, "SEARCH");
+                      setFareRuleData((p) => ({ ...p, [flightId]: data }));
+                    } catch {
+                      setFareRuleData((p) => ({ ...p, [flightId]: null }));
+                    } finally {
+                      setFareRuleLoading((p) => ({ ...p, [flightId]: false }));
+                    }
+                  }
+                }}
+              >
+                Fare Rules
+              </div>
             </div>
+            {currentTab === "farerule" && (
+              <div className="tj-details-body p-3">
+                {fareRuleLoading[flightId] ? (
+                  <div className="text-center py-3">
+                    <span className="spinner-border spinner-border-sm me-2" />
+                    Loading fare rules…
+                  </div>
+                ) : fareRuleData[flightId] === null ? (
+                  <p className="text-muted small">Fare rules unavailable. Please contact support.</p>
+                ) : (
+                  <FareRuleDisplay data={fareRuleData[flightId]} />
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

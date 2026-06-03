@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { reviewFlight } from '../../../../services/api/flightApi';
 import BookingSteps from './components/BookingSteps';
 import FlightItinerary from './components/FlightItinerary';
 import PassengerDetails from './components/PassengerDetails';
@@ -10,18 +11,47 @@ import BookingConfirmation from './components/BookingConfirmation';
 export default function FlightBookingPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  
-  const { outbound, return: returnFlight, multiCity, searchParams, reviewData, bookingId: initialBookingId } = location.state || {};
+
+  const {
+    outbound,
+    return: returnFlight,
+    multiCity,
+    searchParams,
+    reviewData: initialReviewData,
+    bookingId: initialBookingId,
+  } = location.state || {};
+
   const primaryTrip = outbound || (Array.isArray(multiCity) ? multiCity[0] : null);
   const secondaryTrip = returnFlight || (Array.isArray(multiCity) ? multiCity[1] : null);
-  
+
   const [step, setStep] = useState(1);
   const [bookingId, setBookingId] = useState(initialBookingId || null);
+  const [reviewData, setReviewData] = useState(initialReviewData || null);
   const [travellerInfo, setTravellerInfo] = useState([]);
   const [contact, setContact] = useState({});
   const [gstInfo, setGstInfo] = useState(null);
   const [seatSelections, setSeatSelections] = useState([]);
   const [confirmed, setConfirmed] = useState(null);
+
+  // Re-do the TripJack review to get a fresh bookingId when the session expires.
+  // priceIds are extracted from the stored flight data (totalPriceList[0].id).
+  const refreshBookingId = async () => {
+    const priceIds = [];
+    if (primaryTrip?.totalPriceList?.[0]?.id) priceIds.push(primaryTrip.totalPriceList[0].id);
+    if (secondaryTrip?.totalPriceList?.[0]?.id) priceIds.push(secondaryTrip.totalPriceList[0].id);
+    if (!priceIds.length) return false;
+    try {
+      const response = await reviewFlight(priceIds);
+      if (response?.bookingId) {
+        setBookingId(response.bookingId);
+        setReviewData(response);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  };
 
   useEffect(() => {
     if (!primaryTrip || !searchParams) {
@@ -73,6 +103,7 @@ export default function FlightBookingPage() {
                 bookingId={bookingId}
                 passengers={travellerInfo}
                 onBack={() => setStep(2)}
+                onRefreshBookingId={refreshBookingId}
                 onContinue={(seats) => {
                   setSeatSelections(seats);
                   setStep(4);

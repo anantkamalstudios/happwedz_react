@@ -205,6 +205,9 @@ const FlightBookingPage = lazy(
 const MultiCityResults = lazy(
   () => import("./components/pages/Travels/honeymoon/MultiCityResults"),
 );
+const FlightBookingDetail = lazy(
+  () => import("./components/pages/userDashboard/flightBookings/FlightBookingDetail"),
+);
 
 function App() {
   const dispatch = useDispatch();
@@ -525,6 +528,14 @@ function App() {
                 element={
                   <UserPrivateRoute>
                     <UserDashboardMain />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/user-dashboard/my-bookings/:orderId"
+                element={
+                  <UserPrivateRoute>
+                    <FlightBookingDetail />
                   </UserPrivateRoute>
                 }
               />
