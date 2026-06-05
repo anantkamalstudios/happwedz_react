@@ -30,6 +30,7 @@ export default function FlightBookingPage() {
   const [travellerInfo, setTravellerInfo] = useState([]);
   const [contact, setContact] = useState({});
   const [gstInfo, setGstInfo] = useState(null);
+  const [emergencyContact, setEmergencyContact] = useState(null);
   const [seatSelections, setSeatSelections] = useState([]);
   const [confirmed, setConfirmed] = useState(null);
 
@@ -88,11 +89,13 @@ export default function FlightBookingPage() {
             {step === 2 && (
               <PassengerDetails
                 searchParams={searchParams}
+                reviewData={reviewData}
                 onBack={() => setStep(1)}
-                onContinue={(travellers, contactInfo, gst) => {
+                onContinue={(travellers, contactInfo, gst, emergency) => {
                   setTravellerInfo(travellers);
                   setContact(contactInfo);
                   setGstInfo(gst);
+                  setEmergencyContact(emergency || null);
                   setStep(3);
                 }}
               />
@@ -121,6 +124,7 @@ export default function FlightBookingPage() {
                 travellerInfo={travellerInfo}
                 contact={contact}
                 gstInfo={gstInfo}
+                emergencyContact={emergencyContact}
                 seatSelections={seatSelections}
                 bookingId={bookingId}
                 reviewData={reviewData}

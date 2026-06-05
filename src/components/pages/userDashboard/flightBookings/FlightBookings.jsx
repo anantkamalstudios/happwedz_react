@@ -36,7 +36,7 @@ export default function FlightBookings() {
 
   useEffect(() => {
     axiosInstance
-      .get("/flight_booking/my-bookings")
+      .get("/tj/my-bookings")
       .then((res) => {
         if (res.data?.status) setBookings(res.data.data || []);
       })

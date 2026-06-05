@@ -1,6 +1,15 @@
 import { FaPlane, FaCalendarAlt, FaUser, FaEdit } from 'react-icons/fa';
 import { IoIosArrowDropdown } from 'react-icons/io';
 import { MdFlightTakeoff, MdFlightLand } from 'react-icons/md';
+import { AIRLINES } from './PreferredAirline';
+
+// Turn the preferredAirline value (array of codes, or legacy string) into readable names.
+const formatPreferredAirlines = (pref) => {
+  const codes = Array.isArray(pref) ? pref : pref ? [pref] : [];
+  const valid = codes.filter((c) => c && c !== 'All');
+  if (!valid.length) return '';
+  return valid.map((code) => AIRLINES.find((a) => a.code === code)?.name || code).join(', ');
+};
 
 export default function FlightSearchHeader({ searchParams, onModify }) {
   const formatDate = (dateStr) => {
@@ -144,7 +153,7 @@ export default function FlightSearchHeader({ searchParams, onModify }) {
           </div>
 
           {/* Preferred Airline (if selected) */}
-          {searchParams.preferredAirline && searchParams.preferredAirline !== 'All' && (
+          {formatPreferredAirlines(searchParams.preferredAirline) && (
             <>
               <div className="header-divider"></div>
               <div className="header-section airline-section">
@@ -153,7 +162,7 @@ export default function FlightSearchHeader({ searchParams, onModify }) {
                 </div>
                 <div className="section-content">
                   <div className="section-label">Preferred Airline</div>
-                  <div className="section-value">{searchParams.preferredAirline}</div>
+                  <div className="section-value">{formatPreferredAirlines(searchParams.preferredAirline)}</div>
                 </div>
               </div>
             </>

@@ -1,8 +1,9 @@
-import { FaCheckCircle, FaPlane, FaDownload, FaList } from 'react-icons/fa';
+import { FaCheckCircle, FaPlane, FaDownload, FaList, FaClock } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 export default function BookingConfirmation({ bookingData, trip, returnTrip, travellerInfo }) {
   const navigate = useNavigate();
+  const onHold = bookingData.on_hold === true;
 
   const formatTime = (dateStr) => {
     return new Date(dateStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -12,8 +13,17 @@ export default function BookingConfirmation({ bookingData, trip, returnTrip, tra
     return new Date(dateStr).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
+  const formatDeadline = (v) => {
+    if (!v) return null;
+    const d = new Date(v);
+    return Number.isNaN(d.getTime()) ? null : d.toLocaleString('en-US', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
+
   const totalAmount = bookingData.amount_paid || bookingData.paymentInfos?.[0]?.amount || 0;
-  const bookingRef = bookingData.pnr || bookingData.order_id || bookingData.booking_id || bookingData.bookingId || '—';
+  // Booking ID = TripJack order reference (TJS…). PNR = airline check-in reference (shown separately).
+  const bookingRef = bookingData.order_id || bookingData.booking_id || bookingData.bookingId || '—';
+  const pnr = bookingData.pnr || null;
+  const deadline = formatDeadline(bookingData.deadline);
 
   return (
     <div className="booking-confirmation-container">
@@ -21,15 +31,27 @@ export default function BookingConfirmation({ bookingData, trip, returnTrip, tra
         <div className="col-lg-8">
           <div className="booking-card text-center">
             <div className="confirmation-icon mb-4">
-              <FaCheckCircle size={80} className="text-success" />
+              {onHold
+                ? <FaClock size={80} style={{ color: '#b9750a' }} />
+                : <FaCheckCircle size={80} className="text-success" />}
             </div>
-            
-            <h2 className="confirmation-title">Booking Confirmed!</h2>
-            <p className="confirmation-subtitle">Your flight has been successfully booked</p>
-            
+
+            <h2 className="confirmation-title">{onHold ? 'Fare Held!' : 'Booking Confirmed!'}</h2>
+            <p className="confirmation-subtitle">
+              {onHold
+                ? `Your seat is blocked${deadline ? ` until ${deadline}` : ''}. Pay before the deadline to confirm your ticket.`
+                : 'Your flight has been successfully booked'}
+            </p>
+
             <div className="booking-id-section my-4">
               <div className="booking-id-label">Booking ID</div>
               <div className="booking-id-value">{bookingRef}</div>
+              {pnr && (
+                <div className="booking-pnr mt-2">
+                  <span className="booking-id-label">PNR</span>{' '}
+                  <span className="booking-pnr-value">{pnr}</span>
+                </div>
+              )}
             </div>
             
             <div className="confirmation-details-grid mt-4">

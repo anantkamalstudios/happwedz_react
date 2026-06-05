@@ -18,10 +18,21 @@ const useAirportSearch = (delay = 350) => {
   const abortRef = useRef(null);
   // Holds the debounce timer
   const timerRef = useRef(null);
+  // When true, the next query change skips the search (used to restore a value
+  // from persisted state without firing a network request / showing suggestions)
+  const skipNextRef = useRef(false);
 
   useEffect(() => {
     // Clear any pending debounce timer
     if (timerRef.current) clearTimeout(timerRef.current);
+
+    // Programmatic restore — set the text but don't search
+    if (skipNextRef.current) {
+      skipNextRef.current = false;
+      setSuggestions([]);
+      setLoading(false);
+      return;
+    }
 
     // Skip if query is too short
     if (query.length < 2) {
@@ -91,6 +102,12 @@ const useAirportSearch = (delay = 350) => {
     if (abortRef.current) abortRef.current.abort();
   }, []);
 
+  // Set the query text WITHOUT triggering a search (for restoring saved state)
+  const setQuerySilent = useCallback((val) => {
+    skipNextRef.current = true;
+    setQuery(val || "");
+  }, []);
+
   const hideSuggestions = useCallback(() => {
     setSuggestions([]);
   }, []);
@@ -98,6 +115,7 @@ const useAirportSearch = (delay = 350) => {
   return {
     query,
     setQuery,
+    setQuerySilent,
     suggestions,
     loading,
     clearSuggestions,

@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { getFareRule } from "../../../../services/api/flightApi";
+import { getFareRule, createFlightPaymentOrder, verifyAndBookFlight } from "../../../../services/api/flightApi";
 import {
   FaPlane, FaTicketAlt, FaCheckCircle, FaBan,
   FaClock, FaArrowLeft, FaUsers, FaEnvelope, FaPhone,
-  FaChevronDown, FaChevronUp,
+  FaChevronDown, FaChevronUp, FaCreditCard,
 } from "react-icons/fa";
 import CancellationModal from "./CancellationModal";
+
+const loadRazorpay = () =>
+  new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
 
 const policyLabel = (type) => ({ CANCELLATION: "Cancellation", DATECHANGE: "Date Change", NO_SHOW: "No Show", SEAT_CHARGEABLE: "Seat" }[type] || type);
 const timeLabel = (p) => {
@@ -87,6 +97,72 @@ export default function FlightBookingDetail() {
   const [fareRuleData, setFareRuleData] = useState(null);
   const [fareRuleLoading, setFareRuleLoading] = useState(false);
   const [liveDataLoading, setLiveDataLoading] = useState(false);
+  const [paying, setPaying] = useState(false);
+
+  // Pay for a HELD booking → Razorpay → confirm-book (tickets the held PNR).
+  const payConfirm = async () => {
+    setPaying(true);
+    try {
+      const ready = await loadRazorpay();
+      if (!ready) throw new Error("Razorpay failed to load");
+
+      const order = await createFlightPaymentOrder({
+        provider: "tripjack",
+        offer_id: booking.order_id,
+        price: booking.amount_paid || booking.price,
+        trip_type: booking.trip_type,
+        from: booking.from_iata,
+        to: booking.to_iata,
+        departure: booking.departure,
+        arrival: booking.arrival,
+        flight_no: booking.flight_no,
+        airline: booking.airline,
+        cabin_class: booking.cabin_class,
+        passengers: [],
+        contact: { email: booking.contact_email, phone: booking.contact_phone },
+        is_hold_confirm: true,
+        booking_payload: { bookingId: booking.order_id },
+      });
+
+      const rzpOrderId = order?.razorpay_order_id;
+      const key = order?.key_id || import.meta.env.VITE_RAZORPAY_KEY_ID || "";
+      if (!rzpOrderId || !key) throw new Error("Could not start payment");
+
+      const rzp = new window.Razorpay({
+        key,
+        amount: order.amount,
+        currency: order.currency || "INR",
+        name: "HappyWedz",
+        description: "Confirm held flight booking",
+        order_id: rzpOrderId,
+        prefill: { email: booking.contact_email || "", contact: booking.contact_phone || "" },
+        theme: { color: "#ed1173" },
+        handler: async (rzpRes) => {
+          try {
+            const res = await verifyAndBookFlight({
+              razorpay_order_id: rzpRes.razorpay_order_id,
+              razorpay_payment_id: rzpRes.razorpay_payment_id,
+              razorpay_signature: rzpRes.razorpay_signature,
+            });
+            setBooking((prev) => ({
+              ...prev,
+              booking_status: "confirmed",
+              pnr: res?.pnr || prev.pnr,
+            }));
+          } catch (err) {
+            alert(err.response?.data?.message || "Could not confirm the booking.");
+          } finally {
+            setPaying(false);
+          }
+        },
+        modal: { ondismiss: () => setPaying(false) },
+      });
+      rzp.open();
+    } catch (err) {
+      alert(err.message || "Could not start payment.");
+      setPaying(false);
+    }
+  };
 
   // If the booking stored in DB is missing flight details (old bookings before the fix),
   // fetch live data from TripJack booking-details and patch the display.
@@ -166,6 +242,7 @@ export default function FlightBookingDetail() {
   }
 
   const isCancelled = booking.booking_status === "cancelled";
+  const isOnHold = booking.booking_status === "on_hold";
 
   return (
     <div className="container py-4" style={{ maxWidth: 720 }}>
@@ -301,7 +378,7 @@ export default function FlightBookingDetail() {
 
           {/* Price */}
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <span className="fs-16 fw-semibold">Total Amount Paid</span>
+            <span className="fs-16 fw-semibold">{isOnHold ? "Amount Due" : "Total Amount Paid"}</span>
             <span className="fs-20 fw-bold text-primary">
               ₹{Number(booking.price).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
             </span>
@@ -343,9 +420,27 @@ export default function FlightBookingDetail() {
             </div>
           )}
 
-          {/* Cancel Booking button */}
+          {/* On-hold banner */}
+          {isOnHold && !cancelRequested && (
+            <div className="alert alert-warning mb-3 fs-14">
+              <FaClock className="me-2" />
+              This fare is on hold. Pay before the deadline to confirm your ticket.
+            </div>
+          )}
+
+          {/* Action buttons */}
           {!isCancelled && !cancelRequested && (
-            <div className="d-flex justify-content-end">
+            <div className="d-flex justify-content-end gap-2">
+              {isOnHold && (
+                <button
+                  className="btn btn-primary px-4"
+                  onClick={payConfirm}
+                  disabled={paying}
+                >
+                  <FaCreditCard className="me-2" />
+                  {paying ? "Processing…" : "Pay & Confirm"}
+                </button>
+              )}
               <button
                 className="btn btn-danger px-4"
                 onClick={() => setCancelModalOpen(true)}

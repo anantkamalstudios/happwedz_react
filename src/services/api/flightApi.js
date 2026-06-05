@@ -62,8 +62,8 @@ export const getSeatMap = async (bookingId) => {
 // ─── TripJack OMS (Order Management System) — auth required ──────────────────
 
 /**
- * Book flight — POST /tj/oms/book
- * @param {object} payload  TripJack booking payload
+ * Book flight (instant ticket) — POST /tj/oms/book
+ * @param {object} payload  TripJack booking payload (includes paymentInfos)
  */
 export const bookFlight = async (payload) => {
   const response = await axiosInstance.post('/tj/oms/book', payload);
@@ -71,11 +71,29 @@ export const bookFlight = async (payload) => {
 };
 
 /**
- * Fare validate — POST /tj/oms/fare-validate
+ * Hold / Block itinerary — POST /tj/oms/hold (book WITHOUT paymentInfos)
+ * @param {object} payload  bookingId + travellerInfo + deliveryInfo
+ */
+export const holdFlight = async (payload) => {
+  const response = await axiosInstance.post('/tj/oms/hold', payload);
+  return response.data;
+};
+
+/**
+ * Post-hold fare confirmation — POST /tj/oms/fare-validate
  * @param {object} payload
  */
 export const fareValidate = async (payload) => {
   const response = await axiosInstance.post('/tj/oms/fare-validate', payload);
+  return response.data;
+};
+
+/**
+ * Pre-book fare validation (TJ 2.0 instant) — POST /tj/oms/book-fare-validate
+ * @param {object} payload
+ */
+export const bookFareValidate = async (payload) => {
+  const response = await axiosInstance.post('/tj/oms/book-fare-validate', payload);
   return response.data;
 };
 
@@ -91,9 +109,10 @@ export const confirmBook = async (payload) => {
 /**
  * Booking details — POST /tj/oms/booking-details
  * @param {string} bookingId
+ * @param {boolean} requirePaxPricing  include traveller-level pricing (default true)
  */
-export const getBookingDetails = async (bookingId) => {
-  const response = await axiosInstance.post('/tj/oms/booking-details', { bookingId });
+export const getBookingDetails = async (bookingId, requirePaxPricing = true) => {
+  const response = await axiosInstance.post('/tj/oms/booking-details', { bookingId, requirePaxPricing });
   return response.data;
 };
 
@@ -146,8 +165,34 @@ export const createFlightPaymentOrder = async (bookingData) => {
     passengers: bookingData.passengers,
     contact: bookingData.contact,
     booking_payload: bookingData.booking_payload,
+    // true when paying for a previously HELD booking → backend tickets via confirm-book
+    is_hold_confirm: bookingData.is_hold_confirm === true,
   };
   const response = await axiosInstance.post('/flight_payment/create_order', paymentPayload);
+  return response.data;
+};
+
+/**
+ * HOLD a fare (block the seat without payment) — POST /flight_payment/hold
+ * @param {object} holdData  same shape as createFlightPaymentOrder's bookingData
+ */
+export const holdFlightBooking = async (holdData) => {
+  const payload = {
+    provider: holdData.provider,
+    amount: holdData.price,
+    trip_type: holdData.trip_type,
+    from: holdData.from,
+    to: holdData.to,
+    departure: holdData.departure,
+    arrival: holdData.arrival,
+    flight_no: holdData.flight_no,
+    airline: holdData.airline,
+    cabin_class: holdData.cabin_class,
+    passengers: holdData.passengers,
+    contact: holdData.contact,
+    booking_payload: holdData.booking_payload,
+  };
+  const response = await axiosInstance.post('/flight_payment/hold', payload);
   return response.data;
 };
 
@@ -157,5 +202,57 @@ export const createFlightPaymentOrder = async (bookingData) => {
  */
 export const verifyAndBookFlight = async (payload) => {
   const response = await axiosInstance.post('/flight_payment/verify_and_book', payload);
+  return response.data;
+};
+
+// ─── My Bookings (logged-in user) ────────────────────────────────────────────
+
+/**
+ * Get the logged-in user's flight bookings — GET /tj/my-bookings
+ * Returns rows enriched with passenger_name, passenger_count, payment_status, amount_paid.
+ */
+export const getMyFlightBookings = async () => {
+  const response = await axiosInstance.get('/tj/my-bookings');
+  return response.data;
+};
+
+/**
+ * Our DB record for one booking (booking date + Razorpay payment) — GET /tj/booking-record/:orderId
+ */
+export const getFlightBookingRecord = async (orderId) => {
+  const response = await axiosInstance.get(`/tj/booking-record/${encodeURIComponent(orderId)}`);
+  return response.data;
+};
+
+// ─── Cancellation ────────────────────────────────────────────────────────────
+
+/**
+ * Preview cancellation charges/refund (does NOT cancel) — POST /tj/oms/cancel-charges
+ */
+export const getFlightCancelCharges = async (orderId) => {
+  const response = await axiosInstance.post('/tj/oms/cancel-charges', {
+    provider: 'tripjack',
+    order_id: orderId,
+  });
+  return response.data;
+};
+
+/**
+ * Cancel a booking (amendment submit + poll) — POST /tj/oms/cancel
+ */
+export const cancelFlightBooking = async (orderId, opts = {}) => {
+  const response = await axiosInstance.post('/tj/oms/cancel', {
+    provider: 'tripjack',
+    order_id: orderId,
+    ...opts,
+  });
+  return response.data;
+};
+
+/**
+ * Release a HELD booking (unhold) — POST /tj/oms/release-hold
+ */
+export const releaseHeldBooking = async (orderId) => {
+  const response = await axiosInstance.post('/tj/oms/release-hold', { order_id: orderId });
   return response.data;
 };

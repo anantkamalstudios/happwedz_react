@@ -81,61 +81,29 @@ export default function MultiCityResults() {
       ? results
       : (results?.connecting?.searchResult ? results.connecting : null);
     const tripInfos = normalizedResults?.searchResult?.tripInfos || {};
-    
-    // For multi-city, the API returns different itinerary combinations in keys "0", "1", etc.
-    // Each itinerary contains segments for multiple routes marked with sN (segment number)
-    // We need to collect ALL itineraries and organize them by the routes they serve
-    
-    const allItineraries = [];
-    
-    // Collect all itineraries from all keys
-    Object.keys(tripInfos).forEach(key => {
-      if (Array.isArray(tripInfos[key])) {
-        allItineraries.push(...tripInfos[key]);
-      }
-    });
-    
-    // Now organize by route index (sN value)
+
+    // TripJack returns multi-city results bucketed BY ROUTE:
+    //  - Domestic  → numeric keys "0","1",… one bucket per route info (each an
+    //    independent one-way with its own priceId). A flight may itself be
+    //    connecting (multiple segments) — that's ONE flight for that route.
+    //  - International → "COMBO": one combined itinerary (single priceId) covering
+    //    all routes; selecting it books everything.
     const flightsByRoute = {};
-    
-    allItineraries.forEach((itinerary) => {
-      // Find which routes this itinerary covers
-      const routesInItinerary = new Set();
-      itinerary.sI.forEach(segment => {
-        const routeIdx = segment.sN !== undefined ? segment.sN : 0;
-        routesInItinerary.add(routeIdx);
+    const mapItin = (it) => ({ ...it, id: it.totalPriceList?.[0]?.id || it.sI?.[0]?.id });
+
+    const numericKeys = Object.keys(tripInfos).filter((k) => /^\d+$/.test(k));
+    if (numericKeys.length) {
+      numericKeys.forEach((k) => {
+        flightsByRoute[Number(k)] = (tripInfos[k] || []).map(mapItin);
       });
-      
-      // Group segments by their route index
-      const segmentsByRoute = {};
-      itinerary.sI.forEach((segment) => {
-        const routeIdx = segment.sN !== undefined ? segment.sN : 0;
-        if (!segmentsByRoute[routeIdx]) {
-          segmentsByRoute[routeIdx] = [];
-        }
-        segmentsByRoute[routeIdx].push(segment);
-      });
-      
-      // Add this itinerary to each route it covers
-      routesInItinerary.forEach((routeIdx) => {
-        if (!flightsByRoute[routeIdx]) {
-          flightsByRoute[routeIdx] = [];
-        }
-        
-        flightsByRoute[routeIdx].push({
-          ...itinerary,
-          sI: segmentsByRoute[routeIdx], // Only segments for this route in display
-          _fullItinerary: itinerary, // Keep reference to complete itinerary
-          _routesInItinerary: Array.from(routesInItinerary), // Track which routes are in this itinerary
-          id: itinerary.totalPriceList?.[0]?.id || `${itinerary.sI[0].id}-${routeIdx}`
-        });
-      });
-    });
-    
+    } else if (Array.isArray(tripInfos.COMBO)) {
+      flightsByRoute[0] = tripInfos.COMBO.map((it) => ({ ...mapItin(it), _combo: true }));
+    } else if (Array.isArray(tripInfos.ONWARD)) {
+      flightsByRoute[0] = tripInfos.ONWARD.map(mapItin);
+    }
+
     setRouteFlights(flightsByRoute);
     setFilteredRouteFlights(flightsByRoute);
-    
-    // Compute filters metadata
     computeFiltersMeta(flightsByRoute);
   };
 
@@ -284,72 +252,28 @@ export default function MultiCityResults() {
   };
 
   const handleSelectFlight = (routeIndex, flight) => {
-    // Check if this flight is already selected
-    const selectedPriceId = selectedFlightsPerRoute[routeIndex]?.totalPriceList?.[0]?.id;
-    const thisPriceId = flight.totalPriceList?.[0]?.id;
-    
-    // If clicking the same flight, deselect it
-    if (selectedPriceId === thisPriceId) {
-      // Only deselect routes that were part of this itinerary
-      const routesToDeselect = flight._routesInItinerary || [routeIndex];
-      const newSelections = { ...selectedFlightsPerRoute };
-      routesToDeselect.forEach(rIdx => {
-        delete newSelections[rIdx];
-      });
-      setSelectedFlightsPerRoute(newSelections);
-      return;
-    }
-    
-    // Get the full itinerary
-    const fullItinerary = flight._fullItinerary || flight;
-    const routesInItinerary = flight._routesInItinerary || [routeIndex];
-    
-    // Group all segments by route
-    const segmentsByRoute = {};
-    fullItinerary.sI.forEach((segment) => {
-      const routeIdx = segment.sN !== undefined ? segment.sN : routeIndex;
-      if (!segmentsByRoute[routeIdx]) {
-        segmentsByRoute[routeIdx] = [];
+    const selectedId = selectedFlightsPerRoute[routeIndex]?.totalPriceList?.[0]?.id;
+    const thisId = flight.totalPriceList?.[0]?.id;
+    setSelectedFlightsPerRoute((prev) => {
+      const next = { ...prev };
+      if (selectedId === thisId) {
+        delete next[routeIndex]; // clicking the selected flight deselects it
+      } else {
+        next[routeIndex] = flight; // one flight per route
       }
-      segmentsByRoute[routeIdx].push(segment);
+      return next;
     });
-    
-    // Only select routes that are actually present in this itinerary
-    const newSelections = { ...selectedFlightsPerRoute };
-    routesInItinerary.forEach((routeIdx) => {
-      if (segmentsByRoute[routeIdx]) {
-        newSelections[routeIdx] = {
-          ...fullItinerary,
-          sI: segmentsByRoute[routeIdx],
-          _fullItinerary: fullItinerary,
-          _routesInItinerary: routesInItinerary,
-          id: fullItinerary.totalPriceList?.[0]?.id || fullItinerary.id
-        };
-      }
-    });
-    
-    setSelectedFlightsPerRoute(newSelections);
   };
 
   const getTotalPrice = () => {
-    // Calculate total from unique priceIds to avoid double counting
-    const pricesByPriceId = new Map();
-    
-    Object.values(selectedFlightsPerRoute).forEach(flight => {
+    // Sum the selected flight per route, de-duping by priceId (COMBO shares one id).
+    const seen = new Map();
+    Object.values(selectedFlightsPerRoute).forEach((flight) => {
       const priceId = flight.totalPriceList?.[0]?.id;
       const price = flight.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF || 0;
-      
-      if (priceId && !pricesByPriceId.has(priceId)) {
-        pricesByPriceId.set(priceId, price);
-      }
+      if (priceId && !seen.has(priceId)) seen.set(priceId, price);
     });
-    
-    let total = 0;
-    pricesByPriceId.forEach(price => {
-      total += price;
-    });
-    
-    return total;
+    return Array.from(seen.values()).reduce((sum, p) => sum + p, 0);
   };
 
   const canBook = () => {
@@ -363,23 +287,23 @@ export default function MultiCityResults() {
       return;
     }
 
-    // For multi-city, the API expects one priceId per route in the search
-    // If routes share the same itinerary, send the same priceId multiple times
-    const totalRoutes = getRouteList().length;
+    // One priceId per route bucket, in route order. COMBO (intl) shares one
+    // priceId across routes, so de-dupe.
+    const routeKeys = Object.keys(routeFlights)
+      .filter((k) => (routeFlights[k] || []).length > 0)
+      .map(Number)
+      .sort((a, b) => a - b);
     const priceIds = [];
-    
-    // Build priceIds array in route order
-    for (let i = 0; i < totalRoutes; i++) {
-      const flight = selectedFlightsPerRoute[i];
-      if (flight) {
-        const priceId = flight.totalPriceList?.[0]?.id;
-        if (priceId) {
-          priceIds.push(priceId);
-        }
+    const seen = new Set();
+    for (const k of routeKeys) {
+      const priceId = selectedFlightsPerRoute[k]?.totalPriceList?.[0]?.id;
+      if (priceId && !seen.has(priceId)) {
+        seen.add(priceId);
+        priceIds.push(priceId);
       }
     }
 
-    if (priceIds.length !== totalRoutes) {
+    if (!priceIds.length) {
       alert('Please select flights for all routes before booking.');
       return;
     }
@@ -423,23 +347,24 @@ export default function MultiCityResults() {
   };
 
   const renderFlightCard = (flight, routeIndex) => {
-    const segment = flight.sI?.[0]; // First segment of this route
-    if (!segment) return null;
+    const firstSeg = flight.sI?.[0];
+    const lastSeg = flight.sI?.[flight.sI.length - 1];
+    if (!firstSeg) return null;
 
-    const airline = segment.fD.aI;
-    const duration = segment.duration;
+    const airline = firstSeg.fD.aI;
+    // Whole-journey duration & stops (a flight for one route may be connecting).
+    const duration = flight.sI.reduce((s, sg) => s + (sg.duration || 0), 0);
+    const stops = flight.sI.length - 1;
     const price = flight.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF || 0;
     const fareType = flight.totalPriceList?.[0]?.fareIdentifier || 'PUBLISHED';
     const cabinClass = flight.totalPriceList?.[0]?.fd?.ADULT?.cc || 'ECONOMY';
-    
+
     // Check if this itinerary is selected (compare by priceId)
     const selectedPriceId = selectedFlightsPerRoute[routeIndex]?.totalPriceList?.[0]?.id;
     const thisPriceId = flight.totalPriceList?.[0]?.id;
     const isSelected = selectedPriceId === thisPriceId;
-    
-    const stops = segment.stops || 0;
 
-    const detailKey = `${routeIndex}-${flight.id || segment.id}`;
+    const detailKey = `${routeIndex}-${flight.id || firstSeg.id}`;
     return (
       <div
         key={flight.id || Math.random()}
@@ -465,16 +390,16 @@ export default function MultiCityResults() {
               </div>
               <div>
                 <div style={{ fontWeight: '600', fontSize: '14px' }}>{airline.name}</div>
-                <div style={{ fontSize: '12px', color: '#666' }}>{airline.code}-{segment.fD.fN}</div>
+                <div style={{ fontSize: '12px', color: '#666' }}>{airline.code}-{firstSeg.fD.fN}</div>
               </div>
             </div>
           </div>
 
           {/* Departure */}
           <div className="col-md-2 text-center">
-            <div style={{ fontSize: '18px', fontWeight: '600' }}>{segment.da.code}</div>
-            <div style={{ fontSize: '16px', fontWeight: '700' }}>{formatTime(segment.dt)}</div>
-            <div style={{ fontSize: '12px', color: '#666' }}>{formatDate(segment.dt)}</div>
+            <div style={{ fontSize: '18px', fontWeight: '600' }}>{firstSeg.da.code}</div>
+            <div style={{ fontSize: '16px', fontWeight: '700' }}>{formatTime(firstSeg.dt)}</div>
+            <div style={{ fontSize: '12px', color: '#666' }}>{formatDate(firstSeg.dt)}</div>
           </div>
 
           {/* Duration & Stops */}
@@ -486,9 +411,9 @@ export default function MultiCityResults() {
 
           {/* Arrival */}
           <div className="col-md-2 text-center">
-            <div style={{ fontSize: '18px', fontWeight: '600' }}>{segment.aa.code}</div>
-            <div style={{ fontSize: '16px', fontWeight: '700' }}>{formatTime(segment.at)}</div>
-            <div style={{ fontSize: '12px', color: '#666' }}>{formatDate(segment.at)}</div>
+            <div style={{ fontSize: '18px', fontWeight: '600' }}>{lastSeg.aa.code}</div>
+            <div style={{ fontSize: '16px', fontWeight: '700' }}>{formatTime(lastSeg.at)}</div>
+            <div style={{ fontSize: '12px', color: '#666' }}>{formatDate(lastSeg.at)}</div>
           </div>
 
           {/* Price */}
@@ -543,9 +468,7 @@ export default function MultiCityResults() {
             color: '#2e7d32',
             fontWeight: '500'
           }}>
-            ✓ {flight._routesInItinerary?.length > 1 
-              ? `This itinerary is selected for ${flight._routesInItinerary.length} routes` 
-              : 'This flight is selected'}
+            ✓ This flight is selected
           </div>
         )}
         <div className="d-flex justify-content-between align-items-center mt-2">
@@ -796,16 +719,17 @@ export default function MultiCityResults() {
                 <div style={{ display: 'flex', gap: '20px', alignItems: 'center', color: 'white', flexWrap: 'wrap' }}>
                   {Object.entries(selectedFlightsPerRoute).map(([routeIdx, flight]) => {
                     const route = getRouteList()?.[routeIdx];
-                    const segment = flight.sI?.[0];
-                    const airline = segment?.fD?.aI;
-                    
+                    const firstSeg = flight.sI?.[0];
+                    const lastSeg = flight.sI?.[flight.sI.length - 1];
+                    const airline = firstSeg?.fD?.aI;
+
                     return (
                       <div key={routeIdx} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <img
                           src={`https://airhex.com/images/airline-logos/alt/${airline?.code.toLowerCase()}.png`}
                           alt={airline?.name}
                           style={{ width: '30px', height: '30px', objectFit: 'contain' }}
-                          onError={(e) => { 
+                          onError={(e) => {
                             e.target.style.display = 'none';
                             if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
                           }}
@@ -815,10 +739,10 @@ export default function MultiCityResults() {
                         </div>
                         <div>
                           <div style={{ fontSize: '12px', fontWeight: '600' }}>
-                            {airline?.name} {airline?.code}-{segment?.fD?.fN}
+                            {airline?.name} {airline?.code}-{firstSeg?.fD?.fN}
                           </div>
                           <div style={{ fontSize: '11px', opacity: 0.8 }}>
-                            {formatTime(segment?.dt)} {route?.fromCode} → {formatTime(segment?.at)} {route?.toCode}
+                            {formatTime(firstSeg?.dt)} {route?.fromCode} → {formatTime(lastSeg?.at)} {route?.toCode}
                           </div>
                         </div>
                       </div>

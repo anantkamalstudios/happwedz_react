@@ -1,6 +1,6 @@
 import "./Filters.css";
 
-export default function AdditionalFilters({ directFlight, creditShell, onDirectFlightChange, onCreditShellChange }) {
+export default function AdditionalFilters({ directFlight, onDirectFlightChange }) {
   return (
     <div className="filter-group filter-group-additional">
       <label className="filter-label filter-label-placeholder">Options</label>
@@ -13,15 +13,6 @@ export default function AdditionalFilters({ directFlight, creditShell, onDirectF
             onChange={(e) => onDirectFlightChange(e.target.checked)}
           />
           <span className="filter-checkbox-text">Direct Flight</span>
-        </label>
-        <label className="filter-checkbox-label">
-          <input
-            type="checkbox"
-            className="filter-checkbox"
-            checked={creditShell}
-            onChange={(e) => onCreditShellChange(e.target.checked)}
-          />
-          <span className="filter-checkbox-text">Credit Shell</span>
         </label>
       </div>
     </div>

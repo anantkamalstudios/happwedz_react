@@ -11,6 +11,8 @@
  * @param {string} params.cabinClass - Cabin class (Economy, Premium Economy, Business, First)
  * @param {string} params.tripType - Trip type (oneway, round)
  * @param {string} params.paxType - Passenger type (REGULAR, STUDENT, SENIOR_CITIZEN)
+ * @param {string|string[]} params.preferredAirline - IATA airline code(s) to prefer (max 10)
+ * @param {boolean} params.directFlight - Restrict to direct (non-stop) flights only
  * @returns {object} TripJack search query object
  */
 export const buildTripJackSearchQuery = ({
@@ -24,6 +26,8 @@ export const buildTripJackSearchQuery = ({
   cabinClass = 'Economy',
   tripType = 'oneway',
   paxType = 'REGULAR',
+  preferredAirline = '',
+  directFlight = false,
 }) => {
   const routeInfos = [
     {
@@ -55,18 +59,30 @@ export const buildTripJackSearchQuery = ({
     INFANT: infants.toString(),
   };
 
-  const searchQuery = {
-    cabinClass: cabinClass.toUpperCase().replace(' ', '_'),
-    paxInfo,
-    routeInfos,
-    searchModifiers: {
-      isDirectFlight: false,
-      isConnectingFlight: false,
-    },
+  // searchModifiers — per TripJack docs: pft (fare type) lives HERE, not at root.
+  const searchModifiers = {
+    isDirectFlight: !!directFlight,
+    isConnectingFlight: false,
   };
 
-  if (paxType !== 'REGULAR') {
-    searchQuery.paxType = paxType;
+  // pft: REGULAR (default) / STUDENT / SENIOR_CITIZEN — docs §Search Modifiers
+  if (paxType && paxType !== 'REGULAR') {
+    searchModifiers.pft = paxType;
+  }
+
+  const searchQuery = {
+    cabinClass: cabinClass.toUpperCase().replace(/\s+/g, '_'),
+    paxInfo,
+    routeInfos,
+    searchModifiers,
+  };
+
+  // preferredAirline — array of { code }, max 10 (docs §Preferred Carrier)
+  const airlineCodes = (Array.isArray(preferredAirline) ? preferredAirline : [preferredAirline])
+    .map((c) => String(c || '').trim().toUpperCase())
+    .filter(Boolean);
+  if (airlineCodes.length) {
+    searchQuery.preferredAirline = airlineCodes.slice(0, 10).map((code) => ({ code }));
   }
 
   return searchQuery;

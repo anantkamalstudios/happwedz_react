@@ -149,6 +149,210 @@
   color: #ed1173;
 }
 
+/* ── Searchable Preferred Airline combobox ───────────────────────────── */
+.airline-combobox {
+  position: relative;
+}
+
+.airline-combobox-trigger {
+  cursor: pointer;
+}
+
+.airline-combobox-value {
+  width: 100%;
+  padding: 0 34px 0 28px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d3448;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.airline-combobox-value.placeholder {
+  color: #8c95a8;
+  font-weight: 600;
+}
+
+.airline-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: #fff;
+  border: 1px solid #dfe3ee;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(20, 30, 50, 0.14);
+  overflow: hidden;
+}
+
+.airline-search-input {
+  width: 100%;
+  height: 38px;
+  border: none;
+  border-bottom: 1px solid #eef1f7;
+  outline: none;
+  padding: 0 12px;
+  font-size: 13px;
+  color: #2d3448;
+}
+
+.airline-options {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.airline-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #3a4257;
+  cursor: pointer;
+}
+
+.airline-option input[type="checkbox"] {
+  accent-color: #ed1173;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.airline-option-name {
+  flex: 1 1 auto;
+}
+
+.airline-option:hover,
+.airline-option.active {
+  background: #fdeef5;
+  color: #ed1173;
+}
+
+.airline-option.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.airline-option-code {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9aa3b5;
+}
+
+.airline-option.active .airline-option-code {
+  color: #ed1173;
+}
+
+.airline-option-empty {
+  color: #9aa3b5;
+  cursor: default;
+  justify-content: center;
+}
+
+.airline-clear-row {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ed1173;
+  cursor: pointer;
+  border-bottom: 1px solid #eef1f7;
+}
+
+.airline-clear-row:hover {
+  background: #fdeef5;
+}
+
+/* ── Cabin class selector inside the passengers popup ─────────────────── */
+.tj-cabin-class-group {
+  border-top: 1px solid #eef1f7;
+  margin-top: 8px;
+  padding-top: 10px;
+}
+
+.tj-cabin-class-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8c95a8;
+  letter-spacing: 0.2px;
+  margin-bottom: 6px;
+}
+
+.tj-cabin-class-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #3a4257;
+  cursor: pointer;
+}
+
+.tj-cabin-class-option input {
+  accent-color: #ed1173;
+  cursor: pointer;
+}
+
+.tj-pax-done-btn {
+  width: 100%;
+  margin-top: 10px;
+  height: 38px;
+  border: none;
+  border-radius: 8px;
+  background: #ed1173;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+}
+
+.tj-pax-done-btn:hover {
+  background: #d10e66;
+}
+
+/* ── Fare type info tooltip ───────────────────────────────────────────── */
+.fare-info-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.fare-info-icon {
+  margin-left: 4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid #b3bacb;
+  color: #8c95a8;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+}
+
+.fare-info-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  width: 240px;
+  background: #fff;
+  color: #4a5266;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  padding: 10px 12px;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(20, 30, 50, 0.18);
+  white-space: normal;
+}
+
 @media (max-width: 991px) {
   .filter-group {
     width: 100%;

@@ -7,6 +7,7 @@ import ActivityIcon from "../../../../assets/trevel_icon/checklist.png";
 import CruiseIcon from "../../../../assets/trevel_icon/cruise-ship.png";
 import FlightSearchForm from "./components/FlightSearchForm";
 import HotelSearchForm from "./components/HotelSearchForm";
+import UpcomingBookings from "./components/UpcomingBookings";
 import "./index.css";
 
 export default function FlightHero() {
@@ -14,6 +15,7 @@ export default function FlightHero() {
   const [activeTab, setActiveTab] = useState("Flights");
 
   return (
+    <>
     <div className="flight-hero">
       <nav className="navbar-custom">
         <div className="container">
@@ -116,5 +118,12 @@ export default function FlightHero() {
         </div>
       </div>
     </div>
+
+    {activeTab === "Flights" && (
+      <div className="ub-section">
+        <UpcomingBookings />
+      </div>
+    )}
+    </>
   );
 }

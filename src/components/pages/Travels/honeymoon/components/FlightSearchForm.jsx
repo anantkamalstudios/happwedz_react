@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, Users } from "lucide-react";
 import useAirportSearch from "../../../../../hooks/useAirportSearch";
@@ -12,35 +12,153 @@ import PreferredAirline from "./PreferredAirline";
 import FareTypeFilter from "./FareTypeFilter";
 import AdditionalFilters from "./AdditionalFilters";
 
+// Persist the search bar so coming back from results keeps everything filled in.
+const STORAGE_KEY = "hw_flightSearchForm";
+const RECENT_KEY = "hw_flightRecentSearches";
+const loadSaved = () => {
+  try {
+    return JSON.parse(sessionStorage.getItem(STORAGE_KEY)) || {};
+  } catch {
+    return {};
+  }
+};
+
+// Keep a short history of searches for the "Recent Searches" tab.
+const saveRecentSearch = (entry) => {
+  try {
+    const list = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
+    const key = (e) => `${e.from}-${e.to}-${e.departureDate}-${e.returnDate || ""}`;
+    const deduped = [entry, ...list.filter((e) => key(e) !== key(entry))].slice(0, 6);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(deduped));
+  } catch {
+    // ignore
+  }
+};
+
 export default function FlightSearchForm() {
   const navigate = useNavigate();
-  const [tripType, setTripType] = useState("round");
-  const [departureDate, setDepartureDate] = useState("");
-  const [returnDate, setReturnDate] = useState("");
-  const [cabinClass, setCabinClass] = useState("Economy");
-  const [paxType, setPaxType] = useState("REGULAR");
-  const [adults, setAdults] = useState(1);
-  const [children, setChildren] = useState(0);
+  const saved = loadSaved();
+
+  const [tripType, setTripType] = useState(saved.tripType || "round");
+  const [departureDate, setDepartureDate] = useState(saved.departureDate || "");
+  const [returnDate, setReturnDate] = useState(saved.returnDate || "");
+  const [cabinClass, setCabinClass] = useState(saved.cabinClass || "Economy");
+  const [paxType, setPaxType] = useState(saved.paxType || "REGULAR");
+  const [adults, setAdults] = useState(saved.adults || 1);
+  const [children, setChildren] = useState(saved.children || 0);
+  const [infants, setInfants] = useState(saved.infants || 0);
   const [showTravelersDropdown, setShowTravelersDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [preferredAirline, setPreferredAirline] = useState("");
-  const [directFlight, setDirectFlight] = useState(false);
-  const [creditShell, setCreditShell] = useState(false);
+  const [preferredAirline, setPreferredAirline] = useState(
+    Array.isArray(saved.preferredAirline) ? saved.preferredAirline : []
+  );
+  const [directFlight, setDirectFlight] = useState(saved.directFlight || false);
 
-  const [multiCityLegs, setMultiCityLegs] = useState([
-    { from: "", fromCode: "", to: "", toCode: "", date: "" },
-    { from: "", fromCode: "", to: "", toCode: "", date: "" },
-  ]);
+  const cabinClasses = ["Economy", "Premium Economy", "Business", "First"];
+
+  const [multiCityLegs, setMultiCityLegs] = useState(
+    Array.isArray(saved.multiCityLegs) && saved.multiCityLegs.length >= 2
+      ? saved.multiCityLegs
+      : [
+          { from: "", fromCode: "", to: "", toCode: "", date: "" },
+          { from: "", fromCode: "", to: "", toCode: "", date: "" },
+        ]
+  );
 
   const fromSearch = useAirportSearch(350);
   const toSearch = useAirportSearch(350);
   const legFromSearches = [useAirportSearch(350), useAirportSearch(350), useAirportSearch(350), useAirportSearch(350), useAirportSearch(350)];
   const legToSearches = [useAirportSearch(350), useAirportSearch(350), useAirportSearch(350), useAirportSearch(350), useAirportSearch(350)];
-  const [fromCode, setFromCode] = useState("");
-  const [toCode, setToCode] = useState("");
+  const [fromCode, setFromCode] = useState(saved.fromCode || "");
+  const [toCode, setToCode] = useState(saved.toCode || "");
+
+  // Restore From/To display text once on mount (the text lives inside the typeahead
+  // hook). setQuerySilent avoids firing a search / showing a suggestions dropdown.
+  useEffect(() => {
+    if (saved.fromText) fromSearch.setQuerySilent(saved.fromText);
+    if (saved.toText) toSearch.setQuerySilent(saved.toText);
+    if (Array.isArray(saved.multiCityLegs)) {
+      saved.multiCityLegs.forEach((leg, i) => {
+        if (leg?.from && legFromSearches[i]) legFromSearches[i].setQuerySilent(leg.from);
+        if (leg?.to && legToSearches[i]) legToSearches[i].setQuerySilent(leg.to);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Save a snapshot whenever any field changes.
+  useEffect(() => {
+    const snapshot = {
+      tripType, departureDate, returnDate, cabinClass, paxType,
+      adults, children, infants, preferredAirline, directFlight,
+      fromCode, toCode,
+      fromText: fromSearch.query, toText: toSearch.query,
+      multiCityLegs,
+    };
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+    } catch {
+      // ignore quota / serialization errors
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tripType, departureDate, returnDate, cabinClass, paxType, adults, children, infants, preferredAirline, directFlight, fromCode, toCode, fromSearch.query, toSearch.query, multiCityLegs]);
+
+  // Prefill the form from elsewhere (Book Return / Recent Searches → "Search again").
+  useEffect(() => {
+    const handler = (e) => {
+      const s = e.detail || {};
+      if (s.tripType) setTripType(s.tripType);
+      if (s.from != null) setFromCode(s.from);
+      if (s.to != null) setToCode(s.to);
+      if (s.fromText != null) fromSearch.setQuerySilent(s.fromText);
+      if (s.toText != null) toSearch.setQuerySilent(s.toText);
+      if (s.departureDate != null) setDepartureDate(s.departureDate);
+      if (s.returnDate != null) setReturnDate(s.returnDate);
+      if (s.adults != null) setAdults(s.adults);
+      if (s.children != null) setChildren(s.children);
+      if (s.infants != null) setInfants(s.infants);
+      if (s.cabinClass) setCabinClass(s.cabinClass);
+      if (s.paxType) setPaxType(s.paxType);
+      if (Array.isArray(s.preferredAirline)) setPreferredAirline(s.preferredAirline);
+      if (s.directFlight != null) setDirectFlight(s.directFlight);
+    };
+    window.addEventListener("hw:prefillSearch", handler);
+    return () => window.removeEventListener("hw:prefillSearch", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Run a search immediately from saved params (Recent Searches → "Search again").
+  useEffect(() => {
+    const runHandler = (e) => {
+      const r = e.detail || {};
+      if ((r.tripType || "oneway") === "multicity") return; // multicity not supported here
+      runSearch({
+        ...r,
+        adults: r.adults ?? 1,
+        children: r.children ?? 0,
+        infants: r.infants ?? 0,
+        cabinClass: r.cabinClass || "Economy",
+        tripType: r.tripType || "oneway",
+        paxType: r.paxType || "REGULAR",
+        preferredAirline: Array.isArray(r.preferredAirline) ? r.preferredAirline : [],
+        directFlight: !!r.directFlight,
+      });
+    };
+    window.addEventListener("hw:runSearch", runHandler);
+    return () => window.removeEventListener("hw:runSearch", runHandler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const parseDateValue = (dateStr) => (dateStr ? new Date(dateStr) : null);
-  const formatDateValue = (dateObj) => (dateObj ? dateObj.toISOString().split("T")[0] : "");
+  // Format using LOCAL date parts (not toISOString, which shifts to UTC and can
+  // roll the date back a day in +offset timezones like IST).
+  const formatDateValue = (dateObj) => {
+    if (!dateObj) return "";
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const d = String(dateObj.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
 
   const updateMultiCityLeg = (index, field, value) => {
     const updated = [...multiCityLegs];
@@ -84,25 +202,33 @@ export default function FlightSearchForm() {
       alert("Travel dates must be in ascending order. Next date cannot be earlier than previous leg.");
       return;
     }
-    const searchQuery = {
-      searchQuery: {
-        cabinClass: cabinClass.toUpperCase(),
-        paxInfo: { ADULT: adults, CHILD: children, INFANT: 0 },
-        routeInfos: validLegs.map((leg) => ({
-          fromCityOrAirport: { code: leg.fromCode },
-          toCityOrAirport: { code: leg.toCode },
-          travelDate: leg.date,
-        })),
-        searchModifiers: { isDirectFlight: false, isConnectingFlight: true },
-      },
+    const searchModifiers = { isDirectFlight: false, isConnectingFlight: true };
+    if (paxType && paxType !== "REGULAR") searchModifiers.pft = paxType;
+
+    const mcQuery = {
+      cabinClass: cabinClass.toUpperCase().replace(/\s+/g, "_"),
+      paxInfo: { ADULT: adults, CHILD: children, INFANT: infants },
+      routeInfos: validLegs.map((leg) => ({
+        fromCityOrAirport: { code: leg.fromCode },
+        toCityOrAirport: { code: leg.toCode },
+        travelDate: leg.date,
+      })),
+      searchModifiers,
     };
+
+    const airlineCodes = (Array.isArray(preferredAirline) ? preferredAirline : [preferredAirline])
+      .map((c) => String(c || "").trim().toUpperCase())
+      .filter(Boolean);
+    if (airlineCodes.length) mcQuery.preferredAirline = airlineCodes.slice(0, 10).map((code) => ({ code }));
+
+    const searchQuery = { searchQuery: mcQuery };
     setLoading(true);
     try {
       const { searchFlights } = await import("../../../../../services/api/flightApi");
       const result = await searchFlights(searchQuery.searchQuery);
       navigate("/honeymoon/flights/multicity", {
         state: {
-          searchParams: { tripType: "multicity", adults, children, cabinClass, legs: validLegs },
+          searchParams: { tripType: "multicity", adults, children, infants, cabinClass, legs: validLegs },
           searchQuery: searchQuery.searchQuery,
           initialResults: { direct: null, connecting: result },
         },
@@ -115,23 +241,52 @@ export default function FlightSearchForm() {
     }
   };
 
-  const handleSearchFlights = async () => {
-    if (tripType === "multicity") return handleMultiCitySearch();
-    const from = fromCode || fromSearch.query;
-    const to = toCode || toSearch.query;
-    if (!from || !to || !departureDate) return alert("Please fill in all required fields");
-    if (tripType === "round" && !returnDate) return alert("Please select return date for round trip");
+  // Core one-way/round search — runs with explicit params (so "Search again" can
+  // trigger it directly without first repopulating the form and waiting for state).
+  const runSearch = async (p) => {
+    const from = p.from;
+    const to = p.to;
+    if (!from || !to || !p.departureDate) return alert("Please fill in all required fields");
+    if (p.tripType === "round" && !p.returnDate) return alert("Please select return date for round trip");
 
-    const searchQuery = buildTripJackSearchQuery({ from, to, departureDate, returnDate, adults, children, infants: 0, cabinClass, tripType, paxType });
-    const searchParams = { from, to, departureDate, returnDate, adults, children, cabinClass, tripType, paxType, preferredAirline, directFlight, creditShell };
+    const searchQuery = buildTripJackSearchQuery({
+      from, to,
+      departureDate: p.departureDate, returnDate: p.returnDate,
+      adults: p.adults, children: p.children, infants: p.infants,
+      cabinClass: p.cabinClass, tripType: p.tripType, paxType: p.paxType,
+      preferredAirline: p.preferredAirline, directFlight: p.directFlight,
+    });
+    const searchParams = {
+      from, to,
+      departureDate: p.departureDate, returnDate: p.returnDate,
+      adults: p.adults, children: p.children, infants: p.infants,
+      cabinClass: p.cabinClass, tripType: p.tripType, paxType: p.paxType,
+      preferredAirline: p.preferredAirline, directFlight: p.directFlight,
+    };
+
+    saveRecentSearch({
+      tripType: p.tripType, from, to, fromText: p.fromText || from, toText: p.toText || to,
+      departureDate: p.departureDate, returnDate: p.returnDate,
+      adults: p.adults, children: p.children, infants: p.infants,
+      cabinClass: p.cabinClass, paxType: p.paxType,
+      preferredAirline: p.preferredAirline, directFlight: p.directFlight, ts: Date.now(),
+    });
 
     setLoading(true);
     try {
       const { searchFlights } = await import("../../../../../services/api/flightApi");
-      const directQuery = { ...searchQuery, searchModifiers: { isDirectFlight: true, isConnectingFlight: false } };
-      const connectingQuery = { ...searchQuery, searchModifiers: { isDirectFlight: false, isConnectingFlight: true } };
-      const [d, c] = await Promise.allSettled([searchFlights(directQuery), searchFlights(connectingQuery)]);
-      navigate("/honeymoon/flights", { state: { searchParams, initialResults: { direct: d.status === "fulfilled" ? d.value : null, connecting: c.status === "fulfilled" ? c.value : null } } });
+      // Spread the base searchModifiers so pft (Student/Senior) + preferredAirline survive the direct/connecting split.
+      const directQuery = { ...searchQuery, searchModifiers: { ...searchQuery.searchModifiers, isDirectFlight: true, isConnectingFlight: false } };
+
+      if (p.directFlight) {
+        // Direct Flight checked → only non-stop results (docs §Search Modifiers).
+        const [d] = await Promise.allSettled([searchFlights(directQuery)]);
+        navigate("/honeymoon/flights", { state: { searchParams, initialResults: { direct: d.status === "fulfilled" ? d.value : null, connecting: null } } });
+      } else {
+        const connectingQuery = { ...searchQuery, searchModifiers: { ...searchQuery.searchModifiers, isDirectFlight: false, isConnectingFlight: true } };
+        const [d, c] = await Promise.allSettled([searchFlights(directQuery), searchFlights(connectingQuery)]);
+        navigate("/honeymoon/flights", { state: { searchParams, initialResults: { direct: d.status === "fulfilled" ? d.value : null, connecting: c.status === "fulfilled" ? c.value : null } } });
+      }
     } catch (err) {
       console.error("Error searching flights:", err);
       alert("Error searching flights. Please try again.");
@@ -139,6 +294,73 @@ export default function FlightSearchForm() {
       setLoading(false);
     }
   };
+
+  const handleSearchFlights = () => {
+    if (tripType === "multicity") return handleMultiCitySearch();
+    const from = fromCode || fromSearch.query;
+    const to = toCode || toSearch.query;
+    return runSearch({
+      from, to, fromText: fromSearch.query, toText: toSearch.query,
+      departureDate, returnDate, adults, children, infants,
+      cabinClass, tripType, paxType, preferredAirline, directFlight,
+    });
+  };
+
+  const totalPax = adults + children + infants;
+
+  // Shared passenger + class popup (TripJack-style: Adult / Children / Infant counters + cabin class).
+  // Constraints per docs: total ≤ 9, infants ≤ adults (1 infant per adult lap).
+  const renderTravelersDropdown = () => (
+    <div className="tj-travelers-dropdown" onClick={(e) => e.stopPropagation()}>
+      <div className="tj-traveler-row">
+        <span>Adults<small style={{ display: "block", color: "#8c95a8", fontWeight: 400 }}>Age 12+</small></span>
+        <div className="tj-counter">
+          <button onClick={(e) => { e.stopPropagation(); setAdults(Math.max(1, adults - 1)); }}>-</button>
+          <span>{adults}</span>
+          <button onClick={(e) => { e.stopPropagation(); if (totalPax < 9) setAdults(adults + 1); }}>+</button>
+        </div>
+      </div>
+      <div className="tj-traveler-row">
+        <span>Children<small style={{ display: "block", color: "#8c95a8", fontWeight: 400 }}>Age 2-12</small></span>
+        <div className="tj-counter">
+          <button onClick={(e) => { e.stopPropagation(); setChildren(Math.max(0, children - 1)); }}>-</button>
+          <span>{children}</span>
+          <button onClick={(e) => { e.stopPropagation(); if (totalPax < 9) setChildren(children + 1); }}>+</button>
+        </div>
+      </div>
+      <div className="tj-traveler-row">
+        <span>Infants<small style={{ display: "block", color: "#8c95a8", fontWeight: 400 }}>Age 0-2</small></span>
+        <div className="tj-counter">
+          <button onClick={(e) => { e.stopPropagation(); setInfants(Math.max(0, infants - 1)); }}>-</button>
+          <span>{infants}</span>
+          <button onClick={(e) => { e.stopPropagation(); if (infants < adults && totalPax < 9) setInfants(infants + 1); }}>+</button>
+        </div>
+      </div>
+
+      <div className="tj-cabin-class-group">
+        <div className="tj-cabin-class-label">Select Class</div>
+        {cabinClasses.map((c) => (
+          <label key={c} className="tj-cabin-class-option" onClick={(e) => e.stopPropagation()}>
+            <input
+              type="radio"
+              name="cabinClass"
+              checked={cabinClass === c}
+              onChange={(e) => { e.stopPropagation(); setCabinClass(c); }}
+            />
+            <span>{c}</span>
+          </label>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        className="tj-pax-done-btn"
+        onClick={(e) => { e.stopPropagation(); setShowTravelersDropdown(false); }}
+      >
+        DONE
+      </button>
+    </div>
+  );
 
   return (
     <div className="tj-flight-search-wrapper">
@@ -213,29 +435,10 @@ export default function FlightSearchForm() {
                         <Users className="tj-field-icon" size={18} />
                         <div className="tj-field-content">
                           <div className="tj-field-label">Passengers & Class</div>
-                          <div className="tj-field-input">{adults + children} Passenger{adults + children > 1 ? "s" : ""}</div>
+                          <div className="tj-field-input">{totalPax} Passenger{totalPax > 1 ? "s" : ""}</div>
                           <div className="tj-field-sublabel">{cabinClass}</div>
                         </div>
-                        {showTravelersDropdown && (
-                          <div className="tj-travelers-dropdown" onClick={(e) => e.stopPropagation()}>
-                            <div className="tj-traveler-row">
-                              <span>Adults</span>
-                              <div className="tj-counter">
-                                <button onClick={(e) => { e.stopPropagation(); setAdults(Math.max(1, adults - 1)); }}>-</button>
-                                <span>{adults}</span>
-                                <button onClick={(e) => { e.stopPropagation(); setAdults(adults + 1); }}>+</button>
-                              </div>
-                            </div>
-                            <div className="tj-traveler-row">
-                              <span>Children</span>
-                              <div className="tj-counter">
-                                <button onClick={(e) => { e.stopPropagation(); setChildren(Math.max(0, children - 1)); }}>-</button>
-                                <span>{children}</span>
-                                <button onClick={(e) => { e.stopPropagation(); setChildren(children + 1); }}>+</button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
+                        {showTravelersDropdown && renderTravelersDropdown()}
                       </div>
                       <button className="tj-search-btn" onClick={handleSearchFlights} disabled={loading}>{loading ? "Searching..." : "Search"}</button>
                     </>
@@ -307,15 +510,10 @@ export default function FlightSearchForm() {
               <Users className="tj-field-icon" size={18} />
               <div className="tj-field-content">
                 <div className="tj-field-label">Passengers & Class</div>
-                <div className="tj-field-input">{adults + children} Passenger{adults + children > 1 ? "s" : ""}</div>
+                <div className="tj-field-input">{totalPax} Passenger{totalPax > 1 ? "s" : ""}</div>
                 <div className="tj-field-sublabel">{cabinClass}</div>
               </div>
-              {showTravelersDropdown && (
-                <div className="tj-travelers-dropdown">
-                  <div className="tj-traveler-row"><span>Adults</span><div className="tj-counter"><button onClick={(e) => { e.stopPropagation(); setAdults(Math.max(1, adults - 1)); }}>-</button><span>{adults}</span><button onClick={(e) => { e.stopPropagation(); setAdults(adults + 1); }}>+</button></div></div>
-                  <div className="tj-traveler-row"><span>Children</span><div className="tj-counter"><button onClick={(e) => { e.stopPropagation(); setChildren(Math.max(0, children - 1)); }}>-</button><span>{children}</span><button onClick={(e) => { e.stopPropagation(); setChildren(children + 1); }}>+</button></div></div>
-                </div>
-              )}
+              {showTravelersDropdown && renderTravelersDropdown()}
             </div>
             <button className="tj-search-btn" onClick={handleSearchFlights} disabled={loading}>{loading ? "Searching..." : "Search"}</button>
           </div>
@@ -332,11 +530,9 @@ export default function FlightSearchForm() {
             onChange={setPaxType} 
           />
           
-          <AdditionalFilters 
+          <AdditionalFilters
             directFlight={directFlight}
-            creditShell={creditShell}
             onDirectFlightChange={setDirectFlight}
-            onCreditShellChange={setCreditShell}
           />
         </div>
       </div>

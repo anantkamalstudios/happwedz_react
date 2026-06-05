@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { FaPlane, FaUser, FaEnvelope, FaPhone, FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { createFlightPaymentOrder, verifyAndBookFlight, getFareRule } from '../../../../../services/api/flightApi';
+import { createFlightPaymentOrder, verifyAndBookFlight, getFareRule, holdFlightBooking } from '../../../../../services/api/flightApi';
+import FlightAddons from './FlightAddons';
 
 const policyLabel = (type) => ({ CANCELLATION: 'Cancellation', DATECHANGE: 'Date Change', NO_SHOW: 'No Show', SEAT_CHARGEABLE: 'Seat' }[type] || type);
 const timeLabel = (p) => {
@@ -55,19 +56,59 @@ export default function BookingReview({
   returnFare, 
   searchParams, 
   travellerInfo, 
-  contact, 
+  contact,
   gstInfo,
+  emergencyContact,
   seatSelections,
   bookingId,
   reviewData,
-  onBack, 
-  onPaymentSuccess 
+  onBack,
+  onPaymentSuccess
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [fareRuleOpen, setFareRuleOpen] = useState(false);
   const [fareRuleData, setFareRuleData] = useState(null);
   const [fareRuleLoading, setFareRuleLoading] = useState(false);
+  const [mealSel, setMealSel] = useState({}); // `${paxIdx}_${segId}` -> {code, amount}
+  const [bagSel, setBagSel] = useState({});
+
+  // SSR meal/baggage options per segment, from the review response.
+  const ssrSegments = useMemo(() => {
+    const ti = reviewData?.tripInfos;
+    const trips = Array.isArray(ti) ? ti : Object.values(ti || {}).flat();
+    const segs = [];
+    for (const t of trips) {
+      for (const s of (t?.sI || [])) {
+        segs.push({
+          id: String(s.id),
+          label: `${s.da?.code || ''} → ${s.aa?.code || ''}`,
+          meals: s.ssrInfo?.MEAL || [],
+          baggage: s.ssrInfo?.BAGGAGE || [],
+        });
+      }
+    }
+    return segs;
+  }, [reviewData]);
+
+  // Total cost of selected meals + baggage.
+  const addonsTotal = useMemo(() => {
+    let t = 0;
+    Object.values(mealSel).forEach((s) => { t += Number(s.amount) || 0; });
+    Object.values(bagSel).forEach((s) => { t += Number(s.amount) || 0; });
+    return t;
+  }, [mealSel, bagSel]);
+
+  // Build per-traveller ssrMealInfos / ssrBaggageInfos from the selections.
+  const ssrForTraveller = (idx) => {
+    const ssrMealInfos = ssrSegments
+      .map((seg) => { const sel = mealSel[`${idx}_${seg.id}`]; return sel ? { key: seg.id, code: sel.code } : null; })
+      .filter(Boolean);
+    const ssrBaggageInfos = ssrSegments
+      .map((seg) => { const sel = bagSel[`${idx}_${seg.id}`]; return sel ? { key: seg.id, code: sel.code } : null; })
+      .filter(Boolean);
+    return { ssrMealInfos, ssrBaggageInfos };
+  };
 
   const handleToggleFareRule = async () => {
     setFareRuleOpen((prev) => !prev);
@@ -159,10 +200,10 @@ export default function BookingReview({
       totalFlightAmount = calculateTotalAmount();
     }
 
-    // Add seat charges
+    // Add seat + add-on (meal/baggage) charges
     const seatTotal = seatSelections?.reduce((sum, seat) => sum + (seat.amount || 0), 0) || 0;
-    
-    return totalFlightAmount + seatTotal;
+
+    return totalFlightAmount + seatTotal + addonsTotal;
   };
 
   const calculateTotalAmount = () => {
@@ -212,77 +253,107 @@ export default function BookingReview({
     );
   };
 
+  // Build the TripJack book payload + create_order/hold fields (shared by Pay & Hold).
+  const buildPaymentOrderPayload = () => {
+    const confirmedAmount = getConfirmedAmount();
+    const cleanCountryCode = contact.countryCode.replace(/^\+/, '');
+    const fullPhoneNumber = `${cleanCountryCode}${contact.mobile}`;
+
+    // TripJack validates paymentInfos.amount against the session fare (no markup).
+    const tripjackFare =
+      Number(reviewData?.totalPriceInfo?.totalFareDetail?.fC?.NF) ||
+      Number(reviewData?.totalPriceInfo?.totalFareDetail?.fC?.TF) ||
+      confirmedAmount;
+
+    // Attach selected seats + meals + baggage (SSR) to each traveller, keyed by segment id.
+    const travellerInfoWithSsr = travellerInfo.map((t, idx) => {
+      const seatsForPax = (seatSelections || []).filter((s) => s.passengerId === `passenger_${idx}`);
+      const { ssrMealInfos, ssrBaggageInfos } = ssrForTraveller(idx);
+      const out = { ...t };
+      if (seatsForPax.length) out.ssrSeatInfos = seatsForPax.map((s) => ({ key: String(s.segmentId), code: s.seatNo }));
+      if (ssrMealInfos.length) out.ssrMealInfos = ssrMealInfos;
+      if (ssrBaggageInfos.length) out.ssrBaggageInfos = ssrBaggageInfos;
+      return out;
+    });
+
+    const seatTotal = (seatSelections || []).reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+    // TripJack validates paymentInfos.amount against TF + all SSR (seat/meal/baggage) charges.
+    const tripjackPaymentAmount = tripjackFare + seatTotal + addonsTotal;
+
+    const payload = {
+      bookingId: bookingId,
+      paymentInfos: [{ amount: tripjackPaymentAmount }],
+      travellerInfo: travellerInfoWithSsr,
+      deliveryInfo: { emails: [contact.email], contacts: [fullPhoneNumber] },
+      ...(gstInfo && {
+        gstInfo: {
+          gstNumber: gstInfo.gstNumber,
+          email: gstInfo.companyEmail,
+          registeredName: gstInfo.companyName,
+          mobile: fullPhoneNumber,
+          address: '',
+        },
+      }),
+      // Emergency contact (required when review conditions.iecr is true).
+      ...(emergencyContact && {
+        contactInfo: {
+          emails: [emergencyContact.email],
+          contacts: [emergencyContact.mobile],
+          ecn: emergencyContact.name,
+        },
+      }),
+    };
+
+    return {
+      provider: 'tripjack',
+      offer_id: bookingId,
+      trip_type: returnTrip ? 'round' : 'oneway',
+      from: trip?.sI?.[0]?.da?.code || '',
+      to: trip?.sI?.[trip.sI.length - 1]?.aa?.code || '',
+      departure: trip?.sI?.[0]?.dt || '',
+      arrival: trip?.sI?.[trip.sI.length - 1]?.at || '',
+      flight_no: `${trip?.sI?.[0]?.fD?.aI?.code || ''}-${trip?.sI?.[0]?.fD?.fN || ''}`,
+      airline: trip?.sI?.[0]?.fD?.aI?.name || '',
+      cabin_class: fare?.fd?.ADULT?.cc || 'ECONOMY',
+      price: confirmedAmount,
+      passengers: travellerInfo,
+      contact: { email: contact.email, phone: fullPhoneNumber },
+      booking_payload: payload,
+    };
+  };
+
+  // HOLD: block the fare without payment — customer pays & confirms later.
+  const handleHold = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await holdFlightBooking(buildPaymentOrderPayload());
+      if (res?.status) {
+        onPaymentSuccess({ ...res, on_hold: true, order_id: res.held_booking_id, amount_paid: 0 });
+      } else {
+        setError(res?.message || 'Could not hold this fare. Please try again.');
+      }
+    } catch (e) {
+      setError(e.response?.data?.message || 'Could not hold this fare. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleProceedToPayment = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      // Use confirmed amount from review API response
-      const confirmedAmount = getConfirmedAmount();
-      
-      console.log('Booking with confirmed amount:', confirmedAmount);
-      console.log('Review data:', reviewData);
-      
-      // Strip + prefix from country code for phone number
-      const cleanCountryCode = contact.countryCode.replace(/^\+/, '');
-      const fullPhoneNumber = `${cleanCountryCode}${contact.mobile}`;
-
-      // TripJack's OMS book API validates paymentInfos.amount against the amount
-      // in the booking session created at review time. The review response stores
-      // TripJack's raw fare in totalPriceInfo (no platform markup). The marked-up
-      // amount shown to the user lives in tripInfos[].totalPriceList[].fd.ADULT.fC.TF.
-      // Sending the marked-up price causes "Total amount doesn't match" from TripJack.
-      const tripjackFare =
-        Number(reviewData?.totalPriceInfo?.totalFareDetail?.fC?.NF) ||
-        Number(reviewData?.totalPriceInfo?.totalFareDetail?.fC?.TF) ||
-        confirmedAmount;
-
-      const payload = {
-        bookingId: bookingId,
-        paymentInfos: [{ amount: tripjackFare }],
-        travellerInfo: travellerInfo,
-        deliveryInfo: {
-          emails: [contact.email],
-          contacts: [fullPhoneNumber],
-        },
-        ...(gstInfo && {
-          gstInfo: {
-            gstNumber: gstInfo.gstNumber,
-            email: gstInfo.companyEmail,
-            registeredName: gstInfo.companyName,
-            mobile: fullPhoneNumber,
-            address: '',
-          },
-        }),
-      };
-
-      console.log('Booking payload:', payload);
-
       const razorpayReady = await loadRazorpayScript();
       if (!razorpayReady) {
         throw new Error('Razorpay SDK failed to load');
       }
 
-      // Build payment order payload (existing backend contract)
-      const paymentOrderPayload = {
-        provider: 'tripjack',
-        offer_id: bookingId,
-        trip_type: returnTrip ? 'round' : 'oneway',
-        from: trip?.sI?.[0]?.da?.code || '',
-        to: trip?.sI?.[trip.sI.length - 1]?.aa?.code || '',
-        departure: trip?.sI?.[0]?.dt || '',
-        arrival: trip?.sI?.[trip.sI.length - 1]?.at || '',
-        flight_no: `${trip?.sI?.[0]?.fD?.aI?.code || ''}-${trip?.sI?.[0]?.fD?.fN || ''}`,
-        airline: trip?.sI?.[0]?.fD?.aI?.name || '',
-        cabin_class: fare?.fd?.ADULT?.cc || 'ECONOMY',
-        price: confirmedAmount,
-        passengers: travellerInfo,
-        contact: {
-          email: contact.email,
-          phone: fullPhoneNumber,
-        },
-        booking_payload: payload,
-      };
+      const paymentOrderPayload = buildPaymentOrderPayload();
+      // These are local to buildPaymentOrderPayload — re-derive for the Razorpay options/handler below.
+      const payload = paymentOrderPayload.booking_payload;
+      const fullPhoneNumber = paymentOrderPayload.contact?.phone || '';
 
       let orderResponse;
       try {
@@ -440,7 +511,16 @@ export default function BookingReview({
               </div>
             </div>
           </div>
-          
+
+          <FlightAddons
+            segments={ssrSegments}
+            travellers={travellerInfo}
+            mealSel={mealSel}
+            bagSel={bagSel}
+            setMealSel={setMealSel}
+            setBagSel={setBagSel}
+          />
+
           {seatSelections && seatSelections.length > 0 && (
             <div className="review-section mt-4">
               <h5 className="review-section-title">Selected Seats</h5>
@@ -490,6 +570,12 @@ export default function BookingReview({
                 <span>₹{Number(seatSelections.reduce((sum, seat) => sum + (seat.amount || 0), 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
               </div>
             )}
+            {addonsTotal > 0 && (
+              <div className="fare-row">
+                <span>Meals &amp; Baggage</span>
+                <span>₹{Number(addonsTotal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              </div>
+            )}
             <div className="fare-row fare-total mt-3 pt-3">
               <span>Total Amount</span>
               <span>₹{Number(getConfirmedAmount()).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
@@ -503,23 +589,35 @@ export default function BookingReview({
           </div>
           
           <div className="d-flex gap-2 mt-4">
-            <button 
-              type="button" 
-              className="btn btn-outline-secondary flex-grow-1" 
+            <button
+              type="button"
+              className="btn btn-outline-secondary flex-grow-1"
               onClick={onBack}
               disabled={loading}
             >
               Back
             </button>
-            <button 
-              type="button" 
-              className="btn btn-primary flex-grow-1" 
+            <button
+              type="button"
+              className="btn btn-primary flex-grow-1"
               onClick={handleProceedToPayment}
               disabled={loading}
             >
               {loading ? 'Processing...' : 'Confirm Booking'}
             </button>
           </div>
+
+          {/* Hold option — only when TripJack allows blocking this fare (conditions.isBA) */}
+          {reviewData?.conditions?.isBA && (
+            <button
+              type="button"
+              className="btn btn-outline-primary w-100 mt-2"
+              onClick={handleHold}
+              disabled={loading}
+            >
+              {loading ? 'Please wait…' : 'Hold this fare (pay later)'}
+            </button>
+          )}
         </div>
       </div>
     </div>

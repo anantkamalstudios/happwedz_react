@@ -1,13 +1,27 @@
 import { useState } from 'react';
 import { FaUser, FaPhone, FaEnvelope } from 'react-icons/fa';
 
-export default function PassengerDetails({ searchParams, onBack, onContinue }) {
+export default function PassengerDetails({ searchParams, reviewData, onBack, onContinue }) {
   const adults = searchParams.adults || 1;
   const children = searchParams.children || 0;
   const infants = searchParams.infants || 0;
-  
-  const isDomestic = true; // You can add logic to detect domestic vs international
-  
+
+  // Drive required fields from the TripJack review conditions instead of hardcoding.
+  const conditions = reviewData?.conditions || {};
+  const pcs = conditions.pcs || null; // passport conditions (international only)
+  const isDomestic = reviewData?.searchQuery?.isDomestic !== false && !pcs;
+  const passportMandatory = !isDomestic && (pcs?.pm !== false); // require passport for international
+  const passportIssueDateReq = !!pcs?.pid;
+  // Document id (student / senior citizen fares)
+  const docIdApplicable = !!conditions?.dc?.ida || (searchParams.paxType && searchParams.paxType !== 'REGULAR');
+  const docIdMandatory = !!conditions?.dc?.idm;
+  // PAN required for this fare (docs: conditions.ipa — Is PAN Applicable)
+  const panRequired = !!conditions?.ipa;
+  // Emergency contact required (docs: conditions.iecr)
+  const emergencyRequired = !!conditions?.iecr;
+  // DOB requirements per pax type
+  const adultDobReq = conditions?.dob?.adobr !== false;
+
   const [passengers, setPassengers] = useState(
     Array.from({ length: adults + children + infants }, (_, i) => ({
       title: 'Mr',
@@ -18,15 +32,21 @@ export default function PassengerDetails({ searchParams, onBack, onContinue }) {
       nationality: 'IN',
       passportNumber: '',
       passportExpiry: '',
+      passportIssueDate: '',
+      documentId: '',
+      pan: '',
       type: i < adults ? 'ADULT' : i < adults + children ? 'CHILD' : 'INFANT',
     }))
   );
-  
+
   const [contact, setContact] = useState({
     countryCode: '+91',
     mobile: '',
     email: '',
   });
+
+  // Emergency contact (only collected when conditions.iecr is true)
+  const [emergency, setEmergency] = useState({ name: '', email: '', mobile: '' });
   
   const [gst, setGst] = useState({
     enabled: false,
@@ -80,7 +100,7 @@ export default function PassengerDetails({ searchParams, onBack, onContinue }) {
         }
       }
       
-      if (!isDomestic) {
+      if (passportMandatory) {
         if (!passenger.passportNumber.trim()) {
           newErrors[`passenger_${index}_passportNumber`] = 'Passport number is required';
         }
@@ -94,16 +114,36 @@ export default function PassengerDetails({ searchParams, onBack, onContinue }) {
             newErrors[`passenger_${index}_passportExpiry`] = 'Passport must be valid for at least 6 months';
           }
         }
+        if (passportIssueDateReq && !passenger.passportIssueDate) {
+          newErrors[`passenger_${index}_passportIssueDate`] = 'Passport issue date is required';
+        }
+      }
+
+      if (docIdMandatory && !passenger.documentId.trim()) {
+        newErrors[`passenger_${index}_documentId`] = 'Document ID is required for this fare';
+      }
+
+      if (panRequired) {
+        const pan = (passenger.pan || '').trim().toUpperCase();
+        if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan)) {
+          newErrors[`passenger_${index}_pan`] = 'Valid 10-character PAN is required (e.g. ABCDE1234F)';
+        }
       }
     });
-    
+
     if (!contact.mobile.trim() || contact.mobile.length < 10) {
       newErrors.mobile = 'Valid mobile number is required';
     }
     if (!contact.email.trim() || !contact.email.includes('@')) {
       newErrors.email = 'Valid email is required';
     }
-    
+
+    if (emergencyRequired) {
+      if (!emergency.name.trim()) newErrors.emergencyName = 'Emergency contact name is required';
+      if (!emergency.email.trim() || !emergency.email.includes('@')) newErrors.emergencyEmail = 'Valid emergency email is required';
+      if (!emergency.mobile.trim() || emergency.mobile.length < 10) newErrors.emergencyMobile = 'Valid emergency mobile is required';
+    }
+
     if (gst.enabled) {
       if (!gst.companyName.trim()) {
         newErrors.gstCompanyName = 'Company name is required';
@@ -134,14 +174,26 @@ export default function PassengerDetails({ searchParams, onBack, onContinue }) {
       lN: p.lastName,
       pt: p.type,
       dob: p.dob,
-      ...(!isDomestic && {
+      ...(passportMandatory && {
         pNat: p.nationality,
         pNum: p.passportNumber,
         eD: p.passportExpiry,
+        ...(p.passportIssueDate && { pid: p.passportIssueDate }),
       }),
+      ...(docIdApplicable && p.documentId && { di: p.documentId }),
+      ...(panRequired && p.pan && { pan: p.pan.trim().toUpperCase() }),
     }));
-    
-    onContinue(travellerInfo, contact, gst.enabled ? gst : null);
+
+    // Emergency contact (contactInfo) — only when the fare requires it (iecr).
+    const emergencyContact = emergencyRequired
+      ? {
+          name: emergency.name.trim(),
+          email: emergency.email.trim(),
+          mobile: `${contact.countryCode.replace(/^\+/, '')}${emergency.mobile.trim()}`,
+        }
+      : null;
+
+    onContinue(travellerInfo, contact, gst.enabled ? gst : null, emergencyContact);
   };
 
   const renderPassengerForm = (passenger, index) => {
@@ -227,7 +279,7 @@ export default function PassengerDetails({ searchParams, onBack, onContinue }) {
             </select>
           </div>
           
-          {!isDomestic && (
+          {passportMandatory && (
             <>
               <div className="col-md-4">
                 <label className="form-label">Nationality *</label>
@@ -235,12 +287,13 @@ export default function PassengerDetails({ searchParams, onBack, onContinue }) {
                   type="text"
                   className="form-control"
                   value={passenger.nationality}
-                  onChange={(e) => handlePassengerChange(index, 'nationality', e.target.value)}
+                  onChange={(e) => handlePassengerChange(index, 'nationality', e.target.value.toUpperCase())}
                   placeholder="IN"
+                  maxLength={2}
                 />
               </div>
-              
-              <div className="col-md-6">
+
+              <div className="col-md-4">
                 <label className="form-label">Passport Number *</label>
                 <input
                   type="text"
@@ -253,8 +306,8 @@ export default function PassengerDetails({ searchParams, onBack, onContinue }) {
                   <div className="invalid-feedback">{errors[`passenger_${index}_passportNumber`]}</div>
                 )}
               </div>
-              
-              <div className="col-md-6">
+
+              <div className="col-md-4">
                 <label className="form-label">Passport Expiry *</label>
                 <input
                   type="date"
@@ -267,7 +320,58 @@ export default function PassengerDetails({ searchParams, onBack, onContinue }) {
                   <div className="invalid-feedback">{errors[`passenger_${index}_passportExpiry`]}</div>
                 )}
               </div>
+
+              {passportIssueDateReq && (
+                <div className="col-md-4">
+                  <label className="form-label">Passport Issue Date *</label>
+                  <input
+                    type="date"
+                    className={`form-control ${errors[`passenger_${index}_passportIssueDate`] ? 'is-invalid' : ''}`}
+                    value={passenger.passportIssueDate}
+                    onChange={(e) => handlePassengerChange(index, 'passportIssueDate', e.target.value)}
+                    max={new Date().toISOString().split('T')[0]}
+                  />
+                  {errors[`passenger_${index}_passportIssueDate`] && (
+                    <div className="invalid-feedback">{errors[`passenger_${index}_passportIssueDate`]}</div>
+                  )}
+                </div>
+              )}
             </>
+          )}
+
+          {docIdApplicable && (
+            <div className="col-md-6">
+              <label className="form-label">
+                Document ID {docIdMandatory ? '*' : '(Student/Senior ID)'}
+              </label>
+              <input
+                type="text"
+                className={`form-control ${errors[`passenger_${index}_documentId`] ? 'is-invalid' : ''}`}
+                value={passenger.documentId}
+                onChange={(e) => handlePassengerChange(index, 'documentId', e.target.value)}
+                placeholder="Student / Senior Citizen ID"
+              />
+              {errors[`passenger_${index}_documentId`] && (
+                <div className="invalid-feedback">{errors[`passenger_${index}_documentId`]}</div>
+              )}
+            </div>
+          )}
+
+          {panRequired && (
+            <div className="col-md-6">
+              <label className="form-label">PAN Number *</label>
+              <input
+                type="text"
+                className={`form-control ${errors[`passenger_${index}_pan`] ? 'is-invalid' : ''}`}
+                value={passenger.pan}
+                onChange={(e) => handlePassengerChange(index, 'pan', e.target.value.toUpperCase())}
+                placeholder="ABCDE1234F"
+                maxLength={10}
+              />
+              {errors[`passenger_${index}_pan`] && (
+                <div className="invalid-feedback">{errors[`passenger_${index}_pan`]}</div>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -331,7 +435,51 @@ export default function PassengerDetails({ searchParams, onBack, onContinue }) {
                 </div>
               </div>
             </div>
-            
+
+            {emergencyRequired && (
+              <div className="contact-details-card mt-4">
+                <h5 className="section-title">
+                  <FaPhone className="me-2" />
+                  Emergency Contact <small className="text-muted">(required by airline)</small>
+                </h5>
+                <div className="row g-3">
+                  <div className="col-md-4">
+                    <label className="form-label">Contact Name *</label>
+                    <input
+                      type="text"
+                      className={`form-control ${errors.emergencyName ? 'is-invalid' : ''}`}
+                      value={emergency.name}
+                      onChange={(e) => setEmergency({ ...emergency, name: e.target.value })}
+                      placeholder="Full name"
+                    />
+                    {errors.emergencyName && <div className="invalid-feedback">{errors.emergencyName}</div>}
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label">Email *</label>
+                    <input
+                      type="email"
+                      className={`form-control ${errors.emergencyEmail ? 'is-invalid' : ''}`}
+                      value={emergency.email}
+                      onChange={(e) => setEmergency({ ...emergency, email: e.target.value })}
+                      placeholder="email@example.com"
+                    />
+                    {errors.emergencyEmail && <div className="invalid-feedback">{errors.emergencyEmail}</div>}
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label">Mobile *</label>
+                    <input
+                      type="tel"
+                      className={`form-control ${errors.emergencyMobile ? 'is-invalid' : ''}`}
+                      value={emergency.mobile}
+                      onChange={(e) => setEmergency({ ...emergency, mobile: e.target.value })}
+                      placeholder="9876543210"
+                    />
+                    {errors.emergencyMobile && <div className="invalid-feedback">{errors.emergencyMobile}</div>}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="gst-section mt-4">
               <div className="form-check mb-3">
                 <input
@@ -410,7 +558,7 @@ export default function PassengerDetails({ searchParams, onBack, onContinue }) {
               <div className="info-item">
                 <strong>Contact Details:</strong> Booking confirmation will be sent to the provided email and mobile.
               </div>
-              {!isDomestic && (
+              {passportMandatory && (
                 <div className="info-item">
                   <strong>Passport:</strong> Must be valid for at least 6 months from travel date.
                 </div>
