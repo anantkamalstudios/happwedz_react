@@ -17,6 +17,7 @@ import {
   createCorrelationId,
   defaultFilters,
 } from "../../hotelbeds/hotelbedsDetailHelpers";
+import "./HotelSearchForm.css";
 
 const HOTEL_COUNTRIES = [
   { code: "106", name: "India" },
@@ -530,31 +531,83 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
   );
 }
 
-export default function HotelSearchForm() {
+export default function HotelSearchForm({
+  initialPayload = null,
+  initialSuggestion = null,
+  onSearch = null,
+  compact = false,
+} = {}) {
   const navigate = useNavigate();
   const destinationRef = useRef(null);
   const suppressNextSuggestionFetchRef = useRef(false);
-  const [hotelLocation, setHotelLocation] = useState("");
+
+  // --- Prefill (used when the card is rendered on the results / detail pages
+  // with an existing search). When no initial values are passed (hero on
+  // /honeymoon) these all fall back to the original empty defaults. ---
+  const initialSearchQuery = initialPayload?.searchQuery || {};
+  const initialCriteria = initialSearchQuery.searchCriteria || {};
+  const initialSuggestionNorm = initialSuggestion
+    ? normalizeHotelSuggestion(initialSuggestion)
+    : null;
+  const initialIsHotel =
+    String(initialSuggestionNorm?.searchType || "").toUpperCase() === "HOTEL";
+  const initialRoomsState =
+    Array.isArray(initialSearchQuery.roomInfo) && initialSearchQuery.roomInfo.length
+      ? initialSearchQuery.roomInfo.map((room) =>
+          normalizeRoomWithChildAges({
+            adults: room?.numberOfAdults,
+            children: room?.numberOfChild,
+            childAge: room?.childAge,
+          })
+        )
+      : [normalizeRoomWithChildAges({ adults: 2, children: 0, childAge: [] })];
+
+  const [hotelLocation, setHotelLocation] = useState(
+    initialSuggestionNorm?.displayName || ""
+  );
   const [hotelSuggestions, setHotelSuggestions] = useState([]);
   const [hotelSuggestLoading, setHotelSuggestLoading] = useState(false);
   const [showHotelSuggestions, setShowHotelSuggestions] = useState(false);
-  const [selectedDestination, setSelectedDestination] = useState(null);
-  const [selectedHotel, setSelectedHotel] = useState(null);
+  const [selectedDestination, setSelectedDestination] = useState(
+    initialIsHotel ? null : initialSuggestionNorm
+  );
+  const [selectedHotel, setSelectedHotel] = useState(
+    initialIsHotel ? initialSuggestionNorm : null
+  );
   const [countryOptions, setCountryOptions] = useState([{ code: "INDIA", name: "India" }]);
-  const [selectedCountry, setSelectedCountry] = useState("INDIA");
-  const [hotelCheckIn, setHotelCheckIn] = useState("");
-  const [hotelCheckOut, setHotelCheckOut] = useState("");
-  const [hotelRooms, setHotelRooms] = useState([normalizeRoomWithChildAges({ adults: 2, children: 0, childAge: [] })]);
-  const [selectedRatings, setSelectedRatings] = useState([]);
-  const [nationality, setNationality] = useState("106");
-  const [countryOfResidence, setCountryOfResidence] = useState("106");
-  const [gstClaimEligible, setGstClaimEligible] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState(
+    String(initialCriteria.countryName || "INDIA").toUpperCase()
+  );
+  const [hotelCheckIn, setHotelCheckIn] = useState(
+    initialSearchQuery.checkinDate || initialSearchQuery.checkInDate || ""
+  );
+  const [hotelCheckOut, setHotelCheckOut] = useState(
+    initialSearchQuery.checkoutDate || initialSearchQuery.checkOutDate || ""
+  );
+  const [hotelRooms, setHotelRooms] = useState(initialRoomsState);
+  const [selectedRatings, setSelectedRatings] = useState(
+    Array.isArray(initialPayload?.appliedFilters?.ratings)
+      ? initialPayload.appliedFilters.ratings
+      : []
+  );
+  const [nationality, setNationality] = useState(
+    String(initialCriteria.nationality || "106")
+  );
+  const [countryOfResidence, setCountryOfResidence] = useState(
+    String(initialCriteria.countryOfResidence || "106")
+  );
+  const [gstClaimEligible, setGstClaimEligible] = useState(
+    Boolean(initialSearchQuery.gstApplied)
+  );
   const [showRatingsDropdown, setShowRatingsDropdown] = useState(false);
   const [showNationalityDropdown, setShowNationalityDropdown] = useState(false);
   const [showResidenceDropdown, setShowResidenceDropdown] = useState(false);
   const [showSearchCountryDropdown, setShowSearchCountryDropdown] = useState(false);
   const [showGuestsDropdown, setShowGuestsDropdown] = useState(false);
   const [hotelSearchLoading, setHotelSearchLoading] = useState(false);
+  // In compact mode (results / detail pages) the "More options" row is hidden
+  // behind a toggle so the bar stays slim; on the hero (/honeymoon) it's always shown.
+  const [showMoreOptionsRow, setShowMoreOptionsRow] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -580,7 +633,8 @@ export default function HotelSearchForm() {
           name: item?.label || item?.countryName || item?.id,
         }));
         setCountryOptions(mapped);
-        setSelectedCountry("INDIA");
+        // Do not override a prefilled country (results / detail pages);
+        // the hero on /honeymoon already initializes to "INDIA".
       } catch (error) {
         console.error("Unable to load TripJack country list", error);
       }
@@ -755,6 +809,8 @@ export default function HotelSearchForm() {
           city: !effectiveTjids.length ? effectiveCity : "",
           cityRegionIds:
             !isHotelSearch && selectedDestination?.id ? [String(selectedDestination.id)] : [],
+          regionIds:
+            !isHotelSearch && selectedDestination?.id ? [String(selectedDestination.id)] : [],
           countryName: selectedCountry,
           tjids: effectiveTjids,
           nationality,
@@ -805,13 +861,19 @@ export default function HotelSearchForm() {
     setHotelSearchLoading(true);
     try {
       const response = await searchHotels(payload);
-      navigate("/hotels", {
-        state: {
-          hotelSearchPayload: payload,
-          hotelSearchResponse: response,
-          selectedHotelSuggestion: selectedSuggestion,
-        },
-      });
+      if (typeof onSearch === "function") {
+        // Results / detail pages: re-search in place without navigating away.
+        onSearch(payload, response, selectedSuggestion);
+      } else {
+        // Hero on /honeymoon: navigate to the results page with the response.
+        navigate("/hotels", {
+          state: {
+            hotelSearchPayload: payload,
+            hotelSearchResponse: response,
+            selectedHotelSuggestion: selectedSuggestion,
+          },
+        });
+      }
     } catch (error) {
       console.error("Error searching hotels:", error);
       alert("Error searching hotels");
@@ -821,7 +883,7 @@ export default function HotelSearchForm() {
   };
 
   return (
-    <div className="search-card hotel-search-card">
+    <div className={`search-card hotel-search-card${compact ? " hotel-search-card--compact" : ""}`}>
       <div className="hotel-search-stack">
         <div className="hotel-search-main-row">
           <div className="hotel-main-field hotel-main-field--destination" ref={destinationRef}>
@@ -1013,8 +1075,26 @@ export default function HotelSearchForm() {
           </button>
         </div>
 
+        {compact ? (
+          <button
+            type="button"
+            className="hotel-more-options-toggle"
+            onClick={() => setShowMoreOptionsRow((prev) => !prev)}
+          >
+            More options
+            <ChevronDown
+              size={14}
+              style={{
+                transform: showMoreOptionsRow ? "rotate(180deg)" : "none",
+                transition: "transform 0.15s ease",
+              }}
+            />
+          </button>
+        ) : null}
+
+        {!compact || showMoreOptionsRow ? (
         <div className="hotel-more-options-row">
-          <div className="hotel-more-options-title">More Options:</div>
+          {!compact ? <div className="hotel-more-options-title">More Options:</div> : null}
 
           <div className="hotel-more-option-item">
             <button
@@ -1148,6 +1228,7 @@ export default function HotelSearchForm() {
             <span>Show GST claim eligible rates</span>
           </label>
         </div>
+        ) : null}
       </div>
     </div>
   );

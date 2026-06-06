@@ -39,7 +39,7 @@ import {
 } from "../../../../services/api/hotelApi";
 import TripJackBookingReview from "./TripJackBookingReview";
 import TripJackBookingStatus from "./TripJackBookingStatus";
-import HotelSearchBar from "./HotelSearchBar";
+import HotelSearchForm from "../honeymoon/components/HotelSearchForm";
 import "./hotelbedsStyles.css";
 import {
   buildAddressLabel,
@@ -65,10 +65,10 @@ function HotelSearchBarEditable({ payload, suggestion, onBackToSearch }) {
   const navigate = useNavigate();
   
   return (
-    <HotelSearchBar
-      payload={payload}
-      suggestion={suggestion}
-      editable={true}
+    <HotelSearchForm
+      compact
+      initialPayload={payload}
+      initialSuggestion={suggestion}
       onSearch={(nextPayload, response, selectedDestination) => {
         navigate("/hotels", {
           state: {
@@ -359,7 +359,7 @@ function HotelBookingSummaryCard({
   );
 }
 
-function HotelAboutSection({ aboutText, headline, onOpenModal }) {
+function HotelAboutSection({ aboutText, headline, onOpenModal, hasDetails }) {
   if (!aboutText && !headline) return null;
 
   const copy = aboutText || headline;
@@ -369,14 +369,12 @@ function HotelAboutSection({ aboutText, headline, onOpenModal }) {
   return (
     <section className="hotel-detail-section">
       <h4>About this property</h4>
-      <div className="hotel-detail-copy">
-        {visible}
-        {shouldClamp ? (
-          <button type="button" className="hotel-inline-link ms-1" onClick={onOpenModal}>
-            Read more
-          </button>
-        ) : null}
-      </div>
+      <div className="hotel-detail-copy">{visible}</div>
+      {hasDetails || shouldClamp ? (
+        <button type="button" className="hotel-inline-link mt-2" onClick={onOpenModal}>
+          View more
+        </button>
+      ) : null}
     </section>
   );
 }
@@ -411,6 +409,86 @@ function HotelAboutModal({ show, onHide, sections = {} }) {
         <div className="modal-body">
           {renderSection("Overview", sections.headline || "")}
           {sectionItems.map(([title, content]) => renderSection(title, content))}
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function HotelPropertyInfoSection({ propertyInfo = {} }) {
+  const range = (from, till) => [from, till].filter(Boolean).join(" – ");
+  const rows = [
+    ["Property type", propertyInfo.propertyType],
+    ["Check-in", range(propertyInfo.checkInFrom, propertyInfo.checkInTill)],
+    ["Check-out", range(propertyInfo.checkOutFrom, propertyInfo.checkOutTill)],
+    ["Minimum check-in age", propertyInfo.checkInMinAge],
+    [
+      "Hotel chain",
+      propertyInfo.brand && propertyInfo.chain
+        ? `${propertyInfo.chain} (${propertyInfo.brand})`
+        : propertyInfo.chain || propertyInfo.brand,
+    ],
+    ["Phone", propertyInfo.phone],
+    ["Fax", propertyInfo.fax],
+  ].filter(([, value]) => value && String(value).trim());
+
+  if (!rows.length) return null;
+
+  return (
+    <section className="hotel-detail-section">
+      <h4>Property information</h4>
+      <div className="hotel-property-info-grid">
+        {rows.map(([label, value]) => (
+          <div className="hotel-property-info-row" key={label}>
+            <span className="hotel-property-info-label">{label}</span>
+            <span className="hotel-property-info-value">{value}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function HotelImportantInfoSection({ importantInformation = {} }) {
+  const groups = [
+    ["Mandatory fees", importantInformation.mandatoryFees],
+    ["Special instructions", importantInformation.specialInstructions],
+    ["Know before you go", importantInformation.knowBeforeYouGo],
+  ].filter(([, entries]) => Array.isArray(entries) && entries.length > 0);
+
+  if (!groups.length) return null;
+
+  return (
+    <section className="hotel-detail-section">
+      <h4>Important information</h4>
+      {groups.map(([title, entries]) => (
+        <div className="hotel-important-info-group" key={title}>
+          <div className="hotel-important-info-title">{title}</div>
+          {entries.map((entry, index) => (
+            <div className="hotel-detail-copy" key={`${title}-${index}`}>
+              {entry.label && entry.label.toLowerCase() !== title.toLowerCase() ? (
+                <span className="hotel-important-info-label">{entry.label}: </span>
+              ) : null}
+              {entry.text}
+            </div>
+          ))}
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function HotelImportantInfoModal({ show, onHide, propertyInfo = {}, importantInformation = {} }) {
+  return (
+    <Modal show={show} onHide={onHide} centered size="lg">
+      <div className="modal-content rounded-4">
+        <div className="modal-header border-0">
+          <h5 className="modal-title">Property &amp; important information</h5>
+          <button type="button" className="btn-close" onClick={onHide} aria-label="Close" />
+        </div>
+        <div className="modal-body hotel-info-modal-body">
+          <HotelPropertyInfoSection propertyInfo={propertyInfo} />
+          <HotelImportantInfoSection importantInformation={importantInformation} />
         </div>
       </div>
     </Modal>
@@ -1081,6 +1159,7 @@ function HotelDetailsPage({
   });
   const [showAmenitiesModal, setShowAmenitiesModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const [showImportantInfoModal, setShowImportantInfoModal] = useState(false);
   const [showPolicyModal, setShowPolicyModal] = useState(false);
   const [selectedPolicyOption, setSelectedPolicyOption] = useState(null);
   const [showMarkupModal, setShowMarkupModal] = useState(false);
@@ -1161,9 +1240,12 @@ function HotelDetailsPage({
       selectedHotel?.raw?.tjid ||
       selectedHotel?.raw?.hid ||
       "";
-    if (!searchId || !tjHotelId) {
+    // Static content (amenities, descriptions, address, policies, room amenities)
+    // is keyed only by the hotel id — TripJack's /content/fetch-hotel-content does
+    // NOT need a searchId, so we must not gate the fetch on it.
+    if (!tjHotelId) {
       if (import.meta.env.DEV) {
-        console.warn("Skipping TripJack static content fetch due to missing identifiers", {
+        console.warn("Skipping TripJack static content fetch due to missing hotel id", {
           searchId,
           tjHotelId,
           reviewPayloadFields,
@@ -1176,11 +1258,19 @@ function HotelDetailsPage({
     let active = true;
     getHotelStaticContent({
       tjHotelIds: [String(tjHotelId)],
-      searchId: String(searchId),
+      ...(searchId ? { searchId: String(searchId) } : {}),
     })
       .then((response) => {
         if (active) {
-          setStaticContentResponse(Array.isArray(response) ? response : []);
+          // TripJack /content/fetch-hotel-content returns { status, hotels: [...] }.
+          const hotels = Array.isArray(response)
+            ? response
+            : Array.isArray(response?.hotels)
+              ? response.hotels
+              : Array.isArray(response?.data?.hotels)
+                ? response.data.hotels
+                : [];
+          setStaticContentResponse(hotels);
         }
       })
       .catch((error) => {
@@ -1218,6 +1308,32 @@ function HotelDetailsPage({
   }, [initialPayload]);
 
   const mealPlans = useMemo(() => getMealPlanOptions(detailModel.options), [detailModel.options]);
+
+  // Whether the "View more" (About) and "Important information" buttons have
+  // anything to show — so we hide them when the static content is empty.
+  const hasPropertyDetails = useMemo(() => {
+    const sections = detailModel.aboutSections || {};
+    return [
+      "location",
+      "amenities",
+      "rooms",
+      "dining",
+      "businessAmenities",
+      "attractions",
+      "onsitePayments",
+      "spokenLanguages",
+    ].some((key) => typeof sections[key] === "string" && sections[key].trim());
+  }, [detailModel.aboutSections]);
+
+  const hasImportantInfo = useMemo(() => {
+    const propertyInfo = detailModel.propertyInfo || {};
+    const important = detailModel.importantInformation || {};
+    const hasProperty = Object.values(propertyInfo).some((value) => value && String(value).trim());
+    const hasNotes = ["specialInstructions", "knowBeforeYouGo", "mandatoryFees"].some(
+      (key) => Array.isArray(important[key]) && important[key].length > 0
+    );
+    return hasProperty || hasNotes;
+  }, [detailModel.propertyInfo, detailModel.importantInformation]);
 
   const filteredOptions = useMemo(() => {
     const query = roomSearch.trim().toLowerCase();
@@ -2459,6 +2575,7 @@ const retryWithoutRepayment =
                   <HotelAboutSection
                     aboutText={detailModel.aboutText}
                     headline={detailModel.headline}
+                    hasDetails={hasPropertyDetails}
                     onOpenModal={() => setShowAboutModal(true)}
                   />
                   <HotelAboutModal
@@ -2467,6 +2584,24 @@ const retryWithoutRepayment =
                     sections={detailModel.aboutSections || {}}
                   />
                   <HotelAmenities amenities={detailModel.amenities} onViewMore={handleOpenAmenitiesModal} />
+                  {hasImportantInfo ? (
+                    <section className="hotel-detail-section">
+                      <h4>Important information</h4>
+                      <button
+                        type="button"
+                        className="hotel-inline-link"
+                        onClick={() => setShowImportantInfoModal(true)}
+                      >
+                        View property &amp; important information
+                      </button>
+                    </section>
+                  ) : null}
+                  <HotelImportantInfoModal
+                    show={showImportantInfoModal}
+                    onHide={() => setShowImportantInfoModal(false)}
+                    propertyInfo={detailModel.propertyInfo || {}}
+                    importantInformation={detailModel.importantInformation || {}}
+                  />
                 </div>
 
                 <HotelBookingSummaryCard
@@ -2893,20 +3028,40 @@ const retryWithoutRepayment =
                 ) : null}
               </div>
               <div className="hotel-room-modal-divider" />
-              <div className="hotel-room-modal-section-title">Room Amenities</div>
-              <div className="hotel-room-modal-section-subtitle">Popular with Guests</div>
-              <div className="hotel-room-modal-amenities">
-                {Array.isArray(activeOption.inclusions) && activeOption.inclusions.length > 0 ? (
-                  activeOption.inclusions.map((amenity, index) => (
-                    <div key={`${amenity}-${index}`} className="hotel-room-modal-amenity">
-                      <Check size={14} color="#ed1173" />
-                      <span title={amenity}>{amenity}</span>
+              {(() => {
+                const roomAmenities = Array.isArray(activeOption.inclusions)
+                  ? activeOption.inclusions
+                  : [];
+                const hasRoomAmenities = roomAmenities.length > 0;
+                const propertyAmenities = Array.isArray(detailModel.amenities)
+                  ? detailModel.amenities.filter((item) => typeof item === "string" && item.trim())
+                  : [];
+                const list = hasRoomAmenities ? roomAmenities : propertyAmenities;
+                return (
+                  <>
+                    <div className="hotel-room-modal-section-title">
+                      {hasRoomAmenities ? "Room Amenities" : "Property Amenities"}
                     </div>
-                  ))
-                ) : (
-                  <div className="fs-14 text-muted">No amenities available for this room.</div>
-                )}
-              </div>
+                    <div className="hotel-room-modal-section-subtitle">
+                      {hasRoomAmenities
+                        ? "Popular with Guests"
+                        : "Room-specific amenities aren't listed for this room — showing what the property offers."}
+                    </div>
+                    <div className="hotel-room-modal-amenities">
+                      {list.length > 0 ? (
+                        list.map((amenity, index) => (
+                          <div key={`${amenity}-${index}`} className="hotel-room-modal-amenity">
+                            <Check size={14} color="#ed1173" />
+                            <span title={amenity}>{amenity}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="fs-14 text-muted">No amenities available for this room.</div>
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
               {Array.isArray(activeOption.cancellation?.penalties) && activeOption.cancellation.penalties.length > 0 ? (
                 <div className="fs-12 text-muted">
                   {activeOption.cancellation.penalties

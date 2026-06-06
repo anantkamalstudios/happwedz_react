@@ -107,6 +107,24 @@ const parseJsonObjectSafely = (value) => {
   return parsed && typeof parsed === "object" ? parsed : {};
 };
 
+// TripJack policy fields (special_instructions, know_before_you_go, mandatory_fees)
+// arrive as a stringified JSON object of { label: text }. Normalize them into a
+// flat list of { label, text } entries for display. Plain strings are also handled.
+const parsePolicyEntries = (value) => {
+  if (!value) return [];
+  const parsed = parseJsonSafely(value);
+  if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+    return Object.entries(parsed)
+      .map(([label, text]) => ({
+        label: String(label || "").replace(/_/g, " ").trim(),
+        text: String(text || "").replace(/\s+/g, " ").trim(),
+      }))
+      .filter((entry) => entry.text);
+  }
+  const text = String(value).replace(/\s+/g, " ").trim();
+  return text ? [{ label: "", text }] : [];
+};
+
 const buildAddressParts = (address = {}) =>
   [
     address?.adr,
@@ -230,7 +248,32 @@ const getStaticRoomAmenities = (staticRoom = {}) =>
   ]);
 
 const getStaticRoomBedSummary = (staticRoom = {}) => {
-  const bedTypes = Array.isArray(staticRoom?.bed_config?.bed_types) ? staticRoom.bed_config.bed_types : [];
+  const bedConfig = staticRoom?.bed_config || {};
+
+  // Preferred: human-readable summary supplied by TripJack (docs: bed_config.description).
+  const description = String(bedConfig?.description || "").trim();
+  if (description) return description;
+
+  // v3 shape: configuration is a map of { type, size, quantity }.
+  const configuration = bedConfig?.configuration;
+  if (configuration && typeof configuration === "object" && !Array.isArray(configuration)) {
+    const summary = Object.values(configuration)
+      .map((bed) => {
+        const quantity = Number(bed?.quantity || bed?.count || bed?.bed_count || 0);
+        const rawLabel = String(bed?.type || bed?.name || bed?.size || "").trim();
+        // "KingBed" -> "King Bed"
+        const label = rawLabel.replace(/([a-z])([A-Z])/g, "$1 $2").trim();
+        if (!label && quantity <= 0) return "";
+        if (quantity <= 0) return label;
+        return `${quantity} ${label || "Bed"}`;
+      })
+      .filter(Boolean)
+      .join(", ");
+    if (summary) return summary;
+  }
+
+  // Legacy shape.
+  const bedTypes = Array.isArray(bedConfig?.bed_types) ? bedConfig.bed_types : [];
   if (bedTypes.length === 0) return "";
   return bedTypes
     .map((bed) => `${bed?.count || bed?.bed_count || 1} ${bed?.name || bed?.type || "Bed"}`.trim())
@@ -238,16 +281,51 @@ const getStaticRoomBedSummary = (staticRoom = {}) => {
     .join(", ");
 };
 
+const getStaticRoomGuestSummary = (staticRoom = {}) => {
+  const max = staticRoom?.occupancy?.max_allowed || {};
+  const total = Number(max?.total || 0);
+  const adults = Number(max?.adults || 0);
+  const children = Number(max?.children || 0);
+  if (!total && !adults && !children) return "";
+
+  const parts = [];
+  if (total) parts.push(`Fits max. ${total} guest${total > 1 ? "s" : ""}`);
+  else if (adults) parts.push(`${adults} adult${adults > 1 ? "s" : ""}`);
+  if (children) parts.push(`${children} child${children > 1 ? "ren" : ""}`);
+  return parts.join(" • ");
+};
+
+// Loose key for room-name matching: lowercase, drop generic words ("room",
+// "double", "twin", etc.) and punctuation so "Royal Deluxe Room" matches the
+// static content's "Royal Deluxe".
+const normalizeRoomNameKey = (value) =>
+  String(value || "")
+    .toLowerCase()
+    .replace(/\b(room|rooms|double|twin|king|queen|single|bed|non-?smoking|smoking|with|or)\b/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
 const findStaticRoomMatch = (staticHotel, roomInfo, roomMeta = {}) => {
   const staticRooms = getStaticRoomEntries(staticHotel);
   if (staticRooms.length === 0) return null;
 
   const { roomId, roomName } = getRoomIdentity(roomInfo, roomMeta);
   const roomNameKey = normalizeLookupKey(roomName);
+  const looseKey = normalizeRoomNameKey(roomName);
 
   return (
+    // 1. Exact id match.
     staticRooms.find((room) => roomId && String(room?.id || room?.rid || room?.roomId || "").trim() === roomId) ||
+    // 2. Exact (lowercased) name match.
     staticRooms.find((room) => normalizeLookupKey(room?.name) === roomNameKey) ||
+    // 3. Loose name match (ignores generic words / suffixes), only if it has amenities to offer.
+    (looseKey
+      ? staticRooms.find((room) => {
+          const staticKey = normalizeRoomNameKey(room?.name);
+          if (!staticKey) return false;
+          return staticKey === looseKey || staticKey.includes(looseKey) || looseKey.includes(staticKey);
+        })
+      : null) ||
     null
   );
 };
@@ -400,7 +478,8 @@ const normalizeRoomOption = (
     adults: Number(roomInfo?.adt || roomInfo?.adults || 0),
     children: Number(roomInfo?.chd || roomInfo?.children || 0),
     bedSummary: getRoomBedSummary(roomMeta) || staticBedSummary,
-    guestSummary: getRoomGuestSummary(roomMeta, roomInfo),
+    guestSummary:
+      getRoomGuestSummary(roomMeta, roomInfo) || getStaticRoomGuestSummary(staticRoom),
     images,
     image: images[0]?.url || "",
     amenities,
@@ -536,7 +615,19 @@ const normalizeHotelDetails = ({
     : Array.isArray(staticContentResponse?.hotels)
       ? staticContentResponse.hotels
       : [];
-  const staticHotel = staticHotels[0] || {};
+  // Prefer the static entry whose id matches the detail hotel; fall back to first.
+  const detailHotelId = String(
+    hotelInfo?.tjid || hotelInfo?.id || selectedHotel?.id || selectedHotel?.raw?.tjid || ""
+  ).trim();
+  const staticHotel =
+    (detailHotelId &&
+      staticHotels.find(
+        (item) =>
+          String(item?.tjHotelId || item?.tjHotelID || item?.hotelId || item?.id || "").trim() ===
+          detailHotelId
+      )) ||
+    staticHotels[0] ||
+    {};
   const description =
     parseJsonSafely(
       staticHotel?.descriptions?.default ||
@@ -775,9 +866,17 @@ const normalizeHotelDetails = ({
     listHotel: selectedHotel,
     nights,
     importantInformation: {
-      checkInInstructions: parseJsonObjectSafely(staticHotel?.checkInInstructions),
-      knowBeforeYouGo: parseJsonObjectSafely(staticHotel?.knowBeforeYouGo),
-      mandatoryFees: parseJsonObjectSafely(staticHotel?.mandatoryFees),
+      // TripJack v3 nests these under `policies` as stringified JSON objects.
+      // (Older/legacy top-level keys kept as a fallback.)
+      specialInstructions: parsePolicyEntries(
+        staticHotel?.policies?.special_instructions ?? staticHotel?.checkInInstructions
+      ),
+      knowBeforeYouGo: parsePolicyEntries(
+        staticHotel?.policies?.know_before_you_go ?? staticHotel?.knowBeforeYouGo
+      ),
+      mandatoryFees: parsePolicyEntries(
+        staticHotel?.policies?.mandatory_fees ?? staticHotel?.mandatoryFees
+      ),
     },
     propertyInfo: {
       propertyType:
@@ -787,7 +886,10 @@ const normalizeHotelDetails = ({
       checkInFrom: staticHotel?.policies?.checkInCheckOut?.checkin_from || "",
       checkInTill: staticHotel?.policies?.checkInCheckOut?.checkin_till || "",
       checkOutFrom: staticHotel?.policies?.checkInCheckOut?.checkout_from || "",
+      checkOutTill: staticHotel?.policies?.checkInCheckOut?.checkout_till || "",
+      checkInMinAge: staticHotel?.policies?.checkInCheckOut?.checkin_min_age || "",
       phone: Array.isArray(staticHotel?.locale?.phone) ? staticHotel.locale.phone[0] || "" : "",
+      fax: Array.isArray(staticHotel?.locale?.fax) ? staticHotel.locale.fax[0] || "" : "",
       chain: staticHotel?.chain?.name || "",
       brand: staticHotel?.chain?.brand?.name || "",
     },

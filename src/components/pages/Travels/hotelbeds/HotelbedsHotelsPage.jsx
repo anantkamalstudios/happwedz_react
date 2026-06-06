@@ -29,7 +29,7 @@ import {
   trackHotelAnalyticsEvent,
 } from "../../../../services/api/hotelApi";
 import HotelDetailsPage, { HotelSearchBarEditable } from "./HotelbedsDetailsPage";
-import HotelSearchBar from "./HotelSearchBar";
+import HotelSearchForm from "../honeymoon/components/HotelSearchForm";
 import { defaultFilters } from "./hotelbedsDetailHelpers";
 import "./hotelbedsStyles.css";
 
@@ -2018,10 +2018,10 @@ export default function HotelbedsHotelsPage() {
   return (
     <div className="hotel-list-page">
       <div className="hotel-search-bar-container">
-        <HotelSearchBar
-          payload={activePayload}
-          suggestion={activeSuggestion}
-          editable={true}
+        <HotelSearchForm
+          compact
+          initialPayload={activePayload}
+          initialSuggestion={activeSuggestion}
           onSearch={(nextPayload, response, selectedDestination) => {
             // Update the state with new search results
             setSearchPayload(nextPayload);

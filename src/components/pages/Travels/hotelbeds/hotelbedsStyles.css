@@ -1321,6 +1321,78 @@
     font-weight: 600;
   }
 
+  /* Property details (categorized descriptions) */
+  .hotel-detail-sections {
+    display: grid;
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  .hotel-detail-subtitle {
+    color: #1b2231;
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  /* Property information (key/value rows) */
+  .hotel-property-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 10px 24px;
+    margin-top: 12px;
+  }
+
+  .hotel-property-info-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f1f5;
+  }
+
+  .hotel-property-info-label {
+    color: #8b8fa8;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .hotel-property-info-value {
+    color: #1b2231;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  /* Important information (mandatory fees, instructions, know before you go) */
+  .hotel-important-info-group {
+    margin-top: 14px;
+  }
+
+  .hotel-important-info-title {
+    color: #1b2231;
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+
+  .hotel-important-info-label {
+    color: #1b2231;
+    font-weight: 800;
+  }
+
+  /* Sections reused inside the "Property & important information" modal should
+     not carry the on-page divider/margins for the first block. */
+  .hotel-info-modal-body .hotel-detail-section {
+    margin-top: 18px;
+  }
+
+  .hotel-info-modal-body .hotel-detail-section:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+
   .hotel-detail-amenities {
     display: flex;
     flex-wrap: wrap;
