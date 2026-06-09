@@ -93,6 +93,9 @@ const BookingForm = ({ flight, verifiedData, searchParams, onSubmit, loading, er
       }
     };
 
+    console.log("selectedFare:", flight.selectedFare);
+console.log("selectedFare.provider:", flight.selectedFare?.provider);
+console.log("flight.airline:", flight.airline);
     // Call the parent onSubmit with booking data (for payment API)
     onSubmit(bookingData);
   };

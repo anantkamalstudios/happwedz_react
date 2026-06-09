@@ -13,6 +13,7 @@ import Booking from "./booking/Booking";
 import Messages from "./messages/Messages";
 import RealWeddingForm from "./realWeddingForm/RealWeddingForm";
 import UserProfile from "./userProfile/UserProfile";
+import FlightBookings from "./flightBookings/FlightBookings";
 
 const UserDashboardMain = () => {
   const { slug } = useParams();
@@ -40,6 +41,7 @@ const UserDashboardMain = () => {
       {currentSlug === "real-wedding" && (
         <RealWeddingForm user={user} token={token} />
       )}
+      {currentSlug === "my-bookings" && <FlightBookings />}
     </div>
   );
 };

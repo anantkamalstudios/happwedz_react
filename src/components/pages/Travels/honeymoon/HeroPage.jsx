@@ -10,6 +10,7 @@ import CruiseIcon from "../../../../assets/trevel_icon/cruise-ship.png";
 import FlightSearchForm from "./components/FlightSearchForm";
 import HotelSearchForm from "./components/HotelSearchForm";
 import InsuranceSearchPanel from "./InsuranceSearchPanel";
+import UpcomingBookings from "./components/UpcomingBookings";
 import { getRecentHotelBookings } from "../../../../services/api/hotelApi";
 import "./index.css";
 
@@ -102,6 +103,7 @@ export default function FlightHero() {
   }, [activeTab, isAuthenticated, user?.id]);
 
   return (
+    <>
     <div className="flight-hero">
       <nav className="navbar-custom">
         <div className="container">
@@ -280,5 +282,12 @@ export default function FlightHero() {
         </div>
       </div>
     </div>
+
+    {activeTab === "Flights" && (
+      <div className="ub-section">
+        <UpcomingBookings />
+      </div>
+    )}
+    </>
   );
 }

@@ -219,6 +219,21 @@ const InsuranceBookingPage = lazy(
 const InsuranceBookingDetailsPage = lazy(
   () => import("./components/pages/Travels/honeymoon/InsuranceBookingDetailsPage"),
 );
+const FlightBooking = lazy(
+  () => import("./components/pages/Travels/honeymoon/FlightBooking"),
+);
+const FlightBookingPage = lazy(
+  () => import("./components/pages/Travels/honeymoon/FlightBookingPage"),
+);
+const MultiCityResults = lazy(
+  () => import("./components/pages/Travels/honeymoon/MultiCityResults"),
+);
+const BookingDetailPage = lazy(
+  () => import("./components/pages/Travels/honeymoon/BookingDetailPage"),
+);
+const FlightBookingDetail = lazy(
+  () => import("./components/pages/userDashboard/flightBookings/FlightBookingDetail"),
+);
 
 function App() {
   const dispatch = useDispatch();
@@ -308,7 +323,7 @@ function App() {
               />
               <Route path="/:section" element={<MainSection />} />
               <Route path="/:section/:slug" element={<SubSection />} />
-              <Route path="/details/:section/:id" element={<Detailed />} />
+              <Route path="/details/:section/:slug" element={<Detailed />} />
               <Route path="/vendor-360/:id" element={<Vendor360View />} />
               <Route
                 path="/ai-recommandation"
@@ -373,6 +388,42 @@ function App() {
               <Route
                 path="/honeymoon/insurance/booking/:bookingId"
                 element={<InsuranceBookingDetailsPage />}
+              />
+              <Route
+                path="/honeymoon/flights/multicity"
+                element={<MultiCityResults />}
+              />
+              <Route
+                path="/honeymoon/flights/my-booking/:orderId"
+                element={
+                  <UserPrivateRoute>
+                    <BookingDetailPage />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/honeymoon/flights/booking"
+                element={
+                  <UserPrivateRoute>
+                    <FlightBooking />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/honeymoon/flights/book"
+                element={
+                  <UserPrivateRoute>
+                    <FlightBookingPage />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/honeymoon/flights/confirmation"
+                element={
+                  <UserPrivateRoute>
+                    <FlightBookingPage />
+                  </UserPrivateRoute>
+                }
               />
               <Route
                 path="/honeymoon/hotels"
@@ -553,6 +604,14 @@ function App() {
                 element={
                   <UserPrivateRoute>
                     <UserDashboardMain />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/user-dashboard/my-bookings/:orderId"
+                element={
+                  <UserPrivateRoute>
+                    <FlightBookingDetail />
                   </UserPrivateRoute>
                 }
               />

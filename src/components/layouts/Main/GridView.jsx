@@ -147,7 +147,7 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
         console.error("Error tracking click:", error);
       }
     }
-    navigate(`/details/info/${venue.id}`);
+    navigate(`/details/info/${venue.slug}`);
   };
 
   return (
@@ -255,7 +255,7 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
                 {/* Card Body */}
                 <Card.Body className="p-3">
                   <Link
-                    // to={`/details/info/${venue.id}`}
+                    // to={`/details/info/${venue.slug}`}
                     className="text-decoration-none"
                   >
                     {/* Title and Rating Row */}

@@ -185,7 +185,7 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
                         price_range: venue.starting_price || venue.vegPrice || venue.nonVegPrice,
                         slug: venue.slug || venue.id
                       });
-                      navigate(`/details/info/${venue.id}`);
+                      navigate(`/details/info/${venue.slug}`);
                     }}
                     style={{ cursor: "pointer" }}
                   >
