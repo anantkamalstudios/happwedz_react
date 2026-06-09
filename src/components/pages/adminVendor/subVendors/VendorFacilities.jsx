@@ -36,6 +36,7 @@ const VendorFacilities = ({
   onShowSuccess,
   vendorTypeName: propVendorTypeName,
   isVenue: propIsVenue,
+  isCaterer: propIsCaterer,
 }) => {
   const { vendor } = useSelector((state) => state.vendorAuth || {});
   const [fetchedVendorTypeName, setFetchedVendorTypeName] = useState("");
@@ -82,7 +83,15 @@ const VendorFacilities = ({
     normalizedType.includes("palace") ||
     normalizedType.includes("fort");
 
-  const isCaterer = normalizedType.includes("cater");
+  const isCaterer =
+    propIsCaterer ||
+    normalizedType.includes("cater") ||
+    normalizedType.includes("food") ||
+    normalizedType.includes("tiffin") ||
+    normalizedType.includes("kitchen") ||
+    normalizedType.includes("meal") ||
+    normalizedType.includes("cake") ||
+    normalizedType.includes("bakery");
   const isPhotographer = normalizedType.includes("photograph");
   const isMakeupArtist =
     normalizedType.includes("makeup") ||

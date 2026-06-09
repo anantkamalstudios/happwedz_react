@@ -1295,7 +1295,35 @@ const Storefront = ({ setCompletion }) => {
   };
 
   // Only show Menus sidebar for vendorTypeName 'Venues' or 'Caterers' (case-insensitive)
+  const isCatererType = useMemo(() => {
+    const typeLower = (vendorTypeName || "").toLowerCase();
+    return (
+      typeLower.includes("cater") ||
+      typeLower.includes("food") ||
+      typeLower.includes("tiffin") ||
+      typeLower.includes("kitchen") ||
+      typeLower.includes("meal") ||
+      typeLower.includes("cake") ||
+      typeLower.includes("bakery")
+    );
+  }, [vendorTypeName]);
+
+  const isVenueType = useMemo(() => {
+    const typeLower = (vendorTypeName || "").toLowerCase();
+    return (
+      typeLower.includes("venue") ||
+      typeLower.includes("marriage garden") ||
+      typeLower.includes("banquet") ||
+      typeLower.includes("resort") ||
+      typeLower.includes("hotel") ||
+      typeLower.includes("lawn") ||
+      typeLower.includes("palace") ||
+      typeLower.includes("fort")
+    );
+  }, [vendorTypeName]);
+
   const allowedMenuTypes = React.useMemo(() => ["venues", "caterers"], []);
+  const showMenusTab = isVenueType || isCatererType;
   const normalizedVendorTypeName = (vendorTypeName || "").trim().toLowerCase();
 
   // Calculate completion percentage
@@ -1333,7 +1361,7 @@ const Storefront = ({ setCompletion }) => {
       { id: "vendor-marketing", fields: ["primaryCTA"] },
     ];
 
-    if (allowedMenuTypes.includes(normalizedVendorTypeName)) {
+    if (showMenusTab) {
       sections.push({ id: "vendor-menus", fields: ["attributes.menus"] });
     }
 
@@ -1362,11 +1390,11 @@ const Storefront = ({ setCompletion }) => {
     sections.forEach((section) => {
       let hasData = false;
       if (section.id === "vendor-facilities") {
-        if (normalizedVendorTypeName.includes("venue")) {
+        if (isVenueType) {
           const vm =
             formData.venue_master || formData.attributes?.venue_master;
           hasData = venueMasterHasData(vm);
-        } else if (normalizedVendorTypeName.includes("cater")) {
+        } else if (isCatererType) {
           const cm =
             formData.caterer_master || formData.attributes?.caterer_master;
           hasData = venueMasterHasData(cm);
@@ -1551,7 +1579,7 @@ const Storefront = ({ setCompletion }) => {
       label: "Facilities & Features",
       icon: <IoCheckmarkCircleOutline size={20} />,
     },
-    ...(allowedMenuTypes.includes(normalizedVendorTypeName)
+    ...(showMenusTab
       ? [
         {
           id: "vendor-menus",
@@ -1736,7 +1764,6 @@ const Storefront = ({ setCompletion }) => {
           />
         );
       case "vendor-facilities": {
-        const isVenue = (vendorTypeName || "").toLowerCase().includes("venue");
         return (
           <VendorFacilities
             formData={formData}
@@ -1744,7 +1771,8 @@ const Storefront = ({ setCompletion }) => {
             onSave={handleSave}
             onShowSuccess={showSuccessModal}
             vendorTypeName={vendorTypeName}
-            isVenue={isVenue}
+            isVenue={isVenueType}
+            isCaterer={isCatererType}
           />
         );
       }

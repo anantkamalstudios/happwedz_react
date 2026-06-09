@@ -128,10 +128,10 @@ const CatererMasterProfile = ({
           <Accordion.Item eventKey="0">
             <Accordion.Header>Section 1 — Basic identity</Accordion.Header>
             <Accordion.Body>
-              <div className="mb-3">
+              {/* <div className="mb-3">
                 <label className="form-label fw-semibold">Brand / Catering company name</label>
                 <Form.Control value={cm.identity.brand_name} onChange={(e) => patchCm({ identity: { ...cm.identity, brand_name: e.target.value } })} />
-              </div>
+              </div> */}
               <SelectField label="Caterer type" options={CATERER_TYPES} value={cm.identity.caterer_type} onChange={(v) => patchCm({ identity: { ...cm.identity, caterer_type: v } })} />
               <div className="mb-3">
                 <label className="form-label fw-semibold">Years of experience</label>

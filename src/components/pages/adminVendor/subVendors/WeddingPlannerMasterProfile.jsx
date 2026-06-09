@@ -188,7 +188,7 @@ const WeddingPlannerMasterProfile = ({
           <Accordion.Header>Section 1 — Basic Identity</Accordion.Header>
           <Accordion.Body>
             <Row>
-              <Col md={12}>
+              {/* <Col md={12}>
                 <div className="mb-3">
                   <label className="form-label fw-semibold">Company / Planner Name</label>
                   <Form.Control
@@ -200,7 +200,7 @@ const WeddingPlannerMasterProfile = ({
                     }
                   />
                 </div>
-              </Col>
+              </Col> */}
               <Col md={6}>
                 <SelectField
                   label="Planner Type"
