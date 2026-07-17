@@ -9,7 +9,7 @@ import "./App.css";
 import NotFound from "./components/pages/NotFound";
 import BlogDetails from "./components/pages/BlogDetails";
 import { useDispatch } from "react-redux";
-import { setCredentials } from "./redux/authSlice";
+import { setCredentials, logout } from "./redux/authSlice";
 import { setVendorCredentials } from "./redux/vendorAuthSlice";
 import "./services/api/axiosInstance";
 import ToastProvider from "./components/layouts/toasts/Toast";
@@ -250,18 +250,16 @@ function App() {
         const TOKEN_EXPIRATION_TIME = 2 * 24 * 60 * 60 * 1000;
 
         if (elapsed >= TOKEN_EXPIRATION_TIME) {
-          // Token expired, clear auth
-          localStorage.removeItem("user");
-          localStorage.removeItem("token");
-          localStorage.removeItem("tokenTimestamp");
+          // Token expired — clear auth in both localStorage and Redux so
+          // UserPrivateRoute doesn't keep treating the user as logged in.
+          dispatch(logout());
         } else {
           // Token still valid, set credentials
           dispatch(setCredentials({ user: JSON.parse(user), token }));
         }
       } else {
         // No timestamp means old token, consider it expired
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
+        dispatch(logout());
       }
     }
 
