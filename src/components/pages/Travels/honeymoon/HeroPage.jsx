@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Shield } from "lucide-react";
 import FightIcon from "../../../../assets/trevel_icon/airplane.png";
@@ -13,6 +13,12 @@ import InsuranceSearchPanel from "./InsuranceSearchPanel";
 import UpcomingBookings from "./components/UpcomingBookings";
 import { getRecentHotelBookings } from "../../../../services/api/hotelApi";
 import "./index.css";
+
+const TAB_PARAM_MAP = {
+  hotels: "Hotels",
+  flights: "Flights",
+  insurance: "Insurance",
+};
 
 const formatSelectedDate = (dateValue) => {
   if (!dateValue) return "";
@@ -49,7 +55,17 @@ export default function FlightHero() {
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const [activeTab, setActiveTab] = useState("Flights");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = (searchParams.get("tab") || "").toLowerCase();
+  const activeTab = TAB_PARAM_MAP[tabParam] || "Flights";
+
+  const setActiveTab = (label) => {
+    const paramKey = Object.keys(TAB_PARAM_MAP).find(
+      (key) => TAB_PARAM_MAP[key] === label,
+    );
+    setSearchParams(paramKey ? { tab: paramKey } : {}, { replace: true });
+  };
+
   const [recentHotelBookings, setRecentHotelBookings] = useState([]);
   const [recentHotelBookingsLoading, setRecentHotelBookingsLoading] = useState(false);
 

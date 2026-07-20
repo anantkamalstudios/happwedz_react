@@ -226,13 +226,19 @@ const Herosection = () => {
   }, []);
 
 
+  const getVendorDetailPath = (vendor) => {
+    const target =
+      vendor?.slug ?? vendor?.id ?? vendor?.vendor_services_id ?? null;
+    return target ? `/details/info/${target}` : null;
+  };
+
   const handleVendorSelect = (vendor) => {
-    const id = vendor?.id ?? vendor?.vendor_services_id;
-    if (!id) return;
+    const path = getVendorDetailPath(vendor);
+    if (!path) return;
     setShowVendorDropdown(false);
     setVendorQuery("");
     setVendorResults([]);
-    navigate(`/details/info/${id}`);
+    navigate(path);
   };
 
   const handleVendorSearchSubmit = (e) => {
@@ -325,7 +331,7 @@ const Herosection = () => {
               vendorResults.map((vendor, idx) => (
                 <Link
                   key={vendor?.id ?? vendor?.vendor_services_id ?? `vendor-${idx}`}
-                  to={`/details/info/${vendor?.id ?? vendor?.vendor_services_id}`}
+                  to={getVendorDetailPath(vendor) ?? "#"}
                   className="d-block text-decoration-none text-dark border-bottom hero-vendor-result-item"
                   onClick={() => {
                     setShowVendorDropdown(false);
