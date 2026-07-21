@@ -196,15 +196,17 @@ const HomeGennie = () => {
           onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
           onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
-          <img
-            src="/shadigif.gif"
-            alt="logo"
+          <video
+            src="/shadi.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
             style={{
               height: "100%",
               width: "100%",
               objectFit: "cover",
             }}
-            loading="lazy"
           />
         </button>
       )}

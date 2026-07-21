@@ -1,0 +1,33 @@
+User-agent: *
+Allow: /
+
+Disallow: /user-dashboard
+Disallow: /vendor-dashboard
+Disallow: /matrimonial-Dashboard
+Disallow: /edit-profile
+Disallow: /movment-plus
+Disallow: /my-wedding-websites
+Disallow: /choose-template
+Disallow: /finallook
+Disallow: /wedding-form
+Disallow: /einvites/editor
+Disallow: /einvites/my-cards
+Disallow: /einvites/our-cards
+Disallow: /try/bride
+Disallow: /try/groom
+Disallow: /try/upload
+Disallow: /try/filters
+Disallow: /try/outfit-filters
+Disallow: /try/makeup
+Disallow: /hotels/all-booking
+Disallow: /hotels/booking
+Disallow: /honeymoon/flights/my-booking
+Disallow: /honeymoon/flights/booking
+Disallow: /honeymoon/flights/book
+Disallow: /honeymoon/flights/confirmation
+Disallow: /honeymoon/insurance/book
+Disallow: /honeymoon/insurance/booking
+Disallow: /test-interactions
+Disallow: /demo-recently-viewed
+
+Sitemap: https://happywedz.com/sitemap.xml
