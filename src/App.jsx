@@ -198,6 +198,12 @@ const HoneymoonHeroPage = lazy(
 const HoneymoonHotelsPage = lazy(
   () => import("./components/pages/Travels/honeymoon/HoneymoonHotelsPage"),
 );
+const CabSearchResults = lazy(
+  () => import("./components/pages/Travels/honeymoon/CabSearchResults"),
+);
+const CabBookingPage = lazy(
+  () => import("./components/pages/Travels/honeymoon/CabBookingPage"),
+);
 const HotelbedsHotelsPage = lazy(
   () => import("./components/pages/Travels/hotelbeds/HotelbedsHotelsPage"),
 );
@@ -375,6 +381,8 @@ function App() {
                 path="/honeymoon/flights"
                 element={<FlightSearchResults />}
               />
+              <Route path="/honeymoon/cabs" element={<CabSearchResults />} />
+              <Route path="/honeymoon/cabs/book" element={<CabBookingPage />} />
               <Route
                 path="/honeymoon/insurance"
                 element={<TravelInsuranceResults />}

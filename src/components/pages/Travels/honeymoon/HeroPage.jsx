@@ -9,6 +9,7 @@ import ActivityIcon from "../../../../assets/trevel_icon/checklist.png";
 import CruiseIcon from "../../../../assets/trevel_icon/cruise-ship.png";
 import FlightSearchForm from "./components/FlightSearchForm";
 import HotelSearchForm from "./components/HotelSearchForm";
+import CarRentalSearchForm from "./components/CarRentalSearchForm";
 import InsuranceSearchPanel from "./InsuranceSearchPanel";
 import UpcomingBookings from "./components/UpcomingBookings";
 import { getRecentHotelBookings } from "../../../../services/api/hotelApi";
@@ -18,6 +19,7 @@ const TAB_PARAM_MAP = {
   hotels: "Hotels",
   flights: "Flights",
   insurance: "Insurance",
+  "car-rental": "Car rental",
 };
 
 const formatSelectedDate = (dateValue) => {
@@ -74,14 +76,18 @@ export default function FlightHero() {
       ? "Book Cheap Flight Tickets With Ease"
       : activeTab === "Insurance"
         ? "Travel Insurance For Your Trip"
-        : "Book your stay with India's largest network of Hotels.";
+        : activeTab === "Car rental"
+          ? "Rent A Car For Your Honeymoon Trip"
+          : "Book your stay with India's largest network of Hotels.";
 
   const heroSubtitle =
     activeTab === "Flights"
       ? "Discover your next dream destination"
       : activeTab === "Insurance"
         ? "Compare international, student & multi-trip plans"
-        : "Search city stays, romantic escapes, and premium honeymoon-friendly hotels.";
+        : activeTab === "Car rental"
+          ? "Pick up a car at the airport, station or in the city"
+          : "Search city stays, romantic escapes, and premium honeymoon-friendly hotels.";
 
   useEffect(() => {
     let active = true;
@@ -145,6 +151,7 @@ export default function FlightHero() {
                 {
                   icon: { src: CarIcon, alt: "Car rental" },
                   label: "Car rental",
+                  onClick: () => setActiveTab("Car rental"),
                 },
                 {
                   icon: { src: ActivityIcon, alt: "Activities" },
@@ -222,6 +229,8 @@ export default function FlightHero() {
               <FlightSearchForm />
             ) : activeTab === "Insurance" ? (
               <InsuranceSearchPanel formatSelectedDate={formatSelectedDate} />
+            ) : activeTab === "Car rental" ? (
+              <CarRentalSearchForm />
             ) : (
               <>
                 <HotelSearchForm />
