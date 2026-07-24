@@ -6,27 +6,23 @@ import App from "./App.jsx";
 import { Provider } from "react-redux";
 import store from "./redux/store.js";
 import { BrowserRouter } from "react-router-dom";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 import "bootstrap/dist/css/bootstrap.min.css";
 import LoaderProvider from "./components/context/LoaderContext";
 
-// NOTE: The global MUI <ThemeProvider> was removed from here on purpose.
-// Its only job was setting the font family on MUI components, which is now
-// handled by a plain CSS rule in index.css. Keeping the provider here forced
-// the entire 136KB MUI styling engine onto the homepage's critical path even
-// though the landing page renders zero MUI components (only ~7 lazy routes do).
-// Those routes pull MUI in their own lazy chunks when they load.
+// NOTE: The global MUI <ThemeProvider> was removed (font-only theme, now a CSS
+// rule in index.css). The global <GoogleOAuthProvider> was also removed: it
+// loaded Google's GSI script on every page, setting Google third-party cookies
+// that fail the Best Practices audit. It now wraps only the two login components
+// that need it (see GoogleAuthProvider.jsx).
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <GoogleOAuthProvider clientId="5404414440-02ttfd1mvhk62e5bubrkcipdjhdrrabv.apps.googleusercontent.com">
-      <LoaderProvider>
-        <Provider store={store}>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </Provider>
-      </LoaderProvider>
-    </GoogleOAuthProvider>
+    <LoaderProvider>
+      <Provider store={store}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </Provider>
+    </LoaderProvider>
   </StrictMode>
 );

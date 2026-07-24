@@ -9,8 +9,9 @@ import { useLoader } from "../context/LoaderContext";
 import userApi from "../../services/api/userApi";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import GoogleAuthProvider from "./GoogleAuthProvider";
 
-const CustomerLogin = () => {
+const CustomerLoginInner = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -341,5 +342,13 @@ const CustomerLogin = () => {
     </div>
   );
 };
+
+// Provide the Google OAuth context (and load its GSI script) only when the login
+// page is actually rendered — not app-wide.
+const CustomerLogin = () => (
+  <GoogleAuthProvider>
+    <CustomerLoginInner />
+  </GoogleAuthProvider>
+);
 
 export default CustomerLogin;

@@ -11,8 +11,9 @@ import { IoClose } from "react-icons/io5";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { Link } from "react-router-dom";
+import GoogleAuthProvider from "../../auth/GoogleAuthProvider";
 
-export default function LoginPopup({ isOpen, onClose }) {
+function LoginPopupInner({ isOpen, onClose }) {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -371,5 +372,15 @@ export default function LoginPopup({ isOpen, onClose }) {
         `}</style>
       </div>
     </>
+  );
+}
+
+// Provide the Google OAuth context only when this popup renders (it uses the
+// useGoogleLogin hook), so the GSI script + cookies aren't loaded app-wide.
+export default function LoginPopup(props) {
+  return (
+    <GoogleAuthProvider>
+      <LoginPopupInner {...props} />
+    </GoogleAuthProvider>
   );
 }
