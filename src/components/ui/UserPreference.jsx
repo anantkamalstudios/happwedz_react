@@ -1,11 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const UserPreference = () => {
-  const [visible, setVisible] = useState(() => {
-    if (typeof window === "undefined") return true;
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    // Don't show instantly — delay 3s so it doesn't hurt LCP/CLS scores.
+    // If user already consented, never show again.
     const stored = window.localStorage.getItem("cookieConsent");
-    return !stored;
-  });
+    if (stored) return;
+    const timer = setTimeout(() => setVisible(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleChoice = (choice) => {
     try {

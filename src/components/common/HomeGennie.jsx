@@ -174,6 +174,23 @@ const HomeGennie = () => {
       {!isChatOpen && (
         <button
           onClick={handleOpenClick}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "scale(1.1)";
+            // Lazy-load GIF only when user hovers — avoids 1.6 MB on initial page load
+            const img = e.currentTarget.querySelector("img");
+            if (img && img.dataset.src) {
+              img.src = img.dataset.src;
+              delete img.dataset.src;
+            }
+          }}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+          onFocus={(e) => {
+            const img = e.currentTarget.querySelector("img");
+            if (img && img.dataset.src) {
+              img.src = img.dataset.src;
+              delete img.dataset.src;
+            }
+          }}
           style={{
             position: "fixed",
             bottom: "32px",
@@ -181,7 +198,7 @@ const HomeGennie = () => {
             width: "74px",
             height: "74px",
             borderRadius: "50%",
-            background: "white",
+            background: "linear-gradient(135deg, #e83581 0%, #ff6eb4 50%, #e83581 100%)",
             border: "none",
             boxShadow:
               "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
@@ -193,21 +210,29 @@ const HomeGennie = () => {
             transition: "transform 0.3s ease",
             overflow: "hidden",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
-          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
+          {/* GIF starts with data-src; actual src set on first hover to avoid 1.6MB initial load */}
           <img
-            src="/shadigif.gif"
-            alt="logo"
+            data-src="/shadigif.gif"
+            src="/gennie-logo.png"
+            alt="Genie"
             style={{
               height: "100%",
               width: "100%",
               objectFit: "cover",
+              borderRadius: "50%",
             }}
-            loading="lazy"
           />
+          <style>{`
+            @keyframes genieButtonPulse {
+              0% { background-position: 0% 50%; }
+              50% { background-position: 100% 50%; }
+              100% { background-position: 0% 50%; }
+            }
+          `}</style>
         </button>
       )}
+
 
       {isChatOpen && (
         <div

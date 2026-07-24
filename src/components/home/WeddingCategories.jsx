@@ -69,7 +69,8 @@ const WeddingCategories = ({ onSelect }) => {
   return (
     <div className="container py-5 wcg-grid">
       <div className="d-flex align-items-center justify-content-between mb-3">
-        <h3 className="fw-bold mb-0 text-dark">Explore by Category</h3>
+        {/* Section heading -> h2 (after the hero h1). .h3 keeps the visual size. */}
+        <h2 className="h3 fw-bold mb-0 text-dark">Explore by Category</h2>
       </div>
 
       <div className="row g-3 g-md-4">
@@ -108,7 +109,8 @@ const WeddingCategories = ({ onSelect }) => {
                 <div className="pt-2">
                   <div className="d-flex align-items-center justify-content-between my-2">
                     <div>
-                      <h5 className="my-2">{cat.title}</h5>
+                      {/* Card title -> h3 (under the h2 section). .h5 keeps the size. */}
+                      <h3 className="h5 my-2">{cat.title}</h3>
                     </div>
                   </div>
                   <div className=" pills d-flex flex-wrap gap-2 mb-3">

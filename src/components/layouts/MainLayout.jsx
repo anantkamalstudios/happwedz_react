@@ -1,9 +1,9 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { Outlet, useParams } from "react-router-dom";
 import Header from "./Header";
 import Footer from "./Footer";
 import { MyProvider } from "../../context/useContext";
-import HomeGennie from "../common/HomeGennie";
+const HomeGennie = lazy(() => import("../common/HomeGennie"));
 import { FilterProvider } from "../../context/realWedding.context.jsx";
 
 export default function MainLayout() {
@@ -26,7 +26,9 @@ export default function MainLayout() {
                 zIndex: "99",
               }}
             >
-              <HomeGennie />
+              <Suspense fallback={null}>
+                <HomeGennie />
+              </Suspense>
             </div>
           )}
           <Footer />

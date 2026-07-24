@@ -11,6 +11,7 @@ import { FaArrowRightLong, FaChevronDown, FaChevronUp } from "react-icons/fa6";
 import usePhotography from "../../hooks/usePhotography";
 import { useFilter } from "../../context/realWedding.context";
 import axiosInstance from "../../services/api/axiosInstance";
+import { dedupeRequest } from "../../services/api/dedupeApi";
 
 const Header = () => {
   // Add state to track window width for responsive UI
@@ -183,10 +184,10 @@ const Header = () => {
   useEffect(() => {
     const fetchSubcategories = async () => {
       try {
-        const response = await fetch(
-          "https://happywedz.com/api/vendor-types/with-subcategories/all",
+        const res = await dedupeRequest(
+          "https://happywedz.com/api/vendor-types/with-subcategories/all"
         );
-        const data = await response.json();
+        const data = res.data;
         const venues = data.find(
           (vendor) => vendor.name && vendor.name.toLowerCase() === "venues",
         );
@@ -220,10 +221,10 @@ const Header = () => {
   useEffect(() => {
     const fetchVendorCategories = async () => {
       try {
-        const response = await fetch(
-          "https://happywedz.com/api/vendor-types/with-subcategories/all",
+        const res = await dedupeRequest(
+          "https://happywedz.com/api/vendor-types/with-subcategories/all"
         );
-        const data = await response.json();
+        const data = res.data;
         setVendorCategories(Array.isArray(data) ? data : []);
       } catch (error) {
         setVendorCategories([]);
@@ -290,7 +291,7 @@ const Header = () => {
               to="/"
               onClick={handleMobileLinkClick}
             >
-              <img src="/images/logo.webp" alt="HappyWedz" height="30" />
+              <img src="/images/logo.webp" alt="HappyWedz" width="120" height="30" />
             </Link>
 
             {windowWidth <= 1299 && (
@@ -322,7 +323,7 @@ const Header = () => {
             {/* Drawer Header */}
             <div className="d-flex justify-content-between align-items-center p-3 primary-bg">
               <Link to="/" onClick={handleMobileLinkClick}>
-                <img src="/images/logo.webp" alt="HappyWedz" height="30" />
+                <img src="/images/logo.webp" alt="HappyWedz" width="120" height="30" />
               </Link>
               <button
                 className="btn border-0 p-0"
@@ -872,19 +873,25 @@ const Header = () => {
 
               {/* App Download Section */}
               <div className="mt-4 pt-3 border-top">
-                <h6 className="fw-semibold mb-3">Get the App</h6>
+                {/* Nav-drawer label, not a document heading -> use <p> (styled as
+                    h6) so it doesn't break the page heading sequence. */}
+                <p className="h6 fw-semibold mb-3">Get the App</p>
                 <div className="d-flex gap-2 mb-3">
                   <img
                     src="/images/header/playstore.png"
                     alt="Play Store"
                     className="img-fluid"
-                    style={{ maxHeight: "35px", cursor: "pointer" }}
+                    width="118"
+                    height="35"
+                    style={{ maxHeight: "35px", width: "auto", cursor: "pointer" }}
                   />
                   <img
                     src="/images/header/appstore.png"
                     alt="App Store"
                     className="img-fluid"
-                    style={{ maxHeight: "35px", cursor: "pointer" }}
+                    width="118"
+                    height="35"
+                    style={{ maxHeight: "35px", width: "auto", cursor: "pointer" }}
                   />
                 </div>
               </div>
@@ -970,6 +977,7 @@ const Header = () => {
                           <img
                             src="/images/logo.webp"
                             alt="HappyWedz"
+                            width="160"
                             height="40"
                             className="mx-auto d-block"
                           />

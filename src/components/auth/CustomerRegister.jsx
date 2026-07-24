@@ -65,7 +65,7 @@ const CustomerRegister = () => {
 
   useEffect(() => {
     axios
-      .get("https://restcountries.com/v3.1/all?fields=name,cca2")
+      .get("/restcountries/v3.1/all?fields=name,cca2")
       .then((res) => {
         const sorted = res.data
           .map((c) => ({
@@ -74,13 +74,14 @@ const CustomerRegister = () => {
           }))
           .sort((a, b) => a.name.localeCompare(b.name));
         setCountries(sorted);
-      });
+      })
+      .catch((err) => console.warn("Failed to fetch countries:", err));
   }, []);
 
   useEffect(() => {
     if (!formData.country) return;
     axios
-      .post("https://countriesnow.space/api/v0.1/countries/cities", {
+      .post("/countriesnow/api/v0.1/countries/cities", {
         country: formData.country,
       })
       .then((res) => {

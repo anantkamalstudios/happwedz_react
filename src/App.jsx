@@ -6,8 +6,8 @@ import MatrimonialLayout from "./components/layouts/MatrimonialLayout";
 import Loader from "./components/ui/Loader";
 import "./App.css";
 
-import NotFound from "./components/pages/NotFound";
-import BlogDetails from "./components/pages/BlogDetails";
+const NotFound = lazy(() => import("./components/pages/NotFound"));
+const BlogDetails = lazy(() => import("./components/pages/BlogDetails"));
 import { useDispatch } from "react-redux";
 import { setCredentials } from "./redux/authSlice";
 import { setVendorCredentials } from "./redux/vendorAuthSlice";
@@ -16,25 +16,29 @@ import ToastProvider from "./components/layouts/toasts/Toast";
 import LoaderProvider from "./components/context/LoaderContext";
 import VendorPrivateRoute from "./components/routes/VendorPrivateRoute";
 import UserPrivateRoute from "./components/routes/UserPrivateRoute";
-import VendorLeadsPage from "./components/pages/adminVendor/VendorLeadsPage";
-import ReviewsPage from "./components/pages/WriteReviewPage";
-import AboutUs from "./components/layouts/AboutUs";
-import DestinationWedding from "./components/pages/DestinationWedding";
-import SiteMap from "./components/pages/SiteMap";
-import TopRatedVendors from "./components/pages/TopRatedVendors";
-import CareersPage from "./components/pages/CareersPage";
-import DestinationWeddingDetailPage from "./components/pages/DestinationWeddingDetailPage";
-import BusinessClaimForm from "./components/pages/BusinessClaimForm";
+const VendorLeadsPage = lazy(() => import("./components/pages/adminVendor/VendorLeadsPage"));
+const ReviewsPage = lazy(() => import("./components/pages/WriteReviewPage"));
+const AboutUs = lazy(() => import("./components/layouts/AboutUs"));
+const DestinationWedding = lazy(() => import("./components/pages/DestinationWedding"));
+const SiteMap = lazy(() => import("./components/pages/SiteMap"));
+const TopRatedVendors = lazy(() => import("./components/pages/TopRatedVendors"));
+const CareersPage = lazy(() => import("./components/pages/CareersPage"));
+const DestinationWeddingDetailPage = lazy(() => import("./components/pages/DestinationWeddingDetailPage"));
+const BusinessClaimForm = lazy(() => import("./components/pages/BusinessClaimForm"));
 import { ToastContainer } from "react-toastify";
-import PublicWeddingView from "./components/pages/WeddingPublicView";
+const PublicWeddingView = lazy(() => import("./components/pages/WeddingPublicView"));
 import ScrollToTop from "./components/ScrollToTop";
 import UserPreference from "./components/ui/UserPreference";
-import MovementPlusHome from "./components/pages/movments-plus/MovementPlusHome";
-import MovmentPlusGuestToken from "./components/pages/movments-plus/MovmentPlusGuestToken";
-import MovmentPlusUploadSelfie from "./components/pages/movments-plus/MovmentPlusUploadSelfie";
-import MovmentPlusGalleryPage from "./components/pages/movments-plus/MovmentPlusGalleryPage";
+const MovementPlusHome = lazy(() => import("./components/pages/movments-plus/MovementPlusHome"));
+const MovmentPlusGuestToken = lazy(() => import("./components/pages/movments-plus/MovmentPlusGuestToken"));
+const MovmentPlusUploadSelfie = lazy(() => import("./components/pages/movments-plus/MovmentPlusUploadSelfie"));
+const MovmentPlusGalleryPage = lazy(() => import("./components/pages/movments-plus/MovmentPlusGalleryPage"));
 
-const Home = lazy(() => import("./components/pages/Home"));
+// Home is eager (NOT lazy): it's the "/" landing route and its hero is the LCP
+// element. Lazy-loading it added a network round-trip on the critical path
+// (react-core boots -> Suspense loader -> fetch Home chunk -> render hero).
+// Importing it directly lets the hero render as soon as React boots.
+import Home from "./components/pages/Home";
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
 const CustomerRegister = lazy(
   () => import("./components/auth/CustomerRegister"),

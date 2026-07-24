@@ -61,12 +61,15 @@ const LocationModalWithAPI = () => {
   };
 
   useEffect(() => {
-    axios.get("https://restcountries.com/v3.1/all?fields=name").then((res) => {
-      const sorted = res.data
-        .map((c) => c.name.common)
-        .sort((a, b) => a.localeCompare(b));
-      setCountries(sorted);
-    });
+    axios
+      .get("/restcountries/v3.1/all?fields=name")
+      .then((res) => {
+        const sorted = res.data
+          .map((c) => c.name.common)
+          .sort((a, b) => a.localeCompare(b));
+        setCountries(sorted);
+      })
+      .catch((err) => console.warn("Failed to fetch countries:", err));
   }, []);
 
   useEffect(() => {
@@ -78,7 +81,7 @@ const LocationModalWithAPI = () => {
     if (!selectedCountry) return;
 
     axios
-      .post("https://countriesnow.space/api/v0.1/countries/cities", {
+      .post("/countriesnow/api/v0.1/countries/cities", {
         country: selectedCountry,
       })
       .then((res) => {

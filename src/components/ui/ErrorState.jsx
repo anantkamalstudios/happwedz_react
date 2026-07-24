@@ -24,7 +24,9 @@ const ErrorState = ({
         >
           <FiAlertTriangle size={28} />
         </div>
-        <h5 className="fw-bold mb-2">{title}</h5>
+        {/* h2 (not h5) so it doesn't skip heading levels after the page h1.
+            The .h5 class keeps the original visual size. */}
+        <h2 className="h5 fw-bold mb-2">{title}</h2>
         <p className="text-muted mb-4">{message}</p>
         {onRetry && (
           <button

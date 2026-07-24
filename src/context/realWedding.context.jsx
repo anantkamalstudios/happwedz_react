@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config/constants";
+import { dedupeRequest } from "../services/api/dedupeApi";
 
 const FilterContext = createContext();
 
@@ -28,13 +29,14 @@ export const FilterProvider = ({ children }) => {
     () => async () => {
       try {
         if (cities.length === 0) {
-          const res = await axios.post(
+          const res = await dedupeRequest(
             "https://countriesnow.space/api/v0.1/countries/cities",
+            "post",
             { country: "India" }
           );
 
           if (res.data?.data) {
-            const sorted = res.data.data.sort((a, b) => a.localeCompare(b));
+            const sorted = [...res.data.data].sort((a, b) => a.localeCompare(b));
             setCities(sorted);
           }
         }

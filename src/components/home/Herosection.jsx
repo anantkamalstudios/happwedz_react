@@ -6,7 +6,11 @@ import { MdExpandMore, MdExpandLess } from "react-icons/md";
 import { setLocation } from "../../redux/locationSlice";
 import { useVendorType } from "../../hooks/useVendorType";
 import { useHome } from "../../hooks/useHome";
-import herosection from "../../assets/Hero_2.jpg";
+
+// Served from /public with a stable URL so it can be <link rel="preload">-ed
+// in index.html and start downloading before the JS bundle even parses.
+// This is the LCP image — keep it identical to the preload href.
+const HERO_FALLBACK = "/hero-2.webp";
 
 const RotatingWordHeadline = ({
   words = ["Unique", "Dreamy", "Perfect"],
@@ -119,6 +123,21 @@ const Herosection = () => {
     return () => document.removeEventListener("mousedown", handleOutside);
   }, [showCategoryDropdown]);
 
+  // LCP guard: always paint the local, optimized, preloaded webp first.
+  // Only swap to the (unpreloaded, remote) carousel image once the browser is
+  // idle — i.e. after the Largest Contentful Paint has already happened.
+  const remoteBg = getCurrentBackgroundImage();
+  const [useRemoteBg, setUseRemoteBg] = useState(false);
+  useEffect(() => {
+    if (!remoteBg) return;
+    const schedule =
+      window.requestIdleCallback || ((cb) => setTimeout(cb, 1500));
+    const cancel = window.cancelIdleCallback || clearTimeout;
+    const id = schedule(() => setUseRemoteBg(true));
+    return () => cancel(id);
+  }, [remoteBg]);
+  const bgImage = useRemoteBg && remoteBg ? remoteBg : HERO_FALLBACK;
+
   const filteredCities = cities.filter((city) =>
     city.toLowerCase().includes(citySearch.toLowerCase())
   );
@@ -142,21 +161,34 @@ const Herosection = () => {
     }
   };
 
-  const bgImage = getCurrentBackgroundImage() || herosection;
-
   return (
     <section
-      className="hero-search position-relative text-white"
+      className="hero-search position-relative text-white overflow-hidden"
       style={{
-        backgroundImage: `url(${bgImage})`,
-        backgroundPosition: "center",
-        backgroundSize: "cover",
         paddingTop: "120px",
         paddingBottom: "80px",
-        transition: "background-image 1s ease-in-out",
       }}
     >
-      <div className="overlay" />
+      <img
+        src={bgImage}
+        alt="HappyWedz Hero Background"
+        fetchPriority="high"
+        loading="eager"
+        decoding="async"
+        width="1920"
+        height="800"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          zIndex: 0,
+          willChange: "opacity",
+        }}
+      />
+      <div className="overlay" style={{ zIndex: 1 }} />
       <Container className="py-5 position-relative" style={{ zIndex: 2 }}>
         <Row className="justify-content-center text-center">
           <Col lg={10}>
@@ -392,6 +424,10 @@ const Herosection = () => {
                       />
                       <button
                         type="button"
+                        aria-label={
+                          showCityDropdown ? "Hide city list" : "Show city list"
+                        }
+                        aria-expanded={showCityDropdown}
                         onClick={() => setShowCityDropdown(!showCityDropdown)}
                         style={{
                           position: "absolute",
