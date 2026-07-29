@@ -581,7 +581,7 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
                         {searchResults.map((result) => (
                           <Link
                             key={result.id}
-                            to={`/details/info/${result.id}`}
+                            to={`/details/info/${result.slug || result.id}`}
                             className="result-item-hover d-block text-decoration-none border-bottom"
                             style={{ color: "inherit" }}
                             onClick={() => setShowResults(false)}

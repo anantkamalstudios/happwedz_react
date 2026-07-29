@@ -1,0 +1,435 @@
+import { useState } from 'react';
+import { FaPlane, FaUser, FaEnvelope, FaPhone } from 'react-icons/fa';
+import { bookFlight, createFlightPaymentOrder, verifyAndBookFlight } from '../../../../../services/api/flightApi';
+
+export default function BookingReview({ 
+  trip, 
+  returnTrip, 
+  fare, 
+  returnFare, 
+  searchParams, 
+  travellerInfo, 
+  contact, 
+  gstInfo,
+  seatSelections,
+  bookingId,
+  reviewData,
+  onBack, 
+  onPaymentSuccess 
+}) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const formatTime = (dateStr) => {
+    return new Date(dateStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  };
+
+  const formatDate = (dateStr) => {
+    return new Date(dateStr).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
+  const formatDuration = (minutes) => {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return `${h}h ${m}m`;
+  };
+
+  // Get confirmed amount from review API response
+  const getConfirmedAmount = () => {
+    if (!reviewData) {
+      // Fallback to calculated amount if reviewData is not available
+      return calculateTotalAmount();
+    }
+
+    // Try different possible paths in the review response
+    let totalFlightAmount = 0;
+
+    // Path 1: reviewData.results[] shape
+    if (Array.isArray(reviewData.results) && reviewData.results.length > 0) {
+      totalFlightAmount = reviewData.results.reduce((sum, r) => {
+        const fare = r?.fare?.fd?.ADULT?.fC?.TF || r?.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF || 0;
+        return sum + Number(fare || 0);
+      }, 0);
+    }
+    // Path 2: reviewData.totalPriceList[] shape
+    else if (Array.isArray(reviewData.totalPriceList) && reviewData.totalPriceList.length > 0) {
+      totalFlightAmount = Number(reviewData.totalPriceList[0]?.fd?.ADULT?.fC?.TF || 0);
+    }
+    // Path 3a: reviewData.tripInfos is ARRAY (your current response)
+    else if (Array.isArray(reviewData.tripInfos) && reviewData.tripInfos.length > 0) {
+      totalFlightAmount = reviewData.tripInfos.reduce((sum, trip) => {
+        const fare = trip?.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF || 0;
+        return sum + Number(fare || 0);
+      }, 0);
+    }
+    // Path 3b: reviewData.tripInfos is OBJECT with numeric keys
+    else if (reviewData.tripInfos && typeof reviewData.tripInfos === 'object') {
+      const tripInfosValues = Object.values(reviewData.tripInfos);
+      totalFlightAmount = tripInfosValues.reduce((sum, routeTrips) => {
+        if (!Array.isArray(routeTrips) || routeTrips.length === 0) return sum;
+        const routeFare = routeTrips[0]?.totalPriceList?.[0]?.fd?.ADULT?.fC?.TF || 0;
+        return sum + Number(routeFare || 0);
+      }, 0);
+    }
+    // Path 4: direct totalFare
+    else if (reviewData.totalFare) {
+      totalFlightAmount = Number(reviewData.totalFare || 0);
+    }
+
+    if (!totalFlightAmount || Number.isNaN(totalFlightAmount)) {
+      console.warn('Could not find confirmed amount in reviewData, using calculated amount');
+      totalFlightAmount = calculateTotalAmount();
+    }
+
+    // Add seat charges
+    const seatTotal = seatSelections?.reduce((sum, seat) => sum + (seat.amount || 0), 0) || 0;
+    
+    return totalFlightAmount + seatTotal;
+  };
+
+  const calculateTotalAmount = () => {
+    const adults = searchParams.adults || 1;
+    const onwardTotal = fare.fd.ADULT.fC.TF * adults;
+    const returnTotal = returnFare ? returnFare.fd.ADULT.fC.TF * adults : 0;
+    const seatTotal = seatSelections?.reduce((sum, seat) => sum + (seat.amount || 0), 0) || 0;
+    return onwardTotal + returnTotal + seatTotal;
+  };
+
+  const renderFlightSummary = (flightTrip, flightFare, title) => {
+    const first = flightTrip.sI[0];
+    const last = flightTrip.sI[flightTrip.sI.length - 1];
+    const airline = first.fD.aI;
+    const duration = flightTrip.sI.reduce((sum, seg) => sum + seg.duration, 0);
+    const stops = flightTrip.sI.length - 1;
+
+    return (
+      <div className="flight-summary-compact mb-3">
+        <h6 className="flight-summary-title">{title}</h6>
+        <div className="d-flex align-items-center gap-3">
+          <img
+            src={`https://logos.skyscnr.com/images/airlines/favicon/${airline.code}.png`}
+            alt={airline.name}
+            className="airline-logo-sm"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = `https://airlines.airhex.com/airlines-logo/${airline.code.toLowerCase()}.png`;
+            }}
+          />
+          <div className="flex-grow-1">
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <div className="airline-name-sm">{airline.name} {first.fD.fN}</div>
+                <div className="flight-route-sm">
+                  {first.da.code} {formatTime(first.dt)} → {last.aa.code} {formatTime(last.at)}
+                </div>
+              </div>
+              <div className="text-end">
+                <div className="flight-duration-sm">{formatDuration(duration)}</div>
+                <div className="flight-stops-sm">{stops === 0 ? 'Non-Stop' : `${stops} Stop${stops > 1 ? 's' : ''}`}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const handleProceedToPayment = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Use confirmed amount from review API response
+      const confirmedAmount = getConfirmedAmount();
+      
+      console.log('Booking with confirmed amount:', confirmedAmount);
+      console.log('Review data:', reviewData);
+      
+      // Strip + prefix from country code for phone number
+      const cleanCountryCode = contact.countryCode.replace(/^\+/, '');
+      const fullPhoneNumber = `${cleanCountryCode}${contact.mobile}`;
+      
+      const payload = {
+        bookingId: bookingId,
+        paymentInfos: [{ amount: confirmedAmount }],
+        travellerInfo: travellerInfo,
+        deliveryInfo: {
+          emails: [contact.email],
+          contacts: [fullPhoneNumber],
+        },
+        ...(gstInfo && {
+          gstInfo: {
+            gstNumber: gstInfo.gstNumber,
+            email: gstInfo.companyEmail,
+            registeredName: gstInfo.companyName,
+            mobile: fullPhoneNumber,
+            address: '',
+          },
+        }),
+      };
+
+      console.log('Booking payload:', payload);
+
+      const razorpayReady = await loadRazorpayScript();
+      if (!razorpayReady) {
+        throw new Error('Razorpay SDK failed to load');
+      }
+
+      // Build payment order payload (existing backend contract)
+      const paymentOrderPayload = {
+        provider: trip?.sI?.[0]?.fD?.aI?.code || 'TJ',
+        offer_id: bookingId,
+        trip_type: returnTrip ? 'round' : 'oneway',
+        from: trip?.sI?.[0]?.da?.code || '',
+        to: trip?.sI?.[trip.sI.length - 1]?.aa?.code || '',
+        departure: trip?.sI?.[0]?.dt || '',
+        arrival: trip?.sI?.[trip.sI.length - 1]?.at || '',
+        flight_no: `${trip?.sI?.[0]?.fD?.aI?.code || ''}-${trip?.sI?.[0]?.fD?.fN || ''}`,
+        airline: trip?.sI?.[0]?.fD?.aI?.name || '',
+        cabin_class: fare?.fd?.ADULT?.cc || 'ECONOMY',
+        price: confirmedAmount,
+        passengers: travellerInfo,
+        contact: {
+          email: contact.email,
+          phone: fullPhoneNumber,
+        },
+      };
+
+      let orderResponse;
+      try {
+        orderResponse = await createFlightPaymentOrder(paymentOrderPayload);
+      } catch (paymentOrderError) {
+        console.warn('Razorpay order API failed, falling back to direct booking:', paymentOrderError);
+        const directResponse = await bookFlight(payload);
+        if (directResponse && directResponse.bookingId) {
+          onPaymentSuccess(directResponse);
+          return;
+        }
+        throw paymentOrderError;
+      }
+
+      // Support backend response: { razorpay_order_id, key_id, amount, currency }
+      const orderId = orderResponse?.razorpay_order_id || orderResponse?.order_id || orderResponse?.order?.id || orderResponse?.id;
+      const razorpayKey = orderResponse?.key_id || orderResponse?.key || orderResponse?.razorpay_key || import.meta.env.VITE_RAZORPAY_KEY_ID || '';
+      const orderAmount = orderResponse?.amount || orderResponse?.order?.amount || undefined;
+      const orderCurrency = orderResponse?.currency || orderResponse?.order?.currency || 'INR';
+
+      if (!orderId || !razorpayKey) {
+        const directResponse = await bookFlight(payload);
+        if (directResponse && directResponse.bookingId) {
+          onPaymentSuccess(directResponse);
+          return;
+        }
+        throw new Error('Invalid Razorpay order response');
+      }
+
+      const options = {
+        key: razorpayKey,
+        amount: orderAmount,
+        currency: orderCurrency,
+        name: 'HappyWedz',
+        description: 'Flight Booking Payment',
+        order_id: orderId,
+        prefill: {
+          name: travellerInfo?.[0] ? `${travellerInfo[0].fN || ''} ${travellerInfo[0].lN || ''}`.trim() : '',
+          email: contact.email,
+          contact: fullPhoneNumber,
+        },
+        handler: async function (rzpResponse) {
+          try {
+            const verifyPayload = {
+              razorpay_order_id: rzpResponse.razorpay_order_id,
+              razorpay_payment_id: rzpResponse.razorpay_payment_id,
+              razorpay_signature: rzpResponse.razorpay_signature,
+              booking_payload: payload,
+            };
+            const verifyResponse = await verifyAndBookFlight(verifyPayload);
+            if (verifyResponse && (verifyResponse.bookingId || verifyResponse.status?.success)) {
+              onPaymentSuccess(verifyResponse);
+            } else {
+              const directResponse = await bookFlight(payload);
+              if (directResponse && directResponse.bookingId) onPaymentSuccess(directResponse);
+              else setError('Payment verification succeeded but booking confirmation failed.');
+            }
+          } catch (verifyErr) {
+            console.error('Payment verification error:', verifyErr);
+            setError(verifyErr.response?.data?.message || 'Payment succeeded but verification failed.');
+          } finally {
+            setLoading(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setLoading(false);
+          },
+        },
+        theme: { color: '#ed1173' },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response) {
+        setLoading(false);
+        setError(response?.error?.description || 'Payment failed. Please try again.');
+      });
+      rzp.open();
+      return;
+    } catch (err) {
+      console.error('Booking error:', err);
+      setError(err.response?.data?.message || 'Failed to complete booking. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="row">
+      <div className="col-lg-8">
+        <div className="booking-card">
+          <h4 className="booking-card-title">Review Your Booking</h4>
+          
+          {error && (
+            <div className="alert alert-danger" role="alert">
+              {error}
+            </div>
+          )}
+          
+          <div className="review-section">
+            <h5 className="review-section-title">
+              <FaPlane className="me-2" />
+              Flight Details
+            </h5>
+            {renderFlightSummary(trip, fare, 'Onward Journey')}
+            {returnTrip && renderFlightSummary(returnTrip, returnFare, 'Return Journey')}
+          </div>
+          
+          <div className="review-section mt-4">
+            <h5 className="review-section-title">
+              <FaUser className="me-2" />
+              Passenger Details
+            </h5>
+            {travellerInfo.map((traveller, index) => (
+              <div key={index} className="passenger-review-item">
+                <div className="passenger-review-number">Passenger {index + 1}</div>
+                <div className="passenger-review-details">
+                  <strong>{traveller.ti} {traveller.fN} {traveller.lN}</strong>
+                  <span className="ms-3 text-muted">{traveller.pt}</span>
+                  <span className="ms-3 text-muted">DOB: {traveller.dob}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="review-section mt-4">
+            <h5 className="review-section-title">
+              <FaEnvelope className="me-2" />
+              Contact Information
+            </h5>
+            <div className="contact-review">
+              <div className="contact-review-item">
+                <FaPhone className="me-2" />
+                {contact.countryCode} {contact.mobile}
+              </div>
+              <div className="contact-review-item">
+                <FaEnvelope className="me-2" />
+                {contact.email}
+              </div>
+            </div>
+          </div>
+          
+          {seatSelections && seatSelections.length > 0 && (
+            <div className="review-section mt-4">
+              <h5 className="review-section-title">Selected Seats</h5>
+              <div className="seats-review">
+                {seatSelections.map((seat, index) => (
+                  <div key={index} className="seat-review-item">
+                    <span className="seat-passenger">{seat.passengerName || `Passenger ${index + 1}`}</span>
+                    <span className="seat-number-badge">{seat.seatNo}</span>
+                    <span className="seat-amount">₹{Number(seat.amount).toLocaleString('en-IN')}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {gstInfo && (
+            <div className="review-section mt-4">
+              <h5 className="review-section-title">GST Details</h5>
+              <div className="gst-review">
+                <div><strong>Company:</strong> {gstInfo.companyName}</div>
+                <div><strong>GST Number:</strong> {gstInfo.gstNumber}</div>
+                <div><strong>Email:</strong> {gstInfo.companyEmail}</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <div className="col-lg-4">
+        <div className="booking-card sticky-summary">
+          <h5 className="booking-card-title">Fare Summary</h5>
+          
+          <div className="fare-summary-review">
+            <div className="fare-row">
+              <span>Onward Flight</span>
+              <span>₹{Number(fare.fd.ADULT.fC.TF * (searchParams.adults || 1)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            </div>
+            {returnFare && (
+              <div className="fare-row">
+                <span>Return Flight</span>
+                <span>₹{Number(returnFare.fd.ADULT.fC.TF * (searchParams.adults || 1)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              </div>
+            )}
+            {seatSelections && seatSelections.length > 0 && (
+              <div className="fare-row">
+                <span>Seat Charges</span>
+                <span>₹{Number(seatSelections.reduce((sum, seat) => sum + (seat.amount || 0), 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              </div>
+            )}
+            <div className="fare-row fare-total mt-3 pt-3">
+              <span>Total Amount</span>
+              <span>₹{Number(getConfirmedAmount()).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            </div>
+          </div>
+          
+          <div className="terms-notice mt-3">
+            <small className="text-muted">
+              By proceeding, you agree to our Terms & Conditions and Privacy Policy.
+            </small>
+          </div>
+          
+          <div className="d-flex gap-2 mt-4">
+            <button 
+              type="button" 
+              className="btn btn-outline-secondary flex-grow-1" 
+              onClick={onBack}
+              disabled={loading}
+            >
+              Back
+            </button>
+            <button 
+              type="button" 
+              className="btn btn-primary flex-grow-1" 
+              onClick={handleProceedToPayment}
+              disabled={loading}
+            >
+              {loading ? 'Processing...' : 'Confirm Booking'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

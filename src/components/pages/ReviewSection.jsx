@@ -8,6 +8,10 @@ import { Button, Card, Modal } from "react-bootstrap";
 
 const API_BASE_URL = "https://happywedz.com/api";
 
+const getReviewerName = (review) => review?.user?.name || "Anonymous";
+const getReviewerInitial = (review) =>
+  getReviewerName(review).trim().charAt(0).toUpperCase() || "A";
+
 const ReviewSection = ({ vendor }) => {
   const { user, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
@@ -270,26 +274,44 @@ const ReviewSection = ({ vendor }) => {
               <div key={review.id} className="col-md-6 col-lg-6">
                 <div className="h-100">
                   <div className="d-flex align-items-start gap-3 mb-3">
-                    <img
-                      src={review.user?.image || "/images/no-image.png"}
-                      alt={review.user?.name || "User"}
-                      className="rounded-circle"
+                    {review.user?.image ? (
+                      <img
+                        src={review.user.image}
+                        alt={getReviewerName(review)}
+                        className="rounded-circle"
+                        style={{
+                          width: "48px",
+                          height: "48px",
+                          objectFit: "cover",
+                        }}
+                        onError={(e) => {
+                          // Replace broken image with initial avatar fallback.
+                          e.currentTarget.style.display = "none";
+                          const fallback = e.currentTarget.nextElementSibling;
+                          if (fallback) fallback.style.display = "flex";
+                        }}
+                      />
+                    ) : null}
+                    <div
+                      className="rounded-circle align-items-center justify-content-center fw-bold text-white"
                       style={{
                         width: "48px",
                         height: "48px",
-                        objectFit: "cover",
+                        backgroundColor: "#6c757d",
+                        fontSize: "18px",
+                        display: review.user?.image ? "none" : "flex",
                       }}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "/images/no-image.png";
-                      }}
-                    />
+                      aria-label={getReviewerName(review)}
+                      title={getReviewerName(review)}
+                    >
+                      {getReviewerInitial(review)}
+                    </div>
                     <div className="flex-grow-1">
                       <h6
                         className="mb-0 fw-semibold"
                         style={{ fontSize: "16px" }}
                       >
-                        {review.user?.name || "Anonymous"}
+                        {getReviewerName(review)}
                       </h6>
                       <p
                         className="mb-0 text-muted"
@@ -372,19 +394,36 @@ const ReviewSection = ({ vendor }) => {
           {selectedReview && (
             <div>
               <div className="d-flex align-items-start gap-3 mb-4">
-                <img
-                  src={selectedReview.user?.image || "/images/no-image.png"}
-                  alt={selectedReview.user?.name || "User"}
-                  className="rounded-circle"
-                  style={{ width: "56px", height: "56px", objectFit: "cover" }}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "/images/no-image.png";
+                {selectedReview.user?.image ? (
+                  <img
+                    src={selectedReview.user.image}
+                    alt={getReviewerName(selectedReview)}
+                    className="rounded-circle"
+                    style={{ width: "56px", height: "56px", objectFit: "cover" }}
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                      const fallback = e.currentTarget.nextElementSibling;
+                      if (fallback) fallback.style.display = "flex";
+                    }}
+                  />
+                ) : null}
+                <div
+                  className="rounded-circle align-items-center justify-content-center fw-bold text-white"
+                  style={{
+                    width: "56px",
+                    height: "56px",
+                    backgroundColor: "#6c757d",
+                    fontSize: "20px",
+                    display: selectedReview.user?.image ? "none" : "flex",
                   }}
-                />
+                  aria-label={getReviewerName(selectedReview)}
+                  title={getReviewerName(selectedReview)}
+                >
+                  {getReviewerInitial(selectedReview)}
+                </div>
                 <div className="flex-grow-1">
                   <h6 className="mb-0 fw-bold" style={{ fontSize: "18px" }}>
-                    {selectedReview.user?.name || "Anonymous"}
+                    {getReviewerName(selectedReview)}
                   </h6>
                   <p className="mb-0 text-muted" style={{ fontSize: "14px" }}>
                     {new Date(selectedReview.createdAt).toLocaleDateString(
