@@ -1,6 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { TEMPLATE_LIST } from "../../templates";
+import "../../styles/shared.css";
 
 export default function TemplateCustomizePage() {
     const { id } = useParams();

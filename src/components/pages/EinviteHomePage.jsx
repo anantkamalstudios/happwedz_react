@@ -6,10 +6,23 @@ import FaqsSection from "../layouts/Main/FaqsSection";
 import { useToast } from "../layouts/toasts/Toast";
 import { LuSmartphone } from "react-icons/lu";
 import { IoSparklesOutline } from "react-icons/io5";
+import { useDocumentMetadata } from "../../hooks/useDocumentMetadata";
+import "../../styles/routes/einvite-home-page.css";
+import "../../styles/shared.css";
 
 const EinviteHomePage = () => {
   const navigate = useNavigate();
   const { addToast } = useToast();
+
+  useDocumentMetadata({
+    title: "Digital Wedding Invitations & E-Invites | HappyWedz",
+    description:
+      "Create stunning digital wedding invitations, save-the-date cards, and wedding websites in minutes. Choose from hundreds of templates and share instantly via WhatsApp, Email, or Instagram.",
+    keywords:
+      "digital wedding invitations, e-invites, online wedding cards, save the date, wedding website, wedding e-card india",
+    ogUrl: "https://happywedz.com/einvites",
+    canonicalUrl: "https://happywedz.com/einvites",
+  });
 
   const categories = [
     {

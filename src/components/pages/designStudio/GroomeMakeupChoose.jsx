@@ -2,6 +2,7 @@ import React from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setRoleType } from "../../../redux/roleSlice";
+import "../../../styles/shared.css";
 
 const SectionCard = ({ title, subtitle, image, onTry, comingSoon }) => {
   return (

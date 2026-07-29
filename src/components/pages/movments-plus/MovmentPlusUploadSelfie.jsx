@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { IoClose } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { FaCamera, FaCloudUploadAlt } from "react-icons/fa";
+import "../../../styles/shared.css";
 
 const PolicyModal = ({ open, onClose, onAgree }) => {
   const [agreeOne, setAgreeOne] = useState(false);

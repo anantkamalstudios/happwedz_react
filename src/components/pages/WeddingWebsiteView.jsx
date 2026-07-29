@@ -480,6 +480,8 @@ import {
 import { TEMPLATE_LIST } from "../../templates";
 import Swal from "sweetalert2";
 import { weddingWebsiteApi } from "../../services/api/weddingWebsiteApi";
+import "../../styles/routes/wedding-website-view.css";
+import "../../styles/shared.css";
 
 const WeddingWebsiteView = () => {
   const { id } = useParams();

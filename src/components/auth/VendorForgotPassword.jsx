@@ -3,6 +3,7 @@ import { FiMail, FiLock, FiCheck, FiArrowLeft, FiLoader, FiEye, FiEyeOff } from 
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
+import "../../styles/shared.css";
 
 const VendorForgotPassword = () => {
   const [activeStep, setActiveStep] = useState("forgotPassword");

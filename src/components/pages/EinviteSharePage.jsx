@@ -15,6 +15,7 @@ import {
   FaHeart,
   FaCheckCircle,
 } from "react-icons/fa";
+import "../../styles/shared.css";
 
 const EinviteSharePage = () => {
   const { id } = useParams();

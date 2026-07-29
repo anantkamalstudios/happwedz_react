@@ -1,4 +1,5 @@
 import React from "react";
+import "../../styles/shared.css";
 
 const MainTestimonial = ({ heading, subHeading, mainImage, sections = [] }) => {
   const hasData = Array.isArray(sections) && sections.length > 0;

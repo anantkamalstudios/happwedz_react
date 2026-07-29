@@ -9,6 +9,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { SiMinutemailer } from "react-icons/si";
 import { TbPassword } from "react-icons/tb";
+import "../../styles/routes/vendor-login.css";
+import "../../styles/shared.css";
 
 const VendorLogin = () => {
   const persistVendorSession = (vendorData, tokenValue) => {

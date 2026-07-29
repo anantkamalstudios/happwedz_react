@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { einviteApi } from "../../services/api/einviteApi";
 import { getImageUrl, handleImageError } from "../../utils/imageUtils";
 import EinviteCardGrid from "../layouts/einvites/EinviteCardGrid";
+import "../../styles/shared.css";
 
 const OurCards = () => {
     const navigate = useNavigate();

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Modal } from "react-bootstrap";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import "../../../../styles/shared.css";
 
 const mapHotelFromApi = (hotel) => {
   const images = Array.isArray(hotel.images) ? hotel.images : [];

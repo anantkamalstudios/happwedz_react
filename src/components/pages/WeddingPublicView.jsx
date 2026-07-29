@@ -4,6 +4,7 @@ import { FiHeart, FiShare2, FiCheck } from "react-icons/fi";
 import { TEMPLATE_LIST } from "../../templates";
 import { weddingWebsiteApi } from "../../services/api/weddingWebsiteApi";
 import Swal from "sweetalert2";
+import "../../styles/shared.css";
 
 const PublicWeddingView = () => {
   const { websiteUrl } = useParams();

@@ -16,6 +16,8 @@ import {
   getHotelImages,
   searchHotels,
 } from "../../../../services/api/hotelApi";
+import "../../../../styles/routes/hero-page.css";
+import "../../../../styles/shared.css";
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500&display=swap');

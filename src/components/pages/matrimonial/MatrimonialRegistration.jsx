@@ -16,6 +16,7 @@ import {
   FaBriefcase,
   FaHome,
 } from "react-icons/fa";
+import "../../../styles/shared.css";
 
 const MatrimonialRegistration = () => {
   const [step, setStep] = useState(1);

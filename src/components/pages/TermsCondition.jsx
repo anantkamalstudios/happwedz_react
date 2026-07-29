@@ -8,6 +8,7 @@ import {
   FaChevronRight,
   FaAngleRight,
 } from "react-icons/fa";
+import "../../styles/shared.css";
 
 const TermsCondition = () => {
   const [activeSection, setActiveSection] = useState("terms");

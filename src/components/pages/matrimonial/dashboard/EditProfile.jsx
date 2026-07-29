@@ -22,6 +22,8 @@ import {
   FiCheck,
   FiX,
 } from "react-icons/fi";
+import "../../../../styles/routes/edit-profile.css";
+import "../../../../styles/shared.css";
 
 const EditProfile = () => {
   const [key, setKey] = useState("basic");

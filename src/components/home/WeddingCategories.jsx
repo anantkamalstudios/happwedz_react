@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
-import FILTER_CONFIG from "../../data/filtersConfig";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import ErrorState from "../ui/ErrorState";
-
-const API_BASE_URL = "https://happywedz.com";
-import { IMAGE_BASE_URL } from "../../config/constants";
+import { dedupeRequest } from "../../services/api/dedupeApi";
+import { VENDOR_TYPES_URL } from "../../services/api/vendorTypesWithSubcategoriesApi";
 import ShimmerCards from "../ui/ShimmerCards";
+import "../../styles/shared.css";
 
 const WeddingCategories = ({ onSelect }) => {
   const [categories, setCategories] = useState([]);
@@ -21,9 +19,7 @@ const WeddingCategories = ({ onSelect }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(
-        `${API_BASE_URL}/api/vendor-types/with-subcategories/all`
-      );
+      const response = await dedupeRequest(VENDOR_TYPES_URL);
       const apiData = response.data.map((cat) => {
         const imageSrc = cat.hero_image
           ? "https://happywedzbackend.happywedz.com" + cat.hero_image
@@ -85,14 +81,35 @@ const WeddingCategories = ({ onSelect }) => {
                 className="wcg-card h-100 p-2"
                 onClick={() => toggleExpand(i)}
                 role="button"
+                // role="button" with only onClick was mouse-only: the card was
+                // neither focusable nor operable by keyboard (WCAG 2.1.1).
+                // tabIndex puts it in the tab order; native buttons activate on
+                // both Enter and Space, so mirror that.
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault(); // Space would otherwise scroll the page
+                    toggleExpand(i);
+                  }
+                }}
                 aria-expanded={isExpanded}
-                aria-label={`Open ${cat.title} category`}
+                // No aria-label. It used to be `Open ${cat.title} category`,
+                // which overrode the accessible name so it no longer matched the
+                // visible text — a WCAG 2.5.3 "Label in Name" failure. It breaks
+                // voice control (a user saying "click Photographers" would not
+                // match "Open Photographers category") and it also mismatched on
+                // formatted titles: the card renders "Planning & Decor" while the
+                // label said "Planning And Decor". Letting the name come from the
+                // card's own text keeps the two identical by construction.
               >
                 <div className="shadow-sm border-0 rounded-4 overflow-hidden">
                   <div className="ratio ratio-4x3 position-relative">
                     <img
                       src={cat.imageSrc}
-                      alt={cat.title}
+                      // Decorative: the <h3> below already names this card, so
+                      // alt={cat.title} made screen readers announce the title
+                      // twice and doubled the card's text content.
+                      alt=""
                       loading="lazy"
                       className="card-img-top rounded-4"
                       style={{ objectFit: "cover" }}
@@ -106,11 +123,11 @@ const WeddingCategories = ({ onSelect }) => {
                   </div>
                 </div>
 
-                <div className="pt-2">
-                  <div className="d-flex align-items-center justify-content-between my-2">
+                <div className="pt-2 text-center">
+                  <div className="d-flex align-items-center justify-content-center my-2">
                     <div>
                       {/* Card title -> h3 (under the h2 section). .h5 keeps the size. */}
-                      <h3 className="h5 my-2">{cat.title}</h3>
+                      <h3 className="h5 my-2 text-center" style={{ fontSize: "18px" }}>{cat.title}</h3>
                     </div>
                   </div>
                   <div className=" pills d-flex flex-wrap gap-2 mb-3">
@@ -148,15 +165,21 @@ const WeddingCategories = ({ onSelect }) => {
                     )}
                   </div>
 
-                  <div className="wcg-actions d-flex justify-content-between align-items-center mb-2">
+                  <div className="wcg-actions d-flex justify-content-center align-items-center mb-2">
                     <button
                       type="button"
                       className="btn btn-primary rounded-2 px-3 fs-16"
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation();
                         if (onSelect) onSelect(cat);
                         if (cat.title) {
                           const slug = cat.slug;
+                          // filtersConfig is ~137 KB and is only needed to
+                          // decide this one route, so it is loaded on demand
+                          // instead of shipping with the homepage.
+                          const { default: FILTER_CONFIG } = await import(
+                            "../../data/filtersConfig"
+                          );
                           if (FILTER_CONFIG[slug]) {
                             navigate(`/vendor/${slug}`);
                           } else {

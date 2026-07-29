@@ -3,7 +3,7 @@ import { Container, Row, Col, Button, Modal } from "react-bootstrap";
 import { FaLocationDot } from "react-icons/fa6";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleWishlist } from "../../redux/authSlice";
 import "swiper/css";
@@ -12,6 +12,8 @@ import vendorServicesApi from "../../services/api/vendorServicesApi";
 import PricingModal from "./PricingModal";
 import BusinessClaimForm from "../pages/BusinessClaimForm";
 import DOMPurify from "dompurify";
+import { useDocumentMetadata } from "../../hooks/useDocumentMetadata";
+import { buildVendorDetailUrl, buildCategoryUrl, toSlug } from "../../utils/urlUtils";
 
 import {
   FaStar,
@@ -31,6 +33,8 @@ import { GrFormNextLink } from "react-icons/gr";
 import ReviewSection from "../pages/ReviewSection";
 import { FaqQuestions } from "../pages/adminVendor/subVendors/FaqData";
 import axios from "axios";
+import "../../styles/routes/detailed.css";
+import "../../styles/shared.css";
 const API_BASE_URL = "https://happywedz.com";
 import Swal from "sweetalert2";
 import SectionTabs from "./SectionTabs";
@@ -51,7 +55,17 @@ const getYouTubeVideoId = (url) => {
 };
 
 const Detailed = () => {
-  const { id } = useParams();
+  const { id: paramId, vendorSlug, section: paramSection, city: paramCity, category: paramCategory } = useParams();
+
+  // Extract ID from legacy :id route OR from 4-segment slug trailing id (e.g. ek-do-teen-98324 -> 98324)
+  const id = useMemo(() => {
+    if (paramId) return paramId;
+    if (vendorSlug) {
+      const match = vendorSlug.match(/-(\d+)$/);
+      if (match) return match[1];
+    }
+    return null;
+  }, [paramId, vendorSlug]);
   const dispatch = useDispatch();
   const { token } = useSelector((state) => state.auth);
   const [venueData, setVenueData] = useState(null);
@@ -516,6 +530,136 @@ const Detailed = () => {
       behavior: "smooth",
     });
   }, []);
+
+  // ── Dynamic metadata: updates once venueData is loaded ────────────────────
+  const vendorName =
+    venueData?.attributes?.vendor_name ||
+    venueData?.attributes?.name ||
+    venueData?.vendor?.vendor_name ||
+    null;
+  const vendorCity =
+    venueData?.attributes?.city ||
+    venueData?.vendor?.city ||
+    null;
+  const vendorType =
+    venueData?.attributes?.vendor_type ||
+    venueData?.vendor?.vendorType?.name ||
+    null;
+  const vendorImage = venueData?.media?.[0] || venueData?.attributes?.Portfolio?.split("|")[0]?.trim() || null;
+
+  useDocumentMetadata(
+    venueData
+      ? {
+          title: [
+            vendorName,
+            vendorType && vendorCity ? `${vendorType} in ${vendorCity}` : vendorCity || vendorType,
+            "HappyWedz",
+          ]
+            .filter(Boolean)
+            .join(" | "),
+          description: [
+            vendorName && `${vendorName} is a`,
+            vendorType && `top-rated ${vendorType.toLowerCase()}`,
+            vendorCity && `in ${vendorCity}`,
+            `— view photos, pricing, and verified reviews on HappyWedz.`,
+          ]
+            .filter(Boolean)
+            .join(" "),
+          ogUrl: canonicalDetailUrl,
+          canonicalUrl: canonicalDetailUrl,
+        }
+      : {
+          title: "Wedding Vendor Details | HappyWedz",
+          description: "View vendor profile, photos, pricing, and reviews on HappyWedz — India's wedding marketplace.",
+        }
+  );
+
+  // ── Inject LocalBusiness + BreadcrumbList schema when data loads ──────────
+  useEffect(() => {
+    if (!venueData) return;
+
+    const name = vendorName || "Wedding Vendor";
+    const city = vendorCity || "";
+    const rating = venueData?.attributes?.rating;
+    const reviewCount = venueData?.attributes?.review_count;
+    const image = vendorImage || "";
+    const typeLabel = vendorType || "LocalBusiness";
+
+    const localBusinessSchema = {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      name,
+      image: image || undefined,
+      url: canonicalDetailUrl,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: city || undefined,
+        addressRegion: venueData?.attributes?.state || undefined,
+        addressCountry: "IN",
+      },
+      ...(rating && reviewCount
+        ? {
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: String(rating),
+              reviewCount: String(reviewCount),
+              bestRating: "5",
+              worstRating: "1",
+            },
+          }
+        : {}),
+    };
+
+    const breadcrumbSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: "https://happywedz.com/",
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: typeLabel,
+          item: `https://happywedz.com/${currentSection}/`,
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: `${typeLabel} in ${city}`,
+          item: `https://happywedz.com${buildCategoryUrl(currentSection, city, currentCategory)}`,
+        },
+        {
+          "@type": "ListItem",
+          position: 4,
+          name,
+          item: canonicalDetailUrl,
+        },
+      ],
+    };
+
+    // Inject scripts into <head>
+    const lbScript = document.createElement("script");
+    lbScript.type = "application/ld+json";
+    lbScript.id = `schema-local-business-${id}`;
+    lbScript.text = JSON.stringify(localBusinessSchema);
+    document.head.appendChild(lbScript);
+
+    const bcScript = document.createElement("script");
+    bcScript.type = "application/ld+json";
+    bcScript.id = `schema-breadcrumb-${id}`;
+    bcScript.text = JSON.stringify(breadcrumbSchema);
+    document.head.appendChild(bcScript);
+
+    // Clean up on unmount / id change
+    return () => {
+      document.getElementById(`schema-local-business-${id}`)?.remove();
+      document.getElementById(`schema-breadcrumb-${id}`)?.remove();
+    };
+  }, [venueData, id]);
 
   if (loading) {
     return (

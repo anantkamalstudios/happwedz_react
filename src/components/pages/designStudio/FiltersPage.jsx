@@ -345,11 +345,8 @@ const FiltersPage = () => {
       console.error("applyMakeup failed:", e?.message || e, payload);
       Swal.fire({
         icon: "error",
-        title: "Oops...",
-        text:
-          status === 500
-            ? "Internal Server Error"
-            : message || "Failed to apply filter.",
+        title: "Service Unavailable",
+        text: message || "The server is temporarily unavailable. Please try again later.",
       });
     } finally {
       if (mySeq === applySeqRef.current) {

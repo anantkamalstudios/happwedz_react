@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import "./CityActivities.css";
+import "../../../../styles/shared.css";
 
 const CityActivities = () => {
   const { cityName } = useParams();

@@ -3,6 +3,8 @@ import { FiMail, FiPhone, FiMapPin } from "react-icons/fi";
 import Swal from "sweetalert2";
 import { Briefcase, Heart, Mail, TrendingUp, Users } from "lucide-react";
 import { useContact } from "../../hooks/useContact";
+import "../../styles/routes/contactus.css";
+import "../../styles/shared.css";
 
 const Contactus = () => {
   const { submitContact, loading, error } = useContact();

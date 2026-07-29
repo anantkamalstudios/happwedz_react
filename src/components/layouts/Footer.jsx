@@ -1,10 +1,12 @@
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+// SVG icons instead of Font Awesome classes: these two were the only reason the
+// homepage downloaded the fa-brands webfont from the CDN.
+import { FaFacebookF, FaInstagram } from "react-icons/fa6";
 import React from "react";
 import { useContext } from "react";
 import { MyContext } from "../../context/useContext";
 
 const Footer = () => {
-  const navigate = useNavigate();
   const location = useLocation();
 
   const {
@@ -23,25 +25,22 @@ const Footer = () => {
     return category ? category.id : null;
   };
 
+  // The <Link> handles navigation to /photography (keeps the href crawlable);
+  // this only syncs the selected category and scrolls back to the top.
   const handleCategoryClick = (categoryName) => {
     const categoryId = findCategoryIdByName(categoryName);
 
     if (categoryId) {
       setSelectedCategory(categoryId);
       setSelectedCategoryName(categoryName);
+    }
 
-      if (location.pathname === "/photography") {
-        // SAME PAGE → JUST SCROLL TO TOP
+    if (location.pathname === "/photography") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      setTimeout(() => {
         window.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        // DIFFERENT PAGE → NAVIGATE
-        navigate("/photography");
-
-        // after navigation, scroll to top
-        setTimeout(() => {
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }, 150);
-      }
+      }, 150);
     }
   };
 
@@ -93,8 +92,12 @@ const Footer = () => {
               }}
             >
               <img
-                src="/images/logo.webp"
+                src="/images/logo-300.webp"
                 alt="HappyWedz Logo"
+                width="150"
+                height="38"
+                loading="lazy"
+                decoding="async"
                 style={{
                   width: "150px",
                   height: "auto",
@@ -196,51 +199,23 @@ const Footer = () => {
           <div className="col-12 col-sm-6 col-lg-3">
             <p className="footer-title fs-16">Bridal & Groom Fashion</p>
             <ul className="footer-list" style={{ color: "#fff" }}>
-              <li className="fs-14">
-                <a
-                  onClick={() => handleCategoryClick("Wedding Card Designs")}
-                  style={{ cursor: "pointer" }}
-                  className="fs-14"
-                >
-                  Wedding Card Designs
-                </a>
-              </li>
-              <li className="fs-14">
-                <a
-                  onClick={() => handleCategoryClick("Outfit")}
-                  style={{ cursor: "pointer" }}
-                  className="fs-14"
-                >
-                  Outfit
-                </a>
-              </li>
-              <li className="fs-14">
-                <a
-                  onClick={() => handleCategoryClick("Bridal Makeup & Hair")}
-                  style={{ cursor: "pointer" }}
-                  className="fs-14"
-                >
-                  Bridal Makeup &amp; Hair
-                </a>
-              </li>
-              <li className="fs-14">
-                <a
-                  onClick={() => handleCategoryClick("Groom Wear")}
-                  style={{ cursor: "pointer" }}
-                  className="fs-14"
-                >
-                  Groom Wear
-                </a>
-              </li>
-              <li className="fs-14">
-                <a
-                  onClick={() => handleCategoryClick("Jewellery & Accessories")}
-                  style={{ cursor: "pointer" }}
-                  className="fs-14"
-                >
-                  Jewellery & Accessories
-                </a>
-              </li>
+              {[
+                "Wedding Card Designs",
+                "Outfit",
+                "Bridal Makeup & Hair",
+                "Groom Wear",
+                "Jewellery & Accessories",
+              ].map((categoryName) => (
+                <li className="fs-14" key={categoryName}>
+                  <Link
+                    to="/photography"
+                    onClick={() => handleCategoryClick(categoryName)}
+                    className="fs-14"
+                  >
+                    {categoryName}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
@@ -275,11 +250,7 @@ const Footer = () => {
                   Contact Us
                 </Link>
               </li>
-              <li className="mx-3">
-                <Link to="/sitemap" className="fs-16">
-                  Site Map
-                </Link>
-              </li>
+
             </ul>
           </div>
 
@@ -293,10 +264,7 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="social-btn"
               >
-                <i
-                  className="fa-brands fa-facebook-f"
-                  style={{ color: "#C31162" }}
-                ></i>
+                <FaFacebookF size={20} color="#C31162" />
               </a>
 
               {/* Instagram */}
@@ -307,10 +275,7 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="social-btn"
               >
-                <i
-                  className="fa-brands fa-instagram"
-                  style={{ color: "#C31162" }}
-                ></i>
+                <FaInstagram size={20} color="#C31162" />
               </a>
 
               {/* Twitter */}

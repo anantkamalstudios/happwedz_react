@@ -14,6 +14,7 @@ import {
 import { useSelector } from "react-redux";
 import { weddingWebsiteApi } from "../../services/api/weddingWebsiteApi";
 import Swal from "sweetalert2";
+import "../../styles/shared.css";
 
 const WeddingWebsiteForm = () => {
   const navigate = useNavigate();

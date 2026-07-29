@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FiMail, FiLock, FiCheck, FiArrowLeft, FiLoader, FiEye, FiEyeOff } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import "../../styles/shared.css";
 
 const ForgotPassword = () => {
   const [activeStep, setActiveStep] = useState("forgotPassword");

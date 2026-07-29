@@ -80,16 +80,19 @@ export const Loader = () => {
 
 export const getErrorMessage = (err) => {
   try {
-    let message = "Upload failed. Please try again.";
+    let message = "An error occurred while processing your request.";
     let status = err?.response?.status || null;
+
+    if (typeof err?.message === "string" && err.message.includes("500")) {
+      status = 500;
+    }
 
     // 1️⃣ If backend sent { error: "..." }
     if (err?.response?.data?.error) {
       message = err.response.data.error;
     }
-    // 2️⃣ If backend sent plain string like "HTTP 400: { \"error\": \"file too large...\" }"
+    // 2️⃣ If backend sent plain string like "HTTP 500: { \"error\": ... }"
     else if (typeof err?.response?.data === "string") {
-      // Try to find and parse JSON inside the string
       const jsonMatch = err.response.data.match(/{.*}/);
       if (jsonMatch) {
         try {
@@ -102,7 +105,7 @@ export const getErrorMessage = (err) => {
         message = err.response.data;
       }
     }
-    // 3️⃣ If error.message exists and may contain JSON
+    // 3️⃣ If error.message exists
     else if (typeof err?.message === "string") {
       const jsonMatch = err.message.match(/{.*}/);
       if (jsonMatch) {
@@ -119,6 +122,18 @@ export const getErrorMessage = (err) => {
     // 4️⃣ Direct string error
     else if (typeof err === "string") {
       message = err;
+    }
+
+    // Sanitize technical/database stack traces (e.g. psycopg2, OperationalError, password auth failed)
+    if (
+      message.includes("psycopg2") ||
+      message.includes("OperationalError") ||
+      message.includes("connection to server at") ||
+      message.includes("FATAL:") ||
+      message.includes("password authentication failed") ||
+      status === 500
+    ) {
+      message = "The server or database is temporarily unavailable. Please try again later.";
     }
 
     return { message, status };

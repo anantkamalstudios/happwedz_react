@@ -905,23 +905,23 @@ const Header = () => {
                 <div className="container w-100 p-0">
                   <div className="row align-items-center gy-2">
                     {/* Left: Tagline */}
-                    <div className="col-12 col-sm-4 col-lg-4 d-flex align-items-center justify-content-center justify-content-sm-start">
+                    <div className="col-12 col-sm-7 col-lg-5 d-flex align-items-center justify-content-center justify-content-sm-start pe-3">
                       <a
                         className="nav-link fw-bold top-header-heading fs-18"
                         href="#"
-                        style={{ color: "#C31162" }}
+                        style={{ color: "#C31162", whiteSpace: "nowrap" }}
                       >
                         India's Favourite Wedding Planning Platform
                       </a>
                     </div>
 
                     {/* Middle: Location Selector */}
-                    <div className="col-12 col-sm-6 col-lg-3 d-flex justify-content-center justify-content-sm-start">
+                    <div className="col-12 col-sm-5 col-lg-3 d-flex justify-content-center justify-content-sm-start ps-lg-3">
                       <LocationModalWithCategories />
                     </div>
 
                     {/* Right: Store Icons */}
-                    <div className="col-12 col-lg-5 d-flex align-items-center justify-content-center justify-content-lg-end gap-4">
+                    <div className="col-12 col-lg-4 d-flex align-items-center justify-content-center justify-content-lg-end gap-4">
                       <img
                         src="/images/header/playstore.png"
                         alt="Play Store"

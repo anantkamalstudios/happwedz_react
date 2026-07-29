@@ -11,6 +11,15 @@ import { useHome } from "../../hooks/useHome";
 // in index.html and start downloading before the JS bundle even parses.
 // This is the LCP image — keep it identical to the preload href.
 const HERO_FALLBACK = "/hero-2.webp";
+// Downscaled variants of the same photo. A 412px-wide phone at 2x DPR now
+// pulls ~72 KB instead of the full 262 KB 2000px master.
+const HERO_SRCSET = [
+  "/hero-2-640.webp 640w",
+  "/hero-2-960.webp 960w",
+  "/hero-2-1280.webp 1280w",
+  "/hero-2-1600.webp 1600w",
+  "/hero-2.webp 2000w",
+].join(", ");
 
 const RotatingWordHeadline = ({
   words = ["Unique", "Dreamy", "Perfect"],
@@ -29,19 +38,36 @@ const RotatingWordHeadline = ({
     return () => clearInterval(cycle);
   }, [words.length]);
   const parts = titleTemplate.split("_");
+  // The cycling word changes width every 2.8s. Without a reserved width the
+  // rest of the headline slides sideways on every swap, and near a wrap
+  // boundary the whole hero reflows — both count as layout shift. An
+  // invisible sizer holding the longest word pins the width up front.
+  const longestWord = words.reduce(
+    (a, b) => (b.length > a.length ? b : a),
+    words[0] || ""
+  );
   return (
     <h1 className="display-5 fw-bold">
       {parts[0]}
-      <span
-        style={{
-          display: "inline-block",
-          transition: "opacity .3s, transform .3s",
-          opacity: animating ? 1 : 0,
-          transform: animating ? "scale(1)" : "scale(0.95)",
-          color: "#e83581",
-        }}
-      >
-        {words[index]}
+      <span style={{ display: "inline-grid", verticalAlign: "baseline" }}>
+        <span
+          aria-hidden="true"
+          style={{ gridArea: "1 / 1", visibility: "hidden" }}
+        >
+          {longestWord}
+        </span>
+        <span
+          style={{
+            gridArea: "1 / 1",
+            justifySelf: "center",
+            transition: "opacity .3s, transform .3s",
+            opacity: animating ? 1 : 0,
+            transform: animating ? "scale(1)" : "scale(0.95)",
+            color: "#e83581",
+          }}
+        >
+          {words[index]}
+        </span>
       </span>
       {parts[1] || " Wedding Vendor"}
     </h1>
@@ -123,20 +149,20 @@ const Herosection = () => {
     return () => document.removeEventListener("mousedown", handleOutside);
   }, [showCategoryDropdown]);
 
-  // LCP guard: always paint the local, optimized, preloaded webp first.
-  // Only swap to the (unpreloaded, remote) carousel image once the browser is
-  // idle — i.e. after the Largest Contentful Paint has already happened.
+  // This used to defer the remote image to requestIdleCallback, on the theory
+  // that LCP would already be settled by then. It does not work that way: LCP
+  // keeps updating until the first user interaction, so a full-bleed hero that
+  // renders late simply becomes a LATE LCP. Measured, the guard cost 3,241ms of
+  // "render delay" — the image downloaded in 421ms and then waited on idle —
+  // turning a ~1.0s LCP into ~4.1s. It caused the problem it was meant to avoid.
+  //
+  // Swapping as soon as the URL is known means the remote image starts loading
+  // right after the hero API responds, so it becomes the LCP element early
+  // instead of late. index.html already preconnects to the image host. The
+  // local preloaded webp still paints first while the remote one is in flight,
+  // and both fill the same fixed-size box, so the swap shifts nothing (CLS).
   const remoteBg = getCurrentBackgroundImage();
-  const [useRemoteBg, setUseRemoteBg] = useState(false);
-  useEffect(() => {
-    if (!remoteBg) return;
-    const schedule =
-      window.requestIdleCallback || ((cb) => setTimeout(cb, 1500));
-    const cancel = window.cancelIdleCallback || clearTimeout;
-    const id = schedule(() => setUseRemoteBg(true));
-    return () => cancel(id);
-  }, [remoteBg]);
-  const bgImage = useRemoteBg && remoteBg ? remoteBg : HERO_FALLBACK;
+  const bgImage = remoteBg || HERO_FALLBACK;
 
   const filteredCities = cities.filter((city) =>
     city.toLowerCase().includes(citySearch.toLowerCase())
@@ -171,6 +197,11 @@ const Herosection = () => {
     >
       <img
         src={bgImage}
+        // Responsive variants only apply to the local hero — the remote CMS
+        // image has a single size. Must stay in sync with the imagesrcset on
+        // the <link rel="preload"> in index.html.
+        srcSet={bgImage === HERO_FALLBACK ? HERO_SRCSET : undefined}
+        sizes={bgImage === HERO_FALLBACK ? "100vw" : undefined}
         alt="HappyWedz Hero Background"
         fetchPriority="high"
         loading="eager"

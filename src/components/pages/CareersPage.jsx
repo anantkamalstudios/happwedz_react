@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "../../styles/shared.css";
 
 const CareersPage = () => {
   const [activeTab, setActiveTab] = useState("technology");

@@ -8,6 +8,7 @@ import SmartPhotoSharing from "../../movment-plus/SmartPhotoSharing";
 import RealWeddings from "../../home/RealWeddings";
 import cmsApi from "../../../services/api/cmsApi";
 import MainTestimonial from "../../home/MainTestimonial";
+import "../../../styles/shared.css";
 const MovementPlusHome = () => {
   const [realWeddingData, setRealWeddingData] = useState(null);
   const [couplesSaysData, setCouplesSaysData] = useState(null);

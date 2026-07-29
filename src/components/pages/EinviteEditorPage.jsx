@@ -5,6 +5,8 @@ import EinviteShareModal from "../layouts/einvites/EinviteShareModal";
 import { einviteApi } from "../../services/api/einviteApi";
 import { useSelector } from "react-redux";
 import Swal from "sweetalert2";
+import "../../styles/routes/einvite-editor-page.css";
+import "../../styles/shared.css";
 
 const EinviteEditorPage = () => {
   const { id } = useParams();

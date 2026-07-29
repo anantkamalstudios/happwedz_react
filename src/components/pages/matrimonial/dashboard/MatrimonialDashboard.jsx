@@ -28,6 +28,8 @@ import MessagesSection from "./sections/Messages";
 import InterestsSection from "./sections/Interests";
 import AdvancedSearchSection from "./sections/AdvancedSearch";
 import ProfileSection from "./sections/Profile";
+import "../../../../styles/routes/matrimonial-dashboard.css";
+import "../../../../styles/shared.css";
 
 const sampleProfiles = [
   {

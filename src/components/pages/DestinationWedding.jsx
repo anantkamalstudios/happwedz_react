@@ -5,6 +5,8 @@ import ImageCarousel from "./ImageCarousel";
 import DestinationWeddingLocation from "./DestinationWeddingLocation";
 import DestinationWeddingRealStories from "./DestinationWeddingRealStories";
 import DestinationWeddingPlanningIdeas from "./DestinationWeddingPlanningIdeas";
+import "../../styles/routes/destination-wedding.css";
+import "../../styles/shared.css";
 
 const DestinationWedding = () => {
   const [currentIndex, setCurrentIndex] = useState(0);

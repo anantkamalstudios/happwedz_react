@@ -17,6 +17,7 @@ import {
   FiAward,
   FiCheckCircle,
 } from "react-icons/fi";
+import "../../../styles/shared.css";
 
 const VendorPremium = () => {
   const [selectedPackage, setSelectedPackage] = useState(1);

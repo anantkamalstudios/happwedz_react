@@ -4,6 +4,8 @@ import { useSelector } from "react-redux";
 import EinviteCardGrid from "./EinviteCardGrid";
 import { einviteApi } from "../../../services/api/einviteApi";
 import Swal from "sweetalert2";
+import "../../../styles/routes/einvite-my-cards.css";
+import "../../../styles/shared.css";
 
 const EinviteMyCards = () => {
   const [cards, setCards] = useState([]);

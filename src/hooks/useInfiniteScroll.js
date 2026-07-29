@@ -50,14 +50,28 @@ const useInfiniteScroll = (
             .map((url) => url.trim())
             .filter((url) => url)
         : [];
+      
+      const attributeImages = [
+        attributes.banner_image,
+        attributes.profile_image,
+        attributes.image,
+        attributes.logo,
+        attributes.Photo,
+        attributes.photo,
+        vendor.profile_image,
+        vendor.logo
+      ].filter(Boolean);
+
       const normalizeUrl = (u) => {
         if (!u) return null;
+        if (typeof u === "object") u = u.url || u.path || "";
+        if (typeof u !== "string" || !u.trim()) return null;
         if (/^https?:\/\//i.test(u)) return u;
         return `${IMAGE_BASE_URL}${u.startsWith("/") ? u : "/" + u}`;
       };
-      const gallery = (media.length > 0 ? media : portfolioUrls)
-        .map(normalizeUrl)
-        .filter(Boolean);
+
+      const rawList = media.length > 0 ? media : (portfolioUrls.length > 0 ? portfolioUrls : attributeImages);
+      const gallery = rawList.map(normalizeUrl).filter(Boolean);
       const firstImage = gallery.length > 0 ? gallery[0] : null;
 
       const vendorTypeName =
@@ -194,7 +208,9 @@ const useInfiniteScroll = (
       setError(null);
 
       try {
-        const subCategory = slug
+        // Treat slug="all" as no category filter (it means city-only page).
+        // Only generate a subCategory when there is a real category slug.
+        const subCategory = slug && slug !== "all"
           ? slug
               .replace(/-{2,}/g, " / ")
               .replace(/-/g, " ")
@@ -209,7 +225,14 @@ const useInfiniteScroll = (
           params.append("vendorType", vendorType);
         }
         if (city && city !== "all") {
-          params.append("city", city);
+          // Normalize to Title Case so "mumbai" → "Mumbai".
+          // URL slugs are always lowercase, but the API is case-sensitive
+          // and expects capitalised city names (e.g. Mumbai, Noida, Delhi).
+          const normalizedCity = city
+            .split(" ")
+            .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+            .join(" ");
+          params.append("city", normalizedCity);
         }
 
         // Prefer selected venue types for venues; otherwise use slug-derived subCategory

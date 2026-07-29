@@ -38,17 +38,25 @@ export const FilterProvider = ({ children }) => {
           if (res.data?.data) {
             const sorted = [...res.data.data].sort((a, b) => a.localeCompare(b));
             setCities(sorted);
+          } else {
+            setCities(["Ahmedabad", "Bangalore", "Chennai", "Delhi", "Goa", "Hyderabad", "Jaipur", "Kolkata", "Mumbai", "Pune", "Udaipur"]);
           }
         }
       } catch (err) {
-        console.error("Error fetching cities:", err);
+        setCities(["Ahmedabad", "Bangalore", "Chennai", "Delhi", "Goa", "Hyderabad", "Jaipur", "Kolkata", "Mumbai", "Pune", "Udaipur"]);
       }
     },
     [cities.length]
   );
 
+  // This provider wraps the whole app, but its data is only read on the Real
+  // Wedding pages. Firing these on mount put a third-party request and an API
+  // request in front of the homepage's LCP resources, so they wait for idle.
   useEffect(() => {
-    fetchCities();
+    const schedule = window.requestIdleCallback || ((cb) => setTimeout(cb, 2000));
+    const cancel = window.cancelIdleCallback || clearTimeout;
+    const id = schedule(() => fetchCities());
+    return () => cancel(id);
   }, [fetchCities]);
 
   useEffect(() => {
@@ -64,7 +72,10 @@ export const FilterProvider = ({ children }) => {
         console.error("Error fetching cultures:", err);
       }
     };
-    fetchCultures();
+    const schedule = window.requestIdleCallback || ((cb) => setTimeout(cb, 2000));
+    const cancel = window.cancelIdleCallback || clearTimeout;
+    const id = schedule(fetchCultures);
+    return () => cancel(id);
   }, []);
 
   const clearFilters = () => {

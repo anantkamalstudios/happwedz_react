@@ -4,6 +4,7 @@ import { Plane, MapPin, Clock, ArrowRight, Luggage, Filter, SlidersHorizontal } 
 import { searchFlights, verifyOffer, createFlightPaymentOrder, verifyAndBookFlight } from '../../../../services/api/flightApi';
 import FlightFiltersSidebar from './FlightFiltersSidebar';
 import BookingForm from './BookingForm';
+import "../../../../styles/shared.css";
 
 const FlightSearchResults = () => {
   const location = useLocation();

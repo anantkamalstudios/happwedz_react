@@ -1,8 +1,17 @@
-import React, { Suspense, lazy, useEffect } from "react";
+import React, { Suspense, lazy, useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./components/layouts/MainLayout";
-import MovmentPlusLayout from "./components/layouts/MovmentPlusLayout";
-import MatrimonialLayout from "./components/layouts/MatrimonialLayout";
+// These two layouts are lazy on purpose. Importing them eagerly dragged their
+// whole style tree onto every page: MatrimonialLayout -> matrimonial/Navbar ->
+// Matrimonial.css put 150 KB of render-blocking CSS on the homepage, for routes
+// most visitors never open. They only render under /matrimonial* and
+// /movment-plus*, and <Routes> is already wrapped in <Suspense>.
+const MovmentPlusLayout = lazy(
+  () => import("./components/layouts/MovmentPlusLayout"),
+);
+const MatrimonialLayout = lazy(
+  () => import("./components/layouts/MatrimonialLayout"),
+);
 import Loader from "./components/ui/Loader";
 import "./App.css";
 
@@ -25,10 +34,17 @@ const TopRatedVendors = lazy(() => import("./components/pages/TopRatedVendors"))
 const CareersPage = lazy(() => import("./components/pages/CareersPage"));
 const DestinationWeddingDetailPage = lazy(() => import("./components/pages/DestinationWeddingDetailPage"));
 const BusinessClaimForm = lazy(() => import("./components/pages/BusinessClaimForm"));
-import { ToastContainer } from "react-toastify";
+// react-toastify was ~180 KB of the eager entry chunk purely because this
+// container mounts globally. Nothing on the homepage raises a toast — every
+// caller of toast() lives on a lazy route — so load it off the critical path.
+const ToastContainer = lazy(() =>
+  import("react-toastify").then((m) => ({ default: m.ToastContainer })),
+);
 const PublicWeddingView = lazy(() => import("./components/pages/WeddingPublicView"));
-import ScrollToTop from "./components/ScrollToTop";
-import UserPreference from "./components/ui/UserPreference";
+import SmoothScroll from "./components/SmoothScroll";
+// Cookie-consent banner: renders null for its first 3 seconds by design, so it
+// has no reason to sit in the entry chunk.
+const UserPreference = lazy(() => import("./components/ui/UserPreference"));
 const MovementPlusHome = lazy(() => import("./components/pages/movments-plus/MovementPlusHome"));
 const MovmentPlusGuestToken = lazy(() => import("./components/pages/movments-plus/MovmentPlusGuestToken"));
 const MovmentPlusUploadSelfie = lazy(() => import("./components/pages/movments-plus/MovmentPlusUploadSelfie"));
@@ -248,12 +264,36 @@ function App() {
   //   window.scrollTo(0, 0);
   // }, [location.pathname]);
 
+  // Neither the toast container nor the cookie banner is needed for the first
+  // paint, and lazy-loading alone does NOT keep them out of it: a lazy child
+  // that mounts immediately still fetches and parses during page load, just via
+  // an extra request. Gating the mount on an idle callback is what actually
+  // moves that work after load. The homepage raises no toasts, and the banner
+  // waits 3s internally, so nothing is lost by waiting for idle.
+  const [deferredUiReady, setDeferredUiReady] = useState(false);
+  useEffect(() => {
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(() => setDeferredUiReady(true), {
+        timeout: 3000,
+      });
+      return () => window.cancelIdleCallback(id);
+    }
+    const t = setTimeout(() => setDeferredUiReady(true), 1500);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <LoaderProvider>
-      <ScrollToTop />
-      <UserPreference />
+      <SmoothScroll />
+      {/* Own boundaries with a null fallback: inside the route-level Suspense
+          below, these would flash the full-page <Loader /> while loading. */}
+      {deferredUiReady && (
+        <Suspense fallback={null}>
+          <UserPreference />
+          <ToastContainer />
+        </Suspense>
+      )}
       <Suspense fallback={<Loader />}>
-        <ToastContainer />
         <ToastProvider>
           <Routes>
             <Route path="/preview/:id" element={<TemplatePreviewPage />} />
@@ -288,7 +328,15 @@ function App() {
                 element={<PhotographyDetails />}
               />
               <Route path="/:section" element={<MainSection />} />
+              {/* Two-segment form, e.g. /venues/noida. Restored: the newer
+                  city/category routes below are all 3-4 segments, so dropping
+                  this made every 2-segment URL fall through to the "*" NotFound.
+                  Header, WeddingCategories and AllCategories all still link
+                  here, so it is reachable from the live UI. */}
               <Route path="/:section/:slug" element={<SubSection />} />
+              <Route path="/:section/:city/:slug" element={<SubSection />} />
+              <Route path="/:section/:slug/:city" element={<SubSection />} />
+              <Route path="/:section/:city/:category/:vendorSlug" element={<Detailed />} />
               <Route path="/details/:section/:id" element={<Detailed />} />
               <Route path="/vendor-360/:id" element={<Vendor360View />} />
               <Route

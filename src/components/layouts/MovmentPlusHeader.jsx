@@ -37,8 +37,9 @@ const MovmentPlusHeader = () => {
               <div className="text-center">
                 <div className="navbar-brand-logo">
                   <img
-                    src="/images/logo.webp"
+                    src="/images/logo-300.webp"
                     alt="HappyWedz"
+                    width="160"
                     height="40"
                     className="mx-auto d-block"
                   />

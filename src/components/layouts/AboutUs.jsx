@@ -1,7 +1,19 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useDocumentMetadata } from "../../hooks/useDocumentMetadata";
+import "../../styles/shared.css";
 
 const AboutUs = () => {
+  useDocumentMetadata({
+    title: "About Us | India's Wedding Vendor & Venue Marketplace | HappyWedz",
+    description:
+      "HappyWedz is India's wedding vendor and venue marketplace. Discover thousands of verified photographers, decorators, makeup artists, caterers, and banquet halls — all in one place.",
+    keywords:
+      "about happywedz, wedding marketplace india, wedding vendors, wedding venues, wedding planning platform",
+    ogUrl: "https://happywedz.com/about-us",
+    canonicalUrl: "https://happywedz.com/about-us",
+  });
+
   return (
     <div>
       <section className="py-3 py-md-5 py-xl-8">

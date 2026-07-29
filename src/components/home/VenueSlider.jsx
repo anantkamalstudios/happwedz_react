@@ -7,6 +7,8 @@ import useApiData from "../../hooks/useApiData";
 import { CiStar } from "react-icons/ci";
 import { useSelector } from "react-redux";
 import axios from "axios";
+import "../../styles/routes/venue-slider.css";
+import "../../styles/shared.css";
 
 const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
 

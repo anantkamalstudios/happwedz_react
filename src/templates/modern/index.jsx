@@ -15,6 +15,7 @@ import Footer from "../components/footer";
 import ModernCouple from "../components/Modern Couple/Index";
 import RsvpComponent from "../components/Modern Rsvp/RsvpComponent";
 import WeddingPartyComponent from "../components/Modern People/WeddingPartyComponent";
+import "../../styles/shared.css";
 
 const Homepage2 = ({ data }) => {
   return (

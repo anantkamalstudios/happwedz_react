@@ -100,10 +100,10 @@ const AllCategories = ({ onSelect }) => {
                   </div>
                 </div>
 
-                <div className="pt-2">
-                  <div className="d-flex align-items-center justify-content-between my-2">
+                <div className="pt-2 text-center">
+                  <div className="d-flex align-items-center justify-content-center my-2">
                     <div>
-                      <h5 className="my-2">{cat.title}</h5>
+                      <h5 className="my-2 text-center">{cat.title}</h5>
                     </div>
                   </div>
                   <div className=" pills d-flex flex-wrap gap-2 mb-3">
@@ -123,7 +123,7 @@ const AllCategories = ({ onSelect }) => {
                     )} */}
                   </div>
 
-                  <div className="wcg-actions d-flex justify-content-between align-items-center mb-2">
+                  <div className="wcg-actions d-flex justify-content-center align-items-center mb-2">
                     <button
                       type="button"
                       className="btn btn-primary rounded-2 px-3 fs-16"

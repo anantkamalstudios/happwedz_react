@@ -13,6 +13,8 @@ import Booking from "./booking/Booking";
 import Messages from "./messages/Messages";
 import RealWeddingForm from "./realWeddingForm/RealWeddingForm";
 import UserProfile from "./userProfile/UserProfile";
+import "../../../styles/routes/user-dashboard-main.css";
+import "../../../styles/shared.css";
 
 const UserDashboardMain = () => {
   const { slug } = useParams();

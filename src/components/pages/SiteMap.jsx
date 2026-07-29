@@ -256,6 +256,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { MyContext } from "../../context/useContext";
 import { useDispatch } from "react-redux";
 import { setLocation } from "../../redux/locationSlice";
+import "../../styles/shared.css";
 
 const SiteMap = () => {
   const navigate = useNavigate();

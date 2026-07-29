@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiPlus, FiEye, FiEdit, FiTrash2, FiShare, FiCalendar, FiHeart } from "react-icons/fi";
 import Swal from "sweetalert2";
+import "../../styles/routes/my-wedding-websites.css";
+import "../../styles/shared.css";
 
 const MyWeddingWebsites = () => {
     const navigate = useNavigate();

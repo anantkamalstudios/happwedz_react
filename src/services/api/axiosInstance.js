@@ -5,7 +5,18 @@ import {
   vendorLogout,
   isVendorTokenExpired,
 } from "../../redux/vendorAuthSlice";
-import { toast } from "react-toastify";
+// This module is imported eagerly (App.jsx and Header.jsx), so a static
+// react-toastify import put the whole library — ~180 KB — in the entry chunk
+// just to serve three session-expiry messages that almost never fire.
+// Fetching it on demand keeps it off the critical path.
+const notifySessionExpired = () => {
+  import("react-toastify")
+    .then(({ toast }) =>
+      toast.error("Your session has expired. Please login again."),
+    )
+    // A redirect usually follows immediately; never let the toast break it.
+    .catch(() => {});
+};
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL || "https://happywedz.com/api";
@@ -54,14 +65,14 @@ const handle401Error = (error) => {
 
     if (token) {
       store.dispatch(logout());
-      toast.error("Your session has expired. Please login again.");
+      notifySessionExpired();
 
       if (!window.location.pathname.startsWith("/customer-login")) {
         redirectWithReason("/customer-login");
       }
     } else if (vendorToken) {
       store.dispatch(vendorLogout());
-      toast.error("Your session has expired. Please login again.");
+      notifySessionExpired();
 
       if (!window.location.pathname.startsWith("/vendor-login")) {
         redirectWithReason("/vendor-login");
@@ -82,7 +93,7 @@ const requestInterceptor = (config) => {
   } else if (vendorToken && !token && !config.headers.Authorization) {
     if (isVendorTokenExpired()) {
       store.dispatch(vendorLogout());
-      toast.error("Your session has expired. Please login again.");
+      notifySessionExpired();
 
       if (!window.location.pathname.startsWith("/vendor-login")) {
         const url = new URL("/vendor-login", window.location.origin);

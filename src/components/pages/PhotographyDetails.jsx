@@ -15,6 +15,7 @@ import usePhotography from "../../hooks/usePhotography";
 import LoadingState from "../LoadingState";
 import ErrorState from "../ErrorState";
 import { GoHeart } from "react-icons/go";
+import "../../styles/shared.css";
 
 const PhotographyDetails = () => {
   const { id } = useParams();

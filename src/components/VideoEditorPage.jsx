@@ -3,6 +3,8 @@ import { useLocation, useParams, useNavigate } from "react-router-dom";
 import VideoEditor from "./layouts/eInvite/VideoEditor";
 import VideoPreview from "./layouts/eInvite/VideoPreview";
 import Swal from "sweetalert2";
+import "../styles/routes/video-editor-page.css";
+import "../styles/shared.css";
 
 const VideoEditorPage = () => {
   const location = useLocation();

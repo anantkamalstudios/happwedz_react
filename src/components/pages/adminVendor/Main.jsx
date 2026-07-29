@@ -13,6 +13,8 @@ import Reviews from "./subVendors/Reviews";
 import VendorMessages from "./messages/VendorMessages";
 import VendorLeadsPage from "./VendorLeadsPage";
 import MovmentsPlus from "./movments-plus/MovmentsPlus";
+import "../../../styles/routes/main.css";
+import "../../../styles/shared.css";
 
 const Main = () => {
   const { slug } = useParams();

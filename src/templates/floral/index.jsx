@@ -16,6 +16,7 @@ import Saveday from "../components/countdown";
 import Footer from "../components/footer";
 import couple1 from "../images/couple/img-2.jpg";
 import couple2 from "../images/couple/img-1.jpg";
+import "../../styles/shared.css";
 
 const Homepage3 = ({ data }) => {
   return (

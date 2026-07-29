@@ -999,6 +999,7 @@ import {
   ReactCompareSliderImage,
 } from "react-compare-slider";
 import axios from "axios";
+import "../../../styles/shared.css";
 
 const buttons = ["Outfit", "Compare", "Complete Look"];
 const BASE_API = "https://www.happywedz.com/ai";

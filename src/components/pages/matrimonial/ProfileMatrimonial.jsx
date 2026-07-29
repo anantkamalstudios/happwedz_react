@@ -14,6 +14,8 @@ import {
 } from "react-icons/fi";
 import "../../../Matrimonial.css";
 import { useParams } from "react-router-dom";
+import "../../../styles/routes/profile-matrimonial.css";
+import "../../../styles/shared.css";
 
 const FilterSection = ({ title, children, defaultOpen = true }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);

@@ -3,6 +3,8 @@ import Navbar from "../../layouts/matrimonial/Navbar";
 import Hero from "./Home/Hero";
 import MembersPlan from "./Home/MembersPlan";
 import HomeSlider from "./Home/HomeSlider";
+import "../../../styles/routes/matrimonial-main.css";
+import "../../../styles/shared.css";
 // import MatrimonialDashboard from "./dashboard/MatrimonialDashboard";
 
 const MatrimonialMain = () => {

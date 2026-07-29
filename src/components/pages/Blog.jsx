@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import BlogLists from "./BlogLists";
 import BlogDetails from "./BlogDetails";
 import { useLoader } from "../context/LoaderContext";
+import "../../styles/shared.css";
 
 const Blog = () => {
   const { blogId } = useParams();

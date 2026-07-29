@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import InfiniteScroll from "react-infinite-scroll-component";
 import VendorsSearch from "../layouts/vendors/VendorsSearch";
@@ -37,13 +37,96 @@ import UserPrivateRoute from "../routes/UserPrivateRoute";
 import DynamicAside from "../layouts/aside/DynamicAside";
 import { useMemo } from "react";
 import MapView from "../layouts/Main/MapView";
+import { useDocumentMetadata } from "../../hooks/useDocumentMetadata";
+import "../../styles/routes/main-section.css";
+import "../../styles/shared.css";
+
+// Metadata config per top-level section
+const SECTION_META = {
+  venues: {
+    title: "Best Wedding Venues in India — Banquet Halls, Lawns & Resorts | HappyWedz",
+    description:
+      "Find the best wedding venue across India. Browse banquet halls, lawns, resorts, and hotels — filter by city, capacity, budget, and catering policy on HappyWedz.",
+    keywords: "best wedding venues india, banquet halls, wedding lawns, wedding resorts, wedding hotels",
+    ogUrl: "https://happywedz.com/venues",
+    canonicalUrl: "https://happywedz.com/venues",
+  },
+  vendors: {
+    title: "Best Wedding Vendors in India — Photographers, Decorators & More | HappyWedz",
+    description:
+      "Discover the best verified wedding vendors across India. Compare photographers, makeup artists, decorators, caterers, and more — with real reviews and prices on HappyWedz.",
+    keywords: "best wedding vendors india, wedding photographers, bridal makeup, wedding decorators, caterers",
+    ogUrl: "https://happywedz.com/vendors",
+    canonicalUrl: "https://happywedz.com/vendors",
+  },
+  photography: {
+    title: "Wedding Photography Inspiration — Real Wedding Photos | HappyWedz",
+    description:
+      "Explore thousands of stunning wedding photos for inspiration. Bridal looks, décor, pre-wedding shoots, and more — curated from real Indian weddings on HappyWedz.",
+    keywords: "wedding photography inspiration, bridal photos, wedding décor ideas, pre-wedding shoot",
+    ogUrl: "https://happywedz.com/photography",
+    canonicalUrl: "https://happywedz.com/photography",
+  },
+  "real-wedding": {
+    title: "Real Weddings — True Love Stories & Wedding Inspiration | HappyWedz",
+    description:
+      "Read real wedding stories from couples across India. Get inspired by genuine celebrations, stunning décor, and heartfelt moments only on HappyWedz.",
+    keywords: "real weddings india, wedding stories, wedding inspiration, true weddings",
+    ogUrl: "https://happywedz.com/real-wedding",
+    canonicalUrl: "https://happywedz.com/real-wedding",
+  },
+  "e-invites": {
+    title: "Digital Wedding E-Invites & Card Designs | HappyWedz",
+    description:
+      "Browse beautiful wedding e-invite card designs. Create your personalized digital invitation in minutes and share via WhatsApp, Email, or QR code.",
+    keywords: "wedding e-invites, digital wedding cards, online invitation cards",
+    ogUrl: "https://happywedz.com/e-invites",
+    canonicalUrl: "https://happywedz.com/e-invites",
+  },
+  "shaadi-ai": {
+    title: "Shaadi AI — Your AI Wedding Planner | HappyWedz",
+    description:
+      "Let Shaadi AI help you plan your perfect wedding. Get instant vendor recommendations, budget guidance, and personalized suggestions powered by AI.",
+    keywords: "AI wedding planner, shaadi ai, wedding planning tool india",
+    ogUrl: "https://happywedz.com/shaadi-ai",
+    canonicalUrl: "https://happywedz.com/shaadi-ai",
+  },
+};
 
 const MainSection = () => {
   const { section } = useParams();
+  const location = useLocation();
   const reduxLocation = useSelector((state) => state.location.selectedLocation);
-  const [selectedCity, setSelectedCity] = useState(reduxLocation);
+
+  const navigate = useNavigate();
+
+  // Read ?city= from URL first (live site uses /venues/?city=noida),
+  // fall back to the Redux-persisted city selection.
+  const cityFromQuery = new URLSearchParams(location.search).get("city");
+  const initialCity = cityFromQuery || reduxLocation;
+
+  const [selectedCity, setSelectedCity] = useState(initialCity);
   const [show, setShow] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+
+  // Redirect legacy query-param URLs to clean path-based URLs:
+  // /venues/?city=mumbai  →  /venues/mumbai/
+  // /vendors/?city=delhi  →  /vendors/delhi/
+  useEffect(() => {
+    const qCity = new URLSearchParams(location.search).get("city");
+    if (qCity && section) {
+      const citySlug = qCity.toLowerCase().replace(/\s+/g, "-");
+      navigate(`/${section}/${citySlug}/`, { replace: true });
+    }
+  }, [location.search, section, navigate]);
+
+  // Apply per-section metadata
+  const sectionMeta = SECTION_META[section] || {
+    title: "HappyWedz - Find Top Wedding Vendors, Venues & Planning Tools",
+    description:
+      "Discover top-rated wedding vendors, venues, and planning tools for your perfect wedding on HappyWedz.",
+  };
+  useDocumentMetadata(sectionMeta);
 
   const storageKey = useMemo(() => `viewMode:${section}:main`, [section]);
 
@@ -77,9 +160,11 @@ const MainSection = () => {
     setSortBy,
   } = useContext(MyContext);
 
+  // Keep selectedCity in sync: URL query param takes priority over Redux store
   useEffect(() => {
-    setSelectedCity(reduxLocation);
-  }, [reduxLocation]);
+    const qCity = new URLSearchParams(location.search).get("city");
+    setSelectedCity(qCity || reduxLocation);
+  }, [location.search, reduxLocation]);
 
   useEffect(() => {
     const saved =
@@ -111,7 +196,7 @@ const MainSection = () => {
     return (
       <>
         <MainSearch />
-        {!reduxLocation && <MainByRegion type="Venues" />}
+        {!selectedCity && <MainByRegion type="Venues" />}
 
         <DynamicAside
           section="venues"

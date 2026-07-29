@@ -1,5 +1,6 @@
 import { TEMPLATE_LIST } from "../../templates";
 import { useNavigate } from "react-router-dom";
+import "../../styles/shared.css";
 
 export default function ChooseTemplate() {
   const navigate = useNavigate();

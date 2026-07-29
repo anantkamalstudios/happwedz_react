@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Image360Modal from "../ui/Image360Modal";
+import "../../styles/shared.css";
 
 const Vendor360View = () => {
   const { id: paramId } = useParams();

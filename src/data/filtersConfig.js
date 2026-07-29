@@ -1,3 +1,4 @@
+import "../styles/shared.css";
 const FILTER_CONFIG = {
   photographers: {
     // "no Of Days": ["1 day", "2 days", "3 days", "4 days"],

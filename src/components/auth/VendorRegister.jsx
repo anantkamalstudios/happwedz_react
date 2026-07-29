@@ -8,6 +8,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEyeSlash, FaEye } from "react-icons/fa";
 import axiosInstance from "../../services/api/axiosInstance";
+import "../../styles/shared.css";
 
 const API_BASE =
   import.meta.env.VITE_API_BASE_URL ||

@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import * as faceapi from "face-api.js";
 import { beautyApi } from "../../services/api";
 import Swal from "sweetalert2";
+import "../../styles/routes/profile-image-selector.css";
+import "../../styles/shared.css";
 
 const ProfileImageSelector = () => {
   const navigate = useNavigate();

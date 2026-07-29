@@ -3,7 +3,7 @@ import { Modal, Button, Form } from "react-bootstrap";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setLocation, clearLocation } from "../../redux/locationSlice";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { RxCrossCircled } from "react-icons/rx";
 import { IoMdArrowDropdown } from "react-icons/io";
 
@@ -14,6 +14,7 @@ const LocationModalWithAPI = () => {
     (state) => state.location.selectedLocation
   );
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
@@ -110,11 +111,19 @@ const LocationModalWithAPI = () => {
     setSearchTerm("");
     document.body.style.overflow = "auto";
 
-    navigate(
-      `/vendors/all${
-        city !== "All Cities" ? `?city=${encodeURIComponent(city)}` : ""
-      }`
-    );
+    if (city === "All Cities") {
+      // Just clear city, stay on current section root
+      const section = location.pathname.split("/").filter(Boolean)[0] || "venues";
+      navigate(`/${section}/`, { replace: false });
+      return;
+    }
+
+    // Navigate to /{currentSection}/{citySlug}/ — clean path URL
+    // e.g. /venues/mumbai/ or /vendors/delhi/
+    const pathParts = location.pathname.split("/").filter(Boolean);
+    const currentSection = pathParts[0] || "venues";
+    const citySlug = city.toLowerCase().replace(/\s+/g, "-");
+    navigate(`/${currentSection}/${citySlug}/`);
   };
 
   const handleClearLocation = (e) => {

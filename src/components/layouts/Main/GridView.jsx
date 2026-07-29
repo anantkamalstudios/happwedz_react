@@ -7,6 +7,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { toggleWishlist } from "../../../redux/authSlice";
 
+import { buildVendorDetailUrl } from "../../../utils/urlUtils";
+
 const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
   const [favorites, setFavorites] = useState({});
   const [wishlistIds, setWishlistIds] = useState(new Set());
@@ -136,9 +138,9 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
                   <Card.Img
                     key={`${venue.id}-${venue.image}`}
                     variant="top"
-                    src={venue.image || "/images/imageNotFound.jpg"}
+                    src={venue.image || "/images/happywedz-placeholder.jpg"}
                     loading="eager"
-                    alt={venue.name || "Venue"}
+                    alt={`${venue.name || "Wedding Vendor"} - ${venue.vendor_type || "Vendor"} in ${venue.city || "India"} | HappyWedz`}
                     style={{
                       objectFit: "cover",
                       height: "100%",
@@ -148,7 +150,7 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
                     }}
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = "/images/imageNotFound.jpg";
+                      e.target.src = "/images/happywedz-placeholder.jpg";
                     }}
                   />
 
@@ -200,7 +202,8 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
                 {/* Card Body */}
                 <Card.Body className="p-3">
                   <Link
-                    // to={`/details/info/${venue.id}`}
+                    to={buildVendorDetailUrl(venue.section || "vendors", venue.city, venue.categorySlug || venue.slug, venue.name, venue.id)}
+                    aria-label={`View details for ${venue.name || "wedding vendor"}`}
                     className="text-decoration-none"
                   >
                     {/* Title and Rating Row */}

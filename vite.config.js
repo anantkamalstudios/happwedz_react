@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { visualizer } from "rollup-plugin-visualizer";
 import compression from "vite-plugin-compression";
+import seoRoutePages from "./plugins/seoRoutePages.js";
 
 export default defineConfig({
   plugins: [
@@ -21,6 +22,9 @@ export default defineConfig({
     // Gzip compress all JS/CSS/SVG chunks for production.
     // Requires the web server to serve the .gz files (nginx: gzip_static on).
     compression({ algorithm: "gzip", ext: ".gz", threshold: 1024 }),
+    // Bakes per-route <head> tags into dist/<route>/index.html and regenerates
+    // sitemap.xml, so non-JS crawlers stop seeing the homepage on every URL.
+    seoRoutePages(),
   ],
   server: {
     proxy: {
@@ -45,6 +49,14 @@ export default defineConfig({
       },
     },
   },
+  // NOTE: the server.proxy entries above only fire for RELATIVE paths ("/api/x").
+  // The app builds absolute URLs from VITE_API_URL (https://happywedz.com/api),
+  // so those requests bypass the proxy entirely, in dev as well as preview.
+  // Local API calls work only because the backend CORS-whitelists
+  // http://localhost:5173 (verified: :5173 -> 200 + Access-Control-Allow-Origin,
+  // :4173 -> no CORS header). Preview the build on port 5173 to get real data:
+  //   npm run preview -- --port 5173
+  // None of this affects production, where the site and API share an origin.
   build: {
     // Skip gzip-sizing every chunk for the console report — pure cosmetics
     // that adds minutes to builds with a large dependency graph.
@@ -91,6 +103,14 @@ export default defineConfig({
           // into vendor-fabric — which then got imported by the entry chunk,
           // forcing 304KB of canvas code to download on the homepage. Letting
           // Rollup place it naturally keeps it inside the video-editor route.
+          // sweetalert2 is imported by 31 LAZY routes and none of the eager
+          // ones, yet it was landing in the entry chunk: Rollup hoists a module
+          // shared by many async chunks into the entry instead of duplicating
+          // it. That put 77 KB — 29% of the entry — on every page, including a
+          // homepage that never shows an alert. It is pure ESM, so isolating it
+          // does not repeat the CJS-interop problem described above for fabric.
+          if (pkg === "sweetalert2") return "vendor-sweetalert2";
+
           if (pkg.includes("leaflet")) return "vendor-leaflet";
           if (pkg.includes("pannellum")) return "vendor-pannellum";
           if (pkg.includes("face-api")) return "vendor-face-api";

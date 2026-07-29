@@ -7,6 +7,8 @@ import axios from "axios";
 import { FiArrowUpRight } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
 import { useLoader } from "../context/LoaderContext";
+import "../../styles/routes/blog-inspiration-teasers.css";
+import "../../styles/shared.css";
 
 const BlogsCarousel = () => {
   const [blogs, setBlogs] = useState([]);

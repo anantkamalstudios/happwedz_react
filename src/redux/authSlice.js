@@ -1,5 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
-import Swal from "sweetalert2";
+// NOT a static import. This slice is eager (App.jsx and the store), and
+// sweetalert2 is 77 KB — it was 29% of the entry chunk on every page, for one
+// alert that only appears when a logged-out user taps "add to wishlist".
+// Rollup additionally hoists it here because 31 lazy routes share it.
+const swalFire = (options) =>
+  import("sweetalert2").then(({ default: Swal }) => Swal.fire(options));
 
 // Initialize state from localStorage if available
 const storedToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -52,7 +57,7 @@ export const toggleWishlist = (vendor) => async (dispatch, getState) => {
   const { isAuthenticated, user } = auth;
 
   if (!isAuthenticated || !user) {
-    Swal.fire({
+    swalFire({
       icon: "warning",
       text: "Please log in to add items to your wishlist.",
       confirmButtonText: "Login",

@@ -1,6 +1,7 @@
 import { useEffect, useState, lazy, Suspense } from "react";
 import Herosection from "../home/Herosection";
 import LazyViewportSection from "../common/LazyViewportSection";
+import { useDocumentMetadata } from "../../hooks/useDocumentMetadata";
 
 const WeddingCategories = lazy(() => import("../home/WeddingCategories"));
 const VenueSlider = lazy(() => import("../home/VenueSlider"));
@@ -25,6 +26,14 @@ const bigleafcta1 = "/images/home/bigleafcta1.jpg";
 const bigleafcta5 = "/images/home/bigleafcta5.jpg";
 
 const Home = () => {
+  useDocumentMetadata({
+    title: "HappyWedz - Find Top Wedding Vendors, Venues & Planning Tools",
+    description: "Discover top-rated wedding vendors, venues, and planning tools for your perfect wedding. Explore real weddings, inspiration, and expert advice with HappyWedz.",
+    keywords: "wedding planning, wedding vendors, wedding venues, wedding cards, design studio, shaadi ai",
+    ogUrl: "https://happywedz.com/",
+    canonicalUrl: "https://happywedz.com/",
+  });
+
   const [designBanner, setDesignBanner] = useState(null);
   const [einviteBanner, setEinviteBanner] = useState(null);
   const [realWeddingData, setRealWeddingData] = useState(null);

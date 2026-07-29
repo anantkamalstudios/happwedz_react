@@ -4,6 +4,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import GridView from "../layouts/Main/GridView";
 import Loader from "../ui/Loader";
+import "../../styles/shared.css";
 
 const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
 

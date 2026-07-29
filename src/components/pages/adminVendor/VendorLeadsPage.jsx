@@ -6,6 +6,7 @@ import axiosInstance from "../../../services/api/axiosInstance";
 import { PiUsersLight } from "react-icons/pi";
 import { CiCalendarDate, CiTimer } from "react-icons/ci";
 import { IoAnalytics } from "react-icons/io5";
+import "../../../styles/shared.css";
 
 export default function VendorLeadsPage() {
   const [rows, setRows] = useState([]);

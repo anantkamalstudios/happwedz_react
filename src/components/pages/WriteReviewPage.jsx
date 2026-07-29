@@ -38,6 +38,7 @@ import {
   Send,
 } from "@mui/icons-material";
 import { styled, ThemeProvider, createTheme } from "@mui/material/styles";
+import "../../styles/shared.css";
 
 const API_BASE_URL = "https://happywedz.com/api";
 

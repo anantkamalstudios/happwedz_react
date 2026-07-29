@@ -8,6 +8,7 @@ import axiosInstance from "../../services/api/axiosInstance";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import "../../styles/shared.css";
 
 const CustomerRegister = () => {
   const [formData, setFormData] = useState({

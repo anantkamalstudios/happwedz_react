@@ -1,5 +1,6 @@
 import React from "react";
 import { Shield, Mail, Globe, CheckCircle } from "lucide-react";
+import "../../styles/shared.css";
 
 export default function PrivacyPolicy() {
   return (

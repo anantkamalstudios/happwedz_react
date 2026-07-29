@@ -183,6 +183,8 @@ import EinviteCardGrid from "../layouts/einvites/EinviteCardGrid";
 import EinviteFilterBar from "../layouts/einvites/EinviteFilterBar";
 import { einviteApi } from "../../services/api/einviteApi";
 import { FaChevronLeft } from "react-icons/fa6";
+import "../../styles/routes/einvite-category-page.css";
+import "../../styles/shared.css";
 
 const EinviteCategoryPage = () => {
   const { category } = useParams();

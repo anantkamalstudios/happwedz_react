@@ -126,66 +126,84 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
 
   const reduxLocation = useSelector((state) => state.location.selectedLocation);
   const cityParam = searchParams.get("city");
-  const city = cityParam || reduxLocation || null;
+
+  // Known Indian cities — if the URL slug matches one of these, treat it as a
+  // city context (not a category label) when building the hero title.
+  const KNOWN_CITIES = new Set([
+    "mumbai", "pune", "delhi", "bangalore", "kolkata", "chennai", "hyderabad",
+    "jaipur", "goa", "mysore", "kanpur", "udaipur", "lucknow", "agra",
+    "varanasi", "gurgaon", "noida", "ghaziabad", "faridabad", "ahmedabad", "surat",
+    "vadodara", "nagpur", "nashik", "indore", "bhopal", "patna", "ranchi",
+    "coimbatore", "navi-mumbai", "bhopal", "chandigarh", "jodhpur", "kochi",
+    "all"
+  ]);
+  const slugIsCity = slug ? KNOWN_CITIES.has(slug.toLowerCase()) : false;
+
+  // City priority: ?city= param > URL slug (if it's a city) > Redux store
+  const city = cityParam || (slugIsCity ? slug : null) || reduxLocation || null;
   const isVenuePage = location.pathname.includes("/venues");
 
   const dynamicTitle = useMemo(() => {
+    // Always Title Case the city so "mumbai" → "Mumbai"
+    const cityDisplay = city
+      ? city.split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ")
+      : null;
+
+    // Section → human-readable label map
+    const SECTION_LABEL = {
+      venues: "Wedding Venues",
+      vendors: "Wedding Vendors",
+      photography: "Wedding Photography",
+      photographers: "Wedding Photographers",
+      "makeup-artists": "Bridal Makeup Artists",
+      decorators: "Wedding Decorators",
+      caterers: "Wedding Caterers",
+    };
+
     if (vendorType) {
       const formattedVendorType = vendorType
         .split(" ")
-        .map(
-          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-        )
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join(" ");
 
-      if (city) {
-        return `${formattedVendorType} in ${city}`;
+      if (cityDisplay) {
+        return `${formattedVendorType} in ${cityDisplay}`;
       }
       return formattedVendorType;
     }
 
-    if (slug && slug.toLowerCase() !== "all") {
+    if (slug && slug.toLowerCase() !== "all" && !slugIsCity) {
       const formattedSlug = slug
         .replace(/-/g, " ")
         .split(" ")
-        .map(
-          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-        )
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join(" ");
 
-      if (city) {
-        return `${formattedSlug} in ${city}`;
+      if (cityDisplay) {
+        return `${formattedSlug} in ${cityDisplay}`;
       }
       return formattedSlug;
     }
 
-    if (slug && slug.toLowerCase() === "all") {
-      const pathSegments = location.pathname
-        .split("/")
-        .filter((segment) => segment);
-      if (pathSegments.length >= 1) {
-        const category = pathSegments[0];
-        const formattedCategory = category
-          .split(" ")
-          .map(
-            (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-          )
-          .join(" ");
-        return city
-          ? `${formattedCategory} in ${city}`
-          : `All ${formattedCategory}`;
+    // slug is "all" or absent — use section label
+    if (section) {
+      const sectionKey = section.toLowerCase();
+      const label = SECTION_LABEL[sectionKey]
+        || section.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+      if (cityDisplay) {
+        return `${label} in ${cityDisplay}`;
       }
+      return label;
     }
 
-    if (city && !vendorType && !slug) {
-      if (isVenuePage) {
-        return `Wedding Venues in ${city}`;
-      }
-      return `Wedding Vendors in ${city}`;
+    if (cityDisplay) {
+      if (isVenuePage) return `Wedding Venues in ${cityDisplay}`;
+      return `Wedding Vendors in ${cityDisplay}`;
     }
 
     return title || "Plan your perfect day";
-  }, [vendorType, city, title, slug, location.pathname, isVenuePage]);
+  }, [vendorType, city, title, slug, section, location.pathname, isVenuePage]);
+
 
   const placeholders = useMemo(() => {
     const section = (title || "").toLowerCase();
@@ -330,16 +348,33 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
     };
   }, []);
 
+  const DEFAULT_INDIAN_CITIES = [
+    "Mumbai", "Delhi", "Bangalore", "Hyderabad", "Ahmedabad", "Chennai",
+    "Kolkata", "Surat", "Pune", "Jaipur", "Lucknow", "Kanpur", "Nagpur",
+    "Indore", "Thane", "Bhopal", "Visakhapatnam", "Pimpri-Chinchwad", "Patna",
+    "Vadodara", "Ghaziabad", "Ludhiana", "Agra", "Nashik", "Faridabad",
+    "Meerut", "Rajkot", "Varanasi", "Srinagar", "Aurangabad", "Dhanbad",
+    "Amritsar", "Navi Mumbai", "Allahabad", "Ranchi", "Howrah", "Coimbatore",
+    "Jabalpur", "Gwalior", "Vijayawada", "Jodhpur", "Madurai", "Raipur",
+    "Kota", "Guwahati", "Chandigarh", "Solapur", "Hubli-Dharwad", "Bareilly",
+    "Moradabad", "Mysore", "Gurgaon", "Aligarh", "Jalandhar", "Tiruchirappalli",
+    "Bhubaneswar", "Salem", "Mira-Bhayander", "Warangal", "Guntur", "Bhiwandi",
+    "Saharanpur", "Amravati", "Noida", "Bikaner", "Udaipur", "Goa"
+  ];
+
   useEffect(() => {
     axios
       .post("https://countriesnow.space/api/v0.1/countries/cities", {
         country: "India",
       })
       .then((res) => {
-        if (res.data && res.data.data) setCities(res.data.data);
-        else setCities([]);
+        if (res.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
+          setCities(res.data.data);
+        } else {
+          setCities(DEFAULT_INDIAN_CITIES);
+        }
       })
-      .catch(() => setCities([]));
+      .catch(() => setCities(DEFAULT_INDIAN_CITIES));
   }, []);
 
   const filteredCities = cities.filter((city) =>
@@ -454,7 +489,7 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
         <Row className="align-items-center g-4 g-lg-5">
           <Col xs={12} lg={6}>
             <div className="pe-lg-4">
-              <h3 className="mb-3">{dynamicTitle}</h3>
+              <h1 className="mb-3 h3">{dynamicTitle}</h1>
               <p className="text-muted mb-4 fs-16">{placeholders.subtitle}</p>
               {/* <p className="text-muted mb-4">{heroInfo?.subtitle}</p> */}
 

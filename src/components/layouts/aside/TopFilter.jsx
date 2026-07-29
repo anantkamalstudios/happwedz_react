@@ -196,7 +196,7 @@ const TopFilter = ({
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @media (max-width: 576px) {
           .topfilter-filters .filter-item {
             min-width: 0;

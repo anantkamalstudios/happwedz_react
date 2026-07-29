@@ -1,3 +1,4 @@
+import "../../styles/shared.css";
 const handleNewChat = () => {
   setSessionId(null);
   setMessages([

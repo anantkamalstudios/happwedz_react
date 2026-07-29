@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Modal } from "react-bootstrap";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { FaLocationDot } from "react-icons/fa6";
+import "../../../../styles/shared.css";
 
 const formatMoney = (value, currency) => {
   const num =

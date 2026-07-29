@@ -5,6 +5,7 @@ import { BsLightningCharge } from "react-icons/bs";
 import { LuUsers } from "react-icons/lu";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import { Link, useNavigate } from "react-router-dom";
+import { buildVendorDetailUrl } from "../../../utils/urlUtils";
 import { useDispatch, useSelector } from "react-redux";
 import { IoLocationOutline } from "react-icons/io5";
 import { TbView360Number } from "react-icons/tb";
@@ -229,7 +230,11 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
                       </Col>
 
                       <Col md={8} className="p-3 d-flex flex-column">
-                        <Link className="text-decoration-none">
+                        <Link
+                          to={buildVendorDetailUrl(venue.section || "vendors", venue.city, venue.categorySlug || venue.slug, venue.name, venue.id)}
+                          aria-label={`View details for ${venue.name || "wedding vendor"}`}
+                          className="text-decoration-none text-dark"
+                        >
                           <div className="d-flex justify-content-between align-items-start">
                             <span className="fw-bold mb-1 primary-text fs-18">
                               {venue.name}

@@ -66,14 +66,17 @@ const CtaPanel = ({
             )}
           </div>
 
-          <div className="col-12 col-md-3 text-center text-md-start">
-            {/* aspect-ratio reserves height before load so the image doesn't
-                jump content when it arrives (CLS fix) */}
+          <div className="col-12 col-md-4 text-center d-flex align-items-stretch justify-content-center mt-3 mt-md-0">
             <img
               src={img}
               alt="CTA"
-              className="img-fluid rounded w-100"
-              style={{ objectFit: "cover", aspectRatio: "4 / 3", height: "auto" }}
+              className="img-fluid rounded-4 shadow-sm h-100"
+              style={{
+                objectFit: "cover",
+                width: "100%",
+                borderRadius: "16px",
+                minHeight: "220px",
+              }}
             />
           </div>
         </div>

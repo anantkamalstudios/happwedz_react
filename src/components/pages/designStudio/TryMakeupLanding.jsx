@@ -3,6 +3,7 @@ import { pink } from "@mui/material/colors";
 import React, { useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import "../../../styles/shared.css";
 
 const PolicyModal = ({ open, onClose, onAgree }) => {
   const [agreeOne, setAgreeOne] = useState(false);

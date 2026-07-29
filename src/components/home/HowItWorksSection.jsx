@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Container, Row, Col } from "react-bootstrap";
+import "../../styles/routes/how-it-works-section.css";
+import "../../styles/shared.css";
 
 const HowItWorksSection = () => {
   const countRefs = useRef([]);

@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import usePhotography from "../../hooks/usePhotography";
 import { useLoader } from "../context/LoaderContext";
 import ShimmerMasonry from "../ui/ShimmerMasonry";
+import "../../styles/routes/mansory-image-section.css";
+import "../../styles/shared.css";
 
 const MasonryImageSection = () => {
   const { fetchAllPhotos, allPhotos, loading } = usePhotography();

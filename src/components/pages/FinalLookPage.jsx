@@ -5,6 +5,7 @@ import { beautyApi } from "../../services/api";
 import { Download, Heart, Home, Share } from "lucide-react";
 import { MdRestartAlt } from "react-icons/md";
 import { IoClose } from "react-icons/io5";
+import "../../styles/shared.css";
 
 const FinalLookPage = () => {
   const location = useLocation();

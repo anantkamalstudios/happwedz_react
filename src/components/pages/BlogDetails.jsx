@@ -1,3 +1,4 @@
+import "../../styles/shared.css";
 // Utility to normalize image URLs
 // Utility to normalize image URLs
 const getImageUrl = (imageData) => {

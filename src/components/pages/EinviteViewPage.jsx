@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { einviteApi } from "../../services/api/einviteApi";
 import { getImageUrl, handleImageError } from "../../utils/imageUtils";
 import { FaHeart, FaMapMarkerAlt, FaComment } from "react-icons/fa";
+import "../../styles/shared.css";
 
 const EinviteViewPage = () => {
   const { id } = useParams();

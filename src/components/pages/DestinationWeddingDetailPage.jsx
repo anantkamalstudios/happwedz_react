@@ -5,6 +5,7 @@ import {
   destinationWeddingData,
   getDestinationBySlug,
 } from "../../data/designationWedding";
+import "../../styles/shared.css";
 
 const DestinationWeddingDetailPage = () => {
   const { name } = useParams();

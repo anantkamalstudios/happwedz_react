@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "../../../styles/shared.css";
 // import "./Search.css";
 
 const Search = () => {

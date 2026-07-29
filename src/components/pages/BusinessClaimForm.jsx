@@ -3,6 +3,7 @@ import { FiUpload, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
 import { Link, useLocation } from "react-router-dom";
 import useClaimForm from "../../hooks/useClaimForm";
+import "../../styles/shared.css";
 
 const BusinessClaimForm = ({ setShowClaimForm, vendorServiceId = null }) => {
   const location = useLocation();

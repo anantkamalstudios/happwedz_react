@@ -14,6 +14,7 @@ import Gift from "../components/gift";
 import Navbar from "../components/Navbar";
 import Saveday from "../components/countdown";
 import Footer from "../components/footer";
+import "../../styles/shared.css";
 
 const Homepage = ({ data }) => {
   return (

@@ -13,6 +13,8 @@ import {
   Music,
   Sparkles,
 } from "lucide-react";
+import "../../../styles/routes/video-templates.css";
+import "../../../styles/shared.css";
 
 const VideoTemplates = () => {
   const navigate = useNavigate();

@@ -10,6 +10,7 @@ import userApi from "../../services/api/userApi";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import GoogleAuthProvider from "./GoogleAuthProvider";
+import "../../styles/shared.css";
 
 const CustomerLoginInner = () => {
   const [email, setEmail] = useState("");

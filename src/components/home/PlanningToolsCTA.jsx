@@ -2,6 +2,8 @@ import React from "react";
 import tools from "../../data/planningToolsCTA";
 import { Link } from "react-router-dom";
 import { HiArrowRight } from "react-icons/hi";
+import "../../styles/routes/planning-tools-cta.css";
+import "../../styles/shared.css";
 
 const PlanningToolsCTA = () => {
   return (

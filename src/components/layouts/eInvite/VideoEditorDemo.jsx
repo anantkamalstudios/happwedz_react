@@ -16,6 +16,7 @@ import {
   Image,
   Settings,
 } from "lucide-react";
+import "../../../styles/shared.css";
 
 const VideoEditorDemo = () => {
   const navigate = useNavigate();
