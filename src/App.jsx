@@ -216,6 +216,15 @@ const HotelbedsHotelsPage = lazy(
 const FlightSearchResults = lazy(
   () => import("./components/pages/Travels/honeymoon/FlightSearchResults"),
 );
+const FlightBooking = lazy(
+  () => import("./components/pages/Travels/honeymoon/FlightBooking"),
+);
+const FlightBookingPage = lazy(
+  () => import("./components/pages/Travels/honeymoon/FlightBookingPage"),
+);
+const MultiCityResults = lazy(
+  () => import("./components/pages/Travels/honeymoon/MultiCityResults"),
+);
 
 function App() {
   const dispatch = useDispatch();
@@ -384,6 +393,34 @@ function App() {
               <Route
                 path="/honeymoon/flights"
                 element={<FlightSearchResults />}
+              />
+              <Route
+                path="/honeymoon/flights/multicity"
+                element={<MultiCityResults />}
+              />
+              <Route
+                path="/honeymoon/flights/booking"
+                element={
+                  <UserPrivateRoute>
+                    <FlightBooking />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/honeymoon/flights/book"
+                element={
+                  <UserPrivateRoute>
+                    <FlightBookingPage />
+                  </UserPrivateRoute>
+                }
+              />
+              <Route
+                path="/honeymoon/flights/confirmation"
+                element={
+                  <UserPrivateRoute>
+                    <FlightBookingPage />
+                  </UserPrivateRoute>
+                }
               />
               <Route
                 path="/honeymoon/hotels"
