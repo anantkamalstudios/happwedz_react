@@ -46,18 +46,18 @@
   display: none;
 }
 
+/* --- moved out of eager App.css (rules only this route needs) --- */
+
+
+
 /* Image Wrapper for aspect ratio control */
 .image-wrapper {
   position: relative;
   overflow: hidden;
   border-radius: 12px 12px 0 0;
 }
-@media (max-width: 576px) {
 
-  .image-wrapper {
-    border-radius: 8px 8px 0 0;
-  }
-}
+
 
 .image-wrapper {
   position: relative;

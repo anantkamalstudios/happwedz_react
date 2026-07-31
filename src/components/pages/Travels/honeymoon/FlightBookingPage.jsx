@@ -6,6 +6,7 @@ import PassengerDetails from './components/PassengerDetails';
 import SeatSelection from './components/SeatSelection';
 import BookingReview from './components/BookingReview';
 import BookingConfirmation from './components/BookingConfirmation';
+import "../../../../styles/shared.css";
 
 export default function FlightBookingPage() {
   const location = useLocation();

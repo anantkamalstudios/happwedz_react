@@ -157,8 +157,7 @@
   transition: transform 0.3s ease;
 }
 
-.matrimonial-dashboard__profile-card:hover
-  .matrimonial-dashboard__profile-image {
+.matrimonial-dashboard__profile-card:hover .matrimonial-dashboard__profile-image {
   transform: scale(1.05);
 }
 
@@ -252,85 +251,10 @@
   background: var(--mkp-primary);
   color: var(--mkp-white);
 }
-@media (max-width: 768px) {
 
-  .matrimonial-dashboard__profiles-grid {
-    grid-template-columns: 1fr;
-  }
-}
-@media (max-width: 480px) {
+/* --- moved out of eager App.css (rules only this route needs) --- */
 
-  .matrimonial-dashboard__sidebar-link {
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
-  }
 
-  .matrimonial-dashboard__main {
-    padding: 1rem;
-  }
-}
-
-.matrimonial-dashboard__profile-card {
-  animation: mkp-fadeIn 0.6s ease-out;
-}
-
-.matrimonial-dashboard__sidebar {
-  animation: mkp-slideIn 0.4s ease-out;
-}
-
-/* Focus States for Accessibility */
-.matrimony-btn:focus,
-.matrimonial-dashboard__btn:focus,
-.matrimonial-btn:focus {
-  outline: 2px solid var(--mkp-primary);
-  outline-offset: 2px;
-}
-
-/* Custom Scrollbar */
-.matrimonial-dashboard__main::-webkit-scrollbar,
-.matrimonial-profiles::-webkit-scrollbar {
-  width: 8px;
-}
-
-.matrimonial-dashboard__main::-webkit-scrollbar-track,
-.matrimonial-profiles::-webkit-scrollbar-track {
-  background: var(--mkp-gray-100);
-  border-radius: 4px;
-}
-
-.matrimonial-dashboard__main::-webkit-scrollbar-thumb,
-.matrimonial-profiles::-webkit-scrollbar-thumb {
-  background: var(--mkp-primary-light);
-  border-radius: 4px;
-}
-
-.matrimonial-dashboard__main::-webkit-scrollbar-thumb:hover,
-.matrimonial-profiles::-webkit-scrollbar-thumb:hover {
-  background: var(--mkp-primary);
-}
-
-.activity-summary-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
-}
-
-.activity-summary-title {
-  font-size: 12px;
-  color: #475569;
-  line-height: 1.1;
-}
-
-.activity-summary-count {
-  font-size: 18px;
-  font-weight: 700;
-  margin-top: 2px;
-}
 
 .activity-avatar {
   width: 40px;
@@ -344,11 +268,184 @@
   color: #334155;
 }
 
+
+
+.activity-empty-illustration {
+  font-size: 44px;
+}
+
+
+
 .activity-list-item {
   padding-top: 14px;
   padding-bottom: 14px;
 }
 
-.activity-empty-illustration {
-  font-size: 44px;
+
+
+.activity-summary-count {
+  font-size: 18px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+
+
+.activity-summary-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+
+
+.activity-summary-title {
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.1;
+}
+
+
+
+@media (max-width: 768px) {
+  .matrimony-page-title {
+    font-size: 2rem;
+  }
+
+  .matrimony-title-icon {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .matrimony-profile-pic-container {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .matrimony-info-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .matrimony-action-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .matrimonial-dashboard__stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .matrimonial-dashboard__profiles-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .matrimonial-search-container {
+    flex-direction: column;
+  }
+
+  .matrimonial-sidebar {
+    width: 100%;
+  }
+
+  .matrimonial-searchbar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .matrimonial-profile-actions {
+    flex-direction: column;
+  }
+
+  .matrimonial-dashboard-profile-actions {
+    flex-direction: column;
+  }
+
+  .matrimonial-dashboard-profile-details {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+
+
+/* Custom Scrollbar */
+.matrimonial-dashboard__main::-webkit-scrollbar,
+.matrimonial-profiles::-webkit-scrollbar {
+  width: 8px;
+}
+
+
+
+.matrimonial-dashboard__main::-webkit-scrollbar-track,
+.matrimonial-profiles::-webkit-scrollbar-track {
+  background: var(--mkp-gray-100);
+  border-radius: 4px;
+}
+
+
+
+.matrimonial-dashboard__main::-webkit-scrollbar-thumb,
+.matrimonial-profiles::-webkit-scrollbar-thumb {
+  background: var(--mkp-primary-light);
+  border-radius: 4px;
+}
+
+
+
+.matrimonial-dashboard__main::-webkit-scrollbar-thumb:hover,
+.matrimonial-profiles::-webkit-scrollbar-thumb:hover {
+  background: var(--mkp-primary);
+}
+
+@media (max-width: 480px) {
+  .matrimony-container {
+    padding: 0.5rem;
+  }
+
+  .matrimony-profile-section {
+    padding: 1rem;
+  }
+
+  .matrimony-page-title {
+    font-size: 1.5rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .matrimony-completion-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .matrimony-cta-buttons {
+    flex-direction: column;
+  }
+
+  .matrimonial-dashboard__main {
+    padding: 1rem;
+  }
+
+  .matrimonial-premium-banner {
+    padding: 1.5rem;
+  }
+
+  .matrimonial-premium-title {
+    font-size: 1.25rem;
+  }
+}
+
+
+
+/* Focus States for Accessibility */
+.matrimony-btn:focus,
+.matrimonial-dashboard__btn:focus,
+.matrimonial-btn:focus {
+  outline: 2px solid var(--mkp-primary);
+  outline-offset: 2px;
 }

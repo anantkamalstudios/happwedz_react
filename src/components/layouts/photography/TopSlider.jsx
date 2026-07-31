@@ -81,7 +81,7 @@ const TopSlider = ({ onCategorySelect, onPhotosFetched }) => {
             style={{ cursor: "pointer" }}
           >
             <img
-              src="./images/photography-all.png"
+              src="/images/photography-all.png"
               alt="All"
               className="category-image mx-auto d-block mb-2"
               style={{

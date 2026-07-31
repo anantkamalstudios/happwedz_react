@@ -154,7 +154,7 @@ const BlogLists = ({ onPostClick }) => {
       return url;
     };
 
-    if (!imageData) return "./images/noimage.jpeg";
+    if (!imageData) return "/images/noimage.jpeg";
 
     if (typeof imageData === "string") {
       if (imageData.startsWith("http")) {
@@ -184,7 +184,7 @@ const BlogLists = ({ onPostClick }) => {
       return baseUrl + path;
     }
 
-    return "./images/noimage.jpeg";
+    return "/images/noimage.jpeg";
   };
 
   const handleImageError = (e, imageKey, imageData) => {
@@ -192,7 +192,7 @@ const BlogLists = ({ onPostClick }) => {
       setImageErrors((prev) => ({ ...prev, [imageKey]: true }));
       e.target.src = getImageUrl(imageData, true);
     } else {
-      e.target.src = "./images/noimage.jpeg";
+      e.target.src = "/images/noimage.jpeg";
     }
   };
 

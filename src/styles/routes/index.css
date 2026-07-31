@@ -1,0 +1,15 @@
+
+
+/* --- moved out of eager App.css (rules only this route needs) --- */
+
+
+
+.divider-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #e9d4e2;
+  z-index: 1;
+}

@@ -28,7 +28,7 @@ const BlogCardsSection = () => {
             excerpt: blog.shortDescription || "",
             author: {
               name: blog.author || "Admin",
-              avatar: "./images/no-image.png",
+              avatar: "/images/noimage.jpeg",
               date: new Date(blog.postDate).toLocaleDateString(),
             },
           };

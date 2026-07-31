@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import "../../styles/shared.css";
 
 // ─── Location Search (TripJack) ──────────────────────────────────────────────
 

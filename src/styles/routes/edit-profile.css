@@ -19,11 +19,9 @@
 }
 
 .matrimony-edit-profile__header {
-  background: linear-gradient(
-    135deg,
-    var(--mkp-primary) 0%,
-    var(--mkp-primary-light) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--mkp-primary) 0%,
+      var(--mkp-primary-light) 100%);
   color: var(--mkp-white);
   padding: 2rem;
   text-align: center;
@@ -76,11 +74,9 @@
 
 .matrimony-edit-profile__progress {
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--mkp-primary) 0%,
-    var(--mkp-primary-light) 100%
-  );
+  background: linear-gradient(90deg,
+      var(--mkp-primary) 0%,
+      var(--mkp-primary-light) 100%);
   border-radius: 4px;
   transition: width 0.3s ease;
 }
@@ -95,99 +91,6 @@
   padding-left: 2rem;
 }
 
-.matrimony-edit-profile__form {
-  padding: 2rem 0;
-}
-
-.matrimony-edit-profile__form-group {
-  margin-bottom: 1.5rem;
-}
-
-.matrimony-edit-profile__form-label {
-  font-weight: 600;
-  color: var(--mkp-gray-700);
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.matrimony-edit-profile__editable-container {
-  position: relative;
-}
-
-.matrimony-edit-profile__display-value {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  background: var(--mkp-gray-50);
-  border: 1px solid var(--mkp-gray-200);
-  border-radius: var(--mkp-radius);
-}
-
-.matrimony-edit-profile__edit-btn {
-  color: var(--mkp-primary);
-  padding: 0.25rem;
-  border: none;
-  background: none;
-}
-
-.matrimony-edit-profile__editing-controls {
-  display: flex;
-  gap: 0.5rem;
-  align-items: flex-start;
-}
-
-.matrimony-edit-profile__form-control {
-  flex: 1;
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--mkp-primary);
-  border-radius: var(--mkp-radius);
-}
-
-.matrimony-edit-profile__edit-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.matrimony-edit-profile__save-btn,
-.matrimony-edit-profile__cancel-btn {
-  padding: 0.5rem;
-  border: none;
-  border-radius: var(--mkp-radius);
-  cursor: pointer;
-}
-
-.matrimony-edit-profile__save-btn {
-  color: var(--mkp-success);
-}
-
-.matrimony-edit-profile__cancel-btn {
-  color: var(--mkp-error);
-}
-
-.matrimony-edit-profile__actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  padding-top: 2rem;
-  border-top: 1px solid var(--mkp-gray-200);
-}
-
-.matrimony-edit-profile__body {
-  padding: 16px 18px;
-}
-
-.matrimony-edit-profile__form-group {
-  margin-bottom: 12px;
-}
-
-.matrimony-edit-profile__form-label {
-  margin-bottom: 6px;
-}
-
 .matrimony-edit-profile__display-value {
   padding: 3px 10px;
   border-radius: 0px;
@@ -198,20 +101,113 @@
   border-radius: 2px;
 }
 
-.matrimony-edit-profile__editing-controls
-  .matrimony-edit-profile__form-control {
+.matrimony-edit-profile__editing-controls .matrimony-edit-profile__form-control {
   margin-right: 8px;
 }
+
+/* --- moved out of eager App.css (rules only this route needs) --- */
+
+
+
+.matrimony-edit-profile__edit-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+
+
+.matrimony-edit-profile__editable-container {
+  position: relative;
+}
+
+
+
+.matrimony-edit-profile__form {
+  padding: 2rem 0;
+}
+
+
+
+.matrimony-edit-profile__form-group {
+  margin-bottom: 1.5rem;
+}
+
+
+
+.matrimony-edit-profile__form-group {
+  margin-bottom: 12px;
+}
+
+
+
+.matrimony-edit-profile__form-label {
+  font-weight: 600;
+  color: var(--mkp-gray-700);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+
+
+.matrimony-edit-profile__form-label {
+  margin-bottom: 6px;
+}
+
+
+
+.matrimony-edit-profile__editing-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+
+
+.matrimony-edit-profile__form-control {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--mkp-primary);
+  border-radius: var(--mkp-radius);
+}
+
+
+
+.matrimony-edit-profile__save-btn,
+.matrimony-edit-profile__cancel-btn {
+  padding: 0.5rem;
+  border: none;
+  border-radius: var(--mkp-radius);
+  cursor: pointer;
+}
+
+
+
+.matrimony-edit-profile__save-btn {
+  color: var(--mkp-success);
+}
+
+
+
+.matrimony-edit-profile__cancel-btn {
+  color: var(--mkp-error);
+}
+
+
+
+.matrimony-edit-profile__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--mkp-gray-200);
+}
+
+
 
 .matrimony-edit-profile__actions {
   margin-top: 0px;
   gap: 10px;
-}
-
-.matrimony-edit-profile__sidebar {
-  padding-top: 12px;
-}
-
-.matrimony-edit-profile__completion-text {
-  font-size: 0.9rem;
 }

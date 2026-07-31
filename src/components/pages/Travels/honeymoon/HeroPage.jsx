@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { Shield } from "lucide-react";
 import FightIcon from "../../../../assets/trevel_icon/airplane.png";
 import HotelIcon from "../../../../assets/trevel_icon/hotel.png";
 import CarIcon from "../../../../assets/trevel_icon/sedan.png";
@@ -7,11 +9,161 @@ import ActivityIcon from "../../../../assets/trevel_icon/checklist.png";
 import CruiseIcon from "../../../../assets/trevel_icon/cruise-ship.png";
 import FlightSearchForm from "./components/FlightSearchForm";
 import HotelSearchForm from "./components/HotelSearchForm";
+import InsuranceSearchPanel from "./InsuranceSearchPanel";
+import { getRecentHotelBookings } from "../../../../services/api/hotelApi";
+import { getUserInsuranceBookings } from "../../../../services/api/insurancePaymentApi";
 import "./index.css";
+import "../../../../styles/shared.css";
+
+const formatSelectedDate = (dateValue) => {
+  if (!dateValue) return "";
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return dateValue;
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const mapBookingStatusLabel = (status) => {
+  const normalized = String(status || "").toUpperCase();
+  if (normalized === "PAYMENT_SUCCESS") return "Awaiting Confirmation";
+  if (normalized === "SUCCESS") return "Confirmed";
+  if (normalized === "ON_HOLD") return "On Hold";
+  if (normalized === "PAYMENT_PENDING") return "Payment Pending";
+  if (["IN_PROGRESS", "PENDING"].includes(normalized)) return "Processing";
+  if (["FAILED", "ABORTED"].includes(normalized)) return "Failed";
+  if (normalized === "CANCELLED") return "Cancelled";
+  return normalized || "PENDING";
+};
+
+const getBookingStatusColor = (status) => {
+  const normalized = String(status || "").toUpperCase();
+  if (["SUCCESS", "ON_HOLD"].includes(normalized)) return "#22c55e";
+  if (["PAYMENT_SUCCESS", "IN_PROGRESS", "PENDING", "PAYMENT_PENDING"].includes(normalized)) return "#f59e0b";
+  if (["FAILED", "ABORTED", "CANCELLED"].includes(normalized)) return "#ef4444";
+  return "#ffffff";
+};
+
+const TAB_SLUG_TO_LABEL = {
+  hotels: "Hotels",
+  flights: "Flights",
+  insurance: "Insurance",
+  cars: "Car rental",
+  "car-rental": "Car rental",
+  activities: "Activities",
+};
+
+const TAB_LABEL_TO_SLUG = {
+  Hotels: "hotels",
+  Flights: "flights",
+  Insurance: "insurance",
+  "Car rental": "cars",
+  Activities: "activities",
+};
 
 export default function FlightHero() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("Flights");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabSlug = searchParams.get("tab");
+  const user = useSelector((state) => state.auth.user);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const activeTab =
+    TAB_SLUG_TO_LABEL[(tabSlug || "").toLowerCase()] || "Flights";
+
+  const goToTab = (label) => {
+    if (label === activeTab) return;
+    const slug = TAB_LABEL_TO_SLUG[label];
+    if (slug) {
+      setSearchParams({ tab: slug }, { replace: true });
+    }
+  };
+  const [recentHotelBookings, setRecentHotelBookings] = useState([]);
+  const [recentHotelBookingsLoading, setRecentHotelBookingsLoading] = useState(false);
+  const [recentInsuranceBookings, setRecentInsuranceBookings] = useState([]);
+  const [recentInsuranceBookingsLoading, setRecentInsuranceBookingsLoading] =
+    useState(false);
+
+  const heroTitle =
+    activeTab === "Flights"
+      ? "Book Cheap Flight Tickets With Ease"
+      : activeTab === "Insurance"
+        ? "Travel Insurance For Your Trip"
+        : "Book your stay with India's largest network of Hotels.";
+
+  const heroSubtitle =
+    activeTab === "Flights"
+      ? "Discover your next dream destination"
+      : activeTab === "Insurance"
+        ? "Compare international, student & multi-trip plans"
+        : "Search city stays, romantic escapes, and premium honeymoon-friendly hotels.";
+
+  useEffect(() => {
+    let active = true;
+    if (!isAuthenticated || !user?.id) {
+      setRecentHotelBookings([]);
+      return undefined;
+    }
+
+    if (activeTab !== "Hotels") {
+      return undefined;
+    }
+
+    setRecentHotelBookingsLoading(true);
+    getRecentHotelBookings({ limit: 3 })
+      .then((response) => {
+        if (active) {
+          setRecentHotelBookings(Array.isArray(response?.bookings) ? response.bookings : []);
+        }
+      })
+      .catch((error) => {
+        console.error("Unable to load recent hotel bookings", error);
+        if (active) {
+          setRecentHotelBookings([]);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setRecentHotelBookingsLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [activeTab, isAuthenticated, user?.id]);
+
+  useEffect(() => {
+    let active = true;
+    if (!isAuthenticated || !user?.id) {
+      setRecentInsuranceBookings([]);
+      return undefined;
+    }
+
+    if (activeTab !== "Insurance") {
+      return undefined;
+    }
+
+    setRecentInsuranceBookingsLoading(true);
+    getUserInsuranceBookings()
+      .then((response) => {
+        if (!active) return;
+        const list = Array.isArray(response?.bookings) ? response.bookings : [];
+        setRecentInsuranceBookings(list.slice(0, 3));
+      })
+      .catch((error) => {
+        console.error("Unable to load recent insurance bookings", error);
+        if (active) setRecentInsuranceBookings([]);
+      })
+      .finally(() => {
+        if (active) setRecentInsuranceBookingsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [activeTab, isAuthenticated, user?.id]);
 
   return (
     <div className="flight-hero">
@@ -23,17 +175,23 @@ export default function FlightHero() {
                 {
                   icon: { src: HotelIcon, alt: "Hotels" },
                   label: "Hotels",
-                  onClick: () => setActiveTab("Hotels"),
+                  onClick: () => goToTab("Hotels"),
                 },
                 {
                   icon: { src: FightIcon, alt: "Flights" },
                   label: "Flights",
-                  onClick: () => setActiveTab("Flights"),
+                  onClick: () => goToTab("Flights"),
                 },
-                { icon: { src: CruiseIcon, alt: "cruise" }, label: "cruise" },
+                {
+                  lucide: Shield,
+                  label: "Insurance",
+                  onClick: () => goToTab("Insurance"),
+                },
+
                 {
                   icon: { src: CarIcon, alt: "Car rental" },
                   label: "Car rental",
+                  onClick: () => goToTab("Car rental"),
                 },
                 {
                   icon: { src: ActivityIcon, alt: "Activities" },
@@ -43,16 +201,19 @@ export default function FlightHero() {
               ].map((tab) => (
                 <button
                   key={tab.label}
+                  type="button"
                   className={`nav-tab ${activeTab === tab.label ? "active" : ""}`}
                   onClick={tab.onClick}
                 >
                   <span>
-                    {typeof tab.icon === "object" ? (
+                    {tab.lucide ? (
+                      <tab.lucide size={18} />
+                    ) : typeof tab.icon === "object" ? (
                       <img src={tab.icon.src} alt={tab.icon.alt} />
                     ) : (
                       tab.icon
                     )}
-                  </span>
+                  </span>{" "}
                   {tab.label}
                 </button>
               ))}
@@ -63,6 +224,11 @@ export default function FlightHero() {
               <div
                 className="navbar-recommended-pill"
                 onClick={() => navigate("/honeymoon/hotels")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && navigate("/honeymoon/hotels")
+                }
               >
                 <span>🏨</span>
                 <span>Recommended hotel</span>
@@ -81,16 +247,8 @@ export default function FlightHero() {
 
         <div className="row align-items-start">
           <div className="col-12 hero-header">
-            <h1 className="hero-title">
-              {activeTab === "Flights"
-                ? "Book Cheap Flight Tickets With Ease"
-                : "Find Romantic Honeymoon Hotels"}
-            </h1>
-            <p className="hero-subtitle">
-              {activeTab === "Flights"
-                ? "Discover your next dream destination"
-                : "Search stays by country and destination"}
-            </p>
+            <h1 className="hero-title">{heroTitle}</h1>
+            <p className="hero-subtitle">{heroSubtitle}</p>
 
             <div className="stats-row">
               {[
@@ -109,8 +267,198 @@ export default function FlightHero() {
           <div className="col-12">
             {activeTab === "Flights" ? (
               <FlightSearchForm />
+            ) : activeTab === "Insurance" ? (
+              <>
+                <InsuranceSearchPanel formatSelectedDate={formatSelectedDate} />
+                {isAuthenticated ? (
+                  <div
+                    className="mt-4"
+                    style={{
+                      background: "rgba(255, 255, 255, 0.16)",
+                      border: "1px solid rgba(255, 255, 255, 0.28)",
+                      borderRadius: "18px",
+                      padding: "1rem",
+                    }}
+                  >
+                    <div className="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
+                      <div>
+                        <div className="fw-bold text-white">
+                          My Travel Insurance
+                        </div>
+                        <div
+                          style={{
+                            color: "rgba(255,255,255,0.8)",
+                            fontSize: "0.92rem",
+                          }}
+                        >
+                          Policies you have already booked
+                        </div>
+                      </div>
+                      <Link
+                        to="/honeymoon/insurance/bookings"
+                        style={{
+                          background: "#ffffff",
+                          color: "#1f2937",
+                          borderRadius: "999px",
+                          padding: "0.5rem 0.9rem",
+                          fontWeight: 700,
+                          textDecoration: "none",
+                        }}
+                      >
+                        View All
+                      </Link>
+                    </div>
+
+                    {recentInsuranceBookingsLoading ? (
+                      <div style={{ color: "rgba(255,255,255,0.8)" }}>
+                        Loading your insurance bookings...
+                      </div>
+                    ) : recentInsuranceBookings.length === 0 ? (
+                      <div style={{ color: "rgba(255,255,255,0.8)" }}>
+                        You haven't booked any travel insurance yet.
+                      </div>
+                    ) : (
+                      <div className="row g-3">
+                        {recentInsuranceBookings.map((booking) => (
+                          <div className="col-md-4" key={booking.id}>
+                            <Link
+                              to={`/honeymoon/insurance/booking/${booking.tripjack_booking_id}`}
+                              style={{
+                                display: "block",
+                                background: "rgba(14, 23, 38, 0.45)",
+                                borderRadius: "14px",
+                                padding: "0.8rem",
+                                height: "100%",
+                                textDecoration: "none",
+                                color: "inherit",
+                              }}
+                            >
+                              <div className="fw-semibold text-white d-flex align-items-center gap-2">
+                                <Shield size={14} />
+                                {booking.plan_label || "Insurance Plan"}
+                              </div>
+                              <div
+                                style={{
+                                  color: "rgba(255,255,255,0.75)",
+                                  fontSize: "0.84rem",
+                                }}
+                              >
+                                {booking.tripjack_booking_id}
+                              </div>
+                              <div
+                                style={{
+                                  color: "rgba(255,255,255,0.75)",
+                                  fontSize: "0.84rem",
+                                  marginTop: 4,
+                                }}
+                              >
+                                {booking.region_name || "—"} ·{" "}
+                                {booking.traveller_count || 1} traveller
+                                {(booking.traveller_count || 1) > 1 ? "s" : ""}
+                              </div>
+                              <div className="mt-2 d-flex justify-content-between">
+                                <span
+                                  style={{
+                                    color: "rgba(255,255,255,0.8)",
+                                    fontSize: "0.84rem",
+                                  }}
+                                >
+                                  {formatSelectedDate(booking.start_date)} →{" "}
+                                  {formatSelectedDate(booking.end_date)}
+                                </span>
+                                <span
+                                  className="text-white fw-semibold"
+                                  style={{
+                                    fontSize: "0.84rem",
+                                    color: getBookingStatusColor(
+                                      booking.booking_status,
+                                    ),
+                                  }}
+                                >
+                                  {mapBookingStatusLabel(
+                                    booking.booking_status,
+                                  )}
+                                </span>
+                              </div>
+                            </Link>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </>
             ) : (
-              <HotelSearchForm />
+              <>
+                <HotelSearchForm />
+                {isAuthenticated ? (
+                  <div
+                    className="mt-4"
+                    style={{
+                      background: "rgba(255, 255, 255, 0.16)",
+                      border: "1px solid rgba(255, 255, 255, 0.28)",
+                      borderRadius: "18px",
+                      padding: "1rem",
+                    }}
+                  >
+                    <div className="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
+                      <div>
+                        <div className="fw-bold text-white">Recent Hotel Bookings</div>
+                        <div style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.92rem" }}>
+                          Latest bookings from your account
+                        </div>
+                      </div>
+                      <Link
+                        to="/hotels/all-booking"
+                        style={{
+                          background: "#ffffff",
+                          color: "#1f2937",
+                          borderRadius: "999px",
+                          padding: "0.5rem 0.9rem",
+                          fontWeight: 700,
+                          textDecoration: "none",
+                        }}
+                      >
+                        All Bookings
+                      </Link>
+                    </div>
+
+                    {recentHotelBookingsLoading ? (
+                      <div style={{ color: "rgba(255,255,255,0.8)" }}>Loading bookings...</div>
+                    ) : recentHotelBookings.length === 0 ? (
+                      <div style={{ color: "rgba(255,255,255,0.8)" }}>No hotel bookings yet.</div>
+                    ) : (
+                      <div className="row g-3">
+                        {recentHotelBookings.map((booking) => (
+                          <div className="col-md-4" key={booking.bookingId}>
+                            <div
+                              style={{
+                                background: "rgba(14, 23, 38, 0.45)",
+                                borderRadius: "14px",
+                                padding: "0.8rem",
+                                height: "100%",
+                              }}
+                            >
+                              <div className="fw-semibold text-white">{booking.hotelName || "Booked Hotel"}</div>
+                              <div style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.88rem" }}>{booking.bookingId}</div>
+                              <div className="mt-2 d-flex justify-content-between">
+                                <span style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.86rem" }}>
+                                  {booking.checkIn || "Not available"} to {booking.checkOut || "Not available"}
+                                </span>
+                                <span className="text-white fw-semibold" style={{ fontSize: "0.86rem" }}>
+                                  <span style={{ color: getBookingStatusColor(booking.status) }}>
+                                    {mapBookingStatusLabel(booking.status)}
+                                  </span>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </>
             )}
           </div>
         </div>

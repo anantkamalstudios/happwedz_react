@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -9,6 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useLoader } from "../context/LoaderContext";
 import "../../styles/routes/blog-inspiration-teasers.css";
 import "../../styles/shared.css";
+import { useAutoplayGate } from "../../hooks/useMotionGate";
 
 const BlogsCarousel = () => {
   const [blogs, setBlogs] = useState([]);
@@ -16,6 +17,18 @@ const BlogsCarousel = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const navigate = useNavigate();
   const { showLoader, hideLoader } = useLoader();
+
+  // Autoplay only while on screen — see useMotionGate for why.
+  const rootRef = useRef(null);
+  const swiperRef = useRef(null);
+  const canAutoplay = useAutoplayGate(rootRef);
+
+  useEffect(() => {
+    const swiper = swiperRef.current;
+    if (!swiper?.autoplay) return;
+    if (canAutoplay) swiper.autoplay.start();
+    else swiper.autoplay.stop();
+  }, [canAutoplay]);
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -38,7 +51,7 @@ const BlogsCarousel = () => {
             category: "Blog",
             img: cleanedImageUrl,
             author: blog.author,
-            authorImg: "./images/no-image.png",
+            authorImg: "/images/noimage.jpeg",
             date: new Date(blog.postDate).toLocaleDateString(),
             tags: [],
           };
@@ -58,7 +71,7 @@ const BlogsCarousel = () => {
   }, []);
 
   return (
-    <div className="blogs-carousel-wrapper py-5 px-3">
+    <div className="blogs-carousel-wrapper py-5 px-3" ref={rootRef}>
       <div className="container position-relative">
         <div className="text-center mb-1">
           <img
@@ -83,6 +96,10 @@ const BlogsCarousel = () => {
           }}
           modules={[Navigation, Autoplay]}
           autoplay={{ delay: 5000, disableOnInteraction: false }}
+          onSwiper={(swiper) => {
+            swiperRef.current = swiper;
+            swiper.autoplay?.stop();
+          }}
           breakpoints={{
             576: { slidesPerView: 2 },
             992: { slidesPerView: 3 },
@@ -133,7 +150,7 @@ const BlogsCarousel = () => {
                         src={
                           blog.authorImg && blog.authorImg.trim() !== ""
                             ? blog.authorImg
-                            : "./images/no-image.png"
+                            : "/images/noimage.jpeg"
                         }
                         alt={blog.author}
                         className="rounded-circle me-3"

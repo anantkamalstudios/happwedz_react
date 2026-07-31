@@ -1,10 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import Swiper from "swiper/bundle";
 import "swiper/css/bundle";
 import { FaStar, FaMapMarkerAlt, FaHeart, FaEye } from "react-icons/fa";
+import { useAutoplayGate } from "../../hooks/useMotionGate";
 
 const FeaturedVendorsSection = () => {
+  // Autoplay only while on screen — see useMotionGate for why.
+  const rootRef = useRef(null);
+  const swiperRef = useRef(null);
+  const canAutoplay = useAutoplayGate(rootRef);
+
   const featuredVendors = [
     {
       name: "Royal Palace Venues",
@@ -81,7 +87,7 @@ const FeaturedVendorsSection = () => {
   ];
 
   useEffect(() => {
-    new Swiper(".featuredVendorsSwiper", {
+    swiperRef.current = new Swiper(".featuredVendorsSwiper", {
       slidesPerView: 1,
       spaceBetween: 20,
       loop: true,
@@ -105,12 +111,22 @@ const FeaturedVendorsSection = () => {
         },
       },
     });
+    swiperRef.current.autoplay?.stop();
+    return () => swiperRef.current?.destroy?.(true, true);
   }, []);
+
+  useEffect(() => {
+    const swiper = swiperRef.current;
+    if (!swiper?.autoplay) return;
+    if (canAutoplay) swiper.autoplay.start();
+    else swiper.autoplay.stop();
+  }, [canAutoplay]);
 
   return (
     <section
       className="featured-vendors-category py-5"
       style={{ background: "#fff" }}
+      ref={rootRef}
     >
       <Container>
         <div className="d-flex justify-content-between align-items-center mb-5">

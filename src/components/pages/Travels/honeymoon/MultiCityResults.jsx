@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import FlightFiltersSidebar from './FlightFiltersSidebar';
 import FlightSearchHeader from './components/FlightSearchHeader';
 import './tripjack-styles.css';
+import "../../../../styles/routes/multi-city-results.css";
+import "../../../../styles/shared.css";
 
 export default function MultiCityResults() {
   const location = useLocation();

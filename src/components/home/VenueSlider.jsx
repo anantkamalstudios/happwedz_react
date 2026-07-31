@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -9,6 +9,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import "../../styles/routes/venue-slider.css";
 import "../../styles/shared.css";
+import { useAutoplayGate } from "../../hooks/useMotionGate";
 
 const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
 
@@ -16,6 +17,18 @@ const VenueSlider = () => {
   const [favorites, setFavorites] = useState([]);
   const [activeFilter, setActiveFilter] = useState("Top Rated");
   const { user } = useSelector((state) => state.auth);
+
+  // Hold autoplay until the slider is on screen and the page has settled.
+  const rootRef = useRef(null);
+  const swiperRef = useRef(null);
+  const canAutoplay = useAutoplayGate(rootRef);
+
+  useEffect(() => {
+    const swiper = swiperRef.current;
+    if (!swiper?.autoplay) return;
+    if (canAutoplay) swiper.autoplay.start();
+    else swiper.autoplay.stop();
+  }, [canAutoplay]);
 
   // Fetch 9 venues from API
   const {
@@ -96,7 +109,7 @@ const VenueSlider = () => {
   }
 
   return (
-    <div className="venues-slider-container">
+    <div className="venues-slider-container" ref={rootRef}>
       {/* Header */}
       <div className="venues-slider-header d-flex justify-content-between align-items-end">
         <h3>Pick your Venue</h3>
@@ -144,9 +157,16 @@ const VenueSlider = () => {
           spaceBetween={30}
           slidesPerView={1}
           navigation={false}
+          // Autoplay is started imperatively once the slider is on screen — see
+          // the effect above. Running it from mount kept the page changing every
+          // 3s forever, which pins Speed Index.
           autoplay={{
             delay: 3000,
             disableOnInteraction: false,
+          }}
+          onSwiper={(swiper) => {
+            swiperRef.current = swiper;
+            swiper.autoplay?.stop();
           }}
           breakpoints={{
             576: { slidesPerView: 1 },
@@ -157,9 +177,9 @@ const VenueSlider = () => {
           {displayData.map((item) => {
             const id = item.id;
             const name = item.name;
-            const rating = item.rating || 0;
+            const rating = parseFloat(item.rating || 0).toFixed(1);
             const reviews = item.reviews || item.review_count || 0;
-            const city = item.location;
+            const city = item.location ? item.location.trim().replace(/[-,\s]+$/, "") : "";
 
             const rawImage = item.image || "";
             const imageUrl = rawImage

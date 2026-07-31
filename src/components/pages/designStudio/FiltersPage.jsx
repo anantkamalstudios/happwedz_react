@@ -25,6 +25,8 @@ import {
   DEFAULT_INTENSITIES,
   getErrorMessage,
 } from "./Services";
+import "../../../styles/routes/filters-page.css";
+import "../../../styles/shared.css";
 
 const DEBOUNCE_DELAY = 250;
 

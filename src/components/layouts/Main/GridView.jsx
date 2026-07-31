@@ -138,7 +138,7 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
                   <Card.Img
                     key={`${venue.id}-${venue.image}`}
                     variant="top"
-                    src={venue.image || "/images/happywedz-placeholder.jpg"}
+                    src={venue.image || "/images/imageNotFound.jpg"}
                     loading="eager"
                     alt={`${venue.name || "Wedding Vendor"} - ${venue.vendor_type || "Vendor"} in ${venue.city || "India"} | HappyWedz`}
                     style={{
@@ -150,7 +150,7 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
                     }}
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = "/images/happywedz-placeholder.jpg";
+                      e.target.src = "/images/imageNotFound.jpg";
                     }}
                   />
 

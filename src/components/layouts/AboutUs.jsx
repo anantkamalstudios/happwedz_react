@@ -235,7 +235,7 @@ Create your perfect bridal look effortlessly.
               <img
                 className="img-fluid rounded border border-dark"
                 loading="lazy"
-                src="./images/categories/venues.jpg"
+                src="/images/categories/venues.jpg"
                 alt="About Us"
               />
             </div>

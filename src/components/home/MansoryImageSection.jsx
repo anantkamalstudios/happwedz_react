@@ -136,7 +136,7 @@ const MasonryImageSection = () => {
                               e.target.src = weddingImages[0].fallbackSrc;
                             } else {
                               e.target.onerror = null;
-                              e.target.src = "./images/noimage.jpeg";
+                              e.target.src = "/images/noimage.jpeg";
                             }
                           }}
                         />
@@ -175,7 +175,7 @@ const MasonryImageSection = () => {
                               e.target.src = weddingImages[3].fallbackSrc;
                             } else {
                               e.target.onerror = null;
-                              e.target.src = "./images/noimage.jpeg";
+                              e.target.src = "/images/noimage.jpeg";
                             }
                           }}
                         />
@@ -216,7 +216,7 @@ const MasonryImageSection = () => {
                               e.target.src = weddingImages[1].fallbackSrc;
                             } else {
                               e.target.onerror = null;
-                              e.target.src = "./images/noimage.jpeg";
+                              e.target.src = "/images/noimage.jpeg";
                             }
                           }}
                         />
@@ -255,7 +255,7 @@ const MasonryImageSection = () => {
                               e.target.src = weddingImages[4].fallbackSrc;
                             } else {
                               e.target.onerror = null;
-                              e.target.src = "./images/noimage.jpeg";
+                              e.target.src = "/images/noimage.jpeg";
                             }
                           }}
                         />
@@ -296,7 +296,7 @@ const MasonryImageSection = () => {
                               e.target.src = weddingImages[2].fallbackSrc;
                             } else {
                               e.target.onerror = null;
-                              e.target.src = "./images/noimage.jpeg";
+                              e.target.src = "/images/noimage.jpeg";
                             }
                           }}
                         />
@@ -335,7 +335,7 @@ const MasonryImageSection = () => {
                               e.target.src = weddingImages[5].fallbackSrc;
                             } else {
                               e.target.onerror = null;
-                              e.target.src = "./images/noimage.jpeg";
+                              e.target.src = "/images/noimage.jpeg";
                             }
                           }}
                         />

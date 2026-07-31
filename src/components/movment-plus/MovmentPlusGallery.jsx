@@ -37,7 +37,7 @@ const MovmentPlusGallery = () => {
   const [selectedCollection, setSelectedCollection] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const handleImgError = useCallback((e) => {
-    e.currentTarget.src = "/images/default-vendor.jpg";
+    e.currentTarget.src = "/images/imageNotFound.jpg";
   }, []);
 
   useEffect(() => {

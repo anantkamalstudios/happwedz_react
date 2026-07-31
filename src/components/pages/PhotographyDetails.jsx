@@ -56,7 +56,7 @@ const PhotographyDetails = () => {
   }, []);
 
   const normalizeImageUrl = (url) => {
-    if (!url) return "./images/noimage.jpeg";
+    if (!url) return "/images/noimage.jpeg";
     if (url.startsWith("http")) {
       return url.replace("http://happywedz.com/", IMAGE_BASE_URL);
     }
@@ -204,7 +204,7 @@ const PhotographyDetails = () => {
                         e.target.src = fallbackUrl;
                       } else {
                         e.target.onerror = null;
-                        e.target.src = "./images/noimage.jpeg";
+                        e.target.src = "/images/noimage.jpeg";
                       }
                     }}
                   />
@@ -262,7 +262,7 @@ const PhotographyDetails = () => {
                               e.target.src = fallbackUrl;
                             } else {
                               e.target.onerror = null;
-                              e.target.src = "./images/noimage.jpeg";
+                              e.target.src = "/images/noimage.jpeg";
                             }
                           }}
                         />
@@ -682,7 +682,7 @@ const PhotographyDetails = () => {
                                 e.target.src = fallbackUrl;
                               } else {
                                 e.target.onerror = null;
-                                e.target.src = "./images/noimage.jpeg";
+                                e.target.src = "/images/noimage.jpeg";
                               }
                             }}
                           />
@@ -853,7 +853,7 @@ const PhotographyDetails = () => {
                 e.target.src = fallbackUrl;
               } else {
                 e.target.onerror = null;
-                e.target.src = "./images/noimage.jpeg";
+                e.target.src = "/images/noimage.jpeg";
               }
             }}
           />

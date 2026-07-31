@@ -1,0 +1,108 @@
+
+
+/* --- moved out of eager App.css (rules only this route needs) --- */
+
+
+
+.shimmer-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(255, 105, 180, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 182, 193, 0.3);
+}
+
+
+
+@media (max-width: 480px) {
+  .shimmer-title {
+    width: 200px;
+    height: 30px;
+  }
+
+  .shimmer-subtitle {
+    width: 150px;
+    height: 18px;
+  }
+
+  .shimmer-subtitle-small {
+    width: 120px;
+    height: 14px;
+  }
+
+  .shimmer-footer-line {
+    width: 200px;
+    height: 18px;
+  }
+
+  .shimmer-footer-line-small {
+    width: 150px;
+    height: 14px;
+  }
+
+  .shimmer-card {
+    padding: 15px;
+  }
+
+  .shimmer-image {
+    height: 150px;
+  }
+}
+
+
+
+@media (max-width: 768px) {
+  .shimmer-container {
+    padding: 15px;
+  }
+
+  .shimmer-content {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .shimmer-title {
+    width: 250px;
+    height: 35px;
+  }
+
+  .shimmer-subtitle {
+    width: 180px;
+    height: 20px;
+  }
+
+  .shimmer-subtitle-small {
+    width: 140px;
+    height: 16px;
+  }
+
+  .shimmer-navigation {
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .shimmer-nav-item {
+    width: 70px;
+    height: 35px;
+  }
+}
+
+
+
+.shimmer-line {
+  height: 16px;
+  background: linear-gradient(90deg, #ffb3d9 25%, #ff8cc8 50%, #ff69b4 75%);
+  background-size: 200% 100%;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+
+
+.shimmer-title {
+  height: 40px;
+  width: 300px;
+  margin: 0 auto 15px;
+  border-radius: 8px;
+}

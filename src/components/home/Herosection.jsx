@@ -2,17 +2,27 @@ import React, { useState, useEffect, useRef } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { MdExpandMore, MdExpandLess } from "react-icons/md";
+import { MdExpandMore, MdExpandLess, MdClose } from "react-icons/md";
+import { CiLocationOn, CiSearch } from "react-icons/ci";
+import { FaSearch, FaStar } from "react-icons/fa";
+import axios from "axios";
+import axiosInstance from "../../services/api/axiosInstance";
 import { setLocation } from "../../redux/locationSlice";
 import { useVendorType } from "../../hooks/useVendorType";
 import { useHome } from "../../hooks/useHome";
-
-// Served from /public with a stable URL so it can be <link rel="preload">-ed
-// in index.html and start downloading before the JS bundle even parses.
-// This is the LCP image — keep it identical to the preload href.
+import { usePageSettled } from "../../hooks/useMotionGate";
+// Served from /public, NOT imported from /src/assets.
+// src/assets/Hero_2.jpg is the same photo at 2.26 MB, and importing it shipped
+// all of that to every visitor. /hero-2.webp is the optimised version (262 KB)
+// and is ALREADY preloaded at fetchpriority="high" in index.html — so pointing
+// at this exact URL makes that preload serve the hero instead of being wasted
+// on a file nothing referenced.
 const HERO_FALLBACK = "/hero-2.webp";
-// Downscaled variants of the same photo. A 412px-wide phone at 2x DPR now
-// pulls ~72 KB instead of the full 262 KB 2000px master.
+
+// Downscaled variants of the same photo, so a phone does not pull the 2000px
+// master. MUST stay identical to the imagesrcset/imagesizes on the
+// <link rel="preload"> in index.html — if they differ the browser treats them
+// as two different resources and downloads the hero twice.
 const HERO_SRCSET = [
   "/hero-2-640.webp 640w",
   "/hero-2-960.webp 960w",
@@ -27,7 +37,13 @@ const RotatingWordHeadline = ({
 }) => {
   const [index, setIndex] = useState(0);
   const [animating, setAnimating] = useState(true);
+  // This <h1> sits above the fold and rotated every 2.8s from first paint, so
+  // the viewport never stopped changing and Speed Index never converged. Hold
+  // it until the page has loaded and gone idle; the first word is rendered
+  // immediately either way, so nothing is missing before then.
+  const settled = usePageSettled();
   useEffect(() => {
+    if (!settled) return undefined;
     const cycle = setInterval(() => {
       setAnimating(false);
       setTimeout(() => {
@@ -36,38 +52,21 @@ const RotatingWordHeadline = ({
       }, 300);
     }, 2800);
     return () => clearInterval(cycle);
-  }, [words.length]);
+  }, [words.length, settled]);
   const parts = titleTemplate.split("_");
-  // The cycling word changes width every 2.8s. Without a reserved width the
-  // rest of the headline slides sideways on every swap, and near a wrap
-  // boundary the whole hero reflows — both count as layout shift. An
-  // invisible sizer holding the longest word pins the width up front.
-  const longestWord = words.reduce(
-    (a, b) => (b.length > a.length ? b : a),
-    words[0] || ""
-  );
   return (
     <h1 className="display-5 fw-bold">
       {parts[0]}
-      <span style={{ display: "inline-grid", verticalAlign: "baseline" }}>
-        <span
-          aria-hidden="true"
-          style={{ gridArea: "1 / 1", visibility: "hidden" }}
-        >
-          {longestWord}
-        </span>
-        <span
-          style={{
-            gridArea: "1 / 1",
-            justifySelf: "center",
-            transition: "opacity .3s, transform .3s",
-            opacity: animating ? 1 : 0,
-            transform: animating ? "scale(1)" : "scale(0.95)",
-            color: "#e83581",
-          }}
-        >
-          {words[index]}
-        </span>
+      <span
+        style={{
+          display: "inline-block",
+          transition: "opacity .3s, transform .3s",
+          opacity: animating ? 1 : 0,
+          transform: animating ? "scale(1)" : "scale(0.95)",
+          color: "#e83581",
+        }}
+      >
+        {words[index]}
       </span>
       {parts[1] || " Wedding Vendor"}
     </h1>
@@ -102,9 +101,38 @@ const Herosection = () => {
   const categoryDropdownRef = useRef(null);
   const categoryButtonRef = useRef(null);
 
+  // Vendor Search States
+  const [vendorQuery, setVendorQuery] = useState("");
+  const [vendorLoading, setVendorLoading] = useState(false);
+  const [vendorResults, setVendorResults] = useState([]);
+  const [showVendorDropdown, setShowVendorDropdown] = useState(false);
+  const vendorDebounceRef = useRef(null);
+  const vendorDropdownRef = useRef(null);
+  const vendorInputRef = useRef(null);
+
   const toSlug = (t) =>
     t?.replace(/\s+/g, "-").replace(/[^A-Za-z0-9-]/g, "") || "";
   const formatName = (n) => n.replace(/\band\b/gi, "&");
+
+  const cleanMediaUrl = (m) => {
+    if (!m) return null;
+    if (typeof m === "string") return m.replace(/[`"']/g, "").trim();
+    if (typeof m === "object" && m.url) return String(m.url).trim();
+    return null;
+  };
+
+  const getVendorImage = (vendor) =>
+    vendor?.attributes?.image_url ||
+    cleanMediaUrl(vendor?.media?.[0]) ||
+    vendor?.attributes?.image ||
+    vendor?.attributes?.profile_image ||
+    "/images/imageNotFound.jpg";
+
+  const getVendorName = (vendor) =>
+    vendor?.attributes?.name ||
+    vendor?.attributes?.vendor_name ||
+    vendor?.vendor?.businessName ||
+    "Vendor";
 
   useEffect(() => {
     const handleOutside = (e) => {
@@ -149,24 +177,244 @@ const Herosection = () => {
     return () => document.removeEventListener("mousedown", handleOutside);
   }, [showCategoryDropdown]);
 
-  // This used to defer the remote image to requestIdleCallback, on the theory
-  // that LCP would already be settled by then. It does not work that way: LCP
-  // keeps updating until the first user interaction, so a full-bleed hero that
-  // renders late simply becomes a LATE LCP. Measured, the guard cost 3,241ms of
-  // "render delay" — the image downloaded in 421ms and then waited on idle —
-  // turning a ~1.0s LCP into ~4.1s. It caused the problem it was meant to avoid.
-  //
-  // Swapping as soon as the URL is known means the remote image starts loading
-  // right after the hero API responds, so it becomes the LCP element early
-  // instead of late. index.html already preconnects to the image host. The
-  // local preloaded webp still paints first while the remote one is in flight,
-  // and both fill the same fixed-size box, so the swap shifts nothing (CLS).
-  const remoteBg = getCurrentBackgroundImage();
-  const bgImage = remoteBg || HERO_FALLBACK;
+  // Vendor Search - Click Outside Handler
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (
+        vendorDropdownRef.current &&
+        !vendorDropdownRef.current.contains(e.target)
+      )
+        setShowVendorDropdown(false);
+    };
+    if (showVendorDropdown)
+      document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, [showVendorDropdown]);
 
-  const filteredCities = cities.filter((city) =>
+  // Vendor Search - same API as /vendors (MainSearch)
+  const performVendorSearch = async (searchQuery) => {
+    const q = searchQuery?.trim();
+    if (!q || q.length < 2) {
+      setVendorResults([]);
+      setShowVendorDropdown(false);
+      return;
+    }
+    setVendorLoading(true);
+    setShowVendorDropdown(true);
+    try {
+      const params = new URLSearchParams({
+        search: q,
+        limit: "10",
+      });
+      if (
+        reduxLocation &&
+        reduxLocation !== "null" &&
+        reduxLocation.trim() !== ""
+      ) {
+        params.set("city", reduxLocation.trim());
+      }
+      const { data } = await axiosInstance.get(
+        `/vendor-services?${params.toString()}`,
+      );
+      const items = Array.isArray(data?.data) ? data.data : [];
+      setVendorResults(items);
+      setShowVendorDropdown(true);
+    } catch (e) {
+      console.error("Vendor search error:", e);
+      setVendorResults([]);
+    } finally {
+      setVendorLoading(false);
+    }
+  };
+
+  // Vendor Search - Debounced Input Handler
+  const handleVendorQueryChange = (e) => {
+    const value = e.target.value;
+    setVendorQuery(value);
+
+    // Show dropdown immediately if user is typing
+    if (value.trim().length >= 2) {
+      setShowVendorDropdown(true);
+    } else {
+      setShowVendorDropdown(false);
+    }
+
+    if (vendorDebounceRef.current) clearTimeout(vendorDebounceRef.current);
+    vendorDebounceRef.current = setTimeout(() => performVendorSearch(value), 400);
+  };
+
+  // Vendor Search - Cleanup
+  useEffect(() => {
+    return () => {
+      if (vendorDebounceRef.current) clearTimeout(vendorDebounceRef.current);
+    };
+  }, []);
+
+
+  const handleVendorSelect = (vendor) => {
+    const id = vendor?.id ?? vendor?.vendor_services_id;
+    if (!id) return;
+    setShowVendorDropdown(false);
+    setVendorQuery("");
+    setVendorResults([]);
+    navigate(`/details/info/${id}`);
+  };
+
+  const handleVendorSearchSubmit = (e) => {
+    e.preventDefault();
+    const q = vendorQuery.trim();
+    if (q.length < 2) return;
+    const params = new URLSearchParams({ search: q });
+    if (
+      reduxLocation &&
+      reduxLocation !== "null" &&
+      reduxLocation.trim() !== ""
+    ) {
+      params.set("city", reduxLocation.trim());
+    }
+    setShowVendorDropdown(false);
+    navigate(`/vendors/all?${params.toString()}`);
+  };
+
+  const renderVendorLiveSearch = () => (
+    <div ref={vendorDropdownRef} className="position-relative mb-3">
+      <Form onSubmit={handleVendorSearchSubmit}>
+        <div
+          className="d-flex flex-column flex-md-row align-items-stretch gap-2 gap-md-3"
+          style={{ maxWidth: 680, margin: "0 auto" }}
+        >
+          <div
+            className="d-flex align-items-center flex-grow-1 px-3 py-2 bg-white"
+            ref={vendorInputRef}
+            style={{
+              border: "2px solid #e5e7eb",
+              borderRadius: "12px",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
+            }}
+          >
+            <FaSearch className="me-2 text-secondary flex-shrink-0" size={14} />
+            <input
+              type="text"
+              className="form-control border-0 shadow-none p-0"
+              value={vendorQuery}
+              onChange={handleVendorQueryChange}
+              placeholder="Decor, catering, planners..."
+              style={{ background: "transparent", fontSize: "0.95rem" }}
+              onFocus={() =>
+                vendorQuery.trim().length >= 2 && setShowVendorDropdown(true)
+              }
+              autoComplete="off"
+            />
+          </div>
+          {/* <Button
+            type="submit"
+            className="d-flex align-items-center justify-content-center gap-2 border-0 fw-semibold"
+            style={{
+              backgroundColor: "#C31162",
+              borderRadius: "12px",
+              padding: "0.75rem 1.5rem",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <CiSearch size={20} />
+            Search
+          </Button> */}
+        </div>
+
+        {showVendorDropdown && vendorQuery.trim().length >= 2 && (
+          <div
+            className="hero-vendor-search-dropdown bg-white shadow-lg rounded-3 mt-2"
+            style={{
+              position: "absolute",
+              top: "100%",
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "100%",
+              maxWidth: 680,
+              maxHeight: "400px",
+              overflowY: "auto",
+              zIndex: 1100,
+              border: "1px solid #e5e7eb",
+              animation: "slideDown 0.3s ease-out",
+            }}
+          >
+            {vendorLoading ? (
+              <div className="p-4 text-center text-muted">
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  style={{ color: "#C31162" }}
+                />
+                Searching...
+              </div>
+            ) : vendorResults.length > 0 ? (
+              vendorResults.map((vendor, idx) => (
+                <Link
+                  key={vendor?.id ?? vendor?.vendor_services_id ?? `vendor-${idx}`}
+                  to={`/details/info/${vendor?.id ?? vendor?.vendor_services_id}`}
+                  className="d-block text-decoration-none text-dark border-bottom hero-vendor-result-item"
+                  onClick={() => {
+                    setShowVendorDropdown(false);
+                    setVendorQuery("");
+                    setVendorResults([]);
+                  }}
+                >
+                  <div className="d-flex align-items-center gap-3 p-3">
+                    <img
+                      src={getVendorImage(vendor)}
+                      alt={getVendorName(vendor)}
+                      style={{
+                        width: 64,
+                        height: 64,
+                        objectFit: "cover",
+                        borderRadius: 10,
+                        flexShrink: 0,
+                      }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/images/imageNotFound.jpg";
+                      }}
+                    />
+                    <div className="flex-grow-1 overflow-hidden">
+                      <h6 className="mb-1 fw-semibold text-truncate">
+                        {getVendorName(vendor)}
+                      </h6>
+                      <div className="d-flex align-items-center gap-2 mb-1 small text-muted">
+                        <FaStar size={12} className="text-warning" />
+                        <span>
+                          <strong>{vendor?.attributes?.rating || 0}</strong> (
+                          {vendor?.attributes?.review_count || 0} reviews)
+                        </span>
+                      </div>
+                      <p className="mb-0 small text-muted d-flex align-items-center gap-1">
+                        <CiLocationOn size={14} />
+                        {vendor?.attributes?.city ||
+                          vendor?.vendor?.city ||
+                          "Location"}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="p-4 text-center text-muted small">
+                No vendors found for &quot;{vendorQuery.trim()}&quot;
+              </div>
+            )}
+          </div>
+        )}
+      </Form>
+    </div>
+  );
+
+  const filteredCities = (Array.isArray(cities) ? cities : []).filter((city) =>
     city.toLowerCase().includes(citySearch.toLowerCase())
   );
+
+  // Clear location handler
+  const handleClearLocation = (e) => {
+    e.stopPropagation(); // Prevent dropdown toggle
+    dispatch(setLocation("")); // Clear Redux state with empty string
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -187,27 +435,36 @@ const Herosection = () => {
     }
   };
 
+  const bgImage = getCurrentBackgroundImage() || HERO_FALLBACK;
+  // srcset only applies to the local asset — the remote CMS image has one size.
+  const isLocalHero = bgImage === HERO_FALLBACK;
+
   return (
     <section
-      className="hero-search position-relative text-white overflow-hidden"
+      className="hero-search position-relative text-white"
       style={{
         paddingTop: "120px",
         paddingBottom: "80px",
       }}
     >
+      {/* This was a CSS background-image on the <section>. A background image is
+          invisible to the browser's preload scanner, so it could not begin
+          downloading until the JS bundle had loaded, parsed and mounted, and
+          styles were computed. Lighthouse reported "Request is discoverable in
+          initial document: fail" and "fetchpriority=high should be applied",
+          with LCP stuck at 1.76s.
+          A real <img> is discoverable immediately, accepts fetchpriority, and
+          can use srcset — and index.html already preloads this exact URL at
+          high priority, so the element is painted straight from that preload.
+          Decorative: the heading beside it carries the meaning, so alt="". */}
       <img
         src={bgImage}
-        // Responsive variants only apply to the local hero — the remote CMS
-        // image has a single size. Must stay in sync with the imagesrcset on
-        // the <link rel="preload"> in index.html.
-        srcSet={bgImage === HERO_FALLBACK ? HERO_SRCSET : undefined}
-        sizes={bgImage === HERO_FALLBACK ? "100vw" : undefined}
-        alt="HappyWedz Hero Background"
+        srcSet={isLocalHero ? HERO_SRCSET : undefined}
+        sizes={isLocalHero ? "100vw" : undefined}
+        alt=""
+        aria-hidden="true"
         fetchPriority="high"
-        loading="eager"
         decoding="async"
-        width="1920"
-        height="800"
         style={{
           position: "absolute",
           top: 0,
@@ -216,15 +473,18 @@ const Herosection = () => {
           height: "100%",
           objectFit: "cover",
           zIndex: 0,
-          willChange: "opacity",
         }}
       />
-      <div className="overlay" style={{ zIndex: 1 }} />
+      <div className="overlay" />
       <Container className="py-5 position-relative" style={{ zIndex: 2 }}>
         <Row className="justify-content-center text-center">
           <Col lg={10}>
             <RotatingWordHeadline
-              words={heroData?.typewriter_words || ["Dream"]}
+              words={
+                Array.isArray(heroData?.typewriter_words)
+                  ? heroData.typewriter_words
+                  : ["Dream"]
+              }
               titleTemplate={
                 heroData?.title || "Discover Your _ Wedding Vendor"
               }
@@ -236,8 +496,9 @@ const Herosection = () => {
           </Col>
         </Row>
         <Row className="justify-content-center mt-4">
-          <Col xs={12} md={10}>
-            {reduxLocation ? (
+          <Col xs={12} md={10} className="position-relative">
+            {renderVendorLiveSearch()}
+            {reduxLocation && reduxLocation !== "null" && reduxLocation.trim() !== "" ? (
               <div className="position-relative">
                 <button
                   ref={buttonRef}
@@ -253,11 +514,30 @@ const Herosection = () => {
                   }}
                 >
                   <span>Find Vendors in {reduxLocation}</span>
-                  {showDropdown ? (
-                    <MdExpandLess size={24} />
-                  ) : (
-                    <MdExpandMore size={24} />
-                  )}
+                  <div className="d-flex align-items-center gap-2">
+                    <MdClose
+                      size={24}
+                      onClick={handleClearLocation}
+                      style={{
+                        cursor: "pointer",
+                        padding: "2px",
+                        borderRadius: "50%",
+                        transition: "background-color 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "rgba(232, 53, 129, 0.1)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }}
+                      title="Clear location and show search"
+                    />
+                    {showDropdown ? (
+                      <MdExpandLess size={24} />
+                    ) : (
+                      <MdExpandMore size={24} />
+                    )}
+                  </div>
                 </button>
                 {showDropdown && (
                   <div
@@ -286,7 +566,7 @@ const Herosection = () => {
                       }}
                       className="dropdown-grid"
                     >
-                      {vendorCategories.map((cat, i) => (
+                      {(vendorCategories || []).map((cat, i) => (
                         <div
                           key={cat.id || i}
                           style={{
@@ -330,77 +610,279 @@ const Herosection = () => {
                 )}
               </div>
             ) : (
-              <Form className="search-form" onSubmit={handleSearch}>
-                <Row className="g-3">
-                  <Col xs={12} md={5} className="position-relative">
-                    <button
-                      ref={categoryButtonRef}
-                      type="button"
-                      className="btn-light w-100 fw-semibold d-flex justify-content-between align-items-center"
-                      onClick={() =>
-                        setShowCategoryDropdown(!showCategoryDropdown)
-                      }
+              <>
+                <div className="d-none mb-3 p-3 position-relative" aria-hidden="true">
+                  <div
+                    style={{
+                      position: "relative",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    <CiSearch
+                      size={20}
+                      style={{
+                        position: "absolute",
+                        left: "1rem",
+                        color: "#666",
+                        zIndex: 1,
+                      }}
+                    />
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={vendorQuery}
+                      onChange={handleVendorQueryChange}
+                      placeholder="Search for specific vendors (e.g., photographer name, makeup artist...)"
                       style={{
                         fontSize: "14px",
-                        padding: "0.75rem 1rem",
+                        padding: "0.75rem 1rem 0.75rem 2.5rem",
                         backgroundColor: "white",
-                        border: "1px solid #ddd",
-                        color: "#333",
                         borderRadius: "6px",
+                        border: "1px solid #ddd",
+                      }}
+                    />
+                  </div>
+
+                  {/* Vendor Search Results Dropdown */}
+                  {showVendorDropdown && vendorQuery.trim().length >= 2 && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "calc(100% + 8px)",
+                        left: 0,
+                        right: 0,
+                        backgroundColor: "white",
+                        borderRadius: "8px",
+                        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
+                        maxHeight: "400px",
+                        overflowY: "auto",
+                        zIndex: 1000,
+                        animation: "slideDown 0.3s ease-out",
                       }}
                     >
-                      <span style={{ fontSize: "14px" }}>
-                        {selectedCategory}
-                      </span>
-                      {showCategoryDropdown ? (
-                        <MdExpandLess size={18} />
+                      {vendorLoading ? (
+                        <div
+                          style={{
+                            padding: "1.5rem",
+                            textAlign: "center",
+                            color: "#e83581",
+                            fontWeight: "500",
+                          }}
+                        >
+                          <div
+                            className="spinner-border spinner-border-sm me-2"
+                            role="status"
+                            style={{
+                              borderColor: "#e83581",
+                              borderRightColor: "transparent"
+                            }}
+                          >
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                          Searching...
+                        </div>
+                      ) : vendorResults.length === 0 ? (
+                        <div
+                          style={{
+                            padding: "1.5rem",
+                            textAlign: "center",
+                            color: "#666",
+                          }}
+                        >
+                          No vendors found
+                        </div>
                       ) : (
-                        <MdExpandMore size={18} />
+                        <div style={{ padding: "0.5rem 0" }}>
+                          {vendorResults.map((vendor) => {
+                            const vendorId =
+                              vendor?.id ?? vendor?.vendor_services_id;
+                            const vendorName =
+                              vendor?.attributes?.vendor_name ||
+                              vendor?.attributes?.name ||
+                              vendor?.vendor?.businessName ||
+                              `Vendor ${vendorId}`;
+                            const city =
+                              vendor?.attributes?.city ||
+                              vendor?.vendor?.city ||
+                              "";
+                            const image =
+                              vendor?.attributes?.image ||
+                              vendor?.attributes?.profile_image ||
+                              vendor?.vendor?.profileImage;
+                            const rating = vendor?.attributes?.rating;
+
+                            return (
+                              <div
+                                key={vendorId}
+                                onClick={() => handleVendorSelect(vendor)}
+                                style={{
+                                  padding: "0.75rem 1rem",
+                                  cursor: "pointer",
+                                  borderBottom: "1px solid #eee",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "0.75rem",
+                                  transition: "background-color 0.2s",
+                                }}
+                                onMouseEnter={(e) =>
+                                (e.currentTarget.style.backgroundColor =
+                                  "#f5f5f5")
+                                }
+                                onMouseLeave={(e) =>
+                                (e.currentTarget.style.backgroundColor =
+                                  "white")
+                                }
+                              >
+                                {image && (
+                                  <img
+                                    src={image}
+                                    alt={vendorName}
+                                    style={{
+                                      width: "50px",
+                                      height: "50px",
+                                      objectFit: "cover",
+                                      borderRadius: "6px",
+                                      flexShrink: 0,
+                                    }}
+                                    onError={(e) => {
+                                      e.target.style.display = "none";
+                                    }}
+                                  />
+                                )}
+                                <div style={{ flex: 1 }}>
+                                  <div
+                                    style={{
+                                      fontWeight: "600",
+                                      fontSize: "14px",
+                                      color: "#333",
+                                      marginBottom: "0.25rem",
+                                    }}
+                                  >
+                                    {vendorName}
+                                  </div>
+                                  {city && (
+                                    <div
+                                      style={{
+                                        fontSize: "12px",
+                                        color: "#666",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "0.25rem",
+                                      }}
+                                    >
+                                      <CiLocationOn size={14} /> {city}
+                                    </div>
+                                  )}
+                                </div>
+                                {rating != null && (
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "0.25rem",
+                                      fontSize: "12px",
+                                      color: "#666",
+                                      backgroundColor: "#f8f9fa",
+                                      padding: "0.25rem 0.5rem",
+                                      borderRadius: "4px",
+                                    }}
+                                  >
+                                    <FaStar color="#e83581" size={14} />
+                                    {rating}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       )}
-                    </button>
-                    {showCategoryDropdown && (
-                      <div
-                        ref={categoryDropdownRef}
+                    </div>
+                  )}
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "1rem",
+                    margin: "1.5rem 0",
+                  }}
+                >
+                  <div
+                    style={{
+                      flex: 1,
+                      height: "1px",
+                      backgroundColor: "rgba(255, 255, 255, 0.3)",
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      color: "rgba(255, 255, 255, 0.8)",
+                      fontWeight: "500",
+                    }}
+                  >
+                    OR BROWSE BY CATEGORY
+                  </span>
+                  <div
+                    style={{
+                      flex: 1,
+                      height: "1px",
+                      backgroundColor: "rgba(255, 255, 255, 0.3)",
+                    }}
+                  />
+                </div>
+
+                {/* Category + City Search Form */}
+                <Form className="search-form" onSubmit={handleSearch}>
+                  <Row className="g-3">
+                    <Col xs={12} md={5} className="position-relative">
+                      <button
+                        ref={categoryButtonRef}
+                        type="button"
+                        className="btn-light w-100 fw-semibold d-flex justify-content-between align-items-center"
+                        onClick={() =>
+                          setShowCategoryDropdown(!showCategoryDropdown)
+                        }
                         style={{
-                          position: "absolute",
-                          top: "calc(100% + 4px)",
-                          left: 0,
-                          right: 0,
                           fontSize: "14px",
+                          padding: "0.75rem 1rem",
                           backgroundColor: "white",
-                          borderRadius: "6px",
-                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                          maxHeight: "300px",
-                          overflowY: "auto",
-                          zIndex: 999,
                           border: "1px solid #ddd",
+                          color: "#333",
+                          borderRadius: "6px",
                         }}
                       >
-                        <div style={{ padding: "0.5rem 0" }}>
-                          <div
-                            style={{
-                              fontSize: "14px",
-                              padding: "0.75rem 1rem",
-                              color: "#333",
-                              cursor: "pointer",
-                              borderBottom: "1px solid #eee",
-                            }}
-                            onClick={() => {
-                              setSelectedCategory("All Categories");
-                              setShowCategoryDropdown(false);
-                            }}
-                            onMouseEnter={(e) =>
-                              (e.target.style.backgroundColor = "#f5f5f5")
-                            }
-                            onMouseLeave={(e) =>
-                              (e.target.style.backgroundColor = "white")
-                            }
-                          >
-                            All Categories
-                          </div>
-                          {vendorCategories.map((cat) => (
+                        <span style={{ fontSize: "14px" }}>
+                          {selectedCategory}
+                        </span>
+                        {showCategoryDropdown ? (
+                          <MdExpandLess size={18} />
+                        ) : (
+                          <MdExpandMore size={18} />
+                        )}
+                      </button>
+                      {showCategoryDropdown && (
+                        <div
+                          ref={categoryDropdownRef}
+                          style={{
+                            position: "absolute",
+                            top: "calc(100% + 4px)",
+                            left: 0,
+                            right: 0,
+                            fontSize: "14px",
+                            backgroundColor: "white",
+                            borderRadius: "6px",
+                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                            maxHeight: "300px",
+                            overflowY: "auto",
+                            zIndex: 999,
+                            border: "1px solid #ddd",
+                          }}
+                        >
+                          <div style={{ padding: "0.5rem 0" }}>
                             <div
-                              key={cat.id}
                               style={{
                                 fontSize: "14px",
                                 padding: "0.75rem 1rem",
@@ -409,7 +891,7 @@ const Herosection = () => {
                                 borderBottom: "1px solid #eee",
                               }}
                               onClick={() => {
-                                setSelectedCategory(cat.name);
+                                setSelectedCategory("All Categories");
                                 setShowCategoryDropdown(false);
                               }}
                               onMouseEnter={(e) =>
@@ -419,96 +901,21 @@ const Herosection = () => {
                                 (e.target.style.backgroundColor = "white")
                               }
                             >
-                              {cat.name}
+                              All Categories
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </Col>
-                  <Col xs={12} md={5} className="position-relative">
-                    <div
-                      ref={cityInputRef}
-                      style={{
-                        position: "relative",
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
-                      <input
-                        type="text"
-                        className="form-control fw-bold"
-                        value={citySearch}
-                        onChange={(e) => {
-                          setCitySearch(e.target.value);
-                          setShowCityDropdown(true);
-                        }}
-                        placeholder="Search city..."
-                        style={{
-                          fontSize: "14px",
-                          padding: "0.75rem 1rem",
-                          paddingRight: "2.5rem",
-                          borderRadius: "6px",
-                          border: "1px solid #ddd",
-                        }}
-                        onFocus={() => setShowCityDropdown(true)}
-                      />
-                      <button
-                        type="button"
-                        aria-label={
-                          showCityDropdown ? "Hide city list" : "Show city list"
-                        }
-                        aria-expanded={showCityDropdown}
-                        onClick={() => setShowCityDropdown(!showCityDropdown)}
-                        style={{
-                          position: "absolute",
-                          right: "8px",
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          padding: "0",
-                        }}
-                      >
-                        {showCityDropdown ? (
-                          <MdExpandLess size={18} />
-                        ) : (
-                          <MdExpandMore size={18} />
-                        )}
-                      </button>
-                    </div>
-                    {showCityDropdown && (
-                      <div
-                        ref={cityDropdownRef}
-                        style={{
-                          position: "absolute",
-                          top: "calc(100% + 4px)",
-                          left: 0,
-                          right: 0,
-                          backgroundColor: "white",
-                          borderRadius: "6px",
-                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                          maxHeight: "300px",
-                          overflowY: "auto",
-                          zIndex: 999,
-                          fontSize: "14px",
-                          border: "1px solid #ddd",
-                        }}
-                      >
-                        <div style={{ padding: "0.5rem 0" }}>
-                          {filteredCities.length > 0 ? (
-                            filteredCities.map((city) => (
+                            {(vendorCategories || []).map((cat) => (
                               <div
-                                key={city}
+                                key={cat.id}
                                 style={{
+                                  fontSize: "14px",
                                   padding: "0.75rem 1rem",
                                   color: "#333",
                                   cursor: "pointer",
                                   borderBottom: "1px solid #eee",
                                 }}
                                 onClick={() => {
-                                  setCitySearch(city);
-                                  setSelectedCity(city);
-                                  setShowCityDropdown(false);
+                                  setSelectedCategory(cat.name);
+                                  setShowCategoryDropdown(false);
                                 }}
                                 onMouseEnter={(e) =>
                                   (e.target.style.backgroundColor = "#f5f5f5")
@@ -517,35 +924,130 @@ const Herosection = () => {
                                   (e.target.style.backgroundColor = "white")
                                 }
                               >
-                                {city}
+                                {cat.name}
                               </div>
-                            ))
-                          ) : (
-                            <div
-                              style={{
-                                padding: "1rem",
-                                color: "#999",
-                                textAlign: "center",
-                              }}
-                            >
-                              No cities found
-                            </div>
-                          )}
+                            ))}
+                          </div>
                         </div>
+                      )}
+                    </Col>
+                    <Col xs={12} md={5} className="position-relative">
+                      <div
+                        ref={cityInputRef}
+                        style={{
+                          position: "relative",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        <input
+                          type="text"
+                          className="form-control fw-bold"
+                          value={citySearch}
+                          onChange={(e) => {
+                            setCitySearch(e.target.value);
+                            setShowCityDropdown(true);
+                          }}
+                          placeholder="Search city..."
+                          style={{
+                            fontSize: "14px",
+                            padding: "0.75rem 1rem",
+                            paddingRight: "2.5rem",
+                            borderRadius: "6px",
+                            border: "1px solid #ddd",
+                          }}
+                          onFocus={() => setShowCityDropdown(true)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowCityDropdown(!showCityDropdown)}
+                          style={{
+                            position: "absolute",
+                            right: "8px",
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            padding: "0",
+                          }}
+                        >
+                          {showCityDropdown ? (
+                            <MdExpandLess size={18} />
+                          ) : (
+                            <MdExpandMore size={18} />
+                          )}
+                        </button>
                       </div>
-                    )}
-                  </Col>
-                  <Col xs={12} md={2} className="d-grid">
-                    <Button
-                      variant="none"
-                      className="btn-primary fw-semibold fs-12"
-                      type="submit"
-                    >
-                      FIND VENDOR
-                    </Button>
-                  </Col>
-                </Row>
-              </Form>
+                      {showCityDropdown && (
+                        <div
+                          ref={cityDropdownRef}
+                          style={{
+                            position: "absolute",
+                            top: "calc(100% + 4px)",
+                            left: 0,
+                            right: 0,
+                            backgroundColor: "white",
+                            borderRadius: "6px",
+                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                            maxHeight: "300px",
+                            overflowY: "auto",
+                            zIndex: 999,
+                            fontSize: "14px",
+                            border: "1px solid #ddd",
+                          }}
+                        >
+                          <div style={{ padding: "0.5rem 0" }}>
+                            {filteredCities.length > 0 ? (
+                              filteredCities.map((city) => (
+                                <div
+                                  key={city}
+                                  style={{
+                                    padding: "0.75rem 1rem",
+                                    color: "#333",
+                                    cursor: "pointer",
+                                    borderBottom: "1px solid #eee",
+                                  }}
+                                  onClick={() => {
+                                    setCitySearch(city);
+                                    setSelectedCity(city);
+                                    setShowCityDropdown(false);
+                                  }}
+                                  onMouseEnter={(e) =>
+                                    (e.target.style.backgroundColor = "#f5f5f5")
+                                  }
+                                  onMouseLeave={(e) =>
+                                    (e.target.style.backgroundColor = "white")
+                                  }
+                                >
+                                  {city}
+                                </div>
+                              ))
+                            ) : (
+                              <div
+                                style={{
+                                  padding: "1rem",
+                                  color: "#999",
+                                  textAlign: "center",
+                                }}
+                              >
+                                No cities found
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </Col>
+                    <Col xs={12} md={2} className="d-grid">
+                      <Button
+                        variant="none"
+                        className="btn-primary fw-semibold fs-12"
+                        type="submit"
+                      >
+                        FIND VENDOR
+                      </Button>
+                    </Col>
+                  </Row>
+                </Form>
+              </>
             )}
           </Col>
         </Row>
@@ -572,6 +1074,11 @@ const Herosection = () => {
         .search-form .form-control,
         .search-form .form-select {
           border-radius: 6px;
+        }
+        .form-control:focus {
+          border-color: #ddd;
+          box-shadow: none;
+          outline: none;
         }
         .btn-find {
           background: #e83581;
@@ -623,6 +1130,19 @@ const Herosection = () => {
         .dropdown-link:hover {
           color: #e83581 !important;
           padding-left: 4px;
+        }
+
+        .hero-vendor-result-item:hover {
+          background: linear-gradient(to right, rgba(195, 17, 98, 0.06), transparent);
+        }
+
+        .hero-vendor-search-dropdown::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .hero-vendor-search-dropdown::-webkit-scrollbar-thumb {
+          background: #C31162;
+          border-radius: 10px;
         }
 
         /* Responsive grid */

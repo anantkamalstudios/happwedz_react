@@ -350,6 +350,12 @@ const Header = () => {
                       src="/images/header/tryimg.png"
                       alt="Design Studio"
                       className="img-fluid"
+                      // Intrinsic size of the file. Lets the browser reserve the
+                      // correct box before the image arrives instead of
+                      // reflowing the header around it (CLS). img-fluid's
+                      // height:auto plus maxHeight still control the drawn size.
+                      width={500}
+                      height={499}
                       style={{ maxHeight: "40px", cursor: "pointer" }}
                     />
                   </Link>
@@ -955,6 +961,9 @@ const Header = () => {
                           src="/images/header/tryimg.png"
                           alt="Design Studio"
                           className="img-fluid"
+                          // Intrinsic size — reserves the box before load (CLS).
+                          width={500}
+                          height={499}
                           style={{
                             maxHeight: "50px",
                             width: "auto",

@@ -453,10 +453,10 @@ const Detailed = () => {
             setImages(portfolioUrls);
             setMainImage(portfolioUrls[0]);
           } else {
-            setMainImage("/images/default-vendor.jpg");
+            setMainImage("/images/imageNotFound.jpg");
           }
         } else {
-          setMainImage("/images/default-vendor.jpg");
+          setMainImage("/images/imageNotFound.jpg");
         }
 
         // Handle videos if provided
@@ -763,7 +763,7 @@ const Detailed = () => {
     location: displayLocation,
     rating: venueData.attributes?.rating || 4.5,
     reviews: venueData.attributes?.review_count || 0,
-    image: mainImage || "/images/default-vendor.jpg",
+    image: mainImage || "/images/imageNotFound.jpg",
   };
 
   // Aliases to match JSX usage

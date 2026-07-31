@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
 import "../../styles/shared.css";
+import { useAutoplayGate } from "../../hooks/useMotionGate";
 
 const RealWeddings = ({
   icon,
@@ -50,13 +51,20 @@ const RealWeddings = ({
           },
         ];
 
+  // Only rotate while this section is actually on screen. Left running from
+  // first paint it changed the page every 3s forever, which stops Speed Index
+  // from ever converging — and it was animating slides nobody had scrolled to.
+  const rootRef = useRef(null);
+  const canAutoplay = useAutoplayGate(rootRef);
+
   useEffect(() => {
+    if (!canAutoplay) return undefined;
     const total = Math.max(images.length - 2, 1);
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % total);
     }, 3000);
     return () => clearInterval(interval);
-  }, [images.length]);
+  }, [images.length, canAutoplay]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % (images.length - 2));
@@ -69,7 +77,7 @@ const RealWeddings = ({
   };
 
   return (
-    <div className="container py-2">
+    <div className="container py-2" ref={rootRef}>
       <div className="row align-items-center">
         <div className="col-lg-5 p-0 m-0 real-wedding-custom-wide-card">
           <div

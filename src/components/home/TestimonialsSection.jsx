@@ -1,11 +1,17 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import { CiStar } from "react-icons/ci";
 import { FaStar } from "react-icons/fa";
 import Swiper from "swiper/bundle";
 import "swiper/css/bundle";
+import { useAutoplayGate } from "../../hooks/useMotionGate";
 
 const TestimonialsSection = () => {
+  // Autoplay only while on screen — see useMotionGate for why.
+  const rootRef = useRef(null);
+  const swiperRef = useRef(null);
+  const canAutoplay = useAutoplayGate(rootRef);
+
   const testimonials = [
     {
       name: "Priya & Rajesh",
@@ -46,7 +52,7 @@ const TestimonialsSection = () => {
   ];
 
   useEffect(() => {
-    new Swiper(".testimonialsSwiper", {
+    swiperRef.current = new Swiper(".testimonialsSwiper", {
       slidesPerView: 1,
       spaceBetween: 30,
       loop: true,
@@ -67,10 +73,19 @@ const TestimonialsSection = () => {
         },
       },
     });
+    swiperRef.current.autoplay?.stop();
+    return () => swiperRef.current?.destroy?.(true, true);
   }, []);
 
+  useEffect(() => {
+    const swiper = swiperRef.current;
+    if (!swiper?.autoplay) return;
+    if (canAutoplay) swiper.autoplay.start();
+    else swiper.autoplay.stop();
+  }, [canAutoplay]);
+
   return (
-    <section className="py-5" style={{ background: "#fff" }}>
+    <section className="py-5" style={{ background: "#fff" }} ref={rootRef}>
       <Container>
         <div className="text-center mb-5">
           <h2 className="fw-bold text-dark mb-3">What Our Couples Say</h2>

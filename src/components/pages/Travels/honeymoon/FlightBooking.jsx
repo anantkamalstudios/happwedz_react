@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { bookFlight, getBookingDetails } from '../../../../services/api/flightApi';
 import './tripjack-styles.css';
+import "../../../../styles/shared.css";
 
 export default function FlightBooking() {
   const location = useLocation();
