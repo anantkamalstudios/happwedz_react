@@ -130,16 +130,16 @@ const ReviewSection = ({ vendor }) => {
 
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-          <h3 className="fw-bold mb-2 fs-22">
+          <h2 className="fw-bold mb-2 fs-22">
             Reviews of{" "}
             {vendor?.attributes?.name ||
               vendor?.name ||
               vendor?.businessName ||
               vendor?.Name}{" "}
-          </h3>
+          </h2>
           <div className="d-flex align-items-center mb-1">
             <FaStar className="text-warning me-2" size={14} />
-            <h4 className="mb-0 fw-bold fs-14">
+            <div className="mb-0 fw-bold fs-14">
               {reviews.length > 0
                 ? (
                     reviews.reduce((sum, r) => sum + r.rating_quality, 0) /
@@ -147,7 +147,7 @@ const ReviewSection = ({ vendor }) => {
                   ).toFixed(1)
                 : "0.0"}{" "}
               <span className="text-dark fw-normal fs-14">Excellent</span>
-            </h4>
+            </div>
             <span className="text-muted ms-2 fs-14">
               • {reviews.length} Reviews
             </span>
@@ -454,9 +454,9 @@ const ReviewSection = ({ vendor }) => {
               </div>
 
               {selectedReview.title && (
-                <h5 className="fw-bold mb-3" style={{ fontSize: "18px" }}>
+                <div className="fw-bold mb-3 fs-18">
                   {selectedReview.title}
-                </h5>
+                </div>
               )}
 
               <p
@@ -467,9 +467,9 @@ const ReviewSection = ({ vendor }) => {
               </p>
 
               <div className="border-top pt-4 mb-4">
-                <h6 className="fw-semibold mb-3" style={{ fontSize: "16px" }}>
+                <div className="fw-semibold mb-3" style={{ fontSize: "16px" }}>
                   Rating breakdown
-                </h6>
+                </div>
                 <div className="row g-3">
                   {[
                     { label: "Quality of service", key: "rating_quality" },
@@ -515,9 +515,9 @@ const ReviewSection = ({ vendor }) => {
 
               {selectedReview.media && selectedReview.media.length > 0 && (
                 <div className="mb-4">
-                  <h6 className="fw-semibold mb-3" style={{ fontSize: "16px" }}>
+                  <div className="fw-semibold mb-3" style={{ fontSize: "16px" }}>
                     Photos
-                  </h6>
+                  </div>
                   <div className="d-flex flex-wrap gap-2">
                     {selectedReview.media.map((imgUrl, idx) => (
                       <img
@@ -542,9 +542,9 @@ const ReviewSection = ({ vendor }) => {
                   className="border rounded p-3 mt-4"
                   style={{ backgroundColor: "#f7f7f7" }}
                 >
-                  <h6 className="fw-semibold mb-2" style={{ fontSize: "16px" }}>
+                  <div className="fw-semibold mb-2" style={{ fontSize: "16px" }}>
                     Response from {vendor?.name || "vendor"}
-                  </h6>
+                  </div>
                   <p
                     className="mb-0"
                     style={{ fontSize: "14px", whiteSpace: "pre-line" }}

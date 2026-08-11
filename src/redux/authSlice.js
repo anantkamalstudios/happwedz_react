@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import Swal from "sweetalert2";
 
 // Initialize state from localStorage if available
 const storedToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -52,6 +51,9 @@ export const toggleWishlist = (vendor) => async (dispatch, getState) => {
   const { isAuthenticated, user } = auth;
 
   if (!isAuthenticated || !user) {
+    // Loaded on demand: this slice is pulled in by the redux store on every page,
+    // and a static sweetalert2 import made it part of the initial bundle.
+    const { default: Swal } = await import("sweetalert2");
     Swal.fire({
       icon: "warning",
       text: "Please log in to add items to your wishlist.",

@@ -1,7 +1,18 @@
 import React from "react";
 import { Container, Row, Col } from "react-bootstrap";
 
-const VenueInfoSection = () => {
+const cityParagraphs = {
+  nashik: `Wedding venues in Nashik cluster around three areas. Gangapur Road has the larger banquet halls and hotel ballrooms, mostly ₹800–1,500 per plate. College Road suits mid-size functions of 300–500 guests. Out toward Nashik Road and the vineyards, you'll find lawns and farmhouses that work well for winter weddings, though most don't allow non-veg. Peak season runs November to February and the better venues book six to eight months ahead. Expect ₹15,000–25,000 as the standard booking advance.`,
+  mumbai: `Mumbai wedding venues cover a vast range of localities, from South Mumbai heritage hotels to Suburban halls. Western suburbs like Andheri and Juhu are hotspots for elegant banquet halls and beachfront lawns, generally ranging between ₹1,500–3,500 per plate. Central locations like Dadar and Chembur host classic AC banquet halls, whereas Thane and Navi Mumbai offer spacious lawns and resorts for large gatherings of over 1,000 guests at more competitive rates. The city's peak wedding dates see intense demand, requiring bookings 9–12 months in advance.`,
+  pune: `In Pune, wedding venues are highly concentrated in areas like Koregaon Park, Kalyani Nagar, and Baner. High-end star hotels in Koregaon Park and Shivajinagar cater to luxury celebrations with plates starting from ₹1,200–2,200. For outdoor lawns and spacious resorts, couples look toward Hinjawadi, Sinhagad Road, and the scenic Lonavala hills. Pune's venues frequently host multiple functions, and outdoor lawn bookings require early reservation, particularly for dates between November and February when Pune's winter climate is ideal.`,
+  bangalore: `Bangalore, the garden city, offers a vibrant selection of traditional Kalyana Mandapams and modern open-air wedding lawns. Traditional halls in Jayanagar, Malleshwaram, and Basavanagudi suit classic ceremonies, while ECR-style green lawns and villa resorts in Whitefield, Electronic City, and Kanakapura Road are popular for contemporary celebrations. Per-plate rates range from ₹800 to ₹2,500. Given the city's pleasant year-round weather, outdoor wedding spaces book out fast during the main muhurtham seasons.`,
+  jaipur: `Jaipur is world-renowned for its heritage wedding venues, palace hotels, and royal lawns. Key areas like Kukas, Tonk Road, and Mansarovar offer everything from grand forts to modern banquet halls. Kukas and Delhi Highway are famous for massive palace-style resorts suitable for multi-day destination weddings, with rates starting from ₹2,000–5,000 per plate. For budget-friendly local weddings, banquet halls and marriage gardens in Vaishali Nagar and Malviya Nagar are preferred. Peak winter season (November to February) bookings should be finalized at least 8–10 months early.`
+};
+
+const VenueInfoSection = ({ city }) => {
+  const normalizedCity = String(city || "").trim().toLowerCase();
+  const citySpecificText = cityParagraphs[normalizedCity];
+
   return (
     <section className="venue-info-section py-5">
       <Container>
@@ -9,8 +20,18 @@ const VenueInfoSection = () => {
         <Row className="mb-4">
           <Col lg={10} className="mx-auto">
             <h4 className="fw-bold mb-4">
-              Find the Perfect Wedding Venue with HappyWedz
+              Find the Perfect Wedding Venue {city ? `in ${city}` : "with HappyWedz"}
             </h4>
+            
+            {citySpecificText && (
+              <div className="city-specific-description p-3 mb-4 rounded-3 border-start border-4 border-primary bg-light">
+                <p className="fw-medium mb-2 fs-15 text-dark">Local Wedding Insights for {city}:</p>
+                <p className="fs-14 m-0 text-muted" style={{ fontStyle: "italic", textJustify: "auto" }}>
+                  {citySpecificText}
+                </p>
+              </div>
+            )}
+
             <p className="fs-14">
               Every bride dreams of saying “I do” in the perfect setting —
               whether it’s a romantic outdoor lawn, a luxurious 5-star banquet,

@@ -81,7 +81,7 @@ const RealWeddings = ({
           >
             <div className="card-body p-5 d-flex flex-column justify-content-center">
               <div className="mb-4">
-                <img
+                <img loading="lazy" decoding="async"
                   src={normalizeUrl(icon) || "/images/home/Flower.png"}
                   alt="flower"
                   className="w-20 h-20"
@@ -112,8 +112,9 @@ const RealWeddings = ({
                 to={`/${(redirectUrl || "real-wedding").replace(/^\/+/, "")}`}
                 className="btn btn-link p-0 fw-bold text-decoration-none d-flex align-items-center align-self-start"
                 style={{ color: "#e91e63", fontSize: "1.1rem" }}
+                aria-label="Explore Real Wedding Stories"
               >
-                {btnName || "SEE MORE"}
+                {btnName && btnName !== "SEE MORE" ? btnName : "Explore Real Weddings"}
                 <svg
                   width="24"
                   height="24"
@@ -166,7 +167,7 @@ const RealWeddings = ({
                       opacity: index < 4 ? 1 : 0.7,
                     }}
                   >
-                    <img
+                    <img loading="lazy" decoding="async"
                       src={image.url}
                       alt={image.alt}
                       className="w-100 h-100 object-fit-cover"
@@ -193,7 +194,7 @@ const RealWeddings = ({
                     boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                   }}
                 >
-                  <img
+                  <img loading="lazy" decoding="async"
                     src={image.url}
                     alt={image.alt}
                     className="w-100 h-100 object-fit-cover"

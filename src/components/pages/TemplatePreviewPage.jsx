@@ -1,6 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { TEMPLATE_LIST } from "../../templates";
+import NoIndex from "../common/NoIndex";
 
 export default function TemplatePreviewPage() {
     const { id } = useParams();
@@ -27,6 +28,7 @@ export default function TemplatePreviewPage() {
 
     return (
         <div className="min-h-screen bg-white">
+            <NoIndex />
             <Component />
         </div>
     );

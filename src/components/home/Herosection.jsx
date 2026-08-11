@@ -5,12 +5,14 @@ import { useSelector, useDispatch } from "react-redux";
 import { MdExpandMore, MdExpandLess, MdClose } from "react-icons/md";
 import { CiLocationOn, CiSearch } from "react-icons/ci";
 import { FaSearch, FaStar } from "react-icons/fa";
-import axios from "axios";
 import axiosInstance from "../../services/api/axiosInstance";
 import { setLocation } from "../../redux/locationSlice";
-import { useVendorType } from "../../hooks/useVendorType";
 import { useHome } from "../../hooks/useHome";
-import herosection from "../../assets/Hero_2.jpg";
+
+// The default hero background is set in CSS (`.hero-search--default` in
+// App.critical.css) rather than from JS, so the preload scanner and the media
+// queries agree on which of hero-768/1280/2000.webp to fetch. Keep those rules
+// in sync with the <link rel="preload"> tags in index.html.
 
 const RotatingWordHeadline = ({
   words = ["Unique", "Dreamy", "Perfect"],
@@ -29,16 +31,27 @@ const RotatingWordHeadline = ({
     return () => clearInterval(cycle);
   }, [words.length]);
   const parts = titleTemplate.split("_");
+  // The rotating word swaps every 2.8s for the life of the page. Words of
+  // different widths re-flow the headline — and can rewrap it to a second line —
+  // which registers as a layout shift every single cycle. Reserving the width of
+  // the longest word up front makes every rotation dimensionally identical.
+  const widestWord = words.reduce(
+    (longest, w) => (w.length > longest.length ? w : longest),
+    "",
+  );
   return (
-    <h1 className="display-5 fw-bold">
+    <h1 className="display-5 fw-bold" style={{ minHeight: "1.2em" }}>
       {parts[0]}
       <span
         style={{
           display: "inline-block",
+          minWidth: `${widestWord.length + 0.5}ch`,
+          textAlign: "center",
           transition: "opacity .3s, transform .3s",
           opacity: animating ? 1 : 0,
           transform: animating ? "scale(1)" : "scale(0.95)",
           color: "#e83581",
+          verticalAlign: "bottom",
         }}
       >
         {words[index]}
@@ -52,11 +65,11 @@ const Herosection = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const reduxLocation = useSelector((s) => s.location.selectedLocation);
-  const { _vendorTypes, _loading } = useVendorType();
   const {
     heroData,
     vendorCategories,
     cities,
+    ensureCities,
     _loadingHero,
     _loadingCities,
     getCurrentBackgroundImage,
@@ -340,7 +353,7 @@ const Herosection = () => {
                   }}
                 >
                   <div className="d-flex align-items-center gap-3 p-3">
-                    <img
+                    <img loading="lazy" decoding="async"
                       src={getVendorImage(vendor)}
                       alt={getVendorName(vendor)}
                       style={{
@@ -356,9 +369,9 @@ const Herosection = () => {
                       }}
                     />
                     <div className="flex-grow-1 overflow-hidden">
-                      <h6 className="mb-1 fw-semibold text-truncate">
+                      <div className="fw-semibold fs-16 mb-1 text-truncate">
                         {getVendorName(vendor)}
-                      </h6>
+                      </div>
                       <div className="d-flex align-items-center gap-2 mb-1 small text-muted">
                         <FaStar size={12} className="text-warning" />
                         <span>
@@ -416,18 +429,22 @@ const Herosection = () => {
     }
   };
 
-  const bgImage = getCurrentBackgroundImage() || herosection;
+  // null until a CMS carousel frame has been fetched and decoded off-screen.
+  // Until then the default image comes from `.hero-search--default`, whose
+  // media queries let mobile take the 768px file instead of the 1280px one.
+  const cmsBgImage = getCurrentBackgroundImage();
 
   return (
     <section
-      className="hero-search position-relative text-white"
+      className={`hero-search position-relative text-white${
+        cmsBgImage ? "" : " hero-search--default"
+      }`}
       style={{
-        backgroundImage: `url(${bgImage})`,
+        ...(cmsBgImage ? { backgroundImage: `url(${cmsBgImage})` } : null),
         backgroundPosition: "center",
         backgroundSize: "cover",
         paddingTop: "120px",
         paddingBottom: "80px",
-        transition: "background-image 1s ease-in-out",
       }}
     >
       <div className="overlay" />
@@ -690,7 +707,7 @@ const Herosection = () => {
                                 }
                               >
                                 {image && (
-                                  <img
+                                  <img loading="lazy" decoding="async"
                                     src={image}
                                     alt={vendorName}
                                     style={{
@@ -911,11 +928,17 @@ const Herosection = () => {
                             borderRadius: "6px",
                             border: "1px solid #ddd",
                           }}
-                          onFocus={() => setShowCityDropdown(true)}
+                          onFocus={() => {
+                            ensureCities();
+                            setShowCityDropdown(true);
+                          }}
                         />
                         <button
                           type="button"
-                          onClick={() => setShowCityDropdown(!showCityDropdown)}
+                          onClick={() => {
+                            ensureCities();
+                            setShowCityDropdown(!showCityDropdown);
+                          }}
                           style={{
                             position: "absolute",
                             right: "8px",

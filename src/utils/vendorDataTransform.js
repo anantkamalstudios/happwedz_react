@@ -82,7 +82,7 @@ export const transformVendorsData = (apiVendors) => {
   const seenNames = new Set();
 
   transformed.forEach((vendor) => {
-    if (!vendor) return;
+    if (!vendor || !vendor.image || String(vendor.image).trim() === "") return;
     const id = vendor.id;
     const name = (vendor.name || "").trim().toLowerCase();
     const location = (vendor.location || "").trim().toLowerCase();
@@ -141,35 +141,34 @@ const formatPrice = (price, currency = "INR") => {
 };
 
 const getPrimaryImage = (media) => {
-  const fallback = "https://cdn.shopify.com/s/files/1/0553/6422/3136/files/brian-bossany-0100-_brianbossany.jpg";
-  if (!media || typeof media !== "object") return fallback;
+  if (!media || typeof media !== "object") return null;
 
   // Prefer explicit cover image
   if (media.coverImage && typeof media.coverImage === "string") {
-    return normalizeMediaUrl(media.coverImage) || fallback;
+    return normalizeMediaUrl(media.coverImage) || null;
   }
 
   // Support gallery array (strings or objects)
   if (Array.isArray(media.gallery) && media.gallery.length > 0) {
     const first = media.gallery[0];
-    if (typeof first === "string") return normalizeMediaUrl(first) || fallback;
+    if (typeof first === "string") return normalizeMediaUrl(first) || null;
     if (typeof first === "object") {
       const url = first.url || first.src || first.path || first.image || "";
-      return normalizeMediaUrl(url) || fallback;
+      return normalizeMediaUrl(url) || null;
     }
   }
 
   // Backward compatibility: media.images
   if (Array.isArray(media.images) && media.images.length > 0) {
     const first = media.images[0];
-    if (typeof first === "string") return normalizeMediaUrl(first) || fallback;
+    if (typeof first === "string") return normalizeMediaUrl(first) || null;
     if (typeof first === "object") {
       const url = first.url || first.src || first.path || first.image || "";
-      return normalizeMediaUrl(url) || fallback;
+      return normalizeMediaUrl(url) || null;
     }
   }
 
-  return fallback;
+  return null;
 };
 
 // Utilities

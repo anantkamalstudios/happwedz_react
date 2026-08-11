@@ -185,7 +185,8 @@ const useApiData = (
         // The batch job (verify-vendor-images.js) sets image_exists = TRUE after verification.
         params.append("image_exists", "true");
 
-        const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
+        const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+        const apiUrl = `${apiBaseUrl}/vendor-services?${params.toString()}`;
 
         const cacheKey = apiUrl;
         if (cacheRef.current.has(cacheKey)) {
@@ -443,10 +444,10 @@ const transformApiData = (items) => {
           null
         : null,
 
-      address: attributes.address || attributes.Address || "",
-      area: attributes.area || "",
-      city: attributes.city || vendor.city || "",
-      location: attributes.city || vendor.city || "",
+      address: (attributes.address && attributes.address.toLowerCase() !== "unknown") ? attributes.address : (attributes.Address && attributes.Address.toLowerCase() !== "unknown") ? attributes.Address : "",
+      area: (attributes.area && attributes.area.toLowerCase() !== "unknown") ? attributes.area : "",
+      city: (attributes.city && attributes.city.toLowerCase() !== "unknown") ? attributes.city : (vendor.city && vendor.city.toLowerCase() !== "unknown") ? vendor.city : "",
+      location: (attributes.city && attributes.city.toLowerCase() !== "unknown") ? attributes.city : (vendor.city && vendor.city.toLowerCase() !== "unknown") ? vendor.city : "",
       rooms: roomsParsed,
 
       rating: attributes.rating || 0,
@@ -471,7 +472,7 @@ const transformApiData = (items) => {
         vendor.businessName || attributes.vendor_name || attributes.Name || "",
       url: attributes.Website || attributes.URL || null,
     };
-  });
+  }).filter((item) => item && item.image && String(item.image).trim() !== "");
 };
 
 export default useApiData;

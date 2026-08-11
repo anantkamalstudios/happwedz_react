@@ -30,24 +30,47 @@ const CtaPanel = ({
             <img
               src={logo}
               alt="Logo"
+              width="120"
+              height="120"
+              loading="lazy"
+              decoding="async"
               className="object-fit-cover"
-              style={{ maxWidth: "120px", objectFit: "contain" }}
+              /* Fixed square box + contain: the CMS logo can be any aspect
+                 ratio, and letterboxing it is preferable to resizing the row. */
+              style={{ width: "120px", height: "120px", objectFit: "contain" }}
             />
           </div>
 
           <div className="col-12 col-md-7 mb-3 mb-md-0 d-flex flex-column">
             {heading && (
-              <h3 className="mb-3 fw-bold home-cta-section-heading text-decoration-none">
+              <h2
+                className="mb-3 fw-bold home-cta-section-heading text-decoration-none cta-clamp"
+                style={{ "--lines": 2 }}
+              >
                 {heading}
-              </h3>
+              </h2>
             )}
             {subHeading && (
-              <h6 className="my-3 home-cta-section-sub-heading fs-18">
+              <div
+                className="my-3 home-cta-section-sub-heading fs-18 cta-clamp"
+                style={{ "--lines": 2 }}
+              >
                 {subHeading}
-              </h6>
+              </div>
             )}
-            {title && <h5 className="fw-bold mb-2 mt-2 fs-18">{title}</h5>}
-            {subtitle && <p className="mb-3 fs-16">{subtitle}</p>}
+            {title && (
+              <div
+                className="fw-bold mb-2 mt-2 fs-18 cta-clamp"
+                style={{ "--lines": 2 }}
+              >
+                {title}
+              </div>
+            )}
+            {subtitle && (
+              <p className="mb-3 fs-16 cta-clamp" style={{ "--lines": 3 }}>
+                {subtitle}
+              </p>
+            )}
             {btnName && link && (
               <div className="d-flex justify-content-center justify-content-md-end w-100 mt-auto mt-3">
                 <Link to={link} className="w-100" style={{ maxWidth: "400px" }}>
@@ -67,11 +90,21 @@ const CtaPanel = ({
           </div>
 
           <div className="col-12 col-md-3 text-center text-md-start">
+            {/* The width/height attributes only reserve the box until the image
+                loads; after that `img-fluid`'s height:auto re-derives the height
+                from the *real* aspect ratio, and `img` here is a CMS URL whose
+                dimensions are unknown — so the panel resized the moment the
+                banner API responded. A hard aspect-ratio plus object-fit:cover
+                keeps the box identical whatever the CMS returns. */}
             <img
               src={img}
               alt="CTA"
+              width="600"
+              height="563"
+              loading="lazy"
+              decoding="async"
               className="img-fluid rounded w-100"
-              style={{ objectFit: "cover" }}
+              style={{ objectFit: "cover", aspectRatio: "600 / 563" }}
             />
           </div>
         </div>

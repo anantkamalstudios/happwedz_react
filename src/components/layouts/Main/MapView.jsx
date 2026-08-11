@@ -75,7 +75,10 @@ const MapView = ({ subVenuesData = [], section, onClose }) => {
     isMounted.current = true;
     const run = async () => {
       setLoading(true);
-      const tasks = subVenuesData.map(async (v) => {
+      const validVenues = (subVenuesData || []).filter(
+        (v) => v && v.image && String(v.image).trim() !== ""
+      );
+      const tasks = validVenues.map(async (v) => {
         if (v.lat && v.lng) return { ...v, lat: v.lat, lng: v.lng };
         const q =
           typeof v.location === "string"

@@ -10,7 +10,57 @@ import QuickInquiryModal from "../QuickInquiryModal";
 import { trackView } from "../../../services/localStorageService";
 import { prioritizeRecentlyViewed, isRecentlyViewed } from "../../../utils/recentlyViewedHelper";
 
-const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
+const extractMainCity = (rawCity) => {
+  if (!rawCity) return "all";
+  let cleaned = rawCity.replace(/\bdistricts?\b/i, "").trim();
+  const parts = cleaned.split(",");
+  if (parts.length > 1) {
+    return parts[parts.length - 1].trim();
+  }
+  return cleaned;
+};
+
+const slugifyCity = (city) => {
+  if (!city) return "all";
+  return city
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
+
+const cleanVenueSlug = (name) => {
+  if (!name) return "";
+  return name
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
+
+const isValidImage = (url) => {
+  if (!url || typeof url !== "string") return false;
+  const lower = url.toLowerCase().trim();
+  if (
+    !lower ||
+    lower.includes("imagenotfound") ||
+    lower.includes("image_not_found") ||
+    lower.includes("no-image") ||
+    lower.includes("no_image") ||
+    lower.includes("placeholder")
+  ) {
+    return false;
+  }
+  return true;
+};
+
+const GridView = ({ subVenuesData, handleShow, colLg, fluid, currentCity }) => {
   const [favorites, setFavorites] = useState({});
   const [wishlistIds, setWishlistIds] = useState(new Set());
   const [showQuickInquiry, setShowQuickInquiry] = useState(false);
@@ -23,11 +73,14 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
 
   // Reorder: recently viewed first, then rest
   useEffect(() => {
-    if (subVenuesData && subVenuesData.length > 0) {
-      const reordered = prioritizeRecentlyViewed(subVenuesData);
+    const validWithImages = (subVenuesData || []).filter(
+      (item) => item && isValidImage(item.image)
+    );
+    if (validWithImages.length > 0) {
+      const reordered = prioritizeRecentlyViewed(validWithImages);
       setDisplayData(reordered);
     } else {
-      setDisplayData(subVenuesData || []);
+      setDisplayData([]);
     }
   }, [subVenuesData]);
 
@@ -147,7 +200,17 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
         console.error("Error tracking click:", error);
       }
     }
-    navigate(`/details/info/${venue.slug}`);
+    const mainCity = extractMainCity(currentCity || venue.city || venue.location);
+    const citySlug = slugifyCity(mainCity);
+    const cleanedSlug = cleanVenueSlug(venue.name);
+    const isVenue = window.location.pathname.includes("/venues") || window.location.pathname.includes("/wedding-venues");
+    if (isVenue) {
+      navigate(`/wedding-venues/${citySlug}/${cleanedSlug}`);
+    } else {
+      const pathSegments = window.location.pathname.split("/");
+      const categorySlug = pathSegments[2] || (venue.category ? venue.category.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "") : "all");
+      navigate(`/vendors/${categorySlug}/${citySlug || "all"}/${cleanedSlug}`);
+    }
   };
 
   return (
@@ -157,19 +220,19 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
           displayData.map((venue) => {
             const wasViewed = isRecentlyViewed(venue.id);
             return (
-            <Col key={venue.id} xs={12} sm={6} lg={colLg || 4} className="mb-4">
+            <Col key={venue.id} xs={12} sm={6} lg={colLg || 4} className="mb-4 d-flex">
               <Card
-                className="border-0 main-grid-cards rounded-4 overflow-hidden p-2 h-100"
+                className="border-0 main-grid-cards rounded-4 overflow-hidden p-2 h-100 d-flex flex-column w-100"
                 onClick={() => handleCardClick(venue)}
                 style={{ cursor: "pointer" }}
               >
-                <div className="position-relative" style={{ height: "240px" }}>
+                <div className="position-relative flex-shrink-0" style={{ height: "240px" }}>
                   <Card.Img
                     key={`${venue.id}-${venue.image}`}
                     variant="top"
                     src={venue.image || "/images/imageNotFound.jpg"}
                     loading="eager"
-                    alt={venue.name || "Venue"}
+                    alt={`${venue.name}${venue.vendor_type || venue.category ? ` - ${venue.vendor_type || venue.category}` : ""}${venue.city ? ` in ${extractMainCity(venue.city) || venue.city}` : ""}`}
                     style={{
                       objectFit: "cover",
                       height: "100%",
@@ -179,7 +242,10 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
                     }}
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = "/images/imageNotFound.jpg";
+                      const cardCol = e.target.closest(".col-12, .col-sm-6, .col-lg-4, .col-md-4, .col") || e.target.closest(".card");
+                      if (cardCol) {
+                        cardCol.style.display = "none";
+                      }
                     }}
                   />
 
@@ -253,160 +319,178 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid }) => {
                 </div>
 
                 {/* Card Body */}
-                <Card.Body className="p-3">
+                <Card.Body className="p-3 d-flex flex-column flex-grow-1 justify-content-between">
                   <Link
-                    // to={`/details/info/${venue.slug}`}
-                    className="text-decoration-none"
+                    className="text-decoration-none d-flex flex-column flex-grow-1 justify-content-between"
                   >
-                    {/* Title and Rating Row */}
-                    <div className="d-flex justify-content-between align-items-start mb-2">
-                      <Card.Title className="mb-0 fw-bold text-dark fs-18">
-                        {venue.name || "Venue Name"}
-                      </Card.Title>
-                      <div className="d-flex align-items-center gap-1 flex-shrink-0 ms-2">
-                        <FaStar size={14} className="text-warning" />
-                        <span
-                          className="fw-semibold text-dark"
-                          style={{ fontSize: "13px" }}
+                    <div>
+                      {/* Title and Rating Row */}
+                      <div className="d-flex justify-content-between align-items-start mb-2">
+                        <Card.Title
+                          className="mb-0 fw-bold text-dark fs-18 flex-grow-1 pe-2"
+                          style={{
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            minHeight: "44px",
+                            maxHeight: "44px",
+                            lineHeight: "1.25",
+                          }}
+                          title={venue.name || "Venue Name"}
                         >
-                          {/* {venue.rating || "0.0"} */}
-                          {venue.rating || "0.0"}
-                        </span>
-                        <span
-                          className="text-muted"
-                          style={{ fontSize: "12px" }}
+                          {venue.name || "Venue Name"}
+                        </Card.Title>
+                        <div className="d-flex align-items-center gap-1 flex-shrink-0">
+                          <FaStar size={14} className="text-warning" />
+                          <span
+                            className="fw-semibold text-dark"
+                            style={{ fontSize: "13px" }}
+                          >
+                            {venue.rating || "0.0"}
+                          </span>
+                          <span
+                            className="text-muted"
+                            style={{ fontSize: "12px" }}
+                          >
+                            ({venue.review_count || "0"})
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* subtitle */}
+                      {(venue.subtitle || venue.tagline) && (
+                        <div
+                          className="text-muted mb-2 text-truncate"
+                          style={{ fontSize: "13px", height: "20px" }}
                         >
-                          ({venue.review_count || "0"} Review
-                          {venue.reviews !== "1" && "s"})
+                          {venue.subtitle || venue.tagline}
+                        </div>
+                      )}
+
+                      {/* Location */}
+                      <div
+                        className="text-muted mb-3 d-flex align-items-center text-truncate"
+                        style={{ fontSize: "13px", height: "22px" }}
+                      >
+                        <FaMapMarkerAlt className="me-1 flex-shrink-0" />
+                        <span className="text-truncate">
+                          {venue.city || venue.address || "Location not available"}
                         </span>
                       </div>
                     </div>
 
-                    {/* subtitle */}
-                    <div
-                      className="text-muted mb-3"
-                      style={{ fontSize: "13px" }}
-                    >
-                      {venue.subtitle || venue.tagline}
-                    </div>
+                    <div>
+                      {/* Price Row */}
+                      <div className="d-flex justify-content-between align-items-center mb-3" style={{ minHeight: "38px" }}>
+                        {venue.vegPrice || venue.nonVegPrice ? (
+                          <>
+                            {venue.vegPrice !== null &&
+                              venue.vegPrice !== undefined && (
+                                <div className="d-flex flex-column">
+                                  <span
+                                    className="text-muted"
+                                    style={{ fontSize: "12px" }}
+                                  >
+                                    Veg
+                                  </span>
+                                  <span
+                                    className="fw-bold text-dark"
+                                    style={{ fontSize: "15px" }}
+                                  >
+                                    ₹ {String(venue.vegPrice.replace("Rs.", ""))}
+                                  </span>
+                                </div>
+                              )}
+                            {venue.nonVegPrice !== null &&
+                              venue.nonVegPrice !== undefined && (
+                                <div className="d-flex flex-column text-end">
+                                  <span
+                                    className="text-muted"
+                                    style={{ fontSize: "12px" }}
+                                  >
+                                    Non-Veg
+                                  </span>
+                                  <span
+                                    className="fw-bold text-dark"
+                                    style={{ fontSize: "15px" }}
+                                  >
+                                    ₹{" "}
+                                    {String(venue.nonVegPrice.replace("Rs.", ""))}
+                                  </span>
+                                </div>
+                              )}
+                          </>
+                        ) : (
+                          <div>
+                            <span
+                              className="fw-bold text-dark"
+                              style={{ fontSize: "15px" }}
+                            >
+                              {venue.starting_price
+                                ? `₹ ${String(
+                                    venue.starting_price.replace("Rs.", "")
+                                  )}`
+                                : "Contact for pricing"}
+                            </span>
+                          </div>
+                        )}
+                      </div>
 
-                    {/* Location */}
-                    <div
-                      className="text-muted mb-3 d-flex align-items-center"
-                      style={{ fontSize: "14px" }}
-                    >
-                      <FaMapMarkerAlt className="me-1" />
-                      {venue.city || venue.address || "Location not available"}
-                    </div>
-
-                    {/* Price Row - show veg/non-veg for venues, else starting price */}
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                      {venue.vegPrice || venue.nonVegPrice ? (
-                        <>
-                          {venue.vegPrice !== null &&
-                            venue.vegPrice !== undefined && (
-                              <div className="d-flex flex-column">
-                                <span
-                                  className="text-muted"
-                                  style={{ fontSize: "12px" }}
-                                >
-                                  Veg
-                                </span>
-                                <span
-                                  className="fw-bold text-dark"
-                                  style={{ fontSize: "16px" }}
-                                >
-                                  ₹ {String(venue.vegPrice.replace("Rs.", ""))}
-                                </span>
-                              </div>
-                            )}
-                          {venue.nonVegPrice !== null &&
-                            venue.nonVegPrice !== undefined && (
-                              <div className="d-flex flex-column text-end">
-                                <span
-                                  className="text-muted"
-                                  style={{ fontSize: "12px" }}
-                                >
-                                  Non-Veg
-                                </span>
-                                <span
-                                  className="fw-bold text-dark"
-                                  style={{ fontSize: "16px" }}
-                                >
-                                  ₹{" "}
-                                  {String(venue.nonVegPrice.replace("Rs.", ""))}
-                                </span>
-                              </div>
-                            )}
-                        </>
-                      ) : (
-                        <div>
+                      {/* Bottom Info Pills */}
+                      <div className="d-flex gap-2 flex-wrap mb-3" style={{ minHeight: "30px" }}>
+                        {venue.capacity && (
                           <span
-                            className="fw-bold text-dark"
-                            style={{ fontSize: "16px" }}
+                            className="badge px-3 py-2"
+                            style={{
+                              backgroundColor: "#ffe5f0",
+                              color: "#c2185b",
+                              fontSize: "12px",
+                              fontWeight: "500",
+                              border: "none",
+                            }}
                           >
-                            {venue.starting_price
-                              ? `₹ ${String(
-                                  venue.starting_price.replace("Rs.", "")
-                                )}`
-                              : "Contact for pricing"}
+                            {venue.capacity}
                           </span>
-                        </div>
-                      )}
-                    </div>
+                        )}
 
-                    {/* Bottom Info Pills */}
-                    <div className="d-flex gap-2 flex-wrap">
-                      {/* Capacity Pill */}
-                      <span
-                        className="badge px-3 py-2"
-                        style={{
-                          backgroundColor: "#ffe5f0",
-                          color: "#c2185b",
-                          fontSize: "12px",
-                          fontWeight: "500",
-                          border: "none",
-                        }}
-                      >
-                        {venue.capacity}
-                      </span>
+                        {venue.rooms !== null && venue.rooms !== undefined && (
+                          <span
+                            className="badge px-3 py-2"
+                            style={{
+                              backgroundColor: "#ffe5f0",
+                              color: "#c2185b",
+                              fontSize: "12px",
+                              fontWeight: "500",
+                              border: "none",
+                            }}
+                          >
+                            {venue.rooms} Rooms
+                          </span>
+                        )}
 
-                      {/* 🌟 ONLY show Rooms if the value is truthy (i.e., not 0, null, or undefined) 🌟 */}
-                      {venue.rooms !== null && venue.rooms !== undefined && (
-                        <span
-                          className="badge px-3 py-2"
-                          style={{
-                            backgroundColor: "#ffe5f0",
-                            color: "#c2185b",
-                            fontSize: "12px",
-                            fontWeight: "500",
-                            border: "none",
-                          }}
-                        >
-                          {venue.rooms} Rooms
-                        </span>
-                      )}
-
-                      {venue.more && (
-                        <span
-                          className="badge px-3 py-2"
-                          style={{
-                            backgroundColor: "#ffe5f0",
-                            color: "#c2185b",
-                            fontSize: "12px",
-                            fontWeight: "500",
-                            border: "none",
-                          }}
-                        >
-                          + {venue.more} more
-                        </span>
-                      )}
+                        {venue.more && (
+                          <span
+                            className="badge px-3 py-2"
+                            style={{
+                              backgroundColor: "#ffe5f0",
+                              color: "#c2185b",
+                              fontSize: "12px",
+                              fontWeight: "500",
+                              border: "none",
+                            }}
+                          >
+                            + {venue.more} more
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </Link>
 
                   {/* Quick Inquiry Button */}
                   <button
-                    className="quick-inquiry-btn"
+                    className="quick-inquiry-btn mt-auto w-100"
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedVendorId(venue.vendor_id || venue.id);

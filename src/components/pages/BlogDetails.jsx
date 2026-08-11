@@ -50,6 +50,7 @@ import { FaChevronLeft } from "react-icons/fa";
 import { User, Calendar, Clock, Heart } from "lucide-react";
 import { useLoader } from "../context/LoaderContext";
 import DOMPurify from "dompurify";
+import SEO from "../common/SEO";
 
 const BlogDetails = ({ blogId, onBackClick }) => {
   const [blogData, setBlogData] = React.useState(null);
@@ -109,6 +110,11 @@ const BlogDetails = ({ blogId, onBackClick }) => {
         backgroundColor: "#fff",
       }}
     >
+      <SEO
+        title={`${blogData.title} | HappyWedz Blog`}
+        description={blogData.shortDescription || `Read ${blogData.title} on the HappyWedz wedding planning blog.`}
+        image={blogData.images && blogData.images.length > 0 ? getImageUrl(blogData.images[0]) : undefined}
+      />
       <div
         className="container"
         style={{ paddingTop: "2rem", paddingBottom: "1rem" }}

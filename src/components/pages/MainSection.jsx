@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { setLocation } from "../../redux/locationSlice";
 import InfiniteScroll from "react-infinite-scroll-component";
 import VendorsSearch from "../layouts/vendors/VendorsSearch";
 import VenuesSearch from "../layouts/venus/VenuesSearch";
@@ -37,11 +38,147 @@ import UserPrivateRoute from "../routes/UserPrivateRoute";
 import DynamicAside from "../layouts/aside/DynamicAside";
 import { useMemo } from "react";
 import MapView from "../layouts/Main/MapView";
+import SEO from "../common/SEO";
+
+const formatCityName = (cityStr) => {
+  if (!cityStr) return "";
+  const decoded = decodeURIComponent(cityStr);
+  return decoded
+    .split(/[\s-]+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+};
+
+const VENUE_CATEGORY_MAP = {
+  "banquet-halls": { id: 2, name: "Banquet Halls" },
+  "marriage-garden-lawns": { id: 3, name: "Marriage Garden / Lawns" },
+  "marriage-garden--lawns": { id: 3, name: "Marriage Garden / Lawns" },
+  "marriage-gardens": { id: 3, name: "Marriage Garden / Lawns" },
+  "wedding-resorts": { id: 33, name: "Wedding Resorts" },
+  "small-functions-party-halls": { id: 34, name: "Small Functions / Party Halls" },
+  "small-function-party-halls": { id: 34, name: "Small Functions / Party Halls" },
+  "small-function--party-halls": { id: 34, name: "Small Functions / Party Halls" },
+  "party-halls": { id: 34, name: "Small Functions / Party Halls" },
+  "destination-wedding-venues": { id: 35, name: "Destination Wedding Venues" },
+  "4-star-and-above-wedding-hotels": { id: 37, name: "4 Star And Above Wedding Hotels" },
+  "4-star--above-wedding-hotels": { id: 37, name: "4 Star And Above Wedding Hotels" },
+  "4-star-above-wedding-hotels": { id: 37, name: "4 Star And Above Wedding Hotels" },
+  "wedding-farmhouses": { id: 38, name: "Wedding Farmhouses" },
+  "kalyana-mandapams": { id: 39, name: "Kalyana Mandapams" },
+  "wedding-suites": { id: 30, name: "Wedding Suites" }
+};
 
 const MainSection = () => {
-  const { section } = useParams();
+  const { section: rawSection, city: urlCity } = useParams();
+  const location = useLocation();
+  const dispatch = useDispatch();
   const reduxLocation = useSelector((state) => state.location.selectedLocation);
-  const [selectedCity, setSelectedCity] = useState(reduxLocation);
+
+  const section = useMemo(() => {
+    if (location.pathname.startsWith("/wedding-venues") || location.pathname.startsWith("/venues")) {
+      return "venues";
+    }
+    return rawSection;
+  }, [rawSection, location.pathname]);
+
+  const categoryInfo = useMemo(() => {
+    if (urlCity && VENUE_CATEGORY_MAP[urlCity.toLowerCase()]) {
+      return VENUE_CATEGORY_MAP[urlCity.toLowerCase()];
+    }
+    return null;
+  }, [urlCity]);
+
+  const [selectedCity, setSelectedCity] = useState(() => {
+    if (categoryInfo) {
+      return reduxLocation || null;
+    }
+    if ((location.pathname.startsWith("/wedding-venues") || location.pathname.startsWith("/venues")) && urlCity) {
+      return formatCityName(urlCity);
+    }
+    return reduxLocation;
+  });
+
+  useEffect(() => {
+    if (categoryInfo) {
+      setSelectedCity(reduxLocation || null);
+    } else if ((location.pathname.startsWith("/wedding-venues") || location.pathname.startsWith("/venues")) && urlCity) {
+      const formatted = formatCityName(urlCity);
+      setSelectedCity(formatted);
+      dispatch(setLocation(formatted));
+    } else {
+      setSelectedCity(reduxLocation);
+    }
+  }, [reduxLocation, urlCity, location.pathname, categoryInfo, dispatch]);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const queryCity = searchParams.get("city");
+    if (queryCity && (location.pathname === "/venues" || location.pathname === "/wedding-venues")) {
+      const cleanCitySlug = queryCity
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      navigate(`/wedding-venues/${cleanCitySlug}`, { replace: true });
+    }
+  }, [location.search, location.pathname, navigate]);
+
+  const displayTitle = useMemo(() => {
+    switch (section) {
+      case "venues":
+        if (categoryInfo) {
+          return `${categoryInfo.name}${selectedCity ? ` in ${selectedCity}` : ""} | HappyWedz`;
+        }
+        return `Wedding Venues${selectedCity ? ` in ${selectedCity}` : ""} | HappyWedz`;
+      case "vendors":
+        return `Wedding Vendors${selectedCity ? ` in ${selectedCity}` : ""} | HappyWedz`;
+      case "photography":
+        return "Wedding Photography & Inspiration | HappyWedz";
+      case "real-wedding":
+        return "Real Weddings & Stories | HappyWedz";
+      case "e-invites":
+        return "Digital E-Invitations & Wedding Cards | HappyWedz";
+      case "e-invite-wedding-card-designs":
+        return "E-Invite Wedding Card Designs | HappyWedz";
+      case "twosoul":
+        return "Two Soul Matrimonial | HappyWedz";
+      case "latest-real-weddings":
+        return "Latest Real Weddings | HappyWedz";
+      case "shaadi-ai":
+        return "Shaadi AI - Your AI Wedding Planner | HappyWedz";
+      default:
+        return "HappyWedz - Find Top Wedding Vendors, Venues & Planning Tools";
+    }
+  }, [section, selectedCity, categoryInfo]);
+
+  const displayDescription = useMemo(() => {
+    switch (section) {
+      case "venues":
+        return `Find and book top rated wedding venues${selectedCity ? ` in ${selectedCity}` : ""}. Compare options, check pricing, reviews, and availability at HappyWedz.`;
+      case "vendors":
+        return `Discover top-rated wedding vendors${selectedCity ? ` in ${selectedCity}` : ""} including photographers, makeup artists, caterers, and decorators on HappyWedz.`;
+      case "photography":
+        return "Browse wedding photography ideas, pre-wedding shoot inspiration, couples portraits, and get ideas from real Indian weddings.";
+      case "real-wedding":
+        return "Explore real wedding stories, pictures, decorations, wedding outfits, and ideas from real couples around India.";
+      case "e-invites":
+        return "Create beautiful, customized digital wedding invitations and e-cards online with our easy wedding card creator tool.";
+      case "e-invite-wedding-card-designs":
+        return "Browse hundreds of customizable electronic wedding invitation designs and templates for your special day.";
+      case "twosoul":
+        return "Find your soulmate and begin your beautiful journey with HappyWedz Two Soul matrimonial matches and verified profiles.";
+      case "latest-real-weddings":
+        return "See the latest weddings planning and celebration galleries. Get inspired by trending decor and bridal attire.";
+      case "shaadi-ai":
+        return "Plan your wedding with Shaadi AI, our smart assistant helping you find vendors, plan budgets, schedules, and answer wedding queries.";
+      default:
+        return "Discover top-rated wedding vendors, venues, and planning tools for your perfect wedding. Explore real weddings, inspiration, and expert advice with HappyWedz.";
+    }
+  }, [section, selectedCity]);
+
   const [show, setShow] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
 
@@ -59,7 +196,7 @@ const MainSection = () => {
 
   const { data, loading, error, hasMore, loadMore } = useInfiniteScroll(
     "venues",
-    null,
+    categoryInfo ? categoryInfo.name : null,
     selectedCity,
     "Venues",
     9,
@@ -77,9 +214,7 @@ const MainSection = () => {
     setSortBy,
   } = useContext(MyContext);
 
-  useEffect(() => {
-    setSelectedCity(reduxLocation);
-  }, [reduxLocation]);
+
 
   useEffect(() => {
     const saved =
@@ -110,6 +245,7 @@ const MainSection = () => {
   if (section === "venues") {
     return (
       <>
+        <SEO title={displayTitle} description={displayDescription} />
         <MainSearch />
         {!reduxLocation && <MainByRegion type="Venues" />}
 
@@ -163,6 +299,7 @@ const MainSection = () => {
                   subVenuesData={data}
                   section="venues"
                   handleShow={handleShow}
+                  currentCity={selectedCity}
                 />
               )}
               {view === "list" && (
@@ -170,6 +307,7 @@ const MainSection = () => {
                   subVenuesData={data}
                   section="venues"
                   handleShow={handleShow}
+                  currentCity={selectedCity}
                 />
               )}
             </InfiniteScroll>
@@ -180,7 +318,7 @@ const MainSection = () => {
             />
           </div>
         )}
-        <VenueInfoSection />
+        <VenueInfoSection city={selectedCity} />
       </>
     );
   }
@@ -188,6 +326,7 @@ const MainSection = () => {
   if (section === "vendors") {
     return (
       <>
+        <SEO title={displayTitle} description={displayDescription} />
         <MainSearch title="Wedding Vendor" />
         {!reduxLocation && <MainByRegion type="vendors" />}
         <AllCategories />
@@ -200,6 +339,7 @@ const MainSection = () => {
   if (section === "photography") {
     return (
       <div className="container">
+        <SEO title={displayTitle} description={displayDescription} />
         <h3 className="mt-5 fw-bold primary-text h2">
           Every Smile, Every Tear, Every Moment — Perfectly Captured
         </h3>
@@ -238,6 +378,7 @@ const MainSection = () => {
   if (section === "real-wedding") {
     return (
       <>
+        <SEO title={displayTitle} description={displayDescription} />
         <RealWedding />
       </>
     );
@@ -246,6 +387,7 @@ const MainSection = () => {
   if (section === "e-invites") {
     return (
       <>
+        <SEO title={displayTitle} description={displayDescription} />
         <MainSearch title="E Invites" />
         <WeddingCardDesigns />
         <FaqsSection />
@@ -255,6 +397,7 @@ const MainSection = () => {
   if (section === "e-invite-wedding-card-designs") {
     return (
       <>
+        <SEO title={displayTitle} description={displayDescription} />
         <WeddingCardDesigns />
         <FactorsList />
         <FaqsSection />
@@ -265,6 +408,7 @@ const MainSection = () => {
   if (section === "twosoul") {
     return (
       <>
+        <SEO title={displayTitle} description={displayDescription} />
         <MainSearch title="Two Soul" />
         {!reduxLocation && <MainByRegion />}
         <GroomeSlider />
@@ -277,6 +421,7 @@ const MainSection = () => {
   if (section === "latest-real-weddings") {
     return (
       <>
+        <SEO title={displayTitle} description={displayDescription} />
         <MainSearch title="latest Real Weddings" />
         {!reduxLocation && <MainByRegion />}
         <FindMain />
@@ -307,6 +452,7 @@ const MainSection = () => {
   if (section === "shaadi-ai") {
     return (
       <>
+        <SEO title={displayTitle} description={displayDescription} />
         <UserPrivateRoute>
           <Genie />
         </UserPrivateRoute>

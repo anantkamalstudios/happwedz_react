@@ -114,7 +114,10 @@ export default function VerifiedVendors() {
 
         const json = await res.json();
 
-        setVendors(prev => replace ? json.vendors : [...prev, ...json.vendors]);
+        const validList = (json.vendors || []).filter(
+          (v) => v && v.image && String(v.image).trim() !== ""
+        );
+        setVendors((prev) => (replace ? validList : [...prev, ...validList]));
         setPage(json.page);
         setTotalPages(json.totalPages);
         setTotal(json.total);

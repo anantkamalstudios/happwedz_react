@@ -121,7 +121,20 @@ const UserPreference = () => {
         <div className="cookie-gradient">
           <div className="d-flex align-items-start gap-3 mb-4">
             <div className="cookie-icon d-flex align-items-center justify-content-center">
-              <img src="/images/auth/cookie.png" alt="Cookie" />
+              {/* 185KB PNG for a ~48px icon. It is decorative and sits in a
+                  banner nobody reads before the hero paints, so keep it out of
+                  the critical fetch queue. It still needs re-encoding — see the
+                  perf notes; lazy loading only moves the cost, it doesn't
+                  remove it. */}
+              <img
+                src="/images/auth/cookie.png"
+                alt=""
+                width="48"
+                height="48"
+                loading="lazy"
+                decoding="async"
+                fetchPriority="low"
+              />
             </div>
 
             <div className="flex-grow-1">

@@ -9,12 +9,10 @@ const MetroCities = () => {
   const dispatch = useDispatch();
 
   const handleCityClick = (cityLabel) => {
-    const city = cityLabel
-      .replace(/^Wedding Venues\s*/i, "")
-      .trim()
-      .toLowerCase();
-    dispatch(setLocation(city));
-    navigate(`/venues/?city=${encodeURIComponent(city)}`);
+    const cleanCityName = cityLabel.replace(/^Wedding Venues\s*/i, "").trim();
+    const citySlug = cleanCityName.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "");
+    dispatch(setLocation(cleanCityName));
+    navigate(`/wedding-venues/${citySlug}`);
   };
 
   return (

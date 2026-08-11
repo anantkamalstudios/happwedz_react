@@ -3,21 +3,21 @@ import { Modal, Button, Form } from "react-bootstrap";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setLocation, clearLocation } from "../../redux/locationSlice";
-import { useNavigate } from "react-router-dom";
-import { RxCrossCircled } from "react-icons/rx";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { IoMdArrowDropdown } from "react-icons/io";
+import citiesData from "../../data/citiesData";
 
-const LocationModalWithAPI = () => {
+const LocationModalWithCategories = () => {
   const [show, setShow] = useState(false);
   const dispatch = useDispatch();
   const selectedLocation = useSelector(
     (state) => state.location.selectedLocation
   );
   const navigate = useNavigate();
+  const location = useLocation();
+  const { section, slug, subcategory } = useParams();
   const [searchTerm, setSearchTerm] = useState("");
-  const [countries, setCountries] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [selectedCountry, setSelectedCountry] = useState("India");
+  const [selectedState, setSelectedState] = useState(null);
 
   const staticCityData = {
     topCities: [
@@ -27,7 +27,6 @@ const LocationModalWithAPI = () => {
       "Bangalore",
       "Chennai",
       "Pune",
-      // "Lucknow",
       "Jaipur",
       "Kolkata",
       "Hyderabad",
@@ -35,7 +34,6 @@ const LocationModalWithAPI = () => {
       "Goa"
     ],
     popularCities: [
-      // "Gurgaon",
       "Mumbai",
       "Bangalore",
       "Chennai",
@@ -46,7 +44,6 @@ const LocationModalWithAPI = () => {
       "Ahmedabad",
       "Goa",
       "Udaipur",
-
     ],
     otherCities: [
       "Nagpur",
@@ -57,51 +54,41 @@ const LocationModalWithAPI = () => {
       "Raipur",
       "Mysore",
       "Hubli",
-      "Dhitara",
-      "Toranagallu",
     ],
-    states: ["Kerala", "Rajasthan", "Himachal Pradesh", "Maharashtra"],
+    states: Object.keys(citiesData).sort(),
     internationalCities: ["Dubai", "Thailand", "Bali", "Abu Dhabi"],
   };
 
-  useEffect(() => {
-    axios.get("https://restcountries.com/v3.1/all?fields=name").then((res) => {
-      const sorted = res.data
-        .map((c) => c.name.common)
-        .sort((a, b) => a.localeCompare(b));
-      setCountries(sorted);
+  // Local Search over all cities in citiesData
+  const allLocalCities = React.useMemo(() => {
+    const list = new Set();
+    Object.values(citiesData).forEach((venues) => {
+      venues.forEach((v) => {
+        const clean = v.replace(/^Wedding Venues\s*/i, "").trim();
+        list.add(clean);
+      });
     });
+    // Add other static cities
+    staticCityData.topCities.forEach(c => { if(c !== "All Cities") list.add(c); });
+    staticCityData.popularCities.forEach(c => list.add(c));
+    staticCityData.otherCities.forEach(c => list.add(c));
+    return Array.from(list).sort();
   }, []);
 
-  useEffect(() => {
-    if (!searchTerm.trim()) {
-      setCities([]);
-      return;
-    }
-
-    if (!selectedCountry) return;
-
-    axios
-      .post("https://countriesnow.space/api/v0.1/countries/cities", {
-        country: selectedCountry,
-      })
-      .then((res) => {
-        if (res.data && res.data.data) {
-          setCities(res.data.data);
-        } else {
-          setCities([]);
-        }
-      })
-      .catch(() => setCities([]));
-  }, [selectedCountry, searchTerm]);
-
   const filterCities = searchTerm.trim()
-    ? cities.filter((city) =>
-      city.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    ? allLocalCities.filter((city) =>
+        city.toLowerCase().includes(searchTerm.toLowerCase())
+      )
     : [];
 
   const handleCityClick = (city) => {
+    const cleanCity = city.toLowerCase();
+    const cleanCitySlug = cleanCity
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
     if (city === "All Cities") {
       dispatch(clearLocation());
     } else {
@@ -109,27 +96,38 @@ const LocationModalWithAPI = () => {
     }
     setShow(false);
     setSearchTerm("");
+    setSelectedState(null);
     document.body.style.overflow = "auto";
 
-    navigate(
-      `/vendors/all${city !== "All Cities" ? `?city=${encodeURIComponent(city)}` : ""
-      }`
-    );
-  };
+    const isVenuesPage = location.pathname.includes("/venues") || location.pathname.includes("/wedding-venues");
+    const isVendorsPage = location.pathname.startsWith("/vendors/") || location.pathname.startsWith("/vendors");
+    const isPhotographyPage = location.pathname.startsWith("/photography/") || location.pathname.startsWith("/photography");
 
-  const handleClearLocation = (e) => {
-    e.stopPropagation();
-    dispatch(clearLocation());
-    document.body.style.overflow = "auto";
-  };
-
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
+    if (isVenuesPage) {
+      navigate(
+        city === "All Cities" ? "/venues" : `/wedding-venues/${cleanCitySlug}`
+      );
+    } else if (isVendorsPage) {
+      const activeCat = subcategory || slug || "all";
+      navigate(
+        city === "All Cities" ? `/vendors/${activeCat}` : `/vendors/${activeCat}/${cleanCitySlug}`
+      );
+    } else if (isPhotographyPage) {
+      const activeCat = subcategory || slug || "all";
+      navigate(
+        city === "All Cities" ? `/photography/${activeCat}` : `/photography/${activeCat}/${cleanCitySlug}`
+      );
+    } else {
+      navigate(
+        city === "All Cities" ? "/vendors/all" : `/vendors/all/${cleanCitySlug}`
+      );
+    }
   };
 
   const handleModalClose = () => {
     setShow(false);
     setSearchTerm("");
+    setSelectedState(null);
   };
 
   return (
@@ -146,27 +144,13 @@ const LocationModalWithAPI = () => {
           }}
         >
           <span className="d-flex align-items-center gap-2">
-            {selectedLocation ? (
+            {selectedLocation && selectedLocation !== "unknown" ? (
               <span className="fw-medium">{selectedLocation}</span>
             ) : (
               <span className="text-dark fs-14">Select Location</span>
             )}
           </span>
-
-          {selectedLocation ? (
-            // <RxCrossCircled
-            //   size={20}
-            //   color="#d00"
-            //   onClick={(e) => {
-            //     e.stopPropagation();
-            //     handleClearLocation(e);
-            //   }}
-            //   style={{ cursor: "pointer" }}
-            // />
-            <IoMdArrowDropdown size={25} color="#000" />
-          ) : (
-            <IoMdArrowDropdown size={25} color="#000" />
-          )}
+          <IoMdArrowDropdown size={25} color="#000" />
         </Button>
       </div>
 
@@ -181,24 +165,11 @@ const LocationModalWithAPI = () => {
       >
         <Modal.Body style={{ padding: 0 }}>
           <div style={{ padding: "1rem 1rem 0rem 1rem" }}>
-            <Form.Select
-              className="d-none"
-              value={selectedCountry}
-              onChange={(e) => setSelectedCountry(e.target.value)}
-            >
-              <option value="">Select Country</option>
-              {countries.map((c) => (
-                <option className="fs-14" key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </Form.Select>
-
             <Form.Control
               type="text"
-              placeholder="Search City, State..."
+              placeholder="Search City..."
               value={searchTerm}
-              onChange={handleSearchChange}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="p-2 fs-14"
             />
           </div>
@@ -237,6 +208,39 @@ const LocationModalWithAPI = () => {
                   ))}
                 </div>
               )
+            ) : selectedState ? (
+              <div className="p-4">
+                <div className="d-flex align-items-center gap-3 mb-4">
+                  <Button
+                    variant="outline-dark"
+                    size="sm"
+                    onClick={() => setSelectedState(null)}
+                    style={{ borderRadius: "20px" }}
+                  >
+                    ← Back to States
+                  </Button>
+                  <h5 className="mb-0 fw-bold primary-text">{selectedState} Venues</h5>
+                </div>
+                <div className="row g-3">
+                  {(citiesData[selectedState] || []).map((venueText) => {
+                    const city = venueText.replace(/^Wedding Venues\s*/i, "").trim();
+                    return (
+                      <div key={city} className="col-6 col-md-3">
+                        <a
+                          href="#"
+                          className="text-dark text-decoration-none d-block fs-14 p-2 border rounded hover-bg-light"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleCityClick(city);
+                          }}
+                        >
+                          {city}
+                        </a>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             ) : (
               <div className="location-columns-wrapper">
                 {/* Top Cities */}
@@ -286,9 +290,16 @@ const LocationModalWithAPI = () => {
                   </h6>
                   {staticCityData.otherCities.map((city) => (
                     <div key={city} className="mb-2">
-                      <span className="text-muted d-block fs-14">
+                      <a
+                        href="#"
+                        className="text-dark text-decoration-none d-block fs-14"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleCityClick(city);
+                        }}
+                      >
                         {city}
-                      </span>
+                      </a>
                     </div>
                   ))}
                 </div>
@@ -298,9 +309,16 @@ const LocationModalWithAPI = () => {
                   <h6 className="primary-text fw-bold mb-3 mt-2">States</h6>
                   {staticCityData.states.map((state) => (
                     <div key={state} className="mb-2">
-                      <span className="text-muted d-block fs-14">
+                      <a
+                        href="#"
+                        className="text-dark text-decoration-none d-block fs-14"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setSelectedState(state);
+                        }}
+                      >
                         {state}
-                      </span>
+                      </a>
                     </div>
                   ))}
 
@@ -309,9 +327,16 @@ const LocationModalWithAPI = () => {
                   </h6>
                   {staticCityData.internationalCities.map((city) => (
                     <div key={city} className="mb-2">
-                      <span className="text-muted d-block fs-14">
+                      <a
+                        href="#"
+                        className="text-dark text-decoration-none d-block fs-14"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleCityClick(city);
+                        }}
+                      >
                         {city}
-                      </span>
+                      </a>
                     </div>
                   ))}
                 </div>
@@ -324,4 +349,4 @@ const LocationModalWithAPI = () => {
   );
 };
 
-export default LocationModalWithAPI;
+export default LocationModalWithCategories;

@@ -14,6 +14,8 @@ import {
 import { useSelector } from "react-redux";
 import { weddingWebsiteApi } from "../../services/api/weddingWebsiteApi";
 import Swal from "sweetalert2";
+import NoIndex from "../common/NoIndex";
+
 
 const WeddingWebsiteForm = () => {
   const navigate = useNavigate();
@@ -618,10 +620,9 @@ const WeddingWebsiteForm = () => {
         background:
           "linear-gradient(135deg, #ffeef8 0%, #fff5f0 50%, #f0f9ff 100%)",
         position: "relative",
-        overflow: "hidden",
       }}
     >
-      {/* Decorative Elements */}
+      <NoIndex />
       <div
         style={{
           position: "absolute",

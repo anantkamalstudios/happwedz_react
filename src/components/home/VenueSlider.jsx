@@ -36,7 +36,9 @@ const VenueSlider = () => {
     );
   };
 
-  const displayData = venues;
+  const displayData = (venues || []).filter(
+    (v) => v && v.image && String(v.image).trim() !== ""
+  );
   const isLoading = loading;
 
   // Show loading state
@@ -44,7 +46,7 @@ const VenueSlider = () => {
     return (
       <div className="venues-slider-container">
         <div className="venues-slider-header">
-          <h3>Pick your Venue</h3>
+          <h2 className="fw-bold fs-28 text-dark mb-0">Pick your Venue</h2>
           <Link to="/venues" className="see-more-link fs-18">
             SEE MORE
             <svg
@@ -75,7 +77,7 @@ const VenueSlider = () => {
     return (
       <div className="venues-slider-container">
         <div className="venues-slider-header">
-          <h3>Pick your Venue</h3>
+          <h2 className="fw-bold fs-28 text-dark mb-0">Pick your Venue</h2>
         </div>
         <div className="text-center py-5 text-danger">
           <p>Failed to load venues. Please try again later.</p>
@@ -98,8 +100,12 @@ const VenueSlider = () => {
       {/* Header */}
       <div className="venues-slider-header d-flex justify-content-between align-items-end">
         <h3>Pick your Venue</h3>
-        <Link to="/venues" className="see-more-link fs-14">
-          SEE MORE
+        <Link
+          to="/venues"
+          className="see-more-link fs-14"
+          aria-label="Explore All Wedding Venues"
+        >
+          Explore All Venues
           <svg
             width="14"
             height="14"
@@ -174,12 +180,14 @@ const VenueSlider = () => {
                     className="text-decoration-none"
                   >
                     <div className="venues-slider-image-container">
-                      <img
+                      <img loading="lazy" decoding="async"
                         src={imageUrl}
                         alt={name}
                         className="venues-slider-image"
                         onError={(e) => {
-                          e.target.src = "/images/imageNotFound.jpg";
+                          e.target.onerror = null;
+                          const slide = e.target.closest(".swiper-slide");
+                          if (slide) slide.style.display = "none";
                         }}
                       />
                       <button
@@ -203,7 +211,7 @@ const VenueSlider = () => {
                     </div>
 
                     <div className="venues-slider-content">
-                      <h5 className="fs-16 text-black">{name}</h5>
+                      <div className="fw-bold mb-1 text-dark fs-18 text-truncate">{name}</div>
                       <div className="venues-slider-rating d-flex align-items-center gap-1">
                         <CiStar color="orange" />
                         <span className="venues-slider-rating-number">

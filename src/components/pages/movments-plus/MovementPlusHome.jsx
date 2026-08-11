@@ -8,6 +8,7 @@ import SmartPhotoSharing from "../../movment-plus/SmartPhotoSharing";
 import RealWeddings from "../../home/RealWeddings";
 import cmsApi from "../../../services/api/cmsApi";
 import MainTestimonial from "../../home/MainTestimonial";
+import SEO from "../../common/SEO";
 const MovementPlusHome = () => {
   const [realWeddingData, setRealWeddingData] = useState(null);
   const [couplesSaysData, setCouplesSaysData] = useState(null);
@@ -36,6 +37,10 @@ const MovementPlusHome = () => {
 
   return (
     <div className="app_wrapper_2k7m3">
+      <SEO
+        title="Movment+ | Smart Wedding Photo Sharing | HappyWedz"
+        description="Share and relive your wedding moments with Movment+ by HappyWedz. AI-powered face recognition lets guests instantly find their own photos from your wedding gallery."
+      />
       <MovmentPlusHero />
       <Brands />
       <HomeGridImages />

@@ -1,6 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import React from "react";
 import { useContext, useEffect, useRef } from "react";
+import { FaFacebookF, FaInstagram } from "react-icons/fa";
 import { MyContext } from "../../context/useContext";
 
 const Footer = () => {
@@ -16,10 +17,60 @@ const Footer = () => {
     types,
   } = useContext(MyContext);
 
+  // The Trustpilot bootstrap script used to sit in index.html as an `async`
+  // tag, so it downloaded and ran during page load — Lighthouse attributed
+  // ~124ms of forced reflow to it, straight into Total Blocking Time. Load it
+  // only once the widget is close to the viewport, which on the home page is
+  // well after the user has an interactive page.
   useEffect(() => {
-    if (window.Trustpilot && trustpilotRef.current) {
-      window.Trustpilot.loadFromElement(trustpilotRef.current, true);
+    const el = trustpilotRef.current;
+    if (!el) return;
+
+    const render = () => {
+      if (window.Trustpilot && trustpilotRef.current) {
+        window.Trustpilot.loadFromElement(trustpilotRef.current, true);
+      }
+    };
+
+    // Script already fetched by an earlier mount — just re-render the widget.
+    if (window.Trustpilot) {
+      render();
+      return;
     }
+
+    const TP_SRC =
+      "https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js";
+
+    const loadScript = () => {
+      const existing = document.querySelector(`script[src="${TP_SRC}"]`);
+      if (existing) {
+        existing.addEventListener("load", render, { once: true });
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = TP_SRC;
+      script.async = true;
+      script.addEventListener("load", render, { once: true });
+      document.body.appendChild(script);
+    };
+
+    if (typeof IntersectionObserver === "undefined") {
+      loadScript();
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          observer.disconnect();
+          loadScript();
+        }
+      },
+      { rootMargin: "300px" }
+    );
+    observer.observe(el);
+
+    return () => observer.disconnect();
   }, [location.pathname]);
 
   const findCategoryIdByName = (categoryName) => {
@@ -100,8 +151,12 @@ const Footer = () => {
               }}
             >
               <img
-                src="/images/logo.webp"
+                src="/images/logo-sm-300.webp"
                 alt="HappyWedz Logo"
+                width="150"
+                height="38"
+                loading="lazy"
+                decoding="async"
                 style={{
                   width: "150px",
                   height: "auto",
@@ -124,20 +179,23 @@ const Footer = () => {
             </p>
           </div>
 
+          {/* === PLAN YOUR WEDDING === */}
           <div className="col-12 col-sm-6 col-lg-3" style={{ color: "#fff" }}>
             <p className="footer-title fs-16">Plan Your Wedding</p>
             <ul className="footer-list">
               <li className="fs-14">
-                <Link to="/user-dashboard/my-wedding" className="fs-14">
+                <Link
+                  to="/wedding-venues"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="fs-14"
+                >
                   Start Planning
                 </Link>
               </li>
               <li className="fs-14">
                 <Link
                   to="/vendors"
-                  onClick={() =>
-                    window.scrollTo({ top: 0, behavior: "smooth" })
-                  }
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                   className="fs-14"
                 >
                   Search By Vendor
@@ -145,22 +203,28 @@ const Footer = () => {
               </li>
               <li className="fs-14">
                 <Link
-                  to="/vendors"
-                  onClick={() =>
-                    window.scrollTo({ top: 0, behavior: "smooth" })
-                  }
+                  to="/wedding-venues"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                   className="fs-14"
                 >
                   Search By City
                 </Link>
               </li>
               <li className="fs-14">
-                <Link to="/top-rated" className="fs-14">
+                <Link
+                  to="/top-rated"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="fs-14"
+                >
                   Top Rated Vendors
                 </Link>
               </li>
               <li className="fs-14">
-                <Link to="/destination-wedding" className="fs-14">
+                <Link
+                  to="/destination-wedding"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="fs-14"
+                >
                   Destination Wedding
                 </Link>
               </li>
@@ -172,27 +236,47 @@ const Footer = () => {
             <p className="footer-title fs-16">Inspiration & Ideas</p>
             <ul className="footer-list">
               <li className="fs-14">
-                <Link to="/blog" className="fs-14">
+                <Link
+                  to="/blog"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="fs-14"
+                >
                   Wedding Blog
                 </Link>
               </li>
               <li className="fs-14">
-                <Link to="/photography" className="fs-14">
+                <Link
+                  to="/photography/all/all"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="fs-14"
+                >
                   Wedding Inspiration Gallery
                 </Link>
               </li>
               <li className="fs-14">
-                <Link to="/real-wedding" className="fs-14">
+                <Link
+                  to="/latest-real-weddings"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="fs-14"
+                >
                   Real Wedding
                 </Link>
               </li>
               <li className="fs-14">
-                <Link to="/user-dashboard/real-wedding" className="fs-14">
+                <Link
+                  to="/user-dashboard"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="fs-14"
+                >
                   Submit Your Wedding
                 </Link>
               </li>
               <li className="fs-14">
-                <Link to="/einvites" className="fs-14">
+                <Link
+                  to="/einvites"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="fs-14"
+                >
                   Wedding Invitation Maker
                 </Link>
               </li>
@@ -204,49 +288,49 @@ const Footer = () => {
             <p className="footer-title fs-16">Bridal & Groom Fashion</p>
             <ul className="footer-list" style={{ color: "#fff" }}>
               <li className="fs-14">
-                <a
-                  onClick={() => handleCategoryClick("Wedding Card Designs")}
-                  style={{ cursor: "pointer" }}
+                <Link
+                  to="/einvites"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                   className="fs-14"
                 >
                   Wedding Card Designs
-                </a>
+                </Link>
               </li>
               <li className="fs-14">
-                <a
-                  onClick={() => handleCategoryClick("Outfit")}
-                  style={{ cursor: "pointer" }}
+                <Link
+                  to="/vendors/bridal-wear/all"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                   className="fs-14"
                 >
                   Outfit
-                </a>
+                </Link>
               </li>
               <li className="fs-14">
-                <a
-                  onClick={() => handleCategoryClick("Bridal Makeup & Hair")}
-                  style={{ cursor: "pointer" }}
+                <Link
+                  to="/vendors/bridal-makeup/all"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                   className="fs-14"
                 >
                   Bridal Makeup &amp; Hair
-                </a>
+                </Link>
               </li>
               <li className="fs-14">
-                <a
-                  onClick={() => handleCategoryClick("Groom Wear")}
-                  style={{ cursor: "pointer" }}
+                <Link
+                  to="/vendors/groom-wear/all"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                   className="fs-14"
                 >
                   Groom Wear
-                </a>
+                </Link>
               </li>
               <li className="fs-14">
-                <a
-                  onClick={() => handleCategoryClick("Jewellery & Accessories")}
-                  style={{ cursor: "pointer" }}
+                <Link
+                  to="/vendors/jewellery-accessories/all"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                   className="fs-14"
                 >
-                  Jewellery & Accessories
-                </a>
+                  Jewellery &amp; Accessories
+                </Link>
               </li>
             </ul>
           </div>
@@ -254,8 +338,8 @@ const Footer = () => {
 
         <hr className="my-4 opacity-50" style={{ background: "#fff" }} />
 
-        <div className="row mb-4">
-          <div className="col-12">
+        <div className="row mb-4" style={{ minHeight: "52px" }}>
+          <div className="col-12" style={{ minHeight: "52px" }}>
             <div
               ref={trustpilotRef}
               className="trustpilot-widget"
@@ -265,6 +349,7 @@ const Footer = () => {
               data-style-height="52px"
               data-style-width="100%"
               data-token="e35fc7f8-5dea-4218-9fb3-beab0c86bffb"
+              style={{ minHeight: "52px", height: "52px", display: "block" }}
             >
               <a
                 href="https://www.trustpilot.com/review/happywedz.com"
@@ -282,32 +367,56 @@ const Footer = () => {
           <div className="col-12 col-md-8 d-flex justify-content-center justify-content-md-start">
             <ul className="footer-list list-unstyled d-flex flex-wrap pt-3 justify-content-center justify-content-md-start">
               <li className="mx-3">
-                <Link to="/terms" className="fs-16">
-                  Terms & Condition
+                <Link
+                  to="/terms"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="fs-16"
+                >
+                  Terms &amp; Condition
                 </Link>
               </li>
               <li className="mx-3">
-                <Link to="/cancellation" className="fs-16">
+                <Link
+                  to="/cancellation"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="fs-16"
+                >
                   Cancellation Policy
                 </Link>
               </li>
               <li className="mx-3">
-                <Link to="/about-us" className="fs-16">
+                <Link
+                  to="/about-us"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="fs-16"
+                >
                   About HappyWedz
                 </Link>
               </li>
               <li className="mx-3">
-                <Link to="/careers" className="fs-16">
+                <Link
+                  to="/careers"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="fs-16"
+                >
                   Careers
                 </Link>
               </li>
               <li className="mx-3">
-                <Link to="/contact-us" className="fs-16">
+                <Link
+                  to="/contact-us"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="fs-16"
+                >
                   Contact Us
                 </Link>
               </li>
               <li className="mx-3">
-                <Link to="/sitemap" className="fs-16">
+                <Link
+                  to="/sitemap"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="fs-16"
+                >
                   Site Map
                 </Link>
               </li>
@@ -324,10 +433,10 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="social-btn"
               >
-                <i
-                  className="fa-brands fa-facebook-f"
-                  style={{ color: "#C31162" }}
-                ></i>
+                {/* react-icons, not `fa-brands` — these two were the only Font
+                    Awesome brand glyphs on the home page, and rendering them
+                    pulled down the 115KB fa-brands-400.woff2 webfont. */}
+                <FaFacebookF size={20} style={{ color: "#C31162" }} />
               </a>
 
               {/* Instagram */}
@@ -338,10 +447,7 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="social-btn"
               >
-                <i
-                  className="fa-brands fa-instagram"
-                  style={{ color: "#C31162" }}
-                ></i>
+                <FaInstagram size={20} style={{ color: "#C31162" }} />
               </a>
 
               {/* Twitter */}

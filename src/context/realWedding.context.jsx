@@ -52,8 +52,9 @@ export const FilterProvider = ({ children }) => {
   useEffect(() => {
     const fetchCultures = async () => {
       try {
+        const cleanBaseUrl = API_BASE_URL.includes("localhost") ? API_BASE_URL.replace(/\/api$/, "") : API_BASE_URL;
         const res = await axios.get(
-          `${API_BASE_URL}/real-wedding-culture/public`
+          `${cleanBaseUrl}/real-wedding-culture/public`
         );
         if (res.data?.cultures) {
           setCultures(res.data.cultures);

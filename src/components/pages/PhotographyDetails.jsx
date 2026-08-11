@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   FaHeart,
@@ -14,10 +14,32 @@ import { IMAGE_BASE_URL } from "../../config/constants";
 import usePhotography from "../../hooks/usePhotography";
 import LoadingState from "../LoadingState";
 import ErrorState from "../ErrorState";
+import SEO from "../common/SEO";
 import { GoHeart } from "react-icons/go";
 
+const toTitleCase = (str) =>
+  (str || "")
+    .toString()
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (l) => l.toUpperCase());
+
+const toSlug = (str) =>
+  (str || "")
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9\-]/g, "");
+
 const PhotographyDetails = () => {
-  const { id } = useParams();
+  const { id: routeId, subcategory, city, slug } = useParams();
+  const id = useMemo(() => {
+    if (routeId && !isNaN(routeId)) return routeId;
+    if (slug) {
+      const parts = slug.split("-");
+      const lastPart = parts[parts.length - 1];
+      if (lastPart && !isNaN(lastPart)) return lastPart;
+    }
+    return routeId;
+  }, [routeId, slug]);
   const navigate = useNavigate();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -33,7 +55,13 @@ const PhotographyDetails = () => {
     error,
     fetchPhotoById,
     fetchPhotosByCategory,
+    typesWithCategories,
+    fetchTypesWithCategories
   } = usePhotography();
+
+  useEffect(() => {
+    fetchTypesWithCategories();
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -119,13 +147,29 @@ const PhotographyDetails = () => {
     );
   }
 
+  const getCategoryName = (catId) => {
+    for (const t of typesWithCategories || []) {
+      if (Array.isArray(t.categories)) {
+        const found = t.categories.find((c) => c.id === catId);
+        if (found) return found.name;
+      }
+    }
+    return "";
+  };
+  const resolvedCategory = photo ? (photo.category_name || photo.type_name || photo.type || getCategoryName(photo.photography_category_id) || "") : "";
+  const showTitleCrumb = photo && photo.title && resolvedCategory && photo.title.toLowerCase() !== resolvedCategory.toLowerCase() && photo.title.toLowerCase() !== "wedding photo" && photo.title.toLowerCase() !== "photo" && photo.title.toLowerCase() !== "groom wear";
+
   const images = photo.images || [];
   const thumbnails = photo.thumbnails || images;
   const similarPhotos =
     photosByCategory?.filter((p) => p.id !== photo.id) || [];
 
+  const seoTitle = photo ? `${photo.title || resolvedCategory || "Wedding Photo"} in ${toTitleCase(city || photo.city_name || "India")} - HappyWedz` : "HappyWedz";
+  const seoDesc = photo ? (photo.description || `View ${photo.title || resolvedCategory || "Wedding Photo"} tags and details from ${toTitleCase(city || photo.city_name || "India")} on HappyWedz.`) : "";
+
   return (
     <>
+      <SEO title={seoTitle} description={seoDesc} />
       <div style={{ backgroundColor: "#fff", width: "100%" }}>
         <div
           style={{ maxWidth: "1200px", margin: "0 auto", padding: "24px 16px" }}
@@ -154,8 +198,44 @@ const PhotographyDetails = () => {
                   Photography
                 </Link>
               </li>
-              <li style={{ color: "#999" }}>/</li>
-              <li style={{ color: "#333" }}>{photo.title}</li>
+              {resolvedCategory && (
+                <>
+                  <li style={{ color: "#999" }}>/</li>
+                  <li>
+                    <Link
+                      to={`/photography/${toSlug(resolvedCategory)}/all`}
+                      style={{ textDecoration: "none", color: "#666", textTransform: "capitalize" }}
+                    >
+                      {resolvedCategory}
+                    </Link>
+                  </li>
+                </>
+              )}
+              {city && city !== "all" && (
+                <>
+                  <li style={{ color: "#999" }}>/</li>
+                  <li>
+                    {showTitleCrumb ? (
+                      <Link
+                        to={`/photography/${toSlug(resolvedCategory) || "all"}/${city}`}
+                        style={{ textDecoration: "none", color: "#666", textTransform: "capitalize" }}
+                      >
+                        {city.replace(/-/g, " ")}
+                      </Link>
+                    ) : (
+                      <span style={{ color: "#333", textTransform: "capitalize" }}>
+                        {city.replace(/-/g, " ")}
+                      </span>
+                    )}
+                  </li>
+                </>
+              )}
+              {showTitleCrumb && (
+                <>
+                  <li style={{ color: "#999" }}>/</li>
+                  <li style={{ color: "#333" }}>{photo.title}</li>
+                </>
+              )}
             </ol>
           </nav>
           <div
@@ -481,7 +561,7 @@ const PhotographyDetails = () => {
                           color: "#000",
                         }}
                       >
-                        {photo.city_name}
+                        {toTitleCase(photo.city_name)}
                       </div>
                     </div>
                   </div>
@@ -629,7 +709,7 @@ const PhotographyDetails = () => {
                   return (
                     <Link
                       key={item.id}
-                      to={`/photography/details/${item.id}`}
+                      to={`/photography/${subcategory || "all"}/${city || "all"}/${item.id}`}
                       style={{ textDecoration: "none" }}
                     >
                       <div

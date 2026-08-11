@@ -106,7 +106,7 @@ const RecommandedPage = () => {
 
       review_count: item.review_count || 0,
     };
-  });
+  }).filter((item) => item && item.image && !item.image.includes("imageNotFound"));
 
   return (
     <div className="container py-5">

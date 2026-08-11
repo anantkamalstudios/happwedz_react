@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import InfiniteScroll from "react-infinite-scroll-component";
 import ListView from "../layouts/Main/ListView";
 import GridView from "../layouts/Main/GridView";
@@ -15,6 +15,7 @@ import EmptyState from "../EmptyState";
 import LoadingState from "../LoadingState";
 import ErrorState from "../ErrorState";
 import Loader from "../ui/Loader";
+import SEO from "../common/SEO";
 const toTitleCase = (str) =>
   str.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
@@ -31,18 +32,42 @@ const normalizeServiceStatus = (value) => {
 };
 
 const SubSection = () => {
-  const { section, slug } = useParams();
+  const navigate = useNavigate();
+  const { section: routeSection, slug: routeSlug, subcategory, city } = useParams();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const vendorType = searchParams.get("vendorType");
   const stateCity = location.state?.city;
   const stateMinRating = location.state?.minRating;
-  const cityFromQuery = stateCity || searchParams.get("city");
+
+  const isNestedVendor = location.pathname.startsWith("/vendors/");
+  const isNestedPhotography = location.pathname.startsWith("/photography/");
+
+  const section = isNestedVendor ? "vendors" : isNestedPhotography ? "photography" : routeSection;
+  const slug = (isNestedVendor || isNestedPhotography) ? (subcategory || routeSlug) : routeSlug;
+
+  const formatCityName = (cityStr) => {
+    if (!cityStr) return "";
+    const decoded = decodeURIComponent(cityStr);
+    return decoded
+      .split(/[\s-]+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
+
+  const cityFromQuery = stateCity || (city ? formatCityName(city) : (searchParams.get("city") ? formatCityName(searchParams.get("city")) : null));
   const minRatingFromQuery =
     stateMinRating !== undefined && stateMinRating !== null
       ? String(stateMinRating)
       : searchParams.get("minRating");
-  const title = slug ? toTitleCase(slug) : "";
+  let title = slug ? toTitleCase(slug) : "";
+  if (slug === "all") {
+    if (section === "vendors") {
+      title = "All Vendors";
+    } else if (section === "photography") {
+      title = "All Photography";
+    }
+  }
 
   const [show, setShow] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
@@ -81,6 +106,20 @@ const SubSection = () => {
   const [selectedCity, setSelectedCity] = useState(
     cityFromQuery || reduxLocation
   );
+
+  useEffect(() => {
+    const queryCity = searchParams.get("city");
+    if (queryCity && isNestedVendor) {
+      const cleanCitySlug = queryCity
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      const activeSubcat = subcategory || "all";
+      navigate(`/vendors/${activeSubcat}/${cleanCitySlug}`, { replace: true });
+    }
+  }, [location.search, isNestedVendor, subcategory, navigate]);
 
   const mergedFilters = useMemo(() => {
     const merged = { ...activeFilters };
@@ -164,6 +203,25 @@ const SubSection = () => {
     } catch (e) {}
   }, [view, storageKey]);
 
+  useEffect(() => {
+    if (!loading && isNestedVendor && city && apiData && apiData.length === 0) {
+      const knownCities = [
+        "mumbai", "pune", "nashik", "nagpur", "raigad", "gurgaon", "delhi", "noida", 
+        "faridabad", "ghaziabad", "lucknow", "agra", "varanasi", "bangalore", "mysore", 
+        "chennai", "coimbatore", "madurai", "hyderabad", "warangal", "ahmedabad", 
+        "gandhinagar", "dehradun", "nainital", "haridwar", "goa", "ludhiana", "amritsar", 
+        "jalandhar", "patiala", "zirakpur", "chandigarh", "panchkula", "kochi", 
+        "thiruvananthapuram", "ernakulam", "alappuzha", "kozikode", "patna", "gaya", 
+        "muzaffarpur", "bhagalpur", "shimla", "solan", "kangra", "kullu", "chamba", 
+        "udaipur", "jaipur", "all"
+      ];
+      const normalizedCity = String(city).toLowerCase().trim();
+      if (!knownCities.includes(normalizedCity)) {
+        navigate(`/vendors/${subcategory || "all"}/all/${city}`, { replace: true });
+      }
+    }
+  }, [loading, isNestedVendor, city, apiData, subcategory, navigate]);
+
   const dataToSend = useMemo(() => {
     if (section === "photography") {
       return [];
@@ -200,13 +258,13 @@ const SubSection = () => {
 
         const categoryId = findCategoryBySlug();
         if (categoryId) {
-          fetchPhotosByCategory(categoryId);
+          fetchPhotosByCategory(categoryId, selectedCity);
         }
       } else {
         fetchAllPhotos();
       }
     }
-  }, [section, slug, typesWithCategories.length]);
+  }, [section, slug, selectedCity, typesWithCategories.length]);
 
   useEffect(() => {}, [
     section,
@@ -219,11 +277,15 @@ const SubSection = () => {
     dataToSend,
   ]);
 
+  const displayTitle = `Best ${title}${selectedCity ? ` in ${selectedCity}` : ""} — Prices & Reviews | HappyWedz`;
+  const displayDescription = `Find & book the best verified ${title.toLowerCase()}${selectedCity ? ` in ${selectedCity}` : ""}. Compare packages, check prices, view photos, read real reviews and check availability on HappyWedz.`;
+
   if (section === "photography") {
     const photographyData = slug ? photosByCategory : allPhotos;
 
     return (
       <div className="container-fluid">
+        <SEO title={displayTitle} description={displayDescription} />
         <MainSearch
           title={title}
           onSearch={handleSearch}
@@ -239,6 +301,7 @@ const SubSection = () => {
             title={title}
             images={photographyData}
             loading={photographyLoading}
+            typesWithCategories={typesWithCategories}
           />
         )}
       </div>
@@ -247,16 +310,20 @@ const SubSection = () => {
 
   if (view === "map") {
     return (
-      <MapView
-        subVenuesData={dataToSend}
-        section={section}
-        onClose={() => setView("images")}
-      />
+      <>
+        <SEO title={displayTitle} description={displayDescription} />
+        <MapView
+          subVenuesData={dataToSend}
+          section={section}
+          onClose={() => setView("images")}
+        />
+      </>
     );
   }
 
   return (
     <div className="container-fluid">
+      <SEO title={displayTitle} description={displayDescription} />
       <MainSearch
         title={title}
         onSearch={handleSearch}

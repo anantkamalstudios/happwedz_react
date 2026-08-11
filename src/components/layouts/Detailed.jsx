@@ -12,6 +12,23 @@ import PricingModal from "./PricingModal";
 import BusinessClaimForm from "../pages/BusinessClaimForm";
 import DOMPurify from "dompurify";
 
+const extractMainCity = (rawCity) => {
+  if (!rawCity || typeof rawCity !== "string") return null;
+  let cleaned = rawCity.replace(/\bdistricts?\b/i, "").trim();
+  if (cleaned.toLowerCase().includes("location not specified") || cleaned.toLowerCase() === "unknown") {
+    return null;
+  }
+  const parts = cleaned.split(",");
+  if (parts.length > 1) {
+    const candidate = parts[parts.length - 1].trim();
+    if (candidate && !candidate.toLowerCase().includes("location not specified") && candidate.toLowerCase() !== "unknown") {
+      return candidate;
+    }
+  }
+  return cleaned || null;
+};
+
+
 import {
   FaStar,
   FaMapMarkerAlt,
@@ -36,6 +53,13 @@ import SectionTabs from "./SectionTabs";
 import { TbView360Number } from "react-icons/tb";
 import GridView from "./Main/GridView";
 import SimilarServices from "./SimilarServices";
+import SEO from "../common/SEO";
+import VenueFAQ from "./VenueFAQ";
+import Breadcrumbs from "../common/Breadcrumbs";
+import StructuredData from "../common/StructuredData";
+
+
+
 
 const capitalizeWords = (str) => {
   if (!str) return "";
@@ -1995,7 +2019,7 @@ const Detailed = () => {
           setImages(parsedImages);
           setMainImage(parsedImages[0]);
         } else {
-          setMainImage("/images/default-vendor.jpg");
+          setMainImage("/images/imageNotFound.jpg");
         }
 
         // Handle videos if provided
@@ -2655,6 +2679,11 @@ const Detailed = () => {
     venueData.vendor?.city ||
     "Location not specified";
 
+  const rawCityVal = venueData.attributes?.city || venueData.vendor?.city || null;
+  const cleanCity = extractMainCity(rawCityVal);
+
+
+
   // Prefer precise coordinates if present
   const latRaw =
     venueData.attributes?.latitude ?? venueData.attributes?.location?.latitude;
@@ -2690,7 +2719,12 @@ const Detailed = () => {
   
   // For venues, we show all sections by default if they are filled. 
   // For other vendors, we keep the slice limit.
-  const isVenueType = String(venueData.attributes?.vendor_type || "").toLowerCase().includes("venue");
+  const isVenueType =
+    String(venueData.attributes?.vendor_type || "").toLowerCase().includes("venue") ||
+    String(venueData.vendor?.vendorType?.name || "").toLowerCase().includes("venue") ||
+    String(venueData.subcategory?.name || "").toLowerCase().includes("venue") ||
+    window.location.pathname.includes("/wedding-venues");
+
   const displayLimit = isVenueType ? 1000 : 9; 
   
   const hasManyFeatures = vendorFeatures.length > displayLimit;
@@ -2706,9 +2740,91 @@ const Detailed = () => {
     }
   };
 
+  const reviewCountVal = parseInt(venueData.attributes?.review_count || venueData.attributes?.reviews || 0, 10);
+  const reviewPhrase = reviewCountVal > 0 ? "reviews, " : "";
+
+  let rawTitle = isVenueType
+    ? cleanCity
+      ? `${activeVendor.name} — Capacity & Photos | ${cleanCity}`
+      : `${activeVendor.name} — Capacity & Photos | HappyWedz`
+    : cleanCity
+      ? `${activeVendor.name} — Portfolio & Details | ${cleanCity}`
+      : `${activeVendor.name} — Portfolio & Details | HappyWedz`;
+
+  if (rawTitle.length > 60) {
+    const shortName = activeVendor.name.length > 30 ? `${activeVendor.name.substring(0, 27)}...` : activeVendor.name;
+    rawTitle = isVenueType
+      ? cleanCity ? `${shortName} — Capacity | ${cleanCity}` : `${shortName} | HappyWedz`
+      : cleanCity ? `${shortName} — Portfolio | ${cleanCity}` : `${shortName} | HappyWedz`;
+  }
+  const pageTitle = rawTitle;
+
+  let rawDesc = isVenueType
+    ? cleanCity
+      ? `Compare ${activeVendor.name} in ${cleanCity} on HappyWedz. See seating capacity, photos, catering policy, ${reviewPhrase}and venue details.`
+      : `Compare ${activeVendor.name} on HappyWedz. See seating capacity, photos, catering policy, ${reviewPhrase}and venue details.`
+    : cleanCity
+      ? `Explore ${activeVendor.name} in ${cleanCity} on HappyWedz. See photos, service offerings, ${reviewPhrase}and contact details.`
+      : `Explore ${activeVendor.name} on HappyWedz. See photos, service offerings, ${reviewPhrase}and contact details.`;
+
+  if (rawDesc.length > 155) {
+    rawDesc = rawDesc.substring(0, 152).trim() + "...";
+  }
+  const pageDescription = rawDesc;
+
+  const citySlug = cleanCity
+    ? cleanCity.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-")
+    : "all";
+
+  const rawSubCat = venueData.subcategory?.name || venueData.attributes?.subcategory_name || venueData.attributes?.vendor_type || "all";
+  const subCatSlug = rawSubCat.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-");
+
+  const breadcrumbCategoryLabel = isVenueType ? "Wedding Venues" : "Vendors";
+  const breadcrumbCategoryUrl = isVenueType ? "/wedding-venues" : "/vendors";
+  const breadcrumbCityUrl = isVenueType
+    ? `/wedding-venues/${citySlug}`
+    : `/vendors/${subCatSlug}/${citySlug}`;
+
   return (
     <div className="venue-detail-page">
+      <SEO
+        title={pageTitle}
+        description={pageDescription}
+        image={activeVendor.image}
+      />
+      <StructuredData
+        type={isVenueType ? "venue" : "vendor"}
+        data={{
+          name: activeVendor.name,
+          city: cleanCity,
+          address: activeVendor.location,
+          image: activeVendor.image,
+          rating: venueData.attributes?.rating,
+          reviews: venueData.attributes?.review_count,
+          capacity: venueData.attributes?.venue_master?.space_capacity?.max_guests,
+          description: `Book ${activeVendor.name} on HappyWedz.`,
+          phone: venueData.attributes?.contact_phone || venueData.vendor?.phone
+        }}
+      />
       <Container className="py-2">
+        <Breadcrumbs
+          items={[
+            { label: "Home", url: "/" },
+            {
+              label: breadcrumbCategoryLabel,
+              url: breadcrumbCategoryUrl
+            },
+            ...(cleanCity
+              ? [
+                  {
+                    label: cleanCity,
+                    url: breadcrumbCityUrl
+                  }
+                ]
+              : []),
+            { label: activeVendor.name }
+          ]}
+        />
         <Row>
           <Col lg={8}>
             <div className="main-image-container mb-4 position-relative">
@@ -2716,7 +2832,7 @@ const Detailed = () => {
                 mainImage ? (
                   <img
                     src={mainImage}
-                    alt={venueData.attributes?.name || "Main Vendor"}
+                    alt={`${activeVendor.name}${venueData.attributes?.vendor_type ? ` - ${venueData.attributes.vendor_type}` : ""}${cleanCity ? ` in ${cleanCity}` : ""}`}
                     className="main-image rounded-lg"
                     style={{
                       width: "100%",
@@ -2724,13 +2840,18 @@ const Detailed = () => {
                       objectFit: "cover",
                     }}
                     onError={(e) => {
-                      // Fallback to local placeholder image when main image fails to load
                       e.target.onerror = null;
-                      e.target.src = "/images/imageNotFound.jpg";
-                      try {
-                        setMainImage("/images/imageNotFound.jpg");
-                      } catch (err) {
-                        // ignore if setMainImage not available in this scope for any reason
+                      // Find the next image in gallery that isn't the failed image or imageNotFound
+                      const nextValid = (images || []).find(img => img && img !== mainImage && !img.includes('imageNotFound'));
+                      if (nextValid) {
+                        e.target.src = nextValid;
+                        setMainImage(nextValid);
+                      } else {
+                        e.target.src = "/images/imageNotFound.jpg";
+                        e.target.alt = "";
+                        try {
+                          setMainImage("/images/imageNotFound.jpg");
+                        } catch (err) {}
                       }
                     }}
                   />
@@ -2890,7 +3011,7 @@ const Detailed = () => {
                         >
                           <img
                             src={img}
-                            alt={`Thumbnail ${idx + 1}`}
+                            alt={`${activeVendor.name}${cleanCity ? ` in ${cleanCity}` : ""} - Photo ${idx + 1}`}
                             className="img-fluid rounded"
                             style={{
                               cursor: "pointer",
@@ -2970,9 +3091,9 @@ const Detailed = () => {
             <SectionTabs scrollToSection={scrollToSection} />
 
             <div id="about" className="venue-description mb-5 p-2">
-              <h3 className="details-section-title fw-bold fs-22">
+              <h2 className="details-section-title fw-bold fs-22">
                 About {venueData.attributes?.name || venueData.attributes?.Name}
-              </h3>
+              </h2>
               {venueData.attributes?.about_us ? (
                 <div
                   className="description-text text-black fs-14 vendor-about-html"
@@ -2998,9 +3119,9 @@ const Detailed = () => {
             {/* FACILITIES & FEATURES */}
             {vendorFeatures.length > 0 && (
               <div id="facilities" className="venue-facilities mb-5 p-2">
-                <h3 className="details-section-title fw-bold fs-22 mb-4">
+                <h2 className="details-section-title fw-bold fs-22 mb-4">
                   Facilities & Features
-                </h3>
+                </h2>
                 <div className="venue-amenities">
                   <Row>
                     {featuresToRender.map((item, index) => {
@@ -3057,100 +3178,7 @@ const Detailed = () => {
               </div>
             )}
 
-            {/* FaqQuestionAnswer Detailed */}
-
-            <div id="FAQ" className="my-4 border p-3 rounded">
-              <h5 className="my-4 fs-16">Frequently Asked Questions</h5>
-
-              {(() => {
-                // Helper to parse various answer shapes into a string array
-                const parseAnswer = (answer) => {
-                  if (answer == null) return [];
-                  if (Array.isArray(answer)) {
-                    return answer.filter((item) => item != null && item !== "");
-                  }
-                  if (typeof answer === "object") {
-                    const values = Object.values(answer).filter(
-                      (v) => v != null && v !== "",
-                    );
-                    if (values.length === 2)
-                      return [`${values[0]} - ${values[1]}`];
-                    if (values.length === 1) return values;
-                    return values;
-                  }
-                  const strValue = String(answer).trim();
-                  return strValue ? [strValue] : [];
-                };
-
-                // Only include FAQs with at least one non-empty answer
-                const validFaqs = (_faqList || []).filter(
-                  (q) => parseAnswer(q.ans).length > 0,
-                );
-
-                if (validFaqs.length === 0) {
-                  return (
-                    <p className="text-muted fs-14">
-                      No FAQ information available for this vendor.
-                    </p>
-                  );
-                }
-
-                const listToShow = showAllFaqs
-                  ? validFaqs
-                  : validFaqs.slice(0, 5);
-
-                return (
-                  <>
-                    {listToShow.map((ques, index) => {
-                      const answers = parseAnswer(ques.ans);
-                      const isSingleAnswer = answers.length === 1;
-                      return (
-                        <div
-                          className="w-100 rounded border-bottom fs-14"
-                          key={index}
-                        >
-                          <div className="p-2">
-                            <p className="fw-semibold mb-1">{ques.text}</p>
-                            {isSingleAnswer ? (
-                              <p className="text-muted">{answers[0]}</p>
-                            ) : (
-                              <div className="row">
-                                {answers.map((answer, idx) => (
-                                  <div
-                                    className="col-md-4 d-flex align-items-start mb-2"
-                                    key={idx}
-                                  >
-                                    <i
-                                      className="fa-solid fa-check me-2"
-                                      style={{
-                                        color: "#f44e4e",
-                                        marginTop: "4px",
-                                      }}
-                                    ></i>
-                                    <span className="text-muted">{answer}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {validFaqs.length > 5 && (
-                      <div className="text-start mt-3">
-                        <button
-                          className="btn btn-link p-0 text-dark fw-semibold text-decoration-underline fs-14"
-                          onClick={() => setShowAllFaqs(!showAllFaqs)}
-                        >
-                          {showAllFaqs ? "Show Less" : "Read More"}
-                        </button>
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
+            <VenueFAQ venueData={venueData} activeVendor={activeVendor} />
 
             <div id="reviews" className="py-2">
               <ReviewSection vendor={venueData || activeVendor} />
@@ -3163,7 +3191,7 @@ const Detailed = () => {
               >
                 <span>
                   {venueData?.attributes?.address ||
-                    venueData?.attributes?.city}
+                    extractMainCity(venueData?.attributes?.city)}
                 </span>
               </div>
 
@@ -3195,11 +3223,11 @@ const Detailed = () => {
                 {/* Title + Location */}
                 <div className="mb-3">
                   <div className="d-flex">
-                    <h2 className="fw-bold fs-22 text-dark m-0">
+                    <h1 className="fw-bold fs-22 text-dark m-0">
                       {venueData?.attributes?.name ||
                         venueData?.attributes?.Name ||
                         "Vendor Name"}
-                    </h2>
+                    </h1>
                   </div>
 
                   <div
@@ -3234,7 +3262,7 @@ const Detailed = () => {
                       }}
                     >
                       {venueData?.attributes?.address ||
-                        venueData?.attributes?.city}
+                        extractMainCity(venueData?.attributes?.city)}
                     </span>
                   </div>
 
@@ -3274,31 +3302,34 @@ const Detailed = () => {
                 <div className="pricing mb-3 text-dark">
                   {isVenue ? (
                     <>
-                      <h4 className="fw-semibold fs-16 m-0">
+                      <div className="fw-semibold text-black mb-1 fs-14">
                         Veg Starting Price
-                      </h4>
+                      </div>
                       <div className="fw-bold fs-16 mt-1 primary-text">
-                        {venueData.attributes?.veg_price
-                          ? `₹ ${parseInt(
-                            venueData.attributes.veg_price.replace(/,/g, ""),
-                            10,
-                          ).toLocaleString()}`
-                          : "Contact for pricing"}
+                        {(() => {
+                          const raw = venueData.attributes?.veg_price;
+                          if (!raw) return "Contact for pricing";
+                          const val = parseInt(String(raw).replace(/[^0-9]/g, ""), 10);
+                          if (isNaN(val) || val <= 0) return "Contact for pricing";
+                          return val >= 50000
+                            ? `₹ ${val.toLocaleString("en-IN")} (Venue Package)`
+                            : `₹ ${val.toLocaleString("en-IN")}`;
+                        })()}
                       </div>
 
-                      <h4 className="fw-semibold fs-16 mt-3 m-0 ">
+                      <div className="fw-semibold text-black mb-1 fs-14 mt-3">
                         Non-Veg Starting Price
-                      </h4>
+                      </div>
                       <div className="fw-bold fs-16 mt-1 primary-text">
-                        {venueData.attributes?.non_veg_price
-                          ? `₹ ${parseInt(
-                            venueData.attributes.non_veg_price.replace(
-                              /,/g,
-                              "",
-                            ),
-                            10,
-                          ).toLocaleString()} onwards`
-                          : "Contact for pricing"}
+                        {(() => {
+                          const raw = venueData.attributes?.non_veg_price;
+                          if (!raw) return "Contact for pricing";
+                          const val = parseInt(String(raw).replace(/[^0-9]/g, ""), 10);
+                          if (isNaN(val) || val <= 0) return "Contact for pricing";
+                          return val >= 50000
+                            ? `₹ ${val.toLocaleString("en-IN")} (Venue Package)`
+                            : `₹ ${val.toLocaleString("en-IN")} onwards`;
+                        })()}
                       </div>
 
                       {venueData.attributes?.starting_price && (
@@ -3369,9 +3400,9 @@ const Detailed = () => {
 
                       {venueData.attributes?.photo_video_package_price && (
                         <>
-                          <h4 className="fw-semibold fs-16 mt-3 d-block m-0">
+                          <div className="fw-semibold text-black mb-1 fs-14 mt-3">
                             Photo + Video Package (Starting)
-                          </h4>
+                          </div>
                           <div className="fs-16 fw-bold mt-1">
                             <span className="primary-text">
                               ₹{" "}

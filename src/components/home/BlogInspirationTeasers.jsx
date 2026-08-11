@@ -59,7 +59,7 @@ const BlogsCarousel = () => {
     <div className="blogs-carousel-wrapper py-5 px-3">
       <div className="container position-relative">
         <div className="text-center mb-1">
-          <img
+          <img loading="lazy" decoding="async"
             src="/images/home/inspiredTeaser.png"
             alt="inspiredTeaser"
             className="w-20 h-20"
@@ -101,7 +101,7 @@ const BlogsCarousel = () => {
               >
                 {/* Image */}
                 <div className="blogs-card-image p-2">
-                  <img
+                  <img loading="lazy" decoding="async"
                     src={blog.img}
                     alt={blog.title}
                     style={{
@@ -127,7 +127,7 @@ const BlogsCarousel = () => {
 
                   <div className="mt-auto">
                     <div className="d-flex align-items-center">
-                      <img
+                      <img loading="lazy" decoding="async"
                         src={
                           blog.authorImg && blog.authorImg.trim() !== ""
                             ? blog.authorImg

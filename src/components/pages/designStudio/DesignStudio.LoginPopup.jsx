@@ -5,6 +5,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { toast, ToastContainer } from "react-toastify";
 import userApi from "../../../services/api/userApi";
 import { useGoogleLogin } from "@react-oauth/google";
+import GoogleAuthProvider from "../../auth/GoogleAuthProvider";
 import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import { IoClose } from "react-icons/io5";
@@ -12,7 +13,7 @@ import { FaRegEyeSlash } from "react-icons/fa";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { Link } from "react-router-dom";
 
-export default function LoginPopup({ isOpen, onClose }) {
+function LoginPopupContent({ isOpen, onClose }) {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -371,5 +372,17 @@ export default function LoginPopup({ isOpen, onClose }) {
         `}</style>
       </div>
     </>
+  );
+}
+
+// Gate on `isOpen` out here so GoogleAuthProvider — and with it the Google
+// Identity script — only mounts once the popup is actually opened.
+export default function LoginPopup({ isOpen, onClose }) {
+  if (!isOpen) return null;
+
+  return (
+    <GoogleAuthProvider>
+      <LoginPopupContent isOpen={isOpen} onClose={onClose} />
+    </GoogleAuthProvider>
   );
 }

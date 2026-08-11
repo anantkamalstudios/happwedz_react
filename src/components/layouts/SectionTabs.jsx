@@ -3,7 +3,7 @@ import "./SectionTabs.css";
 
 const SectionTabs = ({ scrollToSection }) => {
   const [active, setActive] = useState("");
-  const sectionIds = ["about", "FAQ", "reviews", "map"];
+  const sectionIds = ["about", "venue-faq", "reviews", "map"];
   const isProgrammaticScroll = useRef(false);
   const scrollTimer = useRef(null);
   const [stuck, setStuck] = useState(false);

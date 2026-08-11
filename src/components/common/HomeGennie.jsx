@@ -25,6 +25,19 @@ const HomeGennie = () => {
 
   const messageContainerRef = useRef(null);
 
+  // Gates the 401KB launcher video (see the <video> below) on real user
+  // interaction, so it never lands in the page-load waterfall.
+  const [showVideo, setShowVideo] = useState(false);
+  useEffect(() => {
+    const events = ["pointerdown", "keydown", "scroll", "touchstart"];
+    const arm = () => setShowVideo(true);
+    events.forEach((e) =>
+      window.addEventListener(e, arm, { once: true, passive: true })
+    );
+    return () =>
+      events.forEach((e) => window.removeEventListener(e, arm));
+  }, []);
+
   // Prevent body scroll when chat is open on mobile
   useEffect(() => {
     const isMobile = window.innerWidth <= 576;
@@ -196,18 +209,34 @@ const HomeGennie = () => {
           onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
           onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
-          <video
-            src="/shadi.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
-            style={{
-              height: "100%",
-              width: "100%",
-              objectFit: "cover",
-            }}
-          />
+          {/* /shadi.mp4 is 401KB — the single heaviest request on the home page,
+              for a 74px button. `autoPlay` overrides preload="none", so the only
+              way to keep it off the load trace is to not mount the <video> until
+              the visitor has actually interacted with the page. Until then the
+              button shows the static logo, which is already in cache. */}
+          {showVideo ? (
+            <video
+              src="/shadi.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              style={{
+                height: "100%",
+                width: "100%",
+                objectFit: "cover",
+              }}
+            />
+          ) : (
+            <img
+              src="/logo-no-bg.png"
+              alt=""
+              width="74"
+              height="74"
+              decoding="async"
+              style={{ height: "100%", width: "100%", objectFit: "contain" }}
+            />
+          )}
         </button>
       )}
 

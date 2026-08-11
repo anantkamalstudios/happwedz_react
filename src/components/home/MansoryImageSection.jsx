@@ -70,7 +70,7 @@ const MasonryImageSection = () => {
     <div style={{ padding: "40px 20px" }}>
       <div className="container">
         <div className="text-center mb-1">
-          <img
+          <img loading="lazy" decoding="async"
             src="/images/home/weddinggalleryflower.png"
             alt="inspiredTeaser"
             className="w-20 h-20"
@@ -84,8 +84,12 @@ const MasonryImageSection = () => {
         </div>
 
         <div className="gallery-container">
-          <Link to="/photography" className="see-more-link fs-14">
-            SEE MORE
+          <Link
+            to="/photography"
+            className="see-more-link fs-14"
+            aria-label="Explore All Wedding Photography Gallery"
+          >
+            Explore Gallery
             <svg
               width="14"
               height="14"
@@ -114,7 +118,7 @@ const MasonryImageSection = () => {
                       style={isMobile ? { height: "auto" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[0].id}`}>
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={weddingImages[0].src}
                           alt={weddingImages[0].title}
                           style={
@@ -153,7 +157,7 @@ const MasonryImageSection = () => {
                       style={isMobile ? { height: "auto" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[3].id}`}>
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={weddingImages[3].src}
                           alt={weddingImages[3].title}
                           style={
@@ -194,7 +198,7 @@ const MasonryImageSection = () => {
                       style={isMobile ? { height: "auto" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[1].id}`}>
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={weddingImages[1].src}
                           alt={weddingImages[1].title}
                           style={
@@ -233,7 +237,7 @@ const MasonryImageSection = () => {
                       style={isMobile ? { height: "auto" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[4].id}`}>
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={weddingImages[4].src}
                           alt={weddingImages[4].title}
                           style={
@@ -274,7 +278,7 @@ const MasonryImageSection = () => {
                       style={isMobile ? { height: "auto" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[2].id}`}>
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={weddingImages[2].src}
                           alt={weddingImages[2].title}
                           style={
@@ -313,7 +317,7 @@ const MasonryImageSection = () => {
                       style={isMobile ? { height: "auto" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[5].id}`}>
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={weddingImages[5].src}
                           alt={weddingImages[5].title}
                           style={
