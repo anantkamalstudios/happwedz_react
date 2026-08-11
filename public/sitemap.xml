@@ -1,27 +1,122 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Homepage -->
   <url>
     <loc>https://happywedz.com/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
+
+  <!-- Wedding Venues (Priority Cities on Top) -->
   <url>
-    <loc>https://happywedz.com/about-us</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <loc>https://happywedz.com/wedding-venues/pune</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://happywedz.com/contact-us</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <loc>https://happywedz.com/wedding-venues/nashik</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://happywedz.com/careers</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
+    <loc>https://happywedz.com/wedding-venues</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://happywedz.com/blog</loc>
+    <loc>https://happywedz.com/wedding-venues/mumbai</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/wedding-venues/delhi-ncr</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/wedding-venues/bangalore</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/wedding-venues/jaipur</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/wedding-venues/hyderabad</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/wedding-venues/kolkata</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/wedding-venues/chennai</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/wedding-venues/lucknow</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Wedding Vendors Category Pages -->
+  <url>
+    <loc>https://happywedz.com/vendors</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/vendors/photographers/all</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/vendors/bridal-makeup/all</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/vendors/bridal-wear/all</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/vendors/groom-wear/all</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/vendors/decorators/all</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/vendors/wedding-planners/all</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/vendors/catering-services/all</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/vendors/mehendi-artists/all</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/vendors/invitations/all</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/vendors/jewellery-accessories/all</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -30,11 +125,40 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- Destination Weddings -->
   <url>
     <loc>https://happywedz.com/destination-wedding</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
+  <url>
+    <loc>https://happywedz.com/destination-wedding/udaipur</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/destination-wedding/goa</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/destination-wedding/jaipur</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/destination-wedding/kerala</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/destination-wedding/mussoorie</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <!-- Honeymoon & Travel Services -->
   <url>
     <loc>https://happywedz.com/honeymoon</loc>
     <changefreq>weekly</changefreq>
@@ -42,6 +166,11 @@
   </url>
   <url>
     <loc>https://happywedz.com/honeymoon/flights</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/honeymoon/hotels</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -56,74 +185,109 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://happywedz.com/honeymoon/hotels</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://happywedz.com/hotels</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
+
+  <!-- Digital Invitations & Design Studio -->
   <url>
-    <loc>https://happywedz.com/travels</loc>
+    <loc>https://happywedz.com/einvites</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://happywedz.com/ai-features</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://happywedz.com/shaadi-ai</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://happywedz.com/culture-blender</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://happywedz.com/personality-quiz</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://happywedz.com/conflict-resolver</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://happywedz.com/timeline-generator</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://happywedz.com/try</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://happywedz.com/video-templates</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://happywedz.com/einvites</loc>
+    <loc>https://happywedz.com/try</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- AI Wedding Tools -->
+  <url>
+    <loc>https://happywedz.com/ai-features</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/shaadi-ai</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/culture-blender</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://happywedz.com/personality-quiz</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/conflict-resolver</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/timeline-generator</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Matrimonial Services -->
+  <url>
     <loc>https://happywedz.com/matrimonial</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://happywedz.com/matrimonial-search</loc>
     <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Real Weddings & Blog -->
+  <url>
+    <loc>https://happywedz.com/blog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/photography/all/all</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Company, Accounts & Legal -->
+  <url>
+    <loc>https://happywedz.com/about-us</loc>
+    <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/contact-us</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/careers</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/sitemap</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://happywedz.com/claim-your-buisness</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
   <url>
     <loc>https://happywedz.com/customer-login</loc>
