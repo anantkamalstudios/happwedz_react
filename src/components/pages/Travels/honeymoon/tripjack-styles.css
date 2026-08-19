@@ -90,14 +90,16 @@
 }
 
 .tj-trip-tab.active {
-  background: var(--tj-navy);
-  color: #ed1173 !important;
-  border-color: var(--tj-navy);
+  background: linear-gradient(135deg, #ed1173, #f65196) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 14px rgba(237, 17, 115, 0.35);
 }
 
 .tj-trip-tab:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #fbcfe8;
+  color: #ed1173;
+  background: #fff5f8;
 }
 
 .tj-search-card {
@@ -322,12 +324,13 @@
 }
 
 .tj-options-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-  padding-top: 24px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 20px;
+  padding-top: 16px;
   border-top: 1px solid var(--tj-border);
-  align-items: start;
+  flex-wrap: wrap;
 }
 
 .tj-option-group {
@@ -3407,33 +3410,43 @@
 
 .tj-trip-type-tabs {
   display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 18px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  justify-content: flex-start;
 }
 
 .tj-trip-tab {
-  padding: 10px 26px;
+  padding: 8px 22px;
   border-radius: 999px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  border: 1px solid #dfe3ee;
-  background: #fff;
-  color: #1f2a44;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #334155;
   cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: all 0.2s ease;
+}
+
+.tj-trip-tab:hover {
+  background: #fff5f8;
+  color: #ed1173;
+  border-color: #fbcfe8;
 }
 
 .tj-trip-tab.active {
-  background: #0f1b36;
-  color: #fff;
-  border-color: #0f1b36;
+  background: linear-gradient(135deg, #ed1173, #f65196) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 14px rgba(237, 17, 115, 0.35) !important;
 }
 
 .tj-search-card {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 20px;
   box-shadow: 0 10px 30px rgba(12, 20, 34, 0.12);
-  padding: 18px;
+  padding: 20px 24px;
 }
 
 .tj-search-row {

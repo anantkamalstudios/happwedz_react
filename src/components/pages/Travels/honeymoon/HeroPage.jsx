@@ -1,12 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { Shield } from "lucide-react";
-import FightIcon from "../../../../assets/trevel_icon/airplane.png";
-import HotelIcon from "../../../../assets/trevel_icon/hotel.png";
-import CarIcon from "../../../../assets/trevel_icon/sedan.png";
-import ActivityIcon from "../../../../assets/trevel_icon/checklist.png";
-import CruiseIcon from "../../../../assets/trevel_icon/cruise-ship.png";
+import { Shield, Building2, Plane, Car, FileText, Sparkles, Users, Globe } from "lucide-react";
+import flightHeroVideo from "../../../../assets/travelbackground/make_this_image_live_just_show.mp4";
 import FlightSearchForm from "./components/FlightSearchForm";
 import HotelSearchForm from "./components/HotelSearchForm";
 import CarRentalSearchForm from "./components/CarRentalSearchForm";
@@ -66,14 +62,34 @@ export default function FlightHero() {
   const [recentHotelBookings, setRecentHotelBookings] = useState([]);
   const [recentHotelBookingsLoading, setRecentHotelBookingsLoading] = useState(false);
 
-  const heroTitle =
-    activeTab === "Flights"
-      ? "Book Cheap Flight Tickets With Ease"
-      : activeTab === "Insurance"
-        ? "Travel Insurance For Your Trip"
-        : activeTab === "Car rental"
-          ? "Rent A Car For Your Honeymoon Trip"
-          : "Book your stay with India's largest network of Hotels.";
+  const renderHeroTitle = () => {
+    if (activeTab === "Flights") {
+      return (
+        <>
+          Book Cheap Flight <span className="hero-title-highlight">Tickets With Ease</span>
+        </>
+      );
+    }
+    if (activeTab === "Insurance") {
+      return (
+        <>
+          Travel Insurance <span className="hero-title-highlight">For Your Trip</span>
+        </>
+      );
+    }
+    if (activeTab === "Car rental") {
+      return (
+        <>
+          Rent A Car For Your <span className="hero-title-highlight">Honeymoon Trip</span>
+        </>
+      );
+    }
+    return (
+      <>
+        Book your stay with <span className="hero-title-highlight">India’s largest network</span> of Hotels.
+      </>
+    );
+  };
 
   const heroSubtitle =
     activeTab === "Flights"
@@ -83,6 +99,24 @@ export default function FlightHero() {
         : activeTab === "Car rental"
           ? "Pick up a car at the airport, station or in the city"
           : "Search city stays, romantic escapes, and premium honeymoon-friendly hotels.";
+
+  const statsData = [
+    {
+      icon: Plane,
+      num: "100+",
+      label: "AIRLINES",
+    },
+    {
+      icon: Users,
+      num: "20K+",
+      label: "TRAVELERS",
+    },
+    {
+      icon: Globe,
+      num: "10+",
+      label: "COUNTRIES",
+    },
+  ];
 
   useEffect(() => {
     let active = true;
@@ -122,18 +156,28 @@ export default function FlightHero() {
   return (
     <>
     <div className="flight-hero">
+      <video
+        className="flight-hero-video"
+        autoPlay
+        loop
+        muted
+        playsInline
+      >
+        <source src={flightHeroVideo} type="video/mp4" />
+      </video>
+      <div className="flight-hero-overlay" />
       <nav className="navbar-custom">
         <div className="container">
           <div className="navbar-content">
             <div className="nav-tabs">
               {[
                 {
-                  icon: { src: HotelIcon, alt: "Hotels" },
+                  lucide: Building2,
                   label: "Hotels",
                   onClick: () => setActiveTab("Hotels"),
                 },
                 {
-                  icon: { src: FightIcon, alt: "Flights" },
+                  lucide: Plane,
                   label: "Flights",
                   onClick: () => setActiveTab("Flights"),
                 },
@@ -142,40 +186,33 @@ export default function FlightHero() {
                   label: "Insurance",
                   onClick: () => setActiveTab("Insurance"),
                 },
-
                 {
-                  icon: { src: CarIcon, alt: "Car rental" },
+                  lucide: Car,
                   label: "Car rental",
                   onClick: () => setActiveTab("Car rental"),
                 },
                 {
-                  icon: { src: ActivityIcon, alt: "Activities" },
+                  lucide: FileText,
                   label: "Activities",
                   onClick: () => navigate("/travels"),
                 },
-              ].map((tab) => (
-                <button
-                  key={tab.label}
-                  type="button"
-                  className={`nav-tab ${activeTab === tab.label ? "active" : ""}`}
-                  onClick={tab.onClick}
-                >
-                  <span>
-                    {tab.lucide ? (
-                      <tab.lucide size={18} />
-                    ) : typeof tab.icon === "object" ? (
-                      <img src={tab.icon.src} alt={tab.icon.alt} />
-                    ) : (
-                      tab.icon
-                    )}
-                  </span>{" "}
-                  {tab.label}
-                </button>
-              ))}
+              ].map((tab) => {
+                const Icon = tab.lucide;
+                return (
+                  <button
+                    key={tab.label}
+                    type="button"
+                    className={`nav-tab ${activeTab === tab.label ? "active" : ""}`}
+                    onClick={tab.onClick}
+                  >
+                    <Icon size={16} className="nav-tab-icon" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
             <div className="navbar-recommended">
-              <span className="navbar-recommended-label">Recommended</span>
               <div
                 className="navbar-recommended-pill"
                 onClick={() => navigate("/honeymoon/hotels")}
@@ -185,11 +222,19 @@ export default function FlightHero() {
                   e.key === "Enter" && navigate("/honeymoon/hotels")
                 }
               >
-                <span>🏨</span>
+                <Building2 size={13} className="rec-icon rec-icon-hotel" />
                 <span>Recommended hotel</span>
               </div>
-              <div className="navbar-recommended-pill">
-                <span>✨</span>
+              <div
+                className="navbar-recommended-pill"
+                onClick={() => navigate("/travels")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && navigate("/travels")
+                }
+              >
+                <Sparkles size={13} className="rec-icon rec-icon-activity" />
                 <span>Recommended activity</span>
               </div>
             </div>
@@ -202,20 +247,24 @@ export default function FlightHero() {
 
         <div className="row align-items-start">
           <div className="col-12 hero-header">
-            <h1 className="hero-title">{heroTitle}</h1>
+            <h1 className="hero-title">{renderHeroTitle()}</h1>
             <p className="hero-subtitle">{heroSubtitle}</p>
 
             <div className="stats-row">
-              {[
-                ["100+", "Airlines"],
-                ["20k+", "Travelers"],
-                ["10+", "Countries"],
-              ].map(([n, l]) => (
-                <div key={l} className="stat-item">
-                  <div className="stat-num">{n}</div>
-                  <div className="stat-label">{l}</div>
-                </div>
-              ))}
+              {statsData.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.label} className="stat-item">
+                    <div className="stat-icon-badge">
+                      <Icon size={20} className="stat-icon" />
+                    </div>
+                    <div className="stat-text-stack">
+                      <div className="stat-num">{item.num}</div>
+                      <div className="stat-label">{item.label}</div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 

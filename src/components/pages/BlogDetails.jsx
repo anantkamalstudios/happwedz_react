@@ -113,40 +113,42 @@ const BlogDetails = ({ blogId, onBackClick }) => {
       />
 
       {/* BlogPosting JSON-LD structured data */}
-      <Helmet>
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BlogPosting",
-            "mainEntityOfPage": {
-              "@type": "WebPage",
-              "@id": `https://happywedz.com/blog/${blogId}`
-            },
-            "headline": blogData.title,
-            "description": blogData.shortDescription || `Read ${blogData.title} on the HappyWedz wedding planning blog.`,
-            "image": blogData.images && blogData.images.length > 0
-              ? blogData.images.map(img => getImageUrl(img))
-              : ["https://happywedz.com/images/og-default.jpg"],
-            "author": {
-              "@type": "Person",
-              "name": blogData.author || "HappyWedz Team"
-            },
-            "publisher": {
-              "@type": "Organization",
-              "name": "HappyWedz",
-              "logo": {
-                "@type": "ImageObject",
-                "url": "https://happywedz.com/logo-no-bg.png"
-              }
-            },
-            "datePublished": blogData.createdDate || blogData.createdAt,
-            "dateModified": blogData.updatedAt || blogData.createdDate || blogData.createdAt,
-            "keywords": Array.isArray(blogData.tags) ? blogData.tags.join(", ") : blogData.tags,
-            "articleSection": blogData.category || "Weddings",
-            "url": `https://happywedz.com/blog/${blogId}`
-          })}
-        </script>
-      </Helmet>
+      {import.meta.env.VITE_ENABLE_SEO === "true" && (
+        <Helmet>
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BlogPosting",
+              "mainEntityOfPage": {
+                "@type": "WebPage",
+                "@id": `https://happywedz.com/blog/${blogId}`
+              },
+              "headline": blogData.title,
+              "description": blogData.shortDescription || `Read ${blogData.title} on the HappyWedz wedding planning blog.`,
+              "image": blogData.images && blogData.images.length > 0
+                ? blogData.images.map(img => getImageUrl(img))
+                : ["https://happywedz.com/images/og-default.jpg"],
+              "author": {
+                "@type": "Person",
+                "name": blogData.author || "HappyWedz Team"
+              },
+              "publisher": {
+                "@type": "Organization",
+                "name": "HappyWedz",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "https://happywedz.com/logo-no-bg.png"
+                }
+              },
+              "datePublished": blogData.createdDate || blogData.createdAt,
+              "dateModified": blogData.updatedAt || blogData.createdDate || blogData.createdAt,
+              "keywords": Array.isArray(blogData.tags) ? blogData.tags.join(", ") : blogData.tags,
+              "articleSection": blogData.category || "Weddings",
+              "url": `https://happywedz.com/blog/${blogId}`
+            })}
+          </script>
+        </Helmet>
+      )}
       <div
         className="container"
         style={{ paddingTop: "2rem", paddingBottom: "1rem" }}

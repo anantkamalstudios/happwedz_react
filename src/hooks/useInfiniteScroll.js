@@ -8,6 +8,7 @@ import {
   extractRatingFilters,
   extractReviewFilters,
 } from "../utils/priceFilterUtils";
+import { hasView360 } from "../utils/view360Helper";
 
 const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
 
@@ -186,6 +187,9 @@ const useInfiniteScroll = (
           attributes.Name ||
           "",
         url: attributes.Website || attributes.URL || null,
+
+        // Only vendors who uploaded 360° content from their login get the 360° badge
+        has360: hasView360(item),
       };
     }).filter((item) => item && item.image && String(item.image).trim() !== "");
   }, []);

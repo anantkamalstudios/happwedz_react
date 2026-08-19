@@ -87,7 +87,7 @@ export default function PreferredAirline({ value = [], onChange }) {
           onClick={() => setOpen((o) => !o)}
         >
           <MdFlight className="filter-icon" />
-          <span className={`airline-combobox-value ${selectedCodes.length ? "" : "placeholder"}`}>
+          <span className={`airline-combobox-value ${selectedCodes.length ? "" : "is-placeholder"}`}>
             {triggerLabel()}
           </span>
         </div>

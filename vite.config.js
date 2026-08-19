@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import basicSsl from "@vitejs/plugin-basic-ssl";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -79,9 +80,24 @@ function inlineCriticalCss() {
   };
 }
 
-export default defineConfig({
-  plugins: [react(), inlineCriticalCss()],
+// `npm run dev:https` only. navigator.geolocation is gated behind a secure
+// context, so testing location detection on a real phone over
+// http://<lan-ip>:5173 silently fails no matter how good the device's GPS is —
+// that run needs a self-signed cert.
+//
+// Opt-in rather than always-on: switching the dev server to HTTPS breaks every
+// existing http://localhost:5173 tab and bookmark, which is not a fair price for
+// a workflow most days don't need.
+export default defineConfig(({ mode }) => ({
+  plugins: [
+    react(),
+    // apply: "serve" so `vite build` never pays for certificate generation
+    ...(mode === "https" ? [{ ...basicSsl(), apply: "serve" }] : []),
+    inlineCriticalCss(),
+  ],
   server: {
+    // Listen on the LAN so a phone on the same network can reach the dev server
+    host: true,
     watch: {
       ignored: ["**/*.xlsx"],
     },
@@ -137,4 +153,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

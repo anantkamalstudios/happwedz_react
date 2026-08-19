@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:https": "vite --mode https",
     "sitemap": "node scripts/generate-sitemap.js",
     "build": "node -e \"const fs=require('fs'); if(fs.existsSync('dist')) fs.rmSync('dist', { recursive: true, force: true });\" && node --max-old-space-size=8192 node_modules/vite/bin/vite.js build",
     "lint": "eslint .",
@@ -88,6 +89,7 @@
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-basic-ssl": "^2.3.0",
     "@vitejs/plugin-react": "^4.6.0",
     "eslint": "^9.30.1",
     "eslint-plugin-react-hooks": "^5.2.0",

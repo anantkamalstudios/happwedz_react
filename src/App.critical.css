@@ -3682,13 +3682,11 @@ label {
    short fallback copy giving way to the CMS copy, and anything the CMS sends is
    still capped by the clamps above. */
 .home-cta-section .cta-copy {
-  min-height: 21.5rem;
+  min-height: auto;
 }
-/* Bootstrap's `md`, where the copy stops being a full-width block stacked over
-   the image and becomes the middle column of three. */
 @media (min-width: 768px) {
   .home-cta-section .cta-copy {
-    min-height: 23rem;
+    min-height: auto;
   }
 }
 
@@ -5042,8 +5040,8 @@ label {
 .quick-inquiry-btn {
   display: block;
   width: 100%;
-  margin-top: 12px;
-  padding: 10px;
+  margin-top: 8px;
+  padding: 8px 12px;
   background-color: #e83e8c;
   color: white;
   border: none;

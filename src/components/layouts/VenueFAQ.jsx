@@ -139,11 +139,13 @@ export default function VenueFAQ({ venueData, activeVendor }) {
 
   return (
     <div className="venue-faq-section my-4 p-4 bg-white rounded shadow-sm" id="venue-faq">
-      <Helmet>
-        <script type="application/ld+json">
-          {JSON.stringify(schemaPayload)}
-        </script>
-      </Helmet>
+      {import.meta.env.VITE_ENABLE_SEO === "true" && (
+        <Helmet>
+          <script type="application/ld+json">
+            {JSON.stringify(schemaPayload)}
+          </script>
+        </Helmet>
+      )}
       
       <h2 className="mb-3 font-weight-bold" style={{ fontSize: "1.4rem", color: "#333" }}>
         Frequently Asked Questions about {venueName}

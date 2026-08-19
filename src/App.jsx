@@ -25,7 +25,10 @@ import LoaderProvider from "./components/context/LoaderContext";
 import VendorPrivateRoute from "./components/routes/VendorPrivateRoute";
 import UserPrivateRoute from "./components/routes/UserPrivateRoute";
 import { ToastContainer } from "react-toastify";
+// The container is mounted app-wide, so its styles have to load app-wide too.
+import "react-toastify/dist/ReactToastify.css";
 import ScrollToTop from "./components/ScrollToTop";
+import useAutoDetectLocation from "./hooks/useAutoDetectLocation";
 import UserPreference from "./components/ui/UserPreference";
 
 // Pull in the page-specific half of the old App.css without blocking first paint.
@@ -315,6 +318,9 @@ const FlightBookingDetail = lazy(
 
 function App() {
   const dispatch = useDispatch();
+
+  // Pick up the visitor's real city on load unless they've chosen one themselves
+  useAutoDetectLocation();
 
   useEffect(() => {
     const user = localStorage.getItem("user");

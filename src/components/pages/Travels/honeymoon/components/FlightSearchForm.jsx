@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, Users } from "lucide-react";
 import useAirportSearch from "../../../../../hooks/useAirportSearch";
@@ -364,13 +364,12 @@ export default function FlightSearchForm() {
 
   return (
     <div className="tj-flight-search-wrapper">
-      <div className="tj-trip-type-tabs">
-        <div className={`tj-trip-tab ${tripType === "oneway" ? "active" : ""}`} onClick={() => setTripType("oneway")}>ONE WAY</div>
-        <div className={`tj-trip-tab ${tripType === "round" ? "active" : ""}`} onClick={() => setTripType("round")}>ROUND TRIP</div>
-        <div className={`tj-trip-tab ${tripType === "multicity" ? "active" : ""}`} onClick={() => setTripType("multicity")}>MULTI CITY</div>
-      </div>
-
       <div className="tj-search-card">
+        <div className="tj-trip-type-tabs">
+          <div className={`tj-trip-tab ${tripType === "oneway" ? "active" : ""}`} onClick={() => setTripType("oneway")}>ONE WAY</div>
+          <div className={`tj-trip-tab ${tripType === "round" ? "active" : ""}`} onClick={() => setTripType("round")}>ROUND TRIP</div>
+          <div className={`tj-trip-tab ${tripType === "multicity" ? "active" : ""}`} onClick={() => setTripType("multicity")}>MULTI CITY</div>
+        </div>
         {tripType === "multicity" ? (
           <div className="tj-multicity-wrapper">
             {multiCityLegs.map((leg, index) => (

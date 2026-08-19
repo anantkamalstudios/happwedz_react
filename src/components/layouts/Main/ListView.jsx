@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Row, Col, Card, Container, Button, Badge } from "react-bootstrap";
 import { FaStar, FaHeart, FaRegHeart } from "react-icons/fa";
 import { BsLightningCharge } from "react-icons/bs";
@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { IoLocationOutline } from "react-icons/io5";
 import { TbView360Number } from "react-icons/tb";
 import { toggleWishlist } from "../../../redux/authSlice";
+import WishlistBubble from "../../common/WishlistBubble";
 import DOMPurify from "dompurify";
 import PricingModal from "../PricingModal";
 import QuickInquiryModal from "../QuickInquiryModal";
@@ -17,6 +18,7 @@ import { IMAGE_BASE_URL } from "../../../config/constants";
 import { useParams } from "react-router-dom";
 import { trackView } from "../../../services/localStorageService";
 import { prioritizeRecentlyViewed, isRecentlyViewed } from "../../../utils/recentlyViewedHelper";
+import { hasView360 } from "../../../utils/view360Helper";
 
 const extractMainCity = (rawCity) => {
   if (!rawCity) return "all";
@@ -168,11 +170,29 @@ const isValidImage = (url) => {
     fetchWishlist();
   }, [token, subVenuesData]);
 
+
+  // Confirmation bubble shown next to the heart that was pressed.
+  // It stays mounted with `show: false` while fading out, so the label does
+  // not flip from "Added" to "Removed" mid-transition.
+  const [bubble, setBubble] = useState(null); // { id, added, show }
+  const bubbleTimer = useRef(null);
+
+  const showBubble = (id, added) => {
+    setBubble({ id, added, show: true });
+    if (bubbleTimer.current) clearTimeout(bubbleTimer.current);
+    bubbleTimer.current = setTimeout(
+      () => setBubble((prev) => (prev ? { ...prev, show: false } : null)),
+      2200
+    );
+  };
+
+  useEffect(() => () => clearTimeout(bubbleTimer.current), []);
+
   const isFavorite = (vendorId) => {
     return favorites[vendorId] === true || wishlistIds.has(vendorId);
   };
 
-  const handleWishlistToggle = (venue, e) => {
+  const handleWishlistToggle = async (venue, e) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -194,7 +214,27 @@ const isValidImage = (url) => {
       return newSet;
     });
 
-    dispatch(toggleWishlist(venue));
+    const result = await dispatch(toggleWishlist(venue));
+
+    // Roll the optimistic update back when the server did not accept it.
+    if (!result?.success) {
+      setFavorites((prev) => ({
+        ...prev,
+        [venue.id]: wasFavorite,
+      }));
+      setWishlistIds((prev) => {
+        const newSet = new Set(prev);
+        if (wasFavorite) {
+          newSet.add(venue.id);
+        } else {
+          newSet.delete(venue.id);
+        }
+        return newSet;
+      });
+      return;
+    }
+
+    showBubble(venue.id, result.added);
   };
 
   const handleThumbEnter = (venueId, thumbUrl) => {
@@ -295,25 +335,28 @@ const isValidImage = (url) => {
                           </div>
                         )}
 
-                        {((venue.vendor_type || "")
-                          .toLowerCase()
-                          .includes("venue") ||
-                          venue.vegPrice !== null ||
-                          venue.nonVegPrice !== null) && (
-                            <button
-                              className="btn btn-light rounded-circle position-absolute top-0 start-0 m-2"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
-                            >
-                              <TbView360Number className="text-dark" />
-                            </button>
-                          )}
+                        {hasView360(venue) && (
+                          <button
+                            className="btn btn-light rounded-circle position-absolute top-0 start-0 m-2"
+                            title="View in 360°"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              navigate(`/vendor-360/${venue.id}`);
+                            }}
+                          >
+                            <TbView360Number className="text-dark" />
+                          </button>
+                        )}
 
                         <button
                           className="btn btn-light rounded-circle position-absolute top-0 end-0 m-2"
                           onClick={(e) => handleWishlistToggle(venue, e)}
                         >
+                          <WishlistBubble
+                            show={bubble?.id === venue.id && bubble.show}
+                            added={bubble?.added}
+                          />
                           {isFavorite(venue.id) ? (
                             <FaHeart className="text-danger" />
                           ) : (

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../../../../services/api/axiosInstance";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Container,
@@ -115,7 +116,7 @@ const UserProfile = ({ user, token }) => {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`https://happywedz.com/api/user/${userId}`, {
+        const res = await fetch(`${API_BASE_URL}/user/${userId}`, {
           headers: {
             "Content-Type": "application/json",
             ...(effectiveToken
@@ -250,7 +251,7 @@ const UserProfile = ({ user, token }) => {
         };
 
         const passwordRes = await axios.put(
-          `https://happywedz.com/api/user/${userId}/change-password`,
+          `${API_BASE_URL}/user/${userId}/change-password`,
           passwordBody,
           {
             headers: {
@@ -294,7 +295,7 @@ const UserProfile = ({ user, token }) => {
           body.append("coverImage", formData.coverImage);
 
         res = await axios.put(
-          `https://happywedz.com/api/user/${userId}`,
+          `${API_BASE_URL}/user/${userId}`,
           body,
           {
             headers: {
@@ -329,7 +330,7 @@ const UserProfile = ({ user, token }) => {
           jsonBody.coverImage = formData.coverImage;
         }
         res = await axios.put(
-          `https://happywedz.com/api/user/${userId}`,
+          `${API_BASE_URL}/user/${userId}`,
           jsonBody,
           {
             headers: {

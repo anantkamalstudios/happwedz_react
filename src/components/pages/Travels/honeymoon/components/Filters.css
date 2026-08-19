@@ -11,7 +11,7 @@
 }
 
 .filter-group-fare {
-  flex: 1 1 360px;
+  flex: 0 0 auto;
   min-width: 0;
 }
 
@@ -112,7 +112,11 @@
   min-height: 42px;
   border: 1px solid #dfe3ee;
   border-radius: 10px;
-  padding: 0 12px;
+  padding: 0 14px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  gap: 16px;
+  background: #fff;
 }
 
 .filter-checkbox-group-additional {
@@ -161,45 +165,52 @@
 .airline-combobox-value {
   width: 100%;
   padding: 0 34px 0 28px;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
-  color: #2d3448;
+  color: #1e293b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  user-select: none;
 }
 
-.airline-combobox-value.placeholder {
-  color: #8c95a8;
-  font-weight: 600;
+.airline-combobox-value.is-placeholder {
+  color: #64748b;
+  font-weight: 500;
 }
 
 .airline-dropdown {
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  right: 0;
-  z-index: 50;
-  background: #fff;
+  width: 280px;
+  min-width: 260px;
+  z-index: 99999;
+  background: #ffffff;
   border: 1px solid #dfe3ee;
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(20, 30, 50, 0.14);
+  border-radius: 12px;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.2);
   overflow: hidden;
 }
 
 .airline-search-input {
   width: 100%;
-  height: 38px;
+  height: 40px;
   border: none;
   border-bottom: 1px solid #eef1f7;
   outline: none;
   padding: 0 12px;
   font-size: 13px;
-  color: #2d3448;
+  color: #1e293b;
+  font-family: inherit;
+}
+
+.airline-search-input:focus {
+  border-bottom-color: #ed1173;
 }
 
 .airline-options {
-  max-height: 240px;
+  max-height: 220px;
   overflow-y: auto;
 }
 

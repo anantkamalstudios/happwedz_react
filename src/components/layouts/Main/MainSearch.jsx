@@ -294,9 +294,10 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
     }
     setLoadingSearch(true);
     try {
-      let apiUrl = `https://happywedz.com/api/vendor-services?search=${encodeURIComponent(
+      const apiBase = import.meta.env.VITE_API_URL || "https://happywedz.com/api";
+      let apiUrl = `${apiBase}/vendor-services?search=${encodeURIComponent(
         searchQuery
-      )}&limit=10`;
+      )}&limit=30&image_exists=true`;
 
       if (city) {
         apiUrl += `&city=${encodeURIComponent(city)}`;
@@ -319,13 +320,48 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
       const response = await axios.get(apiUrl);
       const results = response.data?.data || [];
       
-      // Deduplicate results to avoid duplicate vendor items caused by sub-vendor master profiles joins
+      const cleanImgUrl = (m) => {
+        if (!m) return null;
+        let str = "";
+        if (typeof m === "string") str = m.replace(/[`"']/g, "").trim();
+        else if (typeof m === "object" && (m.url || m.image_url || m.src || m.path)) {
+          str = String(m.url || m.image_url || m.src || m.path).trim();
+        }
+        if (
+          !str ||
+          str === "null" ||
+          str === "undefined" ||
+          str === "/images/imageNotFound.jpg" ||
+          str.includes("imageNotFound") ||
+          str.includes("placeholder") ||
+          str.includes("no-image")
+        ) {
+          return null;
+        }
+        return str;
+      };
+
+      // Deduplicate results and strictly filter out vendors without images
       const uniqueResults = [];
       const seenIds = new Set();
       const seenNames = new Set();
 
       results.forEach((item) => {
         if (!item) return;
+
+        // Skip any item without a valid real image
+        const imgCandidate =
+          cleanImgUrl(item.attributes?.image_url) ||
+          cleanImgUrl(item.attributes?.image) ||
+          cleanImgUrl(item.attributes?.profile_image) ||
+          cleanImgUrl(item.attributes?.cover_image) ||
+          cleanImgUrl(item.vendor?.profileImage) ||
+          cleanImgUrl(item.vendor?.coverImage) ||
+          cleanImgUrl(item.media?.[0]) ||
+          cleanImgUrl(item.images?.[0]);
+
+        if (!imgCandidate) return;
+
         const id = item.id;
         const name = (item.attributes?.name || item.vendor?.businessName || "").trim().toLowerCase();
         const city = (item.attributes?.city || item.vendor?.city || "").trim().toLowerCase();

@@ -7079,6 +7079,17 @@ input:checked+.slider:before {
   transition: all 0.2s ease;
 }
 
+.wgl-action-edit {
+  background-color: #f0f7ff;
+  color: #0284c7;
+  border: 1px solid #bae6fd;
+}
+
+.wgl-action-edit:hover {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
 .wgl-action-delete {
   background-color: #f9f9f9;
   color: #d32f2f;
@@ -18470,8 +18481,8 @@ input:checked+.slider:before {
 .quick-inquiry-btn {
   display: block;
   width: 100%;
-  margin-top: 12px;
-  padding: 10px;
+  margin-top: 8px;
+  padding: 8px 12px;
   background-color: #e83e8c;
   color: white;
   border: none;

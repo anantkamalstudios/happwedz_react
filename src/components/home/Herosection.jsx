@@ -143,17 +143,71 @@ const Herosection = () => {
 
   const cleanMediaUrl = (m) => {
     if (!m) return null;
-    if (typeof m === "string") return m.replace(/[`"']/g, "").trim();
-    if (typeof m === "object" && m.url) return String(m.url).trim();
-    return null;
+    let str = "";
+    if (typeof m === "string") str = m.replace(/[`"']/g, "").trim();
+    else if (typeof m === "object" && (m.url || m.image_url || m.src || m.path)) {
+      str = String(m.url || m.image_url || m.src || m.path).trim();
+    }
+    if (
+      !str ||
+      str === "null" ||
+      str === "undefined" ||
+      str === "/images/imageNotFound.jpg" ||
+      str.includes("imageNotFound") ||
+      str.includes("placeholder") ||
+      str.includes("no-image")
+    ) {
+      return null;
+    }
+    return str;
   };
 
-  const getVendorImage = (vendor) =>
-    vendor?.attributes?.image_url ||
-    cleanMediaUrl(vendor?.media?.[0]) ||
-    vendor?.attributes?.image ||
-    vendor?.attributes?.profile_image ||
-    "/images/imageNotFound.jpg";
+  const hasVendorImage = (vendor) => {
+    if (!vendor) return false;
+    const candidates = [
+      vendor?.attributes?.image_url,
+      vendor?.attributes?.image,
+      vendor?.attributes?.profile_image,
+      vendor?.attributes?.cover_image,
+      vendor?.vendor?.profileImage,
+      vendor?.vendor?.coverImage,
+      vendor?.profile_image,
+      vendor?.image_url,
+      vendor?.image,
+      ...(Array.isArray(vendor?.media) ? vendor.media : []),
+      ...(Array.isArray(vendor?.attributes?.images) ? vendor.attributes.images : []),
+      ...(Array.isArray(vendor?.images) ? vendor.images : []),
+    ];
+
+    for (const c of candidates) {
+      const cleaned = cleanMediaUrl(c);
+      if (cleaned) return true;
+    }
+    return false;
+  };
+
+  const getVendorImage = (vendor) => {
+    const candidates = [
+      vendor?.attributes?.image_url,
+      vendor?.attributes?.image,
+      vendor?.attributes?.profile_image,
+      vendor?.attributes?.cover_image,
+      vendor?.vendor?.profileImage,
+      vendor?.vendor?.coverImage,
+      vendor?.profile_image,
+      vendor?.image_url,
+      vendor?.image,
+      ...(Array.isArray(vendor?.media) ? vendor.media : []),
+      ...(Array.isArray(vendor?.attributes?.images) ? vendor.attributes.images : []),
+      ...(Array.isArray(vendor?.images) ? vendor.images : []),
+    ];
+
+    for (const c of candidates) {
+      const cleaned = cleanMediaUrl(c);
+      if (cleaned) return cleaned;
+    }
+    return "/images/imageNotFound.jpg";
+  };
 
   const getVendorName = (vendor) =>
     vendor?.attributes?.name ||
@@ -231,7 +285,8 @@ const Herosection = () => {
     try {
       const params = new URLSearchParams({
         search: q,
-        limit: "10",
+        limit: "30",
+        image_exists: "true",
       });
       if (
         reduxLocation &&
@@ -244,7 +299,9 @@ const Herosection = () => {
         `/vendor-services?${params.toString()}`,
       );
       const items = Array.isArray(data?.data) ? data.data : [];
-      setVendorResults(items);
+      // Strictly exclude any vendor without a real image
+      const vendorsWithImages = items.filter(hasVendorImage);
+      setVendorResults(vendorsWithImages);
       setShowVendorDropdown(true);
     } catch (e) {
       console.error("Vendor search error:", e);

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { setLocation } from "../../redux/locationSlice";
+import { setBrowsingLocation } from "../../redux/locationSlice";
 import InfiniteScroll from "react-infinite-scroll-component";
 import VendorsSearch from "../layouts/vendors/VendorsSearch";
 import VenuesSearch from "../layouts/venus/VenuesSearch";
@@ -104,7 +104,9 @@ const MainSection = () => {
     } else if ((location.pathname.startsWith("/wedding-venues") || location.pathname.startsWith("/venues")) && urlCity) {
       const formatted = formatCityName(urlCity);
       setSelectedCity(formatted);
-      dispatch(setLocation(formatted));
+      // Browsing a city URL shows that city in the header, but must not
+      // overwrite the visitor's own saved city preference.
+      dispatch(setBrowsingLocation(formatted));
     } else {
       setSelectedCity(reduxLocation);
     }

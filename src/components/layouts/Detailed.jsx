@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Container, Row, Col, Button, Modal } from "react-bootstrap";
 import { FaLocationDot } from "react-icons/fa6";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -6,6 +6,7 @@ import { Autoplay } from "swiper/modules";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleWishlist } from "../../redux/authSlice";
+import WishlistBubble from "../common/WishlistBubble";
 import "swiper/css";
 import "swiper/css/autoplay";
 import PricingModal from "./PricingModal";
@@ -51,6 +52,7 @@ const API_BASE_URL = "https://happywedz.com";
 import Swal from "sweetalert2";
 import SectionTabs from "./SectionTabs";
 import { TbView360Number } from "react-icons/tb";
+import { hasView360 } from "../../utils/view360Helper";
 import GridView from "./Main/GridView";
 import SimilarServices from "./SimilarServices";
 import SEO from "../common/SEO";
@@ -1894,6 +1896,24 @@ const Detailed = () => {
     fetchWishlist();
   }, [token, id]);
 
+
+  // Confirmation bubble shown next to the heart that was pressed.
+  // It stays mounted with `show: false` while fading out, so the label does
+  // not flip from "Added" to "Removed" mid-transition.
+  const [bubble, setBubble] = useState(null); // { id, added, show }
+  const bubbleTimer = useRef(null);
+
+  const showBubble = (id, added) => {
+    setBubble({ id, added, show: true });
+    if (bubbleTimer.current) clearTimeout(bubbleTimer.current);
+    bubbleTimer.current = setTimeout(
+      () => setBubble((prev) => (prev ? { ...prev, show: false } : null)),
+      2200
+    );
+  };
+
+  useEffect(() => () => clearTimeout(bubbleTimer.current), []);
+
   const isFavorite = (vendorId) => {
     if (!vendorId) return false;
     const vendorIdStr = String(vendorId);
@@ -1906,7 +1926,7 @@ const Detailed = () => {
     );
   };
 
-  const handleFavoriteToggle = (e) => {
+  const handleFavoriteToggle = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -1915,6 +1935,7 @@ const Detailed = () => {
     const vendorService = {
       id: parseInt(id),
       vendor_services_id: parseInt(id),
+      name: venueData?.attributes?.name || venueData?.attributes?.Name,
     };
 
     const wasFavorite = isFavorite(id);
@@ -1939,7 +1960,29 @@ const Detailed = () => {
     });
 
     // Dispatch toggleWishlist action
-    dispatch(toggleWishlist(vendorService));
+    const result = await dispatch(toggleWishlist(vendorService));
+
+    // Roll the optimistic update back when the server did not accept it.
+    if (!result?.success) {
+      setFavorites((prev) => ({
+        ...prev,
+        [id]: wasFavorite,
+      }));
+      setWishlistIds((prev) => {
+        const newSet = new Set(prev);
+        if (wasFavorite) {
+          newSet.add(id);
+          newSet.add(parseInt(id));
+        } else {
+          newSet.delete(id);
+          newSet.delete(parseInt(id));
+        }
+        return newSet;
+      });
+      return;
+    }
+
+    showBubble(id, result.added);
   };
 
   useEffect(() => {
@@ -2955,9 +2998,10 @@ const Detailed = () => {
                 </button>
               </div>
 
-              {isVenue && (
+              {isVenue && hasView360(venueData) && (
                 <button
                   className="btn btn-light position-absolute rounded-circle border-0 shadow-sm"
+                  title="View in 360°"
                   style={{
                     top: "12px",
                     left: "12px",
@@ -2974,6 +3018,10 @@ const Detailed = () => {
                 </button>
               )}
               <button className="favorite-btn" onClick={handleFavoriteToggle}>
+                <WishlistBubble
+                  show={!!bubble?.show}
+                  added={bubble?.added}
+                />
                 {isFavorite(id) ? (
                   <FaHeart className="text-danger" />
                 ) : (
@@ -3449,7 +3497,13 @@ const Detailed = () => {
       <PricingModal
         show={showPricingModal}
         handleClose={() => setShowPricingModal(false)}
-        vendorId={selectedVendorId}
+        vendorId={selectedVendorId || venueData?.vendor_id || venueData?.id}
+        availableSlots={
+          venueData?.available_slots ||
+          venueData?.attributes?.available_slots ||
+          venueData?.availableSlots ||
+          venueData?.attributes?.availableSlots
+        }
       />
 
       <Modal

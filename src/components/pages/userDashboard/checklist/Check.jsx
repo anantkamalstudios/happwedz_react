@@ -9,7 +9,10 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import { FiCheck, FiTrash, FiLink, FiEdit, FiClock } from "react-icons/fi";
-import axiosInstance from "../../../../services/api/axiosInstance";
+import { FaChevronDown, FaSpinner } from "react-icons/fa6";
+import axiosInstance, {
+  API_BASE_URL,
+} from "../../../../services/api/axiosInstance";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -21,11 +24,11 @@ import dayjs from "dayjs";
 import { pdf } from "@react-pdf/renderer";
 import ChecklistPDF from "./ChecklistPDF";
 import { formatDate } from "../../../../utils/dateFormat";
-import { FaSpinner } from "react-icons/fa6";
 import { Dropdown } from "react-bootstrap";
+import "./Checklist.css";
 
 const CATEGORY_API =
-  "https://happywedz.com/api/vendor-types/with-subcategories/all";
+  `${API_BASE_URL}/vendor-types/with-subcategories/all`;
 
 const Check = () => {
   const user = useSelector((state) => state.auth.user);
@@ -114,14 +117,45 @@ const Check = () => {
     }
   }, [user?.weddingDate]);
 
+  const [countdown, setCountdown] = useState(null);
+
   useEffect(() => {
-    if (weddingDate) {
-      const today = new Date();
-      const wedding = new Date(weddingDate);
-      const diffTime = wedding - today;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      setDaysLeft(diffDays);
+    if (!weddingDate) {
+      setDaysLeft(null);
+      setCountdown(null);
+      return;
     }
+
+    const calculateCountdown = () => {
+      const now = new Date();
+      const target = new Date(weddingDate);
+      const diff = target.getTime() - now.getTime();
+
+      if (diff > 0) {
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor(
+          (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        );
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        setDaysLeft(days);
+        setCountdown({ days, hours, minutes, seconds, hasPassed: false });
+      } else {
+        const diffDays = Math.ceil(Math.abs(diff) / (1000 * 60 * 60 * 24));
+        setDaysLeft(-diffDays);
+        setCountdown({
+          days: diffDays,
+          hours: 0,
+          minutes: 0,
+          seconds: 0,
+          hasPassed: true,
+        });
+      }
+    };
+
+    calculateCountdown();
+    const timer = setInterval(calculateCountdown, 1000);
+    return () => clearInterval(timer);
   }, [weddingDate]);
 
   useEffect(() => {
@@ -467,16 +501,57 @@ const Check = () => {
                   </LocalizationProvider>
                 </div>
 
-                {daysLeft !== null && (
-                  <div className="days-countdown">
-                    <h3 className="days-number">{Math.abs(daysLeft)}</h3>
-                    <span className="days-text fs-16 fw-bold">
-                      {daysLeft > 0
-                        ? "Days Until Wedding"
-                        : daysLeft === 0
-                          ? "Wedding Day!"
-                          : "Days Since Wedding"}
-                    </span>
+                {countdown && (
+                  <div className="hw-countdown-card">
+                    <div className="hw-countdown-header">
+                      <FaHeart className="hw-countdown-icon" />
+                      <span className="hw-countdown-title">
+                        {countdown.hasPassed
+                          ? "Wedding Milestone"
+                          : "Countdown to The Big Day"}
+                      </span>
+                    </div>
+
+                    {!countdown.hasPassed ? (
+                      <div className="hw-countdown-grid">
+                        <div className="hw-countdown-box">
+                          <div className="hw-countdown-num">
+                            {String(countdown.days).padStart(2, "0")}
+                          </div>
+                          <div className="hw-countdown-unit">DAYS</div>
+                        </div>
+                        <div className="hw-countdown-colon">:</div>
+                        <div className="hw-countdown-box">
+                          <div className="hw-countdown-num">
+                            {String(countdown.hours).padStart(2, "0")}
+                          </div>
+                          <div className="hw-countdown-unit">HOURS</div>
+                        </div>
+                        <div className="hw-countdown-colon">:</div>
+                        <div className="hw-countdown-box">
+                          <div className="hw-countdown-num">
+                            {String(countdown.minutes).padStart(2, "0")}
+                          </div>
+                          <div className="hw-countdown-unit">MINS</div>
+                        </div>
+                        <div className="hw-countdown-colon">:</div>
+                        <div className="hw-countdown-box">
+                          <div className="hw-countdown-num">
+                            {String(countdown.seconds).padStart(2, "0")}
+                          </div>
+                          <div className="hw-countdown-unit">SECS</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="hw-countdown-grid">
+                        <div className="hw-countdown-box" style={{ minWidth: "120px" }}>
+                          <div className="hw-countdown-num" style={{ color: "#ed1173" }}>
+                            {countdown.days}
+                          </div>
+                          <div className="hw-countdown-unit">DAYS AGO</div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -484,62 +559,69 @@ const Check = () => {
 
             {/* Main Content */}
             <div className="col-lg-8">
-              <div className="main-card">
-                <div className="main-card-header d-flex justify-content-between align-items-center flex-wrap">
-                  <h5>
+              <div className="hw-checklist-container">
+                <div className="hw-checklist-header">
+                  <h5 className="hw-checklist-title">
                     <FaHeart />
-                    Wedding Checklist
+                    Wedding Checklist & Planning Tasks
                   </h5>
-                  <div className="header-actions d-flex gap-2 fs-14 my-4">
+                  <div className="d-flex gap-2">
                     {(distributedTasks && distributedTasks.length > 0) ||
                       (checklists && checklists.length > 0) ? (
                       <button
-                        className="btn fs-14"
+                        className="hw-download-btn"
                         onClick={handleDownloadPDF}
                       >
-                        <FaDownload className="me-1" size={12} />
-                        Download
+                        <FaDownload size={12} />
+                        Download PDF
                       </button>
                     ) : (
                       <button
-                        className="btn fs-14"
+                        className="hw-download-btn"
                         disabled
                         title="No tasks to download"
                       >
-                        <FaDownload className="me-1" />
-                        Download
+                        <FaDownload size={12} />
+                        Download PDF
                       </button>
                     )}
                   </div>
                 </div>
 
-                <div className="card-body p-4">
-                  {/* Progress Section */}
-                  <div className="progress-section">
-                    <h6>Overall Progress</h6>
-                    <div className="progress-bar-wrapper">
+                <div className="p-4">
+                  {/* Overall Progress Card */}
+                  <div className="hw-progress-card">
+                    <div className="hw-progress-header">
+                      <h6 className="hw-progress-title">Overall Task Completion</h6>
+                      <span className="hw-progress-badge">
+                        {Math.round(progressPercentage)}% Complete
+                      </span>
+                    </div>
+                    <div className="hw-progress-track">
                       <div
-                        className="progress-bar-fill"
+                        className="hw-progress-fill"
                         style={{ width: `${progressPercentage}%` }}
                       />
                     </div>
-                    <div className="progress-stats">
-                      <span>
-                        <strong>{completedCount}</strong> completed
-                      </span>
-                      <span>
-                        <strong>{checklists.length}</strong> total tasks
-                      </span>
-                      <span>
-                        <strong>{Math.round(progressPercentage)}%</strong>{" "}
-                        complete
-                      </span>
+                    <div className="hw-progress-stats">
+                      <div className="hw-stat-pill">
+                        <span className="hw-stat-num" style={{ color: "#10b981" }}>{completedCount}</span>
+                        <span className="hw-stat-label">Tasks Completed</span>
+                      </div>
+                      <div className="hw-stat-pill">
+                        <span className="hw-stat-num" style={{ color: "#0f172a" }}>{checklists.length}</span>
+                        <span className="hw-stat-label">Total Tasks</span>
+                      </div>
+                      <div className="hw-stat-pill">
+                        <span className="hw-stat-num" style={{ color: "#ed1173" }}>{Math.max(0, checklists.length - completedCount)}</span>
+                        <span className="hw-stat-label">Tasks Remaining</span>
+                      </div>
                     </div>
                   </div>
 
                   {error && (
                     <div
-                      className="alert alert-danger alert-custom alert-dismissible fade show fs-14 fw-bold"
+                      className="alert alert-danger alert-custom alert-dismissible fade show fs-14 fw-bold mb-4"
                       role="alert"
                     >
                       {error}
@@ -552,83 +634,80 @@ const Check = () => {
                   )}
 
                   {/* Add Task Form */}
-                  <div className="add-task-card">
-                    <h6 className="fs-16">Add New Task</h6>
-                    <div className="row align-items-end gy-3">
-                      <div className="col-12 col-md-11">
-                        <div className="row gy-3">
-                          <div className="col-12 col-md-6">
-                            <label
-                              className="form-label fs-14"
-                              style={{ fontWeight: "600", color: "#374151" }}
-                            >
-                              Category
-                            </label>
-                            <Dropdown
-                              drop="down"
-                              autoClose="outside"
-                            >
-                              <Dropdown.Toggle className="w-100 fs-14 bg-white text-black text-start d-flex justify-content-between align-items-center">
-                                {vendorSubId
-                                  ? categories.find((c) => c.id == vendorSubId)
-                                    ?.name
-                                  : "Select Category"}
-                              </Dropdown.Toggle>
+                  <div className="hw-add-task-card">
+                    <div className="hw-add-task-header">
+                      <FaPlus style={{ color: "#ed1173", fontSize: "14px" }} />
+                      <h6 className="hw-add-task-title">Add New Task</h6>
+                    </div>
+                    <div className="row align-items-end g-3">
+                      <div className="col-12 col-md-5">
+                        <label className="hw-form-label">Vendor Category</label>
+                        <Dropdown drop="down" autoClose="outside">
+                          <Dropdown.Toggle className="hw-dropdown-toggle">
+                            <span>
+                              {vendorSubId
+                                ? categories.find((c) => c.id == vendorSubId)?.name
+                                : "Select Vendor Category"}
+                            </span>
+                            <FaChevronDown size={11} style={{ color: "#94a3b8" }} />
+                          </Dropdown.Toggle>
 
-                              <Dropdown.Menu
-                                className="w-100"
+                          <Dropdown.Menu
+                            className="w-100 shadow-lg border-0"
+                            style={{
+                              maxHeight: "220px",
+                              overflowY: "auto",
+                              borderRadius: "12px",
+                              padding: "6px",
+                              zIndex: 9999,
+                            }}
+                          >
+                            {categories.map((sub) => (
+                              <Dropdown.Item
+                                key={sub.id}
+                                onClick={() => setVendorSubId(sub.id)}
                                 style={{
-                                  position: "absolute",
-                                  inset: "0 auto auto 0",
-                                  transform: "translateY(100%) !important",
-                                  maxHeight: "200px",
-                                  overflowY: "auto",
-                                  background: "#fff",
-                                  zIndex: 9999,
+                                  borderRadius: "8px",
+                                  fontSize: "13.5px",
+                                  fontWeight: "500",
+                                  padding: "8px 12px",
                                 }}
                               >
-                                {categories.map((sub) => (
-                                  <Dropdown.Item
-                                    key={sub.id}
-                                    onClick={() => setVendorSubId(sub.id)}
-                                    className="fs-14"
-                                  >
-                                    {sub.name}
-                                  </Dropdown.Item>
-                                ))}
-                              </Dropdown.Menu>
-                            </Dropdown>
-                          </div>
-                          <div className="col-12 col-md-6">
-                            <label
-                              className="form-label fs-14"
-                              style={{ fontWeight: "600", color: "#374151" }}
-                            >
-                              Task Name
-                            </label>
-                            <input
-                              type="text"
-                              className="form-control fs-14"
-                              placeholder="Enter task description"
-                              value={text}
-                              onChange={(e) => setText(e.target.value)}
-                            />
-                          </div>
-                        </div>
+                                {sub.name}
+                              </Dropdown.Item>
+                            ))}
+                          </Dropdown.Menu>
+                        </Dropdown>
                       </div>
-                      <div className="col-12 col-md-1 d-flex align-items-center justify-content-center">
+
+                      <div className="col-12 col-md-5">
+                        <label className="hw-form-label">Task Description</label>
+                        <input
+                          type="text"
+                          className="hw-input"
+                          placeholder="e.g., Shortlist & Book Photographer"
+                          value={text}
+                          onChange={(e) => setText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") addChecklist();
+                          }}
+                        />
+                      </div>
+
+                      <div className="col-12 col-md-2">
                         <button
-                          className="btn btn-outline-primary fs-14 w-100 w-md-auto d-flex align-items-center justify-content-center"
+                          className="hw-btn-add w-100"
                           onClick={addChecklist}
                         >
-                          <span className="d-inline d-md-none">Add</span>
-                          <FaPlus className="d-none d-md-inline" />
+                          <FaPlus size={12} />
+                          <span>Add Task</span>
                         </button>
                       </div>
                     </div>
+
                     {timeOptions.length > 0 && (
-                      <div className="time-info">
-                        <label>Time Allocation</label>
+                      <div className="time-info mt-3">
+                        <label>⏱ Estimated Time Allocation</label>
                         <ul>
                           {timeOptions.map((t, i) => (
                             <li key={i}>{t}</li>
@@ -649,153 +728,165 @@ const Check = () => {
                     </div>
                   ) : checklists.length > 0 ? (
                     <>
-                      <div className="table-responsive">
-                        <table className="table checklist-table">
-                          <thead>
-                            <tr>
-                              <th style={{ width: "80px" }}>Status</th>
-                              <th>Task</th>
-                              <th>Category</th>
-                              <th style={{ width: "140px" }}>Days Assigned</th>
-                              <th style={{ width: "120px" }}>Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {currentItems.map((item) => (
-                              <tr key={item.id}>
-                                <td className="text-center">
-                                  <div
-                                    className={`status-icon ${item.status === "completed"
-                                      ? "completed"
-                                      : "pending"
-                                      }`}
-                                    onClick={() =>
-                                      toggleStatus(item.id, item.status)
-                                    }
-                                  >
-                                    {item.status === "completed" ? (
-                                      <FaCheck size={16} />
-                                    ) : (
-                                      <FiCheck size={16} />
-                                    )}
-                                  </div>
-                                </td>
-                                <td>
-                                  {editingId === item.id ? (
-                                    <input
-                                      type="text"
-                                      className="form-control form-control-sm"
-                                      value={editingText}
-                                      onChange={(e) =>
-                                        setEditingText(e.target.value)
-                                      }
-                                      autoFocus
-                                    />
-                                  ) : (
-                                    <span
-                                      style={{
-                                        textDecoration:
-                                          item.status === "completed"
-                                            ? "line-through"
-                                            : "none",
-                                        color:
-                                          item.status === "completed"
-                                            ? "#9ca3af"
-                                            : "#374151",
-                                        fontWeight:
-                                          item.status === "completed"
-                                            ? "400"
-                                            : "600",
-                                      }}
-                                    >
-                                      {item.text}
-                                    </span>
-                                  )}
-                                </td>
-                                <td>
-                                  {(() => {
-                                    const subcategory = categories.find(
-                                      (c) => c.id === item.vendor_subcategory_id
-                                    );
-                                    return (
-                                      <div className="d-flex align-items-center gap-2 flex-wrap">
-                                        {subcategory?.name || "N/A"}
-                                        {subcategory?.required_days && (
-                                          <span className="days-badge">
-                                            <FiClock size={12} />
-                                            {subcategory.required_days}d
-                                          </span>
-                                        )}
-                                      </div>
-                                    );
-                                  })()}
-                                </td>
-                                <td>
-                                  <span
-                                    style={{
-                                      fontWeight: "600",
-                                      color: "#6b7280",
-                                    }}
-                                  >
-                                    {item.days_assigned || "N/A"}{" "}
-                                    {item.days_assigned ? "days" : ""}
-                                  </span>
-                                </td>
-                                <td>
-                                  <div className="d-flex gap-2 justify-content-center">
-                                    {editingId === item.id ? (
-                                      <>
-                                        <button
-                                          className="btn btn-success btn-sm d-flex align-items-center justify-content-center"
-                                          onClick={saveEdit}
-                                          disabled={updateLoading}
-                                          style={{ width: 32, height: 32 }}
-                                        >
-                                          {updateLoading ? (
-                                            <FaSpinner
-                                              className="spin"
-                                              size={14}
-                                            />
-                                          ) : (
-                                            <FaCheck size={14} />
-                                          )}
-                                        </button>
-
-                                        <button
-                                          className="btn btn-secondary btn-sm d-flex align-items-center justify-content-center"
-                                          onClick={cancelEdit}
-                                          disabled={updateLoading}
-                                          style={{ width: 32, height: 32 }}
-                                        >
-                                          <FaTimes size={14} />
-                                        </button>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <button
-                                          className="btn p-2 w-25 border rounded-circle"
-                                          onClick={() =>
-                                            handleEdit(item.id, item.text)
-                                          }
-                                        >
-                                          <FiEdit size={15} />
-                                        </button>
-                                        <button
-                                          className="btn p-2 w-25 border rounded-circle"
-                                          onClick={() =>
-                                            deleteChecklist(item.id)
-                                          }
-                                        >
-                                          <FiTrash size={15} />
-                                        </button>
-                                      </>
-                                    )}
-                                  </div>
-                                </td>
+                      <div className="hw-table-card">
+                        <div className="table-responsive">
+                          <table className="hw-task-table">
+                            <thead>
+                              <tr>
+                                <th style={{ width: "90px", textAlign: "center" }}>Status</th>
+                                <th>Task Details</th>
+                                <th>Category & Lead Time</th>
+                                <th style={{ width: "170px" }}>Allocated Timeline</th>
+                                <th style={{ width: "110px", textAlign: "center" }}>Actions</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody>
+                              {currentItems.map((item) => (
+                                <tr key={item.id}>
+                                  <td className="text-center">
+                                    <div
+                                      className={`hw-status-toggle ${
+                                        item.status === "completed" ? "is-completed" : ""
+                                      }`}
+                                      onClick={() =>
+                                        toggleStatus(item.id, item.status)
+                                      }
+                                      title={
+                                        item.status === "completed"
+                                          ? "Click to mark as pending"
+                                          : "Click to mark as completed"
+                                      }
+                                    >
+                                      {item.status === "completed" ? (
+                                        <FaCheck size={13} />
+                                      ) : (
+                                        <FiCheck size={14} />
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td>
+                                    {editingId === item.id ? (
+                                      <input
+                                        type="text"
+                                        className="form-control form-control-sm"
+                                        value={editingText}
+                                        onChange={(e) =>
+                                          setEditingText(e.target.value)
+                                        }
+                                        autoFocus
+                                      />
+                                    ) : (
+                                      <span
+                                        className={`hw-task-name ${
+                                          item.status === "completed"
+                                            ? "is-completed"
+                                            : ""
+                                        }`}
+                                      >
+                                        {item.text}
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td>
+                                    {(() => {
+                                      const subcategory = categories.find(
+                                        (c) => c.id === item.vendor_subcategory_id
+                                      );
+                                      return (
+                                        <div className="hw-category-wrapper">
+                                          <span className="hw-category-title">
+                                            {subcategory?.name || "General"}
+                                          </span>
+                                          {subcategory?.required_days && (
+                                            <span
+                                              className="hw-lead-time-badge"
+                                              title="Estimated preparation/lead time required"
+                                            >
+                                              <FiClock size={11} />
+                                              ~{subcategory.required_days}d prep
+                                            </span>
+                                          )}
+                                        </div>
+                                      );
+                                    })()}
+                                  </td>
+                                  <td>
+                                    <span
+                                      className="hw-timeline-badge"
+                                      title="Days allocated in your wedding planning schedule"
+                                    >
+                                      <FaCalendarAlt size={11} style={{ color: "#3b82f6" }} />
+                                      {item.days_assigned || "—"}{" "}
+                                      {item.days_assigned ? "Days Allocated" : ""}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <div className="d-flex gap-2 justify-content-center">
+                                      {editingId === item.id ? (
+                                        <>
+                                          <button
+                                            className="hw-action-btn"
+                                            style={{
+                                              background: "#ecfdf5",
+                                              color: "#059669",
+                                              borderColor: "#a7f3d0",
+                                            }}
+                                            onClick={saveEdit}
+                                            disabled={updateLoading}
+                                            title="Save Changes"
+                                          >
+                                            {updateLoading ? (
+                                              <FaSpinner
+                                                className="spin"
+                                                size={13}
+                                              />
+                                            ) : (
+                                              <FaCheck size={13} />
+                                            )}
+                                          </button>
+
+                                          <button
+                                            className="hw-action-btn"
+                                            style={{
+                                              background: "#f1f5f9",
+                                              color: "#64748b",
+                                            }}
+                                            onClick={cancelEdit}
+                                            disabled={updateLoading}
+                                            title="Cancel"
+                                          >
+                                            <FaTimes size={13} />
+                                          </button>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <button
+                                            className="hw-action-btn edit-btn"
+                                            onClick={() =>
+                                              handleEdit(item.id, item.text)
+                                            }
+                                            title="Edit Task"
+                                          >
+                                            <FiEdit size={14} />
+                                          </button>
+                                          <button
+                                            className="hw-action-btn delete-btn"
+                                            onClick={() =>
+                                              deleteChecklist(item.id)
+                                            }
+                                            title="Delete Task"
+                                          >
+                                            <FiTrash size={14} />
+                                          </button>
+                                        </>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
 
                       {totalPages > 1 && (

@@ -896,79 +896,19 @@ const Header = () => {
             <div className="row w-100" style={{ margin: 0, padding: 0 }}>
               <div className="col-12 bg-white p-2 header-topbar">
                 <div className="container w-100 p-0">
-                  <div className="row align-items-center gy-2">
-                    {/* Left: Tagline */}
-                    <div className="col-12 col-sm-auto col-lg-auto d-flex align-items-center justify-content-center justify-content-sm-start">
-                      <a
-                        className="nav-link fw-bold top-header-heading fs-18 text-nowrap"
-                        href="#"
-                        style={{ color: "#C31162" }}
-                      >
-                        India's Favourite Wedding Planning Platform
-                      </a>
-                    </div>
+                  <div className="d-flex align-items-center justify-content-center gap-3 flex-wrap">
+                    {/* Tagline */}
+                    <a
+                      className="nav-link fw-bold top-header-heading fs-18 text-nowrap m-0 p-0"
+                      href="#"
+                      style={{ color: "#C31162" }}
+                    >
+                      India's Favourite Wedding Planning Platform
+                    </a>
 
-                    {/* Middle: Location Selector */}
-                    <div className="col-12 col-sm-6 col-lg-3 d-flex justify-content-center justify-content-sm-start">
+                    {/* Location Selector */}
+                    <div className="d-flex align-items-center">
                       <LocationModalWithCategories />
-                    </div>
-
-                    {/* Right: Store Icons */}
-                    <div className="col-12 col-lg-auto ms-lg-auto d-flex align-items-center justify-content-center justify-content-lg-end gap-4">
-                      <img
-                        src="/images/header/playstore.png"
-                        alt="Play Store"
-                        title="Download on Play Store"
-                        width="24"
-                        height="25"
-                        className="img-fluid"
-                        style={{
-                          height: "28px",
-                          width: "auto",
-                          aspectRatio: "24 / 25",
-                          cursor: "pointer",
-                        }}
-                      />
-
-                      <img
-                        src="/images/header/appstore.png"
-                        alt="App Store"
-                        title="Download on App Store"
-                        width="25"
-                        height="25"
-                        className="img-fluid"
-                        style={{
-                          height: "28px",
-                          width: "auto",
-                          aspectRatio: "24 / 25",
-                          cursor: "pointer",
-                        }}
-                      />
-
-                      <Link
-                        to="/try"
-                        state={{ title: "Try" }}
-                        title="Try Design Studio"
-                      >
-                        {/* 178KB PNG rendered at 50px tall. It is in the header
-                            so it can't be lazy-loaded, but it must not compete
-                            with the hero image for bandwidth. */}
-                        <img
-                          src="/images/header/tryimg.png"
-                          alt="Design Studio"
-                          width="50"
-                          height="50"
-                          className="img-fluid"
-                          decoding="async"
-                          fetchPriority="low"
-                          style={{
-                            height: "50px",
-                            width: "50px",
-                            objectFit: "contain",
-                            cursor: "pointer",
-                          }}
-                        />
-                      </Link>
                     </div>
                   </div>
                 </div>

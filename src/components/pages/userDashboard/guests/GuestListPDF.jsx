@@ -1,83 +1,194 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, Image, StyleSheet } from "@react-pdf/renderer";
 import { formatDateTime } from "../../../../utils/dateFormat";
 
 const styles = StyleSheet.create({
   page: {
-    padding: 30,
-    fontSize: 10,
+    paddingTop: 24,
+    paddingBottom: 28,
+    paddingHorizontal: 28,
+    fontSize: 9.5,
     color: "#1f2937",
     fontFamily: "Helvetica",
   },
-  header: {
-    marginBottom: 20,
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingBottom: 12,
     borderBottomWidth: 2,
-    borderBottomColor: "#d1d5db",
+    borderBottomColor: "#ED1173",
+    marginBottom: 12,
   },
-  title: {
-    fontSize: 20,
+  brandContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  logo: {
+    width: 65,
+    height: 65,
+    marginRight: 10,
+    objectFit: "contain",
+  },
+  brandName: {
+    fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 4,
-    color: "#111827",
+    color: "#ED1173",
+    letterSpacing: 0.5,
   },
-  subtitle: {
-    fontSize: 10,
+  brandTagline: {
+    fontSize: 8.5,
     color: "#6b7280",
-    marginTop: 4,
+    marginTop: 2,
+  },
+  brandUrl: {
+    fontSize: 8,
+    color: "#ED1173",
+    marginTop: 2,
+    fontWeight: "bold",
+  },
+  reportMetaBox: {
+    alignItems: "flex-end",
+  },
+  reportTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#111827",
+    marginBottom: 3,
+  },
+  reportMetaText: {
+    fontSize: 8,
+    color: "#6b7280",
+    marginTop: 1,
+  },
+  summaryBar: {
+    backgroundColor: "#FFF5F8",
+    borderWidth: 1,
+    borderColor: "#FCE7F3",
+    borderRadius: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    marginBottom: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  summaryText: {
+    fontSize: 8,
+    color: "#831843",
+    fontWeight: "bold",
+  },
+  summaryItem: {
+    fontSize: 8,
+    color: "#475569",
+  },
+  groupHeader: {
+    backgroundColor: "#FFF0F6",
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    marginTop: 10,
+    marginBottom: 4,
+    fontWeight: "bold",
+    fontSize: 10,
+    color: "#1e293b",
+    borderLeftWidth: 3,
+    borderLeftColor: "#ED1173",
+    borderRadius: 2,
   },
   table: {
-    marginTop: 12,
+    marginTop: 2,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "#E2E8F0",
+    borderRadius: 2,
   },
   row: {
     flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
+    borderBottomColor: "#F1F5F9",
+    alignItems: "center",
   },
   cellHeader: {
-    padding: 8,
-    backgroundColor: "#F3F4F6",
+    paddingVertical: 5,
+    paddingHorizontal: 6,
+    backgroundColor: "#F8FAFC",
     borderRightWidth: 1,
-    borderRightColor: "#E5E7EB",
+    borderRightColor: "#E2E8F0",
     fontWeight: "bold",
-    fontSize: 10,
+    fontSize: 8.5,
+    color: "#334155",
   },
   cell: {
-    padding: 8,
+    paddingVertical: 5,
+    paddingHorizontal: 6,
     borderRightWidth: 1,
-    borderRightColor: "#E5E7EB",
-    fontSize: 9,
+    borderRightColor: "#F1F5F9",
+    fontSize: 8,
+    color: "#1e293b",
   },
-  wGuest: { width: "30%" },
-  wStatus: { width: "18%" },
+  wGuest: { width: "28%" },
+  wStatus: { width: "16%" },
   wCompanions: { width: "12%" },
   wSeat: { width: "12%" },
-  wType: { width: "14%" },
-  wMenu: { width: "14%" },
-  groupHeader: {
-    backgroundColor: "#F9FAFB",
-    padding: 8,
-    marginTop: 12,
-    marginBottom: 4,
-    fontWeight: "bold",
-    fontSize: 11,
+  wType: { width: "16%" },
+  wMenu: { width: "16%" },
+  aboutBox: {
+    marginTop: 18,
+    padding: 10,
+    backgroundColor: "#FAFAFA",
     borderWidth: 1,
     borderColor: "#E5E7EB",
+    borderTopWidth: 2,
+    borderTopColor: "#ED1173",
+    borderRadius: 4,
+  },
+  aboutTitle: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: "#ED1173",
+    marginBottom: 3,
+  },
+  aboutDescription: {
+    fontSize: 7.5,
+    color: "#4B5563",
+    lineHeight: 1.35,
+  },
+  footerRow: {
+    marginTop: 10,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: "#F3F4F6",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  footerText: {
+    fontSize: 7,
+    color: "#9CA3AF",
   },
 });
 
 const GuestListPDF = ({ guests = [], meta = {} }) => {
-  const { userName = "", generatedAt = new Date() } = meta;
+  const { userName = "", availableGroups = [], generatedAt = new Date() } = meta;
   const dateStr =
     typeof generatedAt === "string"
       ? generatedAt
       : formatDateTime(generatedAt);
 
-  // Group guests by group
+  // Helper to resolve group name
+  const getGroupName = (guest) => {
+    if (guest.city && String(guest.city).trim()) return String(guest.city).trim();
+    if (guest.group && String(guest.group).trim()) return String(guest.group).trim();
+    if (guest.groupData?.name && String(guest.groupData.name).trim()) return String(guest.groupData.name).trim();
+    if (guest.groupId && Array.isArray(availableGroups)) {
+      const match = availableGroups.find((g) => g.id === guest.groupId);
+      if (match?.name) return match.name;
+    }
+    return "Other";
+  };
+
+  // Group guests by group/city
   const groupedGuests = guests.reduce((acc, guest) => {
-    const groupName = guest.group || "Other";
+    const groupName = getGroupName(guest);
     if (!acc[groupName]) {
       acc[groupName] = [];
     }
@@ -96,23 +207,43 @@ const GuestListPDF = ({ guests = [], meta = {} }) => {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Guest List</Text>
-          <Text style={styles.subtitle}>
-            {userName ? `User: ${userName} · ` : ""}
-            Generated: {dateStr}
-          </Text>
-          <Text style={styles.subtitle}>
-            Total: {guests.length} | Attending: {attendingCount} | Pending:{" "}
-            {pendingCount} | Not Attending: {declinedCount} | Adults:{" "}
-            {adultsCount} | Children: {childrenCount}
-          </Text>
+        {/* Top Header */}
+        <View style={styles.headerRow}>
+          <View style={styles.brandContainer}>
+            <Image
+              src={`${typeof window !== "undefined" ? window.location.origin : ""}/happywedzLogo.png`}
+              style={styles.logo}
+            />
+            <View>
+              <Text style={styles.brandName}>HappyWedz</Text>
+              <Text style={styles.brandTagline}>India's Favourite Wedding Planning Platform</Text>
+              <Text style={styles.brandUrl}>www.happywedz.com</Text>
+            </View>
+          </View>
+          <View style={styles.reportMetaBox}>
+            <Text style={styles.reportTitle}>Wedding Guest List</Text>
+            {userName ? (
+              <Text style={styles.reportMetaText}>Planner: {userName}</Text>
+            ) : null}
+            <Text style={styles.reportMetaText}>Generated: {dateStr}</Text>
+          </View>
         </View>
 
+        {/* Summary Metrics Bar */}
+        <View style={styles.summaryBar}>
+          <Text style={styles.summaryText}>Total Guests: {guests.length}</Text>
+          <Text style={styles.summaryItem}>Attending: {attendingCount}</Text>
+          <Text style={styles.summaryItem}>Pending: {pendingCount}</Text>
+          <Text style={styles.summaryItem}>Not Attending: {declinedCount}</Text>
+          <Text style={styles.summaryItem}>Adults: {adultsCount}</Text>
+          <Text style={styles.summaryItem}>Children: {childrenCount}</Text>
+        </View>
+
+        {/* Groups & Guest Tables */}
         {Object.entries(groupedGuests).map(([groupName, groupGuests]) => (
-          <View key={groupName}>
+          <View key={groupName} wrap={false}>
             <Text style={styles.groupHeader}>
-              {groupName} ({groupGuests.length})
+              {groupName} ({groupGuests.length} {groupGuests.length === 1 ? "Guest" : "Guests"})
             </Text>
             <View style={styles.table}>
               {/* Table Header */}
@@ -155,12 +286,30 @@ const GuestListPDF = ({ guests = [], meta = {} }) => {
         ))}
 
         {guests.length === 0 && (
-          <View style={{ marginTop: 20 }}>
-            <Text style={{ fontSize: 12, color: "#6b7280" }}>
-              No guests found
+          <View style={{ marginTop: 20, padding: 15, textAlign: "center" }}>
+            <Text style={{ fontSize: 11, color: "#6b7280" }}>
+              No guests found in this wedding guest list.
             </Text>
           </View>
         )}
+
+        {/* About HappyWedz Section */}
+        <View style={styles.aboutBox} wrap={false}>
+          <Text style={styles.aboutTitle}>About HappyWedz</Text>
+          <Text style={styles.aboutDescription}>
+            HappyWedz is India's favourite one-stop wedding planning platform. From discovering verified venues, photographers, makeup artists, and decorators to managing digital guest lists, RSVPs, e-invitations, checklists, and wedding budgets — HappyWedz simplifies wedding planning from start to finish.
+          </Text>
+        </View>
+
+        {/* Footer */}
+        <View style={styles.footerRow} wrap={false}>
+          <Text style={styles.footerText}>
+            Plan your dream wedding at www.happywedz.com | Contact: support@happywedz.com
+          </Text>
+          <Text style={styles.footerText}>
+            HappyWedz Wedding Planner
+          </Text>
+        </View>
       </Page>
     </Document>
   );

@@ -19,11 +19,13 @@ export default function Breadcrumbs({ items }) {
 
   return (
     <nav aria-label="breadcrumb" className="my-2">
-      <Helmet>
-        <script type="application/ld+json">
-          {JSON.stringify(schemaPayload)}
-        </script>
-      </Helmet>
+      {import.meta.env.VITE_ENABLE_SEO === "true" && (
+        <Helmet>
+          <script type="application/ld+json">
+            {JSON.stringify(schemaPayload)}
+          </script>
+        </Helmet>
+      )}
 
       <ol
         className="breadcrumb mb-0"

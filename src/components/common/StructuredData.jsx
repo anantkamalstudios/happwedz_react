@@ -11,6 +11,7 @@ import { Helmet } from "react-helmet-async";
  * Emitting zero ratings or fake ratings is a manual-action risk.
  */
 export default function StructuredData({ type, data }) {
+  if (import.meta.env.VITE_ENABLE_SEO !== "true") return null;
   if (!type) return null;
 
   let schemaPayload = null;

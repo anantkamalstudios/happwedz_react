@@ -11,9 +11,13 @@ import {
   FaChevronDown,
   FaTrash,
   FaWhatsapp,
+  FaFileImport,
+  FaMapMarkerAlt,
+  FaEdit,
 } from "react-icons/fa";
 import Swal from "sweetalert2";
 import EmailModal from "../../../ui/EmailModal";
+import BulkImportModal from "./BulkImportModal";
 import { pdf } from "@react-pdf/renderer";
 import GuestListPDF from "./GuestListPDF";
 import { useNavigate } from "react-router-dom";
@@ -42,6 +46,7 @@ const Guests = () => {
   const [selectedGroup, setSelectedGroup] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [showAddGuestForm, setShowAddGuestForm] = useState(false);
+  const [showBulkImportModal, setShowBulkImportModal] = useState(false);
   const [showAddGroupForm, setShowAddGroupForm] = useState(false);
   const [showMessageOptions, setShowMessageOptions] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -60,6 +65,9 @@ const Guests = () => {
   const [groupsLoading, setGroupsLoading] = useState(false);
   const [selectedGuestIds, setSelectedGuestIds] = useState(new Set());
   const [whatsappRecipients, setWhatsappRecipients] = useState(null);
+  const [editingGuest, setEditingGuest] = useState(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [editFormError, setEditFormError] = useState("");
 
   const statusOptions = ["Attending", "Not Attending", "Pending"];
   const typeOptions = ["Adult", "Child"];
@@ -86,17 +94,47 @@ const Guests = () => {
       });
       return;
     }
-    printWindow.document.write("<html><head><title>Guest List</title>");
+    printWindow.document.write("<html><head><title>HappyWedz - Wedding Guest List</title>");
     printWindow.document.write(`
       <style>
-        body { font-family: Arial; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background-color: #f4f4f4; }
+        body { font-family: Arial, sans-serif; padding: 25px; color: #1e293b; }
+        .print-header { display: flex; justify-content: space-between; border-bottom: 2px solid #ed1173; padding-bottom: 12px; margin-bottom: 15px; }
+        .brand { font-size: 24px; font-weight: bold; color: #ed1173; }
+        .tagline { font-size: 11px; color: #64748b; margin-top: 2px; }
+        .url { font-size: 10px; color: #ed1173; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+        th, td { border: 1px solid #e2e8f0; padding: 8px 10px; font-size: 12px; text-align: left; }
+        th { background-color: #f8fafc; font-weight: bold; color: #334155; }
+        .about-box { margin-top: 25px; padding: 12px 15px; background: #fafafa; border: 1px solid #e5e7eb; border-top: 3px solid #ed1173; border-radius: 4px; }
+        .about-title { font-size: 13px; font-weight: bold; color: #ed1173; margin-bottom: 4px; }
+        .about-desc { font-size: 11px; color: #475569; line-height: 1.4; margin: 0; }
+        .wgl-action-button, .wgl-guest-actions { display: none !important; }
       </style>
     `);
     printWindow.document.write("</head><body>");
+    printWindow.document.write(`
+      <div class="print-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <img src="${window.location.origin}/happywedzLogo.png" style="height: 65px; width: 65px; object-fit: contain;" alt="HappyWedz" />
+          <div>
+            <div class="brand">HappyWedz</div>
+            <div class="tagline">India's Favourite Wedding Planning Platform</div>
+            <div class="url">www.happywedz.com</div>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <h3 style="margin: 0; font-size: 16px; color: #0f172a;">Wedding Guest List</h3>
+          <p style="margin: 3px 0 0 0; font-size: 11px; color: #64748b;">Planner: ${userName || "Couple"}</p>
+        </div>
+      </div>
+    `);
     printWindow.document.write(printContents);
+    printWindow.document.write(`
+      <div class="about-box">
+        <div class="about-title">About HappyWedz</div>
+        <p class="about-desc">HappyWedz is India's favourite one-stop wedding planning platform. From discovering verified venues, photographers, makeup artists, and decorators to managing digital guest lists, RSVPs, e-invitations, checklists, and wedding budgets — HappyWedz simplifies wedding planning from start to finish. Visit www.happywedz.com</p>
+      </div>
+    `);
     printWindow.document.write("</body></html>");
     printWindow.document.close();
     printWindow.print();
@@ -112,7 +150,7 @@ const Guests = () => {
       const userIdToSend = isNaN(userId) ? userId : parseInt(userId, 10);
 
       const res = await axiosInstance.get(
-        `https://happywedz.com/api/guestlist/user/${userIdToSend}`
+        `/guestlist/user/${userIdToSend}`
       );
 
       if (res.data?.success && Array.isArray(res.data?.guests)) {
@@ -138,7 +176,7 @@ const Guests = () => {
     }
     setGroupsLoading(true);
     try {
-      const res = await axiosInstance.get("https://happywedz.com/api/groups");
+      const res = await axiosInstance.get("/groups");
 
       if (res.data?.success && Array.isArray(res.data?.groups)) {
         setAvailableGroups(res.data.groups);
@@ -157,62 +195,56 @@ const Guests = () => {
     fetchGroups();
   }, [fetchGroups]);
 
+  // Resolve the group or city name for any guest
+  const getGuestGroupName = useCallback(
+    (g) => {
+      if (!g) return "Other";
+      if (g.city && String(g.city).trim()) return String(g.city).trim();
+      if (g.group && String(g.group).trim()) return String(g.group).trim();
+      if (g.groupData?.name && String(g.groupData.name).trim())
+        return String(g.groupData.name).trim();
+      if (g.groupId) {
+        const group = availableGroups.find((gr) => gr.id === g.groupId);
+        if (group?.name) return group.name;
+      }
+      return "Other";
+    },
+    [availableGroups]
+  );
+
   // Get unique group names from guests for filtering
   const _uniqueGroups = React.useMemo(() => {
     const groupNames = new Set();
     guests.forEach((g) => {
-      if (g.group) {
-        groupNames.add(g.group);
-      } else if (g.groupId) {
-        // If guest has groupId, find the group name
-        const group = availableGroups.find((gr) => gr.id === g.groupId);
-        if (group) {
-          groupNames.add(group.name);
-        } else {
-          groupNames.add("Other");
-        }
-      } else {
-        groupNames.add("Other");
-      }
+      groupNames.add(getGuestGroupName(g));
     });
     return ["All", ...Array.from(groupNames)];
-  }, [guests, availableGroups]);
+  }, [guests, getGuestGroupName]);
 
   const filteredAndGroupedGuests = React.useMemo(() => {
     const filtered = guests.filter((g) => {
       if (!g) return false;
-
-      // Get group name for filtering
-      let guestGroupName = "Other";
-      if (g.group) {
-        guestGroupName = g.group;
-      } else if (g.groupId) {
-        const group = availableGroups.find((gr) => gr.id === g.groupId);
-        guestGroupName = group ? group.name : "Other";
-      }
+      const guestGroupName = getGuestGroupName(g);
 
       return (
-        (selectedGroup === "All" || guestGroupName === selectedGroup) &&
+        (selectedGroup === "All" ||
+          guestGroupName.toLowerCase() === selectedGroup.toLowerCase()) &&
         (selectedStatus === "All" || g.status === selectedStatus) &&
-        g.name.toLowerCase().includes(searchTerm.toLowerCase())
+        (g.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          guestGroupName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          g.phone_number?.includes(searchTerm))
       );
     });
 
     return filtered.reduce((acc, guest) => {
-      let groupName = "Other";
-      if (guest.group) {
-        groupName = guest.group;
-      } else if (guest.groupId) {
-        const group = availableGroups.find((gr) => gr.id === guest.groupId);
-        groupName = group ? group.name : "Other";
-      }
+      const groupName = getGuestGroupName(guest);
       if (!acc[groupName]) {
         acc[groupName] = [];
       }
       acc[groupName].push(guest);
       return acc;
     }, {});
-  }, [guests, selectedGroup, selectedStatus, searchTerm, availableGroups]);
+  }, [guests, selectedGroup, selectedStatus, searchTerm, getGuestGroupName]);
 
   const toggleGuestSelection = (id) => {
     setSelectedGuestIds((prev) => {
@@ -275,7 +307,7 @@ const Guests = () => {
       }
 
       const res = await axiosInstance.post(
-        "https://happywedz.com/api/guestlist",
+        "/guestlist",
         payload
       );
       if (res.data?.success && res.data.guest) {
@@ -305,8 +337,12 @@ const Guests = () => {
   };
 
   const updateGuestField = async (id, field, value) => {
+    // Optimistically update local state immediately
+    setGuests((prev) =>
+      prev.map((g) => (g.id === id ? { ...g, [field]: value } : g))
+    );
     try {
-      await axiosInstance.put(`https://happywedz.com/api/guestlist/${id}`, {
+      await axiosInstance.put(`/guestlist/${id}`, {
         [field]: value,
       });
       setRefresh((prev) => !prev);
@@ -319,10 +355,95 @@ const Guests = () => {
     if (!window.confirm("Are you sure?")) return;
     setGuests((prevGuests) => prevGuests.filter((guest) => guest.id !== id));
     try {
-      await axiosInstance.delete(`https://happywedz.com/api/guestlist/${id}`);
+      await axiosInstance.delete(`/guestlist/${id}`);
     } catch (err) {
       console.error("Delete Guest Error:", err);
       setRefresh((prev) => !prev);
+    }
+  };
+
+  const handleOpenEdit = (guest) => {
+    setEditingGuest({
+      id: guest.id,
+      name: guest.name || "",
+      email: guest.email || "",
+      phone_number: guest.phone_number || "",
+      groupId: guest.groupId || "",
+      status: guest.status || "Pending",
+      type: guest.type || "Adult",
+      menu: guest.menu || "Veg",
+      companions: guest.companions ?? 0,
+      seat_number: guest.seat_number || "",
+    });
+    setEditFormError("");
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditingGuest((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSaveEdit = async (e) => {
+    e?.preventDefault();
+    if (!editingGuest) return;
+
+    if (!editingGuest.name || !editingGuest.name.trim()) {
+      setEditFormError("Guest name is required.");
+      return;
+    }
+
+    setIsSavingEdit(true);
+    setEditFormError("");
+
+    try {
+      const payload = {
+        name: editingGuest.name.trim(),
+        email: editingGuest.email?.trim() || null,
+        phone_number: editingGuest.phone_number?.trim() || null,
+        groupId: editingGuest.groupId
+          ? isNaN(editingGuest.groupId)
+            ? editingGuest.groupId
+            : parseInt(editingGuest.groupId, 10)
+          : null,
+        status: editingGuest.status || "Pending",
+        type: editingGuest.type || "Adult",
+        menu: editingGuest.menu || "Veg",
+        companions: parseInt(editingGuest.companions, 10) || 0,
+        seat_number: editingGuest.seat_number ? String(editingGuest.seat_number).trim() : null,
+      };
+
+      // Optimistically update local state
+      setGuests((prev) =>
+        prev.map((g) => (g.id === editingGuest.id ? { ...g, ...payload } : g))
+      );
+
+      const res = await axiosInstance.put(
+        `/guestlist/${editingGuest.id}`,
+        payload
+      );
+
+      if (res.data?.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Guest Updated",
+          text: `"${editingGuest.name}" updated successfully`,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
+
+      setEditingGuest(null);
+      setRefresh((prev) => !prev);
+    } catch (err) {
+      console.error("Save Edit Error:", err);
+      setEditFormError(
+        err.response?.data?.message || err.message || "Failed to update guest."
+      );
+    } finally {
+      setIsSavingEdit(false);
     }
   };
 
@@ -495,7 +616,7 @@ const Guests = () => {
       };
 
       const response = await axiosInstance.post(
-        "https://happywedz.com/api/guestlist/send-guestlist-email",
+        "/guestlist/send-guestlist-email",
         payload
       );
 
@@ -563,6 +684,7 @@ const Guests = () => {
           guests={guests}
           meta={{
             userName: userName || "",
+            availableGroups: availableGroups || [],
             generatedAt: new Date(),
           }}
         />
@@ -717,6 +839,25 @@ const Guests = () => {
               </button>
               <button
                 className="wgl-button wgl-button-secondary"
+                style={{
+                  background: "#fff0f6",
+                  color: "#ed1173",
+                  borderColor: "#f9b6d6",
+                  fontWeight: 600,
+                }}
+                onClick={() => {
+                  setShowBulkImportModal(true);
+                  setShowAddGuestForm(false);
+                  setShowAddGroupForm(false);
+                  setShowMessageOptions(false);
+                }}
+              >
+                <span className="fs-14 d-flex align-items-center gap-1">
+                  <FaFileImport className="wgl-button-icon" /> Bulk Import
+                </span>
+              </button>
+              <button
+                className="wgl-button wgl-button-secondary"
                 onClick={() => {
                   setShowAddGroupForm(!showAddGroupForm);
                   setShowAddGuestForm(false);
@@ -855,9 +996,32 @@ const Guests = () => {
           {showAddGuestForm && (
             <div className="wgl-add-form card shadow-sm mb-4">
               <div className="card-body p-4">
-                <h3 className="wgl-form-title card-title mb-4">
-                  Add New Guest
-                </h3>
+                <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                  <h3 className="wgl-form-title card-title m-0">
+                    Add New Guest
+                  </h3>
+                  <button
+                    type="button"
+                    className="btn btn-sm"
+                    style={{
+                      background: "#fff0f6",
+                      color: "#ed1173",
+                      border: "1px solid #f9b6d6",
+                      fontWeight: 600,
+                      borderRadius: "8px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "6px 14px",
+                    }}
+                    onClick={() => {
+                      setShowAddGuestForm(false);
+                      setShowBulkImportModal(true);
+                    }}
+                  >
+                    <FaFileImport /> Import in Bulk (Excel / CSV)
+                  </button>
+                </div>
                 {formError && (
                   <div className="alert alert-danger small p-2">
                     {formError}
@@ -1010,7 +1174,7 @@ const Guests = () => {
 
                     try {
                       const res = await axiosInstance.post(
-                        "https://happywedz.com/api/groups/add",
+                        "/groups/add",
                         {
                           name: newGroupName.trim(),
                         }
@@ -1059,9 +1223,38 @@ const Guests = () => {
               Object.entries(filteredAndGroupedGuests).map(
                 ([groupName, groupGuests]) => (
                   <div key={groupName} className="wgl-guest-group-section mb-5">
-                    <h4 className="wgl-group-title p-2">
-                      {groupName} ({groupGuests.length})
-                    </h4>
+                    <div
+                      className="d-flex align-items-center justify-content-between px-3 py-2 mb-3 rounded-2 shadow-sm"
+                      style={{
+                        background: "linear-gradient(90deg, #fff0f6 0%, #fdf2f8 100%)",
+                        borderLeft: "5px solid #ed1173",
+                      }}
+                    >
+                      <div className="d-flex align-items-center gap-2">
+                        <FaMapMarkerAlt style={{ color: "#ed1173", fontSize: "1.1rem" }} />
+                        <h4
+                          className="wgl-group-title m-0 fw-bold"
+                          style={{
+                            color: "#1e293b",
+                            textTransform: "capitalize",
+                            fontSize: "1.15rem",
+                          }}
+                        >
+                          {groupName}
+                        </h4>
+                      </div>
+                      <span
+                        className="badge rounded-pill px-3 py-2"
+                        style={{
+                          background: "#ed1173",
+                          color: "#fff",
+                          fontWeight: 600,
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        {groupGuests.length} {groupGuests.length === 1 ? "Guest" : "Guests"}
+                      </span>
+                    </div>
 
                     <table className="wgl-guest-table">
                       <thead>
@@ -1149,47 +1342,57 @@ const Guests = () => {
                             </td>
 
                             <td className="wgl-guest-actions fs-14 text-center">
-                              <button
-                                className="wgl-action-button"
-                                title="WhatsApp"
-                                onClick={() => {
-                                  if (!g.phone_number) {
-                                    Swal.fire({
-                                      icon: "info",
-                                      text: "No phone number for this guest.",
-                                      confirmButtonText: "OK",
-                                      confirmButtonColor: "#C31162",
-                                    });
-                                    return;
-                                  }
-                                  const msg = encodeURIComponent(
-                                    whatsappMessage ||
-                                    formatGuestListForWhatsApp()
-                                  );
-                                  const phone = sanitizePhone(g.phone_number);
-                                  if (!/^\d+$/.test(phone)) {
-                                    Swal.fire({
-                                      icon: "error",
-                                      text: "Invalid phone number for this guest.",
-                                      confirmButtonText: "OK",
-                                      confirmButtonColor: "#C31162",
-                                    });
-                                    return;
-                                  }
-                                  window.open(
-                                    `https://wa.me/${phone}?text=${msg}`,
-                                    "_blank"
-                                  );
-                                }}
-                              >
-                                <FaWhatsapp />
-                              </button>
-                              <button
-                                className="wgl-action-button wgl-action-delete"
-                                onClick={() => deleteGuestAPI(g.id)}
-                              >
-                                <FaTrash />
-                              </button>
+                              <div className="d-flex align-items-center justify-content-center gap-1">
+                                <button
+                                  className="wgl-action-button wgl-action-edit"
+                                  title="Edit Guest"
+                                  onClick={() => handleOpenEdit(g)}
+                                >
+                                  <FaEdit />
+                                </button>
+                                <button
+                                  className="wgl-action-button"
+                                  title="WhatsApp"
+                                  onClick={() => {
+                                    if (!g.phone_number) {
+                                      Swal.fire({
+                                        icon: "info",
+                                        text: "No phone number for this guest.",
+                                        confirmButtonText: "OK",
+                                        confirmButtonColor: "#C31162",
+                                      });
+                                      return;
+                                    }
+                                    const msg = encodeURIComponent(
+                                      whatsappMessage ||
+                                        formatGuestListForWhatsApp()
+                                    );
+                                    const phone = sanitizePhone(g.phone_number);
+                                    if (!/^\d+$/.test(phone)) {
+                                      Swal.fire({
+                                        icon: "error",
+                                        text: "Invalid phone number for this guest.",
+                                        confirmButtonText: "OK",
+                                        confirmButtonColor: "#C31162",
+                                      });
+                                      return;
+                                    }
+                                    window.open(
+                                      `https://wa.me/${phone}?text=${msg}`,
+                                      "_blank"
+                                    );
+                                  }}
+                                >
+                                  <FaWhatsapp />
+                                </button>
+                                <button
+                                  className="wgl-action-button wgl-action-delete"
+                                  title="Delete Guest"
+                                  onClick={() => deleteGuestAPI(g.id)}
+                                >
+                                  <FaTrash />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -1206,6 +1409,222 @@ const Guests = () => {
           </div>
         </div>
       </div>
+
+      {/* Bulk Import Guests Modal */}
+      <BulkImportModal
+        isOpen={showBulkImportModal}
+        onClose={() => setShowBulkImportModal(false)}
+        onSuccess={async () => {
+          await fetchGroups();
+          await fetchGuests();
+        }}
+        availableGroups={availableGroups}
+        userId={userId}
+      />
+
+      {/* Edit Guest Modal */}
+      {editingGuest && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.6)", zIndex: 1050 }}
+        >
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+              <div
+                className="modal-header text-white"
+                style={{ background: "linear-gradient(135deg, #ed1173 0%, #c31162 100%)" }}
+              >
+                <div className="d-flex align-items-center gap-2">
+                  <FaEdit className="fs-5" />
+                  <h5 className="modal-title fw-bold m-0 text-white">Edit Guest Details</h5>
+                </div>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
+                  onClick={() => setEditingGuest(null)}
+                ></button>
+              </div>
+
+              <form onSubmit={handleSaveEdit}>
+                <div className="modal-body p-4">
+                  {editFormError && (
+                    <div className="alert alert-danger small p-2 mb-3 rounded-3">
+                      {editFormError}
+                    </div>
+                  )}
+
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <label className="form-label fw-semibold text-dark fs-14">
+                        Guest Name <span className="text-danger">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        className="form-control"
+                        placeholder="e.g. Rahul Sharma"
+                        value={editingGuest.name}
+                        onChange={handleEditChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="col-md-6">
+                      <label className="form-label fw-semibold text-dark fs-14">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        className="form-control"
+                        placeholder="e.g. rahul@example.com"
+                        value={editingGuest.email}
+                        onChange={handleEditChange}
+                      />
+                    </div>
+
+                    <div className="col-md-6">
+                      <label className="form-label fw-semibold text-dark fs-14">
+                        Phone Number
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone_number"
+                        className="form-control"
+                        placeholder="e.g. +91 9876543210"
+                        value={editingGuest.phone_number}
+                        onChange={handleEditChange}
+                      />
+                    </div>
+
+                    <div className="col-md-6">
+                      <label className="form-label fw-semibold text-dark fs-14">
+                        City / Group
+                      </label>
+                      <select
+                        name="groupId"
+                        className="form-select"
+                        value={editingGuest.groupId || ""}
+                        onChange={handleEditChange}
+                      >
+                        <option value="">Other / No Group</option>
+                        {availableGroups.map((g) => (
+                          <option key={g.id} value={g.id}>
+                            {g.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold text-dark fs-14">
+                        RSVP Status
+                      </label>
+                      <select
+                        name="status"
+                        className="form-select"
+                        value={editingGuest.status}
+                        onChange={handleEditChange}
+                      >
+                        {statusOptions.map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold text-dark fs-14">
+                        Guest Type
+                      </label>
+                      <select
+                        name="type"
+                        className="form-select"
+                        value={editingGuest.type}
+                        onChange={handleEditChange}
+                      >
+                        {typeOptions.map((t) => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold text-dark fs-14">
+                        Dietary / Menu
+                      </label>
+                      <select
+                        name="menu"
+                        className="form-select"
+                        value={editingGuest.menu}
+                        onChange={handleEditChange}
+                      >
+                        {menuOptions.map((m) => (
+                          <option key={m} value={m}>
+                            {m}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="col-md-6">
+                      <label className="form-label fw-semibold text-dark fs-14">
+                        Companions (+1s)
+                      </label>
+                      <input
+                        type="number"
+                        name="companions"
+                        min="0"
+                        className="form-control"
+                        placeholder="0"
+                        value={editingGuest.companions}
+                        onChange={handleEditChange}
+                      />
+                    </div>
+
+                    <div className="col-md-6">
+                      <label className="form-label fw-semibold text-dark fs-14">
+                        Seat / Table Number
+                      </label>
+                      <input
+                        type="text"
+                        name="seat_number"
+                        className="form-control"
+                        placeholder="e.g. Table-1, A12"
+                        value={editingGuest.seat_number}
+                        onChange={handleEditChange}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="modal-footer bg-light px-4 py-3 border-top d-flex justify-content-end gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-secondary px-4 rounded-pill"
+                    onClick={() => setEditingGuest(null)}
+                    disabled={isSavingEdit}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn text-white px-4 rounded-pill fw-semibold shadow-sm"
+                    style={{ background: "#ed1173" }}
+                    disabled={isSavingEdit}
+                  >
+                    {isSavingEdit ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

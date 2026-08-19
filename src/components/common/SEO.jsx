@@ -30,6 +30,17 @@ export default function SEO({
   type = "website",
   canonical,
 }) {
+  const isSEOEnabled = import.meta.env.VITE_ENABLE_SEO === "true";
+
+  if (!isSEOEnabled) {
+    return (
+      <Helmet>
+        <title>{title || "HappyWedz"}</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+    );
+  }
+
   const { pathname } = useLocation();
   // Strip trailing slash once; use this for both canonical and metadata lookup
   const normalizedPath = pathname.length > 1 && pathname.endsWith("/")
@@ -102,6 +113,10 @@ export default function SEO({
       <meta name="title" content={finalTitle} />
       <meta name="description" content={finalDescription} />
       <link rel="canonical" href={currentCanonical} />
+
+      {/* Global No-Index during development/staging */}
+      <meta name="robots" content="noindex, nofollow" />
+      <meta name="googlebot" content="noindex, nofollow" />
 
       {/* Open Graph / Facebook */}
       <meta property="og:site_name" content="HappyWedz" />

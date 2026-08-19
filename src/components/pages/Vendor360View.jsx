@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Image360Modal from "../ui/Image360Modal";
+import { get360Assets } from "../../utils/view360Helper";
 
 const Vendor360View = () => {
   const { id: paramId } = useParams();
@@ -15,6 +16,7 @@ const Vendor360View = () => {
 
   const [title, setTitle] = useState("360° View");
   const [images, setImages] = useState([]);
+  const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,14 +29,10 @@ const Vendor360View = () => {
     fetch(url, { mode: "cors" })
       .then((res) => res.json())
       .then((data) => {
-        const media = Array.isArray(data?.media) ? data.media : [];
-        const normalized = media.filter(Boolean).map((s) =>
-          s
-            .toString()
-            .replace(/^\s*`|`\s*$/g, "")
-            .trim()
-        );
-        setImages(normalized);
+        // Only what the vendor uploaded under 360° — never the regular gallery
+        const assets = get360Assets(data);
+        setImages(assets.images);
+        setVideos(assets.videos);
         const vendorName =
           data?.attributes?.name ||
           data?.vendor?.vendor_name ||
@@ -42,7 +40,10 @@ const Vendor360View = () => {
           "Vendor";
         setTitle(`${vendorName} • 360°`);
       })
-      .catch(() => setImages([]))
+      .catch(() => {
+        setImages([]);
+        setVideos([]);
+      })
       .finally(() => setLoading(false));
   }, [vendorServiceId]);
 
@@ -70,17 +71,61 @@ const Vendor360View = () => {
     );
   }
 
-  if (!images.length) {
+  if (images.length > 0) {
     return (
-      <div style={{ padding: 24 }}>
-        <p>No 360° images available for this vendor.</p>
-        <button onClick={() => navigate(-1)}>Go Back</button>
+      <Image360Modal
+        images={images}
+        title={title}
+        onClose={() => navigate(-1)}
+      />
+    );
+  }
+
+  if (videos.length > 0) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "#000",
+          zIndex: 1080,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <div
+          className="d-flex align-items-center justify-content-between px-3 py-2"
+          style={{ color: "#fff" }}
+        >
+          <span className="fw-semibold text-truncate">{title}</span>
+          <button
+            type="button"
+            className="btn btn-sm btn-light rounded-circle"
+            aria-label="Close 360° view"
+            onClick={() => navigate(-1)}
+          >
+            ✕
+          </button>
+        </div>
+        <div className="flex-grow-1 d-flex align-items-center justify-content-center px-3 pb-3">
+          <video
+            key={videos[0]}
+            src={videos[0]}
+            controls
+            autoPlay
+            playsInline
+            style={{ maxWidth: "100%", maxHeight: "100%" }}
+          />
+        </div>
       </div>
     );
   }
 
   return (
-    <Image360Modal images={images} title={title} onClose={() => navigate(-1)} />
+    <div style={{ padding: 24 }}>
+      <p>No 360° content available for this vendor.</p>
+      <button onClick={() => navigate(-1)}>Go Back</button>
+    </div>
   );
 };
 

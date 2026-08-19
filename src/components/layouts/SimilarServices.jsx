@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Container, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import GridView from "./Main/GridView";
+import { hasView360 } from "../../utils/view360Helper";
 // import { transformApiData } from "../../hooks/useApiData";
 
 const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
@@ -150,6 +151,9 @@ const transformApiData = (items) => {
       vendor_name:
         vendor.businessName || attributes.vendor_name || attributes.Name || "",
       url: attributes.Website || attributes.URL || null,
+
+      // Only vendors who uploaded 360° content from their login get the 360° badge
+      has360: hasView360(item),
     };
   }).filter((item) => item && item.image && String(item.image).trim() !== "");
 };

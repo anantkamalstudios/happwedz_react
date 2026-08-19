@@ -2,11 +2,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BedDouble,
+  Calendar,
   ChevronDown,
   Loader2,
   Search,
   X,
 } from "lucide-react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import {
   fetchHotelCityRegions,
   fetchHotelCountries,
@@ -17,6 +20,7 @@ import {
   createCorrelationId,
   defaultFilters,
 } from "../../hotelbeds/hotelbedsDetailHelpers";
+import { toApiDate, formatDateWithWeekday } from "../../../../../utils/dateFormat";
 import "./HotelSearchForm.css";
 
 const HOTEL_COUNTRIES = [
@@ -990,36 +994,52 @@ export default function HotelSearchForm({
             </div>
           </div>
 
-          <div className="hotel-main-field">
-            <div className="hotel-main-label">Check-in</div>
-            <input
-              className="hotel-main-input"
-              type="date"
-              value={hotelCheckIn}
-              onChange={(event) => {
-                const value = event.target.value;
+          <div className="hotel-main-field hotel-main-field--date">
+            <div className="hotel-main-label">
+              <Calendar size={12} className="hotel-label-icon" />
+              Check-in
+            </div>
+            <DatePicker
+              selected={parseDateInput(hotelCheckIn)}
+              onChange={(date) => {
+                const value = toApiDate(date);
                 setHotelCheckIn(value);
                 if (hotelCheckOut && hotelCheckOut < value) {
                   setHotelCheckOut(value);
                 }
               }}
+              minDate={new Date()}
+              dateFormat="dd/MM/yyyy"
+              placeholderText="Select Date"
+              className="hotel-main-input hotel-datepicker-input"
             />
+            <div className="hotel-main-sub">
+              {hotelCheckIn ? formatDateWithWeekday(hotelCheckIn, { long: true }).split(",")[0] : "Add check-in"}
+            </div>
           </div>
 
-          <div className="hotel-main-field">
-            <div className="hotel-main-label">Check-out</div>
-            <input
-              className="hotel-main-input"
-              type="date"
-              min={hotelCheckIn || undefined}
-              value={hotelCheckOut}
-              onChange={(event) => setHotelCheckOut(event.target.value)}
+          <div className="hotel-main-field hotel-main-field--date">
+            <div className="hotel-main-label">
+              <Calendar size={12} className="hotel-label-icon" />
+              Check-out
+            </div>
+            <DatePicker
+              selected={parseDateInput(hotelCheckOut)}
+              onChange={(date) => setHotelCheckOut(toApiDate(date))}
+              minDate={parseDateInput(hotelCheckIn) || new Date()}
+              dateFormat="dd/MM/yyyy"
+              placeholderText="Select Date"
+              className="hotel-main-input hotel-datepicker-input"
             />
+            <div className="hotel-main-sub">
+              {hotelCheckOut ? formatDateWithWeekday(hotelCheckOut, { long: true }).split(",")[0] : "Add check-out"}
+            </div>
           </div>
 
           <div className="hotel-main-field hotel-main-field--nights">
             <div className="hotel-main-label">Total Nights</div>
             <div className="hotel-main-value">{totalNights > 0 ? `${totalNights} Night${totalNights > 1 ? "s" : ""}` : "--"}</div>
+            <div className="hotel-main-sub">{totalNights > 0 ? `${totalNights} night stay` : "Duration"}</div>
           </div>
 
           <div className="hotel-main-field hotel-main-field--guests">
@@ -1031,6 +1051,7 @@ export default function HotelSearchForm({
                 setShowRatingsDropdown(false);
                 setShowNationalityDropdown(false);
                 setShowResidenceDropdown(false);
+                setShowSearchCountryDropdown(false);
               }}
             >
               <div className="hotel-main-label">
@@ -1093,141 +1114,148 @@ export default function HotelSearchForm({
         ) : null}
 
         {!compact || showMoreOptionsRow ? (
-        <div className="hotel-more-options-row">
-          {!compact ? <div className="hotel-more-options-title">More Options:</div> : null}
+          <div className="hotel-more-options-row">
+            <div className="hotel-more-options-left">
+              {!compact ? <div className="hotel-more-options-title">More Options:</div> : null}
 
-          <div className="hotel-more-option-item">
-            <button
-              type="button"
-              className="hotel-more-option-button"
-              onClick={() => {
-                setShowSearchCountryDropdown((prev) => !prev);
-                setShowGuestsDropdown(false);
-                setShowRatingsDropdown(false);
-                setShowNationalityDropdown(false);
-                setShowResidenceDropdown(false);
-              }}
-            >
-              <span className="hotel-more-option-label">Search Country:</span>
-              <span className="hotel-more-option-value">
-                {selectedCountryLabel}
-                <ChevronDown size={12} />
-              </span>
-            </button>
+              <div className="hotel-more-options-chips">
+                <div className="hotel-more-option-item">
+                  <button
+                    type="button"
+                    className="hotel-more-option-button"
+                    onClick={() => {
+                      setShowSearchCountryDropdown((prev) => !prev);
+                      setShowGuestsDropdown(false);
+                      setShowRatingsDropdown(false);
+                      setShowNationalityDropdown(false);
+                      setShowResidenceDropdown(false);
+                    }}
+                  >
+                    <span className="hotel-more-option-label">Search Country:</span>
+                    <span className="hotel-more-option-value">
+                      {selectedCountryLabel}
+                      <ChevronDown size={12} />
+                    </span>
+                  </button>
 
-            {showSearchCountryDropdown ? (
-              <CountryDropdown
-                value={selectedCountry}
-                label="Select search country"
-                options={countryOptions}
-                onChange={(countryCode) => {
-                  const next = String(countryCode || "").toUpperCase();
-                  setSelectedCountry(next);
-                  setSelectedDestination(null);
-                  setSelectedHotel(null);
-                  setHotelLocation("");
-                  setHotelSuggestions([]);
-                  setShowHotelSuggestions(false);
-                }}
-                onClose={() => setShowSearchCountryDropdown(false)}
+                  {showSearchCountryDropdown ? (
+                    <CountryDropdown
+                      value={selectedCountry}
+                      label="Select search country"
+                      options={countryOptions}
+                      onChange={(countryCode) => {
+                        const next = String(countryCode || "").toUpperCase();
+                        setSelectedCountry(next);
+                        setSelectedDestination(null);
+                        setSelectedHotel(null);
+                        setHotelLocation("");
+                        setHotelSuggestions([]);
+                        setShowHotelSuggestions(false);
+                      }}
+                      onClose={() => setShowSearchCountryDropdown(false)}
+                    />
+                  ) : null}
+                </div>
+
+                <div className="hotel-more-option-item">
+                  <button
+                    type="button"
+                    className="hotel-more-option-button"
+                    onClick={() => {
+                      setShowRatingsDropdown((prev) => !prev);
+                      setShowGuestsDropdown(false);
+                      setShowNationalityDropdown(false);
+                      setShowResidenceDropdown(false);
+                      setShowSearchCountryDropdown(false);
+                    }}
+                  >
+                    <span className="hotel-more-option-label">Rating:</span>
+                    <span className="hotel-more-option-value">
+                      {selectedRatingsLabel}
+                      <ChevronDown size={12} />
+                    </span>
+                  </button>
+
+                  {showRatingsDropdown ? (
+                    <RatingDropdown
+                      selectedRatings={selectedRatings}
+                      onToggle={(value) =>
+                        setSelectedRatings((prev) => toggleArrayValue(prev, value))
+                      }
+                      onClose={() => setShowRatingsDropdown(false)}
+                    />
+                  ) : null}
+                </div>
+
+                <div className="hotel-more-option-item">
+                  <button
+                    type="button"
+                    className="hotel-more-option-button"
+                    onClick={() => {
+                      setShowNationalityDropdown((prev) => !prev);
+                      setShowGuestsDropdown(false);
+                      setShowRatingsDropdown(false);
+                      setShowResidenceDropdown(false);
+                      setShowSearchCountryDropdown(false);
+                    }}
+                  >
+                    <span className="hotel-more-option-label">Nationality:</span>
+                    <span className="hotel-more-option-value">
+                      {nationalityName}
+                      <ChevronDown size={12} />
+                    </span>
+                  </button>
+
+                  {showNationalityDropdown ? (
+                    <CountryDropdown
+                      value={nationality}
+                      label="Select nationality"
+                      onChange={setNationality}
+                      onClose={() => setShowNationalityDropdown(false)}
+                    />
+                  ) : null}
+                </div>
+
+                <div className="hotel-more-option-item">
+                  <button
+                    type="button"
+                    className="hotel-more-option-button"
+                    onClick={() => {
+                      setShowResidenceDropdown((prev) => !prev);
+                      setShowGuestsDropdown(false);
+                      setShowRatingsDropdown(false);
+                      setShowNationalityDropdown(false);
+                      setShowSearchCountryDropdown(false);
+                    }}
+                  >
+                    <span className="hotel-more-option-label">Country of Residence:</span>
+                    <span className="hotel-more-option-value">
+                      {residenceName}
+                      <ChevronDown size={12} />
+                    </span>
+                  </button>
+
+                  {showResidenceDropdown ? (
+                    <CountryDropdown
+                      value={countryOfResidence}
+                      label="Select country of residence"
+                      onChange={setCountryOfResidence}
+                      onClose={() => setShowResidenceDropdown(false)}
+                    />
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
+            <label className="hotel-gst-toggle">
+              <input
+                type="checkbox"
+                checked={gstClaimEligible}
+                onChange={(event) => setGstClaimEligible(event.target.checked)}
               />
-            ) : null}
+              <span>Show GST claim eligible rates</span>
+            </label>
           </div>
-
-          <div className="hotel-more-option-item">
-            <button
-              type="button"
-              className="hotel-more-option-button"
-              onClick={() => {
-                setShowRatingsDropdown((prev) => !prev);
-                setShowGuestsDropdown(false);
-                setShowNationalityDropdown(false);
-                setShowResidenceDropdown(false);
-              }}
-            >
-              <span className="hotel-more-option-label">Rating</span>
-              <span className="hotel-more-option-value">
-                {selectedRatingsLabel}
-                <ChevronDown size={12} />
-              </span>
-            </button>
-
-            {showRatingsDropdown ? (
-              <RatingDropdown
-                selectedRatings={selectedRatings}
-                onToggle={(value) =>
-                  setSelectedRatings((prev) => toggleArrayValue(prev, value))
-                }
-                onClose={() => setShowRatingsDropdown(false)}
-              />
-            ) : null}
-          </div>
-
-          <div className="hotel-more-option-item">
-            <button
-              type="button"
-              className="hotel-more-option-button"
-              onClick={() => {
-                setShowNationalityDropdown((prev) => !prev);
-                setShowGuestsDropdown(false);
-                setShowRatingsDropdown(false);
-                setShowResidenceDropdown(false);
-              }}
-            >
-              <span className="hotel-more-option-label">Nationality:</span>
-              <span className="hotel-more-option-value">
-                {nationalityName}
-                <ChevronDown size={12} />
-              </span>
-            </button>
-
-            {showNationalityDropdown ? (
-              <CountryDropdown
-                value={nationality}
-                label="Select nationality"
-                onChange={setNationality}
-                onClose={() => setShowNationalityDropdown(false)}
-              />
-            ) : null}
-          </div>
-
-          <div className="hotel-more-option-item">
-            <button
-              type="button"
-              className="hotel-more-option-button"
-              onClick={() => {
-                setShowResidenceDropdown((prev) => !prev);
-                setShowGuestsDropdown(false);
-                setShowRatingsDropdown(false);
-                setShowNationalityDropdown(false);
-              }}
-            >
-              <span className="hotel-more-option-label">Country of Residence:</span>
-              <span className="hotel-more-option-value">
-                {residenceName}
-                <ChevronDown size={12} />
-              </span>
-            </button>
-
-            {showResidenceDropdown ? (
-              <CountryDropdown
-                value={countryOfResidence}
-                label="Select country of residence"
-                onChange={setCountryOfResidence}
-                onClose={() => setShowResidenceDropdown(false)}
-              />
-            ) : null}
-          </div>
-
-          <label className="hotel-gst-toggle">
-            <input
-              type="checkbox"
-              checked={gstClaimEligible}
-              onChange={(event) => setGstClaimEligible(event.target.checked)}
-            />
-            <span>Show GST claim eligible rates</span>
-          </label>
-        </div>
         ) : null}
       </div>
     </div>
