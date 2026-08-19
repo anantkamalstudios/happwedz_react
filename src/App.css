@@ -1,55 +1,77 @@
-/* Optimized Google Fonts - Only load fonts actually used in the application */
-/* Reduced from 12 font families to 2, and limited to essential weights (400, 600, 700) */
-/* Added display=swap to prevent render blocking and improve FCP */
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+/* ############################################################################
+   NOT IMPORTED ANYWHERE — DO NOT EDIT. Kept only as the pre-split reference.
 
+   This file was split into App.critical.css (render-blocking, what first paint
+   needs) and App.deferred.css (page-specific rules, loaded after paint) because
+   shipping all 388KB as render-blocking CSS cost ~380ms before first paint.
+   Edits here have no effect; change one of those two files instead.
+   ############################################################################ */
+
+/* Google Fonts (Poppins + Inter) are loaded from index.html as a non-blocking
+   <link rel="preload" as="style">. CSS @import rules here used to chain the font
+   request behind this ~433KB stylesheet, which delayed FCP by seconds. */
+
+/* WOFF2, not OTF. The .otf originals were ~55KB each and four of them sat on the
+   critical request chain (1.8s max latency in Lighthouse); the woff2 builds are
+   ~27KB for byte-identical glyph coverage. Regenerate with:
+     python -c "from fontTools.ttLib import TTFont; f=TTFont('x.otf'); f.flavor='woff2'; f.save('x.woff2')"
+   font-display: swap — render text immediately in the fallback face instead of
+   holding it invisible while the font downloads. */
 @font-face {
   font-family: "AirbnbCereal";
-  src: url("./assets/fonts/AirbnbCereal_W_Lt.otf") format("opentype");
+  src: url("/fonts/AirbnbCereal_W_Lt.woff2") format("woff2");
   font-weight: 300;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
   font-family: "AirbnbCereal";
-  src: url("./assets/fonts/AirbnbCereal_W_Bk.otf") format("opentype");
+  src: url("/fonts/AirbnbCereal_W_Bk.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
   font-family: "AirbnbCereal";
-  src: url("./assets/fonts/AirbnbCereal_W_Md.otf") format("opentype");
+  src: url("/fonts/AirbnbCereal_W_Md.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
   font-family: "AirbnbCereal";
-  src: url("./assets/fonts/AirbnbCereal_W_Bd.otf") format("opentype");
+  src: url("/fonts/AirbnbCereal_W_Bd.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
   font-family: "AirbnbCereal";
-  src: url("./assets/fonts/AirbnbCereal_W_XBd.otf") format("opentype");
+  src: url("/fonts/AirbnbCereal_W_XBd.woff2") format("woff2");
   font-weight: 800;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
   font-family: "AirbnbCereal";
-  src: url("./assets/fonts/AirbnbCereal_W_Blk.otf") format("opentype");
+  src: url("/fonts/AirbnbCereal_W_Blk.woff2") format("woff2");
   font-weight: 900;
   font-style: normal;
+  font-display: swap;
 }
 
 :root {
   /* --rubik-font: "Bricolage Grotesque",  sans-serif; */
-  /* --rubik-font: "AirbnbCereal", serif; */
-  --rubik-font: "AirbnbCereal", serif;
+  /* Fallback is a sans stack, not `serif` — during the font-display: swap window
+     the fallback is what the user actually sees, and a serif substitute for a
+     geometric sans reflows noticeably wider. */
+  --rubik-font: "AirbnbCereal", "Poppins", system-ui, -apple-system, "Segoe UI",
+    sans-serif;
 
   --primary-pink: #ed1173;
   --primary-color: #ed1173;
@@ -7055,6 +7077,17 @@ input:checked+.slider:before {
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.wgl-action-edit {
+  background-color: #f0f7ff;
+  color: #0284c7;
+  border: 1px solid #bae6fd;
+}
+
+.wgl-action-edit:hover {
+  background-color: #e0f2fe;
+  color: #0369a1;
 }
 
 .wgl-action-delete {
@@ -15647,11 +15680,8 @@ input:checked+.slider:before {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.search-input,
-.hero-search {
-  /* border-radius: 25px;
-  border: 2px solid #e9ecef; */
-  transition: all 0.3s ease;
+.search-input {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .search-input:focus,
@@ -17516,7 +17546,7 @@ input:checked+.slider:before {
 }
 
 .custom-floral-graphic {
-  background-image: url("/public/images/home/leaf.png");
+  background-image: url("/images/home/leaf.png");
   background-repeat: no-repeat;
   background-size: contain;
   background-position: bottom center;
@@ -18451,8 +18481,8 @@ input:checked+.slider:before {
 .quick-inquiry-btn {
   display: block;
   width: 100%;
-  margin-top: 12px;
-  padding: 10px;
+  margin-top: 8px;
+  padding: 8px 12px;
   background-color: #e83e8c;
   color: white;
   border: none;

@@ -4,6 +4,7 @@ import { FiHeart, FiShare2, FiCheck } from "react-icons/fi";
 import { TEMPLATE_LIST } from "../../templates";
 import { weddingWebsiteApi } from "../../services/api/weddingWebsiteApi";
 import Swal from "sweetalert2";
+import SEO from "../common/SEO";
 
 const PublicWeddingView = () => {
   const { websiteUrl } = useParams();
@@ -290,6 +291,18 @@ const PublicWeddingView = () => {
 
   return (
     <div style={{ minHeight: "100vh", position: "relative" }}>
+      <SEO
+        title={
+          websiteData?.brideName && websiteData?.groomName
+            ? `${websiteData.brideName} & ${websiteData.groomName}'s Wedding | HappyWedz`
+            : "Wedding Website | HappyWedz"
+        }
+        description={
+          websiteData?.brideName && websiteData?.groomName
+            ? `Celebrate the wedding of ${websiteData.brideName} & ${websiteData.groomName}. View their love story, wedding events and gallery.`
+            : "View this beautiful wedding website created on HappyWedz."
+        }
+      />
       {/* Floating Share Button */}
       <button
         onClick={handleShare}

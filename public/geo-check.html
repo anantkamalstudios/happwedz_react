@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Geolocation check</title>
+<style>
+  body { font: 14px/1.5 system-ui, sans-serif; margin: 0; padding: 24px; background: #f8fafc; color: #1e293b; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  p.sub { margin: 0 0 20px; color: #64748b; }
+  button { padding: 10px 18px; border: 0; border-radius: 8px; background: #ed1173; color: #fff; font-weight: 600; cursor: pointer; }
+  button:disabled { opacity: .6; cursor: default; }
+  pre { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; white-space: pre-wrap; word-break: break-word; margin-top: 16px; }
+  .verdict { margin-top: 16px; padding: 12px 14px; border-radius: 10px; font-weight: 600; }
+  .ok { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+  .bad { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+</style>
+</head>
+<body>
+  <h1>Geolocation check</h1>
+  <p class="sub">Reports exactly what this browser tells the site, so we can tell whether a wrong city comes from the app or from the device.</p>
+  <button id="go">Run check</button>
+  <div id="verdict"></div>
+  <pre id="out">Not run yet.</pre>
+
+<script>
+const out = document.getElementById("out");
+const verdictEl = document.getElementById("verdict");
+const btn = document.getElementById("go");
+
+const log = (t) => { out.textContent = t; };
+
+btn.onclick = () => {
+  btn.disabled = true;
+  verdictEl.innerHTML = "";
+  log("Asking the browser for a high-accuracy fix (up to 20s)…");
+
+  let best = null;
+  const started = Date.now();
+
+  const finish = async () => {
+    navigator.geolocation.clearWatch(id);
+    clearTimeout(timer);
+    if (!best) { log("No position received."); btn.disabled = false; return; }
+
+    const c = best.coords;
+    const lines = [
+      "latitude:  " + c.latitude,
+      "longitude: " + c.longitude,
+      "accuracy:  " + Math.round(c.accuracy) + " m  (~" + (c.accuracy / 1000).toFixed(1) + " km)",
+      "altitude:  " + c.altitude,
+      "speed:     " + c.speed,
+      "elapsed:   " + ((Date.now() - started) / 1000).toFixed(1) + " s",
+      ""
+    ];
+
+    verdictEl.className = "verdict " + (c.accuracy <= 5000 ? "ok" : "bad");
+    verdictEl.textContent = c.accuracy <= 5000
+      ? "Device-level fix (" + Math.round(c.accuracy) + " m). If the city below is still wrong, it is an app problem."
+      : "Coarse fix (~" + (c.accuracy / 1000).toFixed(0) + " km). This is an IP-based guess pointing at your internet provider, NOT your device. Turn on Windows location services + Wi-Fi.";
+
+    lines.push("Reverse geocoding…");
+    log(lines.join("\n"));
+
+    try {
+      const url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2"
+        + "&lat=" + c.latitude + "&lon=" + c.longitude
+        + "&zoom=12&addressdetails=1&accept-language=en";
+      const res = await fetch(url);
+      const data = await res.json();
+      lines[lines.length - 1] = "address from OpenStreetMap:";
+      lines.push(JSON.stringify(data.address, null, 2));
+    } catch (e) {
+      lines[lines.length - 1] = "Reverse geocode failed: " + e.message;
+    }
+
+    log(lines.join("\n"));
+    btn.disabled = false;
+  };
+
+  const id = navigator.geolocation.watchPosition(
+    (pos) => {
+      if (!best || pos.coords.accuracy < best.coords.accuracy) best = pos;
+      log("Refining… best so far: " + Math.round(best.coords.accuracy) + " m");
+      if (best.coords.accuracy <= 1500) finish();
+    },
+    (err) => {
+      if (best) { finish(); return; }
+      navigator.geolocation.clearWatch(id);
+      clearTimeout(timer);
+      log("Error " + err.code + ": " + err.message);
+      btn.disabled = false;
+    },
+    { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+  );
+
+  const timer = setTimeout(finish, 12000);
+};
+</script>
+</body>
+</html>

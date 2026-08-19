@@ -77,7 +77,9 @@ export const useVendors = (options = {}) => {
           return;
         }
 
-        const transformedData = transformVendorsData(items);
+        const transformedData = transformVendorsData(items).filter(
+          (v) => v && v.image && String(v.image).trim() !== ""
+        );
         setVendors(transformedData);
         setPagination({
           page: paginationData?.page || page,

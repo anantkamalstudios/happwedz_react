@@ -1,3 +1,5 @@
+import { formatDateWithWeekday } from "../../../../utils/dateFormat";
+
 const createCorrelationId = () => {
   if (typeof globalThis.crypto?.randomUUID === "function") {
     return globalThis.crypto.randomUUID();
@@ -39,12 +41,7 @@ const formatDate = (value) => {
   if (!value) return "Select date";
   const date = parseDateInput(value);
   if (!date) return value;
-  return date.toLocaleDateString("en-GB", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return formatDateWithWeekday(date);
 };
 
 const parseJsonSafely = (value) => {

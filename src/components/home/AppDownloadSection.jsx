@@ -41,8 +41,13 @@ const AppDownloadSection = () => {
             </p>
 
             <div className="d-flex flex-wrap justify-content-center gap-3">
-              <a target="_blank" rel="noopener noreferrer">
-                <img
+              <a
+                href="https://play.google.com/store/apps/details?id=com.happy.happy_weds_vendors"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Get HappyWedz App on Google Play Store"
+              >
+                <img loading="lazy" decoding="async"
                   src="/images/cta/playstore.svg"
                   alt="Google Play"
                   style={{
@@ -52,8 +57,13 @@ const AppDownloadSection = () => {
                   }}
                 />
               </a>
-              <a target="_blank" rel="noopener noreferrer">
-                <img
+              <a
+                href="https://apps.apple.com/app/happywedz/id123456789"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Get HappyWedz App on Apple App Store"
+              >
+                <img loading="lazy" decoding="async"
                   src="/images/cta/appstore.svg"
                   alt="Apple Store"
                   style={{

@@ -9,6 +9,7 @@ import {
   pollAmendment,
 } from "../../../../services/api/flightApi";
 import CancellationModal from "./components/CancellationModal";
+import { formatDate } from "../../../../utils/dateFormat";
 import "./BookingDetailPage.css";
 
 // ── formatting helpers ───────────────────────────────────────────────────────
@@ -19,11 +20,7 @@ const fmtTime = (v) => {
   const d = new Date(v);
   return Number.isNaN(d.getTime()) ? "—" : d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
 };
-const fmtDate = (v) => {
-  if (!v) return "—";
-  const d = new Date(v);
-  return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
-};
+const fmtDate = (v) => formatDate(v, "—");
 const fmtDateTime = (v) => {
   if (!v) return "—";
   const d = new Date(v);

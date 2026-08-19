@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import BlogLists from "./BlogLists";
 import BlogDetails from "./BlogDetails";
 import { useLoader } from "../context/LoaderContext";
+import SEO from "../common/SEO";
 
 const Blog = () => {
   const { blogId } = useParams();
@@ -58,6 +59,12 @@ const Blog = () => {
 
   return (
     <div>
+      {currentView === "list" && (
+        <SEO
+          title="Wedding Planning Blog & Inspiration | HappyWedz"
+          description="Read top wedding tips, decor trends, bridal outfits ideas, photography inspiration, and planning guides on the HappyWedz wedding blog."
+        />
+      )}
       {currentView === "list" ? (
         filteredBlogs && filteredBlogs.length > 0 ? (
           <div className="container py-4">

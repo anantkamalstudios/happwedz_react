@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Loader2, Upload, ChevronDown } from "lucide-react";
 import { bookTripSafeInsurance } from "../../../../services/api/tripSafeApi";
+import { formatDate as fmtDate } from "../../../../utils/dateFormat";
 
 const NOMINEE_RELATIONS = [
   "LEGAL HEIR",
@@ -22,13 +23,7 @@ const formatPrice = (value) => {
 
 const formatDate = (value) => {
   if (!value) return "—";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
-  return d.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return fmtDate(value, value);
 };
 
 const splitFullName = (fullName) => {

@@ -1,4 +1,5 @@
 import { Button } from "react-bootstrap";
+import { formatDateWithWeekday } from "../../../../utils/dateFormat";
 
 const adultTitleOptions = ["Mr", "Mrs", "Ms", "Miss"];
 const childTitleOptions = ["Master", "Miss"];
@@ -17,14 +18,7 @@ const getPrimaryImage = (reviewResponse) => {
 
 const formatStayDate = (value) => {
   if (!value) return "";
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return String(value);
-  return parsed.toLocaleDateString("en-IN", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return formatDateWithWeekday(value, { fallback: String(value) });
 };
 
 const getNightCount = (checkIn, checkOut) => {

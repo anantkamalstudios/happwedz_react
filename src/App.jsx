@@ -1,13 +1,21 @@
 import React, { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./components/layouts/MainLayout";
-import MovmentPlusLayout from "./components/layouts/MovmentPlusLayout";
-import MatrimonialLayout from "./components/layouts/MatrimonialLayout";
 import Loader from "./components/ui/Loader";
-import "./App.css";
+import Home from "./components/pages/Home";
+// App.css was a single 388KB stylesheet covering every page in the app, and
+// because it was imported here it landed in the entry stylesheet — 79.6KB gzipped
+// of render-blocking CSS on every visit. It is now split in two:
+//   App.critical.css — base styles plus everything the layout and home page can
+//                      reference; still blocking, because it is what first paint
+//                      needs and deferring it would cause a flash of unstyled
+//                      content and layout shift.
+//   App.deferred.css — the ~74% that only matches page-specific components behind
+//                      lazy routes; fetched right after, off the critical path.
+// Rules were partitioned by selector, preserving source order within each file,
+// so the cascade still resolves the same way.
+import "./App.critical.css";
 
-import NotFound from "./components/pages/NotFound";
-import BlogDetails from "./components/pages/BlogDetails";
 import { useDispatch } from "react-redux";
 import { setCredentials, logout } from "./redux/authSlice";
 import { setVendorCredentials } from "./redux/vendorAuthSlice";
@@ -16,25 +24,92 @@ import ToastProvider from "./components/layouts/toasts/Toast";
 import LoaderProvider from "./components/context/LoaderContext";
 import VendorPrivateRoute from "./components/routes/VendorPrivateRoute";
 import UserPrivateRoute from "./components/routes/UserPrivateRoute";
-import VendorLeadsPage from "./components/pages/adminVendor/VendorLeadsPage";
-import ReviewsPage from "./components/pages/WriteReviewPage";
-import AboutUs from "./components/layouts/AboutUs";
-import DestinationWedding from "./components/pages/DestinationWedding";
-import SiteMap from "./components/pages/SiteMap";
-import TopRatedVendors from "./components/pages/TopRatedVendors";
-import CareersPage from "./components/pages/CareersPage";
-import DestinationWeddingDetailPage from "./components/pages/DestinationWeddingDetailPage";
-import BusinessClaimForm from "./components/pages/BusinessClaimForm";
 import { ToastContainer } from "react-toastify";
-import PublicWeddingView from "./components/pages/WeddingPublicView";
+// The container is mounted app-wide, so its styles have to load app-wide too.
+import "react-toastify/dist/ReactToastify.css";
 import ScrollToTop from "./components/ScrollToTop";
+import useAutoDetectLocation from "./hooks/useAutoDetectLocation";
 import UserPreference from "./components/ui/UserPreference";
-import MovementPlusHome from "./components/pages/movments-plus/MovementPlusHome";
-import MovmentPlusGuestToken from "./components/pages/movments-plus/MovmentPlusGuestToken";
-import MovmentPlusUploadSelfie from "./components/pages/movments-plus/MovmentPlusUploadSelfie";
-import MovmentPlusGalleryPage from "./components/pages/movments-plus/MovmentPlusGalleryPage";
 
-const Home = lazy(() => import("./components/pages/Home"));
+// Pull in the page-specific half of the old App.css without blocking first paint.
+// On the home page it can wait for idle; on any other entry URL that page's own
+// styles live in there, so fetch immediately and race it against the route's
+// lazy chunk. Either way a user interaction forces it, so a client-side
+// navigation never renders against missing styles.
+if (typeof window !== "undefined") {
+  let loaded = false;
+  const loadDeferredStyles = () => {
+    if (loaded) return;
+    loaded = true;
+    import("./App.deferred.css");
+  };
+
+  if (window.location.pathname === "/" && "requestIdleCallback" in window) {
+    window.requestIdleCallback(loadDeferredStyles, { timeout: 2000 });
+    ["pointerdown", "keydown", "touchstart"].forEach((event) =>
+      window.addEventListener(event, loadDeferredStyles, {
+        once: true,
+        passive: true,
+      })
+    );
+  } else {
+    loadDeferredStyles();
+  }
+}
+
+// Every route below is rendered inside the <Suspense> in this file, so these are
+// code-split rather than statically imported. They used to be eager imports, which
+// pulled ~4MB of page code (plus Matrimonial.css, framer-motion, react-icons packs)
+// into the initial bundle on every page load, including "/".
+const MovmentPlusLayout = lazy(
+  () => import("./components/layouts/MovmentPlusLayout"),
+);
+const MatrimonialLayout = lazy(
+  () => import("./components/layouts/MatrimonialLayout"),
+);
+const NotFound = lazy(() => import("./components/pages/NotFound"));
+const BlogDetails = lazy(() => import("./components/pages/BlogDetails"));
+const VendorLeadsPage = lazy(
+  () => import("./components/pages/adminVendor/VendorLeadsPage"),
+);
+const ReviewsPage = lazy(() => import("./components/pages/WriteReviewPage"));
+const AboutUs = lazy(() => import("./components/layouts/AboutUs"));
+const DestinationWedding = lazy(
+  () => import("./components/pages/DestinationWedding"),
+);
+const SiteMap = lazy(() => import("./components/pages/SiteMap"));
+const TopRatedVendors = lazy(
+  () => import("./components/pages/TopRatedVendors"),
+);
+const CareersPage = lazy(() => import("./components/pages/CareersPage"));
+const DestinationWeddingDetailPage = lazy(
+  () => import("./components/pages/DestinationWeddingDetailPage"),
+);
+const BusinessClaimForm = lazy(
+  () => import("./components/pages/BusinessClaimForm"),
+);
+const PublicWeddingView = lazy(
+  () => import("./components/pages/WeddingPublicView"),
+);
+const MovementPlusHome = lazy(
+  () => import("./components/pages/movments-plus/MovementPlusHome"),
+);
+const MovmentPlusGuestToken = lazy(
+  () => import("./components/pages/movments-plus/MovmentPlusGuestToken"),
+);
+const MovmentPlusUploadSelfie = lazy(
+  () => import("./components/pages/movments-plus/MovmentPlusUploadSelfie"),
+);
+const MovmentPlusGalleryPage = lazy(
+  () => import("./components/pages/movments-plus/MovmentPlusGalleryPage"),
+);
+
+// Home is the landing route for effectively all traffic, so lazy()-ing it only
+// bought a serialised round trip: entry chunk → Home chunk → hero paint, with
+// nothing to modulepreload the second hop. Importing it statically folds the
+// hero into the entry graph that Vite already emits <link rel="modulepreload">
+// for. The below-the-fold half of Home is still code-split inside Home.jsx, so
+// the entry only grows by the hero, the category row and the first CTA.
 const CustomerLogin = lazy(() => import("./components/auth/CustomerLogin"));
 const CustomerRegister = lazy(
   () => import("./components/auth/CustomerRegister"),
@@ -244,6 +319,9 @@ const FlightBookingDetail = lazy(
 function App() {
   const dispatch = useDispatch();
 
+  // Pick up the visitor's real city on load unless they've chosen one themselves
+  useAutoDetectLocation();
+
   useEffect(() => {
     const user = localStorage.getItem("user");
     const token = localStorage.getItem("token");
@@ -315,6 +393,15 @@ function App() {
             />
 
             <Route element={<MainLayout />}>
+              <Route path="/wedding-venues/:city" element={<MainSection />} />
+              <Route path="/wedding-venues/:city/:slug" element={<Detailed />} />
+              <Route path="/wedding-venues" element={<MainSection />} />
+              <Route path="/venues/:city" element={<MainSection />} />
+              <Route path="/venues/:city/:slug" element={<Detailed />} />
+              <Route path="/venues" element={<MainSection />} />
+              <Route path="/vendors/:subcategory/:city" element={<SubSection />} />
+              <Route path="/vendors/:subcategory/:city/:slug" element={<Detailed />} />
+              <Route path="/photography/:subcategory/:city" element={<SubSection />} />
               <Route path="/" element={<Home />} />
               <Route
                 path="/photos/details/:slug"
@@ -323,6 +410,10 @@ function App() {
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route
                 path="/photography/details/:id"
+                element={<PhotographyDetails />}
+              />
+              <Route
+                path="/photography/:subcategory/:city/:slug"
                 element={<PhotographyDetails />}
               />
               <Route path="/:section" element={<MainSection />} />

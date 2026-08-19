@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Row, Col, Card, Container, Button, Badge } from "react-bootstrap";
 import { FaStar, FaHeart, FaRegHeart } from "react-icons/fa";
 import { BsLightningCharge } from "react-icons/bs";
@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { IoLocationOutline } from "react-icons/io5";
 import { TbView360Number } from "react-icons/tb";
 import { toggleWishlist } from "../../../redux/authSlice";
+import WishlistBubble from "../../common/WishlistBubble";
 import DOMPurify from "dompurify";
 import PricingModal from "../PricingModal";
 import QuickInquiryModal from "../QuickInquiryModal";
@@ -17,8 +18,43 @@ import { IMAGE_BASE_URL } from "../../../config/constants";
 import { useParams } from "react-router-dom";
 import { trackView } from "../../../services/localStorageService";
 import { prioritizeRecentlyViewed, isRecentlyViewed } from "../../../utils/recentlyViewedHelper";
+import { hasView360 } from "../../../utils/view360Helper";
 
-const ListView = ({ subVenuesData, handleShow, section }) => {
+const extractMainCity = (rawCity) => {
+  if (!rawCity) return "all";
+  let cleaned = rawCity.replace(/\bdistricts?\b/i, "").trim();
+  const parts = cleaned.split(",");
+  if (parts.length > 1) {
+    return parts[parts.length - 1].trim();
+  }
+  return cleaned;
+};
+
+const slugifyCity = (city) => {
+  if (!city) return "all";
+  return city
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
+
+const cleanVenueSlug = (name) => {
+  if (!name) return "";
+  return name
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
+
+const ListView = ({ subVenuesData, handleShow, section, currentCity }) => {
   const dispatch = useDispatch();
   const { token } = useSelector((state) => state.auth);
   const [filter, setFilter] = useState("all");
@@ -35,13 +71,32 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
   const [selectedVendorId, setSelectedVendorId] = useState(null);
   const [selectedVendorName, setSelectedVendorName] = useState("");
 
+const isValidImage = (url) => {
+  if (!url || typeof url !== "string") return false;
+  const lower = url.toLowerCase().trim();
+  if (
+    !lower ||
+    lower.includes("imagenotfound") ||
+    lower.includes("image_not_found") ||
+    lower.includes("no-image") ||
+    lower.includes("no_image") ||
+    lower.includes("placeholder")
+  ) {
+    return false;
+  }
+  return true;
+};
+
   // Reorder: recently viewed first, then rest
   useEffect(() => {
-    if (subVenuesData && subVenuesData.length > 0) {
-      const reordered = prioritizeRecentlyViewed(subVenuesData);
+    const validWithImages = (subVenuesData || []).filter(
+      (item) => item && isValidImage(item.image)
+    );
+    if (validWithImages.length > 0) {
+      const reordered = prioritizeRecentlyViewed(validWithImages);
       setDisplayData(reordered);
     } else {
-      setDisplayData(subVenuesData || []);
+      setDisplayData([]);
     }
   }, [subVenuesData]);
 
@@ -115,11 +170,29 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
     fetchWishlist();
   }, [token, subVenuesData]);
 
+
+  // Confirmation bubble shown next to the heart that was pressed.
+  // It stays mounted with `show: false` while fading out, so the label does
+  // not flip from "Added" to "Removed" mid-transition.
+  const [bubble, setBubble] = useState(null); // { id, added, show }
+  const bubbleTimer = useRef(null);
+
+  const showBubble = (id, added) => {
+    setBubble({ id, added, show: true });
+    if (bubbleTimer.current) clearTimeout(bubbleTimer.current);
+    bubbleTimer.current = setTimeout(
+      () => setBubble((prev) => (prev ? { ...prev, show: false } : null)),
+      2200
+    );
+  };
+
+  useEffect(() => () => clearTimeout(bubbleTimer.current), []);
+
   const isFavorite = (vendorId) => {
     return favorites[vendorId] === true || wishlistIds.has(vendorId);
   };
 
-  const handleWishlistToggle = (venue, e) => {
+  const handleWishlistToggle = async (venue, e) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -141,7 +214,27 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
       return newSet;
     });
 
-    dispatch(toggleWishlist(venue));
+    const result = await dispatch(toggleWishlist(venue));
+
+    // Roll the optimistic update back when the server did not accept it.
+    if (!result?.success) {
+      setFavorites((prev) => ({
+        ...prev,
+        [venue.id]: wasFavorite,
+      }));
+      setWishlistIds((prev) => {
+        const newSet = new Set(prev);
+        if (wasFavorite) {
+          newSet.add(venue.id);
+        } else {
+          newSet.delete(venue.id);
+        }
+        return newSet;
+      });
+      return;
+    }
+
+    showBubble(venue.id, result.added);
   };
 
   const handleThumbEnter = (venueId, thumbUrl) => {
@@ -185,7 +278,17 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
                         price_range: venue.starting_price || venue.vegPrice || venue.nonVegPrice,
                         slug: venue.slug || venue.id
                       });
-                      navigate(`/details/info/${venue.slug}`);
+                      const mainCity = extractMainCity(currentCity || venue.city || venue.location);
+                      const citySlug = slugifyCity(mainCity);
+                      const cleanedSlug = cleanVenueSlug(venue.name);
+                      const isVenue = window.location.pathname.includes("/venues") || window.location.pathname.includes("/wedding-venues");
+                      if (isVenue) {
+                        navigate(`/wedding-venues/${citySlug}/${cleanedSlug}`);
+                      } else {
+                        const pathSegments = window.location.pathname.split("/");
+                        const categorySlug = pathSegments[2] || (venue.category ? venue.category.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "") : "all");
+                         navigate(`/vendors/${categorySlug}/${citySlug || "all"}/${cleanedSlug}`);
+                      }
                     }}
                     style={{ cursor: "pointer" }}
                   >
@@ -197,12 +300,15 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
                             venue.image ||
                             "/images/imageNotFound.jpg"
                           }
-                          alt={venue.name}
+                          alt={`${venue.name}${venue.vendor_type || venue.category ? ` - ${venue.vendor_type || venue.category}` : ""}${venue.city ? ` in ${extractMainCity(venue.city) || venue.city}` : ""}`}
                           className="img-fluid rounded-5 object-fit-cover"
                           style={{ height: "200px", width: "100%" }}
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = "/images/imageNotFound.jpg";
+                            const cardCol = e.target.closest(".col-12, .col") || e.target.closest(".card");
+                            if (cardCol) {
+                              cardCol.style.display = "none";
+                            }
                           }}
                         />
 
@@ -229,25 +335,28 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
                           </div>
                         )}
 
-                        {((venue.vendor_type || "")
-                          .toLowerCase()
-                          .includes("venue") ||
-                          venue.vegPrice !== null ||
-                          venue.nonVegPrice !== null) && (
-                            <button
-                              className="btn btn-light rounded-circle position-absolute top-0 start-0 m-2"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
-                            >
-                              <TbView360Number className="text-dark" />
-                            </button>
-                          )}
+                        {hasView360(venue) && (
+                          <button
+                            className="btn btn-light rounded-circle position-absolute top-0 start-0 m-2"
+                            title="View in 360°"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              navigate(`/vendor-360/${venue.id}`);
+                            }}
+                          >
+                            <TbView360Number className="text-dark" />
+                          </button>
+                        )}
 
                         <button
                           className="btn btn-light rounded-circle position-absolute top-0 end-0 m-2"
                           onClick={(e) => handleWishlistToggle(venue, e)}
                         >
+                          <WishlistBubble
+                            show={bubble?.id === venue.id && bubble.show}
+                            added={bubble?.added}
+                          />
                           {isFavorite(venue.id) ? (
                             <FaHeart className="text-danger" />
                           ) : (
@@ -285,9 +394,9 @@ const ListView = ({ subVenuesData, handleShow, section }) => {
                       <Col md={8} className="p-3 d-flex flex-column">
                         <Link className="text-decoration-none">
                           <div className="d-flex justify-content-between align-items-start">
-                            <span className="fw-bold mb-1 primary-text fs-18">
+                            <h3 className="fw-bold mb-1 primary-text fs-18">
                               {venue.name}
-                            </span>
+                            </h3>
                           </div>
 
                           <p className="text-muted small mb-1 fs-14">

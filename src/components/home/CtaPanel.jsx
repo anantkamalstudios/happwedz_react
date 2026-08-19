@@ -14,7 +14,7 @@ const CtaPanel = ({
   return (
     <div className="home-cta-section my-5">
       <div
-        className="container ui-card"
+        className="container ui-card p-4 p-md-4"
         style={{
           backgroundImage:
             background === "bigleaf"
@@ -25,38 +25,60 @@ const CtaPanel = ({
           backgroundRepeat: "no-repeat",
         }}
       >
-        <div className="row">
-          <div className="col-12 col-md-2 col-lg-1 text-md-end mb-3 mb-md-0">
+        <div className="row align-items-center">
+          {/* Logo */}
+          <div className="col-12 col-md-2 col-lg-2 mb-3 mb-md-0 d-flex justify-content-center justify-content-md-center align-items-center">
             <img
               src={logo}
               alt="Logo"
-              className="object-fit-cover"
-              style={{ maxWidth: "120px", objectFit: "contain" }}
+              width="150"
+              height="150"
+              loading="lazy"
+              decoding="async"
+              className="object-fit-contain"
+              style={{ width: "140px", maxWidth: "100%", height: "auto" }}
             />
           </div>
 
-          <div className="col-12 col-md-7 mb-3 mb-md-0 d-flex flex-column">
+          {/* Copy content */}
+          <div className="col-12 col-md-6 col-lg-6 mb-3 mb-md-0 d-flex flex-column">
             {heading && (
-              <h3 className="mb-3 fw-bold home-cta-section-heading text-decoration-none">
+              <h2
+                className="mb-1 fw-bold home-cta-section-heading text-decoration-none"
+                style={{ fontSize: "1.75rem", color: "#ed1173" }}
+              >
                 {heading}
-              </h3>
+              </h2>
             )}
             {subHeading && (
-              <h6 className="my-3 home-cta-section-sub-heading fs-18">
+              <div
+                className="mb-2 home-cta-section-sub-heading fs-16 fw-semibold"
+                style={{ color: "#ed1173" }}
+              >
                 {subHeading}
-              </h6>
+              </div>
             )}
-            {title && <h5 className="fw-bold mb-2 mt-2 fs-18">{title}</h5>}
-            {subtitle && <p className="mb-3 fs-16">{subtitle}</p>}
+            {title && (
+              <div className="fw-bold mb-1 fs-18 text-dark">
+                {title}
+              </div>
+            )}
+            {subtitle && (
+              <p className="mb-3 fs-15 text-muted" style={{ lineHeight: "1.5" }}>
+                {subtitle}
+              </p>
+            )}
             {btnName && link && (
-              <div className="d-flex justify-content-center justify-content-md-end w-100 mt-auto mt-3">
-                <Link to={link} className="w-100" style={{ maxWidth: "400px" }}>
+              <div className="d-flex justify-content-start justify-content-md-start w-100 mt-2">
+                <Link to={link} className="text-decoration-none">
                   <button
-                    className="btn w-100 px-4 py-2"
+                    className="btn px-4 py-2 fw-semibold"
                     style={{
                       backgroundColor: "#C31162",
                       color: "#fff",
-                      minWidth: "200px",
+                      minWidth: "180px",
+                      borderRadius: "8px",
+                      boxShadow: "0 2px 8px rgba(195, 17, 98, 0.2)",
                     }}
                   >
                     {btnName}
@@ -66,12 +88,17 @@ const CtaPanel = ({
             )}
           </div>
 
-          <div className="col-12 col-md-3 text-center text-md-start">
+          {/* Image */}
+          <div className="col-12 col-md-3 col-lg-4 text-center text-md-end">
             <img
               src={img}
               alt="CTA"
-              className="img-fluid rounded w-100"
-              style={{ objectFit: "cover" }}
+              width="600"
+              height="563"
+              loading="lazy"
+              decoding="async"
+              className="img-fluid rounded-3 shadow-sm"
+              style={{ maxHeight: "260px", width: "100%", maxWidth: "320px", objectFit: "cover" }}
             />
           </div>
         </div>

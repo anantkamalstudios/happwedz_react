@@ -1,257 +1,4 @@
-// import { useContext } from "react";
-// import { Link, useNavigate } from "react-router-dom";
-// import { MyContext } from "../../context/useContext";
-// import { useDispatch } from "react-redux";
-// import { setLocation } from "../../redux/locationSlice";
-
-// const SiteMap = () => {
-//   const navigate = useNavigate();
-//   const dispatch = useDispatch();
-
-//   const { setSelectedCategory, setSelectedCategoryName, types } =
-//     useContext(MyContext);
-
-//   const findCategoryIdByName = (categoryName) => {
-//     if (!types || !Array.isArray(types)) return null;
-//     const category = types.find(
-//       (type) => type.name?.toLowerCase() === categoryName.toLowerCase()
-//     );
-//     return category ? category.id : null;
-//   };
-
-//   const siteLinks = [
-//     { name: "About Us", slug: "about-us" },
-//     { name: "Contact Us", slug: "contact-us" },
-//     { name: "Terms & Conditions", slug: "terms" },
-//     { name: "Privacy Policy", slug: "privacy" },
-//     { name: "Cancellation Policy", slug: "cancellation" },
-//     { name: "Submit Your Wedding", slug: "submit-your-wedding" },
-//     { name: "Careers", slug: "careers" },
-//     { name: "Register as a Vendor", slug: "register-as-vendor" },
-//     { name: "Sign Up", slug: "sign-up" },
-//     { name: "Login", slug: "login" },
-//   ];
-
-//   const mainLinks = [
-//     { name: "Home", slug: "/" },
-//     { name: "Vendors", slug: "/vendors" },
-//     { name: "Real Weddings", slug: "/real-wedding" },
-//     { name: "Gallery", slug: "/photography" },
-//     { name: "Blogs", slug: "/blog" },
-//   ];
-
-//   const topCities = [
-//     "Delhi NCR",
-//     "Mumbai",
-//     "Bangalore",
-//     "Chennai",
-//     "Pune",
-//     "Lucknow",
-//     "Jaipur",
-//     "Kolkata",
-//     "Hyderabad",
-//   ];
-
-//   const categories = [
-//     { name: "Accessories", slug: "/vendor/accessories" },
-//     { name: "Jewellery", slug: "/vendor/jewellery" },
-//     { name: "Bridal Makeup Artists", slug: "/vendor/bridal-makeup-artists" },
-//     { name: "Catering Services", slug: "/vendor/catering-services" },
-//     {
-//       name: "Pre Wedding Photographers",
-//       slug: "/vendor/pre-wedding-photographers-",
-//     },
-//     { name: "Trousseau Packers", slug: "/vendor/trousseau-packers" },
-//     { name: "DJs", slug: "/vendor/djs" },
-//     { name: "Venues", slug: "/vendor/venues" },
-//     { name: "Groom Wear", slug: "/vendor/groom-wear" },
-//     { name: "Photographers", slug: "/vendor/photographers" },
-//     { name: "Bridal Wear", slug: "/vendor/bridal-wear" },
-//     { name: "Wedding Pandits", slug: "/vendor/wedding-pandits" },
-//     { name: "Mehendi Artists", slug: "/vendor/mehendi-artists" },
-//     { name: "Favors", slug: "/vendor/favors" },
-//     { name: "Wedding Planners", slug: "/vendor/wedding-planners" },
-//     { name: "Invitations", slug: "/vendor/invitations" },
-//     { name: "Sangeet Choreographer", slug: "/vendor/sangeet-choreographer" },
-//     { name: "Cake", slug: "/vendor/cake" },
-//     { name: "Cinema/Video", slug: "/vendor/cinema-video" },
-//     { name: "Decorators", slug: "/vendor/decorators" },
-//     { name: "Wedding Entertainment", slug: "/vendor/wedding-entertainment" },
-//     { name: "Family Makeup", slug: "/vendor/family-makeup" },
-//     { name: "Beauty and Wellness", slug: "/vendor/beauty-and-wellness" },
-//   ];
-
-//   const shuffleArray = (array) =>
-//     array
-//       .map((item) => ({ item, sort: Math.random() }))
-//       .sort((a, b) => a.sort - b.sort)
-//       .map(({ item }) => item);
-
-//   const cityCategoryMap = topCities.map((city) => ({
-//     city,
-//     categories: shuffleArray(categories),
-//   }));
-
-//   return (
-//     <div style={{ background: "#fafafa" }}>
-//       <h1
-//         style={{
-//           textAlign: "center",
-//           color: "#C31162",
-//           marginBottom: "30px",
-//           fontWeight: "700",
-//           fontSize: "2rem",
-//         }}
-//       >
-//         Site Map
-//       </h1>
-
-//       <div
-//         style={{
-//           maxWidth: "900px",
-//           margin: "0 auto",
-//           lineHeight: "1.8",
-//           color: "#555",
-//         }}
-//       >
-//         <section style={{ marginBottom: "20px" }}>
-//           <h4 style={{ color: "#C31162", marginBottom: "8px" }}>
-//             HappyWedz Links
-//           </h4>
-//           <div>
-//             {mainLinks.map((link, index) => (
-//               <Link
-//                 key={link.slug}
-//                 to={link.slug}
-//                 style={{
-//                   textDecoration: "none",
-//                   color: "#555",
-//                   marginRight: "8px",
-//                 }}
-//               >
-//                 {link.name}
-//                 {index !== mainLinks.length - 1 && ","}
-//               </Link>
-//             ))}
-//           </div>
-//         </section>
-
-//         <section style={{ marginBottom: "20px" }}>
-//           <h4 style={{ color: "#C31162", marginBottom: "8px" }}>Photos</h4>
-//           <div>
-//             {types?.map((type, index) => (
-//               <span key={type.id}>
-//                 <span
-//                   onClick={() => handleCategoryClick(type.name)}
-//                   style={{
-//                     cursor: "pointer",
-//                     color: "#555",
-//                     marginRight: "8px",
-//                     textDecoration: "none",
-//                   }}
-//                 >
-//                   {type.description}
-//                 </span>
-//                 {index !== types.length - 1 && ","}
-//               </span>
-//             ))}
-//           </div>
-//         </section>
-
-//         <section style={{ marginBottom: "20px" }}>
-//           <h4 style={{ color: "#C31162", marginBottom: "8px" }}>Other Links</h4>
-//           <div>
-//             {siteLinks.map((link, index) => (
-//               <Link
-//                 key={link.slug}
-//                 to={`/${link.slug}`}
-//                 style={{
-//                   textDecoration: "none",
-//                   color: "#555",
-//                   marginRight: "8px",
-//                 }}
-//               >
-//                 {link.name}
-//                 {index !== siteLinks.length - 1 && ","}
-//               </Link>
-//             ))}
-//           </div>
-//         </section>
-
-//         <section style={{ marginTop: "40px" }}>
-//           <h4 style={{ color: "#C31162", marginBottom: "15px" }}>
-//             Explore Vendors in Cities
-//           </h4>
-
-//           {cityCategoryMap.map(({ city, categories }, index) => (
-//             <div
-//               key={index}
-//               style={{
-//                 marginBottom: "25px",
-//                 borderBottom: "1px solid #eee",
-//                 paddingBottom: "15px",
-//               }}
-//             >
-//               <h5
-//                 style={{
-//                   fontWeight: "600",
-//                   color: "#333",
-//                   marginBottom: "10px",
-//                 }}
-//               >
-//                 {city}
-//               </h5>
-
-//               <div
-//                 style={{
-//                   display: "flex",
-//                   flexWrap: "wrap",
-//                   gap: "10px",
-//                 }}
-//               >
-//                 {categories.map((cat, index) => (
-//                   <span
-//                     key={index}
-//                     onClick={() => {
-//                       dispatch(setLocation(city));
-//                       navigate(cat.slug);
-//                     }}
-//                     style={{
-//                       cursor: "pointer",
-//                       backgroundColor: "#fff",
-//                       border: "1px solid #ddd",
-//                       borderRadius: "20px",
-//                       padding: "6px 14px",
-//                       fontSize: "0.9rem",
-//                       color: "#555",
-//                       transition: "all 0.2s ease",
-//                     }}
-//                     onMouseOver={(e) => (
-//                       (e.target.style.backgroundColor = "#C31162"),
-//                       (e.target.style.color = "#fff"),
-//                       (e.target.style.borderColor = "#C31162")
-//                     )}
-//                     onMouseOut={(e) => (
-//                       (e.target.style.backgroundColor = "#fff"),
-//                       (e.target.style.color = "#555"),
-//                       (e.target.style.borderColor = "#ddd")
-//                     )}
-//                   >
-//                     {cat.name}
-//                   </span>
-//                 ))}
-//               </div>
-//             </div>
-//           ))}
-//         </section>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default SiteMap;
-
-import { useContext } from "react";
+import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MyContext } from "../../context/useContext";
 import { useDispatch } from "react-redux";
@@ -272,184 +19,7 @@ const SiteMap = () => {
     return category ? category.id : null;
   };
 
-  const siteLinks = [
-    { name: "About Us", slug: "about-us" },
-    { name: "Contact Us", slug: "contact-us" },
-    { name: "Terms & Conditions", slug: "terms" },
-    { name: "Privacy Policy", slug: "privacy" },
-    { name: "Cancellation Policy", slug: "cancellation" },
-    { name: "Submit Your Wedding", slug: "user-dashboard/real-wedding" },
-    { name: "Careers", slug: "careers" },
-    { name: "Register as a Vendor", slug: "vendor-register" },
-    { name: "Sign Up", slug: "customer-register" },
-    { name: "Login", slug: "customer-login" },
-  ];
-
-  const mainLinks = [
-    { name: "Home", slug: "/" },
-    { name: "Vendors", slug: "/vendors" },
-    { name: "Real Weddings", slug: "/real-wedding" },
-    { name: "Gallery", slug: "/photography" },
-    { name: "Blogs", slug: "/blog" },
-  ];
-
-  const topCities = [
-    "Delhi NCR",
-    "Mumbai",
-    "Bangalore",
-    "Chennai",
-    "Pune",
-    "Lucknow",
-    "Jaipur",
-    "Kolkata",
-    "Hyderabad",
-  ];
-
-  const categories = [
-    { name: "Accessories", slug: "/vendor/accessories" },
-    { name: "Jewellery", slug: "/vendor/jewellery" },
-    { name: "Bridal Makeup Artists", slug: "/vendor/bridal-makeup-artists" },
-    { name: "Catering Services", slug: "/vendor/catering-services" },
-    {
-      name: "Pre Wedding Photographers",
-      slug: "/vendor/pre-wedding-photographers-",
-    },
-    { name: "Trousseau Packers", slug: "/vendor/trousseau-packers" },
-    { name: "DJs", slug: "/vendor/djs" },
-    { name: "Venues", slug: "/vendor/venues" },
-    { name: "Groom Wear", slug: "/vendor/groom-wear" },
-    { name: "Photographers", slug: "/vendor/photographers" },
-    { name: "Bridal Wear", slug: "/vendor/bridal-wear" },
-    { name: "Wedding Pandits", slug: "/vendor/wedding-pandits" },
-    { name: "Mehendi Artists", slug: "/vendor/mehendi-artists" },
-    { name: "Favors", slug: "/vendor/favors" },
-    { name: "Wedding Planners", slug: "/vendor/wedding-planners" },
-    { name: "Invitations", slug: "/vendor/invitations" },
-    { name: "Sangeet Choreographer", slug: "/vendor/sangeet-choreographer" },
-    { name: "Cake", slug: "/vendor/cake" },
-    { name: "Cinema/Video", slug: "/vendor/cinema-video" },
-    { name: "Decorators", slug: "/vendor/decorators" },
-    { name: "Wedding Entertainment", slug: "/vendor/wedding-entertainment" },
-    { name: "Family Makeup", slug: "/vendor/family-makeup" },
-    { name: "Beauty and Wellness", slug: "/vendor/beauty-and-wellness" },
-  ];
-
-  const shuffleArray = (array) =>
-    array
-      .map((item) => ({ item, sort: Math.random() }))
-      .sort((a, b) => a.sort - b.sort)
-      .map(({ item }) => item);
-
-  const cityCategoryMap = topCities.map((city) => ({
-    city,
-    categories: shuffleArray(categories),
-  }));
-
-  const styles = {
-    container: {
-      background: "#fafafa",
-      padding: "30px 16px",
-    },
-    wrapper: {
-      maxWidth: "1200px",
-      margin: "0 auto",
-    },
-    title: {
-      textAlign: "center",
-      color: "#C31162",
-      marginBottom: "24px",
-      fontWeight: "700",
-      fontSize: "1.8rem",
-    },
-    gridContainer: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-      gap: "16px",
-      marginBottom: "16px",
-    },
-    card: {
-      background: "white",
-      borderRadius: "8px",
-      padding: "16px",
-      boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-      transition: "all 0.3s ease",
-    },
-    cardTitle: {
-      color: "#C31162",
-      fontSize: "1rem",
-      fontWeight: "600",
-      marginBottom: "10px",
-      paddingBottom: "8px",
-      borderBottom: "2px solid #C31162",
-    },
-    linkContainer: {
-      display: "flex",
-      flexWrap: "wrap",
-      gap: "6px",
-      fontSize: "14px",
-      lineHeight: "1.4",
-    },
-    link: {
-      textDecoration: "none",
-      color: "#555",
-      transition: "color 0.2s ease",
-    },
-    separator: {
-      color: "#ccc",
-      margin: "0 2px",
-    },
-    citiesSection: {
-      background: "white",
-      borderRadius: "8px",
-      padding: "20px",
-      boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-    },
-    citiesSectionTitle: {
-      color: "#C31162",
-      fontSize: "1.1rem",
-      fontWeight: "600",
-      marginBottom: "16px",
-      textAlign: "center",
-    },
-    cityBlock: {
-      marginBottom: "20px",
-      paddingBottom: "16px",
-      borderBottom: "1px solid #f0f0f0",
-    },
-    cityName: {
-      fontWeight: "600",
-      color: "#333",
-      fontSize: "0.95rem",
-      marginBottom: "10px",
-      display: "flex",
-      alignItems: "center",
-      gap: "6px",
-    },
-    cityIcon: {
-      width: "6px",
-      height: "6px",
-      borderRadius: "50%",
-      background: "#C31162",
-    },
-    categoryTags: {
-      display: "flex",
-      flexWrap: "wrap",
-      gap: "6px",
-    },
-    tag: {
-      cursor: "pointer",
-      backgroundColor: "#fff",
-      border: "1px solid #e0e0e0",
-      borderRadius: "16px",
-      padding: "5px 12px",
-      fontSize: "0.8rem",
-      color: "#555",
-      transition: "all 0.2s ease",
-      fontWeight: "500",
-    },
-  };
-
-  const handleCategoryClick = (categoryName) => {
+  const handlePhotoCategoryClick = (categoryName) => {
     const categoryId = findCategoryIdByName(categoryName);
     if (categoryId) {
       setSelectedCategory(categoryId);
@@ -458,133 +28,431 @@ const SiteMap = () => {
     }
   };
 
+  const sitemapSections = [
+    {
+      title: "Main Navigation",
+      badge: "Core",
+      items: [
+        { name: "Home Page", slug: "/" },
+        { name: "Wedding Venues", slug: "/wedding-venues" },
+        { name: "Wedding Vendors", slug: "/vendors" },
+        { name: "Top Rated Vendors", slug: "/top-rated" },
+        { name: "Destination Wedding", slug: "/destination-wedding" },
+        { name: "Honeymoon & Travel", slug: "/honeymoon" },
+        { name: "Wedding Blog", slug: "/blog" },
+        { name: "Inspiration Gallery", slug: "/photography" },
+      ],
+    },
+    {
+      title: "Wedding Venues by Priority Cities",
+      badge: "Venues",
+      items: [
+        { name: "Wedding Venues in Pune", slug: "/wedding-venues/pune" },
+        { name: "Wedding Venues in Nashik", slug: "/wedding-venues/nashik" },
+        { name: "Wedding Venues in Mumbai", slug: "/wedding-venues/mumbai" },
+        { name: "Wedding Venues in Delhi NCR", slug: "/wedding-venues/delhi-ncr" },
+        { name: "Wedding Venues in Bangalore", slug: "/wedding-venues/bangalore" },
+        { name: "Wedding Venues in Jaipur", slug: "/wedding-venues/jaipur" },
+        { name: "Wedding Venues in Hyderabad", slug: "/wedding-venues/hyderabad" },
+        { name: "Wedding Venues in Kolkata", slug: "/wedding-venues/kolkata" },
+        { name: "Wedding Venues in Lucknow", slug: "/wedding-venues/lucknow" },
+        { name: "Wedding Venues in Chennai", slug: "/wedding-venues/chennai" },
+      ],
+    },
+    {
+      title: "Popular Vendor Categories",
+      badge: "Vendors",
+      items: [
+        { name: "Wedding Photographers", slug: "/vendors/photographers/all" },
+        { name: "Bridal Makeup Artists", slug: "/vendors/bridal-makeup/all" },
+        { name: "Bridal Wear Designers", slug: "/vendors/bridal-wear/all" },
+        { name: "Groom Wear", slug: "/vendors/groom-wear/all" },
+        { name: "Wedding Decorators", slug: "/vendors/decorators/all" },
+        { name: "Wedding Planners", slug: "/vendors/wedding-planners/all" },
+        { name: "Catering Services", slug: "/vendors/catering-services/all" },
+        { name: "Mehendi Artists", slug: "/vendors/mehendi-artists/all" },
+        { name: "Invitation Cards & Gifts", slug: "/vendors/invitations/all" },
+        { name: "Jewellery & Accessories", slug: "/vendors/jewellery-accessories/all" },
+      ],
+    },
+    {
+      title: "Destination Weddings",
+      badge: "Popular Destinations",
+      items: [
+        { name: "Destination Wedding in Udaipur", slug: "/destination-wedding/udaipur" },
+        { name: "Destination Wedding in Goa", slug: "/destination-wedding/goa" },
+        { name: "Destination Wedding in Jaipur", slug: "/destination-wedding/jaipur" },
+        { name: "Destination Wedding in Kerala", slug: "/destination-wedding/kerala" },
+        { name: "Destination Wedding in Mussoorie", slug: "/destination-wedding/mussoorie" },
+      ],
+    },
+    {
+      title: "Honeymoon & Booking Services",
+      badge: "Travel",
+      items: [
+        { name: "Honeymoon Packages & Ideas", slug: "/honeymoon" },
+        { name: "Flight Bookings", slug: "/honeymoon/flights" },
+        { name: "Hotel Bookings", slug: "/honeymoon/hotels" },
+        { name: "Cab Rentals", slug: "/honeymoon/cabs" },
+        { name: "Travel Insurance", slug: "/honeymoon/insurance" },
+        { name: "Hotels Finder", slug: "/hotels" },
+      ],
+    },
+    {
+      title: "E-Invites & Design Tools",
+      badge: "Digital Services",
+      items: [
+        { name: "E-Invites & Save the Date Cards", slug: "/einvites" },
+        { name: "Video Invitation Templates", slug: "/video-templates" },
+        { name: "Virtual Try-On Studio", slug: "/try" },
+      ],
+    },
+    {
+      title: "AI Wedding Assistant Tools",
+      badge: "AI Powered",
+      items: [
+        { name: "AI Features Hub", slug: "/ai-features" },
+        { name: "Shaadi AI Chatbot", slug: "/shaadi-ai" },
+        { name: "Culture Blender", slug: "/culture-blender" },
+        { name: "Wedding Personality Quiz", slug: "/personality-quiz" },
+        { name: "Wedding Conflict Resolver", slug: "/conflict-resolver" },
+        { name: "Wedding Day Timeline Generator", slug: "/timeline-generator" },
+      ],
+    },
+    {
+      title: "Matrimonial Services",
+      badge: "Matchmaking",
+      items: [
+        { name: "Matrimonial Hub", slug: "/matrimonial" },
+        { name: "Search Profiles", slug: "/matrimonial-search" },
+      ],
+    },
+    {
+      title: "Accounts, Company & Legal",
+      badge: "Company",
+      items: [
+        { name: "About HappyWedz", slug: "/about-us" },
+        { name: "Contact Us", slug: "/contact-us" },
+        { name: "Careers", slug: "/careers" },
+        { name: "Claim Your Business", slug: "/claim-your-buisness" },
+        { name: "Customer Login", slug: "/customer-login" },
+        { name: "Customer Sign Up", slug: "/customer-register" },
+        { name: "Vendor Login", slug: "/vendor-login" },
+        { name: "Vendor Registration", slug: "/vendor-register" },
+        { name: "Terms & Conditions", slug: "/terms" },
+        { name: "Privacy Policy", slug: "/privacy" },
+        { name: "Cancellation Policy", slug: "/cancellation" },
+      ],
+    },
+  ];
+
+  const topCities = [
+    "Pune",
+    "Nashik",
+    "Mumbai",
+    "Delhi NCR",
+    "Bangalore",
+    "Chennai",
+    "Lucknow",
+    "Jaipur",
+    "Kolkata",
+    "Hyderabad",
+  ];
+
+  const vendorCategories = [
+    { name: "Venues", slug: "/wedding-venues" },
+    { name: "Photographers", slug: "/vendors/photographers/all" },
+    { name: "Bridal Makeup Artists", slug: "/vendors/bridal-makeup/all" },
+    { name: "Bridal Wear", slug: "/vendors/bridal-wear/all" },
+    { name: "Groom Wear", slug: "/vendors/groom-wear/all" },
+    { name: "Decorators", slug: "/vendors/decorators/all" },
+    { name: "Wedding Planners", slug: "/vendors/wedding-planners/all" },
+    { name: "Catering Services", slug: "/vendors/catering-services/all" },
+    { name: "Mehendi Artists", slug: "/vendors/mehendi-artists/all" },
+    { name: "Invitations & Favors", slug: "/vendors/invitations/all" },
+    { name: "Jewellery & Accessories", slug: "/vendors/jewellery-accessories/all" },
+  ];
+
   return (
-    <div style={styles.container}>
-      <div style={styles.wrapper}>
-        <h3 style={styles.title}>Site Map</h3>
-
-        <div style={styles.gridContainer}>
-          <div style={styles.card}>
-            <p className="fs-16" style={styles.cardTitle}>
-              HappyWedz Links
-            </p>
-            <div style={styles.linkContainer}>
-              {mainLinks.map((link, index) => (
-                <span key={link.slug}>
-                  <Link
-                    to={link.slug}
-                    style={styles.link}
-                    onMouseOver={(e) =>
-                      (e.currentTarget.style.color = "#ed1173")
-                    }
-                    onMouseOut={(e) => (e.currentTarget.style.color = "#555")}
-                  >
-                    {link.name}
-                  </Link>
-                  {index !== mainLinks.length - 1 && (
-                    <span style={styles.separator}>•</span>
-                  )}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Photos */}
-          <div style={styles.card}>
-            <p className="fs-16" style={styles.cardTitle}>
-              Photos
-            </p>
-            <div style={styles.linkContainer}>
-              {types?.map((type, index) => (
-                <span key={type.id}>
-                  <span
-                    onClick={() => handleCategoryClick(type.name)}
-                    style={{
-                      ...styles.link,
-                      cursor: "pointer",
-                    }}
-                    onMouseOver={(e) =>
-                      (e.currentTarget.style.color = "#ed1173")
-                    }
-                    onMouseOut={(e) => (e.currentTarget.style.color = "#555")}
-                  >
-                    {type.description}
-                  </span>
-                  {index !== types.length - 1 && (
-                    <span style={styles.separator}>•</span>
-                  )}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Other Links */}
-          <div style={styles.card}>
-            <p className="fs-16" style={styles.cardTitle}>
-              Other Links
-            </p>
-            <div style={styles.linkContainer}>
-              {siteLinks.map((link, index) => (
-                <span key={link.slug}>
-                  <Link
-                    to={`/${link.slug}`}
-                    style={styles.link}
-                    onMouseOver={(e) =>
-                      (e.currentTarget.style.color = "#ed1173")
-                    }
-                    onMouseOut={(e) => (e.currentTarget.style.color = "#555")}
-                  >
-                    {link.name}
-                  </Link>
-                  {index !== siteLinks.length - 1 && (
-                    <span style={styles.separator}>•</span>
-                  )}
-                </span>
-              ))}
-            </div>
-          </div>
+    <div style={{ backgroundColor: "#f8f9fa", padding: "40px 16px", minHeight: "100vh" }}>
+      <div style={{ maxWidth: "1240px", margin: "0 auto" }}>
+        
+        {/* Header Banner */}
+        <div
+          style={{
+            textAlign: "center",
+            marginBottom: "36px",
+            background: "linear-gradient(135deg, #C31162 0%, #E83581 100%)",
+            padding: "36px 20px",
+            borderRadius: "16px",
+            color: "#fff",
+            boxShadow: "0 10px 25px rgba(195, 17, 98, 0.15)",
+          }}
+        >
+          <h1 style={{ fontSize: "2.2rem", fontWeight: "700", marginBottom: "8px" }}>
+            HappyWedz Site Map
+          </h1>
+          <p style={{ fontSize: "1.05rem", opacity: 0.9, maxWidth: "600px", margin: "0 auto" }}>
+            Explore all priority sections, vendor categories, destination wedding guides, AI tools, and city services across HappyWedz.
+          </p>
         </div>
 
-        {/* Cities Section */}
-        <div style={styles.citiesSection}>
-          <h4 style={styles.citiesSectionTitle}>Explore Vendors in Cities</h4>
-
-          {cityCategoryMap.map(({ city, categories }, index) => (
-            <div key={index} style={styles.cityBlock}>
-              <h5 style={styles.cityName}>
-                <span style={styles.cityIcon}></span>
-                {city}
-              </h5>
-
-              <div style={styles.categoryTags}>
-                {categories.map((cat, catIndex) => (
-                  <span
-                    key={catIndex}
-                    onClick={() => {
-                      dispatch(setLocation(city));
-                      navigate(cat.slug);
-                    }}
-                    style={styles.tag}
-                    onMouseOver={(e) => {
-                      e.target.style.backgroundColor = "#C31162";
-                      e.target.style.color = "#fff";
-                      e.target.style.borderColor = "#C31162";
-                      e.target.style.transform = "translateY(-2px)";
-                    }}
-                    onMouseOut={(e) => {
-                      e.target.style.backgroundColor = "#fff";
-                      e.target.style.color = "#555";
-                      e.target.style.borderColor = "#e0e0e0";
-                      e.target.style.transform = "translateY(0)";
-                    }}
-                  >
-                    {cat.name}
-                  </span>
-                ))}
+        {/* Section Cards Grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+            gap: "24px",
+            marginBottom: "40px",
+          }}
+        >
+          {sitemapSections.map((section, idx) => (
+            <div
+              key={idx}
+              style={{
+                backgroundColor: "#fff",
+                borderRadius: "12px",
+                padding: "24px",
+                border: "1px solid #eaeaea",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "16px",
+                  paddingBottom: "12px",
+                  borderBottom: "2px solid #f0f0f0",
+                }}
+              >
+                <h2 style={{ fontSize: "1.15rem", fontWeight: "700", color: "#222", margin: 0 }}>
+                  {section.title}
+                </h2>
+                <span
+                  style={{
+                    backgroundColor: "rgba(195, 17, 98, 0.08)",
+                    color: "#C31162",
+                    fontSize: "0.75rem",
+                    fontWeight: "600",
+                    padding: "4px 10px",
+                    borderRadius: "12px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  {section.badge}
+                </span>
               </div>
+
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, flexGrow: 1 }}>
+                {section.items.map((item, itemIdx) => (
+                  <li key={itemIdx} style={{ marginBottom: "10px" }}>
+                    <Link
+                      to={item.slug}
+                      style={{
+                        textDecoration: "none",
+                        color: "#4a4a4a",
+                        fontSize: "0.95rem",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        transition: "color 0.2s ease, transform 0.2s ease",
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.color = "#C31162";
+                        e.currentTarget.style.transform = "translateX(3px)";
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.color = "#4a4a4a";
+                        e.currentTarget.style.transform = "translateX(0)";
+                      }}
+                    >
+                      <span style={{ color: "#C31162", fontSize: "0.8rem" }}>▸</span>
+                      {item.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
+
+          {/* Dynamic Photo Categories Card */}
+          {types && types.length > 0 && (
+            <div
+              style={{
+                backgroundColor: "#fff",
+                borderRadius: "12px",
+                padding: "24px",
+                border: "1px solid #eaeaea",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "16px",
+                  paddingBottom: "12px",
+                  borderBottom: "2px solid #f0f0f0",
+                }}
+              >
+                <h2 style={{ fontSize: "1.15rem", fontWeight: "700", color: "#222", margin: 0 }}>
+                  Photo & Inspiration Categories
+                </h2>
+                <span
+                  style={{
+                    backgroundColor: "rgba(195, 17, 98, 0.08)",
+                    color: "#C31162",
+                    fontSize: "0.75rem",
+                    fontWeight: "600",
+                    padding: "4px 10px",
+                    borderRadius: "12px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  Gallery
+                </span>
+              </div>
+
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, flexGrow: 1 }}>
+                {types.map((type) => (
+                  <li key={type.id} style={{ marginBottom: "10px" }}>
+                    <span
+                      onClick={() => handlePhotoCategoryClick(type.name)}
+                      style={{
+                        cursor: "pointer",
+                        color: "#4a4a4a",
+                        fontSize: "0.95rem",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        transition: "color 0.2s ease, transform 0.2s ease",
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.color = "#C31162";
+                        e.currentTarget.style.transform = "translateX(3px)";
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.color = "#4a4a4a";
+                        e.currentTarget.style.transform = "translateX(0)";
+                      }}
+                    >
+                      <span style={{ color: "#C31162", fontSize: "0.8rem" }}>▸</span>
+                      {type.description || type.name}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
+
+        {/* Explore Vendors by City Section */}
+        <div
+          style={{
+            backgroundColor: "#fff",
+            borderRadius: "16px",
+            padding: "32px 24px",
+            border: "1px solid #eaeaea",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
+          }}
+        >
+          <h2
+            style={{
+              fontSize: "1.35rem",
+              fontWeight: "700",
+              color: "#C31162",
+              marginBottom: "24px",
+              textAlign: "center",
+            }}
+          >
+            Explore Vendors & Venues Across Major Cities
+          </h2>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            {topCities.map((city, cIdx) => (
+              <div
+                key={cIdx}
+                style={{
+                  paddingBottom: "16px",
+                  borderBottom: cIdx !== topCities.length - 1 ? "1px solid #f0f0f0" : "none",
+                }}
+              >
+                <h3
+                  style={{
+                    fontSize: "1.05rem",
+                    fontWeight: "600",
+                    color: "#333",
+                    marginBottom: "12px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      backgroundColor: "#C31162",
+                      display: "inline-block",
+                    }}
+                  />
+                  {city}
+                </h3>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                  {vendorCategories.map((cat, catIdx) => (
+                    <button
+                      key={catIdx}
+                      onClick={() => {
+                        dispatch(setLocation(city));
+                        const formattedCity = city.toLowerCase().replace(/\s+/g, "-");
+                        if (cat.slug === "/wedding-venues") {
+                          navigate(`/wedding-venues/${formattedCity}`);
+                        } else {
+                          navigate(cat.slug);
+                        }
+                      }}
+                      style={{
+                        backgroundColor: "#fcfcfc",
+                        border: "1px solid #e2e2e2",
+                        borderRadius: "20px",
+                        padding: "6px 14px",
+                        fontSize: "0.85rem",
+                        color: "#555",
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        fontWeight: "500",
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.backgroundColor = "#C31162";
+                        e.currentTarget.style.color = "#fff";
+                        e.currentTarget.style.borderColor = "#C31162";
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = "#fcfcfc";
+                        e.currentTarget.style.color = "#555";
+                        e.currentTarget.style.borderColor = "#e2e2e2";
+                      }}
+                    >
+                      {cat.name} in {city}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );

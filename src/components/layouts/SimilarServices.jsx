@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Container, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import GridView from "./Main/GridView";
+import { hasView360 } from "../../utils/view360Helper";
 // import { transformApiData } from "../../hooks/useApiData";
 
 const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
@@ -150,8 +151,11 @@ const transformApiData = (items) => {
       vendor_name:
         vendor.businessName || attributes.vendor_name || attributes.Name || "",
       url: attributes.Website || attributes.URL || null,
+
+      // Only vendors who uploaded 360° content from their login get the 360° badge
+      has360: hasView360(item),
     };
-  });
+  }).filter((item) => item && item.image && String(item.image).trim() !== "");
 };
 
 const SimilarServices = ({ venueData, currentId }) => {
@@ -186,8 +190,9 @@ const SimilarServices = ({ venueData, currentId }) => {
 
       setLoading(true);
       try {
+        const apiBaseUrl = import.meta.env.VITE_API_URL || "https://happywedz.com/api";
         const response = await fetch(
-          `https://happywedz.com/api/vendor-services/${currentId}/similar?limit=4`
+          `${apiBaseUrl}/vendor-services/${currentId}/similar?limit=4`
         );
 
         if (!response.ok) {
@@ -212,7 +217,7 @@ const SimilarServices = ({ venueData, currentId }) => {
     fetchSimilarServices();
   }, [currentId]);
 
-  if (similarVendors.length === 0 && !loading) return null;
+  if (similarVendors.length < 3 && !loading) return null;
 
   const displaySubCategory =
     subCategory || similarVendors?.[0]?.subcategory_name;
@@ -241,29 +246,52 @@ const SimilarServices = ({ venueData, currentId }) => {
             variant="outline-primary"
             className="px-5 rounded-pill"
             onClick={() => {
-              const type = venueData?.attributes?.vendor_type?.toLowerCase();
+              const vendorTypeRaw =
+                venueData?.attributes?.vendor_type ||
+                venueData?.vendor?.vendor_type ||
+                venueData?.vendor?.vendorType?.name ||
+                venueData?.subcategory?.vendorType?.name ||
+                "";
+              const typeLower = vendorTypeRaw.toLowerCase();
               let section = "vendors";
-              if (type && type.includes("venue")) {
+              if (typeLower && typeLower.includes("venue")) {
                 section = "venues";
               }
 
               const slug = displaySubCategory
                 ? displaySubCategory
                     .toLowerCase()
+                    .replace(/[^a-z0-9\s-]/g, "")
                     .replace(/\s+/g, "-")
-                    .replace(/[^a-z0-9\-]/g, "")
+                    .replace(/-+/g, "-")
+                    .replace(/^-+|-+$/g, "")
                 : "";
 
-              const params = new URLSearchParams();
-              if (currentCity) params.append("city", currentCity);
-              if (type && !slug) params.append("vendorType", type);
+              const citySlug = currentCity
+                ? currentCity
+                    .toLowerCase()
+                    .replace(/[^a-z0-9\s-]/g, "")
+                    .replace(/\s+/g, "-")
+                    .replace(/-+/g, "-")
+                    .replace(/^-+|-+$/g, "")
+                : "all";
 
-              const path = slug ? `/${section}/${slug}` : `/${section}`;
-              navigate(`${path}?${params.toString()}`);
+              if (slug) {
+                navigate(`/vendors/${slug}/${citySlug}`);
+              } else if (section === "venues") {
+                const params = new URLSearchParams();
+                if (currentCity) params.append("city", currentCity);
+                navigate(`/venues?${params.toString()}`);
+              } else {
+                const params = new URLSearchParams();
+                if (currentCity) params.append("city", currentCity);
+                if (vendorTypeRaw) params.append("vendorType", vendorTypeRaw);
+                navigate(`/vendors/all?${params.toString()}`);
+              }
               window.scrollTo(0, 0);
             }}
           >
-            View All Similar{" "}
+            View All Similar
           </Button>
         </div>
       </Container>

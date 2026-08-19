@@ -6,20 +6,19 @@ import "swiper/css/navigation";
 import axios from "axios";
 import { FiArrowUpRight } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
-import { useLoader } from "../context/LoaderContext";
+import { formatDate } from "../../utils/dateFormat";
 
 const BlogsCarousel = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const navigate = useNavigate();
-  const { showLoader, hideLoader } = useLoader();
 
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        showLoader();
-        const response = await fetch("https://happywedz.com/api/blogs/all");
+        const apiBase = import.meta.env.VITE_API_URL || "https://happywedz.com/api";
+        const response = await fetch(`${apiBase}/blogs/all`);
         const result = await response.json();
 
         // Map API fields to component fields
@@ -37,7 +36,7 @@ const BlogsCarousel = () => {
             img: cleanedImageUrl,
             author: blog.author,
             authorImg: "./images/no-image.png",
-            date: new Date(blog.postDate).toLocaleDateString(),
+            date: formatDate(blog.postDate),
             tags: [],
           };
         });
@@ -47,8 +46,6 @@ const BlogsCarousel = () => {
       } catch (error) {
         console.error("Error fetching blog details:", error);
         setLoading(false);
-      } finally {
-        hideLoader();
       }
     };
 
@@ -59,7 +56,7 @@ const BlogsCarousel = () => {
     <div className="blogs-carousel-wrapper py-5 px-3">
       <div className="container position-relative">
         <div className="text-center mb-1">
-          <img
+          <img loading="lazy" decoding="async"
             src="/images/home/inspiredTeaser.png"
             alt="inspiredTeaser"
             className="w-20 h-20"
@@ -101,7 +98,7 @@ const BlogsCarousel = () => {
               >
                 {/* Image */}
                 <div className="blogs-card-image p-2">
-                  <img
+                  <img loading="lazy" decoding="async"
                     src={blog.img}
                     alt={blog.title}
                     style={{
@@ -127,7 +124,7 @@ const BlogsCarousel = () => {
 
                   <div className="mt-auto">
                     <div className="d-flex align-items-center">
-                      <img
+                      <img loading="lazy" decoding="async"
                         src={
                           blog.authorImg && blog.authorImg.trim() !== ""
                             ? blog.authorImg

@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import usePhotography from "../../hooks/usePhotography";
-import { useLoader } from "../context/LoaderContext";
 import ShimmerMasonry from "../ui/ShimmerMasonry";
 
 const MasonryImageSection = () => {
   const { fetchAllPhotos, allPhotos, loading } = usePhotography();
-  const { showLoader, hideLoader } = useLoader();
   const [weddingImages, setWeddingImages] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -18,9 +16,7 @@ const MasonryImageSection = () => {
 
   useEffect(() => {
     const loadPhotos = async () => {
-      showLoader();
       await fetchAllPhotos();
-      hideLoader();
     };
     loadPhotos();
   }, []);
@@ -70,7 +66,7 @@ const MasonryImageSection = () => {
     <div style={{ padding: "40px 20px" }}>
       <div className="container">
         <div className="text-center mb-1">
-          <img
+          <img loading="lazy" decoding="async"
             src="/images/home/weddinggalleryflower.png"
             alt="inspiredTeaser"
             className="w-20 h-20"
@@ -84,8 +80,12 @@ const MasonryImageSection = () => {
         </div>
 
         <div className="gallery-container">
-          <Link to="/photography" className="see-more-link fs-14">
-            SEE MORE
+          <Link
+            to="/photography"
+            className="see-more-link fs-14"
+            aria-label="Explore All Wedding Photography Gallery"
+          >
+            Explore Gallery
             <svg
               width="14"
               height="14"
@@ -111,17 +111,17 @@ const MasonryImageSection = () => {
                   {weddingImages[0] && (
                     <div
                       className={`gallery-item ${weddingImages[0].size}`}
-                      style={isMobile ? { height: "auto" } : undefined}
+                      style={isMobile ? { aspectRatio: "4 / 3" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[0].id}`}>
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={weddingImages[0].src}
                           alt={weddingImages[0].title}
                           style={
                             isMobile
                               ? {
                                   width: "100%",
-                                  height: "auto",
+                                  height: "100%",
                                   objectFit: "contain",
                                 }
                               : undefined
@@ -150,17 +150,17 @@ const MasonryImageSection = () => {
                   {weddingImages[3] && (
                     <div
                       className={`gallery-item ${weddingImages[3].size}`}
-                      style={isMobile ? { height: "auto" } : undefined}
+                      style={isMobile ? { aspectRatio: "4 / 3" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[3].id}`}>
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={weddingImages[3].src}
                           alt={weddingImages[3].title}
                           style={
                             isMobile
                               ? {
                                   width: "100%",
-                                  height: "auto",
+                                  height: "100%",
                                   objectFit: "contain",
                                 }
                               : undefined
@@ -191,17 +191,17 @@ const MasonryImageSection = () => {
                   {weddingImages[1] && (
                     <div
                       className={`gallery-item ${weddingImages[1].size}`}
-                      style={isMobile ? { height: "auto" } : undefined}
+                      style={isMobile ? { aspectRatio: "4 / 3" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[1].id}`}>
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={weddingImages[1].src}
                           alt={weddingImages[1].title}
                           style={
                             isMobile
                               ? {
                                   width: "100%",
-                                  height: "auto",
+                                  height: "100%",
                                   objectFit: "contain",
                                 }
                               : undefined
@@ -230,17 +230,17 @@ const MasonryImageSection = () => {
                   {weddingImages[4] && (
                     <div
                       className={`gallery-item ${weddingImages[4].size}`}
-                      style={isMobile ? { height: "auto" } : undefined}
+                      style={isMobile ? { aspectRatio: "4 / 3" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[4].id}`}>
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={weddingImages[4].src}
                           alt={weddingImages[4].title}
                           style={
                             isMobile
                               ? {
                                   width: "100%",
-                                  height: "auto",
+                                  height: "100%",
                                   objectFit: "contain",
                                 }
                               : undefined
@@ -271,17 +271,17 @@ const MasonryImageSection = () => {
                   {weddingImages[2] && (
                     <div
                       className={`gallery-item ${weddingImages[2].size}`}
-                      style={isMobile ? { height: "auto" } : undefined}
+                      style={isMobile ? { aspectRatio: "4 / 3" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[2].id}`}>
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={weddingImages[2].src}
                           alt={weddingImages[2].title}
                           style={
                             isMobile
                               ? {
                                   width: "100%",
-                                  height: "auto",
+                                  height: "100%",
                                   objectFit: "contain",
                                 }
                               : undefined
@@ -310,17 +310,17 @@ const MasonryImageSection = () => {
                   {weddingImages[5] && (
                     <div
                       className={`gallery-item ${weddingImages[5].size}`}
-                      style={isMobile ? { height: "auto" } : undefined}
+                      style={isMobile ? { aspectRatio: "4 / 3" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[5].id}`}>
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={weddingImages[5].src}
                           alt={weddingImages[5].title}
                           style={
                             isMobile
                               ? {
                                   width: "100%",
-                                  height: "auto",
+                                  height: "100%",
                                   objectFit: "contain",
                                 }
                               : undefined

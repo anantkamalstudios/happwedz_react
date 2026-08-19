@@ -121,7 +121,20 @@ const UserPreference = () => {
         <div className="cookie-gradient">
           <div className="d-flex align-items-start gap-3 mb-4">
             <div className="cookie-icon d-flex align-items-center justify-content-center">
-              <img src="/images/auth/cookie.png" alt="Cookie" />
+              {/* Was a 184KB 566x441 PNG for an icon that renders at ~134x104 —
+                  the single largest first-party image on the page, and lazy
+                  loading only moved that cost rather than removing it. Now a
+                  268x208 WebP (2x for retina) at 18.6KB. The original is still
+                  at images/auth/cookie.png if the source art is needed. */}
+              <img
+                src="/images/auth/cookie.webp"
+                alt=""
+                width="48"
+                height="48"
+                loading="lazy"
+                decoding="async"
+                fetchPriority="low"
+              />
             </div>
 
             <div className="flex-grow-1">

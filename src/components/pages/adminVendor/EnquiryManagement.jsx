@@ -25,6 +25,7 @@ import { useSelector } from "react-redux";
 import QuotationModal from "./QuotationModal";
 import { useToast } from "../../layouts/toasts/Toast";
 import axiosInstance from "../../../services/api/axiosInstance";
+import { formatDate } from "../../../utils/dateFormat";
 
 const API_BASE_URL = "https://happywedz.com/api";
 
@@ -696,12 +697,7 @@ const EnquiryManagement = () => {
                                   </span>
                                   <div className="text-muted fs-12 d-flex align-items-center gap-1">
                                     <Calendar size={12} />
-                                    {new Date(
-                                      lead.request?.eventDate
-                                    ).toLocaleDateString("en-IN", {
-                                      month: "short",
-                                      day: "numeric",
-                                    })}
+                                    {formatDate(lead.request?.eventDate)}
                                   </div>
                                 </div>
                               </div>
@@ -801,13 +797,7 @@ const EnquiryManagement = () => {
                                     </small>
                                   </div>
                                   <div className="fw-semibold fs-14">
-                                    {new Date(
-                                      selectedLead.request.eventDate
-                                    ).toLocaleDateString("en-IN", {
-                                      day: "numeric",
-                                      month: "long",
-                                      year: "numeric",
-                                    })}
+                                    {formatDate(selectedLead.request.eventDate)}
                                   </div>
                                 </div>
                               </div>
@@ -822,12 +812,7 @@ const EnquiryManagement = () => {
                                     </small>
                                   </div>
                                   <div className="fw-semibold fs-14">
-                                    {new Date(
-                                      selectedLead.createdAt
-                                    ).toLocaleDateString("en-IN", {
-                                      day: "numeric",
-                                      month: "short",
-                                    })}
+                                    {formatDate(selectedLead.createdAt)}
                                   </div>
                                 </div>
                               </div>

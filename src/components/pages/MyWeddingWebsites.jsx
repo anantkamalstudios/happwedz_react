@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiPlus, FiEye, FiEdit, FiTrash2, FiShare, FiCalendar, FiHeart } from "react-icons/fi";
 import Swal from "sweetalert2";
+import { formatDate } from "../../utils/dateFormat";
 
 const MyWeddingWebsites = () => {
     const navigate = useNavigate();
@@ -376,7 +377,7 @@ const MyWeddingWebsites = () => {
                                     </h3>
                                     <div className="card-date">
                                         <FiCalendar />
-                                        {new Date(website.weddingDate).toLocaleDateString()}
+                                        {formatDate(website.weddingDate)}
                                     </div>
                                     <div className="card-status">
                                         <span className={`status-badge ${website.isPublished ? 'status-published' : 'status-draft'}`}>

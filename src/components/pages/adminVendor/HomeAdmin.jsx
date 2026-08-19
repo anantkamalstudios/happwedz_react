@@ -47,6 +47,7 @@ import {
   Legend,
 } from "chart.js";
 import axiosInstance from "../../../services/api/axiosInstance";
+import { formatDate } from "../../../utils/dateFormat";
 
 ChartJS.register(
   CategoryScale,
@@ -259,12 +260,7 @@ const HomeAdmin = () => {
         setStats((prev) => ({
           ...prev,
           chartData: {
-            labels: labels.map((d) =>
-              new Date(d).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-              })
-            ),
+            labels: labels.map((d) => formatDate(d)),
             leads: leadChartValues,
             impressions: prev.chartData.impressions,
             profileViews: prev.chartData.totalViews || [],

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import axios from "axios";
 const API_BASE_URL = "https://happywedz.com";
 import ShimmerCards from "../ui/ShimmerCards";
@@ -11,6 +12,8 @@ const AllCategories = ({ onSelect }) => {
   const [error, setError] = useState(null);
   const [expandedIndex, setExpandedIndex] = useState(-1);
   const navigate = useNavigate();
+  const selectedLocation = useSelector((state) => state.location.selectedLocation);
+  const citySlug = selectedLocation ? selectedLocation.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "") : "all";
 
   const toggleExpand = (i) => setExpandedIndex((prev) => (prev === i ? -1 : i));
 
@@ -64,7 +67,7 @@ const AllCategories = ({ onSelect }) => {
   return (
     <div className="container py-5 wcg-grid">
       <div className="d-flex align-items-center justify-content-between mb-3">
-        <h3 className="fw-bold mb-0 text-dark">Explore by Category</h3>
+        <h1 className="fw-bold mb-0 text-dark fs-28">Explore by Category</h1>
       </div>
 
       <div className="row g-3 g-md-4">
@@ -103,7 +106,7 @@ const AllCategories = ({ onSelect }) => {
                 <div className="pt-2">
                   <div className="d-flex align-items-center justify-content-between my-2">
                     <div>
-                      <h5 className="my-2">{cat.title}</h5>
+                      <h2 className="my-2 fs-20 fw-bold text-dark">{cat.title}</h2>
                     </div>
                   </div>
                   <div className=" pills d-flex flex-wrap gap-2 mb-3">
@@ -131,8 +134,12 @@ const AllCategories = ({ onSelect }) => {
                         e.stopPropagation();
                         if (onSelect) onSelect(cat);
                         if (cat.title) {
-                          const encoded = encodeURIComponent(cat.title);
-                          navigate(`/vendors/all?vendorType=${encoded}`);
+                          const slugName = cat.title.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "");
+                          if (slugName === "venues") {
+                            navigate(citySlug === "all" ? "/venues" : `/wedding-venues/${citySlug}`);
+                          } else {
+                            navigate(`/vendors/${slugName}/${citySlug}`);
+                          }
                         }
                       }}
                     >
@@ -143,25 +150,23 @@ const AllCategories = ({ onSelect }) => {
                   {isExpanded && (
                     <div className="wcg-subcats mt-3">
                       <div className="d-flex flex-wrap justify-content-start gap-2">
-                        {cat.items.map((it, idx) => (
-                          <div key={idx} className="">
-                            <Link
-                              to={
-                                cat.title.toLowerCase() === "venues"
-                                  ? `/venues/${it
-                                      .toLowerCase()
-                                      .replace(/\s+/g, "-")}`
-                                  : `/vendor/${it
-                                      .toLowerCase()
-                                      .replace(/\s+/g, "-")}`
-                              }
-                              className="badge rounded-0 primary-light-bg text-dark fs-12 px-3 py-2"
-                              style={{ textDecoration: "none" }}
-                            >
-                              {it}
-                            </Link>
-                          </div>
-                        ))}
+                        {cat.items.map((it, idx) => {
+                          const subcatSlug = it.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "");
+                          const path = cat.title.toLowerCase() === "venues"
+                            ? (citySlug === "all" ? `/wedding-venues/all` : `/wedding-venues/${citySlug}`)
+                            : `/vendors/${subcatSlug}/${citySlug}`;
+                          return (
+                            <div key={idx} className="">
+                              <Link
+                                to={path}
+                                className="badge rounded-0 primary-light-bg text-dark fs-12 px-3 py-2"
+                                style={{ textDecoration: "none" }}
+                              >
+                                {it}
+                              </Link>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}

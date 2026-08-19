@@ -11,6 +11,7 @@ import { FaArrowRightLong, FaChevronDown, FaChevronUp } from "react-icons/fa6";
 import usePhotography from "../../hooks/usePhotography";
 import { useFilter } from "../../context/realWedding.context";
 import axiosInstance from "../../services/api/axiosInstance";
+import { fetchVendorTypesWithSubcategoriesApi } from "../../services/api/vendorTypesWithSubcategoriesApi";
 
 const Header = () => {
   // Add state to track window width for responsive UI
@@ -45,10 +46,11 @@ const Header = () => {
   const [mostSearchedBlogs, setMostSearchedBlogs] = useState([]);
 
   useEffect(() => {
+    const apiBase = import.meta.env.VITE_API_URL || "https://happywedz.com/api";
     const fetchCategories = async (type, setter) => {
       try {
         const res = await fetch(
-          `https://happywedz.com/api/blog-categories/all?type=${type}&status=active`,
+          `${apiBase}/blog-categories/all?type=${type}&status=active`,
         );
         const json = await res.json();
         const arr = Array.isArray(json.data) ? json.data : [];
@@ -180,28 +182,6 @@ const Header = () => {
   ];
 
   const [venueSubcategories, setVenueSubcategories] = useState([]);
-  useEffect(() => {
-    const fetchSubcategories = async () => {
-      try {
-        const response = await fetch(
-          "https://happywedz.com/api/vendor-types/with-subcategories/all",
-        );
-        const data = await response.json();
-        const venues = data.find(
-          (vendor) => vendor.name && vendor.name.toLowerCase() === "venues",
-        );
-        if (venues && Array.isArray(venues.subcategories)) {
-          setVenueSubcategories(venues.subcategories);
-        } else {
-          setVenueSubcategories([]);
-        }
-      } catch (error) {
-        console.error("Error fetching subcategories:", error);
-      }
-    };
-    fetchSubcategories();
-  }, []);
-
   const [vendorCategories, setVendorCategories] = useState([]);
   const [einviteCategories, setEinviteCategories] = useState([
     {
@@ -217,20 +197,23 @@ const Header = () => {
     },
   ]);
 
+  // One shared, deduped request feeds both the vendor menu and the venues submenu.
+  // These were two separate fetches of the same endpoint.
   useEffect(() => {
-    const fetchVendorCategories = async () => {
-      try {
-        const response = await fetch(
-          "https://happywedz.com/api/vendor-types/with-subcategories/all",
-        );
-        const data = await response.json();
-        setVendorCategories(Array.isArray(data) ? data : []);
-      } catch (error) {
-        setVendorCategories([]);
-        console.error("Error fetching vendor categories:", error);
-      }
+    let cancelled = false;
+    fetchVendorTypesWithSubcategoriesApi().then((data) => {
+      if (cancelled) return;
+      setVendorCategories(data);
+      const venues = data.find(
+        (vendor) => vendor.name && vendor.name.toLowerCase() === "venues",
+      );
+      setVenueSubcategories(
+        venues && Array.isArray(venues.subcategories) ? venues.subcategories : [],
+      );
+    });
+    return () => {
+      cancelled = true;
     };
-    fetchVendorCategories();
   }, []);
 
   const {
@@ -290,7 +273,7 @@ const Header = () => {
               to="/"
               onClick={handleMobileLinkClick}
             >
-              <img src="/images/logo.webp" alt="HappyWedz" height="30" />
+              <img src="/images/logo-sm-300.webp" alt="HappyWedz" width="120" height="30" />
             </Link>
 
             {windowWidth <= 1299 && (
@@ -322,7 +305,7 @@ const Header = () => {
             {/* Drawer Header */}
             <div className="d-flex justify-content-between align-items-center p-3 primary-bg">
               <Link to="/" onClick={handleMobileLinkClick}>
-                <img src="/images/logo.webp" alt="HappyWedz" height="30" />
+                <img src="/images/logo-sm-300.webp" alt="HappyWedz" width="120" height="30" />
               </Link>
               <button
                 className="btn border-0 p-0"
@@ -348,8 +331,17 @@ const Header = () => {
                     <img
                       src="/images/header/tryimg.png"
                       alt="Design Studio"
+                      width="40"
+                      height="40"
                       className="img-fluid"
-                      style={{ maxHeight: "40px", cursor: "pointer" }}
+                      loading="lazy"
+                      decoding="async"
+                      style={{
+                        height: "40px",
+                        width: "40px",
+                        objectFit: "contain",
+                        cursor: "pointer",
+                      }}
                     />
                   </Link>
                 </div>
@@ -450,12 +442,14 @@ const Header = () => {
                           ]
                       ).map((item, i) => {
                         const isShowMore = item === "View All Venues";
-                        const path = isShowMore
-                          ? "/venues"
-                          : `/venues/${item
-                              .toLowerCase()
-                              .replace(/\s+/g, "-")
-                              .replace(/[^a-z0-9\-]/g, "")}`;
+                        const cleanSlug = item
+                          .toLowerCase()
+                          .replace(/&/g, "and")
+                          .replace(/[^a-z0-9\s-]/g, "")
+                          .replace(/\s+/g, "-")
+                          .replace(/-+/g, "-")
+                          .replace(/^-+|-+$/g, "");
+                        const path = isShowMore ? "/venues" : `/venues/${cleanSlug}`;
                         return (
                           <Link
                             key={i}
@@ -484,7 +478,7 @@ const Header = () => {
                         const isMore = city === "More";
                         const path = isMore
                           ? "/venues"
-                          : `/venues?city=${encodeURIComponent(city)}`;
+                          : `/wedding-venues/${city.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "")}`;
                         return (
                           <Link
                             key={i}
@@ -545,12 +539,10 @@ const Header = () => {
                                   {cat.subcategories.map((sub, j) => (
                                     <Link
                                       key={sub.id || j}
-                                      to={`/vendors/${toSlug(sub.name)}${
+                                      to={`/vendors/${toSlug(sub.name)}/${
                                         reduxLocation
-                                          ? `?city=${encodeURIComponent(
-                                              reduxLocation,
-                                            )}`
-                                          : ""
+                                          ? reduxLocation.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "")
+                                          : "all"
                                       }`}
                                       className="d-block py-2 text-decoration-none text-dark small"
                                       onClick={handleMobileLinkClick}
@@ -606,7 +598,11 @@ const Header = () => {
                                   {cat.categories.map((sub, j) => (
                                     <Link
                                       key={sub.id || j}
-                                      to={`/photography/${toSlug(sub.name)}`}
+                                      to={`/photography/${toSlug(sub.name)}/${
+                                        reduxLocation
+                                          ? reduxLocation.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "")
+                                          : "all"
+                                      }`}
                                       className="d-block py-2 text-decoration-none text-dark small"
                                       onClick={handleMobileLinkClick}
                                     >
@@ -877,12 +873,16 @@ const Header = () => {
                   <img
                     src="/images/header/playstore.png"
                     alt="Play Store"
+                    width="24"
+                    height="25"
                     className="img-fluid"
                     style={{ maxHeight: "35px", cursor: "pointer" }}
                   />
                   <img
                     src="/images/header/appstore.png"
                     alt="App Store"
+                    width="25"
+                    height="25"
                     className="img-fluid"
                     style={{ maxHeight: "35px", cursor: "pointer" }}
                   />
@@ -894,67 +894,21 @@ const Header = () => {
           {/* DESKTOP VIEW */}
           <div className="d-none d-lg-block w-100">
             <div className="row w-100" style={{ margin: 0, padding: 0 }}>
-              <div className="col-12 bg-white p-2">
+              <div className="col-12 bg-white p-2 header-topbar">
                 <div className="container w-100 p-0">
-                  <div className="row align-items-center gy-2">
-                    {/* Left: Tagline */}
-                    <div className="col-12 col-sm-4 col-lg-4 d-flex align-items-center justify-content-center justify-content-sm-start">
-                      <a
-                        className="nav-link fw-bold top-header-heading fs-18"
-                        href="#"
-                        style={{ color: "#C31162" }}
-                      >
-                        India's Favourite Wedding Planning Platform
-                      </a>
-                    </div>
+                  <div className="d-flex align-items-center justify-content-center gap-3 flex-wrap">
+                    {/* Tagline */}
+                    <a
+                      className="nav-link fw-bold top-header-heading fs-18 text-nowrap m-0 p-0"
+                      href="#"
+                      style={{ color: "#C31162" }}
+                    >
+                      India's Favourite Wedding Planning Platform
+                    </a>
 
-                    {/* Middle: Location Selector */}
-                    <div className="col-12 col-sm-6 col-lg-3 d-flex justify-content-center justify-content-sm-start">
+                    {/* Location Selector */}
+                    <div className="d-flex align-items-center">
                       <LocationModalWithCategories />
-                    </div>
-
-                    {/* Right: Store Icons */}
-                    <div className="col-12 col-lg-5 d-flex align-items-center justify-content-center justify-content-lg-end gap-4">
-                      <img
-                        src="/images/header/playstore.png"
-                        alt="Play Store"
-                        title="Download on Play Store"
-                        className="img-fluid"
-                        style={{
-                          maxHeight: "28px",
-                          width: "auto",
-                          cursor: "pointer",
-                        }}
-                      />
-
-                      <img
-                        src="/images/header/appstore.png"
-                        alt="App Store"
-                        title="Download on App Store"
-                        className="img-fluid"
-                        style={{
-                          maxHeight: "28px",
-                          width: "auto",
-                          cursor: "pointer",
-                        }}
-                      />
-
-                      <Link
-                        to="/try"
-                        state={{ title: "Try" }}
-                        title="Try Design Studio"
-                      >
-                        <img
-                          src="/images/header/tryimg.png"
-                          alt="Design Studio"
-                          className="img-fluid"
-                          style={{
-                            maxHeight: "50px",
-                            width: "auto",
-                            cursor: "pointer",
-                          }}
-                        />
-                      </Link>
                     </div>
                   </div>
                 </div>
@@ -968,14 +922,15 @@ const Header = () => {
                       <div className="text-center">
                         <Link className="navbar-brand-logo" to="/">
                           <img
-                            src="/images/logo.webp"
+                            src="/images/logo-sm-300.webp"
                             alt="HappyWedz"
+                            width="160"
                             height="40"
                             className="mx-auto d-block"
                           />
                         </Link>
                       </div>
-                      <ul className="navbar-nav d-flex flex-wrap justify-content-center gap-2">
+                      <ul className="navbar-nav header-mainnav d-flex flex-wrap justify-content-center gap-2">
                         {/* Planning Tools Dropdown */}
                         <li
                           className="py-2 nav-item dropdown mega-dropdown-wrapper position-static"
@@ -1104,42 +1059,80 @@ const Header = () => {
                                             (e.currentTarget.style.boxShadow =
                                               "0 4px 12px rgba(0,0,0,0.08)")
                                           }
-                                          onMouseLeave={(e) =>
+                          onMouseLeave={(e) =>
                                             (e.currentTarget.style.boxShadow =
                                               "0 2px 4px rgba(0,0,0,0.04)")
                                           }
                                         >
-                                          <Link
-                                            to={item.route}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-decoration-none d-flex justify-content-between align-items-center"
-                                          >
-                                            <div className="me-3">
-                                              <p className="fw-semibold mb-1 text-dark fs-16">
-                                                {item.title}
-                                              </p>
-                                              <p
-                                                className="mb-0 text-muted fs-14"
-                                                style={{
-                                                  fontSize: "13px",
-                                                  lineHeight: "1.4",
-                                                }}
-                                              >
-                                                {item.desc}
-                                              </p>
-                                            </div>
-                                            <img
-                                              src={item.image}
-                                              alt={item.title}
-                                              style={{
-                                                width: "38px",
-                                                height: "38px",
-                                                borderRadius: "8px",
-                                                objectFit: "cover",
-                                              }}
-                                            />
-                                          </Link>
+                                          {item.route.startsWith("http") ? (
+                                            <a
+                                              href={item.route}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              aria-label={item.title}
+                                              className="text-decoration-none d-flex justify-content-between align-items-center"
+                                            >
+                                              <div className="me-3">
+                                                <p className="fw-semibold mb-1 text-dark fs-16">
+                                                  {item.title}
+                                                </p>
+                                                <p
+                                                  className="mb-0 text-muted fs-14"
+                                                  style={{
+                                                    fontSize: "13px",
+                                                    lineHeight: "1.4",
+                                                  }}
+                                                >
+                                                  {item.desc}
+                                                </p>
+                                              </div>
+                                              <div>
+                                                <img
+                                                  src={item.image}
+                                                  alt={item.title}
+                                                  style={{
+                                                    width: "38px",
+                                                    height: "38px",
+                                                    borderRadius: "8px",
+                                                    objectFit: "cover",
+                                                  }}
+                                                />
+                                              </div>
+                                            </a>
+                                          ) : (
+                                            <Link
+                                              to={item.route}
+                                              aria-label={item.title}
+                                              className="text-decoration-none d-flex justify-content-between align-items-center"
+                                            >
+                                              <div className="me-3">
+                                                <p className="fw-semibold mb-1 text-dark fs-16">
+                                                  {item.title}
+                                                </p>
+                                                <p
+                                                  className="mb-0 text-muted fs-14"
+                                                  style={{
+                                                    fontSize: "13px",
+                                                    lineHeight: "1.4",
+                                                  }}
+                                                >
+                                                  {item.desc}
+                                                </p>
+                                              </div>
+                                              <div>
+                                                <img
+                                                  src={item.image}
+                                                  alt={item.title}
+                                                  style={{
+                                                    width: "38px",
+                                                    height: "38px",
+                                                    borderRadius: "8px",
+                                                    objectFit: "cover",
+                                                  }}
+                                                />
+                                              </div>
+                                            </Link>
+                                          )}
                                         </div>
                                       ))}
                                     </div>
@@ -1233,12 +1226,16 @@ const Header = () => {
                                     ).map((item, i) => {
                                       const isShowMore =
                                         item === "View All Venues";
+                                      const cleanSlug = item
+                                        .toLowerCase()
+                                        .replace(/&/g, "and")
+                                        .replace(/[^a-z0-9\s-]/g, "")
+                                        .replace(/\s+/g, "-")
+                                        .replace(/-+/g, "-")
+                                        .replace(/^-+|-+$/g, "");
                                       const path = isShowMore
                                         ? "/venues"
-                                        : `/venues/${item
-                                            .toLowerCase()
-                                            .replace(/\s+/g, "-")
-                                            .replace(/[^a-z0-9\-]/g, "")}`;
+                                        : `/venues/${cleanSlug}`;
                                       return (
                                         <div className="col-12 mb-2" key={i}>
                                           <Link
@@ -1273,18 +1270,18 @@ const Header = () => {
                                       "Jaipur",
                                       "Lucknow",
                                       "Hyderabad",
-                                      "More",
+                                      "More Cities",
                                     ].map((city, i) => {
-                                      const isMore = city === "More";
-                                      const path = isMore
-                                        ? "/venues"
-                                        : `/venues?city=${encodeURIComponent(
-                                            city,
-                                          )}`;
+                                       const isMore = city === "More Cities" || city === "More";
+                                       const cityName = isMore ? "More Cities" : city;
+                                       const path = isMore
+                                         ? "/venues"
+                                         : `/wedding-venues/${city.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "")}`;
                                       return (
                                         <div className="col-12 mb-2" key={i}>
                                           <Link
                                             to={path}
+                                            aria-label={isMore ? "Explore Wedding Venues in More Cities" : `Wedding Venues in ${city}`}
                                             onClick={() => {
                                               if (!isMore) {
                                                 dispatch(setLocation(city));
@@ -1298,7 +1295,7 @@ const Header = () => {
                                           >
                                             <i className="bi bi-geo-alt text-primary"></i>
                                             <span className="fs-14">
-                                              {city}
+                                              {cityName}
                                             </span>
                                           </Link>
                                         </div>
@@ -1360,14 +1357,10 @@ const Header = () => {
                                                     className="mb-1"
                                                   >
                                                     <Link
-                                                      to={`/vendors/${toSlug(
-                                                        sub.name,
-                                                      )}${
+                                                      to={`/vendors/${toSlug(sub.name)}/${
                                                         reduxLocation
-                                                          ? `?city=${encodeURIComponent(
-                                                              reduxLocation,
-                                                            )}`
-                                                          : ""
+                                                          ? reduxLocation.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "")
+                                                          : "all"
                                                       }`}
                                                       className="dropdown-link fs-14 d-block"
                                                     >
@@ -1439,9 +1432,11 @@ const Header = () => {
                                                         className="mb-1"
                                                       >
                                                         <Link
-                                                          to={`/photography/${toSlug(
-                                                            sub.name,
-                                                          )}`}
+                                                          to={`/photography/${toSlug(sub.name)}/${
+                                                            reduxLocation
+                                                              ? reduxLocation.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "")
+                                                              : "all"
+                                                          }`}
                                                           className="dropdown-link fs-14 d-block"
                                                         >
                                                           {formatName(sub.name)}

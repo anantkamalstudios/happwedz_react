@@ -72,11 +72,17 @@ export const {
 } = filterSlice.actions;
 
 // Selectors
+// Shared empty-object fallback so useSelector gets a stable reference when a
+// key has no entry yet, instead of a new {} on every call (which trips
+// Redux's "Selector returned a different result" warning and forces
+// unnecessary re-renders in every component reading this).
+const EMPTY_FILTERS = {};
+
 export const selectActiveFilters = (state, key) =>
-  state.filters.filtersByKey[key] || {};
+  state.filters.filtersByKey[key] || EMPTY_FILTERS;
 
 export const selectAppliedFilters = (state, key) =>
-  state.filters.appliedFiltersByKey[key] || {};
+  state.filters.appliedFiltersByKey[key] || EMPTY_FILTERS;
 
 export default filterSlice.reducer;
 

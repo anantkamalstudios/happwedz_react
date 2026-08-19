@@ -9,6 +9,7 @@ import {
   downloadHotelVoucher,
   getHotelBookingDetails,
 } from "../../../../services/api/hotelApi";
+import { formatDate as fmtDate, formatDateTime as fmtDateTime } from "../../../../utils/dateFormat";
 
 function formatAmount(amount, currency = "INR") {
   const value = Number(amount || 0);
@@ -22,26 +23,12 @@ function formatAmount(amount, currency = "INR") {
 
 function formatDate(value) {
   if (!value) return "Not available";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value);
-  return date.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  return fmtDate(value, String(value));
 }
 
 function formatDateTime(value) {
   if (!value) return "Not available";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value);
-  return date.toLocaleString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return fmtDateTime(value, { fallback: String(value) });
 }
 
 function loadRazorpayScript() {

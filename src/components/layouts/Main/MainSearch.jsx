@@ -7,8 +7,11 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 
 const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
-  const { slug } = useParams();
+  const { slug: routeSlug, subcategory, city: routeCity } = useParams();
   const location = useLocation();
+  const isNestedVendor = location.pathname.startsWith("/vendors/");
+  const isNestedPhotography = location.pathname.startsWith("/photography/");
+  const slug = (isNestedVendor || isNestedPhotography) ? subcategory : routeSlug;
   const [keyword, setKeyword] = useState("");
   const [place, setPlace] = useState("");
   const [cities, setCities] = useState([]);
@@ -80,7 +83,8 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
           // Check pathname fallbacks
           if (
             location.pathname.includes("/venues") ||
-            location.pathname.includes("/venue")
+            location.pathname.includes("/venue") ||
+            location.pathname.includes("/wedding-venues")
           )
             return "venues";
 
@@ -126,8 +130,18 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
 
   const reduxLocation = useSelector((state) => state.location.selectedLocation);
   const cityParam = searchParams.get("city");
-  const city = cityParam || reduxLocation || null;
-  const isVenuePage = location.pathname.includes("/venues");
+  
+  const formatCityName = (cityStr) => {
+    if (!cityStr) return "";
+    const decoded = decodeURIComponent(cityStr);
+    return decoded
+      .split(/[\s-]+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
+
+  const city = (isNestedVendor || isNestedPhotography) ? formatCityName(routeCity) : (cityParam || reduxLocation || null);
+  const isVenuePage = location.pathname.includes("/venues") || location.pathname.includes("/wedding-venues");
 
   const dynamicTitle = useMemo(() => {
     if (vendorType) {
@@ -231,29 +245,35 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
       switch (true) {
         case section.includes("venue"):
           keywordPh = "Banquet halls, resorts, lawns";
-          subtitle =
-            "From royal palaces to cozy gardens – find the perfect setting for your big day";
+          subtitle = city
+            ? `Banquet halls, lawns and resorts in ${city} — compare price per plate and capacity`
+            : "Banquet halls, lawns and resorts — compare price per plate and capacity";
           break;
         case section.includes("vendor"):
           keywordPh = "Decor, catering, planners";
-          subtitle =
-            "Everything you need – from planners to caterers – to make your day hassle-free";
+          subtitle = city
+            ? `Everything you need in ${city} – from planners to caterers – to make your day hassle-free`
+            : "Everything you need – from planners to caterers – to make your day hassle-free";
           break;
         case section.includes("photo"):
         case section.includes("photography"):
           keywordPh = "Photographers, shoots, poses";
-          subtitle =
-            "Capture your special moments with the best wedding photographers";
+          subtitle = city
+            ? `Capture your special moments in ${city} with the best wedding photographers`
+            : "Capture your special moments with the best wedding photographers";
           break;
         case section.includes("invite"):
         case section.includes("e-invite"):
           keywordPh = "Wedding cards, digital invites";
-          subtitle =
-            "Send beautiful invites to your loved ones – traditional or digital";
+          subtitle = city
+            ? `Send beautiful invites to your loved ones in ${city} – traditional or digital`
+            : "Send beautiful invites to your loved ones – traditional or digital";
           break;
         default:
           keywordPh = "Find Best Options";
-          subtitle = "Plan your dream wedding with the best options available";
+          subtitle = city
+            ? `Plan your dream wedding in ${city} with the best options available`
+            : "Plan your dream wedding with the best options available";
       }
     }
 
@@ -274,9 +294,10 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
     }
     setLoadingSearch(true);
     try {
-      let apiUrl = `https://happywedz.com/api/vendor-services?search=${encodeURIComponent(
+      const apiBase = import.meta.env.VITE_API_URL || "https://happywedz.com/api";
+      let apiUrl = `${apiBase}/vendor-services?search=${encodeURIComponent(
         searchQuery
-      )}&limit=10`;
+      )}&limit=30&image_exists=true`;
 
       if (city) {
         apiUrl += `&city=${encodeURIComponent(city)}`;
@@ -299,13 +320,48 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
       const response = await axios.get(apiUrl);
       const results = response.data?.data || [];
       
-      // Deduplicate results to avoid duplicate vendor items caused by sub-vendor master profiles joins
+      const cleanImgUrl = (m) => {
+        if (!m) return null;
+        let str = "";
+        if (typeof m === "string") str = m.replace(/[`"']/g, "").trim();
+        else if (typeof m === "object" && (m.url || m.image_url || m.src || m.path)) {
+          str = String(m.url || m.image_url || m.src || m.path).trim();
+        }
+        if (
+          !str ||
+          str === "null" ||
+          str === "undefined" ||
+          str === "/images/imageNotFound.jpg" ||
+          str.includes("imageNotFound") ||
+          str.includes("placeholder") ||
+          str.includes("no-image")
+        ) {
+          return null;
+        }
+        return str;
+      };
+
+      // Deduplicate results and strictly filter out vendors without images
       const uniqueResults = [];
       const seenIds = new Set();
       const seenNames = new Set();
 
       results.forEach((item) => {
         if (!item) return;
+
+        // Skip any item without a valid real image
+        const imgCandidate =
+          cleanImgUrl(item.attributes?.image_url) ||
+          cleanImgUrl(item.attributes?.image) ||
+          cleanImgUrl(item.attributes?.profile_image) ||
+          cleanImgUrl(item.attributes?.cover_image) ||
+          cleanImgUrl(item.vendor?.profileImage) ||
+          cleanImgUrl(item.vendor?.coverImage) ||
+          cleanImgUrl(item.media?.[0]) ||
+          cleanImgUrl(item.images?.[0]);
+
+        if (!imgCandidate) return;
+
         const id = item.id;
         const name = (item.attributes?.name || item.vendor?.businessName || "").trim().toLowerCase();
         const city = (item.attributes?.city || item.vendor?.city || "").trim().toLowerCase();
@@ -476,7 +532,7 @@ const MainSearch = ({ title = "Wedding Venues", onSearch }) => {
         <Row className="align-items-center g-4 g-lg-5">
           <Col xs={12} lg={6}>
             <div className="pe-lg-4">
-              <h3 className="mb-3">{dynamicTitle}</h3>
+              <h1 className="mb-3 fs-24 fw-bold">{dynamicTitle}</h1>
               <p className="text-muted mb-4 fs-16">{placeholders.subtitle}</p>
               {/* <p className="text-muted mb-4">{heroInfo?.subtitle}</p> */}
 

@@ -10,6 +10,7 @@ import dayjs from "dayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { formatDate as fmtDate } from "../../../../utils/dateFormat";
 
 const Events = ({ onNavigate }) => {
   const [events, setEvents] = useState([]);
@@ -72,11 +73,7 @@ const Events = ({ onNavigate }) => {
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    return fmtDate(dateString);
   };
 
   if (loading) {
@@ -184,6 +181,7 @@ const Events = ({ onNavigate }) => {
                   value={
                     formData.event_date ? dayjs(formData.event_date) : null
                   }
+                  format="DD/MM/YYYY"
                   onChange={(newValue) => {
                     const dateString = newValue
                       ? dayjs(newValue).format("YYYY-MM-DD")

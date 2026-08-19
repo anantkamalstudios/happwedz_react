@@ -40,7 +40,7 @@ const Booking = () => {
     const fetchBookings = async () => {
       try {
         const res = await axiosInstance.get(
-          "https://happywedz.com/api/request-pricing/user/quotations"
+          "/request-pricing/user/quotations"
         );
         if (res.data.success) {
           setBookings(res.data.quotations);
@@ -85,7 +85,7 @@ const Booking = () => {
 
     try {
       const res = await axiosInstance.delete(
-        `https://happywedz.com/api/request-pricing/user/quotations/${requestId}`
+        `/request-pricing/user/quotations/${requestId}`
       );
 
       if (res.data.success) {

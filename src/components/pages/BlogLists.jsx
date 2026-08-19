@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { formatDate as fmtDate } from "../../utils/dateFormat";
 
 const BlogLists = ({ onPostClick }) => {
   const [blogs, setBlogs] = useState([]);
@@ -129,15 +130,7 @@ const BlogLists = ({ onPostClick }) => {
   const currentBlogs = filteredBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
   const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  };
+  const formatDate = (dateString) => fmtDate(dateString);
 
   const getImageUrl = (imageData, useFallback = false) => {
     const baseUrl = "https://happywedzbackend.happywedz.com/";
@@ -514,6 +507,7 @@ const BlogLists = ({ onPostClick }) => {
                 <DatePicker
                   className="form-control"
                   placeholderText="Select Date"
+                  dateFormat="dd/MM/yyyy"
                   selected={selectedDate}
                   onChange={(date) => setSelectedDate(date)}
                   style={{ padding: "12px", fontSize: "15px" }}

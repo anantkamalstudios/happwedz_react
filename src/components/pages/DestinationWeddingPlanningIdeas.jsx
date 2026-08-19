@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useLoader } from "../context/LoaderContext";
+import { formatDate } from "../../utils/dateFormat";
 
 const BlogCardsSection = () => {
   const [blogPosts, setBlogPosts] = useState([]);
@@ -29,7 +30,7 @@ const BlogCardsSection = () => {
             author: {
               name: blog.author || "Admin",
               avatar: "./images/no-image.png",
-              date: new Date(blog.postDate).toLocaleDateString(),
+              date: formatDate(blog.postDate),
             },
           };
         });

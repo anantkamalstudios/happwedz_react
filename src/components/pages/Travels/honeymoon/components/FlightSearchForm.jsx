@@ -103,7 +103,7 @@ export default function FlightSearchForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tripType, departureDate, returnDate, cabinClass, paxType, adults, children, infants, preferredAirline, directFlight, fromCode, toCode, fromSearch.query, toSearch.query, multiCityLegs]);
 
-  // Prefill the form from elsewhere (Book Return / Recent Searches → "Search again").
+  // Prefill the form from elsewhere (Book Return / Recent Searches â†’ "Search again").
   useEffect(() => {
     const handler = (e) => {
       const s = e.detail || {};
@@ -127,7 +127,7 @@ export default function FlightSearchForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Run a search immediately from saved params (Recent Searches → "Search again").
+  // Run a search immediately from saved params (Recent Searches â†’ "Search again").
   useEffect(() => {
     const runHandler = (e) => {
       const r = e.detail || {};
@@ -241,7 +241,7 @@ export default function FlightSearchForm() {
     }
   };
 
-  // Core one-way/round search — runs with explicit params (so "Search again" can
+  // Core one-way/round search â€” runs with explicit params (so "Search again" can
   // trigger it directly without first repopulating the form and waiting for state).
   const runSearch = async (p) => {
     const from = p.from;
@@ -279,7 +279,7 @@ export default function FlightSearchForm() {
       const directQuery = { ...searchQuery, searchModifiers: { ...searchQuery.searchModifiers, isDirectFlight: true, isConnectingFlight: false } };
 
       if (p.directFlight) {
-        // Direct Flight checked → only non-stop results (docs §Search Modifiers).
+        // Direct Flight checked â†’ only non-stop results (docs Â§Search Modifiers).
         const [d] = await Promise.allSettled([searchFlights(directQuery)]);
         navigate("/honeymoon/flights", { state: { searchParams, initialResults: { direct: d.status === "fulfilled" ? d.value : null, connecting: null } } });
       } else {
@@ -309,7 +309,7 @@ export default function FlightSearchForm() {
   const totalPax = adults + children + infants;
 
   // Shared passenger + class popup (TripJack-style: Adult / Children / Infant counters + cabin class).
-  // Constraints per docs: total ≤ 9, infants ≤ adults (1 infant per adult lap).
+  // Constraints per docs: total â‰¤ 9, infants â‰¤ adults (1 infant per adult lap).
   const renderTravelersDropdown = () => (
     <div className="tj-travelers-dropdown" onClick={(e) => e.stopPropagation()}>
       <div className="tj-traveler-row">
@@ -364,13 +364,12 @@ export default function FlightSearchForm() {
 
   return (
     <div className="tj-flight-search-wrapper">
-      <div className="tj-trip-type-tabs">
-        <div className={`tj-trip-tab ${tripType === "oneway" ? "active" : ""}`} onClick={() => setTripType("oneway")}>ONE WAY</div>
-        <div className={`tj-trip-tab ${tripType === "round" ? "active" : ""}`} onClick={() => setTripType("round")}>ROUND TRIP</div>
-        <div className={`tj-trip-tab ${tripType === "multicity" ? "active" : ""}`} onClick={() => setTripType("multicity")}>MULTI CITY</div>
-      </div>
-
       <div className="tj-search-card">
+        <div className="tj-trip-type-tabs">
+          <div className={`tj-trip-tab ${tripType === "oneway" ? "active" : ""}`} onClick={() => setTripType("oneway")}>ONE WAY</div>
+          <div className={`tj-trip-tab ${tripType === "round" ? "active" : ""}`} onClick={() => setTripType("round")}>ROUND TRIP</div>
+          <div className={`tj-trip-tab ${tripType === "multicity" ? "active" : ""}`} onClick={() => setTripType("multicity")}>MULTI CITY</div>
+        </div>
         {tripType === "multicity" ? (
           <div className="tj-multicity-wrapper">
             {multiCityLegs.map((leg, index) => (
@@ -417,13 +416,13 @@ export default function FlightSearchForm() {
                         selected={parseDateValue(leg.date)}
                         onChange={(date) => updateMultiCityLeg(index, "date", formatDateValue(date))}
                         className="tj-field-input tj-date-picker"
-                        dateFormat="dd-MM-yyyy"
+                        dateFormat="dd/MM/yyyy"
                         minDate={
                           index > 0 && multiCityLegs[index - 1]?.date
                             ? parseDateValue(multiCityLegs[index - 1].date)
                             : new Date()
                         }
-                        placeholderText="dd-mm-yyyy"
+                        placeholderText="dd/mm/yyyy"
                       />
                       <div className="tj-field-sublabel">Travel Date</div>
                     </div>
@@ -490,7 +489,7 @@ export default function FlightSearchForm() {
               <Calendar className="tj-field-icon" size={18} />
               <div className="tj-field-content">
                 <div className="tj-field-label">Departure</div>
-                <DatePicker selected={parseDateValue(departureDate)} onChange={(date) => setDepartureDate(formatDateValue(date))} className="tj-field-input tj-date-picker" dateFormat="dd-MM-yyyy" minDate={new Date()} placeholderText="dd-mm-yyyy" />
+                <DatePicker selected={parseDateValue(departureDate)} onChange={(date) => setDepartureDate(formatDateValue(date))} className="tj-field-input tj-date-picker" dateFormat="dd/MM/yyyy" minDate={new Date()} placeholderText="dd/mm/yyyy" />
                 <div className="tj-field-sublabel">Depart</div>
               </div>
             </div>
@@ -500,7 +499,7 @@ export default function FlightSearchForm() {
                 <Calendar className="tj-field-icon" size={18} />
                 <div className="tj-field-content">
                   <div className="tj-field-label">Return</div>
-                  <DatePicker selected={parseDateValue(returnDate)} onChange={(date) => setReturnDate(formatDateValue(date))} className="tj-field-input tj-date-picker" dateFormat="dd-MM-yyyy" minDate={parseDateValue(departureDate) || new Date()} placeholderText="dd-mm-yyyy" />
+                  <DatePicker selected={parseDateValue(returnDate)} onChange={(date) => setReturnDate(formatDateValue(date))} className="tj-field-input tj-date-picker" dateFormat="dd/MM/yyyy" minDate={parseDateValue(departureDate) || new Date()} placeholderText="dd/mm/yyyy" />
                   <div className="tj-field-sublabel">Return</div>
                 </div>
               </div>

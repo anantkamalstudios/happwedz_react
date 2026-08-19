@@ -480,6 +480,7 @@ import {
 import { TEMPLATE_LIST } from "../../templates";
 import Swal from "sweetalert2";
 import { weddingWebsiteApi } from "../../services/api/weddingWebsiteApi";
+import NoIndex from "../common/NoIndex";
 
 const WeddingWebsiteView = () => {
   const { id } = useParams();
@@ -488,6 +489,7 @@ const WeddingWebsiteView = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const token = useSelector((state) => state.auth.token);
+
   const [TemplateComponent, setTemplateComponent] = useState(null);
   const [templateLoadError, setTemplateLoadError] = useState("");
   const [showShareModal, setShowShareModal] = useState(false);
@@ -765,6 +767,7 @@ const WeddingWebsiteView = () => {
 
   return (
     <div className="wedding-website-view">
+      <NoIndex />
       <style>{`
         .wedding-website-view {
           min-height: 100vh;

@@ -5,7 +5,7 @@ import EventDatePicker from "./DayPicker";
 import Swal from "sweetalert2";
 import messagesApi from "../../services/api/messagesApi";
 
-const QuickInquiryModal = ({ show, handleClose, vendorId, vendorName }) => {
+const QuickInquiryModal = ({ show, handleClose, vendorId, vendorName, availableSlots }) => {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -387,7 +387,11 @@ const QuickInquiryModal = ({ show, handleClose, vendorId, vendorName }) => {
                 <FaCalendar size={15} />
                 Event Date
               </Form.Label>
-              <EventDatePicker formData={formData} setFormData={setFormData} />
+              <EventDatePicker
+                formData={formData}
+                setFormData={setFormData}
+                availableSlots={availableSlots}
+              />
             </Form.Group>
 
             <div className="info-text">

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Container } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { getAllHotelBookings } from "../../../../services/api/hotelApi";
+import { formatDate as fmtDate } from "../../../../utils/dateFormat";
 
 const STATUS_OPTIONS = [
   { label: "All", value: "" },
@@ -42,13 +43,7 @@ function formatAmount(amount, currency = "INR") {
 
 function formatDate(value) {
   if (!value) return "Not available";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value);
-  return date.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return fmtDate(value, String(value));
 }
 
 function isOnHoldStatus(status) {

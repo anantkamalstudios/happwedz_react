@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../../../../services/api/axiosInstance";
+import { formatDateWithWeekday } from "../../../../utils/dateFormat";
 
 const REASONS = [
   {
@@ -46,12 +47,7 @@ const fmtTime = (dt) => {
   const d = new Date(dt);
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 };
-const fmtDate = (dt) =>
-  dt
-    ? new Date(dt).toLocaleDateString("en-IN", {
-        weekday: "short", day: "numeric", month: "short", year: "numeric",
-      })
-    : "";
+const fmtDate = (dt) => formatDateWithWeekday(dt);
 const fmtDur = (mins) =>
   mins ? `${Math.floor(mins / 60)}h ${mins % 60}m` : "";
 const paxLabel = (pt) => ({ ADULT: "A", CHILD: "C", INFANT: "I" }[pt] || "A");

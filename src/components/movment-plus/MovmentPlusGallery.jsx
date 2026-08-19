@@ -17,6 +17,7 @@ import Loader from "../ui/Loader";
 import "./movment-plus-gallery.css";
 import { useDispatch } from "react-redux";
 import { removeGuestToken } from "../../redux/guestToken";
+import { formatDate } from "../../utils/dateFormat";
 
 const MovmentPlusGallery = () => {
   const { token } = useParams();
@@ -124,13 +125,7 @@ const MovmentPlusGallery = () => {
     ? collections[firstCollectionKey][0]
     : null;
 
-  const eventDate = firstMedia?.created_at
-    ? new Date(firstMedia.created_at).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : "Date not available";
+  const eventDate = formatDate(firstMedia?.created_at, "Date not available");
 
   // Render Collection View (Images in a folder)
   if (selectedCollection) {

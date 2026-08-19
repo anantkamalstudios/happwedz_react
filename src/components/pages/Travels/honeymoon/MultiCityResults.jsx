@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import FlightFiltersSidebar from './FlightFiltersSidebar';
 import FlightSearchHeader from './components/FlightSearchHeader';
+import { formatDate as fmtDate } from '../../../../utils/dateFormat';
 import './tripjack-styles.css';
 
 export default function MultiCityResults() {
@@ -235,15 +236,9 @@ export default function MultiCityResults() {
     return new Date(dateStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
   };
 
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
-  };
+  const formatDate = (dateStr) => fmtDate(dateStr);
 
-  const formatDateShort = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  };
+  const formatDateShort = (dateStr) => fmtDate(dateStr);
 
   const formatDuration = (minutes) => {
     const h = Math.floor(minutes / 60);

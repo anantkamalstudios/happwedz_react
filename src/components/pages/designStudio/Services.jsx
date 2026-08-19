@@ -78,6 +78,16 @@ export const Loader = () => {
 //   }
 // };
 
+// Internal server faults (DB credentials, stack traces, 5xx bodies) must never
+// reach the user: the AI service returns them verbatim in { error: ... }.
+export const SERVER_FAULT =
+  "The photo service is temporarily unavailable. Please try again in a few minutes.";
+
+export const isInternalError = (text) =>
+  /psycopg2|sqlalchemy|traceback|OperationalError|password authentication|port 5432|HTTP 5\d\d/i.test(
+    text || ""
+  );
+
 export const getErrorMessage = (err) => {
   try {
     let message = "Upload failed. Please try again.";
@@ -119,6 +129,12 @@ export const getErrorMessage = (err) => {
     // 4️⃣ Direct string error
     else if (typeof err === "string") {
       message = err;
+    }
+
+    // The raw text is what tells us this is a server fault — the parsed status
+    // is null for fetch-based callers, which throw `HTTP 500: {...}` Errors.
+    if (isInternalError(message) || (status && status >= 500)) {
+      return { message: SERVER_FAULT, status: status || 500 };
     }
 
     return { message, status };

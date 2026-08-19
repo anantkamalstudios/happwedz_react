@@ -658,10 +658,11 @@ const Contactus = () => {
                   href="https://play.google.com/store/apps/details?id=com.happy.happy_weds_vendors"
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Download HappyWedz App on Google Play Store"
                 >
                   <img
                     src="/images/cta/playstore.svg"
-                    alt="Google Play"
+                    alt="Google Play Store"
                     style={{
                       width: "120px",
                       height: "120px",
@@ -669,10 +670,15 @@ const Contactus = () => {
                     }}
                   />
                 </a>
-                <a href="" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://apps.apple.com/app/happywedz/id123456789"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Download HappyWedz App on Apple App Store"
+                >
                   <img
                     src="/images/cta/appstore.svg"
-                    alt="Apple Store"
+                    alt="Apple App Store"
                     style={{
                       width: "120px",
                       height: "120px",

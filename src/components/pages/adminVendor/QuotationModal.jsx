@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useToast } from "../../layouts/toasts/Toast";
+import { formatDate } from "../../../utils/dateFormat";
 
 const API_BASE_URL = "https://happywedz.com";
 
@@ -181,9 +182,7 @@ const QuotationModal = ({ show, onClose, lead, vendorToken }) => {
                       <small className="text-muted">
                         {/* If we had a createdAt, we'd use it here. 
                             For now, relying on validTill or just order. */}
-                        {q.quote?.createdAt
-                          ? new Date(q.quote.createdAt).toLocaleDateString()
-                          : ""}
+                        {formatDate(q.quote?.createdAt)}
                       </small>
                     </div>
                     <div className="card-body">

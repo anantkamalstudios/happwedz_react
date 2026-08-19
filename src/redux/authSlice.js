@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import Swal from "sweetalert2";
+import { toast } from "react-toastify";
 
 // Initialize state from localStorage if available
 const storedToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -47,11 +47,29 @@ export const loginUser = (payload) => (dispatch) => {
   dispatch(setCredentials(payload));
 };
 
+// Success is reported by the caller, right next to the heart that was pressed
+// (see WishlistBubble). Only failures surface as a toast, since once the
+// optimistic state has been rolled back there is nothing left to anchor to.
+const WISHLIST_TOAST_ID = "wishlist-status";
+
+const showWishlistError = (message) => {
+  const options = { autoClose: 3000, toastId: WISHLIST_TOAST_ID };
+
+  if (toast.isActive(WISHLIST_TOAST_ID)) {
+    toast.update(WISHLIST_TOAST_ID, { render: message, ...options });
+  } else {
+    toast.error(message, options);
+  }
+};
+
 export const toggleWishlist = (vendor) => async (dispatch, getState) => {
   const { auth } = getState();
   const { isAuthenticated, user } = auth;
 
   if (!isAuthenticated || !user) {
+    // Loaded on demand: this slice is pulled in by the redux store on every page,
+    // and a static sweetalert2 import made it part of the initial bundle.
+    const { default: Swal } = await import("sweetalert2");
     Swal.fire({
       icon: "warning",
       text: "Please log in to add items to your wishlist.",
@@ -61,7 +79,17 @@ export const toggleWishlist = (vendor) => async (dispatch, getState) => {
     });
     window.location.href = `/customer-login?redirect=/vendors/${vendor.slug || vendor.id
       }`;
-    return;
+    return { success: false, requiresLogin: true };
+  }
+
+  // The backend resolves the owner from the token, and rejects the request
+  // with a 401 when it is missing, so the header has to be sent explicitly.
+  const token = auth.token || localStorage.getItem("token");
+  const vendorServicesId = vendor?.vendor_services_id ?? vendor?.id;
+
+  if (!vendorServicesId) {
+    console.error("toggleWishlist: missing vendor service id", vendor);
+    return { success: false };
   }
 
   try {
@@ -69,19 +97,31 @@ export const toggleWishlist = (vendor) => async (dispatch, getState) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       credentials: "include",
       body: JSON.stringify({
-        user_id: user.id,
-        vendor_services_id: vendor.id,
+        vendor_services_id: vendorServicesId,
       }),
     });
 
-    if (!response.ok) {
-      console.error("Failed to toggle wishlist");
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok || !result.success) {
+      console.error(
+        "Failed to toggle wishlist:",
+        result.message || response.status
+      );
+      showWishlistError(result.message || "Could not update your wishlist.");
+      return { success: false, message: result.message };
     }
+
+    // The toggle endpoint only returns `data` when the item was added.
+    return { success: true, added: !!result.data };
   } catch (error) {
     console.error("Error toggling wishlist:", error);
+    showWishlistError("Could not update your wishlist. Please try again.");
+    return { success: false };
   }
 };
 

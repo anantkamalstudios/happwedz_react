@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 import { IoClose } from "react-icons/io5";
 import { FaHome, FaTimes } from "react-icons/fa";
 import { useSelector } from "react-redux";
-// import { getErrorMessage } from "./Services";
+import { getErrorMessage as getApiErrorMessage } from "./Services";
 
 const UploadSelfiePage = () => {
   const navigate = useNavigate();
@@ -24,51 +24,14 @@ const UploadSelfiePage = () => {
   const { role, type } = userInfo;
   const controllerRef = useRef(null);
 
-  const getErrorMessage = (err) => {
-    try {
-      if (!err) return "Upload failed. Please try again.";
+  // Shared with the filters page so both surfaces mask internal server faults
+  // (DB credentials, stack traces) the same way.
+  const getErrorMessage = (err) => getApiErrorMessage(err).message;
 
-      const resp = err.response || err?.request?.response;
-      if (resp) {
-        const data =
-          typeof resp.data === "string"
-            ? (() => {
-                try {
-                  return JSON.parse(resp.data);
-                } catch {
-                  return null;
-                }
-              })()
-            : resp.data;
-        if (data?.error) return String(data.error);
-        if (data?.message) return String(data.message);
-        if (typeof resp.statusText === "string" && resp.statusText)
-          return resp.statusText;
-      }
-
-      if (typeof err.message === "string") {
-        const jsonMatch = err.message.match(/{[\s\S]*}/);
-        if (jsonMatch) {
-          try {
-            const parsed = JSON.parse(jsonMatch[0]);
-            if (parsed?.error) return String(parsed.error);
-            if (parsed?.message) return String(parsed.message);
-          } catch {}
-        }
-        const colonIdx = err.message.indexOf(":");
-        if (colonIdx !== -1 && colonIdx + 1 < err.message.length) {
-          const after = err.message.slice(colonIdx + 1).trim();
-          if (after && !after.startsWith("{")) return after;
-        }
-        return err.message;
-      }
-
-      if (typeof err === "string") return err;
-      return "Upload failed. Please try again.";
-    } catch {
-      return "Upload failed. Please try again.";
-    }
-  };
+  // Closing the guide aborts the in-flight upload — that is the user's own
+  // action, not a failure, so it must not raise an error popup.
+  const isAbort = (err) =>
+    err?.name === "AbortError" || /aborted/i.test(err?.message || "");
 
   let image;
   switch (role) {
@@ -205,58 +168,55 @@ const UploadSelfiePage = () => {
       if (fileRef.current) fileRef.current.value = "";
       return;
     }
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      // const dataUrl = ev.target.result;
-      // const ok = await validateFace(dataUrl);
-      // if (!ok) {
-      //   Swal.fire({
-      //     icon: "error",
-      //     title: "Oops...",
-      //     text: "No face detected. Please choose a clear frontal photo.",
-      //   });
-      //   setUploading(false);
-      //   if (fileRef.current) fileRef.current.value = "";
-      //   return;
-      // }
-      try {
-        if (type === "outfit" || type === "jewellary") {
-          setShowGuide(false);
-          setUploading(true);
-          const localUrl = URL.createObjectURL(file);
-          sessionStorage.setItem("try_uploaded_outfit_image_url", localUrl);
-          setUploading(false);
-          navigate("/try/outfit-filters");
-          return;
-        }
-        controllerRef.current = new AbortController();
-        const res = await beautyApi.uploadImage(
-          file,
-          "ORIGINAL",
-          controllerRef.current.signal
-        );
-        const imageId = res?.data?.id || res?.id || res?.image_id;
-        sessionStorage.setItem("try_uploaded_image_id", imageId);
+    // The file is uploaded straight from the input. It used to be read into a
+    // data URL first, but the only consumer of that was the face check below,
+    // which is disabled — reading it did nothing except delay the upload (and
+    // leave the button stuck on "Uploading..." whenever the read failed).
+    // const ok = await validateFace(dataUrl);
+    // if (!ok) {
+    //   Swal.fire({
+    //     icon: "error",
+    //     title: "Oops...",
+    //     text: "No face detected. Please choose a clear frontal photo.",
+    //   });
+    //   return;
+    // }
+    try {
+      if (type === "outfit" || type === "jewellary") {
         setShowGuide(false);
-        setUploading(false);
-        navigate("/try/filters");
-      } catch (err) {
-        const message = getErrorMessage(err);
-
-        Swal.fire({
-          icon: "error",
-          title: "Upload failed",
-          text: message || "Internal Server Error",
-          timer: 3000,
-          confirmButtonText: "OK",
-          confirmButtonColor: "#ed1173",
-        });
-      } finally {
-        setUploading(false);
-        if (fileRef.current) fileRef.current.value = "";
+        const localUrl = URL.createObjectURL(file);
+        sessionStorage.setItem("try_uploaded_outfit_image_url", localUrl);
+        navigate("/try/outfit-filters");
+        return;
       }
-    };
-    reader.readAsDataURL(file);
+      controllerRef.current = new AbortController();
+      const res = await beautyApi.uploadImage(
+        file,
+        "ORIGINAL",
+        controllerRef.current.signal
+      );
+      const imageId = res?.data?.id || res?.id || res?.image_id;
+      // No id means nothing was stored, so the filters page would have nothing
+      // to render — fail here instead of navigating to a broken preview.
+      if (!imageId) throw new Error("HTTP 500: upload returned no image id");
+      sessionStorage.setItem("try_uploaded_image_id", String(imageId));
+      setShowGuide(false);
+      navigate("/try/filters");
+    } catch (err) {
+      if (isAbort(err)) return;
+      Swal.fire({
+        icon: "error",
+        title: "Upload failed",
+        text: getErrorMessage(err),
+        timer: 3000,
+        confirmButtonText: "OK",
+        confirmButtonColor: "#ed1173",
+      });
+    } finally {
+      controllerRef.current = null;
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
   };
 
   const handleCancelUpload = () => {
@@ -327,7 +287,8 @@ const UploadSelfiePage = () => {
       }
       const res = await beautyApi.uploadImage(file, "ORIGINAL");
       const imageId = res?.data?.id || res?.id || res?.image_id;
-      sessionStorage.setItem("try_uploaded_image_id", imageId);
+      if (!imageId) throw new Error("HTTP 500: upload returned no image id");
+      sessionStorage.setItem("try_uploaded_image_id", String(imageId));
       setShowGuide(false);
       navigate(
         type === "outfit" || type === "jewellary"
@@ -501,11 +462,14 @@ const UploadSelfiePage = () => {
             tabIndex="-1"
             role="dialog"
             aria-modal="true"
-            style={{ overflow: "hidden" }}
+            style={{ overflowY: "auto" }}
           >
-            <div className="modal-dialog modal-dialog-centered rounded-0">
-              <div className="modal-content rounded-0 relative">
-                <div className="modal-header border-0 position-relative">
+            <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable rounded-0">
+              <div
+                className="modal-content rounded-0 relative"
+                style={{ maxHeight: "90vh" }}
+              >
+                <div className="modal-header border-0 position-relative flex-shrink-0">
                   <div className="d-flex flex-column">
                     <h4 className="modal-title text-danger fw-bold">
                       Photo Instruction
@@ -532,7 +496,10 @@ const UploadSelfiePage = () => {
                     <IoClose size={30} />
                   </button>
                 </div>
-                <div className="modal-body">
+                <div
+                  className="modal-body"
+                  style={{ overflowY: "auto", WebkitOverflowScrolling: "touch" }}
+                >
                   <ul className="list-unstyled mb-4">
                     {instructionSets[role][type]?.map((item, i) => (
                       <React.Fragment key={i}>

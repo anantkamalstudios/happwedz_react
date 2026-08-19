@@ -4,13 +4,14 @@ import { Form, Button } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../../redux/authSlice";
 import { GoogleLogin } from "@react-oauth/google";
+import GoogleAuthProvider from "./GoogleAuthProvider";
 import { toast, ToastContainer } from "react-toastify";
 import { useLoader } from "../context/LoaderContext";
 import userApi from "../../services/api/userApi";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-const CustomerLogin = () => {
+const CustomerLoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -341,5 +342,13 @@ const CustomerLogin = () => {
     </div>
   );
 };
+
+// The Google Identity script is pulled in here rather than at the app root, so
+// visitors who never open a login screen never download or execute it.
+const CustomerLogin = () => (
+  <GoogleAuthProvider>
+    <CustomerLoginForm />
+  </GoogleAuthProvider>
+);
 
 export default CustomerLogin;

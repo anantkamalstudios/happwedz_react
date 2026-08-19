@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../../../../services/api/axiosInstance";
 import Swal from "sweetalert2";
 import {
   FiUser,
@@ -145,7 +146,7 @@ const RealWeddingForm = ({ user, token }) => {
   useEffect(() => {
     const loadVendorTypes = async () => {
       try {
-        const res = await axios.get("https://happywedz.com/api/vendor-types");
+        const res = await axios.get(`${API_BASE_URL}/vendor-types`);
         setVendorTypes(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error("Failed to load vendor types", err);
@@ -168,7 +169,7 @@ const RealWeddingForm = ({ user, token }) => {
     const loadCultures = async () => {
       try {
         const res = await axios.get(
-          "https://happywedz.com/api/real-wedding-culture/public"
+          `${API_BASE_URL}/real-wedding-culture/public`
         );
         if (res.data && res.data.cultures && Array.isArray(res.data.cultures)) {
           setCultures(res.data.cultures);
@@ -325,7 +326,7 @@ const RealWeddingForm = ({ user, token }) => {
 
     try {
       const response = await axios.post(
-        "https://happywedz.com/api/realwedding",
+        `${API_BASE_URL}/realwedding`,
         data,
         {
           headers: {
@@ -585,7 +586,7 @@ const VenueSearchInput = ({ onSelectVenue }) => {
     }
     setLoadingSearch(true);
     try {
-      const apiUrl = `https://happywedz.com/api/vendor-services?search=${encodeURIComponent(
+      const apiUrl = `${API_BASE_URL}/vendor-services?search=${encodeURIComponent(
         query
       )}&vendorType=Venues&limit=10`;
 
@@ -843,6 +844,7 @@ const BasicInfoStep = ({
                 value={
                   formData.weddingDate ? dayjs(formData.weddingDate) : null
                 }
+                format="DD/MM/YYYY"
                 onChange={(newValue) => {
                   const dateString = newValue
                     ? dayjs(newValue).format("YYYY-MM-DD")
@@ -1098,6 +1100,7 @@ const EventCreator = ({ onAdd }) => {
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               value={local.date ? dayjs(local.date) : null}
+              format="DD/MM/YYYY"
               onChange={(newValue) => {
                 const dateString = newValue
                   ? dayjs(newValue).format("YYYY-MM-DD")
@@ -1184,7 +1187,7 @@ const VendorCreator = ({ vendorTypes = [], onAdd }) => {
     }
     setLoadingSearch(true);
     try {
-      let apiUrl = `https://happywedz.com/api/vendor-services?search=${encodeURIComponent(
+      let apiUrl = `${API_BASE_URL}/vendor-services?search=${encodeURIComponent(
         searchQuery
       )}&limit=10`;
 

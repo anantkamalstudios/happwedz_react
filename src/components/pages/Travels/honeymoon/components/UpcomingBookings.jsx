@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FaWhatsapp, FaPlane, FaChevronUp, FaChevronDown } from "react-icons/fa";
 import { getMyFlightBookings, getBookingDetails, createFlightPaymentOrder, verifyAndBookFlight, releaseHeldBooking } from "../../../../../services/api/flightApi";
 import PassengerSummaryModal from "./PassengerSummaryModal";
+import { formatDate } from "../../../../../utils/dateFormat";
 import "./UpcomingBookings.css";
 
 const PAGE_SIZE = 5;
@@ -23,11 +24,7 @@ const parseDate = (val) => {
   return Number.isNaN(d.getTime()) ? null : d;
 };
 
-const formatTravelDate = (val) => {
-  const d = parseDate(val);
-  if (!d) return "—";
-  return d.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
-};
+const formatTravelDate = (val) => formatDate(val, "—");
 
 export default function UpcomingBookings() {
   const navigate = useNavigate();

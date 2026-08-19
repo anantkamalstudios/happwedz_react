@@ -7,7 +7,7 @@ import EventDatePicker from "./DayPicker";
 import Swal from "sweetalert2";
 import messagesApi from "../../services/api/messagesApi";
 
-const PricingModal = ({ show, handleClose, vendorId }) => {
+const PricingModal = ({ show, handleClose, vendorId, availableSlots: propAvailableSlots }) => {
   const { user, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const [vendorDetails, setVendorDetails] = useState(null);
@@ -28,8 +28,9 @@ const PricingModal = ({ show, handleClose, vendorId }) => {
     if (vendorId && show) {
       const fetchVendorDetails = async () => {
         try {
+          const apiBase = import.meta.env.VITE_API_URL || "https://happywedz.com/api";
           const response = await fetch(
-            `https://happywedz.com/api/vendor-services/${vendorId}`
+            `${apiBase}/vendor-services/${vendorId}`
           );
           const result = await response.json();
           if (result.success) {
@@ -44,6 +45,16 @@ const PricingModal = ({ show, handleClose, vendorId }) => {
       setVendorDetails(null);
     }
   }, [vendorId, show]);
+
+  const resolvedAvailableSlots =
+    (Array.isArray(propAvailableSlots) && propAvailableSlots.length > 0
+      ? propAvailableSlots
+      : null) ||
+    vendorDetails?.available_slots ||
+    vendorDetails?.attributes?.available_slots ||
+    vendorDetails?.availableSlots ||
+    vendorDetails?.attributes?.availableSlots ||
+    [];
 
   useEffect(() => {
     if (user) {
@@ -239,8 +250,12 @@ const PricingModal = ({ show, handleClose, vendorId }) => {
               </Col>
             </Row>
 
-            {/* Event Date */}
-            <EventDatePicker formData={formData} setFormData={setFormData} />
+            {/* Event Date with Available Slots */}
+            <EventDatePicker
+              formData={formData}
+              setFormData={setFormData}
+              availableSlots={resolvedAvailableSlots}
+            />
 
             {/* Message */}
             <Form.Group className="mb-3">

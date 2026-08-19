@@ -6,6 +6,7 @@ import { LuSendHorizontal } from "react-icons/lu";
 import { MdChatBubbleOutline } from "react-icons/md";
 import { useSelector } from "react-redux";
 import { axiosInstance } from "../../services/api/axiosInstance";
+import { formatDateTime } from "../../utils/dateFormat";
 
 const Genie = () => {
   const [messages, setMessages] = useState([
@@ -429,7 +430,7 @@ const Genie = () => {
                         {s.title || "Untitled Session"}
                       </div>
                       <div className="text-muted" style={{ fontSize: "12px" }}>
-                        {new Date(s.updated_at).toLocaleString()}
+                        {formatDateTime(s.updated_at)}
                       </div>
                     </div>
                   ))

@@ -197,7 +197,7 @@ const StorefrontPage = () => {
                       className="d-flex justify-content-between border-bottom py-2"
                     >
                       <div>Service {i + 1}</div>
-                      <div>$500 - $1,200</div>
+                      <div>₹ 50,000 - ₹ 1,20,000</div>
                     </div>
                   ))}
                 </div>

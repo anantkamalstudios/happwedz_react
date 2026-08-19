@@ -8,6 +8,7 @@ import {
   extractRatingFilters,
   extractReviewFilters,
 } from "../utils/priceFilterUtils";
+import { hasView360 } from "../utils/view360Helper";
 
 const IMAGE_BASE_URL = "https://happywedzbackend.happywedz.com";
 
@@ -156,10 +157,10 @@ const useInfiniteScroll = (
             null
           : null,
 
-        address: attributes.address || attributes.Address || "",
-        area: attributes.area || "",
-        city: attributes.city || vendor.city || "",
-        location: attributes.city || vendor.city || "",
+        address: (attributes.address && attributes.address.toLowerCase() !== "unknown") ? attributes.address : (attributes.Address && attributes.Address.toLowerCase() !== "unknown") ? attributes.Address : "",
+        area: (attributes.area && attributes.area.toLowerCase() !== "unknown") ? attributes.area : "",
+        city: (attributes.city && attributes.city.toLowerCase() !== "unknown") ? attributes.city : (vendor.city && vendor.city.toLowerCase() !== "unknown") ? vendor.city : "",
+        location: (attributes.city && attributes.city.toLowerCase() !== "unknown") ? attributes.city : (vendor.city && vendor.city.toLowerCase() !== "unknown") ? vendor.city : "",
         rooms: roomsParsed,
 
         rating: attributes.rating || 0,
@@ -186,8 +187,11 @@ const useInfiniteScroll = (
           attributes.Name ||
           "",
         url: attributes.Website || attributes.URL || null,
+
+        // Only vendors who uploaded 360° content from their login get the 360° badge
+        has360: hasView360(item),
       };
-    });
+    }).filter((item) => item && item.image && String(item.image).trim() !== "");
   }, []);
 
   // Fetch data with caching
@@ -234,7 +238,6 @@ const useInfiniteScroll = (
         if (selectedSubcats && selectedSubcats.trim().length > 0) {
           params.append("subCategory", selectedSubcats);
         } else if (
-          !vendorType &&
           subCategory &&
           subCategory.toLowerCase() !== "all"
         ) {
@@ -344,13 +347,12 @@ const useInfiniteScroll = (
           params.append("filters", JSON.stringify(nonPriceFilters));
         }
 
-        // Only return vendors whose first media image is confirmed to exist in S3 if no search query is specified.
+        // Only return vendors whose first media image is confirmed to exist in S3.
         // The batch job (verify-vendor-images.js) sets image_exists = TRUE after verification.
-        if (!filtersRef.current?.search) {
-          params.append("image_exists", "true");
-        }
+        params.append("image_exists", "true");
 
-        const apiUrl = `https://happywedz.com/api/vendor-services?${params.toString()}`;
+        const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+        const apiUrl = `${apiBaseUrl}/vendor-services?${params.toString()}`;
         const cacheKey = apiUrl;
 
         // Check cache first
@@ -394,7 +396,18 @@ const useInfiniteScroll = (
           ? result.data
           : [];
 
-        const transformed = transformApiData(itemsRaw);
+        const transformed = transformApiData(itemsRaw).filter((item) => {
+          if (!item.image) return false;
+          const imgStr = String(item.image).toLowerCase();
+          if (
+            imgStr.includes("placeholder") ||
+            imgStr.includes("not_found") ||
+            imgStr.includes("image_not_found")
+          ) {
+            return false;
+          }
+          return true;
+        });
 
         // Determine if there are more pages
         let hasMorePages = true;

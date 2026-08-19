@@ -112,11 +112,11 @@ const usePhotography = () => {
         setLoading(false);
       }
     },
-    fetchPhotosByCategory: async (id) => {
+    fetchPhotosByCategory: async (id, city) => {
       setLoading(true);
       setError(null);
       try {
-        const data = await getPhotographyByCategory(id);
+        const data = await getPhotographyByCategory(id, city);
         setPhotosByCategory(data.data || data);
       } catch (err) {
         setError(err);

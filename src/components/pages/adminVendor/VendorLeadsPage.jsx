@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { useToast } from "../../layouts/toasts/Toast";
 import QuotationModal from "./QuotationModal";
 import axiosInstance from "../../../services/api/axiosInstance";
+import { formatDate } from "../../../utils/dateFormat";
 import { PiUsersLight } from "react-icons/pi";
 import { CiCalendarDate, CiTimer } from "react-icons/ci";
 import { IoAnalytics } from "react-icons/io5";
@@ -806,11 +807,7 @@ export default function VendorLeadsPage() {
                       </td>
                       <td>{row.phone}</td>
                       <td>
-                        {new Date(row.eventDate).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
+                        {formatDate(row.eventDate)}
                       </td>
                       <td>
                         <span
