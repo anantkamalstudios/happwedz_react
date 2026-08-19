@@ -1,4 +1,4 @@
-/* Poppins/Inter are loaded from index.html as a non-blocking <link>.
+/* Inter is loaded from index.html as a non-blocking <link>.
    A CSS @import here would serialise the font request behind this stylesheet
    and block first paint. */
 
@@ -7,8 +7,16 @@
   --primary-faint-color: #fff2f8;
 }
 
+/* Was `font-family: "Poppins", sans-serif`, which never applied to anything:
+   App.critical.css lands later in this same bundle with an identical-specificity
+   `*` rule pointing at --rubik-font, so it won every element on the page. Naming
+   the same stack here keeps the two in agreement instead of leaving a rule that
+   reads as if the site were set in Poppins. (Poppins was unreachable through
+   --rubik-font too — "AirbnbCereal Fallback" resolves via local("Arial"), so the
+   cascade never got past it. The webfont request for it has been dropped from
+   index.html.) */
 * {
-  font-family: "Poppins", sans-serif;
+  font-family: var(--rubik-font);
 }
 
 body {

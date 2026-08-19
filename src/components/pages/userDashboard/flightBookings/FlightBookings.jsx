@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../../../services/api/axiosInstance";
 import { FaPlane, FaTicketAlt, FaBan, FaClock, FaCheckCircle, FaEye } from "react-icons/fa";
 import Loader from "../../../ui/Loader";
+import { formatDateTime } from "../../../../utils/dateFormat";
 
 const statusIcon = (status) => {
   switch (status) {
@@ -14,10 +15,7 @@ const statusIcon = (status) => {
 
 const fmt = (dateStr) => {
   if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleString("en-IN", {
-    day: "numeric", month: "short", year: "numeric",
-    hour: "2-digit", minute: "2-digit", hour12: false,
-  });
+  return formatDateTime(dateStr, { fallback: "—" });
 };
 
 const countForFilter = (bookings, s) =>

@@ -14,6 +14,7 @@ import {
 import { getTripSafeBookingDetails } from '../../../../services/api/tripSafeApi';
 import InsuranceBenefitsModal from './InsuranceBenefitsModal';
 import InsuranceCancellationModal from './InsuranceCancellationModal';
+import { formatDate as fmtDate, formatDateTime as fmtDateTime } from '../../../../utils/dateFormat';
 
 const formatPrice = (value) => {
   const num = Number(value || 0);
@@ -23,26 +24,12 @@ const formatPrice = (value) => {
 
 const formatDate = (value) => {
   if (!value) return '—';
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
-  return d.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
+  return fmtDate(value, value);
 };
 
 const formatDateTime = (value) => {
   if (!value) return '—';
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
-  return d.toLocaleString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return fmtDateTime(value, { fallback: value });
 };
 
 const InsuranceBookingDetailsPage = () => {

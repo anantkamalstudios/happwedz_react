@@ -17,6 +17,14 @@ import { useEffect, useRef, useState } from "react";
  * still gets the full page, just after the critical window has closed. Without
  * it this pattern silently hides content from anything that renders without
  * scrolling.
+ *
+ * Note on tuning: `rootMargin` (600px vs 150px) and delaying when the observer
+ * attaches (requestIdleCallback, or waiting on a largest-contentful-paint
+ * entry) were all measured against this page and changed LCP/FCP/TBT by
+ * nothing. On a ~820px mobile viewport the sentinel sits below the fold at
+ * scroll 0 either way, so these sections already mount via `fallbackDelay`
+ * (3500ms) — well after LCP (~2650ms). They are not on the critical path;
+ * don't re-tune this looking for a paint win.
  */
 export default function DeferUntilNearViewport({
   children,

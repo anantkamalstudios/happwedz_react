@@ -15669,11 +15669,8 @@ input:checked+.slider:before {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.search-input,
-.hero-search {
-  /* border-radius: 25px;
-  border: 2px solid #e9ecef; */
-  transition: all 0.3s ease;
+.search-input {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .search-input:focus,
@@ -17538,7 +17535,7 @@ input:checked+.slider:before {
 }
 
 .custom-floral-graphic {
-  background-image: url("/public/images/home/leaf.png");
+  background-image: url("/images/home/leaf.png");
   background-repeat: no-repeat;
   background-size: contain;
   background-position: bottom center;

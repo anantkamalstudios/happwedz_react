@@ -300,7 +300,13 @@ textarea {
   color: #fff;
   padding: 10px 30px;
   font-weight: 500;
-  transition: all 0.3s ease;
+  /* Was `transition: all`, which put colour and border-colour on the animation
+     timeline. Those can't run on the compositor thread, so every one of the six
+     "Explore <category>" buttons showed up under Lighthouse's non-composited
+     animations audit and each hover repainted the whole button. `transform` is
+     the only property here worth animating and the only one that composites;
+     the colour swap in :hover reads fine as an instant change. */
+  transition: transform 0.3s ease;
 }
 .btn-primary:hover {
   background-color: #ffffff !important;
@@ -3608,7 +3614,10 @@ label {
   background-position: center;
   border-radius: 1rem;
   padding: 1.5rem;
-  transition: all 0.3s ease;
+  /* `background-image` is set inline from the CMS payload, and under
+     `transition: all` that assignment animated — a full-panel repaint per frame
+     for a background that was simply arriving, flagged as a non-composited
+     animation. Nothing here needs a transition at all. */
 }
 .home-cta-section .cta-btn {
   background: linear-gradient(135deg, #ff6b9d 0%, #c2185b 100%);
@@ -3616,7 +3625,7 @@ label {
   border-radius: 2rem;
   padding: 0.75rem 2rem;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 4px 15px rgba(199, 20, 101, 0.3);
   width: 100%;
   max-width: 300px;
@@ -3640,16 +3649,47 @@ label {
    with whatever the banner API returns. Copy of a different length changes the
    line count, which changes the column height, which moves every section below
    it — the panel was the largest remaining layout shift on the home page.
-   Clamping each slot to a fixed line count *and* flooring it at the same height
-   makes the box a constant, so the text swap is invisible to layout.
-   `--lines` is set per element; 1.45 tracks the inherited line-height. */
+   `--lines` caps how far any one slot can grow, so the column's height has a
+   known maximum. */
 .cta-clamp {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: var(--lines);
   line-clamp: var(--lines);
   overflow: hidden;
-  min-height: calc(var(--lines) * 1.45em);
+  /* The headline's 1.2 line-height leaves its glyphs ~2px taller than the line
+     box they sit in, and `overflow: hidden` clips whatever pokes out — a nick
+     off the descenders on the last line. Enough padding to clear the ink. */
+  padding-bottom: 0.1em;
+}
+.cta-clamp-body {
+  --lines: 4;
+}
+@media (max-width: 767.98px) {
+  .cta-clamp-body {
+    --lines: 6;
+  }
+}
+/* The height is then reserved once, here, rather than by flooring every slot at
+   its own clamp height: a floor per slot left a blank line hanging under any
+   heading, tagline or title that happened to fit on one line, which is most of
+   them, and the holes between them read as broken spacing. Reserving the stack
+   instead keeps the box just as constant while the copy inside it stays tight.
+   Each value is the shape the panel is written for — a two-line headline, a
+   one-line tagline, a one-line label, a three-line paragraph and the button —
+   plus a line of headroom. Copy longer than that grows the panel rather than
+   being pinned, which is the right trade: the swap this guards against is the
+   short fallback copy giving way to the CMS copy, and anything the CMS sends is
+   still capped by the clamps above. */
+.home-cta-section .cta-copy {
+  min-height: 21.5rem;
+}
+/* Bootstrap's `md`, where the copy stops being a full-width block stacked over
+   the image and becomes the middle column of three. */
+@media (min-width: 768px) {
+  .home-cta-section .cta-copy {
+    min-height: 23rem;
+  }
 }
 
 /* Logo styling */
@@ -4064,11 +4104,8 @@ label {
     justify-content: center;
   }
 }
-.search-input,
-.hero-search {
-  /* border-radius: 25px;
-  border: 2px solid #e9ecef; */
-  transition: all 0.3s ease;
+.search-input {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 /* The desktop top bar sits above everything in normal flow, so any change to
    its height moves the whole page. Its height is set by the 50px Design Studio
@@ -4110,6 +4147,153 @@ label {
     background-image: url("/images/hero/hero-2000.webp");
   }
 }
+/* The hero search Col renders one of two very different heights depending on
+   whether `reduxLocation` is set: a single-line "Find Vendors in {city}"
+   button, or the taller "OR BROWSE BY CATEGORY" divider + category/city form.
+   Reserving space for the taller state stops the rest of the hero (and
+   everything below it) from jumping when the branch that renders differs
+   from what a given user last had reserved. */
+.hero-search-col {
+  min-height: 320px;
+}
+@media (min-width: 768px) {
+  .hero-search-col {
+    min-height: 140px;
+  }
+}
+
+/* Herosection's own styles. These used to live in a <style> block inside the
+   component's JSX — an element in the LCP element's own subtree, so every
+   initial render inserted a stylesheet mid-commit. None of it is dynamic, so
+   it belongs here where it's parsed once with the rest of the sheet.
+   (Measured: this did not move LCP/FCP/TBT on its own. Kept because injecting
+   a stylesheet during render is worth not doing, not as a paint win.) */
+.hero-search .overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 3;
+}
+
+/* Rotating headline word (RotatingWordHeadline in Herosection.jsx).
+   The slot holds every word at once, one per grid item, all in cell 1/1:
+   - its width is max(7ch, longest word), so it does not change when the
+     rotation advances *or* when the CMS word list replaces the bundled one;
+   - the 7ch floor is a constant on purpose. Deriving it from the word list is
+     what made the reservation itself the layout shift — it has to be a value
+     the pre-API and post-API renders both land on. 7ch is 208px at the 48px
+     headline size, comfortably past the ~172px of the longest word the CMS
+     currently serves ("Perfect"); a longer word simply grows the slot;
+   - only opacity/transform animate, both of which the compositor runs without
+     a layout pass, so a rotation costs no reflow and no shift. */
+.hero-rotating-word {
+  display: inline-grid;
+  color: #e83581;
+  vertical-align: baseline;
+  text-align: left;
+}
+.hero-rotating-word > span {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.hero-rotating-word > span.is-active {
+  opacity: 1;
+  transform: scale(1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-rotating-word > span {
+    transition: none;
+    transform: none;
+  }
+}
+.hero-headline {
+  min-height: 1.2em;
+}
+.search-form .form-control,
+.search-form .form-select {
+  border-radius: 6px;
+}
+.form-control:focus {
+  border-color: #ddd;
+  box-shadow: none;
+  outline: none;
+}
+.btn-find {
+  background: #e83581;
+  border: none;
+  color: #fff;
+  border-radius: 6px;
+  min-width: 160px;
+  white-space: nowrap;
+}
+.btn-find:hover {
+  background-color: rgb(238, 83, 148);
+  color: #000;
+}
+.popular-searches a:hover {
+  text-decoration: underline;
+}
+.vendor-dropdown-menu::-webkit-scrollbar {
+  width: 8px;
+}
+.vendor-dropdown-menu::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+.vendor-dropdown-menu::-webkit-scrollbar-thumb {
+  background: #e83581;
+  border-radius: 10px;
+}
+.vendor-dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: #d91d6e;
+}
+.dropdown-link:hover {
+  color: #e83581 !important;
+  padding-left: 4px;
+}
+.hero-vendor-result-item:hover {
+  background: linear-gradient(to right, rgba(195, 17, 98, 0.06), transparent);
+}
+.hero-vendor-search-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+.hero-vendor-search-dropdown::-webkit-scrollbar-thumb {
+  background: #c31162;
+  border-radius: 10px;
+}
+@media (max-width: 1200px) {
+  .dropdown-grid {
+    column-count: 3 !important;
+  }
+}
+@media (max-width: 768px) {
+  .dropdown-grid {
+    column-count: 2 !important;
+  }
+  .vendor-dropdown-menu {
+    max-height: 400px !important;
+  }
+}
+@media (max-width: 576px) {
+  .dropdown-grid {
+    column-count: 1 !important;
+  }
+  .vendor-dropdown-menu {
+    max-height: 350px !important;
+  }
+}
+@media (max-width: 991px) {
+  .hero-search {
+    padding-top: 80px;
+    padding-bottom: 60px;
+  }
+  .display-5 {
+    font-size: 2rem;
+  }
+}
+
 .search-input:focus,
 .hero-search:focus {
   border-color: #667eea;
@@ -4483,7 +4667,7 @@ label {
   }
 }
 .custom-floral-graphic {
-  background-image: url("/public/images/home/leaf.png");
+  background-image: url("/images/home/leaf.png");
   background-repeat: no-repeat;
   background-size: contain;
   background-position: bottom center;
@@ -5866,3 +6050,4 @@ label {
     margin-top: 12px;
   }
 }
+

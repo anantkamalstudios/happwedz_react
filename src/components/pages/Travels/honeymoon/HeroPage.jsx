@@ -13,6 +13,7 @@ import CarRentalSearchForm from "./components/CarRentalSearchForm";
 import InsuranceSearchPanel from "./InsuranceSearchPanel";
 import UpcomingBookings from "./components/UpcomingBookings";
 import { getRecentHotelBookings } from "../../../../services/api/hotelApi";
+import { formatDate } from "../../../../utils/dateFormat";
 import "./index.css";
 
 const TAB_PARAM_MAP = {
@@ -24,13 +25,7 @@ const TAB_PARAM_MAP = {
 
 const formatSelectedDate = (dateValue) => {
   if (!dateValue) return "";
-  const date = new Date(dateValue);
-  if (Number.isNaN(date.getTime())) return dateValue;
-  return date.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return formatDate(dateValue, dateValue);
 };
 
 const mapBookingStatusLabel = (status) => {

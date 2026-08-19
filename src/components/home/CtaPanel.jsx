@@ -41,18 +41,23 @@ const CtaPanel = ({
             />
           </div>
 
-          <div className="col-12 col-md-7 mb-3 mb-md-0 d-flex flex-column">
+          {/* The stack's spacing is deliberately tight: the height it has to
+              occupy is reserved once on `.cta-copy` (see App.critical.css), so
+              the margins here only have to set the rhythm between the lines. */}
+          <div className="col-12 col-md-7 mb-3 mb-md-0 d-flex flex-column cta-copy">
             {heading && (
               <h2
-                className="mb-3 fw-bold home-cta-section-heading text-decoration-none cta-clamp"
-                style={{ "--lines": 2 }}
+                className="mb-2 fw-bold home-cta-section-heading text-decoration-none cta-clamp"
+                /* 3, not 2: the e-invite panel's CMS headline needs a third
+                   line under ~1100px and was being cut to "…captures…". */
+                style={{ "--lines": 3 }}
               >
                 {heading}
               </h2>
             )}
             {subHeading && (
               <div
-                className="my-3 home-cta-section-sub-heading fs-18 cta-clamp"
+                className="mb-4 home-cta-section-sub-heading fs-18 cta-clamp"
                 style={{ "--lines": 2 }}
               >
                 {subHeading}
@@ -60,19 +65,22 @@ const CtaPanel = ({
             )}
             {title && (
               <div
-                className="fw-bold mb-2 mt-2 fs-18 cta-clamp"
+                className="fw-bold mb-1 fs-18 cta-clamp"
                 style={{ "--lines": 2 }}
               >
                 {title}
               </div>
             )}
+            {/* The only slot whose line budget has to change with the viewport,
+                so it comes from the stylesheet rather than from `--lines` here:
+                three lines cut the description off mid-sentence on a laptop,
+                and even four do on a phone, where it is the full width of the
+                card. */}
             {subtitle && (
-              <p className="mb-3 fs-16 cta-clamp" style={{ "--lines": 3 }}>
-                {subtitle}
-              </p>
+              <p className="mb-3 fs-16 cta-clamp cta-clamp-body">{subtitle}</p>
             )}
             {btnName && link && (
-              <div className="d-flex justify-content-center justify-content-md-end w-100 mt-auto mt-3">
+              <div className="d-flex justify-content-center justify-content-md-end w-100 mt-auto pt-3">
                 <Link to={link} className="w-100" style={{ maxWidth: "400px" }}>
                   <button
                     className="btn w-100 px-4 py-2"

@@ -8,7 +8,7 @@ import { IoClose } from "react-icons/io5";
 import { FaHome } from "react-icons/fa";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { Download, Heart, Home, Share } from "lucide-react";
-import { MdRestartAlt } from "react-icons/md";
+import { MdRestartAlt, MdUndo } from "react-icons/md";
 import ReactCompareImage from "react-compare-image";
 import { useDispatch, useSelector } from "react-redux";
 import { addFavorite, removeFavorite } from "../../../redux/favoriteSlice";
@@ -25,6 +25,7 @@ import {
   DEFAULT_INTENSITIES,
   getErrorMessage,
 } from "./Services";
+import { renderLook, loadMakeupModels } from "./makeupRenderer";
 
 const DEBOUNCE_DELAY = 250;
 
@@ -48,9 +49,22 @@ const FiltersPage = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [activeList, setActiveList] = useState(null);
 
-  // Control concurrent apply requests and effect suppression
-  const applyAbortRef = useRef(null);
+  // Control concurrent renders and effect suppression
   const applySeqRef = useRef(0);
+  const renderedUrlRef = useRef(null);
+
+  // Undo stack. Each entry is the full look as it was *before* a change, so
+  // undoing steps back through shade swaps too — not just whole products, which
+  // is all the reset button could do.
+  const historyRef = useRef([]);
+  const [canUndo, setCanUndo] = useState(false);
+  const HISTORY_LIMIT = 25;
+
+  const pushHistory = () => {
+    historyRef.current.push({ appliedProducts, appliedOrder, intensities });
+    if (historyRef.current.length > HISTORY_LIMIT) historyRef.current.shift();
+    setCanUndo(true);
+  };
   const suppressNextEffectRef = useRef(false);
   const lastPayloadRef = useRef("");
 
@@ -77,9 +91,8 @@ const FiltersPage = () => {
 
   const uploadedId = sessionStorage.getItem("try_uploaded_image_id") || null;
   const uploadedPreview = React.useMemo(() => {
-    if (!uploadedId) return null;
-    const base = import.meta.env.VITE_API_BASE_URL || "/ai/api";
-    return `${base}/images/${uploadedId}`;
+    if (!uploadedId || uploadedId === "undefined") return null;
+    return beautyApi.getImageUrl(uploadedId);
   }, [uploadedId]);
 
   const [previewUrl, setPreviewUrl] = React.useState(uploadedPreview);
@@ -87,6 +100,14 @@ const FiltersPage = () => {
   React.useEffect(() => {
     setPreviewUrl(uploadedPreview);
   }, [uploadedPreview]);
+
+  // Warm the landmark models while the user is still browsing shades, so the
+  // first product they tap doesn't wait on a model download.
+  React.useEffect(() => {
+    loadMakeupModels().catch((e) =>
+      console.error("makeup models failed to load:", e?.message || e)
+    );
+  }, []);
 
   React.useEffect(() => {
     const fetchProducts = async () => {
@@ -178,6 +199,9 @@ const FiltersPage = () => {
       (p) => p.id === productId
     );
 
+    // Recorded before the change so undo returns to the previous shade.
+    pushHistory();
+
     const newAppliedProducts = {
       ...appliedProducts,
       [activeCategoryName]: {
@@ -207,7 +231,29 @@ const FiltersPage = () => {
     await applyAllProducts(newAppliedProducts);
   };
 
+  const handleUndo = async () => {
+    const previous = historyRef.current.pop();
+    setCanUndo(historyRef.current.length > 0);
+    if (!previous) return;
+
+    setAppliedProducts(previous.appliedProducts);
+    setAppliedOrder(previous.appliedOrder);
+    setIntensities(previous.intensities);
+
+    // Without clearing the dedupe key, stepping back to a look that was already
+    // rendered once would be treated as "no change" and skipped.
+    lastPayloadRef.current = "";
+    suppressNextEffectRef.current = true;
+
+    if (Object.keys(previous.appliedProducts).length === 0) {
+      setPreviewUrl(uploadedPreview);
+      return;
+    }
+    await applyAllProducts(previous.appliedProducts, previous.intensities);
+  };
+
   const handleRemoveProduct = (categoryName) => {
+    pushHistory();
     const newAppliedProducts = { ...appliedProducts };
     delete newAppliedProducts[categoryName];
     setAppliedProducts(newAppliedProducts);
@@ -232,124 +278,58 @@ const FiltersPage = () => {
     return null;
   }
 
-  const applyAllProducts = async (productsToApply) => {
+  // intensitiesOverride is needed by undo: it renders from a restored snapshot
+  // whose setIntensities has not been committed to state yet.
+  const applyAllProducts = async (productsToApply, intensitiesOverride) => {
     if (!uploadedId || Object.keys(productsToApply).length === 0) return;
+    const activeIntensities = intensitiesOverride || intensities;
 
-    const payload = {
-      image_id: Number(uploadedId),
-      product_ids: Object.values(productsToApply).map((p) => p.productId),
-    };
+    // One layer per applied product. Rendering happens in the browser from the
+    // face landmarks (see makeupRenderer.js) rather than through the AI
+    // service's apply-makeup endpoint.
+    const layers = Object.values(productsToApply).map((product) => ({
+      category: product.categoryName,
+      colorHex: product.colorHex,
+      intensity:
+        activeIntensities[product.categoryName] ??
+        DEFAULT_INTENSITIES[product.categoryName] ??
+        0.6,
+    }));
 
-    Object.values(productsToApply).forEach((product) => {
-      const { colorHex: hex, categoryName } = product;
-      const intensityValue =
-        intensities[categoryName] ?? DEFAULT_INTENSITIES[categoryName] ?? 0.6;
-
-      switch (categoryName) {
-        case "blush":
-          payload.blush_color = hex;
-          payload.blush_intensity = intensityValue;
-          payload.blush_radius = 60;
-          break;
-        case "lipstick":
-          payload.lipstick_color = hex;
-          payload.lipstick_intensity = intensityValue;
-          break;
-        case "eyeshadow":
-          payload.eyeshadow_color = hex;
-          payload.eyeshadow_intensity = intensityValue;
-          payload.eyeshadow_thickness = 30;
-          break;
-        case "contactlenses":
-          payload.contactlenses_color = hex;
-          payload.contactlenses_intensity = 0.2;
-          payload.contactlenses_radius_scale = 1.3;
-          break;
-        case "foundation":
-          payload.foundation_color = hex;
-          payload.foundation_intensity = intensityValue;
-          break;
-        case "kajal":
-          payload.kajal_color = hex;
-          payload.kajal_intensity = intensityValue;
-          break;
-        case "concealer":
-          payload.concealer_color = hex;
-          payload.concealer_intensity = intensityValue;
-          break;
-        case "contour":
-          payload.contour_color = hex;
-          payload.contour_intensity = intensityValue;
-          break;
-        case "bindi":
-          payload.bindi_color = hex;
-          payload.bindi_size = intensityValue;
-          break;
-        case "mascara":
-          payload.mascara_color = hex;
-          payload.mascara_intensity = intensityValue;
-          break;
-        case "eyeliner":
-          payload.eyeliner_color = hex;
-          payload.eyeliner_intensity = intensityValue;
-          break;
-        default:
-          // payload.lipstick_color = hex;
-          // payload.lipstick_intensity = intensityValue;
-          break;
-      }
-    });
-
-    const payloadKey = JSON.stringify(payload);
+    const payloadKey = JSON.stringify(layers);
     if (payloadKey === lastPayloadRef.current) {
       return;
     }
 
-    if (applyAbortRef.current) {
-      try {
-        applyAbortRef.current.abort();
-      } catch {}
-    }
-    const controller = new AbortController();
-    applyAbortRef.current = controller;
+    // Renders are local and fast, but a slider drag can still start a second
+    // one before the first finishes; the sequence number keeps the last one.
     const mySeq = ++applySeqRef.current;
 
     try {
       setIsApplying(true);
-      const res = await beautyApi.applyMakeup(payload, controller.signal);
-      if (mySeq !== applySeqRef.current) return;
+      const renderedUrl = await renderLook({
+        imageUrl: uploadedPreview,
+        layers,
+      });
+      if (mySeq !== applySeqRef.current) {
+        URL.revokeObjectURL(renderedUrl);
+        return;
+      }
 
       lastPayloadRef.current = payloadKey;
 
-      const processedUrl = res?.url || res?.data?.url || res?.image_url;
-      const processedId =
-        res?.processed_image_id || res?.data?.processed_image_id;
-
-      if (processedUrl) {
-        if (import.meta.env.DEV && processedUrl.includes("www.happywedz.com")) {
-          const imageId = processedUrl.split("/").pop();
-          const base = import.meta.env.VITE_API_BASE_URL || "/api";
-          setPreviewUrl(`${base}/images/${imageId}`);
-        } else {
-          setPreviewUrl(processedUrl);
-        }
-      } else if (processedId) {
-        const base = import.meta.env.VITE_API_BASE_URL || "/api";
-        const fallbackUrl = `${base}/images/${processedId}`;
-        setPreviewUrl(fallbackUrl);
-      }
+      // Each render is a fresh object URL; release the one it replaces.
+      if (renderedUrlRef.current) URL.revokeObjectURL(renderedUrlRef.current);
+      renderedUrlRef.current = renderedUrl;
+      setPreviewUrl(renderedUrl);
     } catch (e) {
-      if (e?.name === "AbortError") return;
-      const { message, status } = getErrorMessage(e);
+      const { message } = getErrorMessage(e);
 
-      console.error("applyMakeup failed:", e?.message || e, payload);
+      console.error("makeup render failed:", e?.message || e, layers);
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text:
-          status === 500
-            ? "Internal Server Error"
-            : message || "Failed to apply filter.",
+        text: message || "Failed to apply filter.",
       });
     } finally {
       if (mySeq === applySeqRef.current) {
@@ -396,14 +376,10 @@ const FiltersPage = () => {
     } catch {}
   }, [appliedOrder]);
 
-  // Cleanup in-flight apply on unmount
+  // Release the last rendered look on unmount so its blob isn't leaked.
   useEffect(() => {
     return () => {
-      if (applyAbortRef.current) {
-        try {
-          applyAbortRef.current.abort();
-        } catch {}
-      }
+      if (renderedUrlRef.current) URL.revokeObjectURL(renderedUrlRef.current);
     };
   }, []);
 
@@ -839,6 +815,28 @@ const FiltersPage = () => {
                   }}
                 />
               </div>
+              {/* Steps back one change at a time; shown only once there is
+                  something to undo, so it never reads as a dead control. */}
+              {canUndo && activeBtn !== "Compare" && (
+                <div
+                  title="Undo last change"
+                  style={{ cursor: isApplying ? "wait" : "pointer" }}
+                  onClick={() => {
+                    if (!isApplying) handleUndo();
+                  }}
+                >
+                  <MdUndo
+                    size={30}
+                    style={{
+                      color: "#fff",
+                      backgroundColor: "#C31162",
+                      borderRadius: "100%",
+                      padding: "5px",
+                      opacity: isApplying ? 0.6 : 1,
+                    }}
+                  />
+                </div>
+              )}
               {activeBtn !== "Compare" && (
                 <div
                   onClick={async () => {
@@ -861,6 +859,8 @@ const FiltersPage = () => {
                         confirmButtonText: "Reset",
                       }).then((result) => {
                         if (result.isConfirmed) {
+                          // Recorded so a reset-everything can be walked back.
+                          pushHistory();
                           setPreviewUrl(uploadedPreview);
 
                           try {
@@ -1287,6 +1287,9 @@ const FiltersPage = () => {
                         (currentIntensity / maxIntensity) * 100
                       );
                     })()}
+                    // One history entry per drag, captured before the first
+                    // value change — not one per pixel of travel.
+                    onPointerDown={pushHistory}
                     onChange={(e) => {
                       const categoryName = (
                         categories[expandedCatIdx]

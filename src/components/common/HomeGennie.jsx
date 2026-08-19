@@ -1,13 +1,3 @@
-const handleNewChat = () => {
-  setSessionId(null);
-  setMessages([
-    {
-      type: "ai",
-      text: "Hi! I am ShaadiAI 👋\n\nHow can I help you plan your dream wedding today?",
-    },
-  ]);
-  setInputValue("");
-};
 import React, { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Menu, Plus, SendHorizonal } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -23,6 +13,17 @@ const HomeGennie = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [sessionId, setSessionId] = useState(null);
 
+  const handleNewChat = () => {
+    setSessionId(null);
+    setMessages([
+      {
+        type: "ai",
+        text: "Hi! I am ShaadiAI 👋\n\nHow can I help you plan your dream wedding today?",
+      },
+    ]);
+    setInputValue("");
+  };
+
   const messageContainerRef = useRef(null);
 
   // Gates the 401KB launcher video (see the <video> below) on real user
@@ -36,6 +37,26 @@ const HomeGennie = () => {
     );
     return () =>
       events.forEach((e) => window.removeEventListener(e, arm));
+  }, []);
+
+  // The launcher animation was a 160x160 GIF (160KB) for something shown at
+  // 74x74 in a corner — the heaviest first-party download on the home page. It
+  // is now /shadigif.webp: the same 49 frames and 4080ms loop re-encoded as
+  // animated WebP at 148x148 (2x for retina), 56KB.
+  // It is still held until the browser is idle rather than fetched during load;
+  // until then the button shows /logo-no-bg.png, which index.html's
+  // #initial-loader has already put in cache, so the placeholder costs no
+  // request at all.
+  const [showGif, setShowGif] = useState(false);
+  useEffect(() => {
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(() => setShowGif(true), {
+        timeout: 3000,
+      });
+      return () => window.cancelIdleCallback(id);
+    }
+    const t = setTimeout(() => setShowGif(true), 1500);
+    return () => clearTimeout(t);
   }, []);
 
   // Prevent body scroll when chat is open on mobile
@@ -214,7 +235,25 @@ const HomeGennie = () => {
               way to keep it off the load trace is to not mount the <video> until
               the visitor has actually interacted with the page. Until then the
               button shows the static logo, which is already in cache. */}
-          {showVideo ? (
+          <img
+            src={showGif ? "/shadigif.webp" : "/logo-no-bg.png"}
+            alt="ShaadiAI"
+            width="74"
+            height="74"
+            decoding="async"
+            fetchPriority="low"
+            style={{
+              height: "100%",
+              width: "100%",
+              objectFit: showGif ? "cover" : "contain",
+              padding: showGif ? 0 : "10px",
+              position: "absolute",
+              inset: 0,
+              opacity: showVideo ? 0 : 1,
+              transition: "opacity 0.4s ease",
+            }}
+          />
+          {showVideo && (
             <video
               src="/shadi.mp4"
               autoPlay
@@ -225,16 +264,9 @@ const HomeGennie = () => {
                 height: "100%",
                 width: "100%",
                 objectFit: "cover",
+                position: "absolute",
+                inset: 0,
               }}
-            />
-          ) : (
-            <img
-              src="/logo-no-bg.png"
-              alt=""
-              width="74"
-              height="74"
-              decoding="async"
-              style={{ height: "100%", width: "100%", objectFit: "contain" }}
             />
           )}
         </button>

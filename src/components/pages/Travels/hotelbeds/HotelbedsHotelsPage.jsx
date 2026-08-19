@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Modal, Offcanvas } from "react-bootstrap";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -28,6 +28,7 @@ import {
   searchHotels,
   trackHotelAnalyticsEvent,
 } from "../../../../services/api/hotelApi";
+import { formatDate as fmtDate, formatDateWithWeekday } from "../../../../utils/dateFormat";
 import HotelDetailsPage, { HotelSearchBarEditable } from "./HotelbedsDetailsPage";
 import HotelSearchForm from "../honeymoon/components/HotelSearchForm";
 import { defaultFilters } from "./hotelbedsDetailHelpers";
@@ -73,19 +74,12 @@ const formatMoney = (value, currency = "INR", compact = false) => {
     currency: localeCurrency,
     maximumFractionDigits: 0,
   }).format(amount);
-  return compact ? formatted.replace("₹", "₹") : formatted;
+  return compact ? formatted.replace("â‚¹", "â‚¹") : formatted;
 };
 
 const formatDate = (value) => {
   if (!value) return "Select date";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString("en-GB", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return formatDateWithWeekday(value, { fallback: value });
 };
 
 const getHotelId = (hotel) =>
@@ -555,7 +549,7 @@ const trackSortAnalyticsEvent = async (sortOrder, searchPayload, searchResponse,
         Selected_Option_Id: cityId,
         Selected_Option_Name: cityName,
         TimeStamp: new Date().toISOString(),
-        Date: new Date().toLocaleDateString("en-GB"),
+        Date: fmtDate(new Date()),
         Current_Page: window.location.href,
         Current_Path: window.location.pathname,
         Previous_Page: document.referrer || "",
@@ -591,10 +585,10 @@ const getPriceRangeBucket = (amount) => {
 };
 
 const PRICE_RANGE_LABELS = {
-  UNDER_3000: "Under ₹3,000",
-  "3000_6000": "₹3,000 - ₹6,000",
-  "6000_10000": "₹6,000 - ₹10,000",
-  ABOVE_10000: "Above ₹10,000",
+  UNDER_3000: "Under â‚¹3,000",
+  "3000_6000": "â‚¹3,000 - â‚¹6,000",
+  "6000_10000": "â‚¹6,000 - â‚¹10,000",
+  ABOVE_10000: "Above â‚¹10,000",
 };
 
 const buildLocalFilterGroups = (hotels = []) => {
@@ -661,7 +655,7 @@ const sanitizeArrayFilterValues = (values = []) => {
     .filter((value) => {
       const text = String(value).trim();
       // Drop stale currency chips like "$2500.0" restored from previous UI state.
-      if (/^[\$€£]\s*\d/.test(text)) return false;
+      if (/^[\$â‚¬Â£]\s*\d/.test(text)) return false;
       return true;
     });
 };
@@ -834,7 +828,7 @@ const getRoomGuestSummary = (roomMeta, roomInfo) => {
   if (maxGuests) parts.push(`Fits max. ${maxGuests} guest${maxGuests > 1 ? "s" : ""}`);
   else if (maxAdults) parts.push(`${maxAdults} adult${maxAdults > 1 ? "s" : ""}`);
   if (maxChildren) parts.push(`${maxChildren} child${maxChildren > 1 ? "ren" : ""}`);
-  return parts.join(" • ");
+  return parts.join(" â€¢ ");
 };
 
 const getCancellationLabel = (cnp) => {
@@ -1067,7 +1061,7 @@ function ResultHeader({
       <div className="hotel-controls-row">
         <div className="hotel-controls-left">
           <div className="hotel-sort-dropdown">
-            <span className="hotel-sort-icon">🔽</span>
+            <span className="hotel-sort-icon">ðŸ”½</span>
             <span className="hotel-sort-label">Sort By:</span>
             <select 
               className="hotel-sort-select" 
@@ -1116,7 +1110,7 @@ function ResultHeader({
             className={`hotel-favorites-btn ${favoritesOnly ? "active" : ""}`}
             onClick={() => setFavoritesOnly((prev) => !prev)}
           >
-            ❤️ View Favourites
+            â¤ï¸ View Favourites
           </button>
         </div>
       </div>
@@ -1261,7 +1255,7 @@ function HotelFilterSidebar({
         <div className="hotel-filter-content-static">
           <input
             className="hotel-filter-search"
-            placeholder="🔍 Select by Hotel Name"
+            placeholder="ðŸ” Select by Hotel Name"
             value={hotelNameQuery}
             onChange={(e) => setHotelNameQuery(e.target.value)}
           />
@@ -1293,7 +1287,7 @@ function HotelFilterSidebar({
                   className="hotel-applied-filter-remove"
                   onClick={chip.onRemove}
                 >
-                  ×
+                  Ã—
                 </button>
               </div>
             ))}
@@ -1330,7 +1324,7 @@ function HotelFilterSidebar({
               }
             >
               <span>{group.name}</span>
-              <span>{collapsed[group.key] ? "+" : "−"}</span>
+              <span>{collapsed[group.key] ? "+" : "âˆ’"}</span>
             </button>
             {!collapsed[group.key] ? (
               <div className="hotel-filter-content-expandable">
@@ -1429,14 +1423,14 @@ function HotelCard({ hotel, onClick }) {
               className="image-nav-btn prev"
               onClick={handlePrevImage}
             >
-              ‹
+              â€¹
             </button>
             <button
               type="button"
               className="image-nav-btn next"
               onClick={handleNextImage}
             >
-              ›
+              â€º
             </button>
           </>
         )}
@@ -1455,7 +1449,7 @@ function HotelCard({ hotel, onClick }) {
         </div>
 
         <div className="hotel-inclusion">
-          • {hotel.priceInfo.mealBasis}
+          â€¢ {hotel.priceInfo.mealBasis}
         </div>
 
         <div className="hotel-facilities">
@@ -1478,7 +1472,7 @@ function HotelCard({ hotel, onClick }) {
           <div className="total-price">
             {hotel.priceInfo.totalPrice
               ? formatMoney(hotel.priceInfo.totalPrice, hotel.priceInfo.currency)
-              : "—"} <span className="total-label">Total</span>
+              : "â€”"} <span className="total-label">Total</span>
           </div>
           <div className="tax-info">(Incl. of all taxes)</div>
         </div>
@@ -1601,7 +1595,7 @@ function HotelListCard({ hotel, onClick }) {
               <div className="hotel-total-price">
               {hotel.priceInfo.totalPrice
                 ? formatMoney(hotel.priceInfo.totalPrice, hotel.priceInfo.currency, true)
-                : "—"}
+                : "â€”"}
             </div>
               <div className="hotel-total-caption">Total</div>
             </div>
@@ -2044,7 +2038,7 @@ export default function HotelbedsHotelsPage() {
           <div className="top-controls">
           <div className="left-controls">
             <div className="sort-button">
-              <span className="sort-icon">🔽</span>
+              <span className="sort-icon">ðŸ”½</span>
               <span className="sort-label">Sort By:</span>
               <select 
                 className="sort-select" 
@@ -2093,7 +2087,7 @@ export default function HotelbedsHotelsPage() {
               className={`favorites-btn ${favoritesOnly ? "active" : ""}`}
               onClick={() => setFavoritesOnly((prev) => !prev)}
             >
-              ❤️ View Favourites
+              â¤ï¸ View Favourites
             </button>
           </div>
           </div>
@@ -2110,7 +2104,7 @@ export default function HotelbedsHotelsPage() {
           <div className="content-layout">
             <aside className="filter-sidebar">
               <button className="see-on-map-btn">
-                📍 See on Map
+                ðŸ“ See on Map
               </button>
               
               {filtersLoading ? (

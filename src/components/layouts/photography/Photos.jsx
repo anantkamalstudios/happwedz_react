@@ -86,6 +86,9 @@ const Photos = ({ title, images = [], loading = false }) => {
           let uniqueParts = Array.from(new Set(combinedParts));
           const photoSlug = `${uniqueParts.join("-")}-${img.id}`;
 
+          const imageName = img.title || resolvedCategory || "Photo";
+          const imageType = resolvedCategory;
+
           return (
             <div key={img.id || index} className="masonry-item">
               <Link

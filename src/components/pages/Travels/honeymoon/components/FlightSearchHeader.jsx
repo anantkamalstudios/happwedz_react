@@ -2,6 +2,7 @@ import { FaPlane, FaCalendarAlt, FaUser, FaEdit } from 'react-icons/fa';
 import { IoIosArrowDropdown } from 'react-icons/io';
 import { MdFlightTakeoff, MdFlightLand } from 'react-icons/md';
 import { AIRLINES } from './PreferredAirline';
+import { formatDateWithWeekday } from '../../../../../utils/dateFormat';
 
 // Turn the preferredAirline value (array of codes, or legacy string) into readable names.
 const formatPreferredAirlines = (pref) => {
@@ -12,11 +13,7 @@ const formatPreferredAirlines = (pref) => {
 };
 
 export default function FlightSearchHeader({ searchParams, onModify }) {
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
-    return date.toLocaleDateString('en-US', options);
-  };
+  const formatDate = (dateStr) => formatDateWithWeekday(dateStr);
 
   const getTripTypeLabel = () => {
     if (searchParams.tripType === 'round') return 'ROUND TRIP';

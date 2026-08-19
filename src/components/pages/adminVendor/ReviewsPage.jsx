@@ -6,6 +6,7 @@ import ReviewsDashboard from "./subVendors/ReviewsDashboard";
 import Reviews from "./subVendors/Reviews";
 import ReviewsCollector from "./subVendors/ReviewsCollector";
 import axiosInstance from "../../../services/api/axiosInstance";
+import { formatDate } from "../../../utils/dateFormat";
 
 const ReviewsPage = () => {
   const [activeSection, setActiveSection] = useState("reviews");
@@ -49,7 +50,7 @@ const ReviewsPage = () => {
           ).toFixed(1)
         ),
         review: r.comment,
-        date: new Date(r.createdAt).toLocaleDateString(),
+        date: formatDate(r.createdAt),
         verified: true,
         reply: r.vendor_reply,
       }));

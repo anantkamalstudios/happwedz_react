@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -14,49 +14,88 @@ import { useHome } from "../../hooks/useHome";
 // queries agree on which of hero-768/1280/2000.webp to fetch. Keep those rules
 // in sync with the <link rel="preload"> tags in index.html.
 
+// BgLayer — one crossfading background slot for the CMS hero carousel.
+// It only ever fades IN; the outgoing layer stays fully opaque underneath so
+// the base hero image is never exposed mid-transition.
+const BgLayer = React.memo(({ url, isTop }) => {
+  const [opacity, setOpacity] = useState(0);
+
+  useLayoutEffect(() => {
+    if (!url) return;
+    setOpacity(0);
+    let id2;
+    const id1 = requestAnimationFrame(() => {
+      id2 = requestAnimationFrame(() => setOpacity(1));
+    });
+    return () => {
+      cancelAnimationFrame(id1);
+      if (id2) cancelAnimationFrame(id2);
+    };
+  }, [url]);
+
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: "absolute",
+        inset: 0,
+        backgroundImage: url ? `url(${url})` : "none",
+        backgroundPosition: "center",
+        backgroundSize: "cover",
+        opacity: isTop ? opacity : 1,
+        transition: isTop ? "opacity 1.2s ease-in-out" : "none",
+        willChange: isTop ? "opacity" : "auto",
+        zIndex: isTop ? 2 : 1,
+      }}
+    />
+  );
+});
+
 const RotatingWordHeadline = ({
   words = ["Unique", "Dreamy", "Perfect"],
   titleTemplate = "Find Your _ Wedding Vendor",
 }) => {
   const [index, setIndex] = useState(0);
-  const [animating, setAnimating] = useState(true);
+  const wordCount = words.length;
+
   useEffect(() => {
-    const cycle = setInterval(() => {
-      setAnimating(false);
-      setTimeout(() => {
-        setIndex((i) => (i + 1) % words.length);
-        setAnimating(true);
-      }, 300);
-    }, 2800);
+    if (wordCount < 2) return;
+    const cycle = setInterval(
+      () => setIndex((i) => (i + 1) % wordCount),
+      2800
+    );
     return () => clearInterval(cycle);
-  }, [words.length]);
+  }, [wordCount]);
+
+  // The CMS word list replaces the bundled default mid-flight; without this the
+  // index can point past the end of the shorter list for one render.
+  useEffect(() => setIndex(0), [wordCount]);
+
   const parts = titleTemplate.split("_");
-  // The rotating word swaps every 2.8s for the life of the page. Words of
-  // different widths re-flow the headline — and can rewrap it to a second line —
-  // which registers as a layout shift every single cycle. Reserving the width of
-  // the longest word up front makes every rotation dimensionally identical.
-  const widestWord = words.reduce(
-    (longest, w) => (w.length > longest.length ? w : longest),
-    "",
-  );
+  const prefix = parts[0] ? parts[0].trimEnd() + " " : "Find Your ";
+  const suffix =
+    parts[1] !== undefined && parts[1] !== ""
+      ? " " + parts[1].trimStart()
+      : " Wedding Vendor";
+
+  // Every word is rendered, all the time, stacked into a single inline-grid
+  // cell (see `.hero-rotating-word` in App.critical.css) — only `opacity`
+  // separates the visible one from the rest.
   return (
-    <h1 className="display-5 fw-bold" style={{ minHeight: "1.2em" }}>
-      {parts[0]}
-      <span
-        style={{
-          display: "inline-block",
-          minWidth: `${widestWord.length + 0.5}ch`,
-          textAlign: "center",
-          transition: "opacity .3s, transform .3s",
-          opacity: animating ? 1 : 0,
-          transform: animating ? "scale(1)" : "scale(0.95)",
-          color: "#e83581",
-          verticalAlign: "bottom",
-        }}
-      >
-        {words[index]}
+    <h1 className="display-5 fw-bold hero-headline">
+      {prefix}
+      <span className="hero-rotating-word">
+        {words.map((word, i) => (
+          <span
+            key={`${word}-${i}`}
+            className={i === index ? "is-active" : undefined}
+            aria-hidden={i === index ? undefined : "true"}
+          >
+            {word}
+          </span>
+        ))}
       </span>
-      {parts[1] || " Wedding Vendor"}
+      {suffix}
     </h1>
   );
 };
@@ -434,21 +473,43 @@ const Herosection = () => {
   // media queries let mobile take the 768px file instead of the 1280px one.
   const cmsBgImage = getCurrentBackgroundImage();
 
+  // Two fixed slots for the CMS carousel — never unmounted once they have a
+  // URL, so BgLayer's opacity transition actually gets to play instead of the
+  // background just jumping straight to the next frame.
+  const [bg1, setBg1] = useState(null);
+  const [bg2, setBg2] = useState(null);
+  const [activeBg, setActiveBg] = useState(0); // 0=none, 1=bg1 top, 2=bg2 top
+  const activeRef = useRef(0);
+
+  useEffect(() => {
+    if (!cmsBgImage) return;
+    if (activeRef.current !== 1) {
+      activeRef.current = 1;
+      setBg1(cmsBgImage);
+      setActiveBg(1);
+    } else {
+      activeRef.current = 2;
+      setBg2(cmsBgImage);
+      setActiveBg(2);
+    }
+  }, [cmsBgImage]);
+
   return (
     <section
       className={`hero-search position-relative text-white${
         cmsBgImage ? "" : " hero-search--default"
       }`}
       style={{
-        ...(cmsBgImage ? { backgroundImage: `url(${cmsBgImage})` } : null),
         backgroundPosition: "center",
         backgroundSize: "cover",
         paddingTop: "120px",
         paddingBottom: "80px",
       }}
     >
+      {bg1 && <BgLayer key="bg-slot-1" url={bg1} isTop={activeBg === 1} />}
+      {bg2 && <BgLayer key="bg-slot-2" url={bg2} isTop={activeBg === 2} />}
       <div className="overlay" />
-      <Container className="py-5 position-relative" style={{ zIndex: 2 }}>
+      <Container className="py-5 position-relative" style={{ zIndex: 4 }}>
         <Row className="justify-content-center text-center">
           <Col lg={10}>
             <RotatingWordHeadline
@@ -1042,122 +1103,6 @@ const Herosection = () => {
           </Row>
         )}
       </Container>
-      <style>{`
-        .hero-search .overlay {
-          position: absolute;
-          inset: 0;
-          background: rgba(0,0,0,0.45);
-          z-index: 1;
-        }
-        .search-form .form-control,
-        .search-form .form-select {
-          border-radius: 6px;
-        }
-        .form-control:focus {
-          border-color: #ddd;
-          box-shadow: none;
-          outline: none;
-        }
-        .btn-find {
-          background: #e83581;
-          border: none;
-          color: #fff;
-          border-radius: 6px;
-          min-width: 160px;
-          white-space: nowrap;
-        }
-        .btn-find:hover {
-          background-color:rgb(238, 83, 148);
-          color: #000;
-        }
-        .popular-searches a:hover {
-          text-decoration: underline;
-        }
-
-        /* Dropdown animation */
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-
-        .vendor-dropdown-menu::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        .vendor-dropdown-menu::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 10px;
-        }
-
-        .vendor-dropdown-menu::-webkit-scrollbar-thumb {
-          background: #e83581;
-          border-radius: 10px;
-        }
-
-        .vendor-dropdown-menu::-webkit-scrollbar-thumb:hover {
-          background: #d91d6e;
-        }
-
-        .dropdown-link:hover {
-          color: #e83581 !important;
-          padding-left: 4px;
-        }
-
-        .hero-vendor-result-item:hover {
-          background: linear-gradient(to right, rgba(195, 17, 98, 0.06), transparent);
-        }
-
-        .hero-vendor-search-dropdown::-webkit-scrollbar {
-          width: 6px;
-        }
-
-        .hero-vendor-search-dropdown::-webkit-scrollbar-thumb {
-          background: #C31162;
-          border-radius: 10px;
-        }
-
-        /* Responsive grid */
-        @media (max-width: 1200px) {
-          .dropdown-grid {
-            column-count: 3 !important;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .dropdown-grid {
-            column-count: 2 !important;
-          }
-          .vendor-dropdown-menu {
-            max-height: 400px !important;
-          }
-        }
-
-        @media (max-width: 576px) {
-          .dropdown-grid {
-            column-count: 1 !important;
-          }
-          .vendor-dropdown-menu {
-            max-height: 350px !important;
-          }
-        }
-
-        @media (max-width: 991px) {
-          .hero-search {
-            padding-top: 80px;
-            padding-bottom: 60px;
-          }
-          .display-5 {
-            font-size: 2rem;
-          }
-        }
-      `}</style>
     </section>
   );
 };

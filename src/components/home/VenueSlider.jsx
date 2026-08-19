@@ -47,8 +47,18 @@ const VenueSlider = () => {
       <div className="venues-slider-container">
         <div className="venues-slider-header">
           <h2 className="fw-bold fs-28 text-dark mb-0">Pick your Venue</h2>
-          <Link to="/venues" className="see-more-link fs-18">
-            SEE MORE
+          {/* Same wording as the loaded state below. It used to read "SEE MORE",
+              which is generic anchor text — Lighthouse's SEO "Links do not have
+              descriptive text" audit flags it, and the aria-label does not
+              satisfy that audit because it reads the link's text content. It
+              only ever showed while the venues request was in flight, which is
+              easy to miss locally but is exactly the state an audit can catch. */}
+          <Link
+            to="/venues"
+            className="see-more-link fs-18"
+            aria-label="Explore All Wedding Venues"
+          >
+            Explore All Venues
             <svg
               width="14"
               height="14"
@@ -157,6 +167,15 @@ const VenueSlider = () => {
             768: { slidesPerView: 2 },
             992: { slidesPerView: 3 },
           }}
+          // Swiper's init reads every slide's layout (updateSize/updateSlides),
+          // forcing a synchronous reflow during React's commit. Deferring
+          // .init() to a macrotask cut total forced-reflow time on this page
+          // from 922ms to 195ms (Chrome ForcedReflow insight, 4x CPU
+          // throttle). It does NOT move LCP/FCP/TBT — this section mounts
+          // after LCP anyway — but it's real main-thread work removed from
+          // the scroll-in, so the carousel settles without janking.
+          init={false}
+          onSwiper={(swiper) => setTimeout(() => swiper.init(), 0)}
         >
           {displayData.map((item) => {
             const id = item.id;

@@ -843,6 +843,7 @@ const BasicInfoStep = ({
                 value={
                   formData.weddingDate ? dayjs(formData.weddingDate) : null
                 }
+                format="DD/MM/YYYY"
                 onChange={(newValue) => {
                   const dateString = newValue
                     ? dayjs(newValue).format("YYYY-MM-DD")
@@ -1098,6 +1099,7 @@ const EventCreator = ({ onAdd }) => {
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               value={local.date ? dayjs(local.date) : null}
+              format="DD/MM/YYYY"
               onChange={(newValue) => {
                 const dateString = newValue
                   ? dayjs(newValue).format("YYYY-MM-DD")

@@ -1,13 +1,12 @@
 import { FaPlane, FaClock, FaSuitcase, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { formatDateWithWeekday } from '../../../../../utils/dateFormat';
 
 export default function FlightItinerary({ trip, returnTrip, fare, returnFare, searchParams, onContinue }) {
   const formatTime = (dateStr) => {
     return new Date(dateStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
   };
 
-  const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-  };
+  const formatDate = (dateStr) => formatDateWithWeekday(dateStr);
 
   const formatDuration = (minutes) => {
     const h = Math.floor(minutes / 60);

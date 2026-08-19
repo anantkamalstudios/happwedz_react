@@ -12,6 +12,7 @@ function EventDatePicker({ formData, setFormData }) {
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DatePicker
           value={formData.eventDate ? dayjs(formData.eventDate) : null}
+          format="DD/MM/YYYY"
           onChange={(newDate) =>
             setFormData({
               ...formData,

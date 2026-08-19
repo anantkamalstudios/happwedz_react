@@ -10,7 +10,7 @@ import App from "./App.jsx";
 // unguarded, a production bundle would rewrite every request to localhost:4000.
 if (import.meta.env.DEV) {
   const LIVE_API = "https://happywedz.com/api";
-  const LOCAL_API = "http://localhost:4000/api";
+  const LOCAL_API = "http://127.0.0.1:4000/api";
 
   axios.interceptors.request.use((config) => {
     if (config.url && config.url.startsWith(LIVE_API)) {

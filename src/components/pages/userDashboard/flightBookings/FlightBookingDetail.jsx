@@ -7,6 +7,7 @@ import {
   FaChevronDown, FaChevronUp, FaCreditCard,
 } from "react-icons/fa";
 import CancellationModal from "./CancellationModal";
+import { formatDateTime } from "../../../../utils/dateFormat";
 
 const loadRazorpay = () =>
   new Promise((resolve) => {
@@ -66,10 +67,7 @@ function FareRuleDisplay({ data }) {
 
 const fmt = (dateStr) => {
   if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleString("en-IN", {
-    day: "numeric", month: "short", year: "numeric",
-    hour: "2-digit", minute: "2-digit", hour12: false,
-  });
+  return formatDateTime(dateStr, { fallback: "—" });
 };
 
 const StatusBadge = ({ status }) => {

@@ -16,6 +16,7 @@ import LoadingState from "../LoadingState";
 import ErrorState from "../ErrorState";
 import SEO from "../common/SEO";
 import { GoHeart } from "react-icons/go";
+import { formatDate } from "../../utils/dateFormat";
 
 const toTitleCase = (str) =>
   (str || "")
@@ -392,11 +393,7 @@ const PhotographyDetails = () => {
                     </svg>
                     <span>
                       Uploaded{" "}
-                      {new Date(photo.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
+                      {formatDate(photo.createdAt)}
                     </span>
                   </div>
                 )}

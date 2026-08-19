@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { FaPlane, FaUser, FaEnvelope, FaPhone, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { createFlightPaymentOrder, verifyAndBookFlight, getFareRule, holdFlightBooking } from '../../../../../services/api/flightApi';
 import FlightAddons from './FlightAddons';
+import { formatDate as fmtDate } from '../../../../../utils/dateFormat';
 
 const policyLabel = (type) => ({ CANCELLATION: 'Cancellation', DATECHANGE: 'Date Change', NO_SHOW: 'No Show', SEAT_CHARGEABLE: 'Seat' }[type] || type);
 const timeLabel = (p) => {
@@ -143,9 +144,7 @@ export default function BookingReview({
     return new Date(dateStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
   };
 
-  const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-  };
+  const formatDate = (dateStr) => fmtDate(dateStr);
 
   const formatDuration = (minutes) => {
     const h = Math.floor(minutes / 60);

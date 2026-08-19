@@ -121,13 +121,13 @@ const UserPreference = () => {
         <div className="cookie-gradient">
           <div className="d-flex align-items-start gap-3 mb-4">
             <div className="cookie-icon d-flex align-items-center justify-content-center">
-              {/* 185KB PNG for a ~48px icon. It is decorative and sits in a
-                  banner nobody reads before the hero paints, so keep it out of
-                  the critical fetch queue. It still needs re-encoding — see the
-                  perf notes; lazy loading only moves the cost, it doesn't
-                  remove it. */}
+              {/* Was a 184KB 566x441 PNG for an icon that renders at ~134x104 —
+                  the single largest first-party image on the page, and lazy
+                  loading only moved that cost rather than removing it. Now a
+                  268x208 WebP (2x for retina) at 18.6KB. The original is still
+                  at images/auth/cookie.png if the source art is needed. */}
               <img
-                src="/images/auth/cookie.png"
+                src="/images/auth/cookie.webp"
                 alt=""
                 width="48"
                 height="48"

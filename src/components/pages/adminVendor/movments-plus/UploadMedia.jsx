@@ -21,6 +21,7 @@ import {
 import { toast } from "react-toastify";
 import axiosInstance from "../../../../services/api/axiosInstance";
 import "./tokens-sharing.css";
+import { formatDate as fmtDate, formatDateTime } from "../../../../utils/dateFormat";
 
 const FilePreview = ({ file, index, onReplace, onRemove, disabled }) => {
   const [preview, setPreview] = useState(null);
@@ -357,13 +358,7 @@ const UploadMedia = ({ initialParams }) => {
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return formatDateTime(dateString);
   };
 
   const getStatusBadge = (status) => {
@@ -654,7 +649,7 @@ const UploadMedia = ({ initialParams }) => {
                   {events.map((event) => (
                     <option key={event.id} value={event.id}>
                       {event.name} (
-                      {new Date(event.event_date).toLocaleDateString()})
+                      {fmtDate(event.event_date)})
                     </option>
                   ))}
                 </select>

@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import usePhotography from "../../hooks/usePhotography";
-import { useLoader } from "../context/LoaderContext";
 import ShimmerMasonry from "../ui/ShimmerMasonry";
 
 const MasonryImageSection = () => {
   const { fetchAllPhotos, allPhotos, loading } = usePhotography();
-  const { showLoader, hideLoader } = useLoader();
   const [weddingImages, setWeddingImages] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -18,9 +16,7 @@ const MasonryImageSection = () => {
 
   useEffect(() => {
     const loadPhotos = async () => {
-      showLoader();
       await fetchAllPhotos();
-      hideLoader();
     };
     loadPhotos();
   }, []);
@@ -115,7 +111,7 @@ const MasonryImageSection = () => {
                   {weddingImages[0] && (
                     <div
                       className={`gallery-item ${weddingImages[0].size}`}
-                      style={isMobile ? { height: "auto" } : undefined}
+                      style={isMobile ? { aspectRatio: "4 / 3" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[0].id}`}>
                         <img loading="lazy" decoding="async"
@@ -125,7 +121,7 @@ const MasonryImageSection = () => {
                             isMobile
                               ? {
                                   width: "100%",
-                                  height: "auto",
+                                  height: "100%",
                                   objectFit: "contain",
                                 }
                               : undefined
@@ -154,7 +150,7 @@ const MasonryImageSection = () => {
                   {weddingImages[3] && (
                     <div
                       className={`gallery-item ${weddingImages[3].size}`}
-                      style={isMobile ? { height: "auto" } : undefined}
+                      style={isMobile ? { aspectRatio: "4 / 3" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[3].id}`}>
                         <img loading="lazy" decoding="async"
@@ -164,7 +160,7 @@ const MasonryImageSection = () => {
                             isMobile
                               ? {
                                   width: "100%",
-                                  height: "auto",
+                                  height: "100%",
                                   objectFit: "contain",
                                 }
                               : undefined
@@ -195,7 +191,7 @@ const MasonryImageSection = () => {
                   {weddingImages[1] && (
                     <div
                       className={`gallery-item ${weddingImages[1].size}`}
-                      style={isMobile ? { height: "auto" } : undefined}
+                      style={isMobile ? { aspectRatio: "4 / 3" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[1].id}`}>
                         <img loading="lazy" decoding="async"
@@ -205,7 +201,7 @@ const MasonryImageSection = () => {
                             isMobile
                               ? {
                                   width: "100%",
-                                  height: "auto",
+                                  height: "100%",
                                   objectFit: "contain",
                                 }
                               : undefined
@@ -234,7 +230,7 @@ const MasonryImageSection = () => {
                   {weddingImages[4] && (
                     <div
                       className={`gallery-item ${weddingImages[4].size}`}
-                      style={isMobile ? { height: "auto" } : undefined}
+                      style={isMobile ? { aspectRatio: "4 / 3" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[4].id}`}>
                         <img loading="lazy" decoding="async"
@@ -244,7 +240,7 @@ const MasonryImageSection = () => {
                             isMobile
                               ? {
                                   width: "100%",
-                                  height: "auto",
+                                  height: "100%",
                                   objectFit: "contain",
                                 }
                               : undefined
@@ -275,7 +271,7 @@ const MasonryImageSection = () => {
                   {weddingImages[2] && (
                     <div
                       className={`gallery-item ${weddingImages[2].size}`}
-                      style={isMobile ? { height: "auto" } : undefined}
+                      style={isMobile ? { aspectRatio: "4 / 3" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[2].id}`}>
                         <img loading="lazy" decoding="async"
@@ -285,7 +281,7 @@ const MasonryImageSection = () => {
                             isMobile
                               ? {
                                   width: "100%",
-                                  height: "auto",
+                                  height: "100%",
                                   objectFit: "contain",
                                 }
                               : undefined
@@ -314,7 +310,7 @@ const MasonryImageSection = () => {
                   {weddingImages[5] && (
                     <div
                       className={`gallery-item ${weddingImages[5].size}`}
-                      style={isMobile ? { height: "auto" } : undefined}
+                      style={isMobile ? { aspectRatio: "4 / 3" } : undefined}
                     >
                       <Link to={`/photography/details/${weddingImages[5].id}`}>
                         <img loading="lazy" decoding="async"
@@ -324,7 +320,7 @@ const MasonryImageSection = () => {
                             isMobile
                               ? {
                                   width: "100%",
-                                  height: "auto",
+                                  height: "100%",
                                   objectFit: "contain",
                                 }
                               : undefined

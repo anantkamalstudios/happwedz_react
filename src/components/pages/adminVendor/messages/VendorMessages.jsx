@@ -4,6 +4,7 @@ import { FiSend, FiSmile, FiClock } from "react-icons/fi";
 import vendorMessagesApi from "../../../../services/api/vendorMessagesApi";
 import { vendorsApi } from "../../../../services/api/vendorAuthApi";
 import axiosInstance from "../../../../services/api/axiosInstance";
+import { formatDate, formatDateTime } from "../../../../utils/dateFormat";
 
 const API_BASE = import.meta.env.VITE_API_URL || "https://happywedz.com/api";
 const ONLINE_WINDOW_MS = 60 * 1000;
@@ -13,13 +14,7 @@ function isOnline(lastActiveAtIso) {
 }
 
 function formatTime(iso) {
-  const d = new Date(iso);
-  return d.toLocaleString([], {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return formatDateTime(iso);
 }
 
 const Avatar = ({ name, size = 36, imageUrl }) => {
@@ -522,7 +517,7 @@ const VendorMessages = () => {
                   </div>
                 </div>
                 <div className="text-muted small d-none d-md-block">
-                  <FiClock className="me-1" /> {new Date().toLocaleDateString()}
+                  <FiClock className="me-1" /> {formatDate(new Date())}
                 </div>
               </div>
 

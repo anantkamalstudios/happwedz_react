@@ -29,6 +29,7 @@ import {
 import axiosInstance from "../../../../services/api/axiosInstance";
 import { toast } from "react-toastify";
 import "./analytics.css";
+import { formatDate, formatDateTime } from "../../../../utils/dateFormat";
 
 const COLORS = [
   "#FF6384",
@@ -272,7 +273,7 @@ const Analytics = () => {
             style={{ height: "20px" }}
           />
           <small className="text-muted inter">
-            Started at: {new Date(pkg.startedAt).toLocaleDateString()}
+            Started at: {formatDate(pkg.startedAt)}
           </small>
         </Card.Body>
       </Card>
@@ -450,9 +451,7 @@ const Analytics = () => {
                     <strong className="inter">Last Upload</strong>
                     <br />
                     <span className="text-muted inter">
-                      {activity.lastUploadAt
-                        ? new Date(activity.lastUploadAt).toLocaleString()
-                        : "Never"}
+                      {formatDateTime(activity.lastUploadAt) || "Never"}
                     </span>
                   </div>
                 </div>
@@ -462,9 +461,7 @@ const Analytics = () => {
                     <strong className="inter">Last Token Created</strong>
                     <br />
                     <span className="text-muted inter">
-                      {activity.lastTokenCreatedAt
-                        ? new Date(activity.lastTokenCreatedAt).toLocaleString()
-                        : "Never"}
+                      {formatDateTime(activity.lastTokenCreatedAt) || "Never"}
                     </span>
                   </div>
                 </div>

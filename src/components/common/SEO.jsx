@@ -25,7 +25,8 @@ const getCategoryNoun = (path) => {
 export default function SEO({
   title,
   description,
-  image = "https://happywedz.com/logo-no-bg.png",
+  image = "https://happywedz.com/images/og-default.jpg",
+  imageAlt,
   type = "website",
   canonical,
 }) {
@@ -92,6 +93,8 @@ export default function SEO({
   const finalTitle = resolved?.title || title || "HappyWedz - Find Top Wedding Vendors, Venues & Planning Tools";
   const finalDescription = resolved?.description || description || "Discover top-rated wedding vendors, venues, and planning tools for your perfect wedding. Explore real weddings, inspiration, and expert advice with HappyWedz.";
 
+  const finalImageAlt = imageAlt || finalTitle;
+
   return (
     <Helmet>
       {/* Standard HTML Tags */}
@@ -101,18 +104,24 @@ export default function SEO({
       <link rel="canonical" href={currentCanonical} />
 
       {/* Open Graph / Facebook */}
+      <meta property="og:site_name" content="HappyWedz" />
       <meta property="og:type" content={type} />
       <meta property="og:url" content={currentCanonical} />
       <meta property="og:title" content={finalTitle} />
       <meta property="og:description" content={finalDescription} />
       <meta property="og:image" content={image} />
+      <meta property="og:image:alt" content={finalImageAlt} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:site" content="@happywedz" />
       <meta name="twitter:url" content={currentCanonical} />
       <meta name="twitter:title" content={finalTitle} />
       <meta name="twitter:description" content={finalDescription} />
       <meta name="twitter:image" content={image} />
+      <meta name="twitter:image:alt" content={finalImageAlt} />
     </Helmet>
   );
 }

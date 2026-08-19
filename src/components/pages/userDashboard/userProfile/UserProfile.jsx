@@ -416,6 +416,10 @@ const UserProfile = ({ user, token }) => {
 
   return (
     <Container className="py-3 py-md-4">
+      <style>{`
+        .profile-avatar-upload:hover .profile-avatar-overlay { opacity: 1; }
+        .profile-avatar-upload:focus-within { outline: 2px solid #0d6efd; outline-offset: 2px; }
+      `}</style>
       <Row className="g-3 g-md-4">
         <Col xs={12}>
           <Card className="border-0 shadow-sm">
@@ -436,30 +440,99 @@ const UserProfile = ({ user, token }) => {
             <Card.Body>
               <Row className="align-items-center">
                 <Col xs="auto">
-                  <div
+                  <label
+                    htmlFor="profileImageUpload"
+                    className="profile-avatar-upload"
+                    title="Click to upload profile photo"
                     style={{
+                      position: "relative",
+                      display: "block",
                       width: "96px",
                       height: "96px",
                       borderRadius: "50%",
-                      overflow: "hidden",
                       border: "3px solid #fff",
                       marginTop: "-72px",
                       boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
                       backgroundColor: "#f3f4f6",
+                      cursor: "pointer",
                     }}
                   >
-                    {profilePreview ? (
-                      <img
-                        src={profilePreview}
-                        alt="Profile"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                      />
-                    ) : null}
-                  </div>
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: "50%",
+                        overflow: "hidden",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {profilePreview ? (
+                        <img
+                          src={profilePreview}
+                          alt="Profile"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      ) : (
+                        <FaCamera size={26} color="#9ca3af" />
+                      )}
+                    </div>
+
+                    {/* hover overlay */}
+                    <div
+                      className="profile-avatar-overlay"
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        borderRadius: "50%",
+                        background: "rgba(0,0,0,0.45)",
+                        color: "#fff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        opacity: 0,
+                        transition: "opacity .15s ease",
+                      }}
+                    >
+                      {profilePreview ? "Change" : "Upload"}
+                    </div>
+
+                    {/* camera badge */}
+                    <span
+                      style={{
+                        position: "absolute",
+                        right: "-2px",
+                        bottom: "-2px",
+                        width: "30px",
+                        height: "30px",
+                        borderRadius: "50%",
+                        background: "#0d6efd",
+                        border: "2px solid #fff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                      }}
+                    >
+                      <FaCamera size={13} color="#fff" />
+                    </span>
+
+                    <input
+                      id="profileImageUpload"
+                      type="file"
+                      accept="image/*"
+                      name="profileImage"
+                      onChange={handleImageChange}
+                      style={{ display: "none" }}
+                    />
+                  </label>
                 </Col>
                 <Col>
                   <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
@@ -488,22 +561,14 @@ const UserProfile = ({ user, token }) => {
                           className="d-none"
                         />
                       </Form.Group>
-                      <Form.Group controlId="profileImage" className="mb-0">
-                        <Form.Label
-                          className="btn btn-outline-primary btn-sm mb-0 fs-14 d-inline-flex align-items-center justify-content-center"
-                          title="Change photo"
-                          aria-label="Change photo"
-                        >
-                          <FaCamera size={16} />
-                        </Form.Label>
-                        <Form.Control
-                          type="file"
-                          accept="image/*"
-                          name="profileImage"
-                          onChange={handleImageChange}
-                          className="d-none"
-                        />
-                      </Form.Group>
+                      <label
+                        htmlFor="profileImageUpload"
+                        className="btn btn-outline-primary btn-sm mb-0 fs-14 d-inline-flex align-items-center justify-content-center"
+                        title="Change photo"
+                        aria-label="Change photo"
+                      >
+                        <FaCamera size={16} />
+                      </label>
                     </div>
                   </div>
                 </Col>
@@ -579,6 +644,7 @@ const UserProfile = ({ user, token }) => {
                               ? dayjs(formData.weddingDate)
                               : null
                           }
+                          format="DD/MM/YYYY"
                           onChange={handleDateChange}
                           slotProps={{
                             textField: {

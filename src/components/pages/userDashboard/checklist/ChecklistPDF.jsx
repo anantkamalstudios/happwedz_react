@@ -1,5 +1,6 @@
 import React from "react";
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { formatDateTime } from "../../../../utils/dateFormat";
 
 // const styles = StyleSheet.create({
 //   page: { padding: 24, fontSize: 11, color: "#111827" },
@@ -138,7 +139,7 @@ const ChecklistPDF = ({ items = [], categories = [], meta = {} }) => {
   const dateStr =
     typeof generatedAt === "string"
       ? generatedAt
-      : new Date(generatedAt).toLocaleString();
+      : formatDateTime(generatedAt);
 
   return (
     <Document>

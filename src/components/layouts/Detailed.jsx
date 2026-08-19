@@ -57,6 +57,7 @@ import SEO from "../common/SEO";
 import VenueFAQ from "./VenueFAQ";
 import Breadcrumbs from "../common/Breadcrumbs";
 import StructuredData from "../common/StructuredData";
+import { formatDate } from "../../utils/dateFormat";
 
 
 
@@ -1812,7 +1813,6 @@ const Detailed = () => {
       }
     }
 
-    console.log("FINAL AMENITIES:", amenities);
     return amenities;
   };
 
@@ -1845,7 +1845,7 @@ const Detailed = () => {
       spent,
       images,
       user: "You",
-      date: new Date().toLocaleDateString(),
+      date: formatDate(new Date()),
     };
 
     _setReviews((prev) => [newReview, ...prev]);

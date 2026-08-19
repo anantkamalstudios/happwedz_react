@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Modal, Offcanvas } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -37,6 +37,7 @@ import {
   trackTripjackAnalyticsEvent,
   verifyHotelPaymentAndBook,
 } from "../../../../services/api/hotelApi";
+import { formatDate as fmtDate, formatDateTime } from "../../../../utils/dateFormat";
 import TripJackBookingReview from "./TripJackBookingReview";
 import TripJackBookingStatus from "./TripJackBookingStatus";
 import HotelSearchForm from "../honeymoon/components/HotelSearchForm";
@@ -416,7 +417,7 @@ function HotelAboutModal({ show, onHide, sections = {} }) {
 }
 
 function HotelPropertyInfoSection({ propertyInfo = {} }) {
-  const range = (from, till) => [from, till].filter(Boolean).join(" – ");
+  const range = (from, till) => [from, till].filter(Boolean).join(" â€“ ");
   const rows = [
     ["Property type", propertyInfo.propertyType],
     ["Check-in", range(propertyInfo.checkInFrom, propertyInfo.checkInTill)],
@@ -679,7 +680,7 @@ function MarkupModal({ show, onHide, onUpdate }) {
         <div className="mb-3">
           <label className="form-label">As Value</label>
           <div className="input-group">
-            <span className="input-group-text">₹</span>
+            <span className="input-group-text">â‚¹</span>
             <input
               type="number"
               className="form-control"
@@ -741,7 +742,7 @@ function RoomPolicyModal({ show, onHide, option, hotelName, starRating, searchId
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div><strong>Now</strong></div>
           <div className="text-end">
-            <div>{new Date(option.raw?.checkInDate || Date.now()).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true })}</div>
+            <div>{formatDateTime(option.raw?.checkInDate || Date.now())}</div>
             <div className="text-muted" style={{ fontSize: 13 }}>Check-In</div>
           </div>
         </div>
@@ -763,8 +764,8 @@ function RoomPolicyModal({ show, onHide, option, hotelName, starRating, searchId
               <tbody>
                 {cancellationPenalties.map((penalty, index) => (
                   <tr key={index}>
-                    <td>{penalty.from ? new Date(penalty.from).toLocaleDateString('en-GB') : '-'}</td>
-                    <td>{penalty.to ? new Date(penalty.to).toLocaleDateString('en-GB') : '-'}</td>
+                    <td>{fmtDate(penalty.from, '-')}</td>
+                    <td>{fmtDate(penalty.to, '-')}</td>
                     <td>{penalty.amount ? formatMoney(penalty.amount, option.currency) : '-'}</td>
                   </tr>
                 ))}
@@ -857,7 +858,7 @@ function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onVi
                 onClick={handlePrevImage}
                 aria-label="Previous image"
               >
-                ‹
+                â€¹
               </button>
               <button
                 type="button"
@@ -865,14 +866,14 @@ function RoomTypeGroup({ roomName, options, selectedOptionId, onSelectRoom, onVi
                 onClick={handleNextImage}
                 aria-label="Next image"
               >
-                ›
+                â€º
               </button>
             </>
           )}
           
           <button type="button" className="hotel-photo-overlay">
             <Images size={14} />
-            {images.length > 0 ? `+${images.length} Photos →` : "+4 Photos →"}
+            {images.length > 0 ? `+${images.length} Photos â†’` : "+4 Photos â†’"}
           </button>
         </div>
 
@@ -1241,7 +1242,7 @@ function HotelDetailsPage({
       selectedHotel?.raw?.hid ||
       "";
     // Static content (amenities, descriptions, address, policies, room amenities)
-    // is keyed only by the hotel id — TripJack's /content/fetch-hotel-content does
+    // is keyed only by the hotel id â€” TripJack's /content/fetch-hotel-content does
     // NOT need a searchId, so we must not gate the fetch on it.
     if (!tjHotelId) {
       if (import.meta.env.DEV) {
@@ -1310,7 +1311,7 @@ function HotelDetailsPage({
   const mealPlans = useMemo(() => getMealPlanOptions(detailModel.options), [detailModel.options]);
 
   // Whether the "View more" (About) and "Important information" buttons have
-  // anything to show — so we hide them when the static content is empty.
+  // anything to show â€” so we hide them when the static content is empty.
   const hasPropertyDetails = useMemo(() => {
     const sections = detailModel.aboutSections || {};
     return [
@@ -1375,7 +1376,7 @@ function HotelDetailsPage({
           Agent_Id: "313144",
           Current_Page: window.location.href,
           Current_Path: window.location.pathname,
-          Date: new Date().toLocaleDateString('en-GB'),
+          Date: fmtDate(new Date()),
           Previous_Page: document.referrer,
           Previous_Path: new URL(document.referrer || window.location.href).pathname,
           Product: "HOTEL",
@@ -1409,7 +1410,7 @@ function HotelDetailsPage({
           User_Role: "AGENT",
           Current_Page: window.location.href,
           Current_Path: window.location.pathname,
-          Date: new Date().toLocaleDateString('en-GB'),
+          Date: fmtDate(new Date()),
           Previous_Page: document.referrer,
           Previous_Path: new URL(document.referrer || window.location.href).pathname,
           Product: "HOTEL",
@@ -2448,7 +2449,7 @@ const retryWithoutRepayment =
               ? new URL(document.referrer).pathname
               : "",
           Product: "HOTEL",
-          Date: new Date().toLocaleDateString("en-GB"),
+          Date: fmtDate(new Date()),
           TimeStamp: new Date().toISOString(),
         },
       });
@@ -2519,7 +2520,7 @@ const retryWithoutRepayment =
         Current_Path: typeof window !== "undefined" ? window.location.pathname : "",
         Previous_Page: previousPage,
         Previous_Path: previousPath,
-        Date: new Date().toLocaleDateString("en-GB"),
+        Date: fmtDate(new Date()),
         TimeStamp: new Date().toISOString(),
         Agent_Id: "313144",
         User_Email: "nahatarishabh23@gmail.com",
@@ -3045,7 +3046,7 @@ const retryWithoutRepayment =
                     <div className="hotel-room-modal-section-subtitle">
                       {hasRoomAmenities
                         ? "Popular with Guests"
-                        : "Room-specific amenities aren't listed for this room — showing what the property offers."}
+                        : "Room-specific amenities aren't listed for this room â€” showing what the property offers."}
                     </div>
                     <div className="hotel-room-modal-amenities">
                       {list.length > 0 ? (
@@ -3065,8 +3066,8 @@ const retryWithoutRepayment =
               {Array.isArray(activeOption.cancellation?.penalties) && activeOption.cancellation.penalties.length > 0 ? (
                 <div className="fs-12 text-muted">
                   {activeOption.cancellation.penalties
-                    .map((penalty) => `${penalty.from || "—"} to ${penalty.to || "—"} (${penalty.amount ?? "—"})`)
-                    .join(" • ")}
+                    .map((penalty) => `${penalty.from || "â€”"} to ${penalty.to || "â€”"} (${penalty.amount ?? "â€”"})`)
+                    .join(" â€¢ ")}
                 </div>
               ) : (
                 <div className="fs-12 text-muted">Cancellation policy not available.</div>

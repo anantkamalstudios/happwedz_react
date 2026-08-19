@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { getRecentlyViewed } from '../../services/interactionService';
 import { FaEye, FaClock, FaMapMarkerAlt, FaRupeeSign } from 'react-icons/fa';
 import './RecentlyViewed.css';
+import { formatDate } from '../../utils/dateFormat';
 
 const RecentlyViewed = ({ limit = 6, showTitle = true }) => {
   const { user } = useSelector((state) => state.auth);
@@ -51,7 +52,7 @@ const RecentlyViewed = ({ limit = 6, showTitle = true }) => {
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
     if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-    return viewed.toLocaleDateString();
+    return formatDate(viewed);
   };
 
   // Don't show if user is not logged in or no items

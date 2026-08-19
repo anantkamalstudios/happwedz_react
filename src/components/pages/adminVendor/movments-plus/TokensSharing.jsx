@@ -23,6 +23,7 @@ import ShareModal from "./ShareModal";
 import { SiJsonwebtokens } from "react-icons/si";
 import { ClockLoader } from "react-spinners";
 import { useSelector } from "react-redux";
+import { formatDate as fmtDate, formatDateTime as fmtDateTime } from "../../../../utils/dateFormat";
 
 const TokensSharing = () => {
   const [tokens, setTokens] = useState([]);
@@ -150,23 +151,12 @@ const TokensSharing = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return "No expiry";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    return fmtDate(dateString);
   };
 
   const formatDateTime = (dateString) => {
     if (!dateString) return "Never";
-    const date = new Date(dateString);
-    return date.toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return fmtDateTime(dateString);
   };
 
   if (loading) {

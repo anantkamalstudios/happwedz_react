@@ -46,10 +46,11 @@ const Header = () => {
   const [mostSearchedBlogs, setMostSearchedBlogs] = useState([]);
 
   useEffect(() => {
+    const apiBase = import.meta.env.VITE_API_URL || "https://happywedz.com/api";
     const fetchCategories = async (type, setter) => {
       try {
         const res = await fetch(
-          `https://happywedz.com/api/blog-categories/all?type=${type}&status=active`,
+          `${apiBase}/blog-categories/all?type=${type}&status=active`,
         );
         const json = await res.json();
         const arr = Array.isArray(json.data) ? json.data : [];

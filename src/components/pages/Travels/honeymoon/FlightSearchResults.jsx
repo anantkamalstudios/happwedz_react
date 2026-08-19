@@ -5,6 +5,7 @@ import FlightFiltersSidebar from "./FlightFiltersSidebar";
 import FlightSearchForm from "./components/FlightSearchForm";
 import FlightSearchHeader from "./components/FlightSearchHeader";
 import { reviewFlight, getFareRule } from "../../../../services/api/flightApi";
+import { formatDate } from "../../../../utils/dateFormat";
 
 // ─── Fare Rule display ───────────────────────────────────────────────────────
 const policyLabel = (type) => ({ CANCELLATION: "Cancellation", DATECHANGE: "Date Change", NO_SHOW: "No Show", SEAT_CHARGEABLE: "Seat" }[type] || type);
@@ -93,13 +94,7 @@ const getTime = (dtStr) => {
   const d = new Date(dtStr);
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 };
-const getDateLabel = (dtStr) =>
-  dtStr
-    ? new Date(dtStr).toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "short",
-      })
-    : "";
+const getDateLabel = (dtStr) => formatDate(dtStr);
 const formatDuration = (mins) =>
   mins ? `${Math.floor(mins / 60)}h ${mins % 60}m` : "";
 const getTripDuration = (trip) => {

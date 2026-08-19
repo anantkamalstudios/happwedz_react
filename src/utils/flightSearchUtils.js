@@ -1,3 +1,5 @@
+import { formatDateWithWeekday } from "./dateFormat";
+
 /**
  * Build TripJack-shaped search query from form inputs
  * @param {object} params
@@ -197,14 +199,8 @@ export const formatTime = (dateStr) => {
  * @param {string} dateStr - ISO date string
  * @returns {string} Formatted date string
  */
-export const formatDate = (dateStr) => {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-};
+export const formatDate = (dateStr) => formatDateWithWeekday(dateStr);
+
 
 /**
  * Get stops badge text

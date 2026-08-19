@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
@@ -12,6 +12,7 @@ import {
   Users,
 } from "lucide-react";
 import { fetchHotelCityRegions, searchHotels } from "../../../../services/api/hotelApi";
+import { formatDate as fmtDate, formatDateWithWeekday } from "../../../../utils/dateFormat";
 import {
   createCorrelationId,
   defaultFilters,
@@ -438,17 +439,7 @@ const formatDateDisplay = (dateString) => {
   if (!dateString) return "Select date";
   const date = parseDateInput(dateString);
   if (!date) return "Select date";
-  
-  const weekday = date.toLocaleDateString("en-US", { weekday: "short" });
-  const day = date.getDate();
-  const month = date.toLocaleDateString("en-US", { month: "short" });
-  const year = date.getFullYear();
-  
-  const suffix = day === 1 || day === 21 || day === 31 ? "st" :
-                 day === 2 || day === 22 ? "nd" :
-                 day === 3 || day === 23 ? "rd" : "th";
-  
-  return `${weekday}, ${day}${suffix} ${month} ${year}`;
+  return formatDateWithWeekday(date);
 };
 
 const calculateNights = (checkIn, checkOut) => {
@@ -808,7 +799,7 @@ function CountryDropdown({ value, onChange, label, onClose }) {
           >
             <span className="tripjack-country-name">{country.name}</span>
             {country.code === value && (
-              <span className="tripjack-country-check">✓</span>
+              <span className="tripjack-country-check">âœ“</span>
             )}
           </button>
         ))}
@@ -918,7 +909,7 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
                 onClick={() => updateRoom(roomIndex, "adults", Math.max(1, room.adults - 1))}
                 disabled={room.adults <= 1}
               >
-                −
+                âˆ’
               </button>
               <div className="tripjack-guests-counter-value">{room.adults}</div>
               <button
@@ -944,7 +935,7 @@ function RoomsGuestsDropdown({ rooms, onApply, onClose }) {
                 onClick={() => updateRoom(roomIndex, "children", Math.max(0, room.children - 1))}
                 disabled={room.children <= 0}
               >
-                −
+                âˆ’
               </button>
               <div className="tripjack-guests-counter-value">{room.children}</div>
               <button
@@ -1095,7 +1086,7 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
         User_Role: "AGENT",
         Current_Page: window.location.href,
         Current_Path: window.location.pathname,
-        Date: new Date().toLocaleDateString("en-GB"),
+        Date: fmtDate(new Date()),
         Previous_Page: document.referrer || "",
         Previous_Path: new URL(document.referrer || window.location.href).pathname,
         Product: "HOTEL",
@@ -1325,7 +1316,7 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
               className="tripjack-more-options-link"
               onClick={handleMoreOptionsClick}
             >
-              More options ›
+              More options â€º
             </button>
             {showMoreOptions && (
               <div className="tripjack-more-options-meta">
@@ -1449,7 +1440,7 @@ export default function HotelSearchBar({ payload, suggestion, onSearch, editable
             className="tripjack-more-options-link"
             onClick={handleMoreOptionsClick}
           >
-            More options ›
+            More options â€º
           </button>
           {showMoreOptions && (
             <div className="tripjack-more-options-meta">

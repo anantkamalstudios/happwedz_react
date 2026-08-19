@@ -1,5 +1,6 @@
 import { FaCheckCircle, FaPlane, FaDownload, FaList, FaClock } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { formatDate as fmtDate, formatDateTime as fmtDateTime } from '../../../../../utils/dateFormat';
 
 export default function BookingConfirmation({ bookingData, trip, returnTrip, travellerInfo }) {
   const navigate = useNavigate();
@@ -9,15 +10,9 @@ export default function BookingConfirmation({ bookingData, trip, returnTrip, tra
     return new Date(dateStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
   };
 
-  const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-  };
+  const formatDate = (dateStr) => fmtDate(dateStr);
 
-  const formatDeadline = (v) => {
-    if (!v) return null;
-    const d = new Date(v);
-    return Number.isNaN(d.getTime()) ? null : d.toLocaleString('en-US', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-  };
+  const formatDeadline = (v) => fmtDateTime(v) || null;
 
   const totalAmount = bookingData.amount_paid || bookingData.paymentInfos?.[0]?.amount || 0;
   // Booking ID = TripJack order reference (TJS…). PNR = airline check-in reference (shown separately).

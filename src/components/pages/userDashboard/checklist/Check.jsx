@@ -20,6 +20,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import { pdf } from "@react-pdf/renderer";
 import ChecklistPDF from "./ChecklistPDF";
+import { formatDate } from "../../../../utils/dateFormat";
 import { FaSpinner } from "react-icons/fa6";
 import { Dropdown } from "react-bootstrap";
 
@@ -151,8 +152,8 @@ const Check = () => {
 
       setTimeOptions([
         `${requiredDays} days required`,
-        `Start: ${s.toLocaleDateString()}`,
-        `End: ${endDate.toLocaleDateString()}`,
+        `Start: ${formatDate(s)}`,
+        `End: ${formatDate(endDate)}`,
         `Remaining buffer: ${totalDays - requiredDays} days`,
       ]);
     }
@@ -184,8 +185,8 @@ const Check = () => {
       temp.push({
         ...checklists[i],
         days_assigned: perTaskDays,
-        distributed_start_date: taskStart.toLocaleDateString(),
-        distributed_end_date: taskEnd.toLocaleDateString(),
+        distributed_start_date: formatDate(taskStart),
+        distributed_end_date: formatDate(taskEnd),
       });
       current.setDate(current.getDate() + perTaskDays);
     }
@@ -425,6 +426,7 @@ const Check = () => {
                   >
                     <DatePicker
                       value={startDate ? dayjs(startDate) : null}
+                      format="DD/MM/YYYY"
                       onChange={handleStartDateChange}
                       className="fs-14"
                       disabled={checklists.length > 0 && !!startDate}
@@ -449,6 +451,7 @@ const Check = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       value={weddingDate ? dayjs(weddingDate) : null}
+                      format="DD/MM/YYYY"
                       onChange={handleWeddingDateChange}
                       disabled={checklists.length > 0 && !!weddingDate}
                       slotProps={{

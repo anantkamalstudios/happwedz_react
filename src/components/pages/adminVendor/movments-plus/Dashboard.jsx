@@ -22,6 +22,7 @@ import axiosInstance from "../../../../services/api/axiosInstance";
 import "./dashboard.css";
 import Loader from "../../../ui/Loader";
 import { useSelector } from "react-redux";
+import { formatDate as fmtDate, formatDateWithWeekday } from "../../../../utils/dateFormat";
 const VendorDashboard = ({ onNavigate }) => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -81,7 +82,7 @@ const VendorDashboard = ({ onNavigate }) => {
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
+    return fmtDate(date);
   };
 
   const formatBytes = (mb) => {
@@ -97,14 +98,7 @@ const VendorDashboard = ({ onNavigate }) => {
     });
   };
 
-  const formatFullDate = () => {
-    return currentTime.toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+  const formatFullDate = () => formatDateWithWeekday(currentTime, { long: true });
 
   if (loading) {
     return (

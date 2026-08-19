@@ -5,6 +5,7 @@ import { FaStar } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Card, Modal } from "react-bootstrap";
+import { formatDate } from "../../utils/dateFormat";
 
 const API_BASE_URL = "https://happywedz.com/api";
 
@@ -317,10 +318,7 @@ const ReviewSection = ({ vendor }) => {
                         className="mb-0 text-muted"
                         style={{ fontSize: "14px" }}
                       >
-                        {new Date(review.createdAt).toLocaleDateString(
-                          "en-US",
-                          { month: "long", year: "numeric" }
-                        )}
+                        {formatDate(review.createdAt)}
                       </p>
                     </div>
                   </div>
@@ -426,14 +424,7 @@ const ReviewSection = ({ vendor }) => {
                     {getReviewerName(selectedReview)}
                   </h6>
                   <p className="mb-0 text-muted" style={{ fontSize: "14px" }}>
-                    {new Date(selectedReview.createdAt).toLocaleDateString(
-                      "en-US",
-                      {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      }
-                    )}
+                    {formatDate(selectedReview.createdAt)}
                   </p>
                 </div>
               </div>

@@ -12,6 +12,7 @@ import {
   normalizeCabBookingDetail,
   verifyCabPayment,
 } from "../../../../services/api/cabApi";
+import { formatDateTime as fmtDateTime } from "../../../../utils/dateFormat";
 import "./index.css";
 
 const formatFare = (value) =>
@@ -19,15 +20,7 @@ const formatFare = (value) =>
 
 const formatDateTime = (value) => {
   if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return fmtDateTime(value, { fallback: value });
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

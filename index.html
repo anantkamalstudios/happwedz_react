@@ -19,6 +19,7 @@
 
   <!-- Preconnect to external origins the first paint depends on -->
   <link rel="preconnect" href="https://happywedzbackend.happywedz.com" crossorigin />
+  <link rel="preconnect" href="https://happywedz.com" crossorigin />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
@@ -28,6 +29,12 @@
        (119KB) when the 768px one (48KB) is what it will render.
        Keep the `media` conditions in sync with `.hero-search--default` in
        src/App.critical.css. -->
+  <!-- fetchpriority=high is load-bearing. The measured LCP element is React's
+       `<section class="hero-search">`, NOT the static shell below — Chrome does
+       not credit the shell's paint, because the shell is removed from the DOM
+       before the metric is finalised. Dropping this attribute on the assumption
+       that the shell owned LCP moved LCP from 3.6s to 5.3s in one step, and
+       Lighthouse fails the "LCP request discovery" audit without it. -->
   <link rel="preload" as="image" href="/images/hero/hero-768.webp" media="(max-width: 767.98px)"
     fetchpriority="high" />
   <link rel="preload" as="image" href="/images/hero/hero-1280.webp"
@@ -35,20 +42,50 @@
   <link rel="preload" as="image" href="/images/hero/hero-2000.webp" media="(min-width: 1600px)"
     fetchpriority="high" />
 
-  <!-- Brand font: preload key weights used during initial paint (300, 400, 500, 700) -->
-  <link rel="preload" as="font" type="font/woff2" href="/fonts/AirbnbCereal_W_Lt.woff2" crossorigin />
-  <link rel="preload" as="font" type="font/woff2" href="/fonts/AirbnbCereal_W_Bk.woff2" crossorigin />
-  <link rel="preload" as="font" type="font/woff2" href="/fonts/AirbnbCereal_W_Md.woff2" crossorigin />
-  <link rel="preload" as="font" type="font/woff2" href="/fonts/AirbnbCereal_W_Bd.woff2" crossorigin />
+  <!-- Brand font: preload the weights used during initial paint.
+       These are NOT optional, and removing them is a trap worth documenting.
+       The reasoning for dropping them was that "AirbnbCereal Fallback" in
+       App.critical.css is metric-matched, so the swap should be free. It is not:
+       that fallback carries a single set of metrics derived from the 400 weight,
+       so 500/700 text still re-metrics when the real font arrives. With these
+       preloads the fonts land before React paints and nothing shifts. Without
+       them they land ~2.6s in, after the hero and search form have rendered, and
+       Lighthouse attributed a 0.072 layout shift on the search column directly to
+       these four files — CLS 0 -> 0.072 and TBT 0 -> 370ms (651ms of Style &
+       Layout) in a single change.
+       They do cost ~112KB against the LCP image. That trade is worth it at the
+       current weights (CLS+TBT are 55% of the score, LCP 25%). The right way to
+       reclaim it is per-weight metric-matched fallbacks, not deleting these.
+
+       fetchpriority="low" is the compromise that keeps both. Preloaded fonts
+       default to High priority, so 114KB of them raced the 22KB LCP hero image
+       over the same connection. Low priority still starts them here, early
+       enough to land ~1.3s in — long before React renders any text at ~2.5s, so
+       there is still no swap to shift — while letting the hero image, which is
+       High, take the bandwidth first. All five weights 300-700 are used above
+       the fold, so none of these can simply be dropped. -->
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/AirbnbCereal_W_Lt.woff2" crossorigin
+    fetchpriority="low" />
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/AirbnbCereal_W_Bk.woff2" crossorigin
+    fetchpriority="low" />
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/AirbnbCereal_W_Md.woff2" crossorigin
+    fetchpriority="low" />
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/AirbnbCereal_W_Bd.woff2" crossorigin
+    fetchpriority="low" />
 
   <!-- Fonts: loaded async so they never block first paint. Previously these were
-       CSS @import rules inside App.css/index.css, which serialised behind the bundle. -->
+       CSS @import rules inside App.css/index.css, which serialised behind the bundle.
+       Poppins used to be requested here alongside Inter and was dead weight — four
+       weights fetched for a face nothing could ever resolve to, because
+       `* { font-family: var(--rubik-font) }` in App.critical.css beats index.css's
+       Poppins rule and --rubik-font's own "AirbnbCereal Fallback" (local Arial)
+       always resolves before reaching Poppins in the stack. Inter stays: three
+       lazy-loaded pages ask for it by name. -->
   <link rel="preload" as="style"
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
     onload="this.onload=null;this.rel='stylesheet'" />
   <noscript>
-    <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;600;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" />
   </noscript>
 
   <!-- Font Awesome was render-blocking (~470ms). Load it out of the critical path. -->
@@ -81,7 +118,7 @@
                 "url": "https://happywedz.com/packages",
                 "priceCurrency": "INR",
                 "price": "49999",
-                "priceValidUntil": "2025-12-31",
+                "priceValidUntil": "2026-12-31",
                 "availability": "https://schema.org/InStock",
                 "itemCondition": "https://schema.org/NewCondition"
               }
@@ -100,7 +137,7 @@
                 "url": "https://happywedz.com/destination-wedding",
                 "priceCurrency": "INR",
                 "price": "149999",
-                "priceValidUntil": "2025-12-31",
+                "priceValidUntil": "2026-12-31",
                 "availability": "https://schema.org/InStock",
                 "itemCondition": "https://schema.org/NewCondition"
               }
@@ -119,7 +156,7 @@
                 "url": "https://happywedz.com/luxury-wedding",
                 "priceCurrency": "INR",
                 "price": "299999",
-                "priceValidUntil": "2025-12-31",
+                "priceValidUntil": "2026-12-31",
                 "availability": "https://schema.org/LimitedAvailability",
                 "itemCondition": "https://schema.org/NewCondition"
               }
@@ -131,6 +168,79 @@
 </head>
 
 <body>
+  <!-- BRANDED SPLASH — the first thing painted on every load.
+       ==================================================================
+       #root is empty until ~590KB of JS (the entry chunk plus react-vendor)
+       has downloaded, parsed and executed, so without something here the
+       document renders as blank white for that whole window. This is a static,
+       markup-only copy of src/components/ui/Loader.jsx — same logo, same 100px
+       box, same flipScale keyframes — so that when React's own <Loader> is
+       showing during a route transition the two are indistinguishable.
+
+       It is drawn from the document alone, with no network dependency at all:
+       the logo is inlined below as a data URI, so the splash paints the instant
+       the HTML parses rather than after a round trip for /logo-no-bg.png. That
+       matters — a splash that waits on a file is a white screen first, which is
+       the exact thing it exists to prevent.
+
+       It is position: fixed, so it contributes nothing to layout and removing
+       it cannot shift the page — CLS stays at 0. Removal is driven by
+       LoaderContext.jsx, on the first frame after React commits.
+
+       PERFORMANCE — READ BEFORE TUNING
+       ---------------------------------
+       This deliberately gives up an LCP optimisation, and the reasoning is
+       recorded so it is not re-derived from scratch or reverted by accident.
+
+       What used to be here was a static copy of the *hero* — the pink nav band,
+       the hero-*.webp background and the "Discover Your Dream Wedding Vendor"
+       headline. That existed because the measured LCP element is React's
+       <section class="hero-search">, which on Lighthouse's throttled mobile
+       profile does not exist until 5.7s. Painting a full-viewport copy of it
+       from markup moved LCP to the document's own paint and was worth roughly
+       LCP 0.16 -> a passing score, i.e. most of the gap to 95+.
+
+       A 100px logo centred on white cannot do that job: it is far too small to
+       be the largest contentful paint, so LCP falls back to React's hero at
+       ~5.7s. FCP stays fast (the splash paints at ~100ms) and CLS stays at 0,
+       but expect the Lighthouse LCP subscore to drop back to roughly what it
+       was before the hero shell was introduced.
+
+       That trade was requested deliberately — brand-consistent loading over the
+       LCP subscore. If the score is needed back, the hero shell is in git
+       history; the two cannot both be first, because an opaque splash measures
+       as 0% visually complete no matter what is underneath it.
+
+       The hero-*.webp preloads in <head> are deliberately KEPT. They matter
+       more now, not less: React's hero is the LCP element again, so those
+       preloads are the only thing giving it a head start. -->
+  <style>
+    #app-shell { position: fixed; inset: 0; z-index: 999999; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; transition: opacity .25s ease-out; }
+    /* Matches Loader.jsx's 100x100 box and flipScale animation exactly, so a
+       route-transition loader appearing right after this one does not jump. */
+    #app-shell .as-logo { width: 100px; height: 100px; animation: as-flip 2s ease-in-out infinite; }
+    @keyframes as-flip {
+      0% { transform: scale(1) rotateY(0deg); }
+      50% { transform: scale(1.5) rotateY(180deg); }
+      100% { transform: scale(1) rotateY(360deg); }
+    }
+    @media (prefers-reduced-motion: reduce) { #app-shell .as-logo { animation: none; } }
+  </style>
+  <!-- The logo is inlined rather than referenced, which is the opposite of the
+       rule that applied to the old hero background — that one had to stay a file.
+       The difference is size, and the reason is Lantern, Lighthouse's simulation
+       of TCP slow-start: a document that fits in the initial congestion window
+       (~14KB) lands in one flight, and one that does not pays ~150ms per extra
+       round trip. The hero was 22KB and blew straight past it (measured twice,
+       worst case Lighthouse 90 -> 76). This logo is 3.5KB, ~4.7KB base64, taking
+       the document from 6.0KB to 9.3KB gzipped (measured) — still one flight, so
+       it costs nothing, and it buys a splash with zero network dependency:
+       FCP lands at ~88ms with no resource request for the logo at all.
+       If you swap the logo, re-check that number before assuming it still fits. -->
+  <div id="app-shell" aria-hidden="true">
+    <img class="as-logo" width="100" height="100" alt="" decoding="sync"
+      src="data:image/png;base64,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" />
+  </div>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
   <!-- The Trustpilot bootstrap script is injected by src/components/layouts/Footer.jsx
