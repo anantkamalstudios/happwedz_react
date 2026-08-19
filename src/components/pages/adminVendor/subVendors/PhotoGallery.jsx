@@ -1,14 +1,12 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { FiX } from "react-icons/fi";
 import { IMAGE_BASE_URL } from "../../../../config/constants";
-import SuccessModal from "../../../ui/SuccessModal";
 
 const PhotoGallery = ({ images = [], onImagesChange, onSave }) => {
   const [localImages, setLocalImages] = useState(images);
   const [showAll, setShowAll] = useState(false);
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [showModal, setShowModal] = useState(false);
 
   // Browse button click
   const handleButtonClick = () => {
@@ -67,7 +65,6 @@ const PhotoGallery = ({ images = [], onImagesChange, onSave }) => {
   const handleSave = () => {
     const media = localImages.map((img) => img.file || img.preview || img.url);
     onSave(media);
-    setShowModal(true);
   };
 
   const getImageUrl = (image) => {
@@ -174,12 +171,6 @@ const PhotoGallery = ({ images = [], onImagesChange, onSave }) => {
       <button className="btn btn-primary mt-4 fs-14 " onClick={handleSave}>
         Save Gallery
       </button>
-
-      <SuccessModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        message="Your Photos have been saved successfully!"
-      />
     </div>
   );
 };

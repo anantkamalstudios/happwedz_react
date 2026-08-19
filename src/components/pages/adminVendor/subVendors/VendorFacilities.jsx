@@ -209,10 +209,16 @@ const VendorFacilities = ({
 
   return (
     <div className="my-5">
-      <div className="p-3 border rounded bg-white">
+      <div
+        className="p-4 border-0 rounded-4 bg-white"
+        style={{ boxShadow: "0 2px 16px rgba(0, 0, 0, 0.06)" }}
+      >
         {hasMasterProfile ? (
           <>
-            <h4 className="mb-3 fw-bold">Facilities &amp; Features</h4>
+            <h4 className="mb-1 fw-bold">Facilities &amp; Features</h4>
+            <p className="text-muted fs-14 mb-4">
+              Select everything that applies — these help couples filter and find your listing.
+            </p>
             {isVenue && (
               <VenueMasterProfile
                 formData={formData}

@@ -79,8 +79,8 @@ function CheckboxGroup({ label, options, value, onChange, otherValue, onOtherCha
     else onChange([...selected, opt]);
   };
   return (
-    <div className="mb-3">
-      {label && <label className="form-label fw-semibold">{label}</label>}
+    <div className="mb-4 chip-checkbox-group">
+      {label && <label className="chip-group-title">{label}</label>}
       <div className="d-flex flex-wrap gap-2">
         {options.map((opt) => (
           <Form.Check
@@ -138,8 +138,8 @@ function YesNoField({ label, value, onChange, groupName }) {
   const name = groupName || `yn_${String(label).replace(/\s+/g, "_")}`;
   return (
     <div className="mb-3">
-      <label className="form-label fw-semibold">{label}</label>
-      <div className="d-flex gap-3">
+      <label className="chip-group-title">{label}</label>
+      <div className="d-flex gap-2 yes-no-toggle">
         {yesNo.map((y) => (
           <Form.Check
             key={y}
@@ -244,7 +244,7 @@ const VenueMasterProfile = ({
           </>
         )}
 
-        <Accordion defaultActiveKey={["0", "1"]} alwaysOpen flush className="venue-master-accordion">
+        <Accordion defaultActiveKey={["0", "1"]} alwaysOpen className="venue-master-accordion">
           <Accordion.Item eventKey="0">
             <Accordion.Header>Section 1 — Identity & categories</Accordion.Header>
             <Accordion.Body>
@@ -1632,23 +1632,174 @@ const VenueMasterProfile = ({
     </>
   );
 
+  const styleBlock = (
+    <style>{`
+      .venue-master-embedded .venue-add-space-btn,
+      .venue-master-embedded .venue-remove-space-btn {
+        width: auto;
+        max-width: 9rem;
+        white-space: nowrap;
+      }
+
+      /* Chip-style checkboxes */
+      .chip-group-title {
+        display: block;
+        font-size: 12.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #ed1173;
+        margin-bottom: 10px;
+        padding-left: 10px;
+        border-left: 3px solid #ed1173;
+      }
+      .chip-checkbox-group .form-check {
+        margin: 0;
+        padding: 0;
+        min-height: 0;
+      }
+      .chip-checkbox-group .form-check-input {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+        margin: 0;
+      }
+      .chip-checkbox-group .form-check-label {
+        display: inline-flex;
+        align-items: center;
+        margin: 0;
+        padding: 7px 16px;
+        border-radius: 999px;
+        border: 1.5px solid #e2e8f0;
+        background: #f8fafc;
+        color: #475569;
+        font-size: 13.5px;
+        font-weight: 500;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.16s ease;
+      }
+      .chip-checkbox-group .form-check-label:hover {
+        border-color: #ed1173;
+        color: #ed1173;
+        background: #fff0f6;
+      }
+      .chip-checkbox-group .form-check-input:checked + .form-check-label {
+        background: linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%);
+        border-color: #e91e63;
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(233, 30, 99, 0.28);
+      }
+      .chip-checkbox-group .form-check-input:focus-visible + .form-check-label {
+        outline: 2px solid #ed1173;
+        outline-offset: 2px;
+      }
+
+      /* Yes / No toggle pills */
+      .yes-no-toggle .form-check {
+        margin: 0;
+        padding: 0;
+        min-height: 0;
+      }
+      .yes-no-toggle .form-check-input {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+        margin: 0;
+      }
+      .yes-no-toggle .form-check-label {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        min-width: 52px;
+        padding: 3px 12px;
+        border-radius: 999px;
+        border: 1.5px solid #e2e8f0;
+        background: #f8fafc;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.4;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.16s ease;
+      }
+      .yes-no-toggle .form-check-label:hover {
+        border-color: #cbd5e1;
+        background: #f1f5f9;
+      }
+      .yes-no-toggle .form-check-input:checked + .form-check-label {
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+      }
+      .yes-no-toggle .form-check:first-child .form-check-input:checked + .form-check-label {
+        background: linear-gradient(135deg, #34d399 0%, #16a34a 100%);
+        border-color: #16a34a;
+      }
+      .yes-no-toggle .form-check:last-child .form-check-input:checked + .form-check-label {
+        background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+        border-color: #dc2626;
+      }
+      .yes-no-toggle .form-check-input:focus-visible + .form-check-label {
+        outline: 2px solid #94a3b8;
+        outline-offset: 2px;
+      }
+
+      /* Accordion */
+      .venue-master-accordion .accordion-item {
+        border: 1px solid #f3d9e6;
+        border-radius: 14px;
+        overflow: hidden;
+        margin-bottom: 16px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+      }
+      .venue-master-accordion .accordion-item:last-child {
+        margin-bottom: 0;
+      }
+      .venue-master-accordion .accordion-button {
+        font-weight: 700;
+        font-size: 15.5px;
+        color: #1f2937;
+        background: #fdf2f8;
+        padding: 16px 20px;
+      }
+      .venue-master-accordion .accordion-button:not(.collapsed) {
+        background: linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%);
+        color: #fff;
+        box-shadow: none;
+      }
+      .venue-master-accordion .accordion-button:focus {
+        box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.2);
+        z-index: 1;
+      }
+      .venue-master-accordion .accordion-button:not(.collapsed)::after {
+        filter: brightness(0) invert(1);
+      }
+      .venue-master-accordion .accordion-body {
+        padding: 22px 22px 10px;
+        background: #fff;
+      }
+      .venue-master-accordion hr {
+        margin: 24px 0;
+        opacity: 0.15;
+      }
+    `}</style>
+  );
+
   if (embedded) {
     return (
       <>
-        <style>{`
-          .venue-master-embedded .venue-add-space-btn,
-          .venue-master-embedded .venue-remove-space-btn {
-            width: auto;
-            max-width: 9rem;
-            white-space: nowrap;
-          }
-        `}</style>
+        {styleBlock}
         <div className="venue-master-embedded">{inner}</div>
       </>
     );
   }
   return (
     <div className="my-5">
+      {styleBlock}
       <div className="p-3 border rounded bg-white">{inner}</div>
     </div>
   );

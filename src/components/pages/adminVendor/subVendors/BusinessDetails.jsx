@@ -18,7 +18,10 @@ const BusinessDetails = ({ formData, setFormData }) => {
   const [showPasswords, setShowPasswords] = React.useState(false);
   const [profileImageFile, setProfileImageFile] = React.useState(null);
   const [profileImagePreview, setProfileImagePreview] = React.useState(null);
+  const [profileImageError, setProfileImageError] = React.useState("");
   const [validationErrors, setValidationErrors] = React.useState({});
+
+  const MAX_PROFILE_IMAGE_SIZE = 1 * 1024 * 1024; // 1 MB
 
   const { vendor, token } = useSelector((state) => state.vendorAuth || {});
   const dispatch = useDispatch();
@@ -89,6 +92,13 @@ const BusinessDetails = ({ formData, setFormData }) => {
 
   const handleProfileImage = (e) => {
     const file = e.target.files?.[0] || null;
+    if (file && file.size > MAX_PROFILE_IMAGE_SIZE) {
+      setProfileImageError("Image size should not exceed 1 MB.");
+      setProfileImageFile(null);
+      e.target.value = "";
+      return;
+    }
+    setProfileImageError("");
     setProfileImageFile(file);
   };
 
@@ -375,9 +385,10 @@ const BusinessDetails = ({ formData, setFormData }) => {
               onClick={() => document.getElementById("profileUpload").click()}
             >
               <p className="mb-1 fw-bold">Upload Profile Image</p>
-              <p className="text-muted small mb-2">
+              <p className="text-muted small mb-1">
                 Drag & drop or click to browse
               </p>
+              <p className="text-muted small mb-2">Max file size: 1 MB</p>
 
               <input
                 type="file"
@@ -394,6 +405,9 @@ const BusinessDetails = ({ formData, setFormData }) => {
               )}
             </div>
           </div>
+          {profileImageError && (
+            <div className="text-danger small mt-2">{profileImageError}</div>
+          )}
         </div>
         <div className="mb-3">
           <label className="form-label fs-16">Business Name *</label>

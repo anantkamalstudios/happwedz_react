@@ -8,9 +8,14 @@ const getYouTubeVideoId = (url) => {
   return match && match[2].length === 11 ? match[2] : null;
 };
 
-const VideoGallery = ({ videos: initialVideos = [], onVideosChange }) => {
+const VideoGallery = ({
+  videos: initialVideos = [],
+  onVideosChange,
+  onSave,
+}) => {
   const [videos, setVideos] = useState(initialVideos);
   const [newVideoUrl, setNewVideoUrl] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const handleAddUrl = () => {
     if (!newVideoUrl.trim()) return;
@@ -42,6 +47,16 @@ const VideoGallery = ({ videos: initialVideos = [], onVideosChange }) => {
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && newVideoUrl.trim()) {
       handleAddUrl();
+    }
+  };
+
+  const handleSaveVideos = async () => {
+    if (!onSave) return;
+    setSaving(true);
+    try {
+      await onSave(videos);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -315,6 +330,26 @@ const VideoGallery = ({ videos: initialVideos = [], onVideosChange }) => {
                     Start adding video URLs to build your gallery
                   </p>
                 </div>
+              </div>
+            )}
+
+            {onSave && (
+              <div className="mt-4 text-end">
+                <button
+                  onClick={handleSaveVideos}
+                  disabled={saving}
+                  className="btn btn-lg fs-14"
+                  style={{
+                    background: "#ed1173",
+                    color: "white",
+                    borderRadius: "12px",
+                    border: "none",
+                    padding: "12px 30px",
+                    fontWeight: "600",
+                  }}
+                >
+                  {saving ? "Saving..." : "Save Videos"}
+                </button>
               </div>
             )}
           </div>

@@ -25,10 +25,16 @@ export default function PromoForm({ formData, setFormData, onSave }) {
   const [serverError, setServerError] = useState("");
   const [serverSuccess, setServerSuccess] = useState("");
   const [editingIndex, setEditingIndex] = useState(null);
+  const hasHydrated = React.useRef(false);
 
-  // If parent passed existing deals, prefill the form with the first deal
+  // On first load only, prefill the form with the first existing deal so the
+  // form isn't blank when there's nothing else to show. This must not re-run
+  // on every `deals` change, otherwise adding/editing a promotion snaps the
+  // form back to the first deal's values right after saving.
   useEffect(() => {
+    if (hasHydrated.current) return;
     if (Array.isArray(formData?.deals) && formData.deals.length > 0) {
+      hasHydrated.current = true;
       const d = formData.deals[0];
       setForm((s) => ({
         ...s,
@@ -101,20 +107,21 @@ export default function PromoForm({ formData, setFormData, onSave }) {
         active: !!form.active,
         imageName: imageFile?.name || null,
       };
-      setFormData((prev) => {
-        const existing = Array.isArray(prev.deals) ? [...prev.deals] : [];
-        if (editingIndex !== null && existing[editingIndex]) {
-          existing[editingIndex] = newDeal;
-        } else {
-          existing.push(newDeal);
-        }
-        return { ...prev, deals: existing };
-      });
-      // Let parent handle actual API via onSave (vendorServicesApi)
-      await onSave?.();
+      const existing = Array.isArray(formData?.deals)
+        ? [...formData.deals]
+        : [];
+      if (editingIndex !== null && existing[editingIndex]) {
+        existing[editingIndex] = newDeal;
+      } else {
+        existing.push(newDeal);
+      }
+      setFormData((prev) => ({ ...prev, deals: existing }));
+      // Let parent handle actual API via onSave (vendorServicesApi). Pass the
+      // fresh deals array directly so the save doesn't race the setFormData
+      // update above (parent's formData snapshot updates asynchronously).
+      await onSave?.({ deals: existing });
       setServerSuccess("Promotion added to your service and saved.");
-      const payload = { ...form, imageName: imageFile?.name || null };
-      localStorage.setItem("promoDraft", JSON.stringify(payload));
+      resetForm();
     } catch (err) {
       setServerError(
         typeof err === "string" ? err : err?.message || "Failed to save",
@@ -139,6 +146,7 @@ export default function PromoForm({ formData, setFormData, onSave }) {
     setImageFile(null);
     setImagePreview(null);
     setErrors({});
+    setEditingIndex(null);
   };
 
   const handleEditDeal = (index) => {
@@ -178,7 +186,14 @@ export default function PromoForm({ formData, setFormData, onSave }) {
     const updated = formData.deals.filter((_, i) => i !== index);
     setFormData((prev) => ({ ...prev, deals: updated }));
     try {
-      await onSave?.();
+      // Pass the fresh deals array directly so this doesn't race the
+      // setFormData update above.
+      await onSave?.({ deals: updated });
+      if (editingIndex === index) {
+        resetForm();
+      } else if (editingIndex !== null && editingIndex > index) {
+        setEditingIndex(editingIndex - 1);
+      }
       Swal.fire({
         icon: "success",
         title: "Deleted",
