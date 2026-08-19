@@ -33,7 +33,12 @@ import {
   FiTrendingUp,
   FiPercent,
   FiHeart,
+  FiActivity,
+  FiArrowRight,
+  FiRotateCcw,
+  FiShoppingBag,
 } from "react-icons/fi";
+import "./HomeAdmin.css";
 import { Bar, Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -45,6 +50,7 @@ import {
   Title,
   Tooltip,
   Legend,
+  Filler,
 } from "chart.js";
 import axiosInstance from "../../../services/api/axiosInstance";
 import { formatDate } from "../../../utils/dateFormat";
@@ -57,7 +63,8 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
 
 const HomeAdmin = () => {
@@ -402,83 +409,91 @@ const HomeAdmin = () => {
   // Stats data
   const statsData = {
     leads: {
+      type: "leads",
       title: "Total Leads",
+      label: "TOTAL LEADS",
       value: leadCount,
-      change: "+12%",
-      trend: "up",
-      // daily_avg: 4.7,
-      icon: <FiUsers size={24} />,
+      subtext: "Direct inquiries from interested couples",
+      link: `/vendor-dashboard/total-leads?dateFilter=${dateFilter}${
+        dateFilter === "custom" && customStart && customEnd
+          ? `&customStart=${encodeURIComponent(
+              customStart
+            )}&customEnd=${encodeURIComponent(customEnd)}`
+          : ""
+      }`,
+      icon: <FiUsers size={22} />,
     },
-
     profile_views: {
+      type: "views",
       title: "Profile Views",
+      label: "PROFILE VIEWS",
       value: stats.profileViews.toLocaleString(),
-      change: "+5.2%",
-      trend: "up",
-      icon: <FiEye size={24} />,
+      subtext: "Storefront visits & profile clicks",
+      icon: <FiEye size={22} />,
     },
     wishlist: {
-      title: "impressions",
+      type: "impressions",
+      title: "Impressions",
+      label: "TOTAL IMPRESSIONS",
       value: stats.wishlistCount?.toLocaleString?.() ?? 0,
-      change: "+0%",
-      trend: "up",
-      icon: <FiHeart size={24} />,
+      subtext: "Wishlist saves & discovery reach",
+      icon: <FiHeart size={22} />,
     },
   };
 
-  // Chart data - Enhanced styling
+  // Chart data - Enhanced styling (Brand UI Theme)
   const leadsChartData = {
     labels: stats.chartData.labels,
     datasets: [
       {
         label: "Leads",
         data: stats.chartData.leads,
-        borderColor: "#8b5cf6",
-        backgroundColor: "rgba(139, 92, 246, 0.1)",
+        borderColor: "#ed1173",
+        backgroundColor: "rgba(237, 17, 115, 0.12)",
         tension: 0.4,
         fill: true,
         yAxisID: "y",
         borderWidth: 3,
         pointRadius: 4,
         pointHoverRadius: 6,
-        pointBackgroundColor: "#8b5cf6",
+        pointBackgroundColor: "#ed1173",
         pointBorderColor: "#fff",
         pointBorderWidth: 2,
-        pointHoverBackgroundColor: "#8b5cf6",
+        pointHoverBackgroundColor: "#ed1173",
         pointHoverBorderColor: "#fff",
       },
       {
         label: "Impressions",
         data: stats.chartData.wishlist,
-        borderColor: "#ec4899",
-        backgroundColor: "rgba(236, 72, 153, 0.1)",
+        borderColor: "#db2777",
+        backgroundColor: "rgba(219, 39, 119, 0.08)",
         tension: 0.4,
         yAxisID: "y3",
         fill: true,
         borderWidth: 3,
         pointRadius: 4,
         pointHoverRadius: 6,
-        pointBackgroundColor: "#ec4899",
+        pointBackgroundColor: "#db2777",
         pointBorderColor: "#fff",
         pointBorderWidth: 2,
-        pointHoverBackgroundColor: "#ec4899",
+        pointHoverBackgroundColor: "#db2777",
         pointHoverBorderColor: "#fff",
       },
       {
         label: "Profile Views",
         data: stats.chartData.profileViews,
-        borderColor: "#10b981",
-        backgroundColor: "rgba(16, 185, 129, 0.1)",
+        borderColor: "#be185d",
+        backgroundColor: "rgba(190, 24, 93, 0.08)",
         tension: 0.4,
         yAxisID: "y2",
         fill: true,
         borderWidth: 3,
         pointRadius: 4,
         pointHoverRadius: 6,
-        pointBackgroundColor: "#10b981",
+        pointBackgroundColor: "#be185d",
         pointBorderColor: "#fff",
         pointBorderWidth: 2,
-        pointHoverBackgroundColor: "#10b981",
+        pointHoverBackgroundColor: "#be185d",
         pointHoverBorderColor: "#fff",
       },
     ],
@@ -517,38 +532,27 @@ const HomeAdmin = () => {
     },
     plugins: {
       legend: {
-        position: "top",
-        align: "end",
-        labels: {
-          usePointStyle: true,
-          pointStyle: "circle",
-          padding: 20,
-          font: {
-            size: 13,
-            weight: "500",
-            family: "'Inter', 'Segoe UI', sans-serif",
-          },
-          color: "#4a5568",
-          boxWidth: 8,
-          boxHeight: 8,
-        },
+        display: false, // We render a custom modern legend above the chart
       },
       tooltip: {
         enabled: true,
-        backgroundColor: "rgba(0, 0, 0, 0.85)",
-        titleColor: "#fff",
-        bodyColor: "#fff",
-        borderColor: "rgba(255, 255, 255, 0.2)",
+        backgroundColor: "rgba(15, 23, 42, 0.92)",
+        titleColor: "#ffffff",
+        bodyColor: "#f8fafc",
+        borderColor: "rgba(255, 255, 255, 0.12)",
         borderWidth: 1,
         padding: 12,
         displayColors: true,
-        cornerRadius: 8,
+        cornerRadius: 10,
         titleFont: {
-          size: 14,
-          weight: "bold",
+          size: 13,
+          weight: "700",
+          family: "'Outfit', 'Inter', sans-serif",
         },
         bodyFont: {
-          size: 13,
+          size: 12,
+          weight: "500",
+          family: "'Outfit', 'Inter', sans-serif",
         },
         callbacks: {
           label: function (context) {
@@ -574,7 +578,7 @@ const HomeAdmin = () => {
             size: 11,
             weight: "500",
           },
-          color: "#718096",
+          color: "#94a3b8",
           maxRotation: 45,
           minRotation: 0,
         },
@@ -584,7 +588,7 @@ const HomeAdmin = () => {
         display: true,
         position: "left",
         grid: {
-          color: "rgba(0, 0, 0, 0.05)",
+          color: "rgba(226, 232, 240, 0.6)",
           drawBorder: false,
         },
         ticks: {
@@ -592,7 +596,7 @@ const HomeAdmin = () => {
             size: 11,
             weight: "500",
           },
-          color: "#718096",
+          color: "#94a3b8",
           padding: 8,
         },
         title: {
@@ -602,7 +606,7 @@ const HomeAdmin = () => {
             size: 12,
             weight: "600",
           },
-          color: "#4a5568",
+          color: "#64748b",
         },
       },
       y2: {
@@ -618,7 +622,7 @@ const HomeAdmin = () => {
             size: 11,
             weight: "500",
           },
-          color: "#718096",
+          color: "#94a3b8",
           padding: 8,
         },
         title: {
@@ -628,7 +632,7 @@ const HomeAdmin = () => {
             size: 12,
             weight: "600",
           },
-          color: "#4a5568",
+          color: "#64748b",
         },
       },
       y3: {
@@ -646,7 +650,7 @@ const HomeAdmin = () => {
             size: 12,
             weight: "600",
           },
-          color: "#4a5568",
+          color: "#64748b",
         },
       },
     },
@@ -662,67 +666,208 @@ const HomeAdmin = () => {
     },
   };
 
+// Sparkline Wave Component
+const SparklineWave = ({ color = "#3b82f6" }) => (
+  <svg
+    width="110"
+    height="46"
+    viewBox="0 0 110 46"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className="admin-stat-sparkline"
+  >
+    <path
+      d="M3 34C16 34 22 14 36 26C50 38 58 8 72 18C86 28 92 6 107 10"
+      stroke={color}
+      strokeWidth="2.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
   return (
-    <Container className="leads-dashboard-page">
-      <div className="page-header mb-4">
-        <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center align-items-start gap-3">
-          {/* Title */}
+    <Container className="vendor-crm-dashboard">
+      {/* Top Bar with Title and Breadcrumb */}
+      <div className="vendor-crm-topbar">
+        <h4 className="vendor-crm-page-title">Dashboard</h4>
+        <div className="vendor-crm-breadcrumb">
+          <Link to="/vendor-dashboard" className="vendor-crm-breadcrumb-link">
+            Dashboard
+          </Link>
+          <span>-</span>
+          <span>CRM</span>
+        </div>
+      </div>
+
+      {/* 3 Symmetrical Admin Stat Cards */}
+      <Row className="g-4 mb-4">
+        {/* Card 1: Total Leads (Primary Pink) */}
+        <Col lg={4} md={6} xs={12}>
+          <Link
+            to={`/vendor-dashboard/total-leads?dateFilter=${dateFilter}${
+              dateFilter === "custom" && customStart && customEnd
+                ? `&customStart=${encodeURIComponent(
+                    customStart
+                  )}&customEnd=${encodeURIComponent(customEnd)}`
+                : ""
+            }`}
+            style={{ textDecoration: "none", display: "block", height: "100%" }}
+          >
+            <div className="admin-stat-card admin-stat-card--pink-1">
+              <div className="admin-stat-card-header">
+                <div className="admin-stat-left">
+                  <div className="admin-stat-icon-circle admin-stat-icon-circle--pink-1">
+                    <FiUsers />
+                  </div>
+                  <div>
+                    <div className="admin-stat-title">New Users / Leads</div>
+                    <h3 className="admin-stat-value">{leadCount}</h3>
+                  </div>
+                </div>
+                <SparklineWave color="#ed1173" />
+              </div>
+              <div className="admin-stat-subtitle">Total registered leads</div>
+            </div>
+          </Link>
+        </Col>
+
+        {/* Card 2: Profile Views (Rose Pink) */}
+        <Col lg={4} md={6} xs={12}>
+          <div className="admin-stat-card admin-stat-card--pink-2">
+            <div className="admin-stat-card-header">
+              <div className="admin-stat-left">
+                <div className="admin-stat-icon-circle admin-stat-icon-circle--pink-2">
+                  <FiShoppingBag />
+                </div>
+                <div>
+                  <div className="admin-stat-title">Profile Views</div>
+                  <h3 className="admin-stat-value">
+                    {stats.profileViews.toLocaleString()}
+                  </h3>
+                </div>
+              </div>
+              <SparklineWave color="#db2777" />
+            </div>
+            <div className="admin-stat-subtitle">Total storefront views</div>
+          </div>
+        </Col>
+
+        {/* Card 3: Impressions (Ruby Pink) */}
+        <Col lg={4} md={6} xs={12}>
+          <div className="admin-stat-card admin-stat-card--pink-3">
+            <div className="admin-stat-card-header">
+              <div className="admin-stat-left">
+                <div className="admin-stat-icon-circle admin-stat-icon-circle--pink-3">
+                  <FiHeart />
+                </div>
+                <div>
+                  <div className="admin-stat-title">Impressions</div>
+                  <h3 className="admin-stat-value">
+                    {stats.wishlistCount?.toLocaleString?.() ?? 0}
+                  </h3>
+                </div>
+              </div>
+              <SparklineWave color="#be185d" />
+            </div>
+            <div className="admin-stat-subtitle">Total leads & reach count</div>
+          </div>
+        </Col>
+      </Row>
+
+      {/* Analytics Chart Section (Earning / Performance Statistic) */}
+      <div className="admin-chart-section-card">
+        {/* Top Header */}
+        <div className="admin-chart-top-header">
           <div>
-            <h4 className="page-title">
-              Leads, Impressions & Profile Views Dashboard
-            </h4>
-            <p className="text-muted mb-0">
-              Track your business growth and engagement
+            <h4 className="admin-chart-main-title">Performance Statistic</h4>
+            <p className="admin-chart-sub-title">
+              Yearly engagement and inquiries overview
             </p>
           </div>
-          <div
-            className="d-flex flex-column gap-2 w-100"
-            style={{ maxWidth: "200px" }}
-          >
-            <Dropdown autoClose="outside">
+
+          {/* Select Frequency Dropdown */}
+          <div className="d-flex align-items-center gap-2">
+            <Dropdown>
               <Dropdown.Toggle
-                variant="outline-secondary"
-                className="d-flex align-items-center w-100 justify-content-between"
+                id="vendor-frequency-dropdown"
+                className="admin-frequency-dropdown-toggle"
               >
-                <FiCalendar className="me-2" />
-                {dateFilter === "this_week"
-                  ? "This Week"
-                  : dateFilter === "this_month"
+                <FiCalendar size={15} style={{ color: "#ed1173" }} />
+                <span>
+                  {dateFilter === "all_time"
+                    ? "All Time"
+                    : dateFilter === "this_week"
+                    ? "This Week"
+                    : dateFilter === "this_month"
                     ? "This Month"
                     : dateFilter === "last_month"
-                      ? "Last Month"
-                      : dateFilter === "custom"
-                        ? "Custom Range"
-                        : "All Data"}
+                    ? "Last Month"
+                    : dateFilter === "custom"
+                    ? "Custom Range"
+                    : "Select Frequency"}
+                </span>
               </Dropdown.Toggle>
 
-              <Dropdown.Menu>
-                <Dropdown.Item onClick={() => setDateFilter("this_week")}>
-                  This Week
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => setDateFilter("this_month")}>
-                  This Month
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => setDateFilter("last_month")}>
-                  Last Month
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => setDateFilter("custom")}>
-                  Custom Range
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => setDateFilter("all_time")}>
+              <Dropdown.Menu className="vendor-filter-dropdown-menu">
+                <Dropdown.Item
+                  className={`vendor-filter-dropdown-item ${
+                    dateFilter === "all_time" ? "active" : ""
+                  }`}
+                  onClick={() => setDateFilter("all_time")}
+                >
                   All Data
                 </Dropdown.Item>
-                {/* Desktop-only inline custom range inside dropdown to avoid layout shift */}
+                <Dropdown.Item
+                  className={`vendor-filter-dropdown-item ${
+                    dateFilter === "this_week" ? "active" : ""
+                  }`}
+                  onClick={() => setDateFilter("this_week")}
+                >
+                  This Week
+                </Dropdown.Item>
+                <Dropdown.Item
+                  className={`vendor-filter-dropdown-item ${
+                    dateFilter === "this_month" ? "active" : ""
+                  }`}
+                  onClick={() => setDateFilter("this_month")}
+                >
+                  This Month
+                </Dropdown.Item>
+                <Dropdown.Item
+                  className={`vendor-filter-dropdown-item ${
+                    dateFilter === "last_month" ? "active" : ""
+                  }`}
+                  onClick={() => setDateFilter("last_month")}
+                >
+                  Last Month
+                </Dropdown.Item>
+                <Dropdown.Item
+                  className={`vendor-filter-dropdown-item ${
+                    dateFilter === "custom" ? "active" : ""
+                  }`}
+                  onClick={() => setDateFilter("custom")}
+                >
+                  Custom Range
+                </Dropdown.Item>
+
+                {/* Inline custom range inside dropdown */}
                 {dateFilter === "custom" && (
-                  <div className="d-none d-md-block">
+                  <>
                     <Dropdown.Divider />
-                    <div className="px-3 py-2" style={{ minWidth: "280px" }}>
+                    <div className="admin-custom-date-popover">
                       <div className="d-flex flex-column gap-2">
+                        <div className="small fw-semibold text-muted">
+                          Start Date
+                        </div>
                         <Form.Control
                           type="date"
                           value={customStart}
                           onChange={(e) => setCustomStart(e.target.value)}
                         />
+                        <div className="small fw-semibold text-muted mt-1">
+                          End Date
+                        </div>
                         <Form.Control
                           type="date"
                           value={customEnd}
@@ -730,7 +875,13 @@ const HomeAdmin = () => {
                         />
                         <Button
                           variant="primary"
-                          className="w-100 btn-outline-primary"
+                          className="w-100 mt-2 py-2 fw-semibold"
+                          style={{
+                            backgroundColor: "#ed1173",
+                            borderColor: "#ed1173",
+                            borderRadius: "8px",
+                            fontSize: "0.85rem",
+                          }}
                           onClick={() => {
                             if (!customStart || !customEnd) {
                               alert("Please select both start and end dates.");
@@ -743,256 +894,75 @@ const HomeAdmin = () => {
                             setCustomApplyToggle((t) => !t);
                           }}
                         >
-                          Apply
+                          Apply Filter
                         </Button>
                       </div>
                     </div>
-                  </div>
+                  </>
                 )}
               </Dropdown.Menu>
             </Dropdown>
 
-            {/* Mobile-only custom range below dropdown (hidden on md and up) */}
-            {dateFilter === "custom" && (
-              <div className="d-block d-md-none">
-                <div className="d-flex flex-column gap-2">
-                  <Form.Control
-                    type="date"
-                    value={customStart}
-                    onChange={(e) => setCustomStart(e.target.value)}
-                  />
-                  <Form.Text muted>Format: dd-mm-yyyy</Form.Text>
-
-                  <Form.Control
-                    type="date"
-                    value={customEnd}
-                    onChange={(e) => setCustomEnd(e.target.value)}
-                  />
-                  <Form.Text muted>Format: dd-mm-yyyy</Form.Text>
-                </div>
-                <Button
-                  variant="primary"
-                  className="w-100 btn-outline-primary"
-                  onClick={() => {
-                    if (!customStart || !customEnd) {
-                      alert("Please select both start and end dates.");
-                      return;
-                    }
-                    if (new Date(customStart) > new Date(customEnd)) {
-                      alert("Start date must be before end date.");
-                      return;
-                    }
-                    setCustomApplyToggle((t) => !t);
-                  }}
-                >
-                  Apply
-                </Button>
-              </div>
+            {dateFilter !== "all_time" && (
+              <button
+                type="button"
+                className="vendor-filter-reset-btn"
+                onClick={() => {
+                  setDateFilter("all_time");
+                  setCustomStart("");
+                  setCustomEnd("");
+                }}
+                title="Reset filter"
+              >
+                <FiRotateCcw size={13} />
+                <span>Reset</span>
+              </button>
             )}
-
-            <Button
-              variant="outline-danger"
-              className="ms-2"
-              onClick={() => {
-                setDateFilter("all_time");
-                setCustomStart("");
-                setCustomEnd("");
-              }}
-            >
-              Reset Filter
-            </Button>
           </div>
         </div>
+
+        {/* Stat Pills Center Summary */}
+        <div className="admin-stat-pills-row">
+          <div className="admin-stat-pill-box">
+            <div className="admin-stat-pill-icon" style={{ color: "#ed1173" }}>
+              <FiUsers />
+            </div>
+            <div>
+              <div className="admin-stat-pill-label">Leads</div>
+              <h5 className="admin-stat-pill-value">{leadCount}</h5>
+            </div>
+          </div>
+
+          <div className="admin-stat-pill-box">
+            <div className="admin-stat-pill-icon" style={{ color: "#db2777" }}>
+              <FiShoppingBag />
+            </div>
+            <div>
+              <div className="admin-stat-pill-label">Views</div>
+              <h5 className="admin-stat-pill-value">
+                {stats.profileViews.toLocaleString()}
+              </h5>
+            </div>
+          </div>
+
+          <div className="admin-stat-pill-box">
+            <div className="admin-stat-pill-icon" style={{ color: "#be185d" }}>
+              <FiHeart />
+            </div>
+            <div>
+              <div className="admin-stat-pill-label">Impressions</div>
+              <h5 className="admin-stat-pill-value">
+                {stats.wishlistCount?.toLocaleString?.() ?? 0}
+              </h5>
+            </div>
+          </div>
+        </div>
+
+        {/* Chart Canvas */}
+        <div className="admin-chart-canvas-container">
+          <Line data={leadsChartData} options={leadsChartOptions} />
+        </div>
       </div>
-
-      {/* Stats Cards */}
-      <Row className="mb-4">
-        {Object.entries(statsData).map(([key, data]) => {
-          const cardContent = (
-            <Card className="stat-card h-90">
-              <Card.Body>
-                <div className="d-flex justify-content-between align-items-start">
-                  <div>
-                    <span className="text-uppercase text-muted mb-1">
-                      {data.title}
-                    </span>
-                    <h5 className="pt-4">{data.value}</h5>
-                  </div>
-                  <div
-                    className={`icon-circle bg-${data.trend === "up" ? "success" : "danger"
-                      }-light`}
-                  >
-                    {data.icon}
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          );
-
-          return (
-            <Col xl={3} md={6} key={key} className="mb-4">
-              {key === "leads" ? (
-                <Link
-                  to={`/vendor-dashboard/total-leads?dateFilter=${dateFilter}${dateFilter === "custom" && customStart && customEnd
-                      ? `&customStart=${encodeURIComponent(
-                        customStart
-                      )}&customEnd=${encodeURIComponent(customEnd)}`
-                      : ""
-                    }`}
-                  style={{ textDecoration: "none" }}
-                >
-                  {cardContent}
-                </Link>
-              ) : (
-                cardContent
-              )}
-            </Col>
-          );
-        })}
-      </Row>
-
-      {/* Charts - Modern Design */}
-      <Row className="mb-4">
-        <Col lg={12} className="mb-4 mb-lg-0">
-          <Card
-            className="modern-chart-card border-0 shadow-sm"
-            style={{
-              backgroundColor: "#ffffff",
-              borderRadius: "16px",
-              overflow: "hidden",
-              border: "1px solid #e5e7eb",
-            }}
-          >
-            <Card.Body className="p-4">
-              {/* Header Section */}
-              <div
-                className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 pb-3"
-                style={{ borderBottom: "2px solid #f3f4f6" }}
-              >
-                <div>
-                  <h4
-                    className="mb-1 fw-bold"
-                    style={{ color: "#111827", fontSize: "1.5rem" }}
-                  >
-                    Performance Analytics
-                  </h4>
-                  <p
-                    className="mb-0"
-                    style={{ color: "#6b7280", fontSize: "0.9rem" }}
-                  >
-                    Track your leads, impressions, and profile views over time
-                  </p>
-                </div>
-              </div>
-
-              {/* Chart Container */}
-              <div
-                className="chart-container p-4"
-                style={{
-                  backgroundColor: "#fafbfc",
-                  borderRadius: "12px",
-                  border: "1px solid #e5e7eb",
-                }}
-              >
-                <div style={{ height: "400px", position: "relative" }}>
-                  <Line data={leadsChartData} options={leadsChartOptions} />
-                </div>
-              </div>
-
-              {/* Stats Summary Row */}
-              <Row className="mt-4 g-3">
-                <Col md={4}>
-                  <div
-                    className="p-3 text-center"
-                    style={{
-                      backgroundColor: "#f9fafb",
-                      borderRadius: "10px",
-                      border: "1px solid #e5e7eb",
-                    }}
-                  >
-                    <div className="d-flex align-items-center justify-content-center gap-2 mb-1">
-                      <FiUsers size={18} style={{ color: "#6b7280" }} />
-                      <span
-                        style={{
-                          color: "#6b7280",
-                          fontSize: "0.85rem",
-                          fontWeight: "500",
-                        }}
-                      >
-                        Total Leads
-                      </span>
-                    </div>
-                    <h5
-                      className="mb-0 fw-bold"
-                      style={{ color: "#111827", fontSize: "1.5rem" }}
-                    >
-                      {leadCount}
-                    </h5>
-                  </div>
-                </Col>
-                <Col md={4}>
-                  <div
-                    className="p-3 text-center"
-                    style={{
-                      backgroundColor: "#f9fafb",
-                      borderRadius: "10px",
-                      border: "1px solid #e5e7eb",
-                    }}
-                  >
-                    <div className="d-flex align-items-center justify-content-center gap-2 mb-1">
-                      <FiEye size={18} style={{ color: "#6b7280" }} />
-                      <span
-                        style={{
-                          color: "#6b7280",
-                          fontSize: "0.85rem",
-                          fontWeight: "500",
-                        }}
-                      >
-                        Profile Views
-                      </span>
-                    </div>
-                    <h5
-                      className="mb-0 fw-bold"
-                      style={{ color: "#111827", fontSize: "1.5rem" }}
-                    >
-                      {stats.profileViews.toLocaleString()}
-                    </h5>
-                  </div>
-                </Col>
-                <Col md={4}>
-                  <div
-                    className="p-3 text-center"
-                    style={{
-                      backgroundColor: "#f9fafb",
-                      borderRadius: "10px",
-                      border: "1px solid #e5e7eb",
-                    }}
-                  >
-                    <div className="d-flex align-items-center justify-content-center gap-2 mb-1">
-                      <FiHeart size={18} style={{ color: "#6b7280" }} />
-                      <span
-                        style={{
-                          color: "#6b7280",
-                          fontSize: "0.85rem",
-                          fontWeight: "500",
-                        }}
-                      >
-                        Impressions
-                      </span>
-                    </div>
-                    <h5
-                      className="mb-0 fw-bold"
-                      style={{ color: "#111827", fontSize: "1.5rem" }}
-                    >
-                      {stats.wishlistCount?.toLocaleString?.() ?? 0}
-                    </h5>
-                  </div>
-                </Col>
-              </Row>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
     </Container>
   );
 };

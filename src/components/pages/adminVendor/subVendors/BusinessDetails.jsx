@@ -4,8 +4,10 @@ import vendorsAuthApi, {
   vendorsApi,
 } from "../../../../services/api/vendorAuthApi";
 import { setVendor } from "../../../../redux/vendorAuthSlice";
+import { useToast } from "../../../layouts/toasts/Toast";
 
 const BusinessDetails = ({ formData, setFormData }) => {
+  const { addToast } = useToast();
   const [showPasswordFields, setShowPasswordFields] = React.useState(false);
   const [currentPassword, setCurrentPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
@@ -18,6 +20,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
   const [showPasswords, setShowPasswords] = React.useState(false);
   const [profileImageFile, setProfileImageFile] = React.useState(null);
   const [profileImagePreview, setProfileImagePreview] = React.useState(null);
+  const [isImageRemoved, setIsImageRemoved] = React.useState(false);
   const [validationErrors, setValidationErrors] = React.useState({});
 
   const { vendor, token } = useSelector((state) => state.vendorAuth || {});
@@ -87,9 +90,73 @@ const BusinessDetails = ({ formData, setFormData }) => {
     }));
   };
 
+  const [profileImageError, setProfileImageError] = React.useState("");
+  const [isDragging, setIsDragging] = React.useState(false);
+  const MAX_FILE_SIZE_MB = 5;
+  const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
+  const validateAndSetImage = (file) => {
+    setProfileImageError("");
+    if (!file) {
+      setProfileImageFile(null);
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setProfileImageError("Please upload a valid image file (JPG, PNG, WEBP).");
+      setProfileImageFile(null);
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+      setProfileImageError(
+        `File size must be less than ${MAX_FILE_SIZE_MB} MB. (Selected: ${sizeInMB} MB)`
+      );
+      setProfileImageFile(null);
+      return;
+    }
+
+    setProfileImageFile(file);
+    setIsImageRemoved(false);
+    setProfileImageError("");
+  };
+
+  const handleRemoveImage = (e) => {
+    if (e) e.stopPropagation();
+    setProfileImageFile(null);
+    setProfileImagePreview(null);
+    setIsImageRemoved(true);
+    setProfileImageError("");
+    const fileInput = document.getElementById("profileUpload");
+    if (fileInput) fileInput.value = "";
+    addToast("Profile image removed. Click Save to update.", "info");
+  };
+
   const handleProfileImage = (e) => {
     const file = e.target.files?.[0] || null;
-    setProfileImageFile(file);
+    validateAndSetImage(file);
+    if (e.target) e.target.value = "";
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0] || null;
+    validateAndSetImage(file);
   };
 
   // Build preview URL when file changes, or use existing vendor image when available
@@ -98,6 +165,8 @@ const BusinessDetails = ({ formData, setFormData }) => {
     if (profileImageFile) {
       objectUrl = URL.createObjectURL(profileImageFile);
       setProfileImagePreview(objectUrl);
+    } else if (isImageRemoved) {
+      setProfileImagePreview(null);
     } else if (vendor) {
       // try multiple possible vendor image fields
       const candidate =
@@ -111,7 +180,6 @@ const BusinessDetails = ({ formData, setFormData }) => {
       // Normalize URL - fix /src/uploads/ to /uploads/ if present
       let imageUrl = candidate;
       if (imageUrl && typeof imageUrl === "string") {
-        // Fix the URL path if it has /src/uploads/ instead of /uploads/
         imageUrl = imageUrl.replace(/\/src\/uploads\//g, "/src/uploads/");
       } else {
         imageUrl = null;
@@ -125,7 +193,7 @@ const BusinessDetails = ({ formData, setFormData }) => {
     return () => {
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [profileImageFile, vendor]);
+  }, [profileImageFile, isImageRemoved, vendor]);
 
   const getPasswordStrength = (pwd) => {
     if (!pwd) return null;
@@ -257,7 +325,11 @@ const BusinessDetails = ({ formData, setFormData }) => {
           dispatch(setVendor(newVendor));
         }
       }
-      setSuccess("Business details saved.");
+      const successMsg = profileImageFile
+        ? "Business details and profile image updated successfully!"
+        : "Business details saved successfully.";
+      setSuccess(successMsg);
+      addToast(successMsg, "success");
     } catch (e) {
       // Prefer server message if available
       const serverMsg =
@@ -323,76 +395,175 @@ const BusinessDetails = ({ formData, setFormData }) => {
         <h4 className="mb-3 fw-bold">Bussiness Details</h4>
         <div className="mb-3">
           <label className="form-label fs-16">Profile Image</label>
-          <div className="d-flex align-items-center gap-3">
-            <div style={{ width: 96, height: 96, flex: "0 0 96px" }}>
-              {profileImagePreview &&
-              typeof profileImagePreview === "string" ? (
-                <img
-                  src={profileImagePreview}
-                  alt="Profile preview"
-                  style={{
-                    width: "96px",
-                    height: "96px",
-                    objectFit: "cover",
-                    borderRadius: "50%",
-                    border: "1px solid #e5e7eb",
-                  }}
-                  onError={(e) => {
-                    console.error(
-                      "Failed to load profile image:",
-                      profileImagePreview
-                    );
-                    e.target.style.display = "none";
-                  }}
-                  onLoad={() => {
-                    console.log(
-                      "Profile image loaded successfully:",
-                      profileImagePreview
-                    );
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: "96px",
-                    height: "96px",
-                    borderRadius: "50%",
-                    background: "#f3f4f6",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#6b7280",
-                    fontWeight: 600,
-                  }}
+          <div className="d-flex align-items-start gap-3">
+            <div className="d-flex flex-column align-items-center" style={{ width: 96, flex: "0 0 96px" }}>
+              <div className="position-relative" style={{ width: 96, height: 96 }}>
+                {profileImagePreview &&
+                typeof profileImagePreview === "string" ? (
+                  <>
+                    <img
+                      src={profileImagePreview}
+                      alt="Profile preview"
+                      style={{
+                        width: "96px",
+                        height: "96px",
+                        objectFit: "cover",
+                        borderRadius: "50%",
+                        border: "2px solid #fce7f3",
+                      }}
+                      onError={(e) => {
+                        console.error(
+                          "Failed to load profile image:",
+                          profileImagePreview
+                        );
+                        e.target.style.display = "none";
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-danger position-absolute p-0 d-flex align-items-center justify-content-center shadow"
+                      style={{
+                        bottom: "2px",
+                        right: "2px",
+                        width: "24px",
+                        height: "24px",
+                        borderRadius: "50%",
+                        border: "2px solid #ffffff",
+                        fontSize: "11px",
+                        lineHeight: 1,
+                      }}
+                      onClick={handleRemoveImage}
+                      title="Remove image"
+                    >
+                      ✕
+                    </button>
+                  </>
+                ) : (
+                  <div
+                    style={{
+                      width: "96px",
+                      height: "96px",
+                      borderRadius: "50%",
+                      background: "#fff1f6",
+                      color: "#ed1173",
+                      border: "1px solid #fce7f3",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 700,
+                      fontSize: "1.5rem",
+                    }}
+                  >
+                    {((vendor?.businessName || "")[0] || "U").toUpperCase()}
+                  </div>
+                )}
+              </div>
+              {profileImagePreview && (
+                <button
+                  type="button"
+                  className="btn btn-link text-danger p-0 mt-1 text-decoration-none fw-semibold"
+                  style={{ fontSize: "0.78rem" }}
+                  onClick={handleRemoveImage}
                 >
-                  {((vendor?.businessName || "")[0] || "U").toUpperCase()}
-                </div>
+                  Remove
+                </button>
               )}
             </div>
             <div
-              className="border rounded-3 p-2 text-center fs-14"
-              style={{ borderStyle: "dashed", cursor: "pointer" }}
+              className={`border rounded-3 p-3 text-center fs-14 ${
+                isDragging ? "border-primary" : ""
+              }`}
+              style={{
+                borderStyle: "dashed",
+                cursor: "pointer",
+                borderColor: profileImageError
+                  ? "#ef4444"
+                  : isDragging
+                  ? "#2563eb"
+                  : "#cbd5e1",
+                backgroundColor: isDragging ? "#eff6ff" : "#f8fafc",
+                transition: "all 0.2s ease",
+              }}
               onClick={() => document.getElementById("profileUpload").click()}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
             >
-              <p className="mb-1 fw-bold">Upload Profile Image</p>
-              <p className="text-muted small mb-2">
+              <p className="mb-1 fw-bold text-dark">Upload Profile Image</p>
+              <p className="text-muted small mb-1">
                 Drag & drop or click to browse
               </p>
+              <span
+                className="badge bg-light text-secondary border px-2 py-1"
+                style={{ fontSize: "0.75rem", fontWeight: "500" }}
+              >
+                Max size: {MAX_FILE_SIZE_MB} MB (JPG, PNG, WEBP)
+              </span>
 
               <input
                 type="file"
                 id="profileUpload"
-                accept="image/*"
+                accept="image/png, image/jpeg, image/jpg, image/webp"
                 className="d-none fs-14"
                 onChange={handleProfileImage}
               />
 
-              {profileImageFile && (
-                <p className="small text-success mt-1 fs-14">
-                  Selected: {profileImageFile.name}
+              {profileImageError && (
+                <p className="small text-danger mt-2 mb-0 fw-semibold">
+                  ⚠️ {profileImageError}
                 </p>
               )}
             </div>
+
+            {/* Uploaded File Status Card in HappyWedz Theme */}
+            {profileImageFile && !profileImageError && (
+              <div
+                className="p-3 rounded-3 border d-flex align-items-center gap-3 shadow-sm flex-grow-1 animate__animated animate__fadeIn"
+                style={{
+                  backgroundColor: "#fff1f6",
+                  borderColor: "#fce7f3",
+                  minWidth: "260px",
+                  maxWidth: "400px",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div
+                  style={{
+                    width: "38px",
+                    height: "38px",
+                    borderRadius: "50%",
+                    backgroundColor: "#ed1173",
+                    color: "#ffffff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: "bold",
+                    fontSize: "1rem",
+                    flexShrink: 0,
+                    boxShadow: "0 2px 6px rgba(237, 17, 115, 0.25)",
+                  }}
+                >
+                  ✓
+                </div>
+                <div className="min-w-0 flex-grow-1">
+                  <h6 className="mb-0 fw-bold text-dark fs-14 text-truncate">
+                    {profileImageFile.name}
+                  </h6>
+                  <p className="mb-0 fw-semibold fs-12" style={{ color: "#ed1173" }}>
+                    {(profileImageFile.size / (1024 * 1024)).toFixed(2)} MB • Image Ready
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="btn-close btn-sm ms-auto"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setProfileImageFile(null);
+                  }}
+                  title="Remove selected image"
+                />
+              </div>
+            )}
           </div>
         </div>
         <div className="mb-3">

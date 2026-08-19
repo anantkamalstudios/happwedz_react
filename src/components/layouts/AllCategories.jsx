@@ -21,8 +21,9 @@ const AllCategories = ({ onSelect }) => {
     setLoading(true);
     setError(null);
     try {
+      const cleanApiBase = API_BASE_URL.replace(/\/api$/, "");
       const response = await axios.get(
-        `${API_BASE_URL}/api/vendor-types/with-subcategories/all`
+        `${cleanApiBase}/api/vendor-types/with-subcategories/all`
       );
       const apiData = response.data.map((cat) => {
         const imageSrc = cat.hero_image

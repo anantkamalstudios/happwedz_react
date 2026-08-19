@@ -150,7 +150,7 @@ const Guests = () => {
       const userIdToSend = isNaN(userId) ? userId : parseInt(userId, 10);
 
       const res = await axiosInstance.get(
-        `/guestlist/user/${userIdToSend}`
+        `https://happywedz.com/api/guestlist/user/${userIdToSend}`
       );
 
       if (res.data?.success && Array.isArray(res.data?.guests)) {
@@ -176,7 +176,7 @@ const Guests = () => {
     }
     setGroupsLoading(true);
     try {
-      const res = await axiosInstance.get("/groups");
+      const res = await axiosInstance.get("https://happywedz.com/api/groups");
 
       if (res.data?.success && Array.isArray(res.data?.groups)) {
         setAvailableGroups(res.data.groups);
@@ -307,7 +307,7 @@ const Guests = () => {
       }
 
       const res = await axiosInstance.post(
-        "/guestlist",
+        "https://happywedz.com/api/guestlist",
         payload
       );
       if (res.data?.success && res.data.guest) {
@@ -342,7 +342,7 @@ const Guests = () => {
       prev.map((g) => (g.id === id ? { ...g, [field]: value } : g))
     );
     try {
-      await axiosInstance.put(`/guestlist/${id}`, {
+      await axiosInstance.put(`https://happywedz.com/api/guestlist/${id}`, {
         [field]: value,
       });
       setRefresh((prev) => !prev);
@@ -355,7 +355,7 @@ const Guests = () => {
     if (!window.confirm("Are you sure?")) return;
     setGuests((prevGuests) => prevGuests.filter((guest) => guest.id !== id));
     try {
-      await axiosInstance.delete(`/guestlist/${id}`);
+      await axiosInstance.delete(`https://happywedz.com/api/guestlist/${id}`);
     } catch (err) {
       console.error("Delete Guest Error:", err);
       setRefresh((prev) => !prev);
@@ -616,7 +616,7 @@ const Guests = () => {
       };
 
       const response = await axiosInstance.post(
-        "/guestlist/send-guestlist-email",
+        "https://happywedz.com/api/guestlist/send-guestlist-email",
         payload
       );
 
@@ -1174,7 +1174,7 @@ const Guests = () => {
 
                     try {
                       const res = await axiosInstance.post(
-                        "/groups/add",
+                        "https://happywedz.com/api/groups/add",
                         {
                           name: newGroupName.trim(),
                         }

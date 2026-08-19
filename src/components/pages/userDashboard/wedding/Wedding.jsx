@@ -16,9 +16,7 @@ import VenueVendorComponent from "./VenueVendorComponent";
 import UpComingTask from "../wedding/UpcomingTask";
 import EInvites from "./EInviteCard";
 import cmsApi from "../../../../services/api/cmsApi";
-import axiosInstance, {
-  API_BASE_URL,
-} from "../../../../services/api/axiosInstance";
+import axiosInstance from "../../../../services/api/axiosInstance";
 import { formatDate } from "../../../../utils/dateFormat";
 
 const Wedding = () => {
@@ -89,7 +87,7 @@ const Wedding = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/vendor-types`);
+        const response = await fetch("https://happywedz.com/api/vendor-types");
         const data = await response.json();
 
         const mappedCategories = data.map((cat, index) => ({
@@ -132,7 +130,7 @@ const Wedding = () => {
         let userInfo = parseJwt(token);
 
         const response = await axiosInstance.get(
-          "/user/" + userInfo.id
+          "https://happywedz.com/api/user/" + userInfo.id
         );
 
         const data = response.data;
@@ -153,7 +151,7 @@ const Wedding = () => {
     const fetchDashboardData = async () => {
       try {
         const guestsRes = await axiosInstance.get(
-          `/guestlist/${userId}`
+          `https://happywedz.com/api/guestlist/${userId}`
         );
         const guestsData = guestsRes.data;
         if (
@@ -169,7 +167,7 @@ const Wedding = () => {
         }
 
         const tasksRes = await axiosInstance.get(
-          `/new-checklist/newChecklist/user/${userId}`
+          `https://happywedz.com/api/new-checklist/newChecklist/user/${userId}`
         );
         const tasksData = tasksRes.data;
         if (tasksData.success) {

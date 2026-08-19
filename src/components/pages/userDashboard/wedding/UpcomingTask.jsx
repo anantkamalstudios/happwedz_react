@@ -28,7 +28,7 @@ const UpComingTask = () => {
       setLoading(true);
       try {
         const res = await axiosInstance.get(
-          `/new-checklist/newChecklist/user/${userId}`
+          `https://happywedz.com/api/new-checklist/newChecklist/user/${userId}`
         );
         const allTasks = res.data?.data || [];
         const pending = allTasks.filter((task) => task.status === "pending");
@@ -87,7 +87,7 @@ const UpComingTask = () => {
     try {
       const newStatus = "completed";
       await axiosInstance.put(
-        `/new-checklist/update/${taskId}`,
+        `https://happywedz.com/api/new-checklist/update/${taskId}`,
         { status: newStatus }
       );
       setStatusMessage("✓ Task marked as completed!");

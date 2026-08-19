@@ -51,15 +51,43 @@ const isValidImage = (url) => {
   const lower = url.toLowerCase().trim();
   if (
     !lower ||
-    lower.includes("imagenotfound") ||
-    lower.includes("image_not_found") ||
-    lower.includes("no-image") ||
-    lower.includes("no_image") ||
-    lower.includes("placeholder")
+    lower === "null" ||
+    lower === "undefined"
   ) {
     return false;
   }
   return true;
+};
+
+const isValidCity = (city) => {
+  if (!city || typeof city !== "string") return false;
+  const lower = city.toLowerCase().trim();
+  if (
+    !lower ||
+    lower === "unknown" ||
+    lower === "unknown city" ||
+    lower === "null" ||
+    lower === "undefined" ||
+    lower === "n/a" ||
+    lower === "none" ||
+    lower === "all" ||
+    lower.includes("location not available") ||
+    lower.includes("not available") ||
+    lower.includes("unknown")
+  ) {
+    return false;
+  }
+  return true;
+};
+
+const matchesSelectedCity = (item, selectedCity) => {
+  if (!selectedCity || selectedCity.toLowerCase() === "all") return true;
+  const itemLocation = String(
+    item.city || item.location || item.address || item.area || ""
+  ).toLowerCase();
+  const cleanSelected = selectedCity.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const cleanItem = itemLocation.replace(/[^a-z0-9]/g, "");
+  return cleanItem.includes(cleanSelected) || cleanSelected.includes(cleanItem);
 };
 
 const GridView = ({ subVenuesData, handleShow, colLg, fluid, currentCity }) => {
@@ -69,17 +97,17 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid, currentCity }) => {
   const [selectedVendorId, setSelectedVendorId] = useState(null);
   const [selectedVendorName, setSelectedVendorName] = useState("");
   const [displayData, setDisplayData] = useState([]);
+  const [hiddenIds, setHiddenIds] = useState(new Set());
   const dispatch = useDispatch();
   const { token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
-  // Reorder: recently viewed first, then rest
+  // Reorder to prioritize recently viewed vendors
   useEffect(() => {
-    const validWithImages = (subVenuesData || []).filter(
-      (item) => item && isValidImage(item.image)
-    );
-    if (validWithImages.length > 0) {
-      const reordered = prioritizeRecentlyViewed(validWithImages);
+    setHiddenIds(new Set());
+    const validItems = (subVenuesData || []).filter((item) => item && item.name);
+    if (validItems.length > 0) {
+      const reordered = prioritizeRecentlyViewed(validItems);
       setDisplayData(reordered);
     } else {
       setDisplayData([]);
@@ -242,7 +270,7 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid, currentCity }) => {
     }
     const mainCity = extractMainCity(currentCity || venue.city || venue.location);
     const citySlug = slugifyCity(mainCity);
-    const cleanedSlug = cleanVenueSlug(venue.name);
+    const cleanedSlug = venue.slug || cleanVenueSlug(venue.name);
     const isVenue = window.location.pathname.includes("/venues") || window.location.pathname.includes("/wedding-venues");
     if (isVenue) {
       navigate(`/wedding-venues/${citySlug}/${cleanedSlug}`);
@@ -253,11 +281,15 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid, currentCity }) => {
     }
   };
 
+  const visibleData = (displayData || []).filter(
+    (venue) => venue && venue.id && !hiddenIds.has(venue.id)
+  );
+
   return (
     <Container fluid={fluid}>
       <Row>
-        {displayData && displayData.length > 0 ? (
-          displayData.map((venue) => {
+        {visibleData && visibleData.length > 0 ? (
+          visibleData.map((venue) => {
             const wasViewed = isRecentlyViewed(venue.id);
             return (
             <Col key={venue.id} xs={12} sm={6} lg={colLg || 4} className="mb-4 d-flex">
@@ -280,12 +312,12 @@ const GridView = ({ subVenuesData, handleShow, colLg, fluid, currentCity }) => {
                       borderRadius: "15px",
                       display: "block",
                     }}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      const cardCol = e.target.closest(".col-12, .col-sm-6, .col-lg-4, .col-md-4, .col") || e.target.closest(".card");
-                      if (cardCol) {
-                        cardCol.style.display = "none";
-                      }
+                    onError={() => {
+                      setHiddenIds((prev) => {
+                        const next = new Set(prev);
+                        next.add(venue.id);
+                        return next;
+                      });
                     }}
                   />
 

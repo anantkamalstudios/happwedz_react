@@ -246,15 +246,16 @@ const Navbar = () => {
   const handleTabClick = (tab) => {
     setActiveTab(tab.id);
     navigate(`/vendor-dashboard/${tab.slug}`);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   };
   return (
     <div className="adminNav">
       <div
-        className="wrapper tabs-container py-2 px-3 px-lg-5 mt-3 vendor-dashboard-navbar"
+        className="container py-2 vendor-dashboard-navbar mt-2"
         style={{
           paddingLeft: isMobile ? 12 : undefined,
           paddingRight: isMobile ? 12 : undefined,
-          maxWidth: "100%",
+          maxWidth: "1320px",
           overflowX: "hidden",
         }}
       >

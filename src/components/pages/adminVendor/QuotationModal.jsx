@@ -33,11 +33,13 @@ const QuotationModal = ({ show, onClose, lead, vendorToken }) => {
     }
   }, [show, lead, vendorToken]);
 
+  const cleanApiBase = API_BASE_URL.replace(/\/api$/, "");
+
   const fetchHistory = async () => {
     setLoadingHistory(true);
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/request-pricing/vendor/quotation-history?userId=${lead.request.user.id}`,
+        `${cleanApiBase}/api/request-pricing/vendor/quotation-history?userId=${lead.request.user.id}`,
         {
           headers: {
             Authorization: `Bearer ${vendorToken}`,
@@ -81,7 +83,7 @@ const QuotationModal = ({ show, onClose, lead, vendorToken }) => {
       };
 
       const response = await fetch(
-        `${API_BASE_URL}/api/request-pricing/requests/${lead.request.id}/quotation`,
+        `${cleanApiBase}/api/request-pricing/requests/${lead.request.id}/quotation`,
         {
           method: "POST",
           headers: {

@@ -34,7 +34,7 @@ const Wishlist = () => {
     const fetchWishlist = async () => {
       setLoading(true);
       try {
-        const res = await axiosInstance.get(`/wishlist`);
+        const res = await axiosInstance.get(`https://happywedz.com/api/wishlist`);
         const data = res.data;
 
         if (data.success && data.data.length > 0) {
@@ -117,7 +117,7 @@ const Wishlist = () => {
 
     try {
       const response = await axiosInstance.post(
-        "/wishlist/toggle",
+        "https://happywedz.com/api/wishlist/toggle",
         { vendor_services_id: vendorId }
       );
 

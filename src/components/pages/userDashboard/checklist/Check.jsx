@@ -10,9 +10,7 @@ import {
 } from "react-icons/fa";
 import { FiCheck, FiTrash, FiLink, FiEdit, FiClock } from "react-icons/fi";
 import { FaChevronDown, FaSpinner } from "react-icons/fa6";
-import axiosInstance, {
-  API_BASE_URL,
-} from "../../../../services/api/axiosInstance";
+import axiosInstance from "../../../../services/api/axiosInstance";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -28,7 +26,7 @@ import { Dropdown } from "react-bootstrap";
 import "./Checklist.css";
 
 const CATEGORY_API =
-  `${API_BASE_URL}/vendor-types/with-subcategories/all`;
+  "https://happywedz.com/api/vendor-types/with-subcategories/all";
 
 const Check = () => {
   const user = useSelector((state) => state.auth.user);

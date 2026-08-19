@@ -46,8 +46,9 @@ import {
 } from "react-icons/fa";
 import { GrFormNextLink } from "react-icons/gr";
 import ReviewSection from "../pages/ReviewSection";
-import { FaqQuestions } from "../pages/adminVendor/subVendors/FaqData";
 import axios from "axios";
+import { subVenuesData } from "../../data/subVenuesData";
+import { subVendorsData } from "../../data/subVendorsData";
 const API_BASE_URL = "https://happywedz.com";
 import Swal from "sweetalert2";
 import SectionTabs from "./SectionTabs";
@@ -101,7 +102,7 @@ const getYouTubeVideoId = (url) => {
 };
 
 const Detailed = () => {
-  const { slug } = useParams();
+  const { city, slug, section } = useParams();
   const dispatch = useDispatch();
   const { token } = useSelector((state) => state.auth);
   const [venueData, setVenueData] = useState(null);
@@ -1991,10 +1992,100 @@ const Detailed = () => {
 
       try {
         setLoading(true);
-        const response = await axios.get(
-          `${API_BASE_URL}/api/vendor-services/slug/${slug}`,
-        );
-        const data = response.data;
+        const cleanApiBase = API_BASE_URL.replace(/\/api$/, "");
+        let data = null;
+
+        // 1. Direct slug request
+        try {
+          const response = await axios.get(
+            `${cleanApiBase}/api/vendor-services/slug/${slug}`,
+          );
+          if (response.data && (response.data.id || response.data.vendor_id || response.data.attributes)) {
+            data = response.data;
+          }
+        } catch (directErr) {
+          console.debug("Direct slug lookup not found, trying keyword search fallback...", directErr?.message);
+        }
+
+        // 2. Keyword/City search fallback
+        if (!data) {
+          try {
+            const cleanSearch = slug.replace(/[-_]+/g, " ").trim();
+            const searchRes = await axios.get(`${cleanApiBase}/api/vendor-services`, {
+              params: {
+                search: cleanSearch,
+                limit: 5,
+                ...(city && city !== "all" ? { city } : {}),
+              },
+            });
+            const items = searchRes.data?.data || (Array.isArray(searchRes.data) ? searchRes.data : []);
+            if (items.length > 0) {
+              const matched = items[0];
+              if (matched.slug || matched.id) {
+                try {
+                  const matchedDetailRes = await axios.get(
+                    `${cleanApiBase}/api/vendor-services/slug/${matched.slug || matched.id}`,
+                  );
+                  if (matchedDetailRes.data) {
+                    data = matchedDetailRes.data;
+                  }
+                } catch { }
+              }
+              if (!data) {
+                data = matched;
+              }
+            }
+          } catch (searchErr) {
+            console.debug("Search fallback failed:", searchErr?.message);
+          }
+        }
+
+        // 3. Static mock dataset fallback
+        if (!data) {
+          const cleanSlugStr = slug.toLowerCase().replace(/[^a-z0-9]/g, "");
+          const staticMatch =
+            (subVenuesData || []).find((v) => {
+              const vSlug = String(v.slug || v.name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+              return vSlug.includes(cleanSlugStr) || cleanSlugStr.includes(vSlug);
+            }) ||
+            (subVendorsData || []).find((v) => {
+              const vSlug = String(v.slug || v.name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+              return vSlug.includes(cleanSlugStr) || cleanSlugStr.includes(vSlug);
+            });
+
+          if (staticMatch) {
+            data = {
+              id: staticMatch.id,
+              vendor_id: staticMatch.id,
+              slug: staticMatch.slug || slug,
+              attributes: {
+                name: staticMatch.name,
+                vendor_name: staticMatch.name,
+                city: staticMatch.location || city || "Lucknow",
+                address: staticMatch.location || "",
+                veg_price: staticMatch.vegPrice || staticMatch.price || 1200,
+                non_veg_price: staticMatch.nonVegPrice || 1500,
+                about_us: staticMatch.description || "",
+                rating: staticMatch.rating || 4.8,
+                review_count: staticMatch.reviews || 10,
+                rooms: staticMatch.capacity ? Math.round(staticMatch.capacity / 20) : 25,
+                vendor_type: staticMatch.venueType || "Wedding Venues",
+                Portfolio: staticMatch.image || "",
+              },
+              media: [staticMatch.image || "/images/imageNotFound.jpg"],
+              vendor: {
+                id: staticMatch.id,
+                businessName: staticMatch.name,
+                city: staticMatch.location || city,
+              },
+            };
+          }
+        }
+
+        if (!data) {
+          throw new Error("Vendor details not found");
+        }
+
         setVenueData(data);
 
         (async () => {
@@ -2003,7 +2094,7 @@ const Detailed = () => {
               const sessionKey = `vendor_viewed_${data.vendor_id}`;
               if (!sessionStorage.getItem(sessionKey)) {
                 const incRes = await axios.post(
-                  `${API_BASE_URL}/api/vendor/increment-view/${data.vendor_id}`,
+                  `${cleanApiBase}/api/vendor/increment-view/${data.vendor_id}`,
                 );
                 try {
                   sessionStorage.setItem(sessionKey, Date.now().toString());
@@ -2659,27 +2750,54 @@ const Detailed = () => {
       </div>
     );
   }
-  if (error) {
+  if (error || !venueData) {
     return (
-      <div className="venue-detail-page">
+      <div className="venue-detail-page py-5" style={{ minHeight: "60vh", background: "#fafafa" }}>
         <Container className="py-5">
-          <div className="text-center">
-            <div className="alert alert-danger" role="alert">
-              {error}
+          <div
+            className="text-center mx-auto p-5 bg-white rounded-4 shadow-sm"
+            style={{ maxWidth: "600px", border: "1px solid #f0f0f0" }}
+          >
+            <div
+              className="d-inline-flex align-items-center justify-content-center mb-4 rounded-circle"
+              style={{
+                width: "72px",
+                height: "72px",
+                background: "linear-gradient(135deg, #fff1f6 0%, #ffe4ee 100%)",
+                color: "#ed1173",
+                fontSize: "28px",
+              }}
+            >
+              <FaMapMarkerAlt />
             </div>
-          </div>
-        </Container>
-      </div>
-    );
-  }
-
-  if (!venueData) {
-    return (
-      <div className="venue-detail-page">
-        <Container className="py-5">
-          <div className="text-center">
-            <div className="alert alert-warning" role="alert">
-              Vendor not found
+            <h3 className="fw-bold mb-2" style={{ color: "#222" }}>
+              Vendor Details Unavailable
+            </h3>
+            <p className="text-muted mb-4" style={{ fontSize: "14.5px", lineHeight: "1.6" }}>
+              We couldn't locate this specific vendor profile or the listing is currently being updated.
+            </p>
+            <div className="d-flex flex-wrap justify-content-center gap-3">
+              {city && city !== "all" && (
+                <Button
+                  variant="primary"
+                  onClick={() => navigate(`/wedding-venues/${city}`)}
+                  className="px-4 py-2 rounded-pill fw-semibold shadow-sm"
+                  style={{
+                    background: "linear-gradient(135deg, #ed1173 0%, #c40a5a 100%)",
+                    border: "none",
+                  }}
+                >
+                  Explore Venues in {city.charAt(0).toUpperCase() + city.slice(1)}
+                </Button>
+              )}
+              <Button
+                variant="outline-secondary"
+                onClick={() => navigate("/venues")}
+                className="px-4 py-2 rounded-pill fw-semibold"
+                style={{ borderColor: "#ddd", color: "#555" }}
+              >
+                Browse All Venues
+              </Button>
             </div>
           </div>
         </Container>
@@ -3492,7 +3610,11 @@ const Detailed = () => {
       </Container>
 
       {/* Similar Venues/Vendors section */}
-      <SimilarServices venueData={venueData} currentId={id} />
+      <SimilarServices
+        venueData={venueData}
+        currentId={id || venueData?.id}
+        currentCity={city || venueData?.attributes?.city || venueData?.vendor?.city}
+      />
 
       <PricingModal
         show={showPricingModal}

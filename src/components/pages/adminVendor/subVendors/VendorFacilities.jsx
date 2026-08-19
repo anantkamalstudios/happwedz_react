@@ -208,11 +208,33 @@ const VendorFacilities = ({
   };
 
   return (
-    <div className="my-5">
-      <div className="p-3 border rounded bg-white">
+    <div className="facilities-features-wrapper">
+      <div className="storefront-content-card">
         {hasMasterProfile ? (
           <>
-            <h4 className="mb-3 fw-bold">Facilities &amp; Features</h4>
+            <div className="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom">
+              <div>
+                <h4 className="fw-bold mb-1" style={{ color: "#0f172a" }}>
+                  Facilities &amp; Features
+                </h4>
+                <p className="text-muted small mb-0">
+                  Select available amenities, services, and venue features
+                </p>
+              </div>
+              <span
+                className="badge px-3 py-2"
+                style={{
+                  backgroundColor: "#fff1f6",
+                  color: "#ed1173",
+                  border: "1px solid #fce7f3",
+                  fontSize: "0.82rem",
+                  fontWeight: 600,
+                  borderRadius: "20px",
+                }}
+              >
+                Facilities
+              </span>
+            </div>
             {isVenue && (
               <VenueMasterProfile
                 formData={formData}

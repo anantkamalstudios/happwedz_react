@@ -396,15 +396,62 @@ const useInfiniteScroll = (
           ? result.data
           : [];
 
-        const transformed = transformApiData(itemsRaw).filter((item) => {
-          if (!item.image) return false;
-          const imgStr = String(item.image).toLowerCase();
+        const isValidCity = (city) => {
+          if (!city || typeof city !== "string") return false;
+          const lower = city.toLowerCase().trim();
           if (
-            imgStr.includes("placeholder") ||
-            imgStr.includes("not_found") ||
-            imgStr.includes("image_not_found")
+            !lower ||
+            lower === "unknown" ||
+            lower === "unknown city" ||
+            lower === "null" ||
+            lower === "undefined" ||
+            lower === "n/a" ||
+            lower === "none" ||
+            lower === "all" ||
+            lower.includes("location not available") ||
+            lower.includes("not available") ||
+            lower.includes("unknown")
           ) {
             return false;
+          }
+          return true;
+        };
+
+        const matchesSelectedCity = (item, selectedCity) => {
+          if (!selectedCity || selectedCity.toLowerCase() === "all") return true;
+          const itemLocation = String(
+            item.city || item.location || item.address || item.area || ""
+          ).toLowerCase();
+          const cleanSelected = selectedCity.toLowerCase().replace(/[^a-z0-9]/g, "");
+          const cleanItem = itemLocation.replace(/[^a-z0-9]/g, "");
+          return cleanItem.includes(cleanSelected) || cleanSelected.includes(cleanItem);
+        };
+
+        const transformed = transformApiData(itemsRaw).filter((item) => {
+          if (!item) return false;
+          if (!item.image) return false;
+          const imgStr = String(item.image).toLowerCase().trim();
+          if (
+            !imgStr ||
+            imgStr === "null" ||
+            imgStr === "undefined" ||
+            imgStr.includes("placeholder") ||
+            imgStr.includes("not_found") ||
+            imgStr.includes("image_not_found") ||
+            imgStr.includes("imagenotfound") ||
+            imgStr.includes("no-image") ||
+            imgStr.includes("no_image")
+          ) {
+            return false;
+          }
+          const cityVal = item.city || item.location || item.address;
+          if (!isValidCity(cityVal)) {
+            return false;
+          }
+          if (city && city.toLowerCase() !== "all") {
+            if (!matchesSelectedCity(item, city)) {
+              return false;
+            }
           }
           return true;
         });

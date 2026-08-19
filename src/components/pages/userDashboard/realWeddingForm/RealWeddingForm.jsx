@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { API_BASE_URL } from "../../../../services/api/axiosInstance";
 import Swal from "sweetalert2";
 import {
   FiUser,
@@ -146,7 +145,7 @@ const RealWeddingForm = ({ user, token }) => {
   useEffect(() => {
     const loadVendorTypes = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/vendor-types`);
+        const res = await axios.get("https://happywedz.com/api/vendor-types");
         setVendorTypes(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error("Failed to load vendor types", err);
@@ -169,7 +168,7 @@ const RealWeddingForm = ({ user, token }) => {
     const loadCultures = async () => {
       try {
         const res = await axios.get(
-          `${API_BASE_URL}/real-wedding-culture/public`
+          "https://happywedz.com/api/real-wedding-culture/public"
         );
         if (res.data && res.data.cultures && Array.isArray(res.data.cultures)) {
           setCultures(res.data.cultures);
@@ -326,7 +325,7 @@ const RealWeddingForm = ({ user, token }) => {
 
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/realwedding`,
+        "https://happywedz.com/api/realwedding",
         data,
         {
           headers: {
@@ -586,7 +585,7 @@ const VenueSearchInput = ({ onSelectVenue }) => {
     }
     setLoadingSearch(true);
     try {
-      const apiUrl = `${API_BASE_URL}/vendor-services?search=${encodeURIComponent(
+      const apiUrl = `https://happywedz.com/api/vendor-services?search=${encodeURIComponent(
         query
       )}&vendorType=Venues&limit=10`;
 
@@ -1187,7 +1186,7 @@ const VendorCreator = ({ vendorTypes = [], onAdd }) => {
     }
     setLoadingSearch(true);
     try {
-      let apiUrl = `${API_BASE_URL}/vendor-services?search=${encodeURIComponent(
+      let apiUrl = `https://happywedz.com/api/vendor-services?search=${encodeURIComponent(
         searchQuery
       )}&limit=10`;
 

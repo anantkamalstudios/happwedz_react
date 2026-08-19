@@ -1,7 +1,18 @@
 /* Location Modal Styles - HappyWedz Theme */
+.hw-location-modal.modal .modal-dialog,
 .hw-location-modal .modal-dialog {
-  max-width: 1160px;
-  margin: 1.75rem auto;
+  --bs-modal-width: 1240px;
+  width: 95vw;
+  max-width: 1240px;
+  margin: 1.5rem auto;
+}
+
+@media (min-width: 1400px) {
+  .hw-location-modal.modal .modal-dialog,
+  .hw-location-modal .modal-dialog {
+    --bs-modal-width: 1280px;
+    max-width: 1280px;
+  }
 }
 
 .hw-location-modal .modal-content {
@@ -14,12 +25,12 @@
 }
 
 .hw-location-modal-header {
-  padding: 20px 24px 16px;
+  padding: 18px 22px 14px;
   background: #ffffff;
   border-bottom: 1px solid #f1f5f9;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .hw-location-header-top {
@@ -311,8 +322,9 @@
 .hw-location-body {
   padding: 16px 20px 20px;
   background: #f8fafc;
-  max-height: 480px;
+  max-height: 520px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .hw-location-body::-webkit-scrollbar {
@@ -331,42 +343,33 @@
 /* 5 Balanced Cards Grid */
 .hw-location-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
   align-items: stretch;
-}
-
-@media (max-width: 992px) {
-  .hw-location-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .hw-location-grid {
-    grid-template-columns: 1fr;
-  }
+  width: 100%;
 }
 
 .hw-location-col {
   background: #ffffff;
   border: 1px solid #eef2f6;
   border-radius: 14px;
-  padding: 14px 10px;
+  padding: 12px 10px;
   display: flex;
   flex-direction: column;
   height: 380px;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+  min-width: 0;
 }
 
 .hw-location-col-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding-bottom: 10px;
+  padding-bottom: 8px;
   margin-bottom: 8px;
   border-bottom: 1px solid #f1f5f9;
   flex-shrink: 0;
+  min-width: 0;
 }
 
 .hw-location-col-badge {
@@ -384,11 +387,14 @@
 
 .hw-location-col-title {
   margin: 0;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   color: #1e293b;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hw-location-list {
@@ -397,6 +403,7 @@
   gap: 2px;
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding-right: 2px;
   min-height: 0;
 }
@@ -421,13 +428,22 @@
   padding: 7px 10px;
   border-radius: 8px;
   color: #334155;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
   transition: all 0.15s ease;
   background: transparent;
   user-select: none;
+  gap: 6px;
+  min-width: 0;
+}
+
+.hw-location-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .hw-location-item:hover {
@@ -454,6 +470,7 @@
   font-size: 12px;
   color: #94a3b8;
   transition: transform 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
 }
 
 .hw-location-item:hover .hw-location-arrow {
@@ -465,13 +482,7 @@
   font-size: 14px;
   color: #ffffff;
   font-weight: 700;
-}
-
-/* International sub-section */
-.hw-international-section {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid #f1f5f9;
+  flex-shrink: 0;
 }
 
 /* Search results view */
@@ -622,21 +633,32 @@
   border-color: transparent;
 }
 
-@media (max-width: 1199px) {
+/* Responsive Grid Breakpoints */
+@media (max-width: 1024px) {
   .hw-location-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
   }
 }
 
 @media (max-width: 768px) {
   .hw-location-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 }
 
 @media (max-width: 576px) {
+  .hw-location-modal.modal .modal-dialog,
+  .hw-location-modal .modal-dialog {
+    width: 96vw;
+    margin: 0.5rem auto;
+  }
   .hw-location-grid {
     grid-template-columns: 1fr;
+  }
+  .hw-location-col {
+    height: 280px;
   }
   .hw-search-results-grid {
     grid-template-columns: 1fr;

@@ -7,7 +7,6 @@ import {
   FaCircleArrowRight,
 } from "react-icons/fa6";
 import useApiData from "../../../../hooks/useApiData";
-import { API_BASE_URL } from "../../../../services/api/axiosInstance";
 import { Swiper, SwiperSlide } from "swiper/react"; //
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -45,7 +44,7 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
       try {
         setLoadingCategories(true);
         const res = await fetch(
-          `${API_BASE_URL}/vendor-subcategories`
+          "https://happywedz.com/api/vendor-subcategories"
         );
         const data = await res.json();
         const cats = Array.isArray(data) ? data : [];
@@ -431,7 +430,7 @@ const VenueSwiper = () => {
       try {
         setLoading(true);
         const response = await fetch(
-          `${API_BASE_URL}/vendor-services?vendorType=Venues&page=1&limit=9`
+          "https://happywedz.com/api/vendor-services?vendorType=Venues&page=1&limit=9"
         );
         const result = await response.json();
 
