@@ -208,6 +208,8 @@ const VendorFacilities = ({
   };
 
   return (
+    <div className="facilities-features-wrapper">
+      <div className="storefront-content-card">
     <div className="my-5">
       <div
         className="p-4 border-0 rounded-4 bg-white"
@@ -215,6 +217,29 @@ const VendorFacilities = ({
       >
         {hasMasterProfile ? (
           <>
+            <div className="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom">
+              <div>
+                <h4 className="fw-bold mb-1" style={{ color: "#0f172a" }}>
+                  Facilities &amp; Features
+                </h4>
+                <p className="text-muted small mb-0">
+                  Select available amenities, services, and venue features
+                </p>
+              </div>
+              <span
+                className="badge px-3 py-2"
+                style={{
+                  backgroundColor: "#fff1f6",
+                  color: "#ed1173",
+                  border: "1px solid #fce7f3",
+                  fontSize: "0.82rem",
+                  fontWeight: 600,
+                  borderRadius: "20px",
+                }}
+              >
+                Facilities
+              </span>
+            </div>
             <h4 className="mb-1 fw-bold">Facilities &amp; Features</h4>
             <p className="text-muted fs-14 mb-4">
               Select everything that applies — these help couples filter and find your listing.
@@ -538,6 +563,8 @@ const VendorFacilities = ({
         <button className="btn btn-primary mt-4 fs-14" type="button" onClick={handleSave}>
           {hasMasterProfile ? "Save facilities & features" : "Save profile"}
         </button>
+      </div>
+    </div>
       </div>
     </div>
   );

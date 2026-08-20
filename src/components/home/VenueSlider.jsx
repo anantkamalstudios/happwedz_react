@@ -36,9 +36,47 @@ const VenueSlider = () => {
     );
   };
 
-  const displayData = (venues || []).filter(
-    (v) => v && v.image && String(v.image).trim() !== ""
-  );
+  const isValidCity = (city) => {
+    if (!city || typeof city !== "string") return false;
+    const lower = city.toLowerCase().trim();
+    if (
+      !lower ||
+      lower === "unknown" ||
+      lower === "unknown city" ||
+      lower === "null" ||
+      lower === "undefined" ||
+      lower === "n/a" ||
+      lower === "none" ||
+      lower === "all" ||
+      lower.includes("location not available") ||
+      lower.includes("not available") ||
+      lower.includes("unknown")
+    ) {
+      return false;
+    }
+    return true;
+  };
+
+  const displayData = (venues || []).filter((v) => {
+    if (!v || !v.image) return false;
+    const imgStr = String(v.image).toLowerCase().trim();
+    if (
+      !imgStr ||
+      imgStr === "null" ||
+      imgStr === "undefined" ||
+      imgStr.includes("placeholder") ||
+      imgStr.includes("not_found") ||
+      imgStr.includes("image_not_found") ||
+      imgStr.includes("imagenotfound") ||
+      imgStr.includes("no-image") ||
+      imgStr.includes("no_image")
+    ) {
+      return false;
+    }
+    const cityVal = v.location || v.city || v.address;
+    if (!isValidCity(cityVal)) return false;
+    return true;
+  });
   const isLoading = loading;
 
   // Show loading state
@@ -175,7 +213,13 @@ const VenueSlider = () => {
           // after LCP anyway — but it's real main-thread work removed from
           // the scroll-in, so the carousel settles without janking.
           init={false}
-          onSwiper={(swiper) => setTimeout(() => swiper.init(), 0)}
+          onSwiper={(swiper) =>
+            setTimeout(() => {
+              if (swiper && !swiper.destroyed && swiper.el) {
+                swiper.init();
+              }
+            }, 0)
+          }
         >
           {displayData.map((item) => {
             const id = item.id;

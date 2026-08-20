@@ -3,9 +3,7 @@ import { FaCheck, FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Container, Row, Col } from "react-bootstrap";
-import axiosInstance, {
-  API_BASE_URL,
-} from "../../../../services/api/axiosInstance";
+import axiosInstance from "../../../../services/api/axiosInstance";
 import randomColor from "randomcolor";
 
 const Vendors = () => {
@@ -23,7 +21,7 @@ const Vendors = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/vendor-types`);
+        const response = await fetch("https://happywedz.com/api/vendor-types");
         const data = await response.json();
         setCategories(data);
       } catch (error) {
@@ -38,7 +36,7 @@ const Vendors = () => {
     const fetchBookings = async () => {
       try {
         const res = await axiosInstance.get(
-          "/request-pricing/user/quotations"
+          "https://happywedz.com/api/request-pricing/user/quotations"
         );
         if (res.data.success) {
           const bookedCount = res.data.quotations.length;

@@ -5,28 +5,7 @@ import "./index.css";
 import axios from "axios";
 import App from "./App.jsx";
 
-// Dev-only: redirect live API calls at a locally running backend. Guarded by
-// import.meta.env.DEV so Rollup drops the whole block from production builds —
-// unguarded, a production bundle would rewrite every request to localhost:4000.
-if (import.meta.env.DEV) {
-  const LIVE_API = "https://happywedz.com/api";
-  const LOCAL_API = "http://127.0.0.1:4000/api";
 
-  axios.interceptors.request.use((config) => {
-    if (config.url && config.url.startsWith(LIVE_API)) {
-      config.url = config.url.replace(LIVE_API, LOCAL_API);
-    }
-    return config;
-  });
-
-  const originalFetch = window.fetch;
-  window.fetch = function (input, init) {
-    if (typeof input === "string" && input.startsWith(LIVE_API)) {
-      input = input.replace(LIVE_API, LOCAL_API);
-    }
-    return originalFetch(input, init);
-  };
-}
 
 import { Provider } from "react-redux";
 import store from "./redux/store.js";

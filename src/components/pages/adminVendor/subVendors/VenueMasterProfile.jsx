@@ -1,5 +1,7 @@
 import React, { useCallback, useMemo } from "react";
 import { Accordion, Form, Button, Row, Col } from "react-bootstrap";
+import { FiCheck, FiX } from "react-icons/fi";
+import "./VenueMasterProfile.css";
 import {
   VENUE_CATEGORY_GROUPS,
   PROPERTY_OWNERSHIP_TYPES,
@@ -49,8 +51,6 @@ import {
   SHOW_VENUE_IMAGE_INTELLIGENCE,
 } from "./venueMasterConstants";
 
-const yesNo = ["Yes", "No"];
-
 function mergeDeep(base, patch) {
   const out = { ...base };
   Object.keys(patch).forEach((k) => {
@@ -79,28 +79,48 @@ function CheckboxGroup({ label, options, value, onChange, otherValue, onOtherCha
     else onChange([...selected, opt]);
   };
   return (
-    <div className="mb-4 chip-checkbox-group">
-      {label && <label className="chip-group-title">{label}</label>}
-      <div className="d-flex flex-wrap gap-2">
-        {options.map((opt) => (
-          <Form.Check
-            key={opt}
-            type="checkbox"
-            id={`cb_${label}_${opt}`}
-            label={opt}
-            checked={selected.includes(opt)}
-            onChange={() => toggle(opt)}
-            className="fs-14"
-          />
-        ))}
+    <div className="vm-checkbox-group">
+      {label && (
+        <div className="vm-checkbox-group-title">
+          <span className="group-label">
+            <span className="group-dot"></span>
+            {label}
+          </span>
+          <span
+            className={`vm-selected-count ${
+              selected.length > 0 ? "has-selected" : ""
+            }`}
+          >
+            {selected.length} of {options.length} selected
+          </span>
+        </div>
+      )}
+      <div className="vm-checkbox-grid">
+        {options.map((opt) => {
+          const isSelected = selected.includes(opt);
+          return (
+            <div
+              key={opt}
+              className={`vm-checkbox-card ${isSelected ? "selected" : ""}`}
+              onClick={() => toggle(opt)}
+            >
+              <div className="vm-checkbox-indicator">
+                {isSelected && <FiCheck size={12} strokeWidth={3.5} />}
+              </div>
+              <span className="vm-checkbox-label">{opt}</span>
+            </div>
+          );
+        })}
       </div>
       {onOtherChange != null && (
-        <Form.Control
-          className="mt-2 fs-14"
-          placeholder="Other (type details)"
-          value={otherValue || ""}
-          onChange={(e) => onOtherChange(e.target.value)}
-        />
+        <div className="mt-3">
+          <Form.Control
+            className="vm-input fs-14"
+            placeholder="Other (type details)"
+            value={otherValue || ""}
+            onChange={(e) => onOtherChange(e.target.value)}
+          />
+        </div>
       )}
     </div>
   );
@@ -108,10 +128,10 @@ function CheckboxGroup({ label, options, value, onChange, otherValue, onOtherCha
 
 function SelectField({ label, options, value, onChange, otherValue, onOtherChange }) {
   return (
-    <div className="mb-3">
-      <label className="form-label fw-semibold">{label}</label>
+    <div className="vm-form-group">
+      <label className="vm-form-label">{label}</label>
       <Form.Select
-        className="fs-14"
+        className="vm-select fs-14"
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
       >
@@ -124,7 +144,7 @@ function SelectField({ label, options, value, onChange, otherValue, onOtherChang
       </Form.Select>
       {value === "Other" && onOtherChange && (
         <Form.Control
-          className="mt-2 fs-14"
+          className="vm-input mt-2 fs-14"
           placeholder="Please specify"
           value={otherValue || ""}
           onChange={(e) => onOtherChange(e.target.value)}
@@ -135,23 +155,24 @@ function SelectField({ label, options, value, onChange, otherValue, onOtherChang
 }
 
 function YesNoField({ label, value, onChange, groupName }) {
-  const name = groupName || `yn_${String(label).replace(/\s+/g, "_")}`;
   return (
-    <div className="mb-3">
-      <label className="chip-group-title">{label}</label>
-      <div className="d-flex gap-2 yes-no-toggle">
-        {yesNo.map((y) => (
-          <Form.Check
-            key={y}
-            type="radio"
-            name={name}
-            id={`${name}_${y}`}
-            label={y}
-            checked={value === y}
-            onChange={() => onChange(y)}
-            className="fs-14"
-          />
-        ))}
+    <div className="vm-yesno-group">
+      <label className="vm-yesno-label">{label}</label>
+      <div className="vm-yesno-options">
+        <button
+          type="button"
+          className={`vm-yesno-btn ${value === "Yes" ? "active-yes" : ""}`}
+          onClick={() => onChange("Yes")}
+        >
+          <FiCheck size={14} /> Yes
+        </button>
+        <button
+          type="button"
+          className={`vm-yesno-btn ${value === "No" ? "active-no" : ""}`}
+          onClick={() => onChange("No")}
+        >
+          <FiX size={14} /> No
+        </button>
       </div>
     </div>
   );
@@ -246,7 +267,10 @@ const VenueMasterProfile = ({
 
         <Accordion defaultActiveKey={["0", "1"]} alwaysOpen className="venue-master-accordion">
           <Accordion.Item eventKey="0">
-            <Accordion.Header>Section 1 — Identity & categories</Accordion.Header>
+            <Accordion.Header>
+              <span className="vm-section-badge">Section 1</span>
+              <span>Identity & Categories</span>
+            </Accordion.Header>
             <Accordion.Body>
               {VENUE_CATEGORY_GROUPS.map((group) => (
                 <CheckboxGroup
@@ -367,7 +391,10 @@ const VenueMasterProfile = ({
           </Accordion.Item>
 
           <Accordion.Item eventKey="1">
-            <Accordion.Header>Section 2 — Space & capacity</Accordion.Header>
+            <Accordion.Header>
+              <span className="vm-section-badge">Section 2</span>
+              <span>Space & Capacity</span>
+            </Accordion.Header>
             <Accordion.Body>
               <CheckboxGroup
                 label="Space types available"
@@ -722,7 +749,10 @@ const VenueMasterProfile = ({
           </Accordion.Item>
 
           <Accordion.Item eventKey="2">
-            <Accordion.Header>Section 3 — Rooms & accommodation</Accordion.Header>
+            <Accordion.Header>
+              <span className="vm-section-badge">Section 3</span>
+              <span>Rooms & Accommodation</span>
+            </Accordion.Header>
             <Accordion.Body>
               <Row>
                 <Col md={4}>
@@ -855,7 +885,10 @@ const VenueMasterProfile = ({
           </Accordion.Item>
 
           <Accordion.Item eventKey="3">
-            <Accordion.Header>Section 4 — Food & catering</Accordion.Header>
+            <Accordion.Header>
+              <span className="vm-section-badge">Section 4</span>
+              <span>Food & Catering</span>
+            </Accordion.Header>
             <Accordion.Body>
               <SelectField
                 label="Catering policy"
@@ -943,7 +976,10 @@ const VenueMasterProfile = ({
           </Accordion.Item>
 
           <Accordion.Item eventKey="4">
-            <Accordion.Header>Section 5 — Alcohol</Accordion.Header>
+            <Accordion.Header>
+              <span className="vm-section-badge">Section 5</span>
+              <span>Alcohol Policy & Bar</span>
+            </Accordion.Header>
             <Accordion.Body>
               <SelectField
                 label="Alcohol policy"
@@ -981,7 +1017,10 @@ const VenueMasterProfile = ({
           </Accordion.Item>
 
           <Accordion.Item eventKey="5">
-            <Accordion.Header>Section 6 — Decor & production</Accordion.Header>
+            <Accordion.Header>
+              <span className="vm-section-badge">Section 6</span>
+              <span>Decor & Production</span>
+            </Accordion.Header>
             <Accordion.Body>
               <SelectField
                 label="Decor policy"
@@ -1063,7 +1102,10 @@ const VenueMasterProfile = ({
           </Accordion.Item>
 
           <Accordion.Item eventKey="6">
-            <Accordion.Header>Section 7 — Entertainment & DJ</Accordion.Header>
+            <Accordion.Header>
+              <span className="vm-section-badge">Section 7</span>
+              <span>Entertainment & DJ</span>
+            </Accordion.Header>
             <Accordion.Body>
               <SelectField
                 label="DJ policy"
@@ -1130,7 +1172,10 @@ const VenueMasterProfile = ({
           </Accordion.Item>
 
           <Accordion.Item eventKey="7">
-            <Accordion.Header>Section 8 — Facilities</Accordion.Header>
+            <Accordion.Header>
+              <span className="vm-section-badge">Section 8</span>
+              <span>Facilities & Amenities</span>
+            </Accordion.Header>
             <Accordion.Body>
               <Row>
                 <Col md={4}>
@@ -1280,7 +1325,10 @@ const VenueMasterProfile = ({
           </Accordion.Item>
 
           <Accordion.Item eventKey="8">
-            <Accordion.Header>Section 9 — Pricing & booking</Accordion.Header>
+            <Accordion.Header>
+              <span className="vm-section-badge">Section 9</span>
+              <span>Pricing & Booking Policies</span>
+            </Accordion.Header>
             <Accordion.Body>
               <CheckboxGroup
                 label="Pricing model"
@@ -1446,7 +1494,10 @@ const VenueMasterProfile = ({
           </Accordion.Item>
 
           <Accordion.Item eventKey="9">
-            <Accordion.Header>Section 10 — Event suitability</Accordion.Header>
+            <Accordion.Header>
+              <span className="vm-section-badge">Section 10</span>
+              <span>Event Suitability</span>
+            </Accordion.Header>
             <Accordion.Body>
               <CheckboxGroup
                 label="Suitable for"
@@ -1495,7 +1546,10 @@ const VenueMasterProfile = ({
 
           {SHOW_VENUE_IMAGE_INTELLIGENCE && (
           <Accordion.Item eventKey="10">
-            <Accordion.Header>Section 11 — Image intelligence (tagging)</Accordion.Header>
+            <Accordion.Header>
+              <span className="vm-section-badge">Section 11</span>
+              <span>Image Intelligence (Tagging)</span>
+            </Accordion.Header>
             <Accordion.Body>
               <p className="fs-14 text-muted">
                 Upload photos in the Photos tab. Use this block for default tags /
@@ -1639,113 +1693,6 @@ const VenueMasterProfile = ({
         width: auto;
         max-width: 9rem;
         white-space: nowrap;
-      }
-
-      /* Chip-style checkboxes */
-      .chip-group-title {
-        display: block;
-        font-size: 12.5px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #ed1173;
-        margin-bottom: 10px;
-        padding-left: 10px;
-        border-left: 3px solid #ed1173;
-      }
-      .chip-checkbox-group .form-check {
-        margin: 0;
-        padding: 0;
-        min-height: 0;
-      }
-      .chip-checkbox-group .form-check-input {
-        position: absolute;
-        opacity: 0;
-        width: 1px;
-        height: 1px;
-        margin: 0;
-      }
-      .chip-checkbox-group .form-check-label {
-        display: inline-flex;
-        align-items: center;
-        margin: 0;
-        padding: 7px 16px;
-        border-radius: 999px;
-        border: 1.5px solid #e2e8f0;
-        background: #f8fafc;
-        color: #475569;
-        font-size: 13.5px;
-        font-weight: 500;
-        cursor: pointer;
-        user-select: none;
-        transition: all 0.16s ease;
-      }
-      .chip-checkbox-group .form-check-label:hover {
-        border-color: #ed1173;
-        color: #ed1173;
-        background: #fff0f6;
-      }
-      .chip-checkbox-group .form-check-input:checked + .form-check-label {
-        background: linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%);
-        border-color: #e91e63;
-        color: #fff;
-        box-shadow: 0 2px 8px rgba(233, 30, 99, 0.28);
-      }
-      .chip-checkbox-group .form-check-input:focus-visible + .form-check-label {
-        outline: 2px solid #ed1173;
-        outline-offset: 2px;
-      }
-
-      /* Yes / No toggle pills */
-      .yes-no-toggle .form-check {
-        margin: 0;
-        padding: 0;
-        min-height: 0;
-      }
-      .yes-no-toggle .form-check-input {
-        position: absolute;
-        opacity: 0;
-        width: 1px;
-        height: 1px;
-        margin: 0;
-      }
-      .yes-no-toggle .form-check-label {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-        min-width: 52px;
-        padding: 3px 12px;
-        border-radius: 999px;
-        border: 1.5px solid #e2e8f0;
-        background: #f8fafc;
-        color: #64748b;
-        font-size: 12px;
-        font-weight: 600;
-        line-height: 1.4;
-        cursor: pointer;
-        user-select: none;
-        transition: all 0.16s ease;
-      }
-      .yes-no-toggle .form-check-label:hover {
-        border-color: #cbd5e1;
-        background: #f1f5f9;
-      }
-      .yes-no-toggle .form-check-input:checked + .form-check-label {
-        color: #fff;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
-      }
-      .yes-no-toggle .form-check:first-child .form-check-input:checked + .form-check-label {
-        background: linear-gradient(135deg, #34d399 0%, #16a34a 100%);
-        border-color: #16a34a;
-      }
-      .yes-no-toggle .form-check:last-child .form-check-input:checked + .form-check-label {
-        background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
-        border-color: #dc2626;
-      }
-      .yes-no-toggle .form-check-input:focus-visible + .form-check-label {
-        outline: 2px solid #94a3b8;
-        outline-offset: 2px;
       }
 
       /* Accordion */

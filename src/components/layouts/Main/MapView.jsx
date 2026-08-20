@@ -54,7 +54,7 @@ async function geocodeLocation(query) {
   }
 }
 
-const MapView = ({ subVenuesData = [], section, onClose }) => {
+const MapView = ({ subVenuesData = [], section, onClose, currentCity }) => {
   const [points, setPoints] = useState([]);
   const [loading, setLoading] = useState(true);
   const isMounted = useRef(true);
@@ -75,9 +75,60 @@ const MapView = ({ subVenuesData = [], section, onClose }) => {
     isMounted.current = true;
     const run = async () => {
       setLoading(true);
-      const validVenues = (subVenuesData || []).filter(
-        (v) => v && v.image && String(v.image).trim() !== ""
-      );
+      const isValidCity = (city) => {
+        if (!city || typeof city !== "string") return false;
+        const lower = city.toLowerCase().trim();
+        if (
+          !lower ||
+          lower === "unknown" ||
+          lower === "unknown city" ||
+          lower === "null" ||
+          lower === "undefined" ||
+          lower === "n/a" ||
+          lower === "none" ||
+          lower === "all" ||
+          lower.includes("location not available") ||
+          lower.includes("not available") ||
+          lower.includes("unknown")
+        ) {
+          return false;
+        }
+        return true;
+      };
+
+      const matchesSelectedCity = (item, selectedCity) => {
+        if (!selectedCity || selectedCity.toLowerCase() === "all") return true;
+        const itemLocation = String(
+          item.city || item.location || item.address || item.area || ""
+        ).toLowerCase();
+        const cleanSelected = selectedCity.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const cleanItem = itemLocation.replace(/[^a-z0-9]/g, "");
+        return cleanItem.includes(cleanSelected) || cleanSelected.includes(cleanItem);
+      };
+
+      const validVenues = (subVenuesData || []).filter((v) => {
+        if (!v || !v.image) return false;
+        const imgStr = String(v.image).toLowerCase().trim();
+        if (
+          !imgStr ||
+          imgStr === "null" ||
+          imgStr === "undefined" ||
+          imgStr.includes("placeholder") ||
+          imgStr.includes("not_found") ||
+          imgStr.includes("image_not_found") ||
+          imgStr.includes("imagenotfound") ||
+          imgStr.includes("no-image") ||
+          imgStr.includes("no_image")
+        ) {
+          return false;
+        }
+        const cityVal = v.city || v.location || v.address;
+        if (!isValidCity(cityVal)) return false;
+        if (currentCity && currentCity.toLowerCase() !== "all") {
+          if (!matchesSelectedCity(v, currentCity)) return false;
+        }
+        return true;
+      });
       const tasks = validVenues.map(async (v) => {
         if (v.lat && v.lng) return { ...v, lat: v.lat, lng: v.lng };
         const q =

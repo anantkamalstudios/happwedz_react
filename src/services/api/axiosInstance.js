@@ -7,15 +7,13 @@ import {
 } from "../../redux/vendorAuthSlice";
 import { toast } from "react-toastify";
 
-// Single source of truth for the REST base. Hardcoding "https://happywedz.com/api"
-// at a call site bypasses this and sends dev traffic cross-origin to production,
-// where the CORS policy rejects http://localhost:5173 — always build request URLs
-// from this (or pass a path relative to the instance's baseURL).
-export const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "https://happywedz.com/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://happywedz.com/api";
 
 const AI_API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://www.happywedz.com/ai/api";
+  import.meta.env.VITE_AI_API_BASE_URL || "https://www.happywedz.com/ai/api";
 
 const SHADI_AI_API_BASE_URL =
   import.meta.env.VITE_SHADI_AI_API_BASE_URL ||

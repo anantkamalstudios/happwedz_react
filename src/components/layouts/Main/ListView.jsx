@@ -76,24 +76,50 @@ const isValidImage = (url) => {
   const lower = url.toLowerCase().trim();
   if (
     !lower ||
-    lower.includes("imagenotfound") ||
-    lower.includes("image_not_found") ||
-    lower.includes("no-image") ||
-    lower.includes("no_image") ||
-    lower.includes("placeholder")
+    lower === "null" ||
+    lower === "undefined"
   ) {
     return false;
   }
   return true;
 };
 
-  // Reorder: recently viewed first, then rest
+const isValidCity = (city) => {
+  if (!city || typeof city !== "string") return false;
+  const lower = city.toLowerCase().trim();
+  if (
+    !lower ||
+    lower === "unknown" ||
+    lower === "unknown city" ||
+    lower === "null" ||
+    lower === "undefined" ||
+    lower === "n/a" ||
+    lower === "none" ||
+    lower === "all" ||
+    lower.includes("location not available") ||
+    lower.includes("not available") ||
+    lower.includes("unknown")
+  ) {
+    return false;
+  }
+  return true;
+};
+
+const matchesSelectedCity = (item, selectedCity) => {
+  if (!selectedCity || selectedCity.toLowerCase() === "all") return true;
+  const itemLocation = String(
+    item.city || item.location || item.address || item.area || ""
+  ).toLowerCase();
+  const cleanSelected = selectedCity.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const cleanItem = itemLocation.replace(/[^a-z0-9]/g, "");
+  return cleanItem.includes(cleanSelected) || cleanSelected.includes(cleanItem);
+};
+
+  // Reorder to prioritize recently viewed vendors
   useEffect(() => {
-    const validWithImages = (subVenuesData || []).filter(
-      (item) => item && isValidImage(item.image)
-    );
-    if (validWithImages.length > 0) {
-      const reordered = prioritizeRecentlyViewed(validWithImages);
+    const validItems = (subVenuesData || []).filter((item) => item && item.name);
+    if (validItems.length > 0) {
+      const reordered = prioritizeRecentlyViewed(validItems);
       setDisplayData(reordered);
     } else {
       setDisplayData([]);

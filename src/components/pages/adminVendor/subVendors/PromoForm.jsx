@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
-// (no redux selector needed in this form component)
 import Swal from "sweetalert2";
-import { IMAGE_BASE_URL } from "../../../../config/constants";
-import { TbBookmarkEdit } from "react-icons/tb";
-import { MdDeleteOutline } from "react-icons/md";
+import { MdEdit, MdDeleteOutline } from "react-icons/md";
 
 export default function PromoForm({ formData, setFormData, onSave }) {
   const [form, setForm] = useState({
@@ -18,8 +15,6 @@ export default function PromoForm({ formData, setFormData, onSave }) {
     active: true,
   });
 
-  const [imagePreview, setImagePreview] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
@@ -45,68 +40,86 @@ export default function PromoForm({ formData, setFormData, onSave }) {
         startDate: d.startDate || "",
         endDate: d.endDate || "",
         description: d.description || "",
+        termsAccepted: true,
         active: typeof d.active === "boolean" ? d.active : true,
       }));
-      // hydrate image preview if available
-      if (d.imageName) {
-        let preview = d.imageName;
-        if (preview.startsWith("/uploads/")) preview = IMAGE_BASE_URL + preview;
-        setImagePreview(preview);
-      }
     }
-  }, [formData?.deals]);
+  }, [formData]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm((s) => ({ ...s, [name]: type === "checkbox" ? checked : value }));
-  };
-
-  const handleImage = (e) => {
-    const file = e.target.files?.[0];
-    setImageFile(file || null);
-    if (!file) {
-      setImagePreview(null);
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (ev) => setImagePreview(ev.target.result);
-    reader.readAsDataURL(file);
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const validate = () => {
-    const err = {};
-    if (!form.title.trim()) err.title = "Title is required.";
-    if (!form.promoCode.trim()) err.promoCode = "Promo code is required.";
+    const errs = {};
+    if (!form.title || !form.title.trim())
+      errs.title = "Offer title is required.";
+    if (!form.promoCode || !form.promoCode.trim())
+      errs.promoCode = "Promo code is required.";
     if (!form.value || isNaN(form.value) || Number(form.value) <= 0)
-      err.value = "Enter a valid discount value.";
-    if (!form.startDate) err.startDate = "Start date is required.";
-    if (!form.endDate) err.endDate = "End date is required.";
-    if (form.startDate && form.endDate && form.startDate > form.endDate)
-      err.date = "End date must be after start date.";
-    if (!form.termsAccepted) err.termsAccepted = "You must accept terms.";
-    setErrors(err);
-    return Object.keys(err).length === 0;
+      errs.value = "Enter a valid positive discount value.";
+    if (!form.startDate) errs.startDate = "Start date is required.";
+    if (!form.endDate) errs.endDate = "End date is required.";
+    if (form.startDate && form.endDate) {
+      const s = new Date(form.startDate);
+      const e = new Date(form.endDate);
+      if (s > e) errs.date = "End date cannot be earlier than start date.";
+    }
+    if (!form.termsAccepted)
+      errs.termsAccepted = "You must confirm this offer.";
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
-    setSubmitting(true);
     setServerError("");
     setServerSuccess("");
+    if (!validate()) return;
+    setSubmitting(true);
+
     try {
-      // merge this promo into storefront formData.deals for saving alongside service
-      const newDeal = {
+      const dealObject = {
         title: form.title,
         code: form.promoCode,
         type: form.type,
-        value: Number(form.value),
+        value: form.value,
         startDate: form.startDate,
         endDate: form.endDate,
         description: form.description,
-        active: !!form.active,
-        imageName: imageFile?.name || null,
+        active: form.active,
       };
+
+      const existingDeals = Array.isArray(formData?.deals)
+        ? [...formData.deals]
+        : [];
+      if (editingIndex !== null && existingDeals[editingIndex]) {
+        existingDeals[editingIndex] = dealObject;
+      } else {
+        existingDeals.push(dealObject);
+      }
+
+      setFormData((prev) => ({ ...prev, deals: existingDeals }));
+
+      if (onSave) {
+        await onSave({ ...formData, deals: existingDeals });
+      }
+
+      setServerSuccess("Promotion saved successfully.");
+      Swal.fire({
+        icon: "success",
+        title: "Saved!",
+        text: "Promotion details updated successfully.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      setEditingIndex(null);
+      resetForm();
       const existing = Array.isArray(formData?.deals)
         ? [...formData.deals]
         : [];
@@ -123,6 +136,7 @@ export default function PromoForm({ formData, setFormData, onSave }) {
       setServerSuccess("Promotion added to your service and saved.");
       resetForm();
     } catch (err) {
+      console.error(err);
       setServerError(
         typeof err === "string" ? err : err?.message || "Failed to save",
       );
@@ -143,9 +157,8 @@ export default function PromoForm({ formData, setFormData, onSave }) {
       termsAccepted: false,
       active: true,
     });
-    setImageFile(null);
-    setImagePreview(null);
     setErrors({});
+    setEditingIndex(null);
     setEditingIndex(null);
   };
 
@@ -163,11 +176,6 @@ export default function PromoForm({ formData, setFormData, onSave }) {
       termsAccepted: true,
       active: typeof deal.active === "boolean" ? deal.active : true,
     });
-    if (deal.imageName) {
-      let preview = deal.imageName;
-      if (preview.startsWith("/uploads/")) preview = IMAGE_BASE_URL + preview;
-      setImagePreview(preview);
-    } else setImagePreview(null);
     setEditingIndex(index);
   };
 
@@ -178,14 +186,15 @@ export default function PromoForm({ formData, setFormData, onSave }) {
       text: "This will remove the offer from your storefront.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
+      confirmButtonColor: "#ed1173",
+      cancelButtonColor: "#64748b",
       confirmButtonText: "Yes, delete it",
     });
     if (!confirmed.isConfirmed) return;
     const updated = formData.deals.filter((_, i) => i !== index);
     setFormData((prev) => ({ ...prev, deals: updated }));
     try {
+      await onSave?.({ ...formData, deals: updated });
       // Pass the fresh deals array directly so this doesn't race the
       // setFormData update above.
       await onSave?.({ deals: updated });
@@ -200,6 +209,9 @@ export default function PromoForm({ formData, setFormData, onSave }) {
         timer: 1200,
         showConfirmButton: false,
       });
+      if (editingIndex === index) {
+        resetForm();
+      }
     } catch (err) {
       Swal.fire({
         icon: "error",
@@ -209,436 +221,353 @@ export default function PromoForm({ formData, setFormData, onSave }) {
     }
   };
 
-  const formattedValue = () =>
-    form.type === "percentage" ? `${form.value}% off` : `₹ ${form.value} off`;
+  const existingDealsList = Array.isArray(formData?.deals)
+    ? formData.deals
+    : [];
 
   return (
-    <div className="promo-form-container my-5">
-      <div className="promo-form-wrapper">
-        <div className="form-section">
-          <div className="form-card">
-            <h4 className="fw-bold">Promotion Details</h4>
-            <p className="form-description fs-14">
-              Fill in the details of your special offer for couples
-            </p>
-
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label className="fs-16">Offer Title</label>
-                <input
-                  name="title"
-                  value={form.title}
-                  onChange={handleChange}
-                  className={`form-control fs-14 ${
-                    errors.title ? "error" : ""
-                  }`}
-                  placeholder="placeholder for offer"
-                />
-                {errors.title && (
-                  <div className="error-message">{errors.title}</div>
-                )}
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="fs-16">Promo Code</label>
-                  <input
-                    name="promoCode"
-                    value={form.promoCode}
-                    onChange={handleChange}
-                    className={`form-control fs-14 ${
-                      errors.promoCode ? "error" : ""
-                    }`}
-                    placeholder="E.g. WWCOUPLE10"
-                  />
-                  {errors.promoCode && (
-                    <div className="error-message">{errors.promoCode}</div>
-                  )}
-                </div>
-
-                <div className="form-group">
-                  <label className="fs-16">Status</label>
-                  <div className="switch-container">
-                    <label className="switch" style={{ position: "relative" }}>
-                      <input
-                        type="checkbox"
-                        className="fs-14"
-                        name="active"
-                        checked={form.active}
-                        onChange={handleChange}
-                      />
-                      <span className="slider round fs-10 text-black">
-                        <span
-                          style={{
-                            position: "absolute",
-                            left: form.active ? "calc(100% - 65px)" : "5px",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            fontSize: "12px",
-                            color: form.active ? "#fff" : "#fff",
-                            width: "60px",
-                            textAlign: "center",
-                            transition: "left 0.2s",
-                            pointerEvents: "none",
-                          }}
-                        >
-                          {form.active ? "YES" : "NO"}
-                        </span>
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group fs-14">
-                  <label className="fs-16">Discount Type</label>
-                  <select
-                    name="type"
-                    value={form.type}
-                    onChange={handleChange}
-                    className="form-control fs-14"
-                  >
-                    <option value="percentage">Percentage</option>
-                    <option value="fixed">Fixed amount</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label className="fs-16">Discount Value</label>
-                  <div className="input-with-icon fs-14">
-                    <span className="input-icon fs-14">
-                      {form.type === "percentage" ? "%" : "₹"}
-                    </span>
-                    <input
-                      name="value"
-                      value={form.value}
-                      onChange={handleChange}
-                      className={`form-control fs-14 ${
-                        errors.value ? "error" : ""
-                      }`}
-                      placeholder={form.type === "percentage" ? "10" : "500"}
-                    />
-                  </div>
-                  {errors.value && (
-                    <div className="error-message">{errors.value}</div>
-                  )}
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="fs-16">Start Date</label>
-                  <input
-                    name="startDate"
-                    type="date"
-                    value={form.startDate}
-                    onChange={handleChange}
-                    className={`form-control fs-14 ${
-                      errors.startDate || errors.date ? "error" : ""
-                    }`}
-                  />
-                  {errors.startDate && (
-                    <div className="error-message">{errors.startDate}</div>
-                  )}
-                </div>
-
-                <div className="form-group">
-                  <label className="fs-16">End Date</label>
-                  <input
-                    name="endDate"
-                    type="date"
-                    value={form.endDate}
-                    onChange={handleChange}
-                    className={`form-control fs-14 ${
-                      errors.endDate || errors.date ? "error" : ""
-                    }`}
-                  />
-                  {(errors.endDate || errors.date) && (
-                    <div className="error-message">
-                      {errors.endDate || errors.date}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="fs-16">Description</label>
-                <textarea
-                  name="description"
-                  value={form.description}
-                  onChange={handleChange}
-                  rows="3"
-                  className="form-control fs-14"
-                  placeholder="Short note about terms or what customers get"
-                />
-              </div>
-
-              {/* <div className="form-group">
-                <label className="fs-16">Promotion Image</label>
-                <div className="file-upload">
-                  <label className="file-upload-label">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImage}
-                      className="file-input fs-14"
-                    />
-                    <span className="file-upload-button">Choose File</span>
-                    <span className="file-name">
-                      {imageFile ? imageFile.name : "No file chosen"}
-                    </span>
-                  </label>
-                  <small className="file-hint">
-                    Recommended size: 800x400px (JPG, PNG)
-                  </small>
-                </div>
-              </div> */}
-
-              <div className="form-group terms-group" style={{ marginTop: 25 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                    minHeight: "28px",
-                  }}
-                >
-                  <label
-                    className="checkbox-container fs-14"
-                    style={{
-                      marginBottom: 0,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      className="fs-14"
-                      name="termsAccepted"
-                      checked={form.termsAccepted}
-                      onChange={handleChange}
-                      style={{ margin: 0 }}
-                    />
-                    <span
-                      className={`checkmark fs-14 ${
-                        errors.termsAccepted ? "error" : ""
-                      }`}
-                    ></span>
-                    <span
-                      className="d-flex align-items-center"
-                      style={{ marginTop: "6px" }}
-                    >
-                      I confirm this offer and its terms
-                    </span>
-                  </label>
-                  {errors.termsAccepted && (
-                    <div
-                      className="error-message"
-                      style={{
-                        marginLeft: "12px",
-                        marginBottom: 0,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {errors.termsAccepted}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="form-actions">
-                <button
-                  type="submit"
-                  className="btn-primary folder-item fs-14"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)",
-                  }}
-                  disabled={submitting}
-                >
-                  {submitting ? "Saving..." : "Save Promotion"}
-                </button>
-
-                <button
-                  type="button"
-                  className="btn-secondary folder-item fs-14"
-                  onClick={resetForm}
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    textAlign: "center",
-                  }}
-                >
-                  Reset
-                </button>
-              </div>
-            </form>
-
-            {serverError && (
-              <div className="alert alert-danger mt-3">{serverError}</div>
-            )}
-            {serverSuccess && (
-              <div className="alert alert-success mt-3">{serverSuccess}</div>
-            )}
-          </div>
+    <div className="my-5">
+      <div className="p-3 border rounded bg-white">
+        <div className="d-flex align-items-center justify-content-between mb-3">
+          <h4 className="mb-0 fw-bold">Promotion Details</h4>
+          {editingIndex !== null && (
+            <span className="badge bg-light text-primary border fs-12">
+              Editing Offer #{editingIndex + 1}
+            </span>
+          )}
         </div>
 
-        <div className="preview-section">
-          <div className="preview-card">
-            {Array.isArray(formData?.deals) && formData.deals.length > 0 && (
-              <div className="existing-deals-list mb-3">
-                <h6>Existing Offers</h6>
-                <div className="list-group">
-                  {formData.deals.map((d, i) => (
-                    <div
-                      key={i}
-                      className="d-flex align-items-center justify-content-between p-2 border mb-2 rounded"
-                    >
-                      <div>
-                        <strong className="fs-16">
-                          {d.title || d.name || `Offer ${i + 1}`}
-                        </strong>
-                        <div className="text-muted small fs-14">
-                          Code: {d.code || d.promoCode || "-"}
-                        </div>
-                        <div className="text-muted small fs-14">
-                          {d.startDate || "-"} — {d.endDate || "-"}
-                        </div>
-                      </div>
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-outline-primary  fs-14"
-                          onClick={() => handleEditDeal(i)}
-                        >
-                          <TbBookmarkEdit />
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() => handleDeleteDeal(i)}
-                        >
-                          <MdDeleteOutline />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {/* <div className="preview-header">
-              <h3>Promotion Preview</h3>
-              <p>This is how couples will see your offer</p>
+        <form onSubmit={handleSubmit}>
+          <div className="row">
+            {/* Offer Title */}
+            <div className="col-md-6 mb-3">
+              <label className="form-label fs-16 fw-semibold">
+                Offer Title *
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={form.title}
+                onChange={handleChange}
+                className={`form-control fs-14 ${
+                  errors.title ? "is-invalid" : ""
+                }`}
+                placeholder="Enter offer title"
+              />
+              {errors.title && (
+                <div className="text-danger small mt-1">{errors.title}</div>
+              )}
             </div>
 
-            <div className="promo-preview">
-              <div className="preview-content">
-                <div className="preview-top">
-                  <div>
-                    <h4>{form.title || "Promotion title"}</h4>
-                    <div className="promo-code">
-                      {form.promoCode || "PROMOCODE"}
-                    </div>
-                  </div>
-                  <div className="discount-badge">{formattedValue()}</div>
-                </div>
+            {/* Promo Code */}
+            <div className="col-md-6 mb-3">
+              <label className="form-label fs-16 fw-semibold">
+                Promo Code *
+              </label>
+              <input
+                type="text"
+                name="promoCode"
+                value={form.promoCode}
+                onChange={handleChange}
+                className={`form-control fs-14 text-uppercase ${
+                  errors.promoCode ? "is-invalid" : ""
+                }`}
+                placeholder="e.g. WEDDING10"
+              />
+              {errors.promoCode && (
+                <div className="text-danger small mt-1">{errors.promoCode}</div>
+              )}
+            </div>
 
-                <div className="preview-image">
-                  {imagePreview ? (
-                    <img
-                      src={imagePreview}
-                      alt="promo"
-                      className="preview-img"
-                    />
-                  ) : (
-                    <div className="image-placeholder">
-                      <div className="placeholder-icon">
-                        <svg
-                          width="151px"
-                          height="151px"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-                          <g
-                            id="SVGRepo_tracerCarrier"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          ></g>
-                          <g id="SVGRepo_iconCarrier">
-                            {" "}
-                            <circle
-                              cx="12"
-                              cy="13"
-                              r="3"
-                              stroke="#1C274C"
-                              strokeWidth="1.5"
-                            ></circle>{" "}
-                            <path
-                              d="M2 13.3636C2 10.2994 2 8.76721 2.74902 7.6666C3.07328 7.19014 3.48995 6.78104 3.97524 6.46268C4.69555 5.99013 5.59733 5.82123 6.978 5.76086C7.63685 5.76086 8.20412 5.27068 8.33333 4.63636C8.52715 3.68489 9.37805 3 10.3663 3H13.6337C14.6219 3 15.4728 3.68489 15.6667 4.63636C15.7959 5.27068 16.3631 5.76086 17.022 5.76086C18.4027 5.82123 19.3044 5.99013 20.0248 6.46268C20.51 6.78104 20.9267 7.19014 21.251 7.6666C22 8.76721 22 10.2994 22 13.3636C22 16.4279 22 17.9601 21.251 19.0607C20.9267 19.5371 20.51 19.9462 20.0248 20.2646C18.9038 21 17.3433 21 14.2222 21H9.77778C6.65675 21 5.09624 21 3.97524 20.2646C3.48995 19.9462 3.07328 19.5371 2.74902 19.0607C2.53746 18.7498 2.38566 18.4045 2.27673 18"
-                              stroke="#1C274C"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                            ></path>{" "}
-                            <path
-                              d="M19 10H18"
-                              stroke="#1C274C"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                            ></path>{" "}
-                          </g>
-                        </svg>
-                      </div>
-                      <p>Promotion image preview</p>
-                    </div>
-                  )}
-                </div>
+            {/* Discount Type */}
+            <div className="col-md-6 mb-3">
+              <label className="form-label fs-16 fw-semibold">
+                Discount Type
+              </label>
+              <select
+                name="type"
+                value={form.type}
+                onChange={handleChange}
+                className="form-control fs-14"
+              >
+                <option value="percentage">Percentage (%)</option>
+                <option value="fixed">Fixed Amount (₹)</option>
+              </select>
+            </div>
 
-                <div className="preview-dates">
-                  <span className="date-label">Valid:</span>
-                  <span className="dates">
-                    {form.startDate || "Start"} — {form.endDate || "End"}
-                  </span>
-                </div>
-
-                <div className="preview-description">
-                  <p>
-                    {form.description ||
-                      "Short description of the offer appears here."}
-                  </p>
-                  <p className="terms-note">
-                    Terms apply. See full terms on booking.
-                  </p>
-                </div>
-
-                <div className="preview-actions">
-                  <button
-                    className="btn-primary folder-item"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, #ff6b9d 0%, #e91e63 100%)",
-                    }}
-                  >
-                    Save Promotion
-                  </button>
-                  <button
-                    className="action-button folder-item text-center"
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      textAlign: "center",
-                    }}
-                  >
-                    Share Offer
-                  </button>
-                </div>
+            {/* Discount Value */}
+            <div className="col-md-6 mb-3">
+              <label className="form-label fs-16 fw-semibold">
+                Discount Value *
+              </label>
+              <div className="input-group">
+                <span className="input-group-text fs-14 bg-light text-muted">
+                  {form.type === "percentage" ? "%" : "₹"}
+                </span>
+                <input
+                  type="text"
+                  name="value"
+                  value={form.value}
+                  onChange={handleChange}
+                  className={`form-control fs-14 ${
+                    errors.value ? "is-invalid" : ""
+                  }`}
+                  placeholder={form.type === "percentage" ? "10" : "5000"}
+                />
               </div>
-            </div> */}
+              {errors.value && (
+                <div className="text-danger small mt-1">{errors.value}</div>
+              )}
+            </div>
+
+            {/* Start Date */}
+            <div className="col-md-6 mb-3">
+              <label className="form-label fs-16 fw-semibold">
+                Start Date *
+              </label>
+              <input
+                type="date"
+                name="startDate"
+                value={form.startDate}
+                onChange={handleChange}
+                className={`form-control fs-14 ${
+                  errors.startDate || errors.date ? "is-invalid" : ""
+                }`}
+              />
+              {errors.startDate && (
+                <div className="text-danger small mt-1">{errors.startDate}</div>
+              )}
+            </div>
+
+            {/* End Date */}
+            <div className="col-md-6 mb-3">
+              <label className="form-label fs-16 fw-semibold">End Date *</label>
+              <input
+                type="date"
+                name="endDate"
+                value={form.endDate}
+                onChange={handleChange}
+                className={`form-control fs-14 ${
+                  errors.endDate || errors.date ? "is-invalid" : ""
+                }`}
+              />
+              {(errors.endDate || errors.date) && (
+                <div className="text-danger small mt-1">
+                  {errors.endDate || errors.date}
+                </div>
+              )}
+            </div>
+
+            {/* Description */}
+            <div className="col-12 mb-3">
+              <label className="form-label fs-16 fw-semibold">
+                Description
+              </label>
+              <textarea
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                rows="3"
+                className="form-control fs-14"
+                placeholder="Enter description or special terms for this offer"
+              />
+            </div>
+
+            {/* Status Switch */}
+            <div className="col-md-6 mb-3">
+              <label className="form-label fs-16 fw-semibold d-block">
+                Status
+              </label>
+              <div className="form-check form-switch d-flex align-items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  role="switch"
+                  id="promoStatusSwitch"
+                  name="active"
+                  checked={form.active}
+                  onChange={handleChange}
+                  style={{
+                    cursor: "pointer",
+                    width: "2.5em",
+                    height: "1.3em",
+                  }}
+                />
+                <label
+                  htmlFor="promoStatusSwitch"
+                  className="form-check-label fs-14 fw-medium text-muted cursor-pointer"
+                >
+                  {form.active ? "Active" : "Inactive"}
+                </label>
+              </div>
+            </div>
+
+            {/* Confirmation Checkbox */}
+            <div className="col-12 mb-3">
+              <div className="form-check d-flex align-items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="form-check-input mt-0"
+                  id="termsCheck"
+                  name="termsAccepted"
+                  checked={form.termsAccepted}
+                  onChange={handleChange}
+                  style={{
+                    accentColor: "#ed1173",
+                    width: 18,
+                    height: 18,
+                    cursor: "pointer",
+                  }}
+                />
+                <label
+                  htmlFor="termsCheck"
+                  className="form-check-label fs-14 text-muted cursor-pointer mb-0"
+                >
+                  I confirm this offer and its terms
+                </label>
+              </div>
+              {errors.termsAccepted && (
+                <div className="text-danger small mt-1">
+                  {errors.termsAccepted}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+
+          <div className="d-flex align-items-center gap-2 mt-2">
+            <button
+              className="btn btn-primary fs-14"
+              type="submit"
+              disabled={submitting}
+            >
+              {submitting
+                ? "Saving..."
+                : editingIndex !== null
+                  ? "Update Promotion"
+                  : "Save Promotion"}
+            </button>
+
+            {editingIndex !== null && (
+              <button
+                className="btn btn-outline-secondary fs-14"
+                type="button"
+                onClick={resetForm}
+              >
+                Cancel Edit
+              </button>
+            )}
+          </div>
+        </form>
+
+        {serverError && (
+          <div className="alert alert-danger mt-3 mb-0 fs-14">
+            {serverError}
+          </div>
+        )}
+        {serverSuccess && (
+          <div className="alert alert-success mt-3 mb-0 fs-14">
+            {serverSuccess}
+          </div>
+        )}
+
+        {/* Existing Offers Section inside the same standard card */}
+        {existingDealsList.length > 0 && (
+          <div className="mt-4 pt-3 border-top">
+            <h5 className="mb-3 fw-bold">Existing Offers</h5>
+            <div className="table-responsive">
+              <table className="table table-hover align-middle mb-0">
+                <thead className="table-light fs-14">
+                  <tr>
+                    <th>Offer Title</th>
+                    <th>Promo Code</th>
+                    <th>Discount</th>
+                    <th>Validity Period</th>
+                    <th>Status</th>
+                    <th
+                      className="text-end"
+                      style={{ width: "120px", whiteSpace: "nowrap" }}
+                    >
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="fs-14">
+                  {existingDealsList.map((d, i) => (
+                    <tr
+                      key={i}
+                      className={editingIndex === i ? "table-light" : ""}
+                    >
+                      <td className="fw-semibold">
+                        {d.title || d.name || `Offer ${i + 1}`}
+                      </td>
+                      <td>
+                        <code className="fw-bold text-dark bg-light px-2 py-1 rounded border">
+                          {d.code || d.promoCode || "-"}
+                        </code>
+                      </td>
+                      <td>
+                        <span className="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                          {d.type === "percentage"
+                            ? `${d.value}% OFF`
+                            : `₹${Number(d.value).toLocaleString()} OFF`}
+                        </span>
+                      </td>
+                      <td
+                        className="text-muted small"
+                        style={{ whiteSpace: "nowrap" }}
+                      >
+                        {d.startDate || "-"} — {d.endDate || "-"}
+                      </td>
+                      <td>
+                        <span
+                          className={`badge ${
+                            d.active !== false
+                              ? "bg-primary-subtle text-primary border border-primary-subtle"
+                              : "bg-secondary-subtle text-secondary border"
+                          }`}
+                        >
+                          {d.active !== false ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td className="text-end" style={{ whiteSpace: "nowrap" }}>
+                        <div className="d-inline-flex align-items-center justify-content-end gap-2">
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center"
+                            onClick={() => handleEditDeal(i)}
+                            title="Edit Offer"
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              borderRadius: "6px",
+                              padding: 0,
+                            }}
+                          >
+                            <MdEdit size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center"
+                            onClick={() => handleDeleteDeal(i)}
+                            title="Delete Offer"
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              borderRadius: "6px",
+                              padding: 0,
+                            }}
+                          >
+                            <MdDeleteOutline size={17} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

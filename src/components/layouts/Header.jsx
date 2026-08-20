@@ -895,20 +895,88 @@ const Header = () => {
           <div className="d-none d-lg-block w-100">
             <div className="row w-100" style={{ margin: 0, padding: 0 }}>
               <div className="col-12 bg-white p-2 header-topbar">
-                <div className="container w-100 p-0">
-                  <div className="d-flex align-items-center justify-content-center gap-3 flex-wrap">
-                    {/* Tagline */}
-                    <a
-                      className="nav-link fw-bold top-header-heading fs-18 text-nowrap m-0 p-0"
-                      href="#"
-                      style={{ color: "#C31162" }}
-                    >
-                      India's Favourite Wedding Planning Platform
-                    </a>
-
-                    {/* Location Selector */}
-                    <div className="d-flex align-items-center">
+                <div className="container-fluid w-100 p-0 px-3">
+                  <div className="d-flex align-items-center justify-content-between flex-nowrap">
+                    {/* Left: Tagline + Location */}
+                    <div className="d-flex align-items-center gap-3">
+                      <a
+                        className="nav-link fw-bold top-header-heading fs-18 text-nowrap m-0 p-0"
+                        href="#"
+                        style={{ color: "#C31162" }}
+                      >
+                        India's Favourite Wedding Planning Platform
+                      </a>
                       <LocationModalWithCategories />
+                    </div>
+
+                    {/* Right: Play Store, App Store, TryOn Studio */}
+                    <div className="d-flex align-items-center gap-3">
+                      {/* Play Store */}
+                      <a
+                        href="https://play.google.com/store/apps/details?id=com.happy.happy_weds_vendors"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Download on Play Store"
+                        className="d-flex align-items-center"
+                      >
+                        <img
+                          src="/images/header/playstore.png"
+                          alt="Play Store"
+                          style={{
+                            height: "24px",
+                            width: "auto",
+                            objectFit: "contain",
+                            cursor: "pointer",
+                            transition: "transform 0.2s ease",
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.08)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                        />
+                      </a>
+
+                      {/* App Store */}
+                      <a
+                        href="https://www.apple.com/app-store/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Download on App Store"
+                        className="d-flex align-items-center"
+                      >
+                        <img
+                          src="/images/header/appstore.png"
+                          alt="App Store"
+                          style={{
+                            height: "26px",
+                            width: "auto",
+                            objectFit: "contain",
+                            cursor: "pointer",
+                            transition: "transform 0.2s ease",
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.08)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                        />
+                      </a>
+
+                      {/* TryOn Studio */}
+                      <Link
+                        to="/try/outfit-filters"
+                        title="TryOn Studio"
+                        className="d-flex align-items-center text-decoration-none"
+                      >
+                        <img
+                          src="/images/header/tryimg.png"
+                          alt="TryOn Studio"
+                          style={{
+                            height: "40px",
+                            width: "auto",
+                            objectFit: "contain",
+                            cursor: "pointer",
+                            transition: "transform 0.2s ease",
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.08)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                        />
+                      </Link>
                     </div>
                   </div>
                 </div>

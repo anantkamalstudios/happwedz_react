@@ -7,7 +7,6 @@ import {
   FaCircleArrowRight,
 } from "react-icons/fa6";
 import useApiData from "../../../../hooks/useApiData";
-import { API_BASE_URL } from "../../../../services/api/axiosInstance";
 import { Swiper, SwiperSlide } from "swiper/react"; //
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -45,7 +44,7 @@ const VenueVendorComponent = ({ type = "vendor" }) => {
       try {
         setLoadingCategories(true);
         const res = await fetch(
-          `${API_BASE_URL}/vendor-subcategories`
+          "https://happywedz.com/api/vendor-subcategories"
         );
         const data = await res.json();
         const cats = Array.isArray(data) ? data : [];
@@ -431,26 +430,28 @@ const VenueSwiper = () => {
       try {
         setLoading(true);
         const response = await fetch(
-          `${API_BASE_URL}/vendor-services?vendorType=Venues&page=1&limit=9`
+          "https://happywedz.com/api/vendor-services?vendorType=Venues&page=1&limit=9&image_exists=true"
         );
         const result = await response.json();
 
         const venueData =
-          result.data?.map((item) => ({
-            id: item.id,
-            name:
-              item.attributes?.vendor_name ||
-              item.vendor?.businessName ||
-              "Venue",
-            image:
-              item.attributes?.image_url ||
-              cleanMediaUrl(item.media?.[0]) ||
-              null,
-            rating: item.attributes?.rating || 0,
-            review_count: item.attributes?.review_count || 0,
-            location: item.attributes?.city || item.vendor?.city || "Location",
-            city: item.attributes?.city || item.vendor?.city || "",
-          })) || [];
+          result.data
+            ?.map((item) => ({
+              id: item.id,
+              name:
+                item.attributes?.vendor_name ||
+                item.vendor?.businessName ||
+                "Venue",
+              image:
+                item.attributes?.image_url ||
+                cleanMediaUrl(item.media?.[0]) ||
+                null,
+              rating: item.attributes?.rating || 0,
+              review_count: item.attributes?.review_count || 0,
+              location: item.attributes?.city || item.vendor?.city || "Location",
+              city: item.attributes?.city || item.vendor?.city || "",
+            }))
+            .filter((venue) => !!venue.image) || [];
         setVenues(venueData);
       } catch (error) {
         console.error("Error fetching venues:", error);

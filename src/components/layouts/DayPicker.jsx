@@ -1,67 +1,23 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { PickersDay } from "@mui/x-date-pickers/PickersDay";
-import { Badge } from "@mui/material";
 import dayjs from "dayjs";
-
-function CustomDay(props) {
-  const { highlightedDays = [], day, outsideCurrentMonth, ...other } = props;
-
-  const dayFormatted = day.format("YYYY-MM-DD");
-  const isAvailable =
-    !outsideCurrentMonth &&
-    Array.isArray(highlightedDays) &&
-    highlightedDays.includes(dayFormatted);
-
-  return (
-    <Badge
-      key={day.toString()}
-      overlap="circular"
-      badgeContent={isAvailable ? "✨" : undefined}
-      sx={{
-        "& .MuiBadge-badge": {
-          fontSize: "10px",
-          top: 6,
-          right: 6,
-        },
-      }}
-    >
-      <PickersDay
-        {...other}
-        outsideCurrentMonth={outsideCurrentMonth}
-        day={day}
-        sx={
-          isAvailable
-            ? {
-                backgroundColor: "#e6fffa !important",
-                color: "#0d9488 !important",
-                fontWeight: "bold",
-                border: "1.5px solid #14b8a6 !important",
-                "&:hover": {
-                  backgroundColor: "#ccfbf1 !important",
-                },
-              }
-            : {}
-        }
-      />
-    </Badge>
-  );
-}
 
 function EventDatePicker({ formData, setFormData, availableSlots = [] }) {
   // Normalize slots into an array of "YYYY-MM-DD" strings
-  const normalizedSlots = Array.isArray(availableSlots)
-    ? availableSlots
-        .map((s) => {
-          if (!s) return null;
-          if (typeof s === "string") return s;
-          if (s.date) return String(s.date).split("T")[0];
-          return null;
-        })
-        .filter(Boolean)
-    : [];
+  const normalizedSlots = useMemo(() => {
+    if (!Array.isArray(availableSlots)) return [];
+    return availableSlots
+      .map((s) => {
+        if (!s) return null;
+        if (typeof s === "string") return s.split("T")[0].trim();
+        if (s.date) return String(s.date).split("T")[0].trim();
+        return null;
+      })
+      .filter(Boolean);
+  }, [availableSlots]);
 
   const selectedDateStr = formData.eventDate
     ? dayjs(formData.eventDate).format("YYYY-MM-DD")
@@ -70,23 +26,71 @@ function EventDatePicker({ formData, setFormData, availableSlots = [] }) {
   const isSelectedAvailable =
     selectedDateStr && normalizedSlots.includes(selectedDateStr);
 
+  // Auto-focus calendar on the month containing available slots
+  const firstAvailableDayjs = useMemo(() => {
+    if (formData.eventDate) return dayjs(formData.eventDate);
+    if (normalizedSlots.length > 0) {
+      const sorted = [...normalizedSlots].sort();
+      return dayjs(sorted[0]);
+    }
+    return dayjs();
+  }, [formData.eventDate, normalizedSlots]);
+
+  // Clean, elegant Day Component matching HappyWedz Theme
+  const CustomDay = useMemo(() => {
+    return function DayComponent(props) {
+      const { day, outsideCurrentMonth, selected, disabled, ...other } = props;
+      const dayFormatted = day.format("YYYY-MM-DD");
+      const isAvailable =
+        !outsideCurrentMonth && normalizedSlots.includes(dayFormatted);
+
+      return (
+        <PickersDay
+          {...other}
+          day={day}
+          outsideCurrentMonth={outsideCurrentMonth}
+          selected={selected}
+          disabled={disabled}
+          sx={{
+            margin: "2px",
+            ...(isAvailable &&
+              !selected && {
+                backgroundColor: "#fff0f5 !important",
+                color: "#ED1173 !important",
+                fontWeight: "700 !important",
+                border: "1.5px solid #ED1173 !important",
+                borderRadius: "50%",
+                "&:hover": {
+                  backgroundColor: "#fce7f3 !important",
+                  transform: "scale(1.06)",
+                },
+              }),
+            ...(selected && {
+              backgroundColor: "#ED1173 !important",
+              color: "#ffffff !important",
+              fontWeight: "bold !important",
+              borderRadius: "50%",
+            }),
+            ...(disabled && {
+              color: "#64748b !important",
+              opacity: 0.75,
+              fontWeight: "500",
+              cursor: "not-allowed !important",
+            }),
+          }}
+        />
+      );
+    };
+  }, [normalizedSlots]);
+
   return (
-    <div className="mb-3">
-      <div className="d-flex justify-content-between align-items-center mb-2">
-        <label className="form-label mb-0 fw-semibold">Event Date *</label>
+    <div className="form-group mb-3">
+      <div className="d-flex justify-content-between align-items-center mb-1">
+        <label className="form-label mb-0">Event Date *</label>
         {normalizedSlots.length > 0 && (
-          <span
-            className="badge rounded-pill px-2 py-1"
-            style={{
-              backgroundColor: "#d1fae5",
-              color: "#065f46",
-              border: "1px solid #a7f3d0",
-              fontSize: "11px",
-              fontWeight: "600",
-            }}
-          >
-            ✨ {normalizedSlots.length} Available Slots
-          </span>
+          <small className="text-muted" style={{ fontSize: "11.5px" }}>
+            Only available dates are selectable
+          </small>
         )}
       </div>
 
@@ -94,90 +98,76 @@ function EventDatePicker({ formData, setFormData, availableSlots = [] }) {
         <DatePicker
           value={formData.eventDate ? dayjs(formData.eventDate) : null}
           format="DD/MM/YYYY"
+          referenceDate={firstAvailableDayjs}
+          minDate={dayjs()}
+          shouldDisableDate={(day) => {
+            if (!normalizedSlots || normalizedSlots.length === 0) return false;
+            const dayStr = day.format("YYYY-MM-DD");
+            return !normalizedSlots.includes(dayStr);
+          }}
           onChange={(newDate) =>
             setFormData({
               ...formData,
               eventDate: newDate ? newDate.toDate() : null,
             })
           }
-          minDate={dayjs()}
           slots={{
             day: CustomDay,
           }}
           slotProps={{
-            day: {
-              highlightedDays: normalizedSlots,
-            },
             textField: {
               fullWidth: true,
               variant: "outlined",
               size: "small",
+              placeholder: "DD/MM/YYYY",
+              sx: {
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                  "& fieldset": {
+                    borderColor: "#dee2e6",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "#ced4da",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#ED1173",
+                    borderWidth: "1px",
+                  },
+                },
+              },
+            },
+            popper: {
+              sx: {
+                "& .MuiPaper-root": {
+                  borderRadius: "10px",
+                  boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
+                  border: "1px solid #f0f0f0",
+                },
+                "& .MuiPickersCalendarHeader-root": {
+                  color: "#333",
+                  fontWeight: "600",
+                },
+                "& .MuiDayCalendar-weekDayLabel": {
+                  color: "#666",
+                  fontWeight: "500",
+                },
+              },
             },
           }}
         />
       </LocalizationProvider>
 
-      {/* Available Slots Quick Picker Chips */}
-      {normalizedSlots.length > 0 && (
-        <div
-          className="mt-2 p-2 rounded-3 border"
-          style={{
-            backgroundColor: "#f0fdf4",
-            borderColor: "#bbf7d0",
-          }}
-        >
-          <div
-            className="d-flex align-items-center justify-content-between mb-1"
-            style={{ fontSize: "11.5px", color: "#166534" }}
-          >
-            <span className="fw-bold">🟢 Available Dates (Click to select):</span>
-          </div>
-          <div
-            className="d-flex flex-wrap gap-1"
-            style={{ maxHeight: "120px", overflowY: "auto" }}
-          >
-            {normalizedSlots.map((dateStr) => {
-              const d = dayjs(dateStr);
-              const isSelected = selectedDateStr === dateStr;
-              return (
-                <button
-                  type="button"
-                  key={dateStr}
-                  onClick={() =>
-                    setFormData({
-                      ...formData,
-                      eventDate: d.toDate(),
-                    })
-                  }
-                  className={`btn btn-sm px-2 py-1 rounded-pill ${
-                    isSelected
-                      ? "btn-success text-white fw-bold shadow-sm"
-                      : "btn-outline-success bg-white text-success"
-                  }`}
-                  style={{
-                    fontSize: "11px",
-                    borderColor: isSelected ? "#15803d" : "#86efac",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  📅 {d.format("DD MMM YYYY")} {isSelected ? "✓" : ""}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Real-time Status feedback */}
+      {/* Confirmation feedback */}
       {formData.eventDate && (
-        <div className="mt-1" style={{ fontSize: "11.5px" }}>
+        <div className="mt-1" style={{ fontSize: "12px" }}>
           {isSelectedAvailable ? (
-            <span className="text-success fw-semibold">
-              ✅ Selected date is confirmed available for this vendor/venue!
+            <span style={{ color: "#ED1173", fontWeight: "500" }}>
+              ✓ Confirmed available date with vendor
             </span>
           ) : (
             <span className="text-muted">
-              ℹ️ Custom date selected — availability will be verified with the vendor.
+              Custom date selected
             </span>
           )}
         </div>

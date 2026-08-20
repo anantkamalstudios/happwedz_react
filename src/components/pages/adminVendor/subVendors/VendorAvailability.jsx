@@ -83,7 +83,7 @@ const VendorAvailability = ({
         <h4 className="mb-3 fw-bold">Availability & Slots</h4>
 
         {/* Calendar Section */}
-        <div className="row">
+        <div className="mb-4">
           <VendorAvailabilityCalendar
             initialAvailableDates={availableDates}
             onAvailabilityChange={setAvailableDates}

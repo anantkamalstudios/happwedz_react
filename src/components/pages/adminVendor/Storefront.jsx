@@ -2,6 +2,7 @@ import { IMAGE_BASE_URL } from "../../../config/constants.js";
 import React, { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
 import { Nav } from "react-bootstrap";
+import "./Storefront.css";
 import {
   CiBullhorn,
   CiCircleQuestion,
@@ -811,7 +812,7 @@ const Storefront = ({ setCompletion }) => {
         text: `Failed to update. ${message}`,
         timer: "3000",
         confirmButtonText: "OK",
-        confirmButtonColor: "#C31162",
+        confirmButtonColor: "#ed1173",
       });
       return; // Do not show success modal on failure
     }
@@ -1507,17 +1508,12 @@ const Storefront = ({ setCompletion }) => {
       try {
         localStorage.setItem(storageKey, id);
       } catch (_) { }
-      try {
-        const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
-        if (vw <= 992 && contentRef.current) {
-          setTimeout(() => {
-            contentRef.current.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          }, 50);
-        }
-      } catch (_) { }
+      // Always scroll to top when any left section is clicked
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "smooth",
+      });
     },
     [storageKey]
   );
@@ -1618,6 +1614,11 @@ const Storefront = ({ setCompletion }) => {
       icon: <MdCurrencyRupee size={20} />,
     },
   ];
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, []);
 
   // Restore stored active tab once menu items are known/updated
   useEffect(() => {
@@ -1853,26 +1854,27 @@ const Storefront = ({ setCompletion }) => {
 
   return (
     <div className="container py-3 store-front-navbar">
-      <div className="row">
-        <div className="col-md-3 border-end">
-          <Nav className="flex-column custom-sidebar">
-            {menuItems.map((item) => (
-              <Nav.Link
-                key={item.id}
-                onClick={() => handleSetActive(item.id)}
-                className={`d-flex align-items-center gap-2 sidebar-nav-item ${active === item.id
-                  ? "active fs-16 fw-bold"
-                  : "fs-14 fw-normal"
+      <div className="row g-4">
+        <div className="col-lg-3 col-md-4">
+          <div className="storefront-sidebar-card">
+            <Nav className="flex-column custom-sidebar">
+              {menuItems.map((item) => (
+                <Nav.Link
+                  key={item.id}
+                  onClick={() => handleSetActive(item.id)}
+                  className={`sidebar-nav-item ${
+                    active === item.id ? "active" : ""
                   }`}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </Nav.Link>
-            ))}
-          </Nav>
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Nav.Link>
+              ))}
+            </Nav>
+          </div>
         </div>
 
-        <div className="col-md-9" ref={contentRef}>
+        <div className="col-lg-9 col-md-8 storefront-content-area" ref={contentRef}>
           {renderContent()}
         </div>
       </div>

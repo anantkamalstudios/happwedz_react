@@ -374,6 +374,7 @@ const SubSection = () => {
                 subVenuesData={dataToSend}
                 section={section}
                 handleShow={handleShow}
+                currentCity={selectedCity}
               />
             )}
 
@@ -382,10 +383,15 @@ const SubSection = () => {
                 subVenuesData={dataToSend}
                 section={section}
                 handleShow={handleShow}
+                currentCity={selectedCity}
               />
             )}
             {view === "map" && (
-              <MapView subVenuesData={dataToSend} section={section} />
+              <MapView
+                subVenuesData={dataToSend}
+                section={section}
+                currentCity={selectedCity}
+              />
             )}
           </InfiniteScroll>
 

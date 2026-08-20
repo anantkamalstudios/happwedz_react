@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../../layouts/vendors/Navbar";
 import HomeAdmin from "./HomeAdmin";
 import Storefront from "./Storefront";
@@ -20,6 +20,10 @@ const Main = () => {
     const stored = localStorage.getItem("storefrontCompletion");
     return stored ? parseInt(stored, 10) : 0;
   });
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [slug]);
 
   const renderContent = () => {
     switch (slug) {

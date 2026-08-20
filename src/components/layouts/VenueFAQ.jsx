@@ -5,7 +5,11 @@ import { Helmet } from "react-helmet-async";
 export default function VenueFAQ({ venueData, activeVendor }) {
   if (!venueData) return null;
 
-  const venueName = activeVendor?.name || venueData.attributes?.name || venueData.attributes?.vendor_name || "this venue";
+  const venueName =
+    activeVendor?.name ||
+    venueData.attributes?.name ||
+    venueData.attributes?.vendor_name ||
+    "this venue";
   const venueCity = activeVendor?.location || venueData.attributes?.city || "";
 
   const attrs = venueData.attributes || {};
@@ -20,15 +24,17 @@ export default function VenueFAQ({ venueData, activeVendor }) {
   const faqs = [];
 
   // 1. Price per plate / Starting price
-  const vegStartingPrice = attrs.veg_starting_price || vFood.per_plate_cost_range;
-  const generalStartingPrice = attrs.starting_price || vPricing.starting_venue_price;
+  const vegStartingPrice =
+    attrs.veg_starting_price || vFood.per_plate_cost_range;
+  const generalStartingPrice =
+    attrs.starting_price || vPricing.starting_venue_price;
   if (vegStartingPrice || generalStartingPrice) {
     const priceText = vegStartingPrice
       ? `₹${vegStartingPrice} per plate for vegetarian menus`
       : `starting price of ₹${generalStartingPrice}`;
     faqs.push({
       q: `What is the price per plate at ${venueName}?`,
-      a: `${venueName}${venueCity ? ` in ${venueCity}` : ""} starts at ${priceText}.`
+      a: `${venueName}${venueCity ? ` in ${venueCity}` : ""} starts at ${priceText}.`,
     });
   }
 
@@ -46,19 +52,21 @@ export default function VenueFAQ({ venueData, activeVendor }) {
     }
     faqs.push({
       q: `How many guests can ${venueName} accommodate?`,
-      a: `${venueName} can ${capText}.`
+      a: `${venueName} can ${capText}.`,
     });
   }
 
   // 3. Non-veg food policy
   const vegNonVeg = vFood.veg_non_veg || attrs.veg_non_veg;
   if (vegNonVeg) {
-    const isPureVeg = vegNonVeg.toLowerCase().includes("pure veg") || vegNonVeg.toLowerCase() === "veg";
+    const isPureVeg =
+      vegNonVeg.toLowerCase().includes("pure veg") ||
+      vegNonVeg.toLowerCase() === "veg";
     faqs.push({
       q: `Is non-veg food allowed at ${venueName}?`,
       a: isPureVeg
         ? `No, ${venueName} is a pure vegetarian venue.`
-        : `Yes, non-vegetarian food options are available at ${venueName} (${vegNonVeg}).`
+        : `Yes, non-vegetarian food options are available at ${venueName} (${vegNonVeg}).`,
     });
   }
 
@@ -67,7 +75,7 @@ export default function VenueFAQ({ venueData, activeVendor }) {
   if (cateringPolicy) {
     faqs.push({
       q: `Is outside catering allowed at ${venueName}?`,
-      a: `Catering policy at ${venueName}: ${cateringPolicy}.`
+      a: `Catering policy at ${venueName}: ${cateringPolicy}.`,
     });
   }
 
@@ -76,7 +84,7 @@ export default function VenueFAQ({ venueData, activeVendor }) {
   if (djPolicy) {
     faqs.push({
       q: `Is outside DJ allowed at ${venueName}?`,
-      a: `DJ policy at ${venueName}: ${djPolicy}.`
+      a: `DJ policy at ${venueName}: ${djPolicy}.`,
     });
   }
 
@@ -85,7 +93,7 @@ export default function VenueFAQ({ venueData, activeVendor }) {
   if (roomCount && roomCount !== "0" && roomCount !== 0) {
     faqs.push({
       q: `Are rooms available at ${venueName}?`,
-      a: `Yes, ${venueName} offers ${roomCount} rooms for guests and bridal party stay.`
+      a: `Yes, ${venueName} offers ${roomCount} rooms for guests and bridal party stay.`,
     });
   }
 
@@ -98,7 +106,7 @@ export default function VenueFAQ({ venueData, activeVendor }) {
       : parkingInfo;
     faqs.push({
       q: `Is parking available at ${venueName}?`,
-      a: `Parking at ${venueName}: ${parkDetails}.`
+      a: `Parking at ${venueName}: ${parkDetails}.`,
     });
   }
 
@@ -107,7 +115,7 @@ export default function VenueFAQ({ venueData, activeVendor }) {
   if (slots) {
     faqs.push({
       q: `What are the available time slots at ${venueName}?`,
-      a: `Available booking slots/duration at ${venueName}: ${Array.isArray(slots) ? slots.join(", ") : slots}.`
+      a: `Available booking slots/duration at ${venueName}: ${Array.isArray(slots) ? slots.join(", ") : slots}.`,
     });
   }
 
@@ -116,7 +124,7 @@ export default function VenueFAQ({ venueData, activeVendor }) {
   if (advance) {
     faqs.push({
       q: `How much is the booking advance at ${venueName}?`,
-      a: `The advance payment required for booking ${venueName} is ${advance}.`
+      a: `The advance payment required for booking ${venueName} is ${advance}.`,
     });
   }
 
@@ -127,18 +135,21 @@ export default function VenueFAQ({ venueData, activeVendor }) {
   const schemaPayload = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "mainEntity": faqs.map(faq => ({
+    mainEntity: faqs.map((faq) => ({
       "@type": "Question",
-      "name": faq.q,
-      "acceptedAnswer": {
+      name: faq.q,
+      acceptedAnswer: {
         "@type": "Answer",
-        "text": faq.a
-      }
-    }))
+        text: faq.a,
+      },
+    })),
   };
 
   return (
-    <div className="venue-faq-section my-4 p-4 bg-white rounded shadow-sm" id="venue-faq">
+    <div
+      className="venue-faq-section my-4 p-4 bg-white rounded shadow-sm"
+      id="venue-faq"
+    >
       {import.meta.env.VITE_ENABLE_SEO === "true" && (
         <Helmet>
           <script type="application/ld+json">
@@ -146,11 +157,14 @@ export default function VenueFAQ({ venueData, activeVendor }) {
           </script>
         </Helmet>
       )}
-      
-      <h2 className="mb-3 font-weight-bold" style={{ fontSize: "1.4rem", color: "#333" }}>
+
+      <h4
+        className="mb-3 font-weight-bold"
+        style={{ fontSize: "1.4rem", color: "#333" }}
+      >
         Frequently Asked Questions about {venueName}
-      </h2>
-      
+      </h4>
+
       <Accordion defaultActiveKey="0" flush>
         {faqs.map((faq, idx) => (
           <Accordion.Item eventKey={String(idx)} key={idx}>
